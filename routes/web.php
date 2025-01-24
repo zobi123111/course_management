@@ -17,8 +17,6 @@ use App\Http\Controllers\CourseController;
 |
 */
 
-
-
 // Login Route 
 Route::match(['get', 'post'], '/', [LoginController::class, 'index']);
 Route::match(['get', 'post'], '/login', [LoginController::class, 'login'])->name('login');
