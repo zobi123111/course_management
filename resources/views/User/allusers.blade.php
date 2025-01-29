@@ -2,17 +2,20 @@
 @section('sub-title', 'Users')
 @extends('layout.app')
 @section('content')
-<div class="create_btn">
-    <a href="#" class="btn btn-primary create-button" id="createUser" data-toggle="modal"
-        data-target="#userModal">Create User</a>
-</div>
+
+
 @if(session()->has('message'))
     <div id="successMessage" class="alert alert-success fade show" role="alert">
         <i class="bi bi-check-circle me-1"></i>
         {{ session()->get('message') }}
     </div>
-    @endif
-    <div id="update_success_msg"></div>
+@endif
+<div class="create_btn">
+    <a href="#" class="btn btn-primary create-button" id="createUser" data-toggle="modal"
+        data-target="#userModal">Create User</a>
+</div>
+<br>
+<div id="update_success_msg"></div>
 <table class="table" id="user_table">
   <thead>
     <tr>

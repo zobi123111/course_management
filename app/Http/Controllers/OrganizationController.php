@@ -36,7 +36,7 @@ class OrganizationController extends Controller
             'org_unit_name.required' => 'The Organizational Unit name is required',
             'description.required' => 'Description is required',
             'status.required' => 'Status is required',
-            'role_name.required'  => 'The Role is required'  
+            'role_name.required'  => 'The Role is required'   
             ]
         );
 

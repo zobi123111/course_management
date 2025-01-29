@@ -50,6 +50,15 @@
       </li>
        <!-- End Courses Nav -->
 
+       <!-- Start Courses Nav -->
+       <li class="nav-item">
+        <a class="nav-link collapsed" href="{{ url('organization') }}">
+          <i class="bi bi-person"></i>
+          <span>Organization Unit</span>
+        </a>
+      </li>
+       <!-- End Courses Nav -->
+
     </ul>
 
   </aside><!-- End Sidebar-->
