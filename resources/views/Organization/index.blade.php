@@ -10,8 +10,8 @@
     </div>
 @endif
 <div class="create_btn ">
-    <a href="#" class="btn btn-primary create-button" id="createOrgUnit" data-toggle="modal"
-    data-target="#orgUnitModal">Create Organizational Unit</a>
+    <button class="btn btn-primary create-button" id="createOrgUnit" data-toggle="modal"
+    data-target="#orgUnitModal">Create Organizational Unit</button>
 </div>
 <br>
 <div id="update_success_msg"></div>
@@ -21,18 +21,24 @@
       <th scope="col">Org Unit Name</th>
       <th scope="col">Description</th>
       <th scope="col">Status</th>
+      <th scope="col">First Name</th>
+      <th scope="col">Last Name</th>
+      <th scope="col">Email</th>
       <th scope="col">Edit</th>
       <th scope="col">Delete</th>
     </tr>
   </thead>
   <tbody>
-    @foreach($organizationUnits as $unit)
+    @foreach($organizationUnitsData as $val)
         <tr>
-        <td class="orgUnitName">{{ $unit->org_unit_name}}</td>
-        <td>{{ $unit->description}}</td>
-        <td>{{ ($unit->status==1)? 'Active': 'Inactive' }}</td>
-        <td><i class="fa fa-edit edit-orgunit-icon" style="font-size:25px; cursor: pointer;" data-orgunit-id="{{ $unit->id }}"></i></td>
-        <td><i class="fa-solid fa-trash delete-icon" style="font-size:25px; cursor: pointer;" data-orgunit-id="{{ $unit->id }}"></i></td>
+        <td class="orgUnitName">{{ $val->org_unit_name}}</td>
+        <td>{{ $val->description}}</td>
+        <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
+        <td>{{ $val->fname}}</td>
+        <td>{{ $val->lname}}</td>
+        <td>{{ $val->email}}</td>
+        <td><i class="fa fa-edit edit-orgunit-icon" style="font-size:25px; cursor: pointer;" data-orgunit-id="{{ $val->id }}" data-user-id="{{ $val->user_id }}"></i></td>
+        <td><i class="fa-solid fa-trash delete-icon" style="font-size:25px; cursor: pointer;" data-orgunit-id="{{ $val->id }}" data-user-id="{{ $val->user_id }}"></i></td>
         </tr>
     @endforeach
   </tbody>
@@ -83,7 +89,6 @@
                         <input type="email" name="email" class="form-control">
                         <div id="email_error" class="text-danger error_e"></div>
                     </div>
-
                     <div class="form-group">
                         <label for="password" class="form-label">Password<span class="text-danger">*</span></label>
                         <input type="password" name="password" class="form-control">
@@ -94,15 +99,6 @@
                                 class="text-danger">*</span></label>
                         <input type="password" name="password_confirmation" class="form-control" id="confirmpassword">
                         <div id="password_confirmation_error" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="role" class="form-label">Role<span class="text-danger">*</span></label>
-                        <select name="role_name" class="form-select" id="role">
-                            @foreach($roles as $val)
-                            <option value="{{ $val->id }}">{{ $val->role_name }}</option>
-                            @endforeach
-                        </select>
-                        <div id="role_name_error" class="text-danger error_e"></div>
                     </div>
                     <div class="modal-footer">
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
@@ -144,6 +140,23 @@
                             <option value="0">Inactive</option>
                         </select>
                         <div id="status_error_up" class="text-danger error_e"></div>
+                    </div>
+                     <div class="form-group">
+                        <label for="firstname" class="form-label">First Name<span class="text-danger">*</span></label>
+                        <input type="text" name="edit_firstname" class="form-control">
+                        <input type="hidden" name="user_id" id="user_id" class="form-control">
+
+                        <div id="edit_firstname_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastname" class="form-label">Last Name<span class="text-danger">*</span></label>
+                        <input type="text" name="edit_lastname" class="form-control">
+                        <div id="edit_lastname_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email<span class="text-danger">*</span></label>
+                        <input type="email" name="edit_email" class="form-control">
+                        <div id="edit_email_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="modal-footer">
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
@@ -197,7 +210,7 @@ $(document).ready(function(){
     $("#submitOrgUnit").on("click", function(e){
         e.preventDefault();
         $.ajax({
-            url: '{{ url("/save-org-unit") }}',
+            url: '{{ url("/orgunit/save") }}',
             type: 'POST',
             data: $("#orgUnit").serialize(),
             success: function(response) {
@@ -221,15 +234,25 @@ $(document).ready(function(){
 
         $('.error_e').html('');
         var orgUnitId = $(this).data('orgunit-id');
+        var userId = $(this).data('user-id');
         $.ajax({
-            url: "{{ url('edit-org-unit') }}", 
+            url: "{{ url('/orgunit/edit') }}", 
             type: 'GET',
-            data: {id: orgUnitId},
+            data: {
+                orgId: orgUnitId,
+                userId: userId
+            },
             success: function(response) {
+                console.log(response);
                 $('input[name="org_unit_name"]').val(response.organizationUnit.org_unit_name);
                 $('input[name="org_unit_id"]').val(response.organizationUnit.id);
                 $('#edit_description').val(response.organizationUnit.description);
                 $('#edit_status').val(response.organizationUnit.status);
+                $('input[name="edit_firstname"]').val(response.user.fname);
+                $('input[name="edit_lastname"]').val(response.user.lname);
+                $('input[name="edit_email"]').val(response.user.email);
+                $('input[name="user_id"]').val(response.user.id);
+
 
                 $('#editOrgUnitModal').modal('show');
             },
@@ -243,7 +266,7 @@ $(document).ready(function(){
         e.preventDefault();
 
         $.ajax({
-            url: "{{ url('/update-org-unit') }}",
+            url: "{{ url('orgunit/update') }}",
             type: "POST",
             data: $("#editOrgUnit").serialize(),
             success: function(response){

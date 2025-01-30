@@ -6,6 +6,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\OrganizationController;
+use Illuminate\Support\Facades\Mail;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -40,21 +42,29 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
     
     //Organization Unit
-    Route::get('/organization', [OrganizationController::class, 'index'])->name('org_units.index');
-    Route::post('/save-org-unit', [OrganizationController::class, 'saveOrgUnit'])->name('org-unit.store');
-    Route::get('/edit-org-unit', [OrganizationController::class, 'getOrgUnit'])->name('org-unit.edit');
-    Route::post('/update-org-unit', [OrganizationController::class, 'updateOrgUnit'])->name('org-unit.update');
-    Route::post('/org-unit-delete', [OrganizationController::class, 'deleteOrgUnit'])->name('org-unit.delete');
+    Route::get('/organization', [OrganizationController::class, 'index'])->name('orgunit.index');
+    Route::post('/orgunit/save', [OrganizationController::class, 'saveOrgUnit'])->name('orgunit.store');
+    Route::get('/orgunit/edit', [OrganizationController::class, 'getOrgUnit'])->name('orgunit.edit');
+    Route::post('/orgunit/update', [OrganizationController::class, 'updateOrgUnit'])->name('orgunit.update');
+    Route::post('/orgunit/delete', [OrganizationController::class, 'deleteOrgUnit'])->name('orgunit.delete');
     });
 
 // Courses 
 
 Route::get('/courses', [CourseController::class, 'index'])->name('course.index');
-Route::get('/create/course', [CourseController::class, 'create_course'])->name('create_course.index');
-Route::post('/store/course', [CourseController::class, 'store_course'])->name('store_course.index');
+Route::post('/course/create', [CourseController::class, 'createCourse'])->name('course.store');
+Route::post('/course/edit', [CourseController::class, 'getCourse'])->name('course.edit');
 
 
 
 // Route::post('/org/delete', [OrganizationController::class, 'destroy'])->name('org.destroy');
+Route::get('/test-mail', function () {
+    Mail::raw('This is a test email from Laravel.', function ($message) {
+        $message->to('harpreet.developer.02@example.com')
+                ->subject('Test Email from Laravel');
+    });
+
+    return 'Test email sent successfully!';
+});
 
 
