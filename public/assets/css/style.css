@@ -1231,3 +1231,10 @@ h6 {
   font-size: 13px;
   color: #012970;
 }
+
+/* new css start */
+.main_cont_outer {
+  display: flex;
+  row-gap: 10px;
+  flex-direction: column;
+}

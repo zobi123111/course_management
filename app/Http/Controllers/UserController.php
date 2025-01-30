@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Role;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\UserCreated;
 
 class UserController extends Controller
 {
@@ -36,6 +38,13 @@ class UserController extends Controller
 
        $store =  User::create($store_user);
         if($store){
+
+            // Generate password to send in the email
+            $password = $request->password;
+
+            // Send email
+            Mail::to($store->email)->send(new UserCreated($store, $password));
+
             Session::flash('message', 'User saved successfully');
             return response()->json(['success' => 'User saved successfully']); 
         }

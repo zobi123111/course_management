@@ -11,8 +11,6 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\WelcomeMail;
 
 class OrganizationController extends Controller
 {
@@ -22,8 +20,6 @@ class OrganizationController extends Controller
             ->join('users', 'organization_units.id', '=', 'users.ou_id')
             ->select('organization_units.id','organization_units.org_unit_name','organization_units.description','organization_units.status', 'users.id as user_id','users.fname','users.lname','users.email','users.role','users.password','users.ou_id')
             ->get();
-            dd($organizationUnitsData);
-
         return view('Organization.index', compact('organizationUnitsData'));
     }
 
@@ -75,9 +71,6 @@ class OrganizationController extends Controller
                 "password" => $request->password,
                 "site_url" => config('app.url')
             ];
-            
-            // Send Welcome Email
-            // Mail::to($mailData['email'])->send(new WelcomeMail($mailData));
     
             DB::commit(); // Commit transaction if everything is successful
     

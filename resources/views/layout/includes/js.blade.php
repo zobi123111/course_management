@@ -12,7 +12,8 @@
   <script src="{{ url('assets/vendor/simple-datatables/simple-datatables.js') }}"></script>
   <script src="{{ url('assets/vendor/tinymce/tinymce.min.js') }}"></script>
   <script src="{{ url('assets/vendor/php-email-form/validate.js') }}"></script>
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
   <script type="text/javascript" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
   <script> 
   tinymce.init({
