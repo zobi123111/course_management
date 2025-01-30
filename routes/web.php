@@ -45,20 +45,15 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/orgunit/edit', [OrganizationController::class, 'getOrgUnit'])->name('orgunit.edit');
     Route::post('/orgunit/update', [OrganizationController::class, 'updateOrgUnit'])->name('orgunit.update');
     Route::post('/orgunit/delete', [OrganizationController::class, 'deleteOrgUnit'])->name('orgunit.delete');
+    
+    // Courses 
+    Route::get('/courses', [CourseController::class, 'index'])->name('course.index');
+    Route::post('/course/create', [CourseController::class, 'createCourse'])->name('course.store');
+    Route::get('/course/edit', [CourseController::class, 'getCourse'])->name('course.edit');
+    Route::post('/course/update', [CourseController::class, 'updateCourse'])->name('course.update');
+    Route::post('/course/delete', [CourseController::class, 'deleteCourse'])->name('course.delete');
     });
 
-//Organization Unit
-Route::get('/organization', [OrganizationController::class, 'index'])->name('orgunit.index');
-Route::post('/orgunit/save', [OrganizationController::class, 'saveOrgUnit'])->name('orgunit.store');
-Route::get('/orgunit/edit', [OrganizationController::class, 'getOrgUnit'])->name('orgunit.edit');
-Route::post('/orgunit/update', [OrganizationController::class, 'updateOrgUnit'])->name('orgunit.update');
-Route::post('/orgunit/delete', [OrganizationController::class, 'deleteOrgUnit'])->name('orgunit.delete');
-
-// Courses 
-
-Route::get('/courses', [CourseController::class, 'index'])->name('course.index');
-Route::post('/course/create', [CourseController::class, 'createCourse'])->name('course.store');
-Route::post('/course/edit', [CourseController::class, 'getCourse'])->name('course.edit');
 
 
 Route::get('/clear-cache', function() {

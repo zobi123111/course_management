@@ -152,7 +152,6 @@
                         <label for="firstname" class="form-label">First Name<span class="text-danger">*</span></label>
                         <input type="text" name="edit_firstname" class="form-control">
                         <input type="hidden" name="user_id" id="user_id" class="form-control">
-
                         <div id="edit_firstname_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
@@ -177,7 +176,7 @@
 <!--End of Organizational  Unit-->
 
 <!--Organizational Unit Delete  Modal -->
-<form action="{{ url('/org-unit-delete') }}" method="POST">
+<form action="{{ url('/orgunit/delete') }}" method="POST">
     @csrf
     <div class="modal fade" id="deleteOrgUnitModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"
         data-bs-backdrop="static" data-bs-keyboard="false">

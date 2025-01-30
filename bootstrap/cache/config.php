@@ -1,9 +1,9 @@
 <?php return array (
   'app' => 
   array (
-    'name' => 'Laravel',
+    'name' => 'Courses Management',
     'env' => 'local',
-    'debug' => true,
+    'debugg' => true,
     'url' => 'http://localhost',
     'asset_url' => '/',
     'timezone' => 'UTC',
@@ -241,7 +241,7 @@
         'driver' => 'octane',
       ),
     ),
-    'prefix' => 'laravel_cache_',
+    'prefix' => 'courses_management_cache_',
   ),
   'cors' => 
   array (
@@ -340,7 +340,7 @@
       'options' => 
       array (
         'cluster' => 'redis',
-        'prefix' => 'laravel_database_',
+        'prefix' => 'courses_management_database_',
       ),
       'default' => 
       array (
@@ -505,11 +505,11 @@
       'smtp' => 
       array (
         'transport' => 'smtp',
-        'host' => 'mailpit',
-        'port' => '1025',
-        'encryption' => NULL,
-        'username' => NULL,
-        'password' => NULL,
+        'host' => 'smtp.hostinger.com',
+        'port' => '465',
+        'encryption' => 'ssl',
+        'username' => 'noreply@code4each.com',
+        'password' => 'AdminSimran@2024',
         'timeout' => NULL,
         'local_domain' => NULL,
       ),
@@ -551,8 +551,8 @@
     ),
     'from' => 
     array (
-      'address' => 'hello@example.com',
-      'name' => 'Laravel',
+      'address' => 'noreply@code4each.com',
+      'name' => 'Courses Management',
     ),
     'markdown' => 
     array (
@@ -675,7 +675,7 @@
       0 => 2,
       1 => 100,
     ),
-    'cookie' => 'laravel_session',
+    'cookie' => 'courses_management_session',
     'path' => '/',
     'domain' => NULL,
     'secure' => NULL,

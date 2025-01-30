@@ -21,13 +21,14 @@ class CourseController extends Controller
 
     public function createCourse(Request $request)
     {
-        $request->validate([
+        $request->validate([            
             'course_name' => 'required',
             'description' => 'required',
             'status' => 'required|boolean'
         ]);
 
         Courses::create([
+            'ou_id' => auth()->user()->ou_id,
             'course_name' => $request->course_name,
             'description' => $request->description,
             'status' => $request->status
@@ -40,9 +41,37 @@ class CourseController extends Controller
 
     public function getCourse(Request $request)
     {
-        dd($request);
-        $course = Courses::findOrFail($id);
-        return view('courses.edit', compact('course'));
+        $course = Courses::findOrFail($request->id);
+        return response()->json(['course'=> $course]);
+    }
+
+    //Update course
+    public function updateCourse(Request $request)
+    {
+        $request->validate([
+            'course_name' => 'required',
+            'description' => 'required',
+            'status' => 'required'
+        ]);
+
+        $course = Courses::findOrFail($request->course_id);
+        $course->update([
+            'course_name' => $request->course_name,
+            'description' => $request->description,
+            'status' => $request->status
+        ]);
+
+        Session::flash('message','Course updated successfully.');
+        return response()->json(['success'=> 'Course updated successfully.']);
+    }
+
+    public function deleteCourse(Request $request)
+    {        
+        $courses = Courses::findOrFail($request->course_id);
+        if ($courses) {
+            $courses->delete();
+            return redirect()->route('course.index')->with('message', 'This Course deleted successfully');
+        }
     }
 
 }

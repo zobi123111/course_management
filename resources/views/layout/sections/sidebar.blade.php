@@ -2,13 +2,13 @@
   <aside id="sidebar" class="sidebar">
 
       <ul class="sidebar-nav" id="sidebar-nav">
-
           <li class="nav-item">
               <a class="nav-link " href="{{ url('dashboard') }}">
                   <i class="bi bi-grid"></i>
                   <span>Dashboard</span>
               </a>
-          </li><!-- End Dashboard Nav -->
+          </li>
+          <!-- End Dashboard Nav -->
 
           <!-- <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
@@ -32,6 +32,7 @@
           </li>
         </ul>
       </li> -->
+      @if(auth()->check() && auth()->user()->role == 1 && empty(auth()->user()->ou_id))
           <!-- End User Nav -->
           <li class="nav-item">
               <a class="nav-link collapsed" href="{{ url('users') }}">
@@ -40,7 +41,6 @@
               </a>
           </li>
           <!-- End User  Nav -->
-
           <!-- Start Courses Nav -->
           <li class="nav-item">
               <a class="nav-link collapsed" href="{{ url('courses') }}">
@@ -58,6 +58,56 @@
         </a>
       </li>
        <!-- End Courses Nav -->
+        @endif
+      @if(auth()->check() && auth()->user()->role == 1 && !empty(auth()->user()->ou_id))
+          <!-- End User Nav -->
+          <li class="nav-item">
+              <a class="nav-link collapsed" href="{{ url('users') }}">
+                  <i class="bi bi-person"></i>
+                  <span>Users</span>
+              </a>
+          </li>
+          <!-- End User  Nav -->
+          <!-- Start Courses Nav -->
+          <li class="nav-item">
+              <a class="nav-link collapsed" href="{{ url('courses') }}">
+                  <i class="bi bi-person"></i>
+                  <span>Course List</span>
+              </a>
+          </li>
+          <!-- End Courses Nav -->
+        @endif
+
+        @if(auth()->check() && auth()->user()->role == 2)
+        <!-- End User Nav -->
+        <li class="nav-item">
+              <a class="nav-link collapsed" href="{{ url('users') }}">
+                  <i class="bi bi-person"></i>
+                  <span>Users</span>
+              </a>
+          </li>
+          <!-- End User  Nav -->
+          <!-- Start Courses Nav -->
+          <li class="nav-item">
+              <a class="nav-link collapsed" href="{{ url('courses') }}">
+                  <i class="bi bi-person"></i>
+                  <span>Course List</span>
+              </a>
+          </li>
+          <!-- End Courses Nav -->
+        @endif
+
+        @if(auth()->check() && auth()->user()->role == 3)
+
+          <!-- Start Courses Nav -->
+          <li class="nav-item">
+              <a class="nav-link collapsed" href="{{ url('courses') }}">
+                  <i class="bi bi-person"></i>
+                  <span>Course List</span>
+              </a>
+          </li>
+          <!-- End Courses Nav -->
+        @endif
 
     </ul>
 
