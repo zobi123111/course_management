@@ -5,6 +5,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\OrganizationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,6 +29,7 @@ Route::post('/forgot-password', [LoginController::class, 'forgotPassword'])->nam
 Route::get('/reset/password/{token}', [LoginController::class, 'resetPassword']);
 Route::post('/reset/password', [LoginController::class, 'submitResetPasswordForm'])->name('submit.reset.password');
 
+Route::group(['middleware' => ['auth']], function () {
 // Dashboard Route
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -38,8 +40,42 @@ Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.g
 Route::post('/users/update', [UserController::class, 'update'])->name('user.update');
 Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
 
+//Organization Unit
+Route::get('/organization', [OrganizationController::class, 'index'])->name('orgunit.index');
+Route::post('/orgunit/save', [OrganizationController::class, 'saveOrgUnit'])->name('orgunit.store');
+Route::get('/orgunit/edit', [OrganizationController::class, 'getOrgUnit'])->name('orgunit.edit');
+Route::post('/orgunit/update', [OrganizationController::class, 'updateOrgUnit'])->name('orgunit.update');
+Route::post('/orgunit/delete', [OrganizationController::class, 'deleteOrgUnit'])->name('orgunit.delete');
+
 // Courses 
 
 Route::get('/courses', [CourseController::class, 'index'])->name('course.index');
-Route::get('/create/course', [CourseController::class, 'create_course'])->name('create_course.index');
-Route::post('/store/course', [CourseController::class, 'store_course'])->name('store_course.index');
+Route::post('/course/create', [CourseController::class, 'createCourse'])->name('course.store');
+Route::post('/course/edit', [CourseController::class, 'getCourse'])->name('course.edit');
+});
+
+Route::get('/clear-cache', function() {
+    Artisan::call('optimize:clear');
+    return 'Application cache has been cleared';
+});
+
+Route::get('/migrate', function() {
+    // Run migrations
+    Artisan::call('migrate', ['--force' => true]); // '--force' to bypass confirmation
+
+    return 'Migrations have been executed successfully.';
+});
+
+Route::get('/user_seeder', function() {
+    // Specify the seeder class you want to run
+    Artisan::call('db:seed', ['--class' => 'UserSeeder', '--force' => true]); // '--force' for production
+
+    return 'UserSeeder has been executed successfully.';
+});
+
+Route::get('/role_Seeder', function() {
+    // Specify the seeder class you want to run
+    Artisan::call('db:seed', ['--class' => 'RoleSeeder', '--force' => true]); // '--force' for production
+
+    return 'RoleSeeder has been executed successfully.';
+});

@@ -2,39 +2,43 @@
 @section('sub-title', 'Users')
 @extends('layout.app')
 @section('content')
-<div class="create_btn">
-    <a href="#" class="btn btn-primary create-button" id="createUser" data-toggle="modal"
-        data-target="#userModal">Create User</a>
-</div>
-@if(session()->has('message'))
+<div class="main_cont_outer">
+    <div class="create_btn">
+        <a href="#" class="btn btn-primary create-button" id="createUser" data-toggle="modal"
+            data-target="#userModal">Create User</a>
+    </div>
+    @if(session()->has('message'))
     <div id="successMessage" class="alert alert-success fade show" role="alert">
         <i class="bi bi-check-circle me-1"></i>
         {{ session()->get('message') }}
     </div>
     @endif
     <div id="update_success_msg"></div>
-<table class="table" id="user_table">
-  <thead>
-    <tr>
-      <th scope="col">First Name</th>
-      <th scope="col">Last Name</th>
-      <th scope="col">Email</th>
-      <th scope="col">Edit</th>
-      <th scope="col">Delete</th>
-    </tr>
-  </thead>
-  <tbody>
-    @foreach($users as $val)
-    <tr>
-    <th scope="row" class="fname">{{ $val->fname }}</th>
-      <th scope="row" class="lname">{{ $val->lname }}</th>
-      <td>{{ $val->email }}</td>
-      <td><i class="fa fa-edit edit-user-icon" style="font-size:25px; cursor: pointer;" data-user-id="{{ $val->id }}"></i></td>
-      <td><i class="fa-solid fa-trash delete-icon" style="font-size:25px; cursor: pointer;" data-user-id="{{ $val->id }}"></i></td>
-    </tr>
-    @endforeach
-  </tbody>
-</table>
+    <table class="table" id="user_table">
+        <thead>
+            <tr>
+                <th scope="col">First Name</th>
+                <th scope="col">Last Name</th>
+                <th scope="col">Email</th>
+                <th scope="col">Edit</th>
+                <th scope="col">Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($users as $val)
+            <tr>
+                <td scope="row" class="fname">{{ $val->fname }}</td>
+                <td scope="row" class="lname">{{ $val->lname }}</td>
+                <td>{{ $val->email }}</td>
+                <td><i class="fa fa-edit edit-user-icon" style="font-size:18px; cursor: pointer;"
+                        data-user-id="{{ $val->id }}"></i></td>
+                <td><i class="fa-solid fa-trash delete-icon" style="font-size:18px; cursor: pointer;"
+                        data-user-id="{{ $val->id }}"></i></td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
 
 <!-- Create User -->
 <div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-labelledby="userModalLabel" aria-hidden="true">
@@ -98,7 +102,8 @@
 <!--End of create user-->
 
 <!-- Edit user -->
-<div class="modal fade" id="editUserDataModal" tabindex="-1" role="dialog" aria-labelledby="editUserDataModalLabel" aria-hidden="true">
+<div class="modal fade" id="editUserDataModal" tabindex="-1" role="dialog" aria-labelledby="editUserDataModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -125,7 +130,7 @@
                         <input type="email" name="edit_email" class="form-control">
                         <div id="email_error_up" class="text-danger error_e"></div>
                     </div>
-                   
+
                     <div class="form-group">
                         <label for="role" class="form-label">Role<span class="text-danger">*</span></label>
                         <select name="edit_role_name" class="form-select" id="edit_role">
@@ -212,12 +217,12 @@ $(document).ready(function() {
         $('.error_ee').html('');
         var userId = $(this).data('user-id');
         vdata = {
-            id: userId, 
+            id: userId,
             "_token": "{{ csrf_token() }}",
         };
         $.ajax({
             type: 'post',
-            url: "{{ url('users/edit') }}", 
+            url: "{{ url('users/edit') }}",
             data: vdata,
             success: function(response) {
                 $('input[name="edit_firstname"]').val(response.user.fname);
@@ -233,16 +238,17 @@ $(document).ready(function() {
 
                 //Secondary role
                 var secondary_role = response.user.role_id1;
-              //  $('#secondary_role').val('');
+                //  $('#secondary_role').val('');
                 $('#secondary_role option').removeAttr('selected');
-                $('#secondary_role option[value="' + secondary_role + '"]').attr('selected','selected');
+                $('#secondary_role option[value="' + secondary_role + '"]').attr('selected',
+                    'selected');
                 $('#editUserDataModal').modal('show');
             },
             error: function(xhr, status, error) {
                 console.error(xhr.responseText);
             }
         });
-});
+    });
 
     // Update user  form 
     // Use event delegation for update form button
@@ -250,7 +256,7 @@ $(document).ready(function() {
         e.preventDefault();
         $.ajax({
             type: 'post',
-            url: "/users/update", 
+            url: "/users/update",
             data: {
                 'fname': $("input[name=edit_firstname]").val(),
                 'lname': $("input[name=edit_lastname]").val(),
@@ -280,19 +286,21 @@ $(document).ready(function() {
         });
     });
 
-$('.delete-icon').click(function(e) {
-    e.preventDefault();
+    $('.delete-icon').click(function(e) {
+        e.preventDefault();
         $('#deleteUserModal').modal('show');
         var userId = $(this).data('user-id');
         var fname = $(this).closest('tr').find('.fname').text();
-          var lname = $(this).closest('tr').find('.lname').text();
-          var name = fname + ' ' + lname;
+        var lname = $(this).closest('tr').find('.lname').text();
+        var name = fname + ' ' + lname;
         $('#append_name').html(name);
         $('#userid').val(userId);
-      
-});
 
+    });
 
+    setTimeout(function() {
+        $('#successMessage').fadeOut('fast');
+    }, 2000);
 
 });
 </script>
