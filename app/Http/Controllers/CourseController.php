@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Courses;
+use App\Models\CourseLesson;
 use Illuminate\Support\Facades\Session;
 
 class CourseController extends Controller
@@ -73,5 +74,34 @@ class CourseController extends Controller
             return redirect()->route('course.index')->with('message', 'This Course deleted successfully');
         }
     }
+
+    public function showCourse(Request $request)
+    {
+        $courseId = $request->query('course_id');
+        $course = Courses::findOrFail($courseId);
+        $courseLesson = CourseLesson::all();
+        return view('courses.show', compact('course', 'courseLesson'));
+    }
+
+    public function showLesson(Request $request)
+    {
+        // dd($request);
+        $request->validate([            
+            'lesson_title' => 'required',
+            'description' => 'required',
+            'status' => 'required|boolean'
+        ]);
+
+        CourseLesson::create([
+            'course_id' => $request->course_id,
+            'lesson_title' => $request->lesson_title,
+            'description' => $request->description,
+            'status' => $request->status
+        ]);
+
+        Session::flash('message', 'Lesson created successfully.');
+        return response()->json(['success' => 'Lesson created successfully.']);
+    }
+
 
 }

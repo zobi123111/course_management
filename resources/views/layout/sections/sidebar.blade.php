@@ -32,6 +32,7 @@
           </li>
         </ul>
       </li> -->
+      
       @if(auth()->check() && auth()->user()->role == 1 && empty(auth()->user()->ou_id))
           <!-- End User Nav -->
           <li class="nav-item">
@@ -41,14 +42,6 @@
               </a>
           </li>
           <!-- End User  Nav -->
-          <!-- Start Courses Nav -->
-          <li class="nav-item">
-              <a class="nav-link collapsed" href="{{ url('courses') }}">
-                  <i class="bi bi-person"></i>
-                  <span>Course List</span>
-              </a>
-          </li>
-          <!-- End Courses Nav -->
 
        <!-- Start Courses Nav -->
        <li class="nav-item">
@@ -58,7 +51,8 @@
         </a>
       </li>
        <!-- End Courses Nav -->
-        @endif
+      @endif
+
       @if(auth()->check() && auth()->user()->role == 1 && !empty(auth()->user()->ou_id))
           <!-- End User Nav -->
           <li class="nav-item">
@@ -98,7 +92,6 @@
         @endif
 
         @if(auth()->check() && auth()->user()->role == 3)
-
           <!-- Start Courses Nav -->
           <li class="nav-item">
               <a class="nav-link collapsed" href="{{ url('courses') }}">
