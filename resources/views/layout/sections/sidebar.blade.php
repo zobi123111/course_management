@@ -32,8 +32,8 @@
           </li>
         </ul>
       </li> -->
-      
-      @if(auth()->check() && auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+
+          @if(auth()->check() && auth()->user()->role == 1 && empty(auth()->user()->ou_id))
           <!-- End User Nav -->
           <li class="nav-item">
               <a class="nav-link collapsed" href="{{ url('users') }}">
@@ -43,17 +43,17 @@
           </li>
           <!-- End User  Nav -->
 
-       <!-- Start Courses Nav -->
-       <li class="nav-item">
-        <a class="nav-link collapsed" href="{{ url('organization') }}">
-          <i class="bi bi-person"></i>
-          <span>Organization Unit</span>
-        </a>
-      </li>
-       <!-- End Courses Nav -->
-      @endif
+          <!-- Start Courses Nav -->
+          <li class="nav-item">
+              <a class="nav-link collapsed" href="{{ url('organization') }}">
+                  <i class="bi bi-person"></i>
+                  <span>Organization Unit</span>
+              </a>
+          </li>
+          <!-- End Courses Nav -->
+          @endif
 
-      @if(auth()->check() && auth()->user()->role == 1 && !empty(auth()->user()->ou_id))
+          @if(auth()->check() && auth()->user()->role == 1 && !empty(auth()->user()->ou_id))
           <!-- End User Nav -->
           <li class="nav-item">
               <a class="nav-link collapsed" href="{{ url('users') }}">
@@ -70,11 +70,11 @@
               </a>
           </li>
           <!-- End Courses Nav -->
-        @endif
+          @endif
 
-        @if(auth()->check() && auth()->user()->role == 2)
-        <!-- End User Nav -->
-        <li class="nav-item">
+          @if(auth()->check() && auth()->user()->role == 2)
+          <!-- End User Nav -->
+          <li class="nav-item">
               <a class="nav-link collapsed" href="{{ url('users') }}">
                   <i class="bi bi-person"></i>
                   <span>Users</span>
@@ -89,9 +89,9 @@
               </a>
           </li>
           <!-- End Courses Nav -->
-        @endif
+          @endif
 
-        @if(auth()->check() && auth()->user()->role == 3)
+          @if(auth()->check() && auth()->user()->role == 3)
           <!-- Start Courses Nav -->
           <li class="nav-item">
               <a class="nav-link collapsed" href="{{ url('courses') }}">
@@ -100,8 +100,13 @@
               </a>
           </li>
           <!-- End Courses Nav -->
-        @endif
-
-    </ul>
+          @endif
+          <li class="nav-item">
+              <a class="nav-link collapsed" href="{{ url('groups') }}">
+                  <i class="bi bi-person"></i>
+                  <span>Groups</span>
+              </a>
+          </li>
+      </ul>
 
   </aside><!-- End Sidebar-->
