@@ -15,7 +15,7 @@ class UserController extends Controller
     {
        $users = User::all();
        $roles = Role::all();
-        return view('User.allusers', compact('users', 'roles'));
+        return view('users.index', compact('users', 'roles'));
         
     }
 
@@ -50,8 +50,9 @@ class UserController extends Controller
             $password = $request->password;
     
             // Send email
+
             Mail::to($store->email)->send(new UserCreated($store, $password));
-    
+
             Session::flash('message', 'User saved successfully');
             return response()->json(['success' => 'User saved successfully']);
         }
@@ -80,7 +81,7 @@ class UserController extends Controller
         ->update([
             'Fname' => $validatedData['fname'],
             'Lname' => $validatedData['lname'],
-            'email' => $validatedData['email'],
+            'email' => $validatedData['email'], 
             'role' => $validatedData['role'],
        
         ]);
@@ -90,7 +91,7 @@ class UserController extends Controller
 
     public function getUserById(Request $request) 
     {
-        $user = User::find($request->id);
+        $user = User::find(decode_id($request->id));
         // dd($user);
         if (!$user) {
             return response()->json(['error' => 'User not found']);
@@ -101,7 +102,7 @@ class UserController extends Controller
     public function destroy(Request $request)
     { 
        
-        $user = User::find($request->id);
+        $user = User::find(decode_id($request->id));
 
         if ($user) {
             $user->delete();

@@ -20,7 +20,7 @@ class OrganizationController extends Controller
             ->join('users', 'organization_units.id', '=', 'users.ou_id')
             ->select('organization_units.id','organization_units.org_unit_name','organization_units.description','organization_units.status', 'users.id as user_id','users.fname','users.lname','users.email','users.role','users.password','users.ou_id')
             ->get();
-        return view('Organization.index', compact('organizationUnitsData'));
+        return view('organization.index', compact('organizationUnitsData'));
     }
 
     public function saveOrgUnit(Request $request)
@@ -89,8 +89,8 @@ class OrganizationController extends Controller
 
     public function getOrgUnit(Request $request) 
     {
-        $organizationUnit = OrganizationUnits::find($request->orgId);
-        $user = User::find($request->userId);
+        $organizationUnit = OrganizationUnits::find(decode_id($request->orgId));
+        $user = User::find(decode_id($request->userId));
         if (!$organizationUnit && !$user) {
             return response()->json(['error' => 'Organizational Unit not found']);
         }
@@ -153,7 +153,7 @@ class OrganizationController extends Controller
 
     public function deleteOrgUnit(Request $request)
     {        
-        $organizationUnit = OrganizationUnits::findOrFail($request->id);
+        $organizationUnit = OrganizationUnits::findOrFail(decode_id($request->id));
         if ($organizationUnit) {
             $organizationUnit->delete();
             return redirect()->route('orgunit.index')->with('message', 'Organizational Unit deleted successfully');

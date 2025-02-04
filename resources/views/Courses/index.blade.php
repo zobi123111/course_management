@@ -39,9 +39,9 @@
                 <td>{{ $val->description}}</td>
                 <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
                 @if(auth()->check() && auth()->user()->role == 1 && !empty(auth()->user()->ou_id))
-                    <td><i class="fa fa-edit edit-course-icon" style="font-size:25px; cursor: pointer;" data-course-id="{{ $val->id }}" ></i></td>
-                    <td><i class="fa-solid fa-trash delete-icon" style="font-size:25px; cursor: pointer;" data-course-id="{{ $val->id }}" ></i></td>
-                    <td><a href="{{ route('course.show', ['course_id' => $val->id]) }}" class="btn btn-warning" id="viewCourse">View Course</a></td>
+                    <td><i class="fa fa-edit edit-course-icon" style="font-size:25px; cursor: pointer;" data-course-id="{{ encode_id($val->id) }}" ></i></td>
+                    <td><i class="fa-solid fa-trash delete-icon" style="font-size:25px; cursor: pointer;" data-course-id="{{ encode_id($val->id) }}" ></i></td>
+                    <td><a href="{{ route('course.show', ['course_id' => encode_id($val->id)]) }}" class="btn btn-warning" id="viewCourse">View Course</a></td>
                 @endif  
             </tr>
         @elseif(auth()->check() && auth()->user()->role == 1 && empty(auth()->user()->ou_id))

@@ -1,11 +1,11 @@
-@section('title', 'Users')
-@section('sub-title', 'Users')
+@section('title', 'Roles')
+@section('sub-title', 'Roles')
 @extends('layout.app')
 @section('content')
 <div class="main_cont_outer">
     <div class="create_btn">
-        <a href="#" class="btn btn-primary create-button" id="createUser" data-toggle="modal"
-            data-target="#userModal">Create User</a>
+        <button class="btn btn-primary create-button" id="createRole" data-toggle="modal"
+            data-target="#roleModal">Create Role</button>
     </div>
     @if(session()->has('message'))
     <div id="successMessage" class="alert alert-success fade show" role="alert">
@@ -17,23 +17,21 @@
     <table class="table" id="user_table">
         <thead>
             <tr>
-                <th scope="col">First Name</th>
-                <th scope="col">Last Name</th>
-                <th scope="col">Email</th>
+                <th scope="col">Role Name</th>
+                <th scope="col">Status</th>
                 <th scope="col">Edit</th>
                 <th scope="col">Delete</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($users as $val)
+            @foreach($roles as $val)
             <tr>
-                <td scope="row" class="fname">{{ $val->fname }}</td>
-                <td scope="row" class="lname">{{ $val->lname }}</td>
-                <td>{{ $val->email }}</td>
-                <td><i class="fa fa-edit edit-user-icon" style="font-size:18px; cursor: pointer;"
-                        data-user-id="{{ $val->id }}"></i></td>
+                <td class="fname">{{ $val->role_name }}</td>
+                <td>{{ $val->status }}</td>
+                <td><i class="fa fa-edit edit-role-icon" style="font-size:18px; cursor: pointer;"
+                        data-role-id="{{ $val->id }}"></i></td>
                 <td><i class="fa-solid fa-trash delete-icon" style="font-size:18px; cursor: pointer;"
-                        data-user-id="{{ $val->id }}"></i></td>
+                        data-role-id="{{ $val->id }}"></i></td>
             </tr>
             @endforeach
         </tbody>
@@ -41,58 +39,32 @@
 </div>
 
 <!-- Create User -->
-<div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-labelledby="userModalLabel" aria-hidden="true">
+<div class="modal fade" id="roleModal" tabindex="-1" role="dialog" aria-labelledby="roleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="userModalLabel">Create Employee</h5>
+                <h5 class="modal-title" id="roleModalLabel">Create Role</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="" method="POST" id="Create_user" class="row g-3 needs-validation">
+                <form action="" method="POST" id="roleForm" class="row g-3 needs-validation">
                     @csrf
                     <div class="form-group">
-                        <label for="firstname" class="form-label">First Name<span class="text-danger">*</span></label>
-                        <input type="text" name="firstname" class="form-control">
-                        <div id="firstname_error" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="lastname" class="form-label">Last Name<span class="text-danger">*</span></label>
-                        <input type="text" name="lastname" class="form-control">
-                        <div id="lastname_error" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="email" class="form-label">Email<span class="text-danger">*</span></label>
-                        <input type="email" name="email" class="form-control">
-                        <div id="email_error" class="text-danger error_e"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="password" class="form-label">Password<span class="text-danger">*</span></label>
-                        <input type="password" name="password" class="form-control">
-                        <div id="password_error" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmpassword" class="form-label">Confirm Password<span
-                                class="text-danger">*</span></label>
-                        <input type="password" name="password_confirmation" class="form-control" id="confirmpassword">
-                        <div id="password_confirmation_error" class="text-danger error_e"></div>
-                    </div>
-                    <hr>
-                    <div class="form-group">
-                        <label for="role" class="form-label">Role<span class="text-danger">*</span></label>
-                        <select name="role_name" class="form-select" id="role">
-                            @foreach($roles as $val)
-                            <option value="{{ $val->id }}">{{ $val->role_name }}</option>
-                            @endforeach
-
-                        </select>
+                        <label for="firstname" class="form-label">Role Name<span class="text-danger">*</span></label>
+                        <input type="text" name="role_name" class="form-control">
                         <div id="role_name_error" class="text-danger error_e"></div>
                     </div>
-
+                    <div class="form-group">
+                        <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
+                        <select class="form-select" name="status" aria-label="Default select example">
+                            <option value="1" selected>Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                        <div id="status_error" class="text-danger error_e"></div>            
+                    </div>
                     <div class="modal-footer">
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
-                        <a href="#" type="button" id="saveuser" class="btn btn-primary sbt_btn">Save </a>
+                        <a href="#" type="button" id="saveRole" class="btn btn-primary sbt_btn">Save </a>
                     </div>
                 </form>
             </div>
@@ -102,46 +74,31 @@
 <!--End of create user-->
 
 <!-- Edit user -->
-<div class="modal fade" id="editUserDataModal" tabindex="-1" role="dialog" aria-labelledby="editUserDataModalLabel"
+<div class="modal fade" id="editRoleModal" tabindex="-1" role="dialog" aria-labelledby="editRoleModalLabel"
     aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editUserDataModalLabel">Edit Employee</h5>
+                <h5 class="modal-title" id="editRoleLabel">Edit Employee</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form action="" method="POST" id="Create_user3" class="row g-3 needs-validation">
                     @csrf
                     <div class="form-group">
-                        <label for="firstname" class="form-label">First Name<span class="text-danger">*</span></label>
-                        <input type="text" name="edit_firstname" class="form-control">
-                        <input type="hidden" name="edit_form_id" id="edit_form_id" class="form-control">
-
-                        <div id="fname_error_up" class="text-danger error_e"></div>
+                        <label for="firstname" class="form-label">Role Name<span class="text-danger">*</span></label>
+                        <input type="text" name="role_name" class="form-control">
+                        <input type="hidden" name="role_id" id="role_id" class="form-control">
+                        <div id="role_name_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="lastname" class="form-label">Last Name<span class="text-danger">*</span></label>
-                        <input type="text" name="edit_lastname" class="form-control">
-                        <div id="lname_error_up" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="email" class="form-label">Email<span class="text-danger">*</span></label>
-                        <input type="email" name="edit_email" class="form-control">
-                        <div id="email_error_up" class="text-danger error_e"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="role" class="form-label">Role<span class="text-danger">*</span></label>
-                        <select name="edit_role_name" class="form-select" id="edit_role">
-                            @foreach($roles as $val)
-                            <option value="{{ $val->id }}">{{ $val->role_name }}</option>
-                            @endforeach
-
+                        <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
+                        <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
+                            <option value="1" selected>Active</option>
+                            <option value="0">Inactive</option>
                         </select>
-                        <div id="edit_role_name_error_up" class="text-danger error_e"></div>
+                        <div id="status_error_up" class="text-danger error_e"></div>
                     </div>
-
                     <div class="modal-footer">
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
                         <a href="#" type="button" id="updateForm" class="btn btn-primary sbt_btn">Update</a>
@@ -184,21 +141,21 @@
 $(document).ready(function() {
     $('#user_table').DataTable();
 
-    $('#createUser').on('click', function() {
+    $('#createRole').on('click', function() {
         $('.error_e').html('');
         $('.alert-danger').css('display', 'none');
-        $('#userModal').modal('show');
+        $('#roleModal').modal('show');
     });
 
-    $('#saveuser').click(function(e) {
+    $('#saveRole').click(function(e) {
         e.preventDefault();
         $('.error_e').html('');
         $.ajax({
-            url: '{{ url("/save_user") }}',
+            url: '{{ url("role/create") }}',
             type: 'POST',
-            data: $('#Create_user').serialize(),
+            data: $('#roleForm').serialize(),
             success: function(response) {
-                $('#userModal').modal('hide');
+                $('#roleModal').modal('hide');
                 location.reload();
             },
             error: function(xhr, status, error) {
@@ -212,43 +169,29 @@ $(document).ready(function() {
         });
     });
 
-    $('.edit-user-icon').click(function(e) {
+    $('.edit-role-icon').click(function(e) {
         e.preventDefault();
         $('.error_ee').html('');
-        var userId = $(this).data('user-id');
-        vdata = {
-            id: userId,
-            "_token": "{{ csrf_token() }}",
-        };
+        var roleId = $(this).data('role-id');
+        // vdata = {
+        //     id: roleId,
+        //     "_token": "{{ csrf_token() }}",
+        // };
         $.ajax({
             type: 'post',
-            url: "{{ url('users/edit') }}",
-            data: vdata,
+            url: "{{ url('role/edit') }}",
+            data: {roleId: roleId},
             success: function(response) {
-                $('input[name="edit_firstname"]').val(response.user.fname);
-                $('input[name="edit_lastname"]').val(response.user.lname);
-                $('input[name="edit_email"]').val(response.user.email);
-                $('input[name="edit_form_id"]').val(response.user.id);
-
-                // Primary role
-                var userRoleId = response.user.role;
-                $('#role_id option').removeAttr('selected');
-                $('#edit_role option[value="' + userRoleId + '"]').attr('selected',
-                    'selected');
-
-                //Secondary role
-                var secondary_role = response.user.role_id1;
-                //  $('#secondary_role').val('');
-                $('#secondary_role option').removeAttr('selected');
-                $('#secondary_role option[value="' + secondary_role + '"]').attr('selected',
-                    'selected');
-                $('#editUserDataModal').modal('show');
+                $('input[name="role_name"]').val(response.user.fname);
+                $('#edit_status').val();
+                $('#editRoleModal').modal('show');
             },
             error: function(xhr, status, error) {
                 console.error(xhr.responseText);
             }
         });
     });
+    
 
     // Update user  form 
     // Use event delegation for update form button
