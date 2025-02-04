@@ -65,7 +65,7 @@ class UserController extends Controller
         [
             'fname.required' => 'The  Firstname is required',
             'lname.required' => 'The Lastname is required',
-             'email.required' => 'The  Email is required'
+            'email.required' => 'The  Email is required'
         ]);
 
         $userToUpdate->where('id', $request->edit_form_id)

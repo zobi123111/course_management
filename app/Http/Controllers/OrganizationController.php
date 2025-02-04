@@ -156,7 +156,7 @@ class OrganizationController extends Controller
         $organizationUnit = OrganizationUnits::findOrFail($request->id);
         if ($organizationUnit) {
             $organizationUnit->delete();
-            return redirect()->route('org_units.index')->with('message', 'Organizational Unit deleted successfully');
+            return redirect()->route('orgunit.index')->with('message', 'Organizational Unit deleted successfully');
         }
     }
 

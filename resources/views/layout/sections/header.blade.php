@@ -8,9 +8,6 @@
           </a>
           <i class="bi bi-list toggle-sidebar-btn"></i>
       </div><!-- End Logo -->
-
-
-
       <nav class="header-nav ms-auto">
           <ul class="d-flex align-items-center">
 
@@ -33,7 +30,7 @@
                           <h6>@if(Auth::check())
                               {{ Auth::user()->fname }} {{ Auth::user()->lname }}
                               @endif</h6>
-                          <span>Admin</span>
+                          <!-- <span>Admin</span> -->
                       </li>
                       <li>
                           <hr class="dropdown-divider">

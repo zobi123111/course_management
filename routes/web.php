@@ -18,8 +18,6 @@ use App\Http\Controllers\OrganizationController;
 |
 */
 
-
-
 // Login Route 
 Route::match(['get', 'post'], '/', [LoginController::class, 'index']);
 Route::match(['get', 'post'], '/login', [LoginController::class, 'login'])->name('login');
@@ -29,30 +27,37 @@ Route::post('/forgot-password', [LoginController::class, 'forgotPassword'])->nam
 Route::get('/reset/password/{token}', [LoginController::class, 'resetPassword']);
 Route::post('/reset/password', [LoginController::class, 'submitResetPasswordForm'])->name('submit.reset.password');
 
+
 Route::group(['middleware' => ['auth']], function () {
-// Dashboard Route
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Dashboard Route
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    //Users Route
+    Route::get('/users', [UserController::class, 'users'])->name('users.index');
+    Route::post('/save_user', [UserController::class, 'save_user'])->name('save_user.index');
+    Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.get');
+    Route::post('/users/update', [UserController::class, 'update'])->name('user.update');
+    Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
+    
+    //Organization Unit
+    Route::get('/organization', [OrganizationController::class, 'index'])->name('orgunit.index');
+    Route::post('/orgunit/save', [OrganizationController::class, 'saveOrgUnit'])->name('orgunit.store');
+    Route::get('/orgunit/edit', [OrganizationController::class, 'getOrgUnit'])->name('orgunit.edit');
+    Route::post('/orgunit/update', [OrganizationController::class, 'updateOrgUnit'])->name('orgunit.update');
+    Route::post('/orgunit/delete', [OrganizationController::class, 'deleteOrgUnit'])->name('orgunit.delete');
+    
+    // Courses 
+    Route::get('/courses', [CourseController::class, 'index'])->name('course.index');
+    Route::post('/course/create', [CourseController::class, 'createCourse'])->name('course.store');
+    Route::get('/course/edit', [CourseController::class, 'getCourse'])->name('course.edit');
+    Route::post('/course/update', [CourseController::class, 'updateCourse'])->name('course.update');
+    Route::post('/course/delete', [CourseController::class, 'deleteCourse'])->name('course.delete');
+    Route::get('/course/show', [CourseController::class, 'showCourse'])->name('course.show');
 
-//Users Route
-Route::get('/users', [UserController::class, 'users'])->name('users.index');
-Route::post('/save_user', [UserController::class, 'save_user'])->name('save_user.index');
-Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.get');
-Route::post('/users/update', [UserController::class, 'update'])->name('user.update');
-Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
+    Route::post('/lesson/create', [CourseController::class, 'showLesson'])->name('lesson.store');
+    });
 
-//Organization Unit
-Route::get('/organization', [OrganizationController::class, 'index'])->name('orgunit.index');
-Route::post('/orgunit/save', [OrganizationController::class, 'saveOrgUnit'])->name('orgunit.store');
-Route::get('/orgunit/edit', [OrganizationController::class, 'getOrgUnit'])->name('orgunit.edit');
-Route::post('/orgunit/update', [OrganizationController::class, 'updateOrgUnit'])->name('orgunit.update');
-Route::post('/orgunit/delete', [OrganizationController::class, 'deleteOrgUnit'])->name('orgunit.delete');
 
-// Courses 
-
-Route::get('/courses', [CourseController::class, 'index'])->name('course.index');
-Route::post('/course/create', [CourseController::class, 'createCourse'])->name('course.store');
-Route::post('/course/edit', [CourseController::class, 'getCourse'])->name('course.edit');
-});
 
 Route::get('/clear-cache', function() {
     Artisan::call('optimize:clear');
