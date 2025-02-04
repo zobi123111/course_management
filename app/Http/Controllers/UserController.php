@@ -27,28 +27,36 @@ class UserController extends Controller
             'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|min:6|confirmed'
         ]);
-
+    
+        // Get the current logged-in user
+        $currentUser = auth()->user();
+    
+        // Check if the logged-in user has an 'ouid'
+        $ouid = $currentUser && $currentUser->ou_id ? $currentUser->ou_id : null;
+    
         $store_user = array(
             "fname" => $request->firstname,
-            "lname"  => $request->lastname,
-            "email"   => $request->email,
-            "password"=> Hash::make($request->password),
-            'role'    => $request->role_name
-         );
-
-       $store =  User::create($store_user);
-        if($store){
-
+            "lname" => $request->lastname,
+            "email" => $request->email,
+            "password" => Hash::make($request->password),
+            "role" => $request->role_name,
+            "ou_id" => $ouid // Assigning the same 'ouid' as the logged-in user
+        );
+    
+        $store = User::create($store_user);
+        if ($store) {
+    
             // Generate password to send in the email
             $password = $request->password;
-
+    
             // Send email
             Mail::to($store->email)->send(new UserCreated($store, $password));
-
+    
             Session::flash('message', 'User saved successfully');
-            return response()->json(['success' => 'User saved successfully']); 
+            return response()->json(['success' => 'User saved successfully']);
         }
     }
+    
 
     public function update(Request $request)
     {
