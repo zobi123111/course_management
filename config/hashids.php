@@ -35,7 +35,7 @@ return [
         ],
 
         'alternative' => [
-            'salt' => env('HASHIDS_ALT_SALT', 'AOL1234'),
+            'salt' => env('HASHIDS_ALT_SALT', 'CM123456'), 
             'length' => 8,
             // 'alphabet' => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
         ],

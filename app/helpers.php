@@ -1,17 +1,24 @@
-<?php 
+<?php
+ 
 use Hashids\Hashids;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Page;
 
 function encode_id($id)
 {
-    $hashids = new Hashids(env('HASHIDS_SALT'), 8);
+    $salt = config('hashids.connections.main.salt'); 
+    $length = config('hashids.connections.main.length', 8);
+    // $hashids = new Hashids(env('HASHIDS_SALT'), 8);
+    $hashids = new Hashids($salt, $length);
     return $hashids->encode($id);
 }
 
 function decode_id($hashedId)
 {
-    $hashids = new Hashids(env('HASHIDS_SALT'), 8);
+    $salt = config('hashids.connections.main.salt'); 
+    $length = config('hashids.connections.main.length', 8);
+    // $hashids = new Hashids(env('HASHIDS_SALT'), 8);
+    $hashids = new Hashids($salt, $length);
     $decoded = $hashids->decode($hashedId);
     return !empty($decoded) ? $decoded[0] : null;
 }

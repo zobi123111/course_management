@@ -39,9 +39,9 @@
                 <td>{{ $val->lname}}</td>
                 <td>{{ $val->email}}</td>
                 <td><i class="fa fa-edit edit-orgunit-icon" style="font-size:25px; cursor: pointer;"
-                        data-orgunit-id="{{ $val->id }}" data-user-id="{{ $val->user_id }}"></i></td>
+                        data-orgunit-id="{{ encode_id($val->id) }}" data-user-id="{{ encode_id($val->user_id) }}"></i></td>
                 <td><i class="fa-solid fa-trash delete-icon" style="font-size:25px; cursor: pointer;"
-                        data-orgunit-id="{{ $val->id }}" data-user-id="{{ $val->user_id }}"></i></td>
+                        data-orgunit-id="{{ encode_id($val->id) }}" data-user-id="{{ encode_id($val->user_id) }}"></i></td>
             </tr>
             @endforeach
         </tbody>

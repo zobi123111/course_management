@@ -4,8 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\RolePermissionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,13 +30,15 @@ Route::get('/reset/password/{token}', [LoginController::class, 'resetPassword'])
 Route::post('/reset/password', [LoginController::class, 'submitResetPasswordForm'])->name('submit.reset.password');
 
 
-Route::group(['middleware' => ['auth']], function () {
+// Route::group(['middleware' => ['auth']], function () {
+
+Route::middleware(['auth', 'role.permission'])->group(function () {
     // Dashboard Route
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     //Users Route
     Route::get('/users', [UserController::class, 'users'])->name('users.index');
-    Route::post('/save_user', [UserController::class, 'save_user'])->name('save_user.index');
+    Route::post('/users/save', [UserController::class, 'save_user'])->name('user.index');
     Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.get');
     Route::post('/users/update', [UserController::class, 'update'])->name('user.update');
     Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
@@ -52,10 +56,21 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/course/edit', [CourseController::class, 'getCourse'])->name('course.edit');
     Route::post('/course/update', [CourseController::class, 'updateCourse'])->name('course.update');
     Route::post('/course/delete', [CourseController::class, 'deleteCourse'])->name('course.delete');
-    Route::get('/course/show', [CourseController::class, 'showCourse'])->name('course.show');
+    Route::get('/course/show/{course_id}', [CourseController::class, 'showCourse'])->name('course.show');
 
     Route::post('/lesson/create', [CourseController::class, 'showLesson'])->name('lesson.store');
-    });
+
+    //Roles Route
+    // Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
+    // Route::post('/role/create', [RoleController::class, 'createRole'])->name('role.store');
+    // Route::post('/role/edit', [RoleController::class, 'getRoleById'])->name('role.get');
+    // Route::post('/users/update', [RoleController::class, 'update'])->name('user.update');
+    // Route::post('/users/delete', [RoleController::class, 'destroy'])->name('user.destroy');
+
+    //roles 
+    Route::resource('roles', RolePermissionController::class);
+
+});
 
 
 

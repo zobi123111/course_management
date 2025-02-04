@@ -42,7 +42,7 @@ class CourseController extends Controller
 
     public function getCourse(Request $request)
     {
-        $course = Courses::findOrFail($request->id);
+        $course = Courses::findOrFail(decode_id($request->id));
         return response()->json(['course'=> $course]);
     }
 
@@ -68,16 +68,18 @@ class CourseController extends Controller
 
     public function deleteCourse(Request $request)
     {        
-        $courses = Courses::findOrFail($request->course_id);
+        $courses = Courses::findOrFail(decode_id($request->course_id));
         if ($courses) {
             $courses->delete();
             return redirect()->route('course.index')->with('message', 'This Course deleted successfully');
         }
     }
 
-    public function showCourse(Request $request)
+    public function showCourse(Request $request,$course_id)
     {
-        $courseId = $request->query('course_id');
+        dd($course_id);
+        // $courseId = decode_id($request->query('course_id'));
+
         $course = Courses::findOrFail($courseId);
         $courseLesson = CourseLesson::all();
         return view('courses.show', compact('course', 'courseLesson'));
