@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\GroupController;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +56,14 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/course/show', [CourseController::class, 'showCourse'])->name('course.show');
 
     Route::post('/lesson/create', [CourseController::class, 'showLesson'])->name('lesson.store');
+
+    Route::get('/groups', [GroupController::class, 'index'])->name('groups.index'); 
+    Route::post('/group/create', [GroupController::class, 'store'])->name('groups.create'); 
+    Route::get('/group/edit', [GroupController::class, 'show'])->name('groups.edit'); 
+    Route::post('/group/update', [GroupController::class, 'update'])->name('groups.update'); 
+    Route::post('/group/delete', [GroupController::class, 'destroy'])->name('groups.delete'); 
+    Route::get('/group/show', [GroupController::class, 'show'])->name('groups.show');
+
     });
 
 
