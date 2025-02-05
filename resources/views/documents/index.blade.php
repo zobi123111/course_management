@@ -1,6 +1,6 @@
 
-@section('title', 'Courses')
-@section('sub-title', 'Courses')
+@section('title', 'Documents')
+@section('sub-title', 'Documents')
 @extends('layout.app')
 @section('content')
 
@@ -13,80 +13,77 @@
 
 @if(checkAllowedModule('courses','course.store')->isNotEmpty())
 <div class="create_btn">
-    <button class="btn btn-primary create-button" id="createCourse" data-toggle="modal"
-    data-target="#createCourseModal">Create Course</button>
+    <button class="btn btn-primary create-button" id="createDocument" data-toggle="modal"
+    data-target="#createDocumentModal">Create Document</button>
 </div>
 @endif
 <br>
-<table class="table" id="courseTable">
+<table class="table" id="documentTable">
   <thead>
     <tr>
-      <th scope="col">Course Name</th>
-      <th scope="col">Description</th>
-      <th scope="col">Status</th>
+      <th scope="col">Version Number</th>
+      <th scope="col">Issue date</th>
+      <th scope="col">Expiry Date</th>
+      <th scope="col">Document</th>
       @if(checkAllowedModule('courses','course.edit')->isNotEmpty())
       <th scope="col">Edit</th>
       @endif
       @if(checkAllowedModule('courses','course.delete')->isNotEmpty())
       <th scope="col">Delete</th>
       @endif
-      @if(checkAllowedModule('courses','course.show')->isNotEmpty())
-      <th scope="col">Lesson</th>
-      @endif
     </tr>
   </thead>
   <tbody>
-    @foreach($courses as $val)
+    @foreach($documents as $val)
             <tr>
-                <td class="courseName">{{ $val->course_name}}</td>
-                <td>{{ $val->description}}</td>
-                <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
+                <td class="courseName">{{ $val->version_no}}</td>
+                <td>{{ $val->issue_date}}</td>
+                <td>{{ $val->expiry_date}}</td>
                 @if(checkAllowedModule('courses','course.edit')->isNotEmpty())
                     <td><i class="fa fa-edit edit-course-icon" style="font-size:25px; cursor: pointer;" data-course-id="{{ encode_id($val->id) }}" ></i></td>
                 @endif
                 @if(checkAllowedModule('courses','course.delete')->isNotEmpty())
                     <td><i class="fa-solid fa-trash delete-icon" style="font-size:25px; cursor: pointer;" data-course-id="{{ encode_id($val->id) }}" ></i></td>
-                @endif  
-                @if(checkAllowedModule('courses','course.show')->isNotEmpty())
-                    <td><a href="{{ route('course.show', ['course_id' => encode_id($val->id)]) }}" class="btn btn-warning" id="viewCourse">View Course</a></td>
-                @endif  
+                @endif
             </tr> 
     @endforeach
   </tbody>
 </table>
 
 <!-- Create Courses-->
-<div class="modal fade" id="createCourseModal" tabindex="-1" role="dialog" aria-labelledby="courseModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal fade" id="createDocumentModal" tabindex="-1" role="dialog" aria-labelledby="documentModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="courseModalLabel">Create Organizational Unit</h5>
+                <h5 class="modal-title" id="documentModalLabel">Create Document</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form action="" id="courses" method="POST" class="row g-3 needs-validation">
                     @csrf
                     <div class="form-group">
-                        <label for="firstname" class="form-label">Course Name<span class="text-danger">*</span></label>
-                        <input type="text" name="course_name" class="form-control">
+                        <label for="firstname" class="form-label">Version Number<span class="text-danger">*</span></label>
+                        <input type="text" name="version_no" class="form-control">
                         <div id="course_name_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
-                        <textarea class="form-control" name="description"  rows="3"></textarea>
-                        <div id="description_error" class="text-danger error_e"></div>
+                        <label for="lastname" class="form-label">Issue Date<span class="text-danger">*</span></label>
+                        <input type="date" name="issue_date" class="form-control">
+                        <div id="issue_date_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
-                        <select class="form-select" name="status" aria-label="Default select example">
-                            <option value="1" selected>Active</option>
-                            <option value="0">Inactive</option>
-                        </select>
+                        <label for="lastname" class="form-label">Expiry Date<span class="text-danger">*</span></label>
+                        <input type="date" name="expiry_date" class="form-control">
+                        <div id="expiry_date_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Upload Document<span class="text-danger">*</span></label>
+                        <input type="file" name="document" class="form-control">
                         <div id="status_error" class="text-danger error_e"></div>            
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" id="submitCourse" class="btn btn-primary sbt_btn">Save </button>
+                        <button type="button" id="submitDocument" class="btn btn-primary sbt_btn">Save </button>
                     </div>
                 </form>
             </div>

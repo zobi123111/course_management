@@ -6,8 +6,11 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\CourseLessonController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\RolePermissionController;
+use App\Http\Controllers\GroupController;
+use App\Http\Controllers\DocumentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,24 +36,24 @@ Route::post('/reset/password', [LoginController::class, 'submitResetPasswordForm
 // Route::group(['middleware' => ['auth']], function () {
 
 Route::middleware(['auth', 'role.permission'])->group(function () {
-    // Dashboard Route
+    //Dashboard Route
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     //Users Route
-    Route::get('/users', [UserController::class, 'users'])->name('users.index');
-    Route::post('/users/save', [UserController::class, 'save_user'])->name('user.index');
+    Route::get('/users', [UserController::class, 'users'])->name('user.index');
+    Route::post('/users/save', [UserController::class, 'save_user'])->name('user.store');
     Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.get');
     Route::post('/users/update', [UserController::class, 'update'])->name('user.update');
     Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
     
     //Organization Unit
-    Route::get('/organization', [OrganizationController::class, 'index'])->name('orgunit.index');
+    Route::get('/orgunit', [OrganizationController::class, 'index'])->name('orgunit.index');
     Route::post('/orgunit/save', [OrganizationController::class, 'saveOrgUnit'])->name('orgunit.store');
     Route::get('/orgunit/edit', [OrganizationController::class, 'getOrgUnit'])->name('orgunit.edit');
     Route::post('/orgunit/update', [OrganizationController::class, 'updateOrgUnit'])->name('orgunit.update');
     Route::post('/orgunit/delete', [OrganizationController::class, 'deleteOrgUnit'])->name('orgunit.delete');
     
-    // Courses 
+    //Courses 
     Route::get('/courses', [CourseController::class, 'index'])->name('course.index');
     Route::post('/course/create', [CourseController::class, 'createCourse'])->name('course.store');
     Route::get('/course/edit', [CourseController::class, 'getCourse'])->name('course.edit');
@@ -58,14 +61,25 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/course/delete', [CourseController::class, 'deleteCourse'])->name('course.delete');
     Route::get('/course/show/{course_id}', [CourseController::class, 'showCourse'])->name('course.show');
 
+    //Lesson 
     Route::post('/lesson/create', [CourseController::class, 'showLesson'])->name('lesson.store');
+    Route::get('/lesson/edit', [CourseController::class, 'getLesson'])->name('lesson.edit');
+    Route::post('/lesson/update', [CourseController::class, 'updateLesson'])->name('lesson.update');
+    Route::post('/lesson/delete', [CourseController::class, 'deleteLesson'])->name('lesson.delete');
 
-    //Roles Route
-    // Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
-    // Route::post('/role/create', [RoleController::class, 'createRole'])->name('role.store');
-    // Route::post('/role/edit', [RoleController::class, 'getRoleById'])->name('role.get');
-    // Route::post('/users/update', [RoleController::class, 'update'])->name('user.update');
-    // Route::post('/users/delete', [RoleController::class, 'destroy'])->name('user.destroy');
+    //Groups Route
+    Route::get('/groups', [GroupController::class, 'index'])->name('group.index');
+    Route::post('/group/create', [GroupController::class, 'createGroup'])->name('group.store');
+    Route::get('/group/edit', [GroupController::class, 'getGroup'])->name('group.edit');
+    Route::post('/group/update', [GroupController::class, 'updateGroup'])->name('group.update');
+    Route::post('/group/delete', [GroupController::class, 'deleteGroup'])->name('group.delete');
+    
+    //Groups Route
+    Route::get('/documents', [DocumentController::class, 'index'])->name('document.index');
+    // Route::post('/group/create', [GroupController::class, 'createGroup'])->name('group.store');
+    // Route::get('/group/edit', [GroupController::class, 'getGroup'])->name('group.edit');
+    // Route::post('/group/update', [GroupController::class, 'updateGroup'])->name('group.update');
+    // Route::post('/group/delete', [GroupController::class, 'deleteGroup'])->name('group.delete');
 
     //roles 
     Route::resource('roles', RolePermissionController::class);

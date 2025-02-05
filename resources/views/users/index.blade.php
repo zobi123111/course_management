@@ -3,14 +3,17 @@
 @extends('layout.app')
 @section('content')
 <div class="main_cont_outer">
-    <div class="create_btn">
-        <a href="#" class="btn btn-primary create-button" id="createUser" data-toggle="modal"
-            data-target="#userModal">Create User</a>
-    </div>
     @if(session()->has('message'))
     <div id="successMessage" class="alert alert-success fade show" role="alert">
         <i class="bi bi-check-circle me-1"></i>
         {{ session()->get('message') }}
+    </div>
+    @endif
+
+    @if(checkAllowedModule('users','user.store')->isNotEmpty())
+    <div class="create_btn">
+        <a href="#" class="btn btn-primary create-button" id="createUser" data-toggle="modal"
+            data-target="#userModal">Create User</a>
     </div>
     @endif
     <div id="update_success_msg"></div>
@@ -20,8 +23,12 @@
                 <th scope="col">First Name</th>
                 <th scope="col">Last Name</th>
                 <th scope="col">Email</th>
+                @if(checkAllowedModule('users','user.get')->isNotEmpty())
                 <th scope="col">Edit</th>
+                @endif   
+                @if(checkAllowedModule('users','user.destroy')->isNotEmpty())
                 <th scope="col">Delete</th>
+                @endif  
             </tr>
         </thead>
         <tbody>
@@ -30,10 +37,14 @@
                 <td scope="row" class="fname">{{ $val->fname }}</td>
                 <td scope="row" class="lname">{{ $val->lname }}</td>
                 <td>{{ $val->email }}</td>
+                @if(checkAllowedModule('users','user.get')->isNotEmpty())
                 <td><i class="fa fa-edit edit-user-icon" style="font-size:18px; cursor: pointer;"
-                        data-user-id="{{ encode_id($val->id) }}"></i></td>
+                    data-user-id="{{ encode_id($val->id) }}"></i></td>
+                @endif    
+                @if(checkAllowedModule('users','user.destroy')->isNotEmpty())
                 <td><i class="fa-solid fa-trash delete-icon" style="font-size:18px; cursor: pointer;"
-                        data-user-id="{{ encode_id($val->id) }}"></i></td>
+                data-user-id="{{ encode_id($val->id) }}"></i></td>
+                @endif 
             </tr>
             @endforeach
         </tbody>
@@ -194,7 +205,7 @@ $(document).ready(function() {
         e.preventDefault();
         $('.error_e').html('');
         $.ajax({
-            url: '{{ url("/user/save") }}',
+            url: '{{ url("/users/save") }}',
             type: 'POST',
             data: $('#Create_user').serialize(),
             success: function(response) {

@@ -13,7 +13,12 @@ class UserController extends Controller
 {
     public function users()
     {
-       $users = User::all();
+       $ou_id =  auth()->user()->ou_id;
+       if(empty($ou_id)){
+           $users = User::all();
+        }else{
+           $users = User::where('ou_id',$ou_id)->get();
+       }
        $roles = Role::all();
         return view('users.index', compact('users', 'roles'));
         
@@ -106,7 +111,7 @@ class UserController extends Controller
 
         if ($user) {
             $user->delete();
-            return redirect()->route('users.index')->with('message', 'User deleted successfully');
+            return redirect()->route('user.index')->with('message', 'User deleted successfully');
         }
     }
 }

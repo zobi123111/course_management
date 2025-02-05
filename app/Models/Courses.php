@@ -8,5 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 class Courses extends Model
 {
     use HasFactory;
+
     protected $fillable = ['ou_id','course_name','description','status'];
+
+    public function organizationUnit()
+    {
+        return $this->belongsTo(OrganizationUnits::class, 'ou_id');
+    }
+
+    public function courseLessons()
+    {
+        return $this->hasMany(CourseLesson::class, 'course_id');
+    }
 }
