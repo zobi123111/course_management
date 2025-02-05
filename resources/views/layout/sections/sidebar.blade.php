@@ -4,11 +4,12 @@
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link " href="index.html">
+        <a class="nav-link " href="{{ url('dashboard') }}">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
       </li><!-- End Dashboard Nav -->
+   
 
       <!-- <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
@@ -39,15 +40,21 @@
           <span>Users</span>
         </a>
       </li>
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{{ url('organization') }}">
+          <i class="bi bi-person"></i>
+          <span>Organization Unit</span>
+        </a>
+      </li>
       <!-- End User  Nav -->
 
        <!-- Start Courses Nav -->
-       <li class="nav-item">
+       <!-- <li class="nav-item">
         <a class="nav-link collapsed" href="{{ url('courses') }}">
           <i class="bi bi-person"></i>
           <span>Course List</span>
         </a>
-      </li>
+      </li> -->
        <!-- End Courses Nav -->
 
     </ul>

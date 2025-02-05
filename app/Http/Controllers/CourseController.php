@@ -18,7 +18,7 @@ class CourseController extends Controller
 
     public function store_course(Request $request)
     {
-       dd($request->all()); 
+       dd($request->all());  
     }
 
 }

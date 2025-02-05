@@ -2,6 +2,7 @@
 @section('sub-title', 'Users')
 @extends('layout.app')
 @section('content')
+<div class="main_cont_outer">
 <div class="create_btn">
     <a href="#" class="btn btn-primary create-button" id="createUser" data-toggle="modal"
         data-target="#userModal">Create User</a>
@@ -26,15 +27,16 @@
   <tbody>
     @foreach($users as $val)
     <tr>
-    <th scope="row" class="fname">{{ $val->fname }}</th>
-      <th scope="row" class="lname">{{ $val->lname }}</th>
+    <td scope="row" class="fname">{{ $val->fname }}</td>
+      <td scope="row" class="lname">{{ $val->lname }}</td>
       <td>{{ $val->email }}</td>
-      <td><i class="fa fa-edit edit-user-icon" style="font-size:25px; cursor: pointer;" data-user-id="{{ $val->id }}"></i></td>
-      <td><i class="fa-solid fa-trash delete-icon" style="font-size:25px; cursor: pointer;" data-user-id="{{ $val->id }}"></i></td>
+      <td><i class="fa fa-edit edit-user-icon" style="font-size:18px; cursor: pointer;" data-user-id="{{ $val->id }}"></i></td>
+      <td><i class="fa-solid fa-trash delete-icon" style="font-size:18px; cursor: pointer;" data-user-id="{{ $val->id }}"></i></td>
     </tr>
     @endforeach
   </tbody>
 </table>
+</div>
 
 <!-- Create User -->
 <div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-labelledby="userModalLabel" aria-hidden="true">
@@ -292,7 +294,9 @@ $('.delete-icon').click(function(e) {
       
 });
 
-
+setTimeout(function() {
+  $('#successMessage').fadeOut('fast');
+}, 2000);
 
 });
 </script>

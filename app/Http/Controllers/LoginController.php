@@ -93,7 +93,7 @@ class LoginController extends Controller
             //  $resetUrl = '/reset/password/' . $token . '?email=' . urlencode($email);
             //  dd($resetUrl);
             $resetUrl = url('/reset/password/' . $token . '?email=' . urlencode($email));
-            dd($resetUrl);
+        
             //  print_r($resetUrl);
             //  $messages = [
             //     'subject' => 'Reset Your Password ' ,

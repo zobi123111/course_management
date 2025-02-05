@@ -18,10 +18,10 @@ class UserSeeder extends Seeder
         User::truncate();
         $data = [
             [
-                'fname' => "Rohit",
+                'fname' => "Admin",
                 'lname' => "",
-                'email' => 'sandhu065@gmail.com',
-                'password' => Hash::make('123456'),
+                'email' => 'zobi123111@gmail.com',
+                'password' => Hash::make('zobi@2025'),
                 'role'   =>   "1"
             ]
         ];
