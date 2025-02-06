@@ -74,12 +74,12 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/group/update', [GroupController::class, 'updateGroup'])->name('group.update');
     Route::post('/group/delete', [GroupController::class, 'deleteGroup'])->name('group.delete');
     
-    //Groups Route
+    //Documents Route
     Route::get('/documents', [DocumentController::class, 'index'])->name('document.index');
-    // Route::post('/group/create', [GroupController::class, 'createGroup'])->name('group.store');
-    // Route::get('/group/edit', [GroupController::class, 'getGroup'])->name('group.edit');
-    // Route::post('/group/update', [GroupController::class, 'updateGroup'])->name('group.update');
-    // Route::post('/group/delete', [GroupController::class, 'deleteGroup'])->name('group.delete');
+    Route::post('/document/create', [DocumentController::class, 'createDocument'])->name('document.store');
+    Route::get('/document/edit', [DocumentController::class, 'getDocument'])->name('document.edit');
+    Route::post('/document/update', [DocumentController::class, 'updateDocument'])->name('document.update');
+    Route::post('/document/delete', [DocumentController::class, 'deleteDocument'])->name('document.delete');
 
     //roles 
     Route::resource('roles', RolePermissionController::class);
