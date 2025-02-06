@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\UserCreated;
+use App\Mail\OrgUnitCreated;
 
 class OrganizationController extends Controller
 {
@@ -64,16 +67,17 @@ class OrganizationController extends Controller
                 'role' => 1,
                 'ou_id' => $orgUnit->id,
             ]);
+        
+            if($user && $orgUnit){  
+                
+                // Generate password to send in the email
+                $password = $request->password;
+                
+                // Send email
+                Mail::to($user->email)->send(new OrgUnitCreated($user, $password, $orgUnit));
+            }
 
-            $mailData = [
-                'username' => $request->firstname.' '.$request->lastname,
-                'email' => $request->email,
-                "password" => $request->password,
-                "site_url" => config('app.url')
-            ];
-    
             DB::commit(); // Commit transaction if everything is successful
-    
             // Success
             Session::flash('message', 'Organizational unit and user created successfully');
             return response()->json(['success' => 'Organizational unit and user created successfully']);

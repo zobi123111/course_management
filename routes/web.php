@@ -113,3 +113,8 @@ Route::get('/role_Seeder', function() {
 
     return 'RoleSeeder has been executed successfully.';
 });
+
+Route::get('/link-storage', function () {
+    Artisan::call('storage:link');
+    return 'Storage linked successfully!';
+});

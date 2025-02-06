@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class LoginController extends Controller
 {
@@ -92,28 +93,17 @@ class LoginController extends Controller
             );
             //  $resetUrl = '/reset/password/' . $token . '?email=' . urlencode($email);
             //  dd($resetUrl);
-            $resetUrl = url('/reset/password/' . $token . '?email=' . urlencode($email));
-            dd($resetUrl);
-            //  print_r($resetUrl);
-            //  $messages = [
-            //     'subject' => 'Reset Your Password ' ,
-            //     'greeting-text' => 'Dear ' .ucfirst($recipient->first_name). ',',
-            //     'url-title' => 'Reset Password',
-            //     'url' => $resetUrl,
-            //     'lines_array' => [
-            //         'body-text' => 'We received a request to reset your account password. To reset your password, please click on the link below:',
-            //         'info' => "If you didn't request this password reset or believe it's a mistake, you can ignore this email. Your password will not be changed until you access the link above and create a new password.",
-            //         'expiration' => "This password reset link is valid for the next 24 hours. After that, you'll need to request another password reset.",
-            //     ],
-            //     'thanks-message' => 'Thank you for using our application!',
-            // ];
+            $resetLink = url('/reset/password/' . $token . '?email=' . urlencode($email));
+            Mail::send('emailtemplates.password_reset', ['resetLink' => $resetLink, 'user' => $recipient], function ($message) use ($email) {
+                $message->to($email)
+                    ->subject('Reset Your Password');
+            });
 
-            //  $recipient->notify(new CommonEmailNotification($messages));
-
-
-        }
-        else{
-            return redirect()->back()->with('error', 'Your Email Is Not Registered.');
+            return redirect()->back()->with('message', 'Password reset link has been sent to your email.');
+        } else {
+            return response()->json([
+                'message' => 'Email address not found.'
+            ], 404);
         }
         return redirect()->back()->with('message', 'We have mailed your password reset link!');
     }

@@ -57,7 +57,7 @@
                     </div>
                     <div class="col-12">
                       <!-- <p class="small mb-0">Don't have account? <a href="pages-register.html">Create an account</a></p> -->
-                       <!-- <p class="small mb-0"><a href="{{ url('forgot-password') }} ">Forgot Password ? </a></p> -->
+                       <p class="small mb-0"><a href="{{ url('forgot-password') }} ">Forgot Password ? </a></p>
                     </div>
                   
                   </form>
