@@ -23,9 +23,11 @@ class DocumentController extends Controller
         $request->validate([
             'version_no' => 'required',
             'issue_date' => 'required|date',
-            'expiry_date' => 'required|date',
-            // 'expiry_date' => 'required|date|after:issue_date',
+            // 'expiry_date' => 'required|date',
+            'expiry_date' => 'required|date|after:issue_date',
             'document_file' => 'required|file|mimes:pdf|max:2048',
+            'status' => 'required',
+
         ]);
 
         // Handle file upload
@@ -38,6 +40,7 @@ class DocumentController extends Controller
             'issue_date' => $request->issue_date,
             'expiry_date' => $request->expiry_date,
             'document_file' => $filePath ?? null,
+            'status' => $request->status
         ]);
 
         Session::flash('message', 'Document added successfully.');
@@ -58,6 +61,7 @@ class DocumentController extends Controller
             'issue_date' => 'required|date',
             'expiry_date' => 'required|date',
             'document_file' => 'nullable|file|mimes:pdf|max:2048', // 'nullable' makes it optional
+            'status' => 'required',
         ]);
     
         // Retrieve the document by ID
@@ -83,13 +87,14 @@ class DocumentController extends Controller
             'issue_date' => $request->issue_date,
             'expiry_date' => $request->expiry_date,
             'document_file' => $filePath, // Will be either the new file path or the existing one
+            'status' => $request->status,
         ]);
     
         Session::flash('message', 'Document updated successfully.');
         return response()->json(['success' => 'Document updated successfully.']);
     }
 
-    
+
     public function deleteDocument(Request $request)
     {        
         // Find the document by ID

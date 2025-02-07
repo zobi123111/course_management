@@ -25,10 +25,11 @@
       <th scope="col">Issue date</th>
       <th scope="col">Expiry Date</th>
       <th scope="col">Document</th>
-      @if(checkAllowedModule('courses','course.edit')->isNotEmpty())
+      <th scope="col">Status</th>
+      @if(checkAllowedModule('documents','course.edit')->isNotEmpty())
       <th scope="col">Edit</th>
       @endif
-      @if(checkAllowedModule('courses','course.delete')->isNotEmpty())
+      @if(checkAllowedModule('documents','course.delete')->isNotEmpty())
       <th scope="col">Delete</th>
       @endif
     </tr>
@@ -46,6 +47,7 @@
                     No File uploaded
                     @endif
                 </td>
+                <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
                 @if(checkAllowedModule('documents','document.edit')->isNotEmpty())
                     <td><i class="fa fa-edit edit-document-icon" style="font-size:25px; cursor: pointer;" data-document-id="{{ encode_id($val->id) }}" ></i></td>
                 @endif
@@ -87,6 +89,14 @@
                         <label for="email" class="form-label">Upload Document<span class="text-danger">*</span></label>
                         <input type="file" name="document_file" class="form-control">
                         <div id="document_file_error" class="text-danger error_e"></div>            
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
+                        <select class="form-select" name="status" aria-label="Default select example">
+                            <option value="1" selected>Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                        <div id="status_error" class="text-danger error_e"></div>            
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -131,6 +141,14 @@
                         <input type="file" name="document_file" id="edit_document_file" class="form-control">
                         <div id="document_file_error_up" class="text-danger error_e"></div>            
                     </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
+                        <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
+                            <option value="1" selected>Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                        <div id="status_error_up" class="text-danger error_e"></div>
+                    </div>  
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="updateDocument" class="btn btn-primary sbt_btn">Update</button>
@@ -220,6 +238,7 @@ $(document).ready(function() {
                 $('#document_id').val(response.document.id);
                 $('#edit_issue_date').val(response.document.issue_date);
                 $('#edit_expiry_date').val(response.document.expiry_date);
+                $('#edit_status').val(response.document.status);
 
                 $('#editDocumentModal').modal('show');
             },

@@ -22,6 +22,7 @@
         <thead>
             <tr>
                 <th scope="col">Role</th>
+                <th scope="col">Status</th>
                 @if(checkAllowedModule('roles', 'roles.edit')->isNotEmpty())
                 <th scope="col">Edit</th>
                 @endif
@@ -36,6 +37,7 @@
             <tr>
             <tr>
                 <td scope="row" class="fname">{{ $role->role_name }}</td>
+                <td>{{ ($role->status==1)? 'Active': 'Inactive' }}</td>
                 @if(checkAllowedModule('roles', 'roles.edit')->isNotEmpty())
                 <td><a href="{{ route('roles.edit', ['role' => encode_id($role->id)]) }}"><i
                             class="fa fa-edit edit-user-icon table_icon_style blue_icon_color"

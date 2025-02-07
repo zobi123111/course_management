@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Document extends Model
 {
     use HasFactory;
-    protected $fillable = ['version_no', 'issue_date', 'expiry_date', 'document_file'];
+    protected $fillable = ['version_no', 'issue_date', 'expiry_date', 'document_file', 'status'];
 }

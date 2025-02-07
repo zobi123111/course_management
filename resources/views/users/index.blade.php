@@ -23,6 +23,7 @@
                 <th scope="col">First Name</th>
                 <th scope="col">Last Name</th>
                 <th scope="col">Email</th>
+                <th scope="col">Status</th>
                 @if(checkAllowedModule('users','user.get')->isNotEmpty())
                 <th scope="col">Edit</th>
                 @endif   
@@ -37,6 +38,7 @@
                 <td scope="row" class="fname">{{ $val->fname }}</td>
                 <td scope="row" class="lname">{{ $val->lname }}</td>
                 <td>{{ $val->email }}</td>
+                <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
                 @if(checkAllowedModule('users','user.get')->isNotEmpty())
                 <td><i class="fa fa-edit edit-user-icon" style="font-size:18px; cursor: pointer;"
                     data-user-id="{{ encode_id($val->id) }}"></i></td>
@@ -89,7 +91,6 @@
                         <input type="password" name="password_confirmation" class="form-control" id="confirmpassword">
                         <div id="password_confirmation_error" class="text-danger error_e"></div>
                     </div>
-                    <hr>
                     <div class="form-group">
                         <label for="role" class="form-label">Role<span class="text-danger">*</span></label>
                         <select name="role_name" class="form-select" id="role">
@@ -100,7 +101,14 @@
                         </select>
                         <div id="role_name_error" class="text-danger error_e"></div>
                     </div>
-
+                    <div class="form-group">
+                        <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
+                        <select class="form-select" name="status" aria-label="Default select example">
+                            <option value="1" selected>Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                        <div id="status_error" class="text-danger error_e"></div>            
+                    </div>
                     <div class="modal-footer">
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
                         <a href="#" type="button" id="saveuser" class="btn btn-primary sbt_btn">Save </a>
@@ -152,7 +160,14 @@
                         </select>
                         <div id="edit_role_name_error_up" class="text-danger error_e"></div>
                     </div>
-
+                    <div class="form-group">
+                        <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
+                        <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
+                            <option value="1" selected>Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                        <div id="status_error_up" class="text-danger error_e"></div>
+                    </div>  
                     <div class="modal-footer">
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
                         <a href="#" type="button" id="updateForm" class="btn btn-primary sbt_btn">Update</a>
@@ -241,6 +256,7 @@ $(document).ready(function() {
                 $('input[name="edit_lastname"]').val(response.user.lname);
                 $('input[name="edit_email"]').val(response.user.email);
                 $('input[name="edit_form_id"]').val(response.user.id);
+                $('#edit_status').val(response.user.status);
 
                 // Primary role
                 var userRoleId = response.user.role;
@@ -274,6 +290,7 @@ $(document).ready(function() {
                 'lname': $("input[name=edit_lastname]").val(),
                 'email': $("input[name=edit_email]").val(),
                 'role': $("select[name=edit_role_name]").val(),
+                'status': $("#edit_status").val(),
                 'edit_form_id': $("input[name=edit_form_id]").val(),
                 "_token": "{{ csrf_token() }}",
             },

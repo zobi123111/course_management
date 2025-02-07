@@ -30,7 +30,8 @@ class UserController extends Controller
             'firstname' => 'required',
             'lastname' => 'required',
             'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|min:6|confirmed'
+            'password' => 'required|min:6|confirmed',
+            'status' => 'required',
         ]);
     
         // Get the current logged-in user
@@ -45,6 +46,7 @@ class UserController extends Controller
             "email" => $request->email,
             "password" => Hash::make($request->password),
             "role" => $request->role_name,
+            'status' => $request->status,
             "ou_id" => $ouid // Assigning the same 'ouid' as the logged-in user
         );
     
@@ -66,7 +68,6 @@ class UserController extends Controller
 
     public function update(Request $request)
     {
-       
         $userToUpdate = User::find($request->edit_form_id);
         if($userToUpdate){
         
@@ -74,7 +75,8 @@ class UserController extends Controller
             'fname' => 'required',
             'lname' => 'required',
             'email'  => 'required',
-            'role'  => 'required'
+            'role'  => 'required',
+            'status' => 'required'
         ],
         [
             'fname.required' => 'The  Firstname is required',
@@ -88,6 +90,7 @@ class UserController extends Controller
             'Lname' => $validatedData['lname'],
             'email' => $validatedData['email'], 
             'role' => $validatedData['role'],
+            'status' => $validatedData['status'],
        
         ]);
         return response()->json(['success' => true,'message' => "User data updated successfully"]);

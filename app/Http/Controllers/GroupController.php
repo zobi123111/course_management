@@ -34,11 +34,13 @@ class GroupController extends Controller
             'name' => 'required|unique:groups|max:255',
             'user_ids' => 'required|array',
             'user_ids.*' => 'exists:users,id', // Ensure all user IDs exist
+            'status' => 'required',
         ]);
 
         $group = Group::create([
             'name' => $request->name,
             'user_ids' => $request->user_ids,
+            'status' => $request->status,
         ]);
 
         Session::flash('message', 'Group created successfully.');
@@ -58,12 +60,15 @@ class GroupController extends Controller
             'name' => 'required',
             'user_ids' => 'required|array',
             'user_ids.*' => 'exists:users,id',
+            'status' => 'required',
         ]);
 
         $group = Group::findOrFail($request->group_id);
+        // dd($group);
         $group->update([
             'name' => $request->name,
             'user_ids' => $request->user_ids,
+            'status' => $request->status,
         ]);
         Session::flash('message', 'Group updated successfully.');
         return response()->json(['message' => 'Group updated successfully', 'group' => $group]);

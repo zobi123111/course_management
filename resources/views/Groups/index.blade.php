@@ -18,11 +18,13 @@
 </div>
 @endif
 <br>
+
 <table class="table" id="groupTable">
     <thead>
         <tr>
             <th scope="col">Group Name</th>
             <th scope="col">User Count</th>
+            <th scope="col">Status</th>
             @if(checkAllowedModule('groups','group.edit')->isNotEmpty())
             <th scope="col">Edit</th>
             @endif
@@ -36,6 +38,7 @@
         <tr>
             <td class="groupName">{{ $val->name }}</td>
             <td>{{ $val->user_count }}</td> <!-- Display user count -->
+            <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
             @if(checkAllowedModule('groups','group.edit')->isNotEmpty())
             <td>
                 <i class="fa fa-edit edit-group-icon" style="font-size:25px; cursor: pointer;"
@@ -80,7 +83,14 @@
                         </select>
                         <div id="user_ids_error" class="text-danger error_e"></div>
                     </div>
-
+                    <div class="form-group">
+                        <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
+                        <select class="form-select" name="status" aria-label="Default select example">
+                            <option value="1" selected>Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                        <div id="status_error" class="text-danger error_e"></div>            
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="submitGroup" class="btn btn-primary sbt_btn">Save</button>
@@ -119,6 +129,14 @@
                             @endforeach
                         </select>
                         <div id="user_ids_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
+                        <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
+                            <option value="1" selected>Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                        <div id="status_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -162,15 +180,23 @@
 $(document).ready(function() {
     $('#groupTable').DataTable();
 
-    // $('.users-select').select2({
-    //     placeholder: "Select Users",
-    //     allowClear: true
-    // });
+    // Initialize Select2 globally on all user selection dropdowns
+    function initializeSelect2() {
+        $('.users-select').select2({
+            allowClear: true,
+            dropdownParent: $('.modal:visible') // Fix for modals
+        });
+    }
+
+    initializeSelect2(); // Call on page load
 
     $("#createGroup").on('click', function() {
         $(".error_e").html('');
         $("#groups")[0].reset();
+        $(".users-select").val(null).trigger("change"); // Reset Select2
         $("#createGroupModal").modal('show');
+
+        initializeSelect2(); // Ensure Select2 is re-initialized
     })
 
     $("#submitGroup").on("click", function(e) {
@@ -209,12 +235,15 @@ $(document).ready(function() {
             success: function(response) {
                 $('#edit_name').val(response.group.name);
                 $('#edit_group_id').val(response.group.id);
+                $('#edit_status').val(response.group.status);
 
                 // Ensure user_ids is an array
                 let selectedUsers = response.group.user_ids.map(String); // Convert to string if necessary
                 $('#edit_users').val(selectedUsers).trigger('change'); // Set selected values
 
                 $('#editGroupModal').modal('show');
+
+                initializeSelect2(); // Ensure Select2 is re-initialized
             },
             error: function(xhr) {
                 console.error(xhr.responseText);
@@ -263,6 +292,11 @@ $(document).ready(function() {
         $('#append_name').html(groupName);
         $('#groupId').val(groupId);
       
+    });
+
+    // Ensure Select2 works when modal is shown
+    $('#createGroupModal, #editGroupModal').on('shown.bs.modal', function() {
+        initializeSelect2();
     });
 
 });
