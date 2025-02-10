@@ -21,15 +21,16 @@
 <table class="table" id="documentTable">
   <thead>
     <tr>
+      <th scope="col">Document Title</th>
       <th scope="col">Version Number</th>
       <th scope="col">Issue date</th>
       <th scope="col">Expiry Date</th>
       <th scope="col">Document</th>
       <th scope="col">Status</th>
-      @if(checkAllowedModule('documents','course.edit')->isNotEmpty())
+      @if(checkAllowedModule('documents','document.edit')->isNotEmpty())
       <th scope="col">Edit</th>
       @endif
-      @if(checkAllowedModule('documents','course.delete')->isNotEmpty())
+      @if(checkAllowedModule('documents','document.delete')->isNotEmpty())
       <th scope="col">Delete</th>
       @endif
     </tr>
@@ -37,7 +38,8 @@
   <tbody>
     @foreach($documents as $val)
             <tr>
-                <td class="courseName">{{ $val->version_no}}</td>
+                <td class="docTitle">{{ $val->doc_title}}</td>
+                <td>{{ $val->version_no}}</td>
                 <td>{{ $val->issue_date}}</td>
                 <td>{{ $val->expiry_date}}</td>
                 <td>
@@ -70,6 +72,11 @@
             <div class="modal-body">
                 <form id="documentsForm" method="POST" class="row g-3 needs-validation" enctype="multipart/form-data">
                     @csrf
+                    <div class="form-group">
+                        <label for="firstname" class="form-label">Document Title<span class="text-danger">*</span></label>
+                        <input type="text" name="doc_title" class="form-control">
+                        <div id="course_name_error" class="text-danger error_e"></div>
+                    </div>
                     <div class="form-group">
                         <label for="firstname" class="form-label">Version Number<span class="text-danger">*</span></label>
                         <input type="text" name="version_no" class="form-control">
@@ -120,6 +127,11 @@
             <div class="modal-body">
                 <form id="editDocumentForm" method="POST"  class="row g-3 needs-validation" enctype="multipart/form-data">
                     @csrf
+                    <div class="form-group">
+                        <label for="firstname" class="form-label">Document Title<span class="text-danger">*</span></label>
+                        <input type="text" name="doc_title" id="edit_doc_title" class="form-control">
+                        <div id="course_name_error_up" class="text-danger error_e"></div>
+                    </div>
                     <div class="form-group">
                         <label for="firstname" class="form-label">Version Number<span class="text-danger">*</span></label>
                         <input type="text" name="version_no" id="edit_version_no" class="form-control">
@@ -234,6 +246,7 @@ $(document).ready(function() {
             type: 'GET',
             data: {  id: documentId },
             success: function(response) {
+                $('#edit_doc_title').val(response.document.doc_title);
                 $('#edit_version_no').val(response.document.version_no);
                 $('#document_id').val(response.document.id);
                 $('#edit_issue_date').val(response.document.issue_date);

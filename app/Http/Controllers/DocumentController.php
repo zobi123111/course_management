@@ -21,6 +21,7 @@ class DocumentController extends Controller
     {
         // dd($request);
         $request->validate([
+            'doc_title' => 'required',
             'version_no' => 'required',
             'issue_date' => 'required|date',
             // 'expiry_date' => 'required|date',
@@ -36,6 +37,7 @@ class DocumentController extends Controller
         }
 
         Document::create([
+            'doc_title' => $request->doc_title,
             'version_no' => $request->version_no,
             'issue_date' => $request->issue_date,
             'expiry_date' => $request->expiry_date,
@@ -57,6 +59,7 @@ class DocumentController extends Controller
     {
         // Validate the request, making 'document_file' optional
         $request->validate([
+            'doc_title' => 'required',
             'version_no' => 'required',
             'issue_date' => 'required|date',
             'expiry_date' => 'required|date',
@@ -83,6 +86,7 @@ class DocumentController extends Controller
     
         // Update the document
         $document->update([
+            'doc_title' => $request->doc_title,
             'version_no' => $request->version_no,
             'issue_date' => $request->issue_date,
             'expiry_date' => $request->expiry_date,

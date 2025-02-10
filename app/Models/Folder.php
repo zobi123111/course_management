@@ -5,8 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Document extends Model
+class Folder extends Model
 {
     use HasFactory;
-    protected $fillable = ['doc_title', 'version_no', 'issue_date', 'expiry_date', 'document_file', 'status'];
+    protected $fillable = ['folder_name', 'description', 'status'];
 }
