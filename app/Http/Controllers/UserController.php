@@ -16,7 +16,6 @@ class UserController extends Controller
        $users = User::all();
        $roles = Role::all();
         return view('users.index', compact('users', 'roles'));
-        
     }
 
     public function save_user(Request $request)
