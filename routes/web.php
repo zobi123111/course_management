@@ -70,6 +70,8 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     //roles 
     Route::resource('roles', RolePermissionController::class);
 
+    // Route::get('/test', [CourseController::class, 'test'])->name('test.test');
+
 });
 
 
