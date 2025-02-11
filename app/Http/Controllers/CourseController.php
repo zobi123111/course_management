@@ -5,13 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Courses;
 use App\Models\CourseLesson;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
 class CourseController extends Controller
 {
     public function index()
     {
-        $courses = Courses::all();
+        $ouId = Auth::user()->ou_id;
+        $courses = Courses::where('ou_id', $ouId)->get();
         return view('courses.index',compact('courses'));
     }
 
@@ -77,12 +79,9 @@ class CourseController extends Controller
 
     public function showCourse(Request $request,$course_id)
     {
-        dd($course_id);
-        // $courseId = decode_id($request->query('course_id'));
-
-        $course = Courses::findOrFail($courseId);
-        $courseLesson = CourseLesson::all();
-        return view('courses.show', compact('course', 'courseLesson'));
+        // $course = Courses::with('courseLessons')->find(decode_id($course_id));
+        $course = Courses::with('courseLessons')->findOrFail(decode_id($course_id));
+        return view('courses.show', compact('course'));
     }
 
     public function showLesson(Request $request)
@@ -103,6 +102,44 @@ class CourseController extends Controller
 
         Session::flash('message', 'Lesson created successfully.');
         return response()->json(['success' => 'Lesson created successfully.']);
+    }
+
+
+    public function getLesson(Request $request)
+    {
+        $lesson = CourseLesson::findOrFail(decode_id($request->id));
+        return response()->json(['lesson'=> $lesson]);
+    }
+
+    //Update course
+    public function updateLesson(Request $request)
+    {
+        $request->validate([
+            'edit_lesson_title' => 'required',
+            'edit_description' => 'required',
+            'edit_status' => 'required'
+        ]);
+
+        // dd($request);
+        $lesson = CourseLesson::findOrFail($request->lesson_id);
+        $lesson->update([
+            'lesson_title' => $request->edit_lesson_title,
+            'description' => $request->edit_description,
+            'status' => $request->edit_status
+        ]);
+
+        Session::flash('message','Lesson updated successfully.');
+        return response()->json(['success'=> 'Lesson updated successfully.']);
+    }
+
+    public function deleteLesson(Request $request)
+    {        
+        $lesson = CourseLesson::findOrFail(decode_id($request->lesson_id));
+        if ($lesson) {
+            $course_id = $lesson->course_id;
+            $lesson->delete();
+            return redirect()->route('course.show',['course_id' => encode_id($course_id)])->with('message', 'This lesson deleted successfully');
+        }
     }
 
 

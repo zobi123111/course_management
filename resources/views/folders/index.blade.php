@@ -1,6 +1,6 @@
 
-@section('title', 'Courses')
-@section('sub-title', 'Courses')
+@section('title', 'Folders')
+@section('sub-title', 'Folders')
 @extends('layout.app')
 @section('content')
 
@@ -13,63 +13,57 @@
 
 @if(checkAllowedModule('courses','course.store')->isNotEmpty())
 <div class="create_btn">
-    <button class="btn btn-primary create-button" id="createCourse" data-toggle="modal"
-    data-target="#createCourseModal">Create Course</button>
+    <button class="btn btn-primary create-button" id="createFolder" data-toggle="modal"
+    data-target="#createFolderModal">Create Folders</button>
 </div>
 @endif
 <br>
 <table class="table" id="courseTable">
   <thead>
     <tr>
-      <th scope="col">Course Name</th>
+      <th scope="col">Folder Name</th>
       <th scope="col">Description</th>
       <th scope="col">Status</th>
-      @if(checkAllowedModule('courses','course.edit')->isNotEmpty())
+      @if(checkAllowedModule('folders','folder.edit')->isNotEmpty())
       <th scope="col">Edit</th>
       @endif
-      @if(checkAllowedModule('courses','course.delete')->isNotEmpty())
+      @if(checkAllowedModule('folders','folder.delete')->isNotEmpty())
       <th scope="col">Delete</th>
-      @endif
-      @if(checkAllowedModule('courses','course.show')->isNotEmpty())
-      <th scope="col">Lesson</th>
       @endif
     </tr>
   </thead>
   <tbody>
-    @foreach($courses as $val)
+    @foreach($folders as $val)
             <tr>
-                <td class="courseName">{{ $val->course_name}}</td>
+                <td class="courseName">{{ $val->folder_name}}</td>
                 <td>{{ $val->description}}</td>
                 <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
-                @if(checkAllowedModule('courses','course.edit')->isNotEmpty())
-                    <td><i class="fa fa-edit edit-course-icon" style="font-size:25px; cursor: pointer;" data-course-id="{{ encode_id($val->id) }}" ></i></td>
+                @if(checkAllowedModule('folders','folder.edit')->isNotEmpty())
+                    <td><i class="fa fa-edit edit-folder-icon" style="font-size:25px; cursor: pointer;" data-folder-id="{{ encode_id($val->id) }}" ></i></td>
                 @endif
-                @if(checkAllowedModule('courses','course.delete')->isNotEmpty())
-                    <td><i class="fa-solid fa-trash delete-icon" style="font-size:25px; cursor: pointer;" data-course-id="{{ encode_id($val->id) }}" ></i></td>
-                @endif  
-                @if(checkAllowedModule('courses','course.show')->isNotEmpty())
-                    <td><a href="{{ route('course.show', ['course_id' => encode_id($val->id)]) }}" class="btn btn-warning" id="viewCourse">View Course</a></td>
-                @endif  
+                @if(checkAllowedModule('folders','folder.delete')->isNotEmpty())
+                    <td><i class="fa-solid fa-trash delete-folder-icon" style="font-size:25px; cursor: pointer;" data-folder-id="{{ encode_id($val->id) }}" ></i></td>
+                @endif
             </tr> 
     @endforeach
   </tbody>
 </table>
 
 <!-- Create Courses-->
-<div class="modal fade" id="createCourseModal" tabindex="-1" role="dialog" aria-labelledby="courseModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal fade" id="createFolderModal" tabindex="-1" role="dialog" aria-labelledby="folderModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="courseModalLabel">Create Organizational Unit</h5>
+                <h5 class="modal-title" id="folderModalLabel">Create Folder</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="" id="courses" method="POST" class="row g-3 needs-validation">
+                <form action="" id="folders" method="POST" class="row g-3 needs-validation">
                     @csrf
                     <div class="form-group">
-                        <label for="firstname" class="form-label">Course Name<span class="text-danger">*</span></label>
-                        <input type="text" name="course_name" class="form-control">
-                        <div id="course_name_error" class="text-danger error_e"></div>
+                        <label for="firstname" class="form-label">Folder Name<span class="text-danger">*</span></label>
+                        <input type="text" name="folder_name" class="form-control">
+                        <div id="folder_name_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
@@ -86,7 +80,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" id="submitCourse" class="btn btn-primary sbt_btn">Save </button>
+                        <button type="button" id="submitFolder" class="btn btn-primary sbt_btn">Save </button>
                     </div>
                 </form>
             </div>
@@ -96,21 +90,21 @@
 <!--End of Courses-->
 
 <!-- Edit Courses -->
-<div class="modal fade" id="editCourseModal" tabindex="-1" role="dialog" aria-labelledby="editCourseModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal fade" id="editFolderModal" tabindex="-1" role="dialog" aria-labelledby="editFolderModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editCourseModalLabel">Edit Courses</h5>
+                <h5 class="modal-title" id="editFolderModalLabel">Edit Folder</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="editCourse" class="row g-3 needs-validation">
+                <form id="editFolder" class="row g-3 needs-validation">
                     @csrf
                     <div class="form-group">
-                        <label for="firstname" class="form-label">Course Name<span class="text-danger">*</span></label>
-                        <input type="text" name="course_name" class="form-control">
-                        <input type="hidden" name="course_id" class="form-control">
-                        <div id="course_name_error_up" class="text-danger error_e"></div>
+                        <label for="firstname" class="form-label">Folder Name<span class="text-danger">*</span></label>
+                        <input type="text" name="folder_name" id="edit_folder_name" class="form-control">
+                        <input type="hidden" name="folder_id" id="folder_id" class="form-control">
+                        <div id="folder_name_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
@@ -127,7 +121,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" id="updateCourse" class="btn btn-primary sbt_btn">Update</button>
+                        <button type="button" id="updateFolder" class="btn btn-primary sbt_btn">Update</button>
                     </div>
                 </form>
             </div>
@@ -167,20 +161,20 @@
 $(document).ready(function() {
     $('#courseTable').DataTable();
 
-    $("#createCourse").on('click', function(){
+    $("#createFolder").on('click', function(){
         $(".error_e").html('');
-        $("#courses")[0].reset();
-        $("#createCourseModal").modal('show');
+        $("#folders")[0].reset();
+        $("#createFolderModal").modal('show');
     })
 
-    $("#submitCourse").on("click", function(e){
+    $("#submitFolder").on("click", function(e){
         e.preventDefault();
         $.ajax({
-            url: '{{ url("/course/create") }}',
+            url: '{{ url("/folder/create") }}',
             type: 'POST',
-            data: $("#courses").serialize(),
+            data: $("#folders").serialize(),
             success: function(response) {
-                $('#createCourseModal').modal('hide');
+                $('#createFolderModal').modal('hide');
                 location.reload();
             },
             error: function(xhr, status, error){
@@ -195,23 +189,23 @@ $(document).ready(function() {
 
     })
 
-    $('.edit-course-icon').click(function(e) {
+    $('.edit-folder-icon').click(function(e) {
         e.preventDefault();
 
         $('.error_e').html('');
-        var courseId = $(this).data('course-id');
+        var folderId = $(this).data('folder-id');
         $.ajax({
-            url: "{{ url('/course/edit') }}", 
+            url: "{{ url('/folder/edit') }}", 
             type: 'GET',
-            data: { id: courseId },
+            data: { id: folderId },
             success: function(response) {
                 console.log(response);
-                $('input[name="course_name"]').val(response.course.course_name);
-                $('input[name="course_id"]').val(response.course.id);
-                $('#edit_description').val(response.course.description);
-                $('#edit_status').val(response.course.status);
+                $('#edit_folder_name').val(response.folder.folder_name);
+                $('#folder_id').val(response.folder.id);
+                $('#edit_description').val(response.folder.description);
+                $('#edit_status').val(response.folder.status);
 
-                $('#editCourseModal').modal('show');
+                $('#editFolderModal').modal('show');
             },
             error: function(xhr, status, error) {
                 console.error(xhr.responseText);
@@ -219,15 +213,15 @@ $(document).ready(function() {
         });
     });
 
-    $('#updateCourse').on('click', function(e){
+    $('#updateFolder').on('click', function(e){
         e.preventDefault();
 
         $.ajax({
-            url: "{{ url('course/update') }}",
+            url: "{{ url('folder/update') }}",
             type: "POST",
-            data: $("#editCourse").serialize(),
+            data: $("#editFolder").serialize(),
             success: function(response){
-                $('#editCourseModal').modal('hide');
+                $('#editFolderModal').modal('hide');
                 location.reload();
             },
             error: function(xhr, status, error){

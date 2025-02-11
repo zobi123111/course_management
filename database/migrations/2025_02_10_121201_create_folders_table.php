@@ -11,19 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('groups', function (Blueprint $table) {
+        Schema::create('folders', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->json('user_ids')->nullable();
+            $table->string('folder_name')->nullable();
+            $table->text('description')->nullable();
+            $table->boolean('status')->default(1);
+            $table->softDeletes();
             $table->timestamps();
         });
-    }  
+    }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('groups');
+        Schema::dropIfExists('folders');
     }
 };

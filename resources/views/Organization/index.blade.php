@@ -10,10 +10,12 @@
 </div>
 @endif
 <div class="main_cont_outer">
+@if(checkAllowedModule('orgunit','orgunit.store')->isNotEmpty())
     <div class="create_btn ">
         <button class="btn btn-primary create-button" id="createOrgUnit" data-toggle="modal"
             data-target="#orgUnitModal">Create Organizational Unit</button>
     </div>
+@endif
     <br>
     <div id="update_success_msg"></div>
     <table class="table" id="orgUnitTable">
@@ -25,8 +27,12 @@
                 <th scope="col">First Name</th>
                 <th scope="col">Last Name</th>
                 <th scope="col">Email</th>
+                @if(checkAllowedModule('orgunit','orgunit.edit')->isNotEmpty())
                 <th scope="col">Edit</th>
+                @endif
+                @if(checkAllowedModule('orgunit','orgunit.delete')->isNotEmpty())
                 <th scope="col">Delete</th>
+                @endif
             </tr>
         </thead>
         <tbody>
@@ -38,10 +44,14 @@
                 <td>{{ $val->fname}}</td>
                 <td>{{ $val->lname}}</td>
                 <td>{{ $val->email}}</td>
+                @if(checkAllowedModule('orgunit','orgunit.edit')->isNotEmpty())
                 <td><i class="fa fa-edit edit-orgunit-icon" style="font-size:25px; cursor: pointer;"
-                        data-orgunit-id="{{ encode_id($val->id) }}" data-user-id="{{ encode_id($val->user_id) }}"></i></td>
+                    data-orgunit-id="{{ encode_id($val->id) }}" data-user-id="{{ encode_id($val->user_id) }}"></i></td>
+                @endif
+                @if(checkAllowedModule('orgunit','orgunit.delete')->isNotEmpty())
                 <td><i class="fa-solid fa-trash delete-icon" style="font-size:25px; cursor: pointer;"
-                        data-orgunit-id="{{ encode_id($val->id) }}" data-user-id="{{ encode_id($val->user_id) }}"></i></td>
+                    data-orgunit-id="{{ encode_id($val->id) }}" data-user-id="{{ encode_id($val->user_id) }}"></i></td>
+                @endif
             </tr>
             @endforeach
         </tbody>

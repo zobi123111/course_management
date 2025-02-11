@@ -58,9 +58,19 @@
                         </div>
             @endforeach
         </div>
-        @error('module_ids')
-            <div class="text-danger">{{ $message }}</div>
+        @error('status')
+            <div  class="text-danger">{{ $message }}</div>
         @enderror
+    </div>
+    <div class="mb-3">
+        <div class="form-group">
+            <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
+            <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
+                <option value="1" {{ $role->status == 1 ? 'selected' : '' }}>Active</option>
+                <option value="0" {{ $role->status == 0 ? 'selected' : '' }}>Inactive</option>
+            </select>
+            <div id="status_error_up" class="text-danger error_e"></div>
+        </div>  
     </div>
 
     <button type="submit" class="btn btn-primary create-button btn_primary_color">Submit</button>

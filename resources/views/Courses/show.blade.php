@@ -20,8 +20,10 @@
             <div class="card-body">
                 <h5 class="card-title">{{  $course->course_name  }}</h5>
                 <p class="card-text">{{ $course->description }}</p>
+                @if(checkAllowedModule('courses', 'lesson.store')->isNotEmpty())
                 <p class="card-text"><button class="btn btn-success" id="createLesson" data-toggle="modal"
                 data-target="#createLessonModal">Create Lesson</button></p>
+                @endif
             </div>
         </div>
     </div>
@@ -30,11 +32,19 @@
 
  <!-- List group with Advanced Contents -->
 <div class="list-group">
-    @foreach($courseLesson as $val)
+    @foreach($course->courseLessons as $val)
     <div class="list-group-item " aria-current="true">
         <div class="d-flex w-100 justify-content-between">
             <h5 class="mb-1">{{ $val->lesson_title }}</h5>
-            <!-- <small>3 days ago</small> -->
+            <span>
+            @if(checkAllowedModule('courses', 'lesson.edit')->isNotEmpty())
+                <i class="fa fa-edit edit-lesson-icon" style="font-size:18px; cursor: pointer; margin-right: 5px;" data-lesson-id="{{ encode_id($val->id) }}"></i>
+            @endif
+            @if(checkAllowedModule('courses', 'lesson.delete')->isNotEmpty())
+                <i class="fa-solid fa-trash delete-lesson-icon" style="font-size:18px; cursor: pointer;"
+                data-lesson-id="{{ encode_id($val->id) }}"></i>
+            @endif
+            </span>
         </div>
         <p class="mb-1">{{ $val->description }}</p>
         <!-- <small>And some small print.</small> -->
@@ -74,7 +84,7 @@
                         <label for="firstname" class="form-label">Lesson Title<span class="text-danger">*</span></label>
                         <input type="text" name="lesson_title" class="form-control">
                         <input type="hidden" name="course_id" class="form-control" value="{{ $course->id }}">
-                        <div id="course_name_error" class="text-danger error_e"></div>
+                        <div id="lesson_title_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
@@ -98,7 +108,72 @@
         </div>
     </div>
 </div>
-<!--End of Courses-->
+<!--End of Lesson-->
+
+<!-- Edit Lesson -->
+<div class="modal fade" id="editLessonModal" tabindex="-1" role="dialog" aria-labelledby="editLessonModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editLessonModalLabel">Edit Lesson</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editLesson" class="row g-3 needs-validation">
+                    @csrf
+                    <div class="form-group">
+                        <label for="firstname" class="form-label">Lesson Title<span class="text-danger">*</span></label>
+                        <input type="text" name="edit_lesson_title" class="form-control">
+                        <input type="hidden" name="lesson_id" class="form-control">
+                        <div id="lesson_title_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
+                        <textarea class="form-control" name="edit_description" id="edit_description" rows="3"></textarea>
+                        <div id="description_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
+                        <select class="form-select" name="edit_status" id="edit_status" aria-label="Default select example">
+                            <option value="1" selected>Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                        <div id="status_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" id="updateLesson" class="btn btn-primary sbt_btn">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End Edit Lesson-->
+
+<!--Lesson Delete  Modal -->
+<form action="{{ url('lesson/delete') }}" method="POST">
+    @csrf
+    <div class="modal fade" id="deleteLesson" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Delete Lesson</h5>
+                    <input type="hidden" name="lesson_id" id="lessonId" value="">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this Lesson "<strong><span id="append_name"> </span></strong>" ?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary delete_lesson">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<!-- End Lesson Delete Model -->
 
 @endsection
 
@@ -134,6 +209,62 @@ $(document).ready(function() {
         });
 
     })
+
+    $('.edit-lesson-icon').click(function(e) {
+        e.preventDefault();
+
+        $('.error_e').html('');
+        var lessonId = $(this).data('lesson-id');
+        $.ajax({
+            url: "{{ url('/lesson/edit') }}", 
+            type: 'GET',
+            data: { id: lessonId },
+            success: function(response) {
+                console.log(response);
+                $('input[name="edit_lesson_title"]').val(response.lesson.lesson_title);
+                $('input[name="lesson_id"]').val(response.lesson.id);
+                $('#edit_description').val(response.lesson.description);
+                $('#edit_status').val(response.lesson.status);
+
+                $('#editLessonModal').modal('show');
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    });
+
+    $('#updateLesson').on('click', function(e){
+        e.preventDefault();
+
+        $.ajax({
+            url: "{{ url('lesson/update') }}",
+            type: "POST",
+            data: $("#editLesson").serialize(),
+            success: function(response){
+                $('#editlessonModal').modal('hide');
+                location.reload();
+            },
+            error: function(xhr, status, error){
+                var errorMessage = JSON.parse(xhr.responseText);
+                var validationErrors = errorMessage.errors;
+                $.each(validationErrors, function(key,value){
+                    var msg = '<p>'+value+'<p>';
+                    $('#'+key+'_error_up').html(msg); 
+                }) 
+            }
+        })
+    })
+
+    $('.delete-lesson-icon').click(function(e) {
+    e.preventDefault();
+        $('#deleteLesson').modal('show');
+        var lessonId = $(this).data('lesson-id');
+        var courseName = $(this).closest('tr').find('.courseName').text();
+        $('#append_name').html(courseName);
+        $('#lessonId').val(lessonId);
+      
+    });
 
 });
 </script>

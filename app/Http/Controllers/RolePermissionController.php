@@ -31,13 +31,16 @@ class RolePermissionController extends Controller
             'role_name' => 'required|string',
             'module_ids' => 'required|array',  
             'module_ids.*' => 'exists:modules,id',
+            'status' => 'required',
+
         ]);
     
         // Create a new RolePermission instance and save it
         try {
 
             $createRole = Role::create([
-                'role_name' => $validated['role_name']
+                'role_name' => $validated['role_name'],
+                'status' => $validated['status'],
             ]);
 
             // Attach the selected modules to the role_permission
@@ -85,6 +88,8 @@ class RolePermissionController extends Controller
 
     public function update(Request $request, $roleId)
     {
+
+        // dd($request->input('status'));
         $en = $roleId;
         $roleId = decode_id($roleId);
 
@@ -92,6 +97,7 @@ class RolePermissionController extends Controller
             'role_name' => 'required|string',
             'module_ids' => 'required|array', 
             'module_ids.*' => 'exists:modules,id', 
+            'status' => 'required',
         ]);
         
         // Find the role
@@ -99,6 +105,7 @@ class RolePermissionController extends Controller
     
         $role->update([
             'role_name' => $request->input('role_name'),
+            'status' => $request->input('status'),
         ]);
 
         // Get the selected modules from the request
