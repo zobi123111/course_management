@@ -3,6 +3,7 @@
 @extends('layout.app')
 @section('content')
 
+
 @if(session()->has('message'))
 <div id="successMessage" class="alert alert-success fade show" role="alert">
     <i class="bi bi-check-circle me-1"></i>
@@ -10,20 +11,24 @@
 </div>
 @endif
 
-@if(auth()->check() && auth()->user()->role == 1 && !empty(auth()->user()->ou_id))
+@if(checkAllowedModule('groups','group.store')->isNotEmpty())
 <div class="create_btn">
     <button class="btn btn-primary create-button" id="createGroup" data-toggle="modal"
         data-target="#createGroupModal">Create Group</button>
 </div>
 @endif
 <br>
+
 <table class="table" id="groupTable">
     <thead>
         <tr>
             <th scope="col">Group Name</th>
             <th scope="col">User Count</th>
-            @if(auth()->check() && auth()->user()->role == 1)
+            <th scope="col">Status</th>
+            @if(checkAllowedModule('groups','group.edit')->isNotEmpty())
             <th scope="col">Edit</th>
+            @endif
+            @if(checkAllowedModule('groups','group.delete')->isNotEmpty())
             <th scope="col">Delete</th>
             @endif
         </tr>
@@ -31,17 +36,19 @@
     <tbody>
         @foreach($groups as $val)
         <tr>
-            <td class="groupname">{{ $val->name }}</td>
+            <td class="groupName">{{ $val->name }}</td>
             <td>{{ $val->user_count }}</td> <!-- Display user count -->
-            @if(auth()->check() && auth()->user()->role == 1)
+            <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
+            @if(checkAllowedModule('groups','group.edit')->isNotEmpty())
             <td>
                 <i class="fa fa-edit edit-group-icon" style="font-size:25px; cursor: pointer;"
-                    data-group-id="{{ $val->id }}" data-group-name="{{ $val->name }}"
-                    data-group-users="{{ json_encode($val->user_ids) }}"></i>
+                data-group-id="{{ encode_id($val->id) }}"></i>
             </td>
+            @endif
+            @if(checkAllowedModule('groups','group.delete')->isNotEmpty())
             <td>
-                <i class="fa-solid fa-trash delete-icon" style="font-size:25px; cursor: pointer;"
-                    data-group-id="{{ $val->id }}" data-group-name="{{ $val->name }}"></i>
+                <i class="fa-solid fa-trash delete-group-icon" style="font-size:25px; cursor: pointer;"
+                data-group-id="{{ encode_id($val->id) }}" data-group-name="{{ $val->name }}"></i>
             </td>
             @endif
         </tr>
@@ -64,7 +71,7 @@
                     <div class="form-group">
                         <label for="name" class="form-label">Group Name<span class="text-danger">*</span></label>
                         <input type="text" name="name" class="form-control">
-                        <div id="group_name_error" class="text-danger error_e"></div>
+                        <div id="name_error" class="text-danger error_e"></div>
                     </div>
 
                     <div class="form-group">
@@ -74,9 +81,16 @@
                             <option value="{{ $user->id }}">{{ $user->fname }} {{ $user->lname }}</option>
                             @endforeach
                         </select>
-                        <div id="users_error" class="text-danger error_e"></div>
+                        <div id="user_ids_error" class="text-danger error_e"></div>
                     </div>
-
+                    <div class="form-group">
+                        <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
+                        <select class="form-select" name="status" aria-label="Default select example">
+                            <option value="1" selected>Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                        <div id="status_error" class="text-danger error_e"></div>            
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="submitGroup" class="btn btn-primary sbt_btn">Save</button>
@@ -104,7 +118,7 @@
                     <div class="form-group">
                         <label for="edit_name" class="form-label">Group Name<span class="text-danger">*</span></label>
                         <input type="text" name="name" id="edit_name" class="form-control">
-                        <div id="group_name_error" class="text-danger error_e"></div>
+                        <div id="name_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="edit_users" class="form-label">Select Users<span
@@ -114,7 +128,15 @@
                             <option value="{{ $user->id }}">{{ $user->fname }} {{ $user->lname }}</option>
                             @endforeach
                         </select>
-                        <div id="users_error" class="text-danger error_e"></div>
+                        <div id="user_ids_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
+                        <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
+                            <option value="1" selected>Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                        <div id="status_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -128,7 +150,7 @@
 <!--End of Group Edit-->
 
 <!-- Delete Group Modal -->
-<form id="deleteGroupForm" method="POST">
+<form action="{{ url('group/delete') }}" id="deleteGroupForm" method="POST">
     @csrf
     <div class="modal fade" id="deleteGroup" tabindex="-1" aria-labelledby="deleteGroupLabel" aria-hidden="true"
         data-bs-backdrop="static" data-bs-keyboard="false">
@@ -136,15 +158,15 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="deleteGroupLabel">Delete Group</h5>
-                    <input type="hidden" name="group_id" id="delete_group_id">
+                    <input type="hidden" name="group_id" id="groupId">
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete this Group "<strong><span id="delete_group_name"></span></strong>"?
+                    Are you sure you want to delete this Group "<strong><span id="append_name"></span></strong>"?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
-                    <button type="button" id="confirmDeleteGroup" class="btn btn-danger delete_group">Delete</button>
+                    <button type="submit" id="confirmDeleteGroup" class="btn btn-danger delete_group">Delete</button>
                 </div>
             </div>
         </div>
@@ -158,15 +180,23 @@
 $(document).ready(function() {
     $('#groupTable').DataTable();
 
-    // $('.users-select').select2({
-    //     placeholder: "Select Users",
-    //     allowClear: true
-    // });
+    // Initialize Select2 globally on all user selection dropdowns
+    function initializeSelect2() {
+        $('.users-select').select2({
+            allowClear: true,
+            dropdownParent: $('.modal:visible') // Fix for modals
+        });
+    }
+
+    initializeSelect2(); // Call on page load
 
     $("#createGroup").on('click', function() {
         $(".error_e").html('');
         $("#groups")[0].reset();
+        $(".users-select").val(null).trigger("change"); // Reset Select2
         $("#createGroupModal").modal('show');
+
+        initializeSelect2(); // Ensure Select2 is re-initialized
     })
 
     $("#submitGroup").on("click", function(e) {
@@ -203,11 +233,17 @@ $(document).ready(function() {
                 id: groupId
             },
             success: function(response) {
-                $('#edit_group_id').val(response.group.id);
                 $('#edit_name').val(response.group.name);
-                $('#edit_users').val(response.group.user_ids.split(',')).trigger('change');
+                $('#edit_group_id').val(response.group.id);
+                $('#edit_status').val(response.group.status);
+
+                // Ensure user_ids is an array
+                let selectedUsers = response.group.user_ids.map(String); // Convert to string if necessary
+                $('#edit_users').val(selectedUsers).trigger('change'); // Set selected values
 
                 $('#editGroupModal').modal('show');
+
+                initializeSelect2(); // Ensure Select2 is re-initialized
             },
             error: function(xhr) {
                 console.error(xhr.responseText);
@@ -219,7 +255,7 @@ $(document).ready(function() {
         e.preventDefault();
 
         $.ajax({
-            url: "{{ url('group/update') }}",
+            url: "{{ url('/group/update') }}",
             type: "POST",
             data: $("#editGroupForm").serialize(),
             success: function(response) {
@@ -247,24 +283,20 @@ $(document).ready(function() {
         $('#deleteGroup').modal('show');
     });
 
-    // Confirm Delete
-    $('#confirmDeleteGroup').click(function() {
-        var groupId = $('#delete_group_id').val();
+    // Delete Group
+    $('.delete-group-icon').click(function(e) {
+    e.preventDefault();
+        $('#deleteGroup').modal('show');
+        var groupId = $(this).data('group-id');
+        var groupName = $(this).closest('tr').find('.groupName').text();
+        $('#append_name').html(groupName);
+        $('#groupId').val(groupId);
+      
+    });
 
-        $.ajax({
-            url: "/group/delete",
-            type: "POST",
-            data: {
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                alert(response.message);
-                location.reload();
-            },
-            error: function() {
-                alert("Error deleting group!");
-            }
-        });
+    // Ensure Select2 works when modal is shown
+    $('#createGroupModal, #editGroupModal').on('shown.bs.modal', function() {
+        initializeSelect2();
     });
 
 });

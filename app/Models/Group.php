@@ -9,7 +9,7 @@ class Group extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'user_ids'];
+    protected $fillable = ['name', 'user_ids', 'status'];
 
     protected $casts = [
         'user_ids' => 'array', // Automatically converts JSON to array

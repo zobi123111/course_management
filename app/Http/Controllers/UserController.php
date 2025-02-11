@@ -13,7 +13,12 @@ class UserController extends Controller
 {
     public function users()
     {
-       $users = User::all();
+       $ou_id =  auth()->user()->ou_id;
+       if(empty($ou_id)){
+           $users = User::all();
+        }else{
+           $users = User::where('ou_id',$ou_id)->get();
+       }
        $roles = Role::all();
         return view('users.index', compact('users', 'roles'));
     }
@@ -24,7 +29,8 @@ class UserController extends Controller
             'firstname' => 'required',
             'lastname' => 'required',
             'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|min:6|confirmed'
+            'password' => 'required|min:6|confirmed',
+            'status' => 'required',
         ]);
     
         // Get the current logged-in user
@@ -39,6 +45,7 @@ class UserController extends Controller
             "email" => $request->email,
             "password" => Hash::make($request->password),
             "role" => $request->role_name,
+            'status' => $request->status,
             "ou_id" => $ouid // Assigning the same 'ouid' as the logged-in user
         );
     
@@ -60,7 +67,6 @@ class UserController extends Controller
 
     public function update(Request $request)
     {
-       
         $userToUpdate = User::find($request->edit_form_id);
         if($userToUpdate){
         
@@ -68,7 +74,8 @@ class UserController extends Controller
             'fname' => 'required',
             'lname' => 'required',
             'email'  => 'required',
-            'role'  => 'required'
+            'role'  => 'required',
+            'status' => 'required'
         ],
         [
             'fname.required' => 'The  Firstname is required',
@@ -82,6 +89,7 @@ class UserController extends Controller
             'Lname' => $validatedData['lname'],
             'email' => $validatedData['email'], 
             'role' => $validatedData['role'],
+            'status' => $validatedData['status'],
        
         ]);
         return response()->json(['success' => true,'message' => "User data updated successfully"]);
@@ -105,7 +113,7 @@ class UserController extends Controller
 
         if ($user) {
             $user->delete();
-            return redirect()->route('users.index')->with('message', 'User deleted successfully');
+            return redirect()->route('user.index')->with('message', 'User deleted successfully');
         }
     }
 }
