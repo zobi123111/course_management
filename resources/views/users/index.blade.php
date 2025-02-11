@@ -20,6 +20,7 @@
                 <th scope="col">First Name</th>
                 <th scope="col">Last Name</th>
                 <th scope="col">Email</th>
+                <th scope="col">OU</th>
                 <th scope="col">Edit</th>
                 <th scope="col">Delete</th>
             </tr>
@@ -30,6 +31,9 @@
                 <td scope="row" class="fname">{{ $val->fname }}</td>
                 <td scope="row" class="lname">{{ $val->lname }}</td>
                 <td>{{ $val->email }}</td>
+                {{-- <td>{{ $val->organization->org_unit_name }}</td> --}}
+                <td>{{ $val->organization ? $val->organization->org_unit_name : '--' }}</td>
+
                 <td><i class="fa fa-edit edit-user-icon" style="font-size:18px; cursor: pointer;"
                         data-user-id="{{ encode_id($val->id) }}"></i></td>
                 <td><i class="fa-solid fa-trash delete-icon" style="font-size:18px; cursor: pointer;"
@@ -94,6 +98,13 @@
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
                         <a href="#" type="button" id="saveuser" class="btn btn-primary sbt_btn">Save </a>
                     </div>
+
+                    {{-- <button id="loader" style="display:none" class="btn btn-primary" type="button" disabled="">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        Loading...
+                  </button> --}}
+
+                  <div class="loader" style="display: none;"></div>
                 </form>
             </div>
         </div>
@@ -175,6 +186,8 @@
         </div>
     </div>
 </form>
+
+    
 <!-- End of Delete Model -->
 @endsection
 
@@ -187,22 +200,32 @@ $(document).ready(function() {
     $('#createUser').on('click', function() {
         $('.error_e').html('');
         $('.alert-danger').css('display', 'none');
-        $('#userModal').modal('show');
+        $('#userModal').modal('show');        
     });
 
     $('#saveuser').click(function(e) {
         e.preventDefault();
+        // $('#loader').show();
+        $(".loader").fadeIn();
+
+        
         $('.error_e').html('');
         $.ajax({
-            url: '{{ url("/user/save") }}',
+            url: '{{ url("/users/save") }}',
             type: 'POST',
             data: $('#Create_user').serialize(),
             success: function(response) {
+                // $('#loader').hide();
+                $(window).load(function() {
+                    $(".loader").fadeOut("slow");
+                })
             console.log(response);
                 $('#userModal').modal('hide');
                 location.reload();
             },
             error: function(xhr, status, error) {
+                // $('#loader').hide();
+                $(".loader").fadeOut("slow");
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
                 $.each(validationErrors, function(key, value) {

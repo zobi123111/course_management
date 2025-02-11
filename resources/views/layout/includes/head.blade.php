@@ -36,5 +36,37 @@
     <link href="{{ url('assets/css/style.css') }}" rel="stylesheet">
     <title>@yield('title')</title>
 
+    <style>
 
+        .loader {
+            opacity: 0.7;
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url(assets/img/double_ring.svg) 50% 50% no-repeat rgba(185, 243, 255, 0.19);
+        }
+      
+      
+      
+        .dropdown-menu li a::after {
+            margin-right: 4px;
+            position: absolute;
+            right: 15px;
+            content: "";
+            font-family: fcicons !important;
+        }
+      
+      
+        #loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+        }
+      
+      </style>
 </head>
