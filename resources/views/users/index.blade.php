@@ -23,7 +23,13 @@
                 <th scope="col">First Name</th>
                 <th scope="col">Last Name</th>
                 <th scope="col">Email</th>
+                @if(auth()->user()->ou_id == null)
                 <th scope="col">OU</th>
+                @endif
+                @if(auth()->user()->ou_id)
+                <th scope="col">Position</th>
+                @endif
+
                 <th scope="col">Status</th>
                 @if(checkAllowedModule('users','user.get')->isNotEmpty())
                 <th scope="col">Edit</th>
@@ -39,9 +45,12 @@
                 <td scope="row" class="fname">{{ $val->fname }}</td>
                 <td scope="row" class="lname">{{ $val->lname }}</td>
                 <td>{{ $val->email }}</td>
-                {{-- <td>{{ $val->organization->org_unit_name }}</td> --}}
+                @if(auth()->user()->ou_id == null)
                 <td>{{ $val->organization ? $val->organization->org_unit_name : '--' }}</td>
-
+                @endif
+                @if(auth()->user()->ou_id)
+                    <td>{{ $val->roles ? $val->roles->role_name : '--' }}</td>
+                @endif
                 <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
                 @if(checkAllowedModule('users','user.get')->isNotEmpty())
                 <td><i class="fa fa-edit edit-user-icon" style="font-size:18px; cursor: pointer;"

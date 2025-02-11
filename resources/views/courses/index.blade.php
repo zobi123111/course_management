@@ -23,6 +23,7 @@
     <tr>
       <th scope="col">Course Name</th>
       <th scope="col">Description</th>
+      <th scope="col">Image</th>
       <th scope="col">Status</th>
       @if(checkAllowedModule('courses','course.edit')->isNotEmpty())
       <th scope="col">Edit</th>
@@ -40,6 +41,10 @@
             <tr>
                 <td class="courseName">{{ $val->course_name}}</td>
                 <td>{{ $val->description}}</td>
+                <td>
+                    @if($val->image)
+                        <img src="{{ asset('storage/' . $val->image) }}" alt="Course Image" width="100px"></td>               
+                    @endif
                 <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
                 @if(checkAllowedModule('courses','course.edit')->isNotEmpty())
                     <td><i class="fa fa-edit edit-course-icon" style="font-size:25px; cursor: pointer;" data-course-id="{{ encode_id($val->id) }}" ></i></td>
@@ -64,7 +69,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="" id="courses" method="POST" class="row g-3 needs-validation">
+                <form action="" id="courses" method="POST" enctype="multipart/form-data" class="row g-3 needs-validation">
                     @csrf
                     <div class="form-group">
                         <label for="firstname" class="form-label">Course Name<span class="text-danger">*</span></label>
@@ -75,6 +80,11 @@
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="description"  rows="3"></textarea>
                         <div id="description_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="image" class="form-label">Image<span class="text-danger">*</span></label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                        <div id="image_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
@@ -116,6 +126,11 @@
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="description" id="edit_description" rows="3"></textarea>
                         <div id="description_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastname" class="form-label">Image<span class="text-danger">*</span></label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                        <div id="image_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
@@ -175,10 +190,15 @@ $(document).ready(function() {
 
     $("#submitCourse").on("click", function(e){
         e.preventDefault();
+        var formData = new FormData($('#courses')[0]);
+        
         $.ajax({
             url: '{{ url("/course/create") }}',
             type: 'POST',
-            data: $("#courses").serialize(),
+            // data: $("#courses").serialize(),
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(response) {
                 $('#createCourseModal').modal('hide');
                 location.reload();
@@ -221,11 +241,13 @@ $(document).ready(function() {
 
     $('#updateCourse').on('click', function(e){
         e.preventDefault();
-
+        var formData = new FormData($('#editCourse')[0]);
         $.ajax({
             url: "{{ url('course/update') }}",
             type: "POST",
-            data: $("#editCourse").serialize(),
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(response){
                 $('#editCourseModal').modal('hide');
                 location.reload();

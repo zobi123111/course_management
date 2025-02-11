@@ -7,6 +7,8 @@ use App\Models\Courses;
 use App\Models\CourseLesson;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
+
 
 class CourseController extends Controller
 {
@@ -24,16 +26,23 @@ class CourseController extends Controller
 
     public function createCourse(Request $request)
     {
+        // dd($request->all());
         $request->validate([            
             'course_name' => 'required',
             'description' => 'required',
+            'image' => 'required',
             'status' => 'required|boolean'
         ]);
+
+        if ($request->hasFile('image')) {
+            $filePath = $request->file('image')->store('courses', 'public');
+        }
 
         Courses::create([
             'ou_id' => auth()->user()->ou_id,
             'course_name' => $request->course_name,
             'description' => $request->description,
+            'image' => $filePath ?? null,
             'status' => $request->status
         ]);
 
@@ -51,16 +60,30 @@ class CourseController extends Controller
     //Update course
     public function updateCourse(Request $request)
     {
+
         $request->validate([
             'course_name' => 'required',
             'description' => 'required',
             'status' => 'required'
         ]);
 
+        $courses = Courses::findOrFail($request->course_id);
+        
+        if ($request->hasFile('image')) {
+            if ($courses->image) {
+                Storage::disk('public')->delete($courses->image);
+            }
+    
+            $filePath = $request->file('image')->store('document', 'public');
+        } else {
+            $filePath = $courses->image;
+        }
+
         $course = Courses::findOrFail($request->course_id);
         $course->update([
             'course_name' => $request->course_name,
             'description' => $request->description,
+            'image' => $filePath,
             'status' => $request->status
         ]);
 

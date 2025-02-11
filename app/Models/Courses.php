@@ -9,7 +9,7 @@ class Courses extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['ou_id','course_name','description','status'];
+    protected $fillable = ['ou_id','course_name','description','image','status'];
 
     public function organizationUnit()
     {

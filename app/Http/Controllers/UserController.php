@@ -20,6 +20,7 @@ class UserController extends Controller
            $users = User::where('ou_id',$ou_id)->get();
        }
        $roles = Role::all();
+
         return view('users.index', compact('users', 'roles'));
     }
 
