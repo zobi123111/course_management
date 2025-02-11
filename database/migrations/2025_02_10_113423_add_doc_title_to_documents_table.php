@@ -11,19 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('groups', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->unique();
-            $table->json('user_ids')->nullable();
-            $table->timestamps();
+        Schema::table('documents', function (Blueprint $table) {
+            $table->string('doc_title')->nullable()->after('id');
         });
-    }  
+    }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('groups');
+        Schema::table('documents', function (Blueprint $table) {
+            $table->dropColumn();
+        });
     }
 };

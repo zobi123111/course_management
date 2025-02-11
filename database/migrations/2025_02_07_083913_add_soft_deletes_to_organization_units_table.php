@@ -11,19 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('groups', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->unique();
-            $table->json('user_ids')->nullable();
-            $table->timestamps();
+        Schema::table('organization_units', function (Blueprint $table) {
+            $table->softDeletes(); // Adds deleted_at column
         });
-    }  
+    }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('groups');
+        Schema::table('organization_units', function (Blueprint $table) {
+            $table->dropSoftDeletes(); // Removes deleted_at column
+        });
     }
 };

@@ -59,6 +59,18 @@
                     <div class="text-danger">{{ $message }}</div>
                     @enderror
                 </div>
+                <div class="mb-3">
+                    <div class="form-group">
+                        <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
+                        <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
+                            <option value="1" selected>Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                        @error('status')
+                        <div  class="text-danger">{{ $message }}</div>
+                        @enderror
+                    </div>  
+                </div>
 
                 <button type="submit" class="btn btn-primary create-button btn_primary_color">Submit</button>
             </form>
