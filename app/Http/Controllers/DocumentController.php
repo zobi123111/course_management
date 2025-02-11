@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Document;
+use App\Models\Folder;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -13,8 +15,15 @@ class DocumentController extends Controller
 {
     public function index()
     {
+        $ou_id =  auth()->user()->ou_id;
+        $users = User::where('ou_id', $ou_id)->get();
+        if(empty($ou_id)){
+            $folders = Folder::all();
+         }else{
+            $folders = Folder::where('ou_id',$ou_id)->get();
+        }
         $documents = Document::all();
-        return view('documents.index',compact('documents'));
+        return view('documents.index',compact('documents', 'folders', 'users'));
     }
 
     public function createDocument(Request $request)
@@ -27,16 +36,19 @@ class DocumentController extends Controller
             // 'expiry_date' => 'required|date',
             'expiry_date' => 'required|date|after:issue_date',
             'document_file' => 'required|file|mimes:pdf|max:2048',
-            'status' => 'required',
+            'folder' => 'required',
+            'status' => 'required'
 
         ]);
 
+        $folder = Folder::find($request->folder);
         // Handle file upload
         if ($request->hasFile('document_file')) {
-            $filePath = $request->file('document_file')->store('document', 'public');
+            $filePath = $request->file('document_file')->store($folder->folder_name, 'public');
         }
 
         Document::create([
+            'folder_id' => $folder->id,
             'doc_title' => $request->doc_title,
             'version_no' => $request->version_no,
             'issue_date' => $request->issue_date,
@@ -62,42 +74,63 @@ class DocumentController extends Controller
             'doc_title' => 'required',
             'version_no' => 'required',
             'issue_date' => 'required|date',
-            'expiry_date' => 'required|date',
-            'document_file' => 'nullable|file|mimes:pdf|max:2048', // 'nullable' makes it optional
+            'expiry_date' => 'required|date|after:issue_date',
+            'document_file' => 'nullable|file|mimes:pdf|max:2048', // Optional file
+            'folder' => 'required', // Ensure folder selection
             'status' => 'required',
         ]);
-    
+
         // Retrieve the document by ID
         $document = Document::findOrFail($request->document_id);
-    
+
+        // Retrieve the current folder and new folder
+        $currentFolder = Folder::find($document->folder_id);
+        $newFolder = Folder::find($request->folder);
+
+        if (!$newFolder) {
+            return response()->json(['error' => 'Folder not found.'], 404);
+        }
+
+        $filePath = $document->document_file; // Keep the existing file path by default
+
         // Handle file upload if a new file is provided
         if ($request->hasFile('document_file')) {
             // Delete the old file if it exists
             if ($document->document_file) {
                 Storage::disk('public')->delete($document->document_file);
             }
-    
-            // Store the new file and get its path
-            $filePath = $request->file('document_file')->store('document', 'public');
+
+            // Store the new file inside the new folder
+            $filePath = $request->file('document_file')->store($newFolder->folder_name, 'public');
         } else {
-            // If no file is uploaded, keep the existing file path
-            $filePath = $document->document_file;
+            // If no new file is uploaded, check if the folder has changed
+            if ($currentFolder && $currentFolder->id !== $newFolder->id && $document->document_file) {
+                $oldPath = $document->document_file;
+                $newPath = str_replace($currentFolder->folder_name, $newFolder->folder_name, $oldPath);
+
+                // Move the file to the new folder
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->move($oldPath, $newPath);
+                    $filePath = $newPath; // Update file path
+                }
+            }
         }
-    
+
         // Update the document
         $document->update([
+            'folder_id' => $newFolder->id, // Update folder reference
             'doc_title' => $request->doc_title,
             'version_no' => $request->version_no,
             'issue_date' => $request->issue_date,
             'expiry_date' => $request->expiry_date,
-            'document_file' => $filePath, // Will be either the new file path or the existing one
+            'document_file' => $filePath, // Keep old file or move it
             'status' => $request->status,
         ]);
-    
+
+        // Flash success message and return JSON response
         Session::flash('message', 'Document updated successfully.');
         return response()->json(['success' => 'Document updated successfully.']);
     }
-
 
     public function deleteDocument(Request $request)
     {        
@@ -116,6 +149,12 @@ class DocumentController extends Controller
             // Return a success message
             return redirect()->route('document.index')->with('message', 'This Document deleted successfully');
         }
+    }
+
+    public function showDocument(Request $request,$doc_id)
+    {
+        $document = Document::find(decode_id($doc_id));
+        return view('documents.show',compact('document'));
     }
 
 

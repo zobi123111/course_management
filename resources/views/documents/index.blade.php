@@ -44,7 +44,8 @@
                 <td>{{ $val->expiry_date}}</td>
                 <td>
                     @if($val->document_file)
-                    <a href="{{ asset('storage/'.$val->document_file) }}" target="_blank">View Document</a>
+                    <!-- <a href="{{ asset('storage/'.$val->document_file) }}" target="_blank">View Document</a> -->
+                    <a href="{{ route('document.show', encode_id($val->id)) }}" target="_blank">View Document</a>
                     @else
                     No File uploaded
                     @endif
@@ -96,6 +97,25 @@
                         <label for="email" class="form-label">Upload Document<span class="text-danger">*</span></label>
                         <input type="file" name="document_file" class="form-control">
                         <div id="document_file_error" class="text-danger error_e"></div>            
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Folder<span class="text-danger">*</span></label>
+                        <select class="form-select" name="folder" aria-label="Default select example">
+                            <option value="">Select Folder</option>
+                            @foreach($folders as $val)
+                            <option value="{{ $val->id }}">{{ $val->folder_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="folder_error" class="text-danger error_e"></div>            
+                    </div>
+                    <div class="form-group">
+                        <label for="users" class="form-label">Assign to users<span class="text-danger">*</span></label>
+                        <select class="form-select users-select" name="user_ids[]" multiple="multiple">
+                            @foreach($users as $user)
+                            <option value="{{ $user->id }}">{{ $user->fname }} {{ $user->lname }}</option>
+                            @endforeach
+                        </select>
+                        <div id="user_ids_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
@@ -152,6 +172,25 @@
                         <label for="email" class="form-label">Upload Document<span class="text-danger">*</span></label>
                         <input type="file" name="document_file" id="edit_document_file" class="form-control">
                         <div id="document_file_error_up" class="text-danger error_e"></div>            
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Folder<span class="text-danger">*</span></label>
+                        <select class="form-select" name="folder" id="edit_folder" aria-label="Default select example">
+                            <option value="">Select Folder</option>
+                            @foreach($folders as $val)
+                            <option value="{{ $val->id }}">{{ $val->folder_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="folder_error_up" class="text-danger error_e"></div>            
+                    </div>
+                    <div class="form-group">
+                        <label for="users" class="form-label">Assign to users<span class="text-danger">*</span></label>
+                        <select class="form-select users-select" name="user_ids[]" multiple="multiple">
+                            @foreach($users as $user)
+                            <option value="{{ $user->id }}">{{ $user->fname }} {{ $user->lname }}</option>
+                            @endforeach
+                        </select>
+                        <div id="user_ids_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
@@ -246,11 +285,13 @@ $(document).ready(function() {
             type: 'GET',
             data: {  id: documentId },
             success: function(response) {
+                console.log(response.document.folder_id);
                 $('#edit_doc_title').val(response.document.doc_title);
                 $('#edit_version_no').val(response.document.version_no);
                 $('#document_id').val(response.document.id);
                 $('#edit_issue_date').val(response.document.issue_date);
                 $('#edit_expiry_date').val(response.document.expiry_date);
+                $('#edit_folder').val(response.document.folder_id);
                 $('#edit_status').val(response.document.status);
 
                 $('#editDocumentModal').modal('show');
@@ -290,7 +331,7 @@ $(document).ready(function() {
     e.preventDefault();
         $('#deleteDocument').modal('show');
         var documentId = $(this).data('document-id');
-        var documentName = $(this).closest('tr').find('.courseName').text();
+        var documentName = $(this).closest('tr').find('.docTitle').text();
         $('#append_name').html(documentName);
         $('#documentId').val(documentId);
       
