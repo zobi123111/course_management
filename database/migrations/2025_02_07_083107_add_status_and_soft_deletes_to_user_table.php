@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->integer('status')->default(1)->comment('1 = Active, 0 = Inactive')->after('role');
-            $table->softDeletes(); // Adds deleted_at column
+            $table->softDeletes();
         });
     }
 

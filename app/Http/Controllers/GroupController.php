@@ -32,7 +32,7 @@ class GroupController extends Controller
         // dd($request);
         $request->validate([
             'name' => 'required|unique:groups|max:255',
-            'user_ids' => 'required|array',
+            'user_ids' => 'array',
             'user_ids.*' => 'exists:users,id', // Ensure all user IDs exist
             'status' => 'required',
         ]);
