@@ -18,7 +18,7 @@
 </div>
 @endif
 <br>
-<table class="table" id="courseTable">
+<table class="table" id="folderTable">
   <thead>
     <tr>
       <th scope="col">Folder Name</th>
@@ -35,7 +35,7 @@
   <tbody>
     @foreach($folders as $val)
             <tr>
-                <td class="courseName">{{ $val->folder_name}}</td>
+                <td class="folderName">{{ $val->folder_name}}</td>
                 <td>{{ $val->description}}</td>
                 <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
                 @if(checkAllowedModule('folders','folder.edit')->isNotEmpty())
@@ -131,22 +131,22 @@
 <!--End Edit Courses-->
 
 <!--Courses Delete  Modal -->
-<form action="{{ url('course/delete') }}" method="POST">
+<form action="{{ url('folder/delete') }}" method="POST">
     @csrf
-    <div class="modal fade" id="deleteCourse" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal fade" id="deleteFolder" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Delete</h5>
-                    <input type="hidden" name="course_id" id="courseId" value="">
+                    <input type="hidden" name="folder_id" id="folderId" value="">
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete this Course "<strong><span id="append_name"> </span></strong>" ?
+                    Are you sure you want to delete this Folder "<strong><span id="append_name"> </span></strong>" ?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary delete_course">Delete</button>
+                    <button type="submit" class="btn btn-primary delete_folder">Delete</button>
                 </div>
             </div>
         </div>
@@ -159,7 +159,7 @@
 
 <script>
 $(document).ready(function() {
-    $('#courseTable').DataTable();
+    $('#folderTable').DataTable();
 
     $("#createFolder").on('click', function(){
         $(".error_e").html('');
@@ -178,6 +178,9 @@ $(document).ready(function() {
                 location.reload();
             },
             error: function(xhr, status, error){
+                if(xhr.responseJSON && xhr.responseJSON.error){
+                    alert(xhr.responseJSON.error);
+                }
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
                 $.each(validationErrors, function(key,value){
@@ -235,13 +238,13 @@ $(document).ready(function() {
         })
     })
 
-    $('.delete-icon').click(function(e) {
+    $('.delete-folder-icon').click(function(e) {
     e.preventDefault();
-        $('#deleteCourse').modal('show');
-        var courseId = $(this).data('course-id');
-        var courseName = $(this).closest('tr').find('.courseName').text();
-        $('#append_name').html(courseName);
-        $('#courseId').val(courseId);
+        $('#deleteFolder').modal('show');
+        var folderId = $(this).data('folder-id');
+        var folderName = $(this).closest('tr').find('.folderName').text();
+        $('#append_name').html(folderName);
+        $('#folderId').val(folderId);
       
     });
 
