@@ -74,7 +74,7 @@ class CourseController extends Controller
                 Storage::disk('public')->delete($courses->image);
             }
     
-            $filePath = $request->file('image')->store('document', 'public');
+            $filePath = $request->file('image')->store('courses', 'public');
         } else {
             $filePath = $courses->image;
         }
@@ -107,7 +107,7 @@ class CourseController extends Controller
         return view('courses.show', compact('course'));
     }
 
-    public function showLesson(Request $request)
+    public function createLesson(Request $request)
     {
         // dd($request);
         $request->validate([            
@@ -116,12 +116,20 @@ class CourseController extends Controller
             'status' => 'required|boolean'
         ]);
 
+        if ($request->has('comment_required') && $request->comment_required) {
+            $request->validate([
+                'comment' => 'required|string',
+            ]);
+        }
+
         CourseLesson::create([
             'course_id' => $request->course_id,
             'lesson_title' => $request->lesson_title,
             'description' => $request->description,
+            'comment' => $request->comment,
             'status' => $request->status
         ]);
+
 
         Session::flash('message', 'Lesson created successfully.');
         return response()->json(['success' => 'Lesson created successfully.']);
@@ -143,11 +151,20 @@ class CourseController extends Controller
             'edit_status' => 'required'
         ]);
 
+        if ($request->has('edit_comment_required') && $request->edit_comment_required) {
+            $request->validate([
+                'edit_comment' => 'required|string',
+            ]);
+        }
+
+        $comment = $request->has('edit_comment_required') && !$request->edit_comment_required ? null : $request->edit_comment;
+        
         // dd($request);
         $lesson = CourseLesson::findOrFail($request->lesson_id);
         $lesson->update([
             'lesson_title' => $request->edit_lesson_title,
             'description' => $request->edit_description,
+            'comment' => $comment,
             'status' => $request->edit_status
         ]);
 

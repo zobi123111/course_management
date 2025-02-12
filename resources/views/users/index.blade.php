@@ -20,6 +20,7 @@
     <table class="table" id="user_table">
         <thead>
             <tr>
+                <th scope="col">Image</th>
                 <th scope="col">First Name</th>
                 <th scope="col">Last Name</th>
                 <th scope="col">Email</th>
@@ -42,6 +43,11 @@
         <tbody>
             @foreach($users as $val)
             <tr>
+                @if($val->image)
+                    <td scope="row"><img src="{{ asset('storage/' . $val->image) }}" alt="Course Image"  class="rounded-circle" height="50px" width="50px"></td>
+                @else
+                    <td><p>No Image</p></td>
+                @endif
                 <td scope="row" class="fname">{{ $val->fname }}</td>
                 <td scope="row" class="lname">{{ $val->lname }}</td>
                 <td>{{ $val->email }}</td>
@@ -75,7 +81,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="" method="POST" id="Create_user" class="row g-3 needs-validation">
+                <form action="" method="POST" id="Create_user" enctype="multipart/form-data" class="row g-3 needs-validation">
                     @csrf
                     <div class="form-group">
                         <label for="firstname" class="form-label">First Name<span class="text-danger">*</span></label>
@@ -92,7 +98,11 @@
                         <input type="email" name="email" class="form-control">
                         <div id="email_error" class="text-danger error_e"></div>
                     </div>
-
+                    <div class="form-group">
+                        <label for="image" class="form-label">Image<span class="text-danger">*</span></label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                        <div id="image_error" class="text-danger error_e"></div>
+                    </div>
                     <div class="form-group">
                         <label for="password" class="form-label">Password<span class="text-danger">*</span></label>
                         <input type="password" name="password" class="form-control">
@@ -169,7 +179,11 @@
                         <input type="email" name="edit_email" class="form-control">
                         <div id="email_error_up" class="text-danger error_e"></div>
                     </div>
-
+                    <div class="form-group">
+                        <label for="lastname" class="form-label">Image<span class="text-danger">*</span></label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                        <div id="image_error" class="text-danger error_e"></div>
+                    </div>
                     <div class="form-group">
                         <label for="role" class="form-label">Role<span class="text-danger">*</span></label>
                         <select name="edit_role_name" class="form-select" id="edit_role">
@@ -243,17 +257,20 @@ $(document).ready(function() {
         // $('#loader').show();
         $(".loader").fadeIn();
 
-        
         $('.error_e').html('');
+
+        var formData = new FormData($('#Create_user')[0]);
+
         $.ajax({
             url: '{{ url("/users/save") }}',
             type: 'POST',
-            data: $('#Create_user').serialize(),
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(response) {
                 // $('#loader').hide();
-                $(window).load(function() {
-                    $(".loader").fadeOut("slow");
-                })
+                $(".loader").fadeOut("slow");
+                
             console.log(response);
                 $('#userModal').modal('hide');
                 location.reload();
@@ -314,18 +331,24 @@ $(document).ready(function() {
     // Use event delegation for update form button
     $(document).on('click', '#updateForm', function(e) {
         e.preventDefault();
+
+        var formData = new FormData($('#Create_user3')[0]);
+
         $.ajax({
             type: 'post',
             url: "/users/update",
-            data: {
-                'fname': $("input[name=edit_firstname]").val(),
-                'lname': $("input[name=edit_lastname]").val(),
-                'email': $("input[name=edit_email]").val(),
-                'role': $("select[name=edit_role_name]").val(),
-                'status': $("#edit_status").val(),
-                'edit_form_id': $("input[name=edit_form_id]").val(),
-                "_token": "{{ csrf_token() }}",
-            },
+            // data: {
+            //     'fname': $("input[name=edit_firstname]").val(),
+            //     'lname': $("input[name=edit_lastname]").val(),
+            //     'email': $("input[name=edit_email]").val(),
+            //     'role': $("select[name=edit_role_name]").val(),
+            //     'status': $("#edit_status").val(),
+            //     'edit_form_id': $("input[name=edit_form_id]").val(),
+            //     "_token": "{{ csrf_token() }}",
+            // },
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(response) {
                 $('#editUserDataModal').modal('hide');
                 $('#update_success_msg').html(`

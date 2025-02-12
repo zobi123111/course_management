@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\UserCreated;
+use Illuminate\Support\Facades\Storage;
+
 
 class UserController extends Controller
 {
@@ -30,6 +32,7 @@ class UserController extends Controller
             'firstname' => 'required',
             'lastname' => 'required',
             'email' => 'required|email|max:255|unique:users,email',
+            'image' => 'required',
             'password' => 'required|min:6|confirmed',
             'status' => 'required',
         ]);
@@ -40,10 +43,16 @@ class UserController extends Controller
         // Check if the logged-in user has an 'ouid'
         $ouid = $currentUser && $currentUser->ou_id ? $currentUser->ou_id : null;
     
+
+        if ($request->hasFile('image')) {
+            $filePath = $request->file('image')->store('users', 'public');
+        }
+
         $store_user = array(
             "fname" => $request->firstname,
             "lname" => $request->lastname,
             "email" => $request->email,
+            'image' => $filePath ?? null,
             "password" => Hash::make($request->password),
             "role" => $request->role_name,
             'status' => $request->status,
@@ -68,28 +77,41 @@ class UserController extends Controller
 
     public function update(Request $request)
     {
+
+        // dd($request->all());
         $userToUpdate = User::find($request->edit_form_id);
         if($userToUpdate){
         
-       $validatedData =  $request->validate([
-            'fname' => 'required',
-            'lname' => 'required',
-            'email'  => 'required',
-            'role'  => 'required',
+        $validatedData = $request->validate([
+            'edit_firstname' => 'required',
+            'edit_lastname' => 'required',
+            'edit_email' => 'required|email',
+            'edit_role_name' => 'required',
             'status' => 'required'
-        ],
-        [
-            'fname.required' => 'The  Firstname is required',
-            'lname.required' => 'The Lastname is required',
-            'email.required' => 'The  Email is required'
+        ], [
+            'edit_firstname.required' => 'The First Name is required',
+            'edit_lastname.required' => 'The Last Name is required',
+            'edit_email.required' => 'The Email is required',
+            'edit_email.email' => 'Please enter a valid Email'
         ]);
+        
+        if ($request->hasFile('image')) {
+            if ($userToUpdate->image) {
+                Storage::disk('public')->delete($userToUpdate->image);
+            }
+    
+            $filePath = $request->file('image')->store('users', 'public');
+        } else {
+            $filePath = $userToUpdate->image;
+        }
 
         $userToUpdate->where('id', $request->edit_form_id)
         ->update([
-            'Fname' => $validatedData['fname'],
-            'Lname' => $validatedData['lname'],
-            'email' => $validatedData['email'], 
-            'role' => $validatedData['role'],
+            'Fname' => $validatedData['edit_firstname'],
+            'Lname' => $validatedData['edit_lastname'],
+            'email' => $validatedData['edit_email'], 
+            'image' => $filePath,
+            'role' => $validatedData['edit_role_name'],
             'status' => $validatedData['status'],
        
         ]);
