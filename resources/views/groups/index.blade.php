@@ -75,7 +75,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="users" class="form-label">Select Users<span class="text-danger">*</span></label>
+                        <label for="users" class="form-label">Select Users<span class="text-danger"></span></label>
                         <select class="form-select users-select" name="user_ids[]" multiple="multiple">
                             @foreach($users as $user)
                             <option value="{{ $user->id }}">{{ $user->fname }} {{ $user->lname }}</option>
@@ -122,7 +122,7 @@
                     </div>
                     <div class="form-group">
                         <label for="edit_users" class="form-label">Select Users<span
-                                class="text-danger">*</span></label>
+                                class="text-danger"></span></label>
                         <select class="form-select users-select" name="user_ids[]" id="edit_users" multiple="multiple">
                             @foreach($users as $user)
                             <option value="{{ $user->id }}">{{ $user->fname }} {{ $user->lname }}</option>

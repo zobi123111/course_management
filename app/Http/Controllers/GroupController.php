@@ -38,6 +38,7 @@ class GroupController extends Controller
         ]);
 
         $group = Group::create([
+            'ou_id' => auth()->user()->ou_id ?? null,
             'name' => $request->name,
             'user_ids' => $request->user_ids,
             'status' => $request->status,
@@ -66,6 +67,7 @@ class GroupController extends Controller
         $group = Group::findOrFail($request->group_id);
         // dd($group);
         $group->update([
+            'ou_id' => auth()->user()->ou_id ?? null,
             'name' => $request->name,
             'user_ids' => $request->user_ids,
             'status' => $request->status,

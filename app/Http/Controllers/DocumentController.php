@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Document;
 use App\Models\Folder;
 use App\Models\User;
+use App\Models\Group;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -16,19 +17,19 @@ class DocumentController extends Controller
     public function index()
     {
         $ou_id =  auth()->user()->ou_id;
-        $users = User::where('ou_id', $ou_id)->get();
+        $groups = Group::where('ou_id', $ou_id)->get();
         if(empty($ou_id)){
             $folders = Folder::all();
          }else{
             $folders = Folder::where('ou_id',$ou_id)->get();
         }
         $documents = Document::all();
-        return view('documents.index',compact('documents', 'folders', 'users'));
+        return view('documents.index',compact('documents', 'folders', 'groups'));
     }
 
     public function createDocument(Request $request)
     {
-        // dd($request);
+        // dd(auth()->user()->ou_id);
         $request->validate([
             'doc_title' => 'required',
             'version_no' => 'required',
@@ -37,7 +38,8 @@ class DocumentController extends Controller
             'expiry_date' => 'required|date|after:issue_date',
             'document_file' => 'required|file|mimes:pdf|max:2048',
             'folder' => 'required',
-            'status' => 'required'
+            'status' => 'required',
+            'group' => "required",
 
         ]);
 
@@ -48,7 +50,9 @@ class DocumentController extends Controller
         }
 
         Document::create([
+            'ou_id' => auth()->user()->ou_id ?? null,
             'folder_id' => $folder->id,
+            'group_id' => $request->group,
             'doc_title' => $request->doc_title,
             'version_no' => $request->version_no,
             'issue_date' => $request->issue_date,
@@ -69,8 +73,11 @@ class DocumentController extends Controller
 
     public function updateDocument(Request $request)
     {
+        // dd(auth()->user()->ou_id);
         // Validate the request, making 'document_file' optional
         $request->validate([
+            'folder' => 'required',
+            'group' => 'required',
             'doc_title' => 'required',
             'version_no' => 'required',
             'issue_date' => 'required|date',
@@ -118,7 +125,9 @@ class DocumentController extends Controller
 
         // Update the document
         $document->update([
+            'ou_id' => auth()->user()->ou_id ?? null,
             'folder_id' => $newFolder->id, // Update folder reference
+            'group_id' => $request->group,
             'doc_title' => $request->doc_title,
             'version_no' => $request->version_no,
             'issue_date' => $request->issue_date,
@@ -155,6 +164,23 @@ class DocumentController extends Controller
     {
         $document = Document::find(decode_id($doc_id));
         return view('documents.show',compact('document'));
+    }
+
+    public function acknowledgeDocument(Request $request)
+    {
+        $request->validate([
+            'document_id' => 'required|exists:documents,id',
+            'acknowledged' => 'required|boolean',
+        ]);
+    
+        $document = Document::findOrFail($request->document_id);
+        if($document){
+            $document->update(['acknowledged' => $request->acknowledged]); // Assuming you have an 'acknowledged' column
+            return response()->json(['success' => 'Document acknowledged successfully.']);
+        }else{
+            return response()->json(['error' => 'Something went wrong, Please try after some time.']);
+        }
+    
     }
 
 

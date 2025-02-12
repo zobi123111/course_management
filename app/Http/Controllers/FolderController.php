@@ -37,6 +37,7 @@ class FolderController extends Controller
 
         if ($folderCreated) {
             Folder::create([
+                'ou_id' => auth()->user()->ou_id ?? null,
                 'folder_name' => $request->folder_name,
                 'description' => $request->description,
                 'status' => $request->status
@@ -73,6 +74,7 @@ class FolderController extends Controller
 
         if ($renameFolder) {
             $folder->update([
+                'ou_id' => auth()->user()->ou_id ?? null,
                 'folder_name' => $request->folder_name,
                 'description' => $request->description,
                 'status' => $request->status

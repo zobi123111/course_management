@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Folder extends Model
 {
     use HasFactory;
-    protected $fillable = ['folder_name', 'description', 'status'];
+    protected $fillable = ['ou_id','folder_name', 'description', 'status'];
 }

@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Document extends Model
 {
     use HasFactory;
-    protected $fillable = ['folder_id', 'doc_title', 'version_no', 'issue_date', 'expiry_date', 'document_file', 'status'];
+    protected $fillable = ['ou_id', 'folder_id', 'group_id', 'doc_title', 'version_no', 'issue_date', 'expiry_date', 'document_file', 'acknowledged', 'status'];
 }

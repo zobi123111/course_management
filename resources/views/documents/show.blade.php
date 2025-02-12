@@ -16,17 +16,17 @@
     <iframe src="{{ asset('storage/'.$document->document_file) }}" width="100%" height="600px"></iframe>
 
     <!-- Acknowledgment Form -->
-    <form id="docAcknowledgeForm">
+    <form method="POST" id="docAcknowledgeForm">
         @csrf
         <input type="hidden" name="document_id" value="{{ $document->id }}">
         
         <div class="mt-3 text-center">
-            <input type="checkbox" id="acknowledged" name="acknowledged" value="1">
+            <input type="checkbox" id="acknowledged" name="acknowledged" value="1" {{ ($document->acknowledged==1)? 'checked': '' }}>
             <label for="acknowledged">I have read and acknowledged this document</label>
         </div>
-        <div class="text-center">
+        <!-- <div class="text-center">
             <button type="submit" class="btn btn-primary mt-2 ">Acknowledge</button>
-        </div>
+        </div> -->
     </form>
 </div>
 
@@ -37,6 +37,28 @@
 <script>
 $(document).ready(function() {
 
+    $('#acknowledged').on('change', function() {
+        if ($(this).is(':checked')) {
+            $.ajax({
+                url: "{{ route('document.acknowledge') }}", // Update with your route
+                type: "POST",
+                data: $('#docAcknowledgeForm').serialize(),
+                dataType: "json",
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.success);
+                        // $('#acknowledged').prop('disabled', true); // Disable checkbox after acknowledgment
+                    } else {
+                        alert(response.error);
+                    }
+                },
+                error: function(xhr) {
+                    alert("An error occurred while updating acknowledgment.");
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+    });
 });
 </script>
 
