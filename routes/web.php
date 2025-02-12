@@ -81,13 +81,14 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/document/edit', [DocumentController::class, 'getDocument'])->name('document.edit');
     Route::post('/document/update', [DocumentController::class, 'updateDocument'])->name('document.update');
     Route::post('/document/delete', [DocumentController::class, 'deleteDocument'])->name('document.delete');
+    Route::get('/document/show/{doc_id}', [DocumentController::class, 'showDocument'])->name('document.show');
     
     //Folders Route
     Route::get('/folders', [FolderController::class, 'index'])->name('folder.index');
     Route::post('/folder/create', [FolderController::class, 'createFolder'])->name('folder.store');
     Route::get('/folder/edit', [FolderController::class, 'getFolder'])->name('folder.edit');
     Route::post('/folder/update', [FolderController::class, 'updateFolder'])->name('folder.update');
-    // Route::post('/document/delete', [DocumentController::class, 'deleteDocument'])->name('document.delete');
+    Route::post('/folder/delete', [FolderController::class, 'deleteFolder'])->name('folder.delete');
 
     //roles 
     Route::resource('roles', RolePermissionController::class);
