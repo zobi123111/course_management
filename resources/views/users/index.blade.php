@@ -2,6 +2,37 @@
 @section('sub-title', 'Users')
 @extends('layout.app')
 @section('content')
+
+<style>
+
+.rating-stars {
+    display: flex;
+    cursor: pointer;
+    font-size: 30px;
+    color: gray;
+}
+
+.rating-stars .star {
+    padding: 5px;
+}
+
+.rating-stars .star.active {
+    color: gold;
+}
+
+.star {
+    font-size: 30px;
+    color: gray; /* default color for unfilled stars */
+    cursor: pointer;
+}
+
+.star.rated {
+    color: gold; /* color for filled stars */
+}
+
+
+</style>
+
 <div class="main_cont_outer">
     @if(session()->has('message'))
     <div id="successMessage" class="alert alert-success fade show" role="alert">
@@ -118,12 +149,70 @@
                         <label for="role" class="form-label">Role<span class="text-danger">*</span></label>
                         <select name="role_name" class="form-select" id="role">
                             @foreach($roles as $val)
-                            <option value="{{ $val->id }}">{{ $val->role_name }}</option>
+                                <option value="{{ $val->id }}">{{ $val->role_name }}</option>
                             @endforeach
-
                         </select>
                         <div id="role_name_error" class="text-danger error_e"></div>
                     </div>
+                    <!-- Licence -->
+                    <div class="form-group">
+                        <label for="licence_checkbox" class="form-label">Licence</label>
+                        <input type="checkbox" name="licence_checkbox" id="licence_checkbox">
+                        <input type="text" name="licence" id="licence" class="form-control" style="display: none;" placeholder="Enter Licence Number">
+                        <div id="licence_error" class="text-danger error_e"></div>
+                        <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                        <div id="licence_file_error" class="text-danger error_e"></div>
+                    </div>
+
+                    <!-- Passport -->
+                    <div class="form-group">
+                        <label for="passport_checkbox" class="form-label">Passport</label>
+                        <input type="checkbox" name="passport_checkbox" id="passport_checkbox">
+                        <input type="text" name="passport" id="passport" class="form-control" style="display: none;" placeholder="Enter Passport Number">
+                        <div id="passport_error" class="text-danger error_e"></div>
+                        <input type="file" name="passport_file" id="passport_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                        <div id="passport_file_error" class="text-danger error_e"></div>
+
+                    </div>
+
+                    <!-- Rating/s (Stars) -->
+                    <div class="form-group">
+                        <label for="rating_checkbox" class="form-label">Rating/s</label>
+                        <input type="checkbox" name="rating_checkbox" id="rating_checkbox">
+                        <div id="ratings" style="display: none;">
+                            <div id="ratingStars" class="rating-stars">
+                                <span class="star" data-value="1">&#9733;</span>
+                                <span class="star" data-value="2">&#9733;</span>
+                                <span class="star" data-value="3">&#9733;</span>
+                                <span class="star" data-value="4">&#9733;</span>
+                                <span class="star" data-value="5">&#9733;</span>
+                            </div>
+                            <input type="hidden" name="rating" id="rating_value" value="0">
+                            <div id="rating_error" class="text-danger error_e"></div>
+                        </div>
+                    </div>
+
+
+                    <!-- Currency (Optional) -->
+                    <div class="form-group">
+                        <label for="currency" class="form-label">Currency</label>
+                        <input type="checkbox" name="currency_checkbox" id="currency_checkbox">
+                        <input type="text" name="currency" id="currency" class="form-control" style="display: none;" placeholder="Enter Currency">
+                        <div id="currency_error" class="text-danger error_e"></div>
+                    </div>
+
+                    <!-- Custom Field -->
+                    <div class="form-group">
+                        <label for="custom_field_checkbox" class="form-label">Custom Field</label>
+                        <input type="checkbox" name="custom_field_checkbox" id="custom_field_checkbox">
+                        {{-- <label for="custom_field_name" class="form-label">Custom Field Name</label> --}}
+                        <input type="text" name="custom_field_name" id="custom_field_name" style="display: none;" class="form-control" placeholder="Enter Custom Field Name">
+                        <div id="custom_field_name_error" class="text-danger error_e"></div>
+                        {{-- <label for="custom_field_value" class="form-label">Custom Field Value</label> --}}
+                        <input type="text" name="custom_field_value" id="custom_field_value" style="display: none;" class="form-control mt-3" placeholder="Enter Custom Field Value">
+                        <div id="custom_field_value_error" class="text-danger error_e"></div>
+                    </div>
+                    
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" aria-label="Default select example">
@@ -194,6 +283,63 @@
                         </select>
                         <div id="edit_role_name_error_up" class="text-danger error_e"></div>
                     </div>
+
+                    <!-- Licence -->
+                    <div class="form-group">
+                        <label for="edit_licence_checkbox" class="form-label">Licence</label>
+                        <input type="checkbox" name="edit_licence_checkbox" id="edit_licence_checkbox">
+                        <input type="text" name="edit_licence" id="edit_licence" class="form-control" style="display: none;" placeholder="Enter Licence Number">
+                        <div id="edit_licence_error_up" class="text-danger error_e"></div>
+                        <input type="file" name="edit_licence_file" id="edit_licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                        <div id="edit_licence_file_error_up" class="text-danger error_e"></div>
+                    </div>
+
+                    <!-- Passport -->
+                    <div class="form-group">
+                        <label for="edit_passport_checkbox" class="form-label">Passport</label>
+                        <input type="checkbox" name="edit_passport_checkbox" id="edit_passport_checkbox">
+                        <input type="text" name="edit_passport" id="edit_passport" class="form-control" style="display: none;" placeholder="Enter Passport Number">
+                        <div id="edit_passport_error_up" class="text-danger error_e"></div>
+                        <input type="file" name="edit_passport_file" id="edit_passport_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                        <div id="edit_passport_file_error_up" class="text-danger error_e"></div>
+
+                    </div>
+
+                    <!-- Rating/s (Stars) -->
+                    <div class="form-group">
+                        <label for="edit_rating_checkbox" class="form-label">Rating/s</label>
+                        <input type="checkbox" name="edit_rating_checkbox" id="edit_rating_checkbox">
+                        <div id="edit_ratings" style="display: none;">
+                            <div id="edit_ratingStars" class="rating-stars">
+                                <span class="star" data-value="1">&#9733;</span>
+                                <span class="star" data-value="2">&#9733;</span>
+                                <span class="star" data-value="3">&#9733;</span>
+                                <span class="star" data-value="4">&#9733;</span>
+                                <span class="star" data-value="5">&#9733;</span>
+                            </div>
+                            <input type="hidden" name="edit_rating" id="edit_rating_value" value="0">
+                            <div id="edit_rating_error_up" class="text-danger error_e"></div>
+                        </div>
+                    </div>
+
+                    <!-- Currency (Optional) -->
+                    <div class="form-group">
+                        <label for="edit_currency" class="form-label">Currency</label>
+                        <input type="checkbox" name="edit_currency_checkbox" id="edit_currency_checkbox">
+                        <input type="text" name="edit_currency" id="edit_currency" class="form-control" style="display: none;" placeholder="Enter Currency">
+                        <div id="edit_currency_error_up" class="text-danger error_e"></div>
+                    </div>
+
+                    <!-- Custom Field -->
+                    <div class="form-group">
+                        <label for="edit_custom_field_checkbox" class="form-label">Custom Field</label>
+                        <input type="checkbox" name="edit_custom_field_checkbox" id="edit_custom_field_checkbox">
+                        <input type="text" name="edit_custom_field_name" id="edit_custom_field_name" style="display: none;" class="form-control" placeholder="Enter Custom Field Name">
+                        <div id="edit_custom_field_name_error_up" class="text-danger error_e"></div>
+                        <input type="text" name="edit_custom_field_value" id="edit_custom_field_value" style="display: none;" class="form-control mt-3" placeholder="Enter Custom Field Value">
+                        <div id="edit_custom_field_value_error_up" class="text-danger error_e"></div>
+                    </div>
+
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
@@ -243,150 +389,372 @@
 @section('js_scripts')
 
 <script>
-$(document).ready(function() {
-    $('#user_table').DataTable();
+    
+    $(document).ready(function() {
+        $('#user_table').DataTable();
 
-    $('#createUser').on('click', function() {
-        $('.error_e').html('');
-        $('.alert-danger').css('display', 'none');
-        $('#userModal').modal('show');        
-    });
-
-    $('#saveuser').click(function(e) {
-        e.preventDefault();
-        // $('#loader').show();
-        $(".loader").fadeIn();
-
-        $('.error_e').html('');
-
-        var formData = new FormData($('#Create_user')[0]);
-
-        $.ajax({
-            url: '{{ url("/users/save") }}',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                // $('#loader').hide();
-                $(".loader").fadeOut("slow");
-                
-            console.log(response);
-                $('#userModal').modal('hide');
-                location.reload();
-            },
-            error: function(xhr, status, error) {
-                // $('#loader').hide();
-                $(".loader").fadeOut("slow");
-                var errorMessage = JSON.parse(xhr.responseText);
-                var validationErrors = errorMessage.errors;
-                $.each(validationErrors, function(key, value) {
-                    var html1 = '<p>' + value + '</p>';
-                    $('#' + key + '_error').html(html1);
-                });
+        $('#licence_checkbox').change(function() {
+            if (this.checked) {
+                $('#licence').show().prop('required', true);
+                $('#licence_file').show().prop('required', true);
+            } else {
+                $('#licence').hide().prop('required', false);
+                $('#licence_file').hide().prop('required', false);
+                $('#licence').val('');
+                $('#licence_file').val('');
+                $('#licence_error').hide().prop('required', false);
+                $('#licence_file_error').hide().prop('required', false);
             }
         });
-    });
 
-    $('.edit-user-icon').click(function(e) {
-        e.preventDefault();
-        $('.error_ee').html('');
-        var userId = $(this).data('user-id');
-        vdata = {
-            id: userId,
-            "_token": "{{ csrf_token() }}",
-        };
-        $.ajax({
-            type: 'post',
-            url: "{{ url('users/edit') }}",
-            data: vdata,
-            success: function(response) {
-                $('input[name="edit_firstname"]').val(response.user.fname);
-                $('input[name="edit_lastname"]').val(response.user.lname);
-                $('input[name="edit_email"]').val(response.user.email);
-                $('input[name="edit_form_id"]').val(response.user.id);
-                $('#edit_status').val(response.user.status);
-
-                // Primary role
-                var userRoleId = response.user.role;
-                $('#role_id option').removeAttr('selected');
-                $('#edit_role option[value="' + userRoleId + '"]').attr('selected',
-                    'selected');
-
-                //Secondary role
-                var secondary_role = response.user.role_id1;
-                //  $('#secondary_role').val('');
-                $('#secondary_role option').removeAttr('selected');
-                $('#secondary_role option[value="' + secondary_role + '"]').attr('selected',
-                    'selected');
-                $('#editUserDataModal').modal('show');
-            },
-            error: function(xhr, status, error) {
-                console.error(xhr.responseText);
+        $('#passport_checkbox').change(function() {
+            if (this.checked) {
+                $('#passport').show().prop('required', true);
+                $('#passport_file').show().prop('required', true);
+            } else {
+                $('#passport').hide().prop('required', false);
+                $('#passport_file').hide().prop('required', false);
+                $('#passport').val('');
+                $('#passport_file').val('');
+                $('#passport_error').hide().prop('required', false);
+                $('#passport_file_error').hide().prop('required', false);
             }
         });
-    });
 
-    // Update user  form 
-    // Use event delegation for update form button
-    $(document).on('click', '#updateForm', function(e) {
-        e.preventDefault();
-
-        var formData = new FormData($('#Create_user3')[0]);
-
-        $.ajax({
-            type: 'post',
-            url: "/users/update",
-            // data: {
-            //     'fname': $("input[name=edit_firstname]").val(),
-            //     'lname': $("input[name=edit_lastname]").val(),
-            //     'email': $("input[name=edit_email]").val(),
-            //     'role': $("select[name=edit_role_name]").val(),
-            //     'status': $("#edit_status").val(),
-            //     'edit_form_id': $("input[name=edit_form_id]").val(),
-            //     "_token": "{{ csrf_token() }}",
-            // },
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                $('#editUserDataModal').modal('hide');
-                $('#update_success_msg').html(`
-                <div class="alert alert-success fade show" role="alert">
-                    <i class="bi bi-check-circle me-1"></i>
-                    ${response.message}
-                </div>
-                `).stop(true, true).fadeIn();
-                location.reload();
-            },
-            error: function(xhr, status, error) {
-                var errorMessage = JSON.parse(xhr.responseText);
-                var validationErrors = errorMessage.errors;
-                $.each(validationErrors, function(key, value) {
-                    var html = '<p>' + value + '</p>';
-                    $('#' + key + '_error_up').html(html);
-                });
+        $('#rating_checkbox').change(function() {
+            if (this.checked) {
+                $('#ratings').show().prop('required', true);
+            } else {
+                $('#ratings').hide().prop('required', false);
+                $('#ratings').val('');
+                $('#ratings_error').hide().prop('required', false);
             }
         });
+
+        $('#currency_checkbox').change(function() {
+            if (this.checked) {
+                $('#currency').show().prop('required', true);
+            } else {
+                $('#currency').hide().prop('required', false);
+                $('#currency').val('');
+                $('#currency_error').hide().prop('required', false);
+            }
+        });
+
+        $('#custom_field_checkbox').change(function() {
+            if (this.checked) {
+                $('#custom_field_name').show().prop('required', true);
+                $('#custom_field_value').show().prop('required', true);
+            } else {
+                $('#custom_field_name').hide().prop('required', false);
+                $('#custom_field_value').hide().prop('required', false);
+                $('#custom_field_name').val('');
+                $('#custom_field_value').val('');
+                $('#custom_field_name_error').hide().prop('required', false);
+                $('#custom_field_value_error').hide().prop('required', false);
+
+            }
+        });
+
+        $('#ratingStars .star').on('click', function() {
+            var rating = $(this).data('value');
+            $('#rating_value').val(rating);
+
+            $('#ratingStars .star').removeClass('active');
+
+            for (var i = 1; i <= rating; i++) {
+                $('#ratingStars .star[data-value="' + i + '"]').addClass('active');
+            }
+        });
+
+        $('#createUser').on('click', function() {
+            $('.error_e').html('');
+            $('.alert-danger').css('display', 'none');
+            $('#userModal').modal('show');        
+        });
+
+        $('#saveuser').click(function(e) {
+            e.preventDefault();
+            // $('#loader').show();
+            $(".loader").fadeIn();
+
+            $('.error_e').html('');
+
+            var formData = new FormData($('#Create_user')[0]);
+
+            $.ajax({
+                url: '{{ url("/users/save") }}',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    // $('#loader').hide();
+                    $(".loader").fadeOut("slow");
+                    
+                console.log(response);
+                    $('#userModal').modal('hide');
+                    location.reload();
+                },
+                error: function(xhr, status, error) {
+                    // $('#loader').hide();
+                    $(".loader").fadeOut("slow");
+                    var errorMessage = JSON.parse(xhr.responseText);
+                    var validationErrors = errorMessage.errors;
+                    $.each(validationErrors, function(key, value) {
+                        var html1 = '<p>' + value + '</p>';
+                        $('#' + key + '_error').html(html1);
+                    });
+                }
+            });
+        });
+
+
+        // edit 
+
+        $('#edit_licence_checkbox').change(function() {
+            if (this.checked) {
+                $('#edit_licence').show().prop('required', true);
+                $('#edit_licence_file').show().prop('required', true);
+            } else {
+                $('#edit_licence').hide().prop('required', false);
+                $('#edit_licence_file').hide().prop('required', false);
+                $('#edit_licence').val('');
+                $('#edit_licence_file').val('');
+                $('#edit_licence_error_up').hide().prop('required', false);
+                $('#edit_licence_file_error_up').hide().prop('required', false);
+            }
+        });
+
+        $('#edit_passport_checkbox').change(function() {
+            if (this.checked) {
+                $('#edit_passport').show().prop('required', true);
+                $('#edit_passport_file').show().prop('required', true);
+            } else {
+                $('#edit_passport').hide().prop('required', false);
+                $('#edit_passport_file').hide().prop('required', false);
+                $('#edit_passport').val('');
+                $('#edit_passport_file').val('');
+                $('#edit_passport_error_up').hide().prop('required', false);
+                $('#edit_passport_file_error_up').hide().prop('required', false);
+            }
+        });
+
+        $('#edit_rating_checkbox').change(function() {
+            if (this.checked) {
+                $('#edit_ratings').show().prop('required', true);
+            } else {
+                $('#edit_ratings').hide().prop('required', false);
+                $('#edit_ratings').val('');
+                $('#edit_ratings_error_up').hide().prop('required', false);
+            }
+        });
+
+        $('#edit_ratingStars .star').click(function() {
+            var ratingValue = $(this).data('value');
+            $('#edit_rating_value').val(ratingValue);
+
+            $('#edit_ratingStars .star').each(function() {
+                if ($(this).data('value') <= ratingValue) {
+                    $(this).addClass('rated');
+                } else {
+                    $(this).removeClass('rated');
+                }
+            });
+        });
+
+        $('#edit_currency_checkbox').change(function() {
+            if (this.checked) {
+                $('#edit_currency').show().prop('required', true);
+            } else {
+                $('#edit_currency').hide().prop('required', false);
+                $('#edit_currency').val('');
+                $('#edit_currency_error_up').hide().prop('required', false);
+            }
+        });
+
+        $('#edit_custom_field_checkbox').change(function() {
+            if (this.checked) {
+                $('#edit_custom_field_name').show().prop('required', true);
+                $('#edit_custom_field_value').show().prop('required', true);
+            } else {
+                $('#edit_custom_field_name').hide().prop('required', false);
+                $('#edit_custom_field_value').hide().prop('required', false);
+                $('#edit_custom_field_name').val('');
+                $('#edit_custom_field_value').val('');
+                $('#edit_custom_field_name_error_up').hide().prop('required', false);
+                $('#edit_custom_field_value_error_up').hide().prop('required', false);
+
+            }
+        });
+
+        //
+
+        $('.edit-user-icon').click(function(e) {
+            e.preventDefault();
+            $('.error_ee').html('');
+            var userId = $(this).data('user-id');
+            vdata = {
+                id: userId,
+                "_token": "{{ csrf_token() }}",
+            };
+            $.ajax({
+                type: 'post',
+                url: "{{ url('users/edit') }}",
+                data: vdata,
+                success: function(response) {
+                    $('input[name="edit_firstname"]').val(response.user.fname);
+                    $('input[name="edit_lastname"]').val(response.user.lname);
+                    $('input[name="edit_email"]').val(response.user.email);
+                    $('input[name="edit_form_id"]').val(response.user.id);
+                    $('#edit_status').val(response.user.status);
+
+                    // Primary role
+                    var userRoleId = response.user.role;
+                    $('#role_id option').removeAttr('selected');
+                    $('#edit_role option[value="' + userRoleId + '"]').attr('selected',
+                        'selected');
+
+                        if (response.user.licence) {
+                            $('#edit_licence_checkbox').prop('checked', true);
+                            $('#edit_licence').val(response.user.licence).show().prop('required', true);
+                            $('#edit_licence_file').show().prop('required', true);
+                            
+                        } else {
+                            $('#edit_licence_checkbox').prop('checked', false);
+                            $('#edit_licence').hide().prop('required', false);
+                            $('#edit_licence_file').hide().prop('required', false);
+                        }
+
+                        // Set passport checkbox and fields
+                        if (response.user.passport) {
+                            $('#edit_passport_checkbox').prop('checked', true);
+                            $('#edit_passport').val(response.user.passport).show().prop('required', true);
+                            $('#edit_passport_file').show().prop('required', true);
+                        } else {
+                            $('#edit_passport_checkbox').prop('checked', false);
+                            $('#edit_passport').hide().prop('required', false);
+                            $('#passport_file').hide().prop('required', false);
+                           
+                        }
+
+                        if (response.user.rating) {
+                            $('#edit_rating_checkbox').prop('checked', true);
+                            $('#edit_ratings').show();
+                            $('#edit_rating_value').val(response.user.rating);
+
+                            $('#edit_ratingStars .star').each(function() {
+                                var starValue = $(this).data('value');
+                                if (starValue <= response.user.rating) {
+                                    $(this).addClass('rated');
+                                } else {
+                                    $(this).removeClass('rated');
+                                }
+                            });
+                        } else {
+                            $('#edit_rating_checkbox').prop('checked', false);
+                            $('#edit_ratings').hide();
+                        }
+
+                        // Set currency checkbox and field
+                        if (response.user.currency) {
+                            $('#edit_currency_checkbox').prop('checked', true);
+                            $('#edit_currency').val(response.user.currency).show().prop('required', true);
+                        } else {
+                            $('#edit_currency_checkbox').prop('checked', false);
+                            $('#edit_currency').hide().prop('required', false);
+                        }
+
+                        // Set custom field checkbox and fields
+                        if (response.user.custom_field_name && response.user.custom_field_value) {
+                            $('#edit_custom_field_checkbox').prop('checked', true);
+                            $('#edit_custom_field_name').val(response.user.custom_field_name).show().prop('required', true);
+                            $('#edit_custom_field_value').val(response.user.custom_field_value).show().prop('required', true);
+                        } else {
+                            $('#edit_custom_field_checkbox').prop('checked', false);
+                            $('#edit_custom_field_name').hide().prop('required', false);
+                            $('#edit_custom_field_value').hide().prop('required', false);
+                                      
+                        }
+
+                    //Secondary role
+                    var secondary_role = response.user.role_id1;
+                    //  $('#secondary_role').val('');
+                    $('#secondary_role option').removeAttr('selected');
+                    $('#secondary_role option[value="' + secondary_role + '"]').attr('selected',
+                        'selected');
+                    $('#editUserDataModal').modal('show');
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+
+        $('#edit_ratingStars .star').click(function() {
+            var ratingValue = $(this).data('value');
+            $('#edit_rating_value').val(ratingValue);
+
+            $('#edit_ratingStars .star').each(function() {
+                if ($(this).data('value') <= ratingValue) {
+                    $(this).addClass('rated');
+                } else {
+                    $(this).removeClass('rated');
+                }
+            });
+        });
+
+        // Update user  form 
+        // Use event delegation for update form button
+        $(document).on('click', '#updateForm', function(e) {
+            e.preventDefault();
+
+            var formData = new FormData($('#Create_user3')[0]);
+
+            $.ajax({
+                type: 'post',
+                url: "/users/update",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('#editUserDataModal').modal('hide');
+                    $('#update_success_msg').html(`
+                    <div class="alert alert-success fade show" role="alert">
+                        <i class="bi bi-check-circle me-1"></i>
+                        ${response.message}
+                    </div>
+                    `).stop(true, true).fadeIn();
+                    location.reload();
+                },
+                error: function(xhr, status, error) {
+                    var errorMessage = JSON.parse(xhr.responseText);
+                    var validationErrors = errorMessage.errors;
+                    $.each(validationErrors, function(key, value) {
+                        var html = '<p>' + value + '</p>';
+                        $('#' + key + '_error_up').html(html);
+                    });
+                }
+            });
+        });
+
+        $('.delete-icon').click(function(e) {
+            e.preventDefault();
+            $('#deleteUserModal').modal('show');
+            var userId = $(this).data('user-id');
+            var fname = $(this).closest('tr').find('.fname').text();
+            var lname = $(this).closest('tr').find('.lname').text();
+            var name = fname + ' ' + lname;
+            $('#append_name').html(name);
+            $('#userid').val(userId);
+
+        });
+
+        setTimeout(function() {
+            $('#successMessage').fadeOut('fast');
+        }, 2000);
+
     });
-
-    $('.delete-icon').click(function(e) {
-        e.preventDefault();
-        $('#deleteUserModal').modal('show');
-        var userId = $(this).data('user-id');
-        var fname = $(this).closest('tr').find('.fname').text();
-        var lname = $(this).closest('tr').find('.lname').text();
-        var name = fname + ' ' + lname;
-        $('#append_name').html(name);
-        $('#userid').val(userId);
-
-    });
-
-    setTimeout(function() {
-        $('#successMessage').fadeOut('fast');
-    }, 2000);
-
-});
 </script>
 
 @endsection
