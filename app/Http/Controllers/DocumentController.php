@@ -17,13 +17,15 @@ class DocumentController extends Controller
     public function index()
     {
         $ou_id =  auth()->user()->ou_id;
-        $groups = Group::where('ou_id', $ou_id)->get();
         if(empty($ou_id)){
+            $groups = Group::all();
             $folders = Folder::all();
-         }else{
+            $documents = Document::all();
+        }else{
+            $groups = Group::where('ou_id', $ou_id)->get();
             $folders = Folder::where('ou_id',$ou_id)->get();
+            $documents = Document::where('ou_id',$ou_id)->get();
         }
-        $documents = Document::all();
         return view('documents.index',compact('documents', 'folders', 'groups'));
     }
 

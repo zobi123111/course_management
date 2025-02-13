@@ -83,6 +83,18 @@
                         </select>
                         <div id="user_ids_error" class="text-danger error_e"></div>
                     </div>
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ou_id" aria-label="Default select example">
+                            <option value="">Select Org Unit</option>
+                            @foreach($urganizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                    </div>
+                    @endif
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" aria-label="Default select example">
@@ -130,6 +142,18 @@
                         </select>
                         <div id="user_ids_error_up" class="text-danger error_e"></div>
                     </div>
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
+                            <option value="">Select Org Unit</option>
+                            @foreach($urganizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                    </div>
+                    @endif
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
@@ -235,10 +259,11 @@ $(document).ready(function() {
             success: function(response) {
                 $('#edit_name').val(response.group.name);
                 $('#edit_group_id').val(response.group.id);
+                $('#edit_ou_id').val(response.group.ou_id);
                 $('#edit_status').val(response.group.status);
 
                 // Ensure user_ids is an array
-                let selectedUsers = response.group.user_ids.map(String); // Convert to string if necessary
+                let selectedUsers = response.group.user_ids ? response.group.user_ids.map(String) : []; // Convert to string if necessary
                 $('#edit_users').val(selectedUsers).trigger('change'); // Set selected values
 
                 $('#editGroupModal').modal('show');

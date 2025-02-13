@@ -21,8 +21,11 @@ class OrganizationController extends Controller
     {
         $organizationUnitsData = DB::table('organization_units')
             ->join('users', 'organization_units.id', '=', 'users.ou_id')
+            ->whereNull('organization_units.deleted_at')
+            ->whereNull('users.deleted_at')
             ->select('organization_units.id','organization_units.org_unit_name','organization_units.description','organization_units.status', 'users.id as user_id','users.fname','users.lname','users.email','users.role','users.password','users.ou_id')
             ->get();
+
         return view('organization.index', compact('organizationUnitsData'));
     }
 
@@ -30,7 +33,7 @@ class OrganizationController extends Controller
     {
         // dd($request);
         $request->validate([
-                'org_unit_name' => 'required',
+                'org_unit_name' => 'required|unique:organization_units',
                 'description' => 'required',
                 'status' => 'required',
                 'firstname' => 'required',
@@ -39,7 +42,7 @@ class OrganizationController extends Controller
                 'password' => 'required|min:6|confirmed'
             ],
             [
-            'org_unit_name.required' => 'The Organizational Unit name field is required',
+            // 'org_unit_name.required' => 'The Organizational Unit name field is required',
             'description.required' => 'Description field is required',
             'status.required' => 'Status field is required',
             'firstname.required' => 'The Firstname field is required',
@@ -104,7 +107,7 @@ class OrganizationController extends Controller
     public function updateOrgUnit(Request $request)
     {
             $validatedData = $request->validate([
-                'org_unit_name' => 'required',
+                'org_unit_name' => 'required|unique:organization_units,org_unit_name,' . $request->org_unit_id,
                 'description' => 'required',
                 'status' => 'required',
                 'edit_firstname' => 'required',
@@ -113,6 +116,7 @@ class OrganizationController extends Controller
             ],
             [
                 'org_unit_name.required' => 'The Organizational Unit name field is required',
+                'org_unit_name.unique' => 'The Organizational Unit name must be unique.',
                 'description.required' => 'Description field is required',
                 'status.required' => 'Status field is required',
                 'edit_firstname.required' => 'The Firstname field is required',
@@ -157,10 +161,12 @@ class OrganizationController extends Controller
 
     public function deleteOrgUnit(Request $request)
     {        
-        $organizationUnit = OrganizationUnits::findOrFail(decode_id($request->id));
-        if ($organizationUnit) {
+        $organizationUnit = OrganizationUnits::findOrFail(decode_id($request->org_id));
+        $user = User::findOrFail(decode_id($request->user_id));
+        if ($organizationUnit && $user) {
             $organizationUnit->delete();
-            return redirect()->route('orgunit.index')->with('message', 'Organizational Unit deleted successfully');
+            $user->delete();
+            return redirect()->route('orgunit.index')->with('message', 'Organizational Unit and OU User deleted successfully');
         }
     }
 

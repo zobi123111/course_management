@@ -86,6 +86,18 @@
                         <input type="file" name="image" class="form-control" accept="image/*">
                         <div id="image_error" class="text-danger error_e"></div>
                     </div>
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ou_id" aria-label="Default select example">
+                            <option value="">Select Org Unit</option>
+                            @foreach($urganizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                    </div>
+                    @endif
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" aria-label="Default select example">
@@ -140,6 +152,18 @@
                         </select>
                         <div id="status_error_up" class="text-danger error_e"></div>
                     </div>
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
+                            <option value="">Select Org Unit</option>
+                            @foreach($urganizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                    </div>
+                    @endif
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="updateCourse" class="btn btn-primary sbt_btn">Update</button>
@@ -229,6 +253,7 @@ $(document).ready(function() {
                 $('input[name="course_name"]').val(response.course.course_name);
                 $('input[name="course_id"]').val(response.course.id);
                 $('#edit_description').val(response.course.description);
+                $('#edit_ou_id').val(response.course.ou_id);
                 $('#edit_status').val(response.course.status);
 
                 $('#editCourseModal').modal('show');

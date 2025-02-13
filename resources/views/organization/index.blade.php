@@ -184,7 +184,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Delete</h5>
-                    <input type="hidden" name="id" id="orgUnitId" value="">
+                    <input type="hidden" name="org_id" id="orgUnitId" value="">
+                    <input type="hidden" name="user_id" id="userId" value="">
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -297,9 +298,11 @@ $(document).ready(function() {
         e.preventDefault();
         $('#deleteOrgUnitModal').modal('show');
         var orgUnitId = $(this).data('orgunit-id');
+        var userId = $(this).data('user-id');
         var orgUnitName = $(this).closest('tr').find('.orgUnitName').text();
         $('#append_name').html(orgUnitName);
         $('#orgUnitId').val(orgUnitId);
+        $('#userId').val(userId);
     });
 
 

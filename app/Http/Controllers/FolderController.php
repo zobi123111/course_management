@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Folder;
+use App\Models\OrganizationUnits;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -13,8 +14,13 @@ class FolderController extends Controller
 {
     public function index()
     {
-        $folders = Folder::all();
-        return view('folders.index',compact('folders'));
+        $urganizationUnits = OrganizationUnits::all();
+        if(Auth::user()->role==1 && empty(Auth::user()->ou_id)){
+            $folders = Folder::all();
+        }else{
+            $folders = Folder::where('ou_id', Auth::user()->ou_id)->get();
+        }
+        return view('folders.index',compact('folders','urganizationUnits'));
     }
 
     public function createFolder(Request $request)
@@ -22,7 +28,14 @@ class FolderController extends Controller
         $request->validate([            
             'folder_name' => 'required|unique:folders,folder_name',
             'description' => 'required',
-            'status' => 'required|boolean'
+            'status' => 'required|boolean',
+            'ou_id' => [
+                function ($attribute, $value, $fail) {
+                    if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
+                        $fail('The Organizational Unit (OU) is required for Super Admin.');
+                    }
+                }
+            ]
         ]);
 
         $path = public_path("storage/{$request->folder_name}");
@@ -37,7 +50,7 @@ class FolderController extends Controller
 
         if ($folderCreated) {
             Folder::create([
-                'ou_id' => auth()->user()->ou_id ?? null,
+                'ou_id' =>  (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
                 'folder_name' => $request->folder_name,
                 'description' => $request->description,
                 'status' => $request->status
@@ -61,7 +74,14 @@ class FolderController extends Controller
         $request->validate([
             'folder_name' => 'required',
             'description' => 'required',
-            'status' => 'required'
+            'status' => 'required',
+            'ou_id' => [
+                function ($attribute, $value, $fail) {
+                    if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
+                        $fail('The Organizational Unit (OU) is required for Super Admin.');
+                    }
+                }
+            ]
         ]);
 
         $folder = Folder::findOrFail($request->folder_id);
@@ -74,7 +94,7 @@ class FolderController extends Controller
 
         if ($renameFolder) {
             $folder->update([
-                'ou_id' => auth()->user()->ou_id ?? null,
+                'ou_id' =>  (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
                 'folder_name' => $request->folder_name,
                 'description' => $request->description,
                 'status' => $request->status

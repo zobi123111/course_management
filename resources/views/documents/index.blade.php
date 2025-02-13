@@ -45,7 +45,7 @@
                 <td>
                     @if($val->document_file)
                     <!-- <a href="{{ asset('storage/'.$val->document_file) }}" target="_blank">View Document</a> -->
-                    <a href="{{ route('document.show', encode_id($val->id)) }}" target="_blank">View Document</a>
+                    <a href="{{ route('document.show', encode_id($val->id)) }}" >View Document</a>
                     @else
                     No File uploaded
                     @endif
@@ -116,7 +116,7 @@
                             <option value="{{ $group->id }}">{{ $group->name }}</option>
                             @endforeach
                         </select>
-                        <div id="user_ids_error" class="text-danger error_e"></div>
+                        <div id="group_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
