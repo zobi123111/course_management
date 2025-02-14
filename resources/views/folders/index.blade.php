@@ -70,6 +70,18 @@
                         <textarea class="form-control" name="description"  rows="3"></textarea>
                         <div id="description_error" class="text-danger error_e"></div>
                     </div>
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ou_id" aria-label="Default select example">
+                            <option value="">Select Org Unit</option>
+                            @foreach($urganizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                    </div>
+                    @endif
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" aria-label="Default select example">
@@ -111,6 +123,18 @@
                         <textarea class="form-control" name="description" id="edit_description" rows="3"></textarea>
                         <div id="description_error_up" class="text-danger error_e"></div>
                     </div>
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
+                            <option value="">Select Org Unit</option>
+                            @foreach($urganizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                    </div>
+                    @endif
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
@@ -206,6 +230,7 @@ $(document).ready(function() {
                 $('#edit_folder_name').val(response.folder.folder_name);
                 $('#folder_id').val(response.folder.id);
                 $('#edit_description').val(response.folder.description);
+                $('#edit_ou_id').val(response.folder.ou_id);
                 $('#edit_status').val(response.folder.status);
 
                 $('#editFolderModal').modal('show');

@@ -18,8 +18,8 @@
 </div>
 @endif
 <br>
-<table class="table" id="documentTable">
-  <thead>
+<table class="table" id="documemtTable">
+  <thead>   
     <tr>
       <th scope="col">Document Title</th>
       <th scope="col">Version Number</th>
@@ -45,7 +45,7 @@
                 <td>
                     @if($val->document_file)
                     <!-- <a href="{{ asset('storage/'.$val->document_file) }}" target="_blank">View Document</a> -->
-                    <a href="{{ route('document.show', encode_id($val->id)) }}" target="_blank">View Document</a>
+                    <a href="{{ route('document.show', encode_id($val->id)) }}" >View Document</a>
                     @else
                     No File uploaded
                     @endif
@@ -109,13 +109,14 @@
                         <div id="folder_error" class="text-danger error_e"></div>            
                     </div>
                     <div class="form-group">
-                        <label for="users" class="form-label">Assign to users<span class="text-danger">*</span></label>
-                        <select class="form-select users-select" name="user_ids[]" multiple="multiple">
-                            @foreach($users as $user)
-                            <option value="{{ $user->id }}">{{ $user->fname }} {{ $user->lname }}</option>
+                        <label for="users" class="form-label">Assign to Group<span class="text-danger">*</span></label>
+                        <select class="form-select group-select" name="group" id="group">
+                        <option value="">Select Group</option>
+                            @foreach($groups as $group)
+                            <option value="{{ $group->id }}">{{ $group->name }}</option>
                             @endforeach
                         </select>
-                        <div id="user_ids_error" class="text-danger error_e"></div>
+                        <div id="group_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
@@ -184,10 +185,11 @@
                         <div id="folder_error_up" class="text-danger error_e"></div>            
                     </div>
                     <div class="form-group">
-                        <label for="users" class="form-label">Assign to users<span class="text-danger">*</span></label>
-                        <select class="form-select users-select" name="user_ids[]" multiple="multiple">
-                            @foreach($users as $user)
-                            <option value="{{ $user->id }}">{{ $user->fname }} {{ $user->lname }}</option>
+                        <label for="users" class="form-label">Assign to Group<span class="text-danger">*</span></label>
+                        <select class="form-select group-select" name="group" id="edit_group">
+                        <option value="">Select Group</option>
+                            @foreach($groups as $group)
+                            <option value="{{ $group->id }}">{{ $group->name }}</option>
                             @endforeach
                         </select>
                         <div id="user_ids_error" class="text-danger error_e"></div>
@@ -240,7 +242,7 @@
 
 <script>
 $(document).ready(function() {
-    $('#courseTable').DataTable();
+    $('#documemtTable').DataTable();
 
     $("#createDocument").on('click', function(){
         $(".error_e").html('');
@@ -292,6 +294,7 @@ $(document).ready(function() {
                 $('#edit_issue_date').val(response.document.issue_date);
                 $('#edit_expiry_date').val(response.document.expiry_date);
                 $('#edit_folder').val(response.document.folder_id);
+                $('#edit_group').val(response.document.group_id);
                 $('#edit_status').val(response.document.status);
 
                 $('#editDocumentModal').modal('show');

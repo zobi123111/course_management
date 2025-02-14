@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\User;
 class Group extends Model
 {
     use HasFactory;
-
-    protected $fillable = ['name', 'user_ids', 'status'];
+    use SoftDeletes;
+    protected $fillable = ['ou_id', 'name', 'user_ids', 'status'];
 
     protected $casts = [
         'user_ids' => 'array', // Automatically converts JSON to array

@@ -114,6 +114,29 @@
                         </select>
                         <div id="status_error" class="text-danger error_e"></div>            
                     </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Task Based Grading<span class="text-danger">*</span></label>
+                        <select class="form-select" name="task_grading" aria-label="Default select example">
+                            <option value="" >Select Garding</option>
+                            <option value="N/A" >N/A</option>
+                            <option value="Passed">Passed</option>
+                            <option value="Further Training Required">Further Training Required</option>
+                            <option value="Defer">Defer</option>
+                        </select>
+                        <div id="status_error" class="text-danger error_e"></div>            
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Competency Based Grading<span class="text-danger">*</span></label>
+                        <select class="form-select" name="comp_grading" aria-label="Default select example">
+                            <option value="" >Select Garding</option>
+                            <option value="1" >1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                        <div id="status_error" class="text-danger error_e"></div>            
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="submitLesson" class="btn btn-primary sbt_btn">Save </button>
