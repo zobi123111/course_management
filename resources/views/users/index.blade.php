@@ -187,7 +187,7 @@
                                 <span class="star" data-value="4">&#9733;</span>
                                 <span class="star" data-value="5">&#9733;</span>
                             </div>
-                            <input type="hidden" name="rating" id="rating_value" value="0">
+                            <input type="hidden" name="rating" id="rating_value" value="">
                             <div id="rating_error" class="text-danger error_e"></div>
                         </div>
                     </div>
@@ -213,6 +213,19 @@
                         <div id="custom_field_value_error" class="text-danger error_e"></div>
                     </div>
                     
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                        <div class="form-group">
+                            <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                            <select class="form-select" name="ou_id" aria-label="Default select example">
+                                <option value="">Select Org Unit</option>
+                                @foreach($urganizationUnits as $val)
+                                <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                                @endforeach
+                            </select>
+                            <div id="ou_id_error" class="text-danger error_e"></div>            
+                        </div>
+                    @endif
+
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" aria-label="Default select example">
@@ -317,7 +330,7 @@
                                 <span class="star" data-value="4">&#9733;</span>
                                 <span class="star" data-value="5">&#9733;</span>
                             </div>
-                            <input type="hidden" name="edit_rating" id="edit_rating_value" value="0">
+                            <input type="hidden" name="edit_rating" id="edit_rating_value" value="">
                             <div id="edit_rating_error_up" class="text-danger error_e"></div>
                         </div>
                     </div>
@@ -339,6 +352,19 @@
                         <input type="text" name="edit_custom_field_value" id="edit_custom_field_value" style="display: none;" class="form-control mt-3" placeholder="Enter Custom Field Value">
                         <div id="edit_custom_field_value_error_up" class="text-danger error_e"></div>
                     </div>
+
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                        <div class="form-group">
+                            <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                            <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
+                                <option value="">Select Org Unit</option>
+                                @foreach($urganizationUnits as $val)
+                                <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                                @endforeach
+                            </select>
+                            <div id="ou_id_error" class="text-danger error_e"></div>            
+                        </div>
+                    @endif
 
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
@@ -545,7 +571,7 @@
                 $('#edit_ratings').show().prop('required', true);
             } else {
                 $('#edit_ratings').hide().prop('required', false);
-                $('#edit_ratings').val('');
+                $('#edit_rating_value').val('');
                 $('#edit_ratings_error_up').hide().prop('required', false);
             }
         });
@@ -607,6 +633,7 @@
                     $('input[name="edit_lastname"]').val(response.user.lname);
                     $('input[name="edit_email"]').val(response.user.email);
                     $('input[name="edit_form_id"]').val(response.user.id);
+                    $('#edit_ou_id').val(response.user.ou_id);
                     $('#edit_status').val(response.user.status);
 
                     // Primary role
@@ -654,6 +681,8 @@
                         } else {
                             $('#edit_rating_checkbox').prop('checked', false);
                             $('#edit_ratings').hide();
+                            $('#edit_ratings').val('')
+                            $('#edit_rating_value').val('');
                         }
 
                         // Set currency checkbox and field

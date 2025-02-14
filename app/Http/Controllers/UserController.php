@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\OrganizationUnits;
 use App\Models\Role;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
@@ -16,6 +17,7 @@ class UserController extends Controller
     public function users()
     {
        $ou_id =  auth()->user()->ou_id;
+       $urganizationUnits = OrganizationUnits::all();
        if(empty($ou_id)){
            $users = User::all();
         }else{
@@ -23,7 +25,7 @@ class UserController extends Controller
        }
        $roles = Role::all();
 
-        return view('users.index', compact('users', 'roles'));
+        return view('users.index', compact('users', 'roles', 'urganizationUnits'));
     }
 
     public function save_user(Request $request)
@@ -36,6 +38,13 @@ class UserController extends Controller
             'image' => 'required',
             'password' => 'required|min:6|confirmed',
             'status' => 'required',
+            'ou_id' => [
+                function ($attribute, $value, $fail) {
+                    if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
+                        $fail('The Organizational Unit (OU) is required for Super Admin.');
+                    }
+                }
+            ]
         ]);
 
 
@@ -72,10 +81,10 @@ class UserController extends Controller
             ]);
         }
     
-        $currentUser = auth()->user();
+        // $currentUser = auth()->user();
     
-        // Check if the logged-in user has an 'ouid'
-        $ouid = $currentUser && $currentUser->ou_id ? $currentUser->ou_id : null;
+        // // Check if the logged-in user has an 'ouid'
+        // $ouid = $currentUser && $currentUser->ou_id ? $currentUser->ou_id : null;
     
 
         if ($request->hasFile('image')) {
@@ -105,7 +114,7 @@ class UserController extends Controller
             "custom_field_name" => $request->custom_field_name ?? null,
             "custom_field_value" => $request->custom_field_value ?? null,
             'status' => $request->status,
-            "ou_id" => $ouid // Assigning the same 'ouid' as the logged-in user
+            "ou_id" => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
         );
     
         $store = User::create($store_user);
@@ -136,12 +145,14 @@ class UserController extends Controller
             'edit_lastname' => 'required',
             'edit_email' => 'required|email',
             'edit_role_name' => 'required',
-            'status' => 'required'
-        ], [
-            'edit_firstname.required' => 'The First Name is required',
-            'edit_lastname.required' => 'The Last Name is required',
-            'edit_email.required' => 'The Email is required',
-            'edit_email.email' => 'Please enter a valid Email'
+            'status' => 'required',
+            'ou_id' => [
+                function ($attribute, $value, $fail) {
+                    if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
+                        $fail('The Organizational Unit (OU) is required for Super Admin.');
+                    }
+                }
+            ]
         ]);
         
         if ($request->hasFile('image')) {
@@ -223,6 +234,7 @@ class UserController extends Controller
             'currency' => $request->edit_currency ?? null,
             'custom_field_name' => $request->edit_custom_field_name ?? null,
             'custom_field_value' => $request->edit_custom_field_value ?? null,
+            "ou_id" => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
        
         ]);
         return response()->json(['success' => true,'message' => "User data updated successfully"]);
