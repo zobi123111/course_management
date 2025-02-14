@@ -14,7 +14,11 @@
 <div class="card mb-3">
     <div class="row g-0">
         <div class="col-md-4">
-        <img src="{{  url('assets/img/card.jpg')  }}" class="img-fluid rounded-start" alt="...">
+            @if($course->image)
+                <img src="{{ asset('storage/' . $course->image) }}" class="img-fluid rounded-start" alt="Course Image">
+            @else
+                <img src="{{  url('assets/img/card.jpg')  }}" class="img-fluid rounded-start" alt="...">
+            @endif
         </div>
         <div class="col-md-8">
             <div class="card-body">
@@ -92,6 +96,17 @@
                         <div id="description_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
+                        <label for="comment_required" class="form-label">
+                            Require Comment
+                        </label>
+                        <input type="checkbox" id="comment_required" name="comment_required">
+                    </div>
+                    <div class="form-group" id="comment_container" style="display: none;">
+                        <label for="comment" class="form-label">Comment<span class="text-danger">*</span></label>
+                        <textarea class="form-control" name="comment" rows="3"></textarea>
+                        <div id="comment_error" class="text-danger error_e"></div>
+                    </div>                    
+                    <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" aria-label="Default select example">
                             <option value="1" selected>Active</option>
@@ -131,7 +146,18 @@
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="edit_description" id="edit_description" rows="3"></textarea>
                         <div id="description_error_up" class="text-danger error_e"></div>
-                    </div>
+                    </div>     
+                    <div class="form-group">
+                        <label for="comment_required" class="form-label">
+                            Require Comment
+                        </label>
+                        <input type="checkbox" id="edit_comment_required" name="edit_comment_required">
+                    </div>                             
+                    <div class="form-group">
+                        <label for="comment" class="form-label">Comment<span class="text-danger">*</span></label>
+                        <textarea class="form-control" name="edit_comment" id="edit_comment" rows="3"></textarea>
+                        <div id="comment_error" class="text-danger error_e"></div>
+                    </div>                    
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="edit_status" id="edit_status" aria-label="Default select example">
@@ -182,6 +208,27 @@
 <script>
 $(document).ready(function() {
 
+    // $("#comment_required").on('change', function() {
+    //     var commentContainer = $("#comment_container");
+    //     if ($(this).is(":checked")) {
+    //         commentContainer.show();
+    //     } else {
+    //         commentContainer.hide();
+    //     }
+    // })
+
+    $("#comment_required").on('change', function() {
+        var commentContainer = $("#comment_container");
+        var commentField = $("textarea[name='comment']");
+        if ($(this).is(":checked")) {
+            commentContainer.show();
+            commentField.prop("required", true);
+        } else {
+            commentContainer.hide();
+            commentField.prop("required", false);
+        }
+    });
+
     $("#createLesson").on('click', function(){
         $(".error_e").html('');
         $("#lesson")[0].reset();
@@ -225,6 +272,22 @@ $(document).ready(function() {
                 $('input[name="lesson_id"]').val(response.lesson.id);
                 $('#edit_description').val(response.lesson.description);
                 $('#edit_status').val(response.lesson.status);
+                
+                if (response.lesson.comment) {
+                    $('#edit_comment').val(response.lesson.comment);
+                    $('#edit_comment').closest('.form-group').show();
+                } else {
+                    $('#edit_comment').val('');
+                    $('#edit_comment').closest('.form-group').hide();
+                }
+
+                if (response.lesson.comment) {
+                    $('#edit_comment_required').prop('checked', true);
+                    $('#edit_comment').prop('required', true);
+                } else {
+                    $('#edit_comment_required').prop('checked', false);
+                    $('#edit_comment').prop('required', false);
+                }
 
                 $('#editLessonModal').modal('show');
             },
@@ -232,6 +295,17 @@ $(document).ready(function() {
                 console.error(xhr.responseText);
             }
         });
+    });
+
+    $('#edit_comment_required').change(function() {
+        if ($(this).prop('checked')) {
+            $('#edit_comment').prop('required', true);
+            $('#edit_comment').closest('.form-group').show();
+        } else {
+            $('#edit_comment').prop('required', false);
+            $('#edit_comment').closest('.form-group').hide();
+            $('#edit_comment').val(null);
+        }
     });
 
     $('#updateLesson').on('click', function(e){
