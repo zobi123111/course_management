@@ -153,7 +153,7 @@
                             @endforeach
                         </select>
                         <div id="role_name_error" class="text-danger error_e"></div>
-                    </div>
+                    </div>                    
                     <!-- Licence -->
                     <div class="form-group">
                         <label for="licence_checkbox" class="form-label">Licence</label>
@@ -212,7 +212,18 @@
                         <input type="text" name="custom_field_value" id="custom_field_value" style="display: none;" class="form-control mt-3" placeholder="Enter Custom Field Value">
                         <div id="custom_field_value_error" class="text-danger error_e"></div>
                     </div>
-                    
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ou_id" aria-label="Default select example">
+                            <option value="">Select Org Unit</option>
+                            @foreach($urganizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                    </div>
+                    @endif
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" aria-label="Default select example">
@@ -282,7 +293,7 @@
 
                         </select>
                         <div id="edit_role_name_error_up" class="text-danger error_e"></div>
-                    </div>
+                    </div>                                       
 
                     <!-- Licence -->
                     <div class="form-group">
@@ -339,7 +350,18 @@
                         <input type="text" name="edit_custom_field_value" id="edit_custom_field_value" style="display: none;" class="form-control mt-3" placeholder="Enter Custom Field Value">
                         <div id="edit_custom_field_value_error_up" class="text-danger error_e"></div>
                     </div>
-
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
+                            <option value="">Select Org Unit</option>
+                            @foreach($urganizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                    </div>
+                    @endif
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
@@ -474,40 +496,38 @@
         });
 
         $('#saveuser').click(function(e) {
-            e.preventDefault();
-            // $('#loader').show();
-            $(".loader").fadeIn();
-
-            $('.error_e').html('');
-
-            var formData = new FormData($('#Create_user')[0]);
-
-            $.ajax({
-                url: '{{ url("/users/save") }}',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    // $('#loader').hide();
-                    $(".loader").fadeOut("slow");
-                    
-                console.log(response);
-                    $('#userModal').modal('hide');
-                    location.reload();
-                },
-                error: function(xhr, status, error) {
-                    // $('#loader').hide();
-                    $(".loader").fadeOut("slow");
-                    var errorMessage = JSON.parse(xhr.responseText);
-                    var validationErrors = errorMessage.errors;
-                    $.each(validationErrors, function(key, value) {
-                        var html1 = '<p>' + value + '</p>';
-                        $('#' + key + '_error').html(html1);
+                    e.preventDefault();
+                    // $('#loader').show();
+                    $(".loader").fadeIn();
+        
+                    $('.error_e').html('');
+        
+                    var formData = new FormData($('#Create_user')[0]);
+        
+                    $.ajax({
+                        url: '{{ url("/users/save") }}',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(response) {
+                            // $('#loader').hide();
+                            $(".loader").fadeOut("slow");
+                            $('#userModal').modal('hide');
+                            location.reload();
+                        },
+                        error: function(xhr, status, error) {
+                            // $('#loader').hide();
+                            $(".loader").fadeOut("slow");
+                            var errorMessage = JSON.parse(xhr.responseText);
+                            var validationErrors = errorMessage.errors;
+                            $.each(validationErrors, function(key, value) {
+                                var html1 = '<p>' + value + '</p>';
+                                $('#' + key + '_error').html(html1);
+                            });
+                        }
                     });
-                }
-            });
-        });
+                });
 
 
         // edit 
@@ -607,6 +627,7 @@
                     $('input[name="edit_lastname"]').val(response.user.lname);
                     $('input[name="edit_email"]').val(response.user.email);
                     $('input[name="edit_form_id"]').val(response.user.id);
+                    $('#edit_ou_id').val(response.user.ou_id);
                     $('#edit_status').val(response.user.status);
 
                     // Primary role
