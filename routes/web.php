@@ -63,7 +63,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/course/show/{course_id}', [CourseController::class, 'showCourse'])->name('course.show');
 
     //Lesson 
-    Route::post('/lesson/create', [CourseController::class, 'showLesson'])->name('lesson.store');
+    Route::post('/lesson/create', [CourseController::class, 'createLesson'])->name('lesson.store');
     Route::get('/lesson/edit', [CourseController::class, 'getLesson'])->name('lesson.edit');
     Route::post('/lesson/update', [CourseController::class, 'updateLesson'])->name('lesson.update');
     Route::post('/lesson/delete', [CourseController::class, 'deleteLesson'])->name('lesson.delete');
@@ -82,6 +82,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/document/update', [DocumentController::class, 'updateDocument'])->name('document.update');
     Route::post('/document/delete', [DocumentController::class, 'deleteDocument'])->name('document.delete');
     Route::get('/document/show/{doc_id}', [DocumentController::class, 'showDocument'])->name('document.show');
+    Route::post('/document/acknowledge', [DocumentController::class, 'acknowledgeDocument'])->name('document.acknowledge');
     
     //Folders Route
     Route::get('/folders', [FolderController::class, 'index'])->name('folder.index');

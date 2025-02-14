@@ -81,11 +81,6 @@ class UserController extends Controller
             ]);
         }
     
-        // $currentUser = auth()->user();
-    
-        // // Check if the logged-in user has an 'ouid'
-        // $ouid = $currentUser && $currentUser->ou_id ? $currentUser->ou_id : null;
-    
 
         if ($request->hasFile('image')) {
             $filePath = $request->file('image')->store('users', 'public');
@@ -138,215 +133,113 @@ class UserController extends Controller
 
         // dd($request->all());
         $userToUpdate = User::find($request->edit_form_id);
-        if($userToUpdate){
-        
-        $validatedData = $request->validate([
-            'edit_firstname' => 'required',
-            'edit_lastname' => 'required',
-            'edit_email' => 'required|email',
-            'edit_role_name' => 'required',
-            'status' => 'required',
-            'ou_id' => [
-                function ($attribute, $value, $fail) {
-                    if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
-                        $fail('The Organizational Unit (OU) is required for Super Admin.');
+            if($userToUpdate){
+                $validatedData = $request->validate([
+                'edit_firstname' => 'required',
+                'edit_lastname' => 'required',
+                'edit_email' => 'required|email',
+                'edit_role_name' => 'required',
+                'status' => 'required',
+                'ou_id' => [
+                    function ($attribute, $value, $fail) {
+                        if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
+                            $fail('The Organizational Unit (OU) is required for Super Admin.');
+                        }
                     }
-                }
-            ]
-        ]);
-        
-        if ($request->hasFile('image')) {
-            if ($userToUpdate->image) {
-                Storage::disk('public')->delete($userToUpdate->image);
-            }
-    
-            $filePath = $request->file('image')->store('users', 'public');
-        } else {
-            $filePath = $userToUpdate->image;
-        }
-
-
-        if ($request->has('edit_licence_checkbox') && $request->edit_licence_checkbox) {
-            $request->validate([
-                'edit_licence' => 'required|string',
-            ]);
-            if ($request->hasFile('edit_licence_file')) {
-                if ($userToUpdate->licence_file) {
-                    Storage::disk('public')->delete($userToUpdate->licence_file);
-                }
-                $licenceFilePath = $request->file('edit_licence_file')->store('licence_files', 'public');
-            } else {
-                $licenceFilePath = $userToUpdate->licence_file;
-            }
-        } else {
-            $licenceFilePath = $userToUpdate->licence_file;
-        }
-
-        // Handle Passport Upload
-        if ($request->has('edit_passport_checkbox') && $request->edit_passport_checkbox) {
-            $request->validate([
-                'edit_passport' => 'required|string',
-            ]);
-            if ($request->hasFile('edit_passport_file')) {
-                if ($userToUpdate->passport_file) {
-                    Storage::disk('public')->delete($userToUpdate->passport_file);
-                }
-                $passportFilePath = $request->file('edit_passport_file')->store('passport_files', 'public');
-            } else {
-                $passportFilePath = $userToUpdate->passport_file;
-            }
-        } else {
-            $passportFilePath = $userToUpdate->passport_file;
-        }
-
-        if ($request->has('edit_rating_checkbox') && $request->edit_rating_checkbox) {
-            $request->validate([
-                'edit_rating' => 'required|integer|min:1|max:5',
-            ]);
-        }
-
-        if ($request->has('edit_currency_checkbox') && $request->edit_currency_checkbox) {
-            $request->validate([
-                'edit_currency' => 'required|string',
-            ]);
-        }
-
-        if ($request->has('edit_custom_field_checkbox') && $request->edit_custom_field_checkbox) {
-            $request->validate([
-                'edit_custom_field_name' => 'required|string',
-                'edit_custom_field_value' => 'required|string',
-            ]);
-        }
-
-        $userToUpdate->where('id', $request->edit_form_id)
-        ->update([
-            'Fname' => $validatedData['edit_firstname'],
-            'Lname' => $validatedData['edit_lastname'],
-            'email' => $validatedData['edit_email'], 
-            'image' => $filePath,
-            'role' => $validatedData['edit_role_name'],
-            'status' => $validatedData['status'],
-            'licence' => $request->edit_licence ?? null,
-            'licence_file' => $licenceFilePath  ?? null,
-            'passport' => $request->edit_passport  ?? null,
-            'passport_file' => $passportFilePath  ?? null,
-            'rating' => $request->edit_rating ?? null,
-            'currency' => $request->edit_currency ?? null,
-            'custom_field_name' => $request->edit_custom_field_name ?? null,
-            'custom_field_value' => $request->edit_custom_field_value ?? null,
-            "ou_id" => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
-       
-        ]);
-        return response()->json(['success' => true,'message' => "User data updated successfully"]);
-    }
-    }
-
-        // public function update(Request $request)
-        // {
-        //     $userToUpdate = User::find($request->edit_form_id);
+                ]
+                ], [
+                    'edit_firstname.required' => 'The First Name is required',
+                    'edit_lastname.required' => 'The Last Name is required',
+                    'edit_email.required' => 'The Email is required',
+                    'edit_email.email' => 'Please enter a valid Email'
+                ]);
             
-        //     if($userToUpdate) {
-        //         // Validation
-        //         $validatedData = $request->validate([
-        //             'edit_firstname' => 'required',
-        //             'edit_lastname' => 'required',
-        //             'edit_email' => 'required|email',
-        //             'edit_role_name' => 'required',
-        //             'status' => 'required'
-        //         ], [
-        //             'edit_firstname.required' => 'The First Name is required',
-        //             'edit_lastname.required' => 'The Last Name is required',
-        //             'edit_email.required' => 'The Email is required',
-        //             'edit_email.email' => 'Please enter a valid Email'
-        //         ]);
-                
-        //         // Handle Image Upload
-        //         if ($request->hasFile('image')) {
-        //             if ($userToUpdate->image) {
-        //                 // Delete the old image file if it exists
-        //                 Storage::disk('public')->delete($userToUpdate->image);
-        //             }
-        //             // Upload the new image file
-        //             $imagePath = $request->file('image')->store('users', 'public');
-        //         } else {
-        //             // If no new image is uploaded, retain the old image
-        //             $imagePath = $userToUpdate->image;
-        //         }
-        
-        //         // Handle Licence Upload
-        //         if ($request->has('edit_licence_checkbox') && $request->edit_licence_checkbox) {
-        //             $request->validate([
-        //                 'edit_licence' => 'required|string',
-        //                 'edit_licence_file' => 'required|mimes:pdf,jpg,jpeg,png',
-        //             ]);
-        //             if ($request->hasFile('edit_licence_file')) {
-        //                 if ($userToUpdate->licence_file) {
-        //                     // Delete old licence file if exists
-        //                     Storage::disk('public')->delete($userToUpdate->licence_file);
-        //                 }
-        //                 $licenceFilePath = $request->file('edit_licence_file')->store('licence_files', 'public');
-        //             } else {
-        //                 // If no file uploaded, retain the old licence file
-        //                 $licenceFilePath = $userToUpdate->licence_file;
-        //             }
-        //         } else {
-        //             // If licence checkbox is not checked, retain the old licence file
-        //             $licenceFilePath = $userToUpdate->licence_file;
-        //         }
-        
-        //         // Handle Passport Upload
-        //         if ($request->has('edit_passport_checkbox') && $request->edit_passport_checkbox) {
-        //             $request->validate([
-        //                 'edit_passport' => 'required|string',
-        //                 'edit_passport_file' => 'required|mimes:pdf,jpg,jpeg,png',
-        //             ]);
-        //             if ($request->hasFile('edit_passport_file')) {
-        //                 if ($userToUpdate->passport_file) {
-        //                     // Delete old passport file if exists
-        //                     Storage::disk('public')->delete($userToUpdate->passport_file);
-        //                 }
-        //                 $passportFilePath = $request->file('edit_passport_file')->store('passport_files', 'public');
-        //             } else {
-        //                 // If no file uploaded, retain the old passport file
-        //                 $passportFilePath = $userToUpdate->passport_file;
-        //             }
-        //         } else {
-        //             // If passport checkbox is not checked, retain the old passport file
-        //             $passportFilePath = $userToUpdate->passport_file;
-        //         }
-        
-        //         // Handle Rating (no file associated with rating, just store the rating value)
-        //         $ratingValue = $request->has('edit_rating_checkbox') && $request->edit_rating_checkbox ? $request->edit_rating : $userToUpdate->rating;
-        
-        //         // Handle Currency (no file associated with currency, just store the currency value)
-        //         $currencyValue = $request->has('edit_currency_checkbox') && $request->edit_currency_checkbox ? $request->edit_currency : $userToUpdate->currency;
-        
-        //         // Handle Custom Field (no file associated with custom field, just store the field values)
-        //         $customFieldName = $request->has('edit_custom_field_checkbox') && $request->edit_custom_field_checkbox ? $request->edit_custom_field_name : $userToUpdate->custom_field_name;
-        //         $customFieldValue = $request->has('edit_custom_field_checkbox') && $request->edit_custom_field_checkbox ? $request->edit_custom_field_value : $userToUpdate->custom_field_value;
-        
-        //         // Update the User Record
-        //         $userToUpdate->update([
-        //             'Fname' => $validatedData['edit_firstname'],
-        //             'Lname' => $validatedData['edit_lastname'],
-        //             'email' => $validatedData['edit_email'], 
-        //             'image' => $imagePath,
-        //             'role' => $validatedData['edit_role_name'],
-        //             'status' => $validatedData['status'],
-        //             'licence' => $request->edit_licence,
-        //             'licence_file' => $licenceFilePath,
-        //             'passport' => $request->edit_passport,
-        //             'passport_file' => $passportFilePath,
-        //             'currency' => $currencyValue,
-        //             'custom_field_name' => $customFieldName,
-        //             'custom_field_value' => $customFieldValue,
-        //         ]);
-        
-        //         return response()->json(['success' => true, 'message' => "User data updated successfully"]);
-        //     }
-        
-        //     return response()->json(['success' => false, 'message' => 'User not found'], 404);
-        // }
+                if ($request->hasFile('image')) {
+                    if ($userToUpdate->image) {
+                        Storage::disk('public')->delete($userToUpdate->image);
+                    }
+            
+                    $filePath = $request->file('image')->store('users', 'public');
+                } else {
+                    $filePath = $userToUpdate->image;
+                }
+
+
+                if ($request->has('edit_licence_checkbox') && $request->edit_licence_checkbox) {
+                    $request->validate([
+                        'edit_licence' => 'required|string',
+                    ]);
+                    if ($request->hasFile('edit_licence_file')) {
+                        if ($userToUpdate->licence_file) {
+                            Storage::disk('public')->delete($userToUpdate->licence_file);
+                        }
+                        $licenceFilePath = $request->file('edit_licence_file')->store('licence_files', 'public');
+                    } else {
+                        $licenceFilePath = $userToUpdate->licence_file;
+                    }
+                } else {
+                    $licenceFilePath = $userToUpdate->licence_file;
+                }
+
+                // Handle Passport Upload
+                if ($request->has('edit_passport_checkbox') && $request->edit_passport_checkbox) {
+                    $request->validate([
+                        'edit_passport' => 'required|string',
+                    ]);
+                    if ($request->hasFile('edit_passport_file')) {
+                        if ($userToUpdate->passport_file) {
+                            Storage::disk('public')->delete($userToUpdate->passport_file);
+                        }
+                        $passportFilePath = $request->file('edit_passport_file')->store('passport_files', 'public');
+                    } else {
+                        $passportFilePath = $userToUpdate->passport_file;
+                    }
+                } else {
+                    $passportFilePath = $userToUpdate->passport_file;
+                }
+
+                if ($request->has('edit_rating_checkbox') && $request->edit_rating_checkbox) {
+                    $request->validate([
+                        'edit_rating' => 'required|integer|min:1|max:5',
+                    ]);
+                }
+
+                if ($request->has('edit_currency_checkbox') && $request->edit_currency_checkbox) {
+                    $request->validate([
+                        'edit_currency' => 'required|string',
+                    ]);
+                }
+
+                if ($request->has('edit_custom_field_checkbox') && $request->edit_custom_field_checkbox) {
+                    $request->validate([
+                        'edit_custom_field_name' => 'required|string',
+                        'edit_custom_field_value' => 'required|string',
+                    ]);
+                }
+
+                $userToUpdate->where('id', $request->edit_form_id)
+                ->update([
+                    'Fname' => $validatedData['edit_firstname'],
+                    'Lname' => $validatedData['edit_lastname'],
+                    'email' => $validatedData['edit_email'], 
+                    'image' => $filePath,
+                    'role' => $validatedData['edit_role_name'],
+                    'status' => $validatedData['status'],
+                    "ou_id" => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
+                    'licence' => $request->edit_licence ?? null,
+                    'licence_file' => $licenceFilePath  ?? null,
+                    'passport' => $request->edit_passport  ?? null,
+                    'passport_file' => $passportFilePath  ?? null,
+                    'rating' => $request->edit_rating ?? null,
+                    'currency' => $request->edit_currency ?? null,
+                    'custom_field_name' => $request->edit_custom_field_name ?? null,
+                    'custom_field_value' => $request->edit_custom_field_value ?? null,
+            
+                ]);
+                return response()->json(['success' => true,'message' => "User data updated successfully"]);
+        }
+    }
+
     
 
 

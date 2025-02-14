@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Courses;
+use App\Models\OrganizationUnits;
 use App\Models\CourseLesson;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -15,8 +16,13 @@ class CourseController extends Controller
     public function index()
     {
         $ouId = Auth::user()->ou_id;
-        $courses = Courses::where('ou_id', $ouId)->get();
-        return view('courses.index',compact('courses'));
+        if(Auth::user()->role==1 && empty(Auth::user()->ou_id)){
+            $courses = Courses::all();
+        }else{            
+            $courses = Courses::where('ou_id', $ouId)->get();
+        }
+        $urganizationUnits = OrganizationUnits::all();
+        return view('courses.index',compact('courses','urganizationUnits'));
     }
 
     public function create_course()
@@ -31,7 +37,14 @@ class CourseController extends Controller
             'course_name' => 'required',
             'description' => 'required',
             'image' => 'required',
-            'status' => 'required|boolean'
+            'status' => 'required|boolean',
+            'ou_id' => [
+                function ($attribute, $value, $fail) {
+                    if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
+                        $fail('The Organizational Unit (OU) is required for Super Admin.');
+                    }
+                }
+            ]
         ]);
 
         if ($request->hasFile('image')) {
@@ -39,7 +52,7 @@ class CourseController extends Controller
         }
 
         Courses::create([
-            'ou_id' => auth()->user()->ou_id,
+            'ou_id' =>  (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
             'course_name' => $request->course_name,
             'description' => $request->description,
             'image' => $filePath ?? null,
@@ -64,7 +77,14 @@ class CourseController extends Controller
         $request->validate([
             'course_name' => 'required',
             'description' => 'required',
-            'status' => 'required'
+            'status' => 'required',
+            'ou_id' => [
+                function ($attribute, $value, $fail) {
+                    if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
+                        $fail('The Organizational Unit (OU) is required for Super Admin.');
+                    }
+                }
+            ]
         ]);
 
         $courses = Courses::findOrFail($request->course_id);
@@ -81,6 +101,7 @@ class CourseController extends Controller
 
         $course = Courses::findOrFail($request->course_id);
         $course->update([
+            'ou_id' =>  (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
             'course_name' => $request->course_name,
             'description' => $request->description,
             'image' => $filePath,
