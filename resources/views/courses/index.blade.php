@@ -43,8 +43,9 @@
                 <td>{{ $val->description}}</td>
                 <td>
                     @if($val->image)
-                        <img src="{{ asset('storage/' . $val->image) }}" alt="Course Image" width="100px"></td>               
+                        <img src="{{ asset('storage/' . $val->image) }}" alt="Course Image" width="100px">
                     @endif
+                </td>               
                 <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
                 @if(checkAllowedModule('courses','course.edit')->isNotEmpty())
                     <td><i class="fa fa-edit edit-course-icon" style="font-size:25px; cursor: pointer;" data-course-id="{{ encode_id($val->id) }}" ></i></td>

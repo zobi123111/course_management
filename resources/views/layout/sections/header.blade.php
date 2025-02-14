@@ -20,17 +20,21 @@
 
                   <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
                       <img src="assets/img/profile-img.jpg" alt="Profile" class="rounded-circle">
-                      <span class="d-none d-md-block dropdown-toggle ps-2"> @if(Auth::check())
-                          {{ Auth::user()->fname }} {{ Auth::user()->lname }}
-                          @endif</span>
+                        <span class="d-none d-md-block dropdown-toggle ps-2"> 
+                            @if(Auth::check())
+                                {{ Auth::user()->fname }} {{ Auth::user()->lname }}
+                            @endif
+                        </span>
                   </a><!-- End Profile Iamge Icon -->
 
                   <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
                       <li class="dropdown-header">
-                          <h6>@if(Auth::check())
-                              {{ Auth::user()->fname }} {{ Auth::user()->lname }}
-                              @endif</h6>
-                          <!-- <span>Admin</span> -->
+                            <h6>
+                                @if(Auth::check())
+                                {{ Auth::user()->fname }} {{ Auth::user()->lname }}
+                                @endif
+                            </h6>
+                          <span>{{ Auth::user()->roles->role_name }}</span>
                       </li>
                       <li>
                           <hr class="dropdown-divider">
