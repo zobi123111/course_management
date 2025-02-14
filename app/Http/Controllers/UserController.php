@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\OrganizationUnits;
 use App\Models\Role;
 use App\Models\OrganizationUnits;
 use Illuminate\Support\Facades\Session;
@@ -81,10 +82,6 @@ class UserController extends Controller
             ]);
         }
     
-        // Get the current logged-in user
-        // $currentUser = auth()->user();
-    
-        // Check if the logged-in user has an 'ouid'
         // $ouid = $currentUser && $currentUser->ou_id ? $currentUser->ou_id : null;
     
 
@@ -139,6 +136,7 @@ class UserController extends Controller
 
         // dd($request->all());
         $userToUpdate = User::find($request->edit_form_id);
+
             if($userToUpdate){
                 $validatedData = $request->validate([
                 'edit_firstname' => 'required',
@@ -223,6 +221,7 @@ class UserController extends Controller
                     ]);
                 }
 
+
                 $userToUpdate->where('id', $request->edit_form_id)
                 ->update([
                     'Fname' => $validatedData['edit_firstname'],
@@ -244,6 +243,7 @@ class UserController extends Controller
                 ]);
                 return response()->json(['success' => true,'message' => "User data updated successfully"]);
         }
+
     }
 
     
