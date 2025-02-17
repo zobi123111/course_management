@@ -9,8 +9,8 @@
     {{ session()->get('message') }}
 </div>
 @endif
-<div class="main_cont_outer">
-    <div class="create_btn ">
+<div class="main_cont_outer" >
+    <div class="create_btn " >
         <button class="btn btn-primary create-button" id="createOrgUnit" data-toggle="modal"
             data-target="#orgUnitModal">Create Organizational Unit</button>
     </div>
@@ -22,9 +22,10 @@
                 <th scope="col">Org Unit Name</th>
                 <th scope="col">Description</th>
                 <th scope="col">Status</th>
-                <th scope="col">First Name</th>
+                <!-- <th scope="col">First Name</th>
                 <th scope="col">Last Name</th>
-                <th scope="col">Email</th>
+                <th scope="col">Email</th> -->
+                <th scope="col">Users Count</th>
                 <th scope="col">Edit</th>
                 <th scope="col">Delete</th>
             </tr>
@@ -35,13 +36,20 @@
                 <td class="orgUnitName">{{ $val->org_unit_name}}</td>
                 <td>{{ $val->description}}</td>
                 <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
-                <td>{{ $val->fname}}</td>
+                <!-- <td>{{ $val->fname}}</td>
                 <td>{{ $val->lname}}</td>
-                <td>{{ $val->email}}</td>
+                <td>{{ $val->email}}</td> -->
+                <td>{{ $val->users_count }}</td>
                 <td><i class="fa fa-edit edit-orgunit-icon" style="font-size:25px; cursor: pointer;"
-                        data-orgunit-id="{{ encode_id($val->id) }}" data-user-id="{{ encode_id($val->user_id) }}"></i></td>
+                        data-orgunit-id="{{ encode_id($val->id) }}"
+                        data-user-id="{{ encode_id(optional($val->roleOneUsers)->id) }}">
+                    </i>
+                </td>
                 <td><i class="fa-solid fa-trash delete-icon" style="font-size:25px; cursor: pointer;"
-                        data-orgunit-id="{{ encode_id($val->id) }}" data-user-id="{{ encode_id($val->user_id) }}"></i></td>
+                        data-orgunit-id="{{ encode_id($val->id) }}"
+                        data-user-id="{{ encode_id(optional($val->roleOneUsers)->id) }}">
+                    </i>
+                </td>
             </tr>
             @endforeach
         </tbody>
@@ -80,28 +88,28 @@
                         <div id="status_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="firstname" class="form-label">First Name<span class="text-danger">*</span></label>
+                        <label for="firstname" class="form-label">First Name<span class="text-danger"></span></label>
                         <input type="text" name="firstname" class="form-control">
                         <div id="firstname_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="lastname" class="form-label">Last Name<span class="text-danger">*</span></label>
+                        <label for="lastname" class="form-label">Last Name<span class="text-danger"></span></label>
                         <input type="text" name="lastname" class="form-control">
                         <div id="lastname_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="email" class="form-label">Email<span class="text-danger">*</span></label>
+                        <label for="email" class="form-label">Email<span class="text-danger"></span></label>
                         <input type="email" name="email" class="form-control">
                         <div id="email_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="password" class="form-label">Password<span class="text-danger">*</span></label>
+                        <label for="password" class="form-label">Password<span class="text-danger"></span></label>
                         <input type="password" name="password" class="form-control">
                         <div id="password_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="confirmpassword" class="form-label">Confirm Password<span
-                                class="text-danger">*</span></label>
+                                class="text-danger"></span></label>
                         <input type="password" name="password_confirmation" class="form-control" id="confirmpassword">
                         <div id="password_confirmation_error" class="text-danger error_e"></div>
                     </div>
@@ -109,6 +117,7 @@
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
                         <a href="#" type="button" id="submitOrgUnit" class="btn btn-primary sbt_btn">Save </a>
                     </div>
+                    <div class="loader" style="display: none;"></div>
                 </form>
             </div>
         </div>
@@ -149,25 +158,39 @@
                         <div id="status_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="firstname" class="form-label">First Name<span class="text-danger">*</span></label>
+                        <label for="firstname" class="form-label">First Name<span class="text-danger"></span></label>
                         <input type="text" name="edit_firstname" class="form-control">
                         <input type="hidden" name="user_id" id="user_id" class="form-control">
                         <div id="edit_firstname_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="lastname" class="form-label">Last Name<span class="text-danger">*</span></label>
+                        <label for="lastname" class="form-label">Last Name<span class="text-danger"></span></label>
                         <input type="text" name="edit_lastname" class="form-control">
                         <div id="edit_lastname_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="email" class="form-label">Email<span class="text-danger">*</span></label>
+                        <label for="email" class="form-label">Email<span class="text-danger"></span></label>
                         <input type="email" name="edit_email" class="form-control">
                         <div id="edit_email_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="create_org_admin" style="display: none;">
+                        <div class="form-group">
+                            <label for="password" class="form-label">Password<span class="text-danger"></span></label>
+                            <input type="password" name="password" class="form-control">
+                            <div id="password_error_up" class="text-danger error_e"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmpassword" class="form-label">Confirm Password<span
+                                    class="text-danger"></span></label>
+                            <input type="password" name="password_confirmation" class="form-control" id="confirmpassword">
+                            <div id="password_confirmation_error_up" class="text-danger error_e"></div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
                         <a href="#" type="button" id="updateOrgUnit" class="btn btn-primary sbt_btn">Update</a>
                     </div>
+                    <div class="loader" style="display: none;"></div>
                 </form>
             </div>
         </div>
@@ -218,15 +241,18 @@ $(document).ready(function() {
 
     $("#submitOrgUnit").on("click", function(e) {
         e.preventDefault();
+        $(".loader").fadeIn();
         $.ajax({
             url: '{{ url("/orgunit/save") }}',
             type: 'POST',
             data: $("#orgUnit").serialize(),
             success: function(response) {
+                $(".loader").fadeOut("slow");
                 $('#orgUnitModal').modal('hide');
                 location.reload();
             },
             error: function(xhr, status, error) {
+                $(".loader").fadeOut("slow");
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
                 $.each(validationErrors, function(key, value) {
@@ -240,8 +266,8 @@ $(document).ready(function() {
 
     $('.edit-orgunit-icon').click(function(e) {
         e.preventDefault();
-
         $('.error_e').html('');
+        $("#editOrgUnit")[0].reset();
         var orgUnitId = $(this).data('orgunit-id');
         var userId = $(this).data('user-id');
         $.ajax({
@@ -252,18 +278,21 @@ $(document).ready(function() {
                 userId: userId
             },
             success: function(response) {
-                console.log(response);
-                $('input[name="org_unit_name"]').val(response.organizationUnit
-                    .org_unit_name);
-                $('input[name="org_unit_id"]').val(response.organizationUnit.id);
-                $('#edit_description').val(response.organizationUnit.description);
-                $('#edit_status').val(response.organizationUnit.status);
-                $('input[name="edit_firstname"]').val(response.user.fname);
-                $('input[name="edit_lastname"]').val(response.user.lname);
-                $('input[name="edit_email"]').val(response.user.email);
-                $('input[name="user_id"]').val(response.user.id);
-
-
+                if (response.organizationUnit) {
+                    $('input[name="org_unit_name"]').val(response.organizationUnit.org_unit_name || '');
+                    $('input[name="org_unit_id"]').val(response.organizationUnit.id || '');
+                    $('#edit_description').val(response.organizationUnit.description || '');
+                    $('#edit_status').val(response.organizationUnit.status || '').trigger('change'); // Useful for select fields
+                }
+                if (response.user) {
+                    $('input[name="edit_firstname"]').val(response.user.fname || '');
+                    $('input[name="edit_lastname"]').val(response.user.lname || '');
+                    $('input[name="edit_email"]').val(response.user.email || '');
+                    $('input[name="user_id"]').val(response.user.id || '');
+                    $(".create_org_admin").hide();
+                } else {
+                    $(".create_org_admin").show();
+                }
                 $('#editOrgUnitModal').modal('show');
             },
             error: function(xhr, status, error) {
@@ -274,7 +303,7 @@ $(document).ready(function() {
 
     $('#updateOrgUnit').on('click', function(e) {
         e.preventDefault();
-
+        $(".loader").fadeIn();
         $.ajax({
             url: "{{ url('orgunit/update') }}",
             type: "POST",
@@ -284,6 +313,7 @@ $(document).ready(function() {
                 location.reload();
             },
             error: function(xhr, status, error) {
+                $(".loader").fadeOut('slow');
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
                 $.each(validationErrors, function(key, value) {

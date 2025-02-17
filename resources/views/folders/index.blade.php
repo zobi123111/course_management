@@ -60,6 +60,17 @@
             <div class="modal-body">
                 <form action="" id="folders" method="POST" class="row g-3 needs-validation">
                     @csrf
+                    <!-- Parent Folder Selection -->
+                    <div class="form-group">
+                        <label for="parent_id" class="form-label">Parent Folder</label>
+                        <select class="form-select" name="parent_id" aria-label="Select Parent Folder">
+                            <option value="">No Parent (Root Folder)</option>
+                            @foreach($folders as $folder)
+                                <option value="{{ $folder->id }}">{{ $folder->folder_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="parent_id_error" class="text-danger error_e"></div>
+                    </div>
                     <div class="form-group">
                         <label for="firstname" class="form-label">Folder Name<span class="text-danger">*</span></label>
                         <input type="text" name="folder_name" class="form-control">
