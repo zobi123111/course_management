@@ -12,6 +12,7 @@ use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FolderController;
+use App\Http\Controllers\SubLessonController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,8 +34,14 @@ Route::post('/forgot-password', [LoginController::class, 'forgotPassword'])->nam
 Route::get('/reset/password/{token}', [LoginController::class, 'resetPassword']);
 Route::post('/reset/password', [LoginController::class, 'submitResetPasswordForm'])->name('submit.reset.password');
 
+//change passwword
+// Route::get('change-password', [LoginController::class, 'showChangePasswordForm'])->name('changePassword');
+// Route::post('change-password', [LoginController::class, 'changePassword'])->name('update-password');
 
-// Route::group(['middleware' => ['auth']], function () {
+Route::group(['middleware' => ['auth']], function () {
+    Route::get('change-password', [LoginController::class, 'showChangePasswordForm'])->name('change-password');
+    Route::post('change-password', [LoginController::class, 'changePassword'])->name('update-password');
+});
 
 Route::middleware(['auth', 'role.permission'])->group(function () {
     //Dashboard Route
@@ -65,8 +72,16 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     //Lesson 
     Route::post('/lesson/create', [CourseController::class, 'createLesson'])->name('lesson.store');
     Route::get('/lesson/edit', [CourseController::class, 'getLesson'])->name('lesson.edit');
+    Route::get('/lesson/{id}', [CourseController::class, 'showLesson'])->name('lesson.show');
     Route::post('/lesson/update', [CourseController::class, 'updateLesson'])->name('lesson.update');
     Route::post('/lesson/delete', [CourseController::class, 'deleteLesson'])->name('lesson.delete');
+
+    //Sub-Lesson 
+    Route::post('/sub-lesson/create', [SubLessonController::class, 'createSubLesson'])->name('sub-lesson.store');
+    Route::get('/sub-lesson/edit', [SubLessonController::class, 'getSubLesson'])->name('sub-lesson.edit');
+    Route::get('/sub-lesson/{id}', [SubLessonController::class, 'showSubLesson'])->name('sub-lesson.show');
+    Route::post('/sub-lesson/update', [SubLessonController::class, 'updateSubLesson'])->name('sub-lesson.update');
+    Route::post('/sub-lesson/delete', [SubLessonController::class, 'deleteSubLesson'])->name('sub-lesson.delete');
 
     //Groups Route
     Route::get('/groups', [GroupController::class, 'index'])->name('group.index');

@@ -36,6 +36,7 @@ class User extends Authenticatable
         'custom_field_value',
         'status',
         'password',
+        'password_flag',
         'ou_id',
     ];
 

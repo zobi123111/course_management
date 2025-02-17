@@ -163,6 +163,14 @@ class CourseController extends Controller
         return response()->json(['lesson'=> $lesson]);
     }
 
+    public function showLesson(Request $request)
+    {
+        $lesson = CourseLesson::with('sublessons')->findOrFail(decode_id($request->id));
+
+        // dd($lesson);
+        return view('lesson.show', compact('lesson'));
+    }
+
     //Update course
     public function updateLesson(Request $request)
     {

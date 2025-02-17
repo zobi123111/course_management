@@ -217,6 +217,12 @@ class UserController extends Controller
                     ]);
                 }
 
+
+                if ($request->has('edit_custom_field_checkbox') && $request->edit_custom_field_checkbox) {
+                    $userToUpdate->password_flag = 1;
+                }
+
+                
                 $userToUpdate->where('id', $request->edit_form_id)
                 ->update([
                     'Fname' => $validatedData['edit_firstname'],
@@ -234,11 +240,11 @@ class UserController extends Controller
                     'currency' => $request->edit_currency ?? null,
                     'custom_field_name' => $request->edit_custom_field_name ?? null,
                     'custom_field_value' => $request->edit_custom_field_value ?? null,
-            
+                    'password_flag' => $request->edit_update_password
                 ]);
                 return response()->json(['success' => true,'message' => "User data updated successfully"]);
         }
-    }
+    } 
 
     
 

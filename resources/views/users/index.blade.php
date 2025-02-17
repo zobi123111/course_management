@@ -293,7 +293,15 @@
 
                         </select>
                         <div id="edit_role_name_error_up" class="text-danger error_e"></div>
-                    </div>                                       
+                    </div>       
+                    
+                      <!-- Update Password Checkbox -->
+                    <div class="form-group">
+                        <label for="edit_update_password_checkbox" class="form-label">Update Password</label>
+                        <input type="checkbox" name="edit_update_password_checkbox" id="edit_update_password_checkbox">
+                        <input type="hidden" name="edit_update_password" id="edit_update_password" value="0">
+                    </div>
+
 
                     <!-- Licence -->
                     <div class="form-group">
@@ -647,7 +655,14 @@
                             $('#edit_licence_file').hide().prop('required', false);
                         }
 
+                        if (response.user.password_flag == 1) {
+                            $('#edit_update_password_checkbox').prop('checked', true);
+                        } else {
+                            $('#edit_update_password_checkbox').prop('checked', false);                           
+                        }
+                        
                         // Set passport checkbox and fields
+
                         if (response.user.passport) {
                             $('#edit_passport_checkbox').prop('checked', true);
                             $('#edit_passport').val(response.user.passport).show().prop('required', true);
@@ -712,6 +727,15 @@
                     console.error(xhr.responseText);
                 }
             });
+        });
+
+        document.getElementById('edit_update_password_checkbox').addEventListener('change', function() {
+            var passwordField = document.getElementById('edit_update_password');
+            if (this.checked) {
+                passwordField.value = '1';
+            } else {
+                passwordField.value = '0';
+            }
         });
 
         $('#edit_ratingStars .star').click(function() {
