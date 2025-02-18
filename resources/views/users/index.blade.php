@@ -236,12 +236,6 @@
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
                         <a href="#" type="button" id="saveuser" class="btn btn-primary sbt_btn">Save </a>
                     </div>
-
-                    {{-- <button id="loader" style="display:none" class="btn btn-primary" type="button" disabled="">
-                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                        Loading...
-                  </button> --}}
-
                   <div class="loader" style="display: none;"></div>
                 </form>
             </div>
@@ -260,7 +254,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="" method="POST" id="Create_user3" class="row g-3 needs-validation">
+                <form action="" method="POST" id="editUserForm" class="row g-3 needs-validation">
                     @csrf
                     <div class="form-group">
                         <label for="firstname" class="form-label">First Name<span class="text-danger">*</span></label>
@@ -621,6 +615,7 @@
         $('.edit-user-icon').click(function(e) {
             e.preventDefault();
             $('.error_ee').html('');
+            $("#editUserForm")[0].reset();
             var userId = $(this).data('user-id');
             vdata = {
                 id: userId,
@@ -755,8 +750,8 @@
         // Use event delegation for update form button
         $(document).on('click', '#updateForm', function(e) {
             e.preventDefault();
-
-            var formData = new FormData($('#Create_user3')[0]);
+            $(".loader").fadeIn();
+            var formData = new FormData($('#editUserForm')[0]);
 
             $.ajax({
                 type: 'post',
@@ -765,6 +760,7 @@
                 processData: false,
                 contentType: false,
                 success: function(response) {
+                    $(".loader").fadeOut('slow');
                     $('#editUserDataModal').modal('hide');
                     $('#update_success_msg').html(`
                     <div class="alert alert-success fade show" role="alert">
@@ -775,6 +771,7 @@
                     location.reload();
                 },
                 error: function(xhr, status, error) {
+                    $(".loader").fadeOut('slow');
                     var errorMessage = JSON.parse(xhr.responseText);
                     var validationErrors = errorMessage.errors;
                     $.each(validationErrors, function(key, value) {

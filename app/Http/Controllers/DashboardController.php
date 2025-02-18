@@ -17,12 +17,12 @@ class DashboardController extends Controller
             $user_count = user::count();
             $group_count = Group::count();
             $folder_count = Folder::count();
-            $documents = Document::where('ou_id', Auth::user()->ou_id)->get();
+            $documents = Document::all();
         }else{
             $user_count = user::where('ou_id' , auth()->user()->ou_id)->count();
             $group_count = 0;
             $folder_count = 0;
-            $documents = Document::all();
+            $documents = Document::where('ou_id', Auth::user()->ou_id)->get();
         }
         $totalDocuments = $documents->count();
         $readDocuments = $documents->where('acknowledged', 1)->count();

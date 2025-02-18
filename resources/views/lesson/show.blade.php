@@ -34,13 +34,13 @@
             <div class="d-flex w-100 justify-content-between">
                     <h5 class="mb-1"> {{ $val->title }}</h5>
                 <span>                 
-                {{-- @if(checkAllowedModule('lesson', 'lesson.edit')->isNotEmpty())
+                @if(checkAllowedModule('courses', 'sublesson.edit')->isNotEmpty())
                     <i class="fa fa-edit edit-lesson-icon" style="font-size:18px; cursor: pointer; margin-right: 5px;" data-lesson-id="{{ encode_id($val->id) }}"></i>
                 @endif
-                @if(checkAllowedModule('lesson', 'lesson.delete')->isNotEmpty())
+                @if(checkAllowedModule('courses', 'sublesson.delete')->isNotEmpty())
                     <i class="fa-solid fa-trash delete-lesson-icon" style="font-size:18px; cursor: pointer;"
                     data-lesson-id="{{ encode_id($val->id) }}"></i>
-                @endif --}}
+                @endif
                 </span>
 
             </div>
@@ -64,18 +64,18 @@
                     @csrf
                     <div class="form-group">
                         <label for="sub_lesson_title" class="form-label">Sub-Lesson Title<span class="text-danger">*</span></label>
-                        <input type="text" name="sub_lesson_title" class="form-control" required>
+                        <input type="text" name="sub_lesson_title" class="form-control">
                         <input type="hidden" name="lesson_id" class="form-control" value="{{ $lesson->id }}">
                         <div id="sub_lesson_title_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="sub_description" class="form-label">Description<span class="text-danger">*</span></label>
-                        <textarea class="form-control" name="sub_description" rows="3" required></textarea>
+                        <textarea class="form-control" name="sub_description" rows="3"></textarea>
                         <div id="sub_description_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="sub_status" class="form-label">Status<span class="text-danger">*</span></label>
-                        <select class="form-select" name="sub_status" aria-label="Select status" required>
+                        <select class="form-select" name="sub_status" aria-label="Select status">
                             <option value="1" selected>Active</option>
                             <option value="0">Inactive</option>
                         </select>
@@ -105,18 +105,18 @@
                     @csrf
                     <div class="form-group">
                         <label for="edit_sub_lesson_title" class="form-label">Sub-Lesson Title<span class="text-danger">*</span></label>
-                        <input type="text" name="edit_sub_lesson_title" class="form-control" required>
+                        <input type="text" name="edit_sub_lesson_title" class="form-control">
                         <input type="hidden" name="edit_sub_lesson_id" class="form-control">
                         <div id="edit_sub_lesson_title_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="edit_sub_description" class="form-label">Description<span class="text-danger">*</span></label>
-                        <textarea class="form-control" name="edit_sub_description" rows="3" required></textarea>
+                        <textarea class="form-control" name="edit_sub_description" id="edit_sub_description" rows="3"></textarea>
                         <div id="edit_sub_description_error" class="text-danger error_e"></div>
                     </div>     
                     <div class="form-group">
                         <label for="edit_sub_status" class="form-label">Status<span class="text-danger">*</span></label>
-                        <select class="form-select" name="edit_sub_status" id="edit_sub_status" required>
+                        <select class="form-select" name="edit_sub_status" id="edit_sub_status">
                             <option value="1" selected>Active</option>
                             <option value="0">Inactive</option>
                         </select>
@@ -145,7 +145,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete this Sub-Lesson "<strong><span id="append_sub_lesson_name"></span></strong>"?
+                    Are you sure you want to delete this Sub-Lesson ?
+                    {{-- <strong><span id="append_sub_lesson_name"></span></strong> --}}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -161,7 +162,7 @@
 
 @section('js_scripts')
 
-<script>
+{{-- <script>
     // Show modal for creating sub-lesson
     $("#createSubLessonBtn").on('click', function(){
         $(".error_e").html('');
@@ -241,6 +242,90 @@
         $('#append_sub_lesson_name').html(subLessonTitle);
         $('#deleteSubLessonModal').modal('show');
     });
+</script> --}}
+
+<script>
+    // Show modal for creating sub-lesson
+    $("#createSubLessonBtn").on('click', function(){
+        $(".error_e").html('');
+        $("#subLessonForm")[0].reset();
+        $("#createSubLessonModal").modal('show');
+    });
+
+    // Handle form submission for creating sub-lesson
+    $("#subLessonForm").on("submit", function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: '{{ url("/sub-lesson/create") }}',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                $('#createSubLessonModal').modal('hide');
+                location.reload();
+            },
+            error: function(xhr) {
+                var errorMessage = JSON.parse(xhr.responseText);
+                var validationErrors = errorMessage.errors;
+                $.each(validationErrors, function(key, value) {
+                    var msg = '<p>'+value+'<p>';
+                    $('#'+key+'_error').html(msg); 
+                });
+            }
+        });
+    });
+
+    // Show modal for editing sub-lesson
+    $('body').on('click', '.edit-lesson-icon', function() {
+        var subLessonId = $(this).data('lesson-id');
+        $.ajax({
+            url: "{{ url('/sub-lesson/edit') }}",
+            type: 'GET',
+            data: { id: subLessonId },
+            success: function(response) {
+                // Ensure the response is correct and populate the form
+                $('input[name="edit_sub_lesson_title"]').val(response.subLesson.title);
+                $('input[name="edit_sub_lesson_id"]').val(response.subLesson.id);
+                $('#edit_sub_description').val(response.subLesson.description);
+                $('#edit_sub_status').val(response.subLesson.status);
+                $('#editSubLessonModal').modal('show');
+            },
+            error: function(xhr) {
+                console.error(xhr.responseText);
+            }
+        });
+    });
+
+    // Handle form submission for updating sub-lesson
+    $("#editSubLessonForm").on("submit", function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: '{{ url("/sub-lesson/update") }}',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                $('#editSubLessonModal').modal('hide');
+                location.reload();
+            },
+            error: function(xhr) {
+                var errorMessage = JSON.parse(xhr.responseText);
+                var validationErrors = errorMessage.errors;
+                $.each(validationErrors, function(key, value) {
+                    var msg = '<p>' + value + '</p>';
+                    $('#' + key + '_error').html(msg);
+                });
+            }
+        });
+    });
+
+    // Show modal for deleting sub-lesson
+    $('body').on('click', '.delete-lesson-icon', function() {
+        var subLessonId = $(this).data('lesson-id');
+        var subLessonTitle = $(this).data('lesson-title');
+        $('#subLessonId').val(subLessonId);
+        $('#append_sub_lesson_name').html(subLessonTitle);
+        $('#deleteSubLessonModal').modal('show');
+    });
 </script>
+
 
 @endsection

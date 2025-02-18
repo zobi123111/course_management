@@ -17,7 +17,7 @@ class DocumentController extends Controller
     public function index()
     {
         $ou_id =  auth()->user()->ou_id;
-        if(empty($ou_id)){
+        if(Auth::user()->role==1 && empty($ou_id)){
             $groups = Group::all();
             $folders = Folder::all();
             $documents = Document::all();

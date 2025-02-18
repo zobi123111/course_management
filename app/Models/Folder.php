@@ -11,5 +11,15 @@ class Folder extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $fillable = ['ou_id','folder_name', 'description', 'status'];
+    protected $fillable = ['ou_id', 'parent_id', 'folder_name', 'description', 'status'];
+
+    public function parent()
+    {
+        return $this->belongsTo(Folder::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Folder::class, 'parent_id');
+    }
 }

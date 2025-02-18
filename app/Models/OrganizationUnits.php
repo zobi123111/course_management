@@ -14,7 +14,12 @@ class OrganizationUnits extends Model
 
 
     public function users(){
-        return $this->hasMany(User::class, 'id', 'ou_id');
+        return $this->hasMany(User::class, 'ou_id', 'id');
     }
+
+    public function roleOneUsers()
+{
+    return $this->hasOne(User::class, 'ou_id', 'id')->where('role', 1);
+}
     
 }
