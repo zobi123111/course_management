@@ -21,6 +21,10 @@ class CheckRolePermission
             return $next($request);
         }
 
+        if ($user && $user->password_flag == 1) {
+            return redirect()->route('change-password');
+        } 
+
           // Get allowed pages based on role permissions
           if($request->route()->getName() == 'dashboard'){
                 return $next($request);

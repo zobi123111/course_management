@@ -5,7 +5,6 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\OrganizationUnits;
 use App\Models\Role;
-use App\Models\OrganizationUnits;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -82,8 +81,6 @@ class UserController extends Controller
             ]);
         }
     
-        // $ouid = $currentUser && $currentUser->ou_id ? $currentUser->ou_id : null;
-    
 
         if ($request->hasFile('image')) {
             $filePath = $request->file('image')->store('users', 'public');
@@ -136,7 +133,6 @@ class UserController extends Controller
 
         // dd($request->all());
         $userToUpdate = User::find($request->edit_form_id);
-
             if($userToUpdate){
                 $validatedData = $request->validate([
                 'edit_firstname' => 'required',
@@ -222,6 +218,11 @@ class UserController extends Controller
                 }
 
 
+                if ($request->has('edit_custom_field_checkbox') && $request->edit_custom_field_checkbox) {
+                    $userToUpdate->password_flag = 1;
+                }
+
+                
                 $userToUpdate->where('id', $request->edit_form_id)
                 ->update([
                     'Fname' => $validatedData['edit_firstname'],
@@ -239,12 +240,11 @@ class UserController extends Controller
                     'currency' => $request->edit_currency ?? null,
                     'custom_field_name' => $request->edit_custom_field_name ?? null,
                     'custom_field_value' => $request->edit_custom_field_value ?? null,
-            
+                    'password_flag' => $request->edit_update_password
                 ]);
                 return response()->json(['success' => true,'message' => "User data updated successfully"]);
         }
-
-    }
+    } 
 
     
 

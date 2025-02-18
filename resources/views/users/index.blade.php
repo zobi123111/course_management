@@ -212,7 +212,6 @@
                         <input type="text" name="custom_field_value" id="custom_field_value" style="display: none;" class="form-control mt-3" placeholder="Enter Custom Field Value">
                         <div id="custom_field_value_error" class="text-danger error_e"></div>
                     </div>
-
                     @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                     <div class="form-group">
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
@@ -225,7 +224,6 @@
                         <div id="ou_id_error" class="text-danger error_e"></div>            
                     </div>
                     @endif
-
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" aria-label="Default select example">
@@ -295,7 +293,15 @@
 
                         </select>
                         <div id="edit_role_name_error_up" class="text-danger error_e"></div>
-                    </div>                                       
+                    </div>       
+                    
+                      <!-- Update Password Checkbox -->
+                    <div class="form-group">
+                        <label for="edit_update_password_checkbox" class="form-label">Update Password</label>
+                        <input type="checkbox" name="edit_update_password_checkbox" id="edit_update_password_checkbox">
+                        <input type="hidden" name="edit_update_password" id="edit_update_password" value="0">
+                    </div>
+
 
                     <!-- Licence -->
                     <div class="form-group">
@@ -352,7 +358,6 @@
                         <input type="text" name="edit_custom_field_value" id="edit_custom_field_value" style="display: none;" class="form-control mt-3" placeholder="Enter Custom Field Value">
                         <div id="edit_custom_field_value_error_up" class="text-danger error_e"></div>
                     </div>
-
                     @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                     <div class="form-group">
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
@@ -365,7 +370,6 @@
                         <div id="ou_id_error" class="text-danger error_e"></div>            
                     </div>
                     @endif
-
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
@@ -651,7 +655,14 @@
                             $('#edit_licence_file').hide().prop('required', false);
                         }
 
+                        if (response.user.password_flag == 1) {
+                            $('#edit_update_password_checkbox').prop('checked', true);
+                        } else {
+                            $('#edit_update_password_checkbox').prop('checked', false);                           
+                        }
+                        
                         // Set passport checkbox and fields
+
                         if (response.user.passport) {
                             $('#edit_passport_checkbox').prop('checked', true);
                             $('#edit_passport').val(response.user.passport).show().prop('required', true);
@@ -716,6 +727,15 @@
                     console.error(xhr.responseText);
                 }
             });
+        });
+
+        document.getElementById('edit_update_password_checkbox').addEventListener('change', function() {
+            var passwordField = document.getElementById('edit_update_password');
+            if (this.checked) {
+                passwordField.value = '1';
+            } else {
+                passwordField.value = '0';
+            }
         });
 
         $('#edit_ratingStars .star').click(function() {

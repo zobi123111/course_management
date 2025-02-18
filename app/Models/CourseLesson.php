@@ -16,4 +16,10 @@ class CourseLesson extends Model
     {
         return $this->belongsTo(Courses::class, 'course_id');
     }
+
+    public function sublessons()
+    {
+        return $this->hasMany(SubLesson::class, 'lesson_id');
+    }
+
 }

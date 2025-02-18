@@ -37,22 +37,25 @@
  <!-- List group with Advanced Contents -->
 <div class="list-group">
     @foreach($course->courseLessons as $val)
-    <div class="list-group-item " aria-current="true">
-        <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">{{ $val->lesson_title }}</h5>
-            <span>
-            @if(checkAllowedModule('courses', 'lesson.edit')->isNotEmpty())
-                <i class="fa fa-edit edit-lesson-icon" style="font-size:18px; cursor: pointer; margin-right: 5px;" data-lesson-id="{{ encode_id($val->id) }}"></i>
-            @endif
-            @if(checkAllowedModule('courses', 'lesson.delete')->isNotEmpty())
-                <i class="fa-solid fa-trash delete-lesson-icon" style="font-size:18px; cursor: pointer;"
-                data-lesson-id="{{ encode_id($val->id) }}"></i>
-            @endif
-            </span>
+        <div class="list-group-item " aria-current="true">
+            <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1"> {{ $val->title }}</h5>
+                <span>
+                <a href="{{ route('lesson.show', ['id' => encode_id($val->id)]) }}" style="text-decoration: none;">
+                    <i class="fa fa-eye" style="font-size:18px; cursor: pointer; margin-right: 5px;"></i>
+                </a>                    
+                @if(checkAllowedModule('courses', 'lesson.edit')->isNotEmpty())
+                    <i class="fa fa-edit edit-lesson-icon" style="font-size:18px; cursor: pointer; margin-right: 5px;" data-lesson-id="{{ encode_id($val->id) }}"></i>
+                @endif
+                @if(checkAllowedModule('courses', 'lesson.delete')->isNotEmpty())
+                    <i class="fa-solid fa-trash delete-lesson-icon" style="font-size:18px; cursor: pointer;"
+                    data-lesson-id="{{ encode_id($val->id) }}"></i>
+                @endif
+                </span>
+
+            </div>
+            <p class="mb-1">{{ $val->description }}</p>
         </div>
-        <p class="mb-1">{{ $val->description }}</p>
-        <!-- <small>And some small print.</small> -->
-</div>
     @endforeach
     <!-- <a href="#" class="list-group-item list-group-item-action">
         <div class="d-flex w-100 justify-content-between">
