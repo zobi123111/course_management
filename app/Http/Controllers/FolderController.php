@@ -15,20 +15,27 @@ class FolderController extends Controller
     public function index()
     {
         $urganizationUnits = OrganizationUnits::all();
-        if(Auth::user()->role==1 && empty(Auth::user()->ou_id)){
-            $folders = Folder::all();
-        }else{
-            $folders = Folder::where('ou_id', Auth::user()->ou_id)->get();
+        if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
+            // Admin without OU restriction: Fetch all folders with their children
+            $folders = Folder::whereNull('parent_id')->with('children')->get();
+        } else {
+            // Regular users: Fetch only their org unit folders
+            $folders = Folder::where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children')->get();
         }
+        // dd($folders);
         return view('folders.index',compact('folders','urganizationUnits'));
     }
 
     public function createFolder(Request $request)
     {
-        $request->validate([            
+        $request->validate([
             'folder_name' => 'required|unique:folders,folder_name',
             'description' => 'required',
             'status' => 'required|boolean',
+            'parent_id' => [
+                'nullable',
+                'exists:folders,id', // Ensures the provided parent_id exists in the folders table
+            ],
             'ou_id' => [
                 function ($attribute, $value, $fail) {
                     if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
@@ -37,25 +44,38 @@ class FolderController extends Controller
                 }
             ]
         ]);
-
-        $path = public_path("storage/{$request->folder_name}");
-
+    
+        // Determine correct OU ID
+        $ouId = (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id;
+    
+        // Determine the folder path based on parent_id
+        if ($request->parent_id) {
+            $parentFolder = Folder::find($request->parent_id);
+            if (!$parentFolder) {
+                return response()->json(['error' => 'Invalid parent folder.'], 400);
+            }
+            $path = public_path("storage/{$parentFolder->folder_name}/{$request->folder_name}");
+        } else {
+            $path = public_path("storage/{$request->folder_name}");
+        }
+    
         // Check if folder already exists
         if (File::exists($path)) {
             return response()->json(['error' => 'Folder already exists.'], 400);
         }
-
+    
         // Create directory
         $folderCreated = File::makeDirectory($path, 0777, true, true);
-
+    
         if ($folderCreated) {
             Folder::create([
-                'ou_id' =>  (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
+                'ou_id' => $ouId,
                 'folder_name' => $request->folder_name,
                 'description' => $request->description,
-                'status' => $request->status
+                'status' => $request->status,
+                'parent_id' => $request->parent_id, // Assign parent_id if provided
             ]);
-
+    
             Session::flash('message', 'Folder created successfully.');
             return response()->json(['success' => 'Folder created successfully.']);
         } else {

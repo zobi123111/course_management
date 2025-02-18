@@ -19,154 +19,214 @@ class OrganizationController extends Controller
 {
     public function index()
     {
-        $organizationUnitsData = DB::table('organization_units')
-            ->join('users', 'organization_units.id', '=', 'users.ou_id')
-            ->whereNull('organization_units.deleted_at')
-            ->whereNull('users.deleted_at')
-            ->select('organization_units.id','organization_units.org_unit_name','organization_units.description','organization_units.status', 'users.id as user_id','users.fname','users.lname','users.email','users.role','users.password','users.ou_id')
-            ->get();
-
+        $organizationUnitsData = OrganizationUnits::with(['roleOneUsers'])
+        ->withCount('users') // Count all users linked to organization
+        ->whereNull('deleted_at')
+        ->get();
+        // $organizationUnitsData = OrganizationUnits::with(['roleOneUsers'])
+        // ->withCount(['users as non_role_one_users_count' => function ($query) {
+        //     $query->where('role', '!=', 1);
+        // }])
+        // ->whereNull('deleted_at')
+        // ->get();
+        // dd($organizationUnitsData);
         return view('organization.index', compact('organizationUnitsData'));
     }
 
+
+
     public function saveOrgUnit(Request $request)
     {
-        // dd($request);
-        $request->validate([
-                'org_unit_name' => 'required|unique:organization_units',
-                'description' => 'required',
-                'status' => 'required',
+        $rules = [
+            'org_unit_name' => 'required|unique:organization_units',
+            'description' => 'required',
+            'status' => 'required',
+        ];
+    
+        if ($request->filled('email') || $request->filled('firstname') || $request->filled('lastname')) {
+            $rules = array_merge($rules, [
                 'firstname' => 'required',
                 'lastname' => 'required',
                 'email' => 'required|email|max:255|unique:users,email',
-                'password' => 'required|min:6|confirmed'
-            ],
-            [
-            // 'org_unit_name.required' => 'The Organizational Unit name field is required',
+                'password' => 'required|min:6|confirmed',
+            ]);
+        }
+    
+        $request->validate($rules, [
             'description.required' => 'Description field is required',
             'status.required' => 'Status field is required',
-            'firstname.required' => 'The Firstname field is required',
-            'lastname.required' => 'The Lastname field is required'
-            ]
-        );
-
+        ]);
+    
         DB::beginTransaction();
-
+    
         try {
-
             // Step 1: Store the organizational unit data
             $orgUnit = OrganizationUnits::create([
                 'org_unit_name' => $request->org_unit_name,
                 'description' => $request->description,
                 'status' => $request->status
             ]);
-
-            // Step 2: Store the user data and associate with 'ou_id'
-            $user = User::create([
-                'fname' => $request->firstname,
-                'lname' => $request->lastname,
-                'email' => $request->email,
-                "password"=> Hash::make($request->password),
-                'role' => 1,
-                'ou_id' => $orgUnit->id,
-            ]);
+    
+            // Step 2: Store the user data only if email is provided
+            $user = null;
+            if ($request->filled('email') && $request->filled('firstname') && $request->filled('lastname')) {
+                $user = User::create([
+                    'fname' => $request->firstname,
+                    'lname' => $request->lastname,
+                    'email' => $request->email,
+                    'password' => Hash::make($request->password),
+                    'role' => 1,
+                    'ou_id' => $orgUnit->id,
+                ]);
+            }
         
-            if($user && $orgUnit){  
-                
-                // Generate password to send in the email
+            if ($user) {  
+                // Generate password to send in the email (if user exists and password is provided)
                 $password = $request->password;
                 
                 // Send email
                 Mail::to($user->email)->send(new OrgUnitCreated($user, $password, $orgUnit));
             }
-
+    
             DB::commit(); // Commit transaction if everything is successful
-            // Success
-            Session::flash('message', 'Organizational unit and user created successfully');
-            return response()->json(['success' => 'Organizational unit and user created successfully']);
+    
+            // Success response
+            Session::flash('message', 'Organizational unit created successfully' . ($user ? ' with user' : ''));
+            return response()->json(['success' => 'Organizational unit created successfully' . ($user ? ' with user' : '')]);
         } catch (\Exception $e) {
             DB::rollBack();
         
-            // Use Log correctly
             Log::error('Error creating organizational unit and user: ' . $e->getMessage());
         
             return response()->json(['error' => $e->getMessage()]);
         }
     }
+    
+
 
     public function getOrgUnit(Request $request) 
     {
-        $organizationUnit = OrganizationUnits::find(decode_id($request->orgId));
-        $user = User::find(decode_id($request->userId));
-        if (!$organizationUnit && !$user) {
-            return response()->json(['error' => 'Organizational Unit not found']);
+        // Check if orgId and userId are filled before decoding
+        $organizationUnit = $request->filled('orgId') ? OrganizationUnits::find(decode_id($request->orgId)) : null;
+        $user = $request->filled('userId') ? User::find(decode_id($request->userId)) : null;
+
+        // Handle missing or not found errors
+        if ($request->filled('orgId') && !$organizationUnit) {
+            return response()->json(['error' => 'Organizational Unit not found'], 404);
         }
-        return response()->json(['organizationUnit' => $organizationUnit,'user'=>$user]);
+        if ($request->filled('userId') && !$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+        if (!$request->filled('orgId') && !$request->filled('userId')) {
+            return response()->json(['error' => 'At least one of orgId or userId is required'], 400);
+        }
+
+        return response()->json([
+            'organizationUnit' => $organizationUnit,
+            'user' => $user
+        ]);
     }
+
 
     public function updateOrgUnit(Request $request)
     {
-            $validatedData = $request->validate([
-                'org_unit_name' => 'required|unique:organization_units,org_unit_name,' . $request->org_unit_id,
-                'description' => 'required',
-                'status' => 'required',
+        // dd($request);
+        $rules = [
+            'org_unit_name' => 'required|unique:organization_units,org_unit_name,' . $request->org_unit_id,
+            'description' => 'required',
+            'status' => 'required',
+        ];
+
+        if ($request->filled('user_id') && ($request->filled('edit_email') || $request->filled('edit_firstname') || $request->filled('edit_lastname'))) {
+            $rules = array_merge($rules, [
                 'edit_firstname' => 'required',
                 'edit_lastname' => 'required',
-                'edit_email'  => 'required',
-            ],
-            [
-                'org_unit_name.required' => 'The Organizational Unit name field is required',
-                'org_unit_name.unique' => 'The Organizational Unit name must be unique.',
-                'description.required' => 'Description field is required',
-                'status.required' => 'Status field is required',
-                'edit_firstname.required' => 'The Firstname field is required',
-                'edit_lastname.required' => 'The Lastname field is required',
-                'edit_email.required' => 'The Email field is required',
+                'edit_email' => 'required|email|unique:users,email,' . $request->user_id,
+            ]);
+        }
+        if(!$request->filled('user_id') && ($request->filled('edit_email') || $request->filled('edit_firstname') || $request->filled('edit_lastname') || $request->filled('password'))){
+            $rules = array_merge($rules, [
+                'edit_firstname' => 'required',
+                'edit_lastname' => 'required',
+                'edit_email' => 'required|email|unique:users,email',
+                'password' => 'required|min:6|confirmed',
+            ]);
+        }
+
+        $validatedData = $request->validate($rules, [
+            'org_unit_name.required' => 'The Organizational Unit name field is required',
+            'org_unit_name.unique' => 'The Organizational Unit name must be unique.',
+            'description.required' => 'Description field is required',
+            'status.required' => 'Status field is required',
+            'edit_firstname.required' => 'The Firstname field is required',
+            'edit_lastname.required' => 'The Lastname field is required',
+            'edit_email.required' => 'The Email field is required',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // Step 1: Update Organizational Unit
+            $orgUnit = OrganizationUnits::findOrFail($request->org_unit_id);
+            $orgUnit->update([
+                'org_unit_name' => $request->org_unit_name,
+                'description' => $request->description,
+                'status' => $request->status,
             ]);
 
-            DB::beginTransaction();
-
-            try {
-                // Step 1: Find the Organizational Unit and update
-                $orgUnit = OrganizationUnits::findOrFail($request->org_unit_id);
-                $orgUnit->update([
-                    'org_unit_name' => $request->org_unit_name,
-                    'description' => $request->description,
-                    'status' => $request->status,
-                ]);
-        
-                // Step 2: Find the user and update user details
+            // Step 2: Update existing user
+            if ($request->filled('user_id') && $request->filled('edit_email')) {
                 $user = User::findOrFail($request->user_id);
                 $user->update([
                     'fname' => $request->edit_firstname,
                     'lname' => $request->edit_lastname,
                     'email' => $request->edit_email
                 ]);
-        
-                DB::commit(); // Commit transaction if everything is successful
-        
-                // Success
-                Session::flash('message', 'Organizational Unit and User updated successfully');
-                return response()->json(['success' => 'Organizational unit and user updated successfully']);
-            } catch (\Exception $e) {
-                DB::rollBack();
-        
-                // Log error
-                Log::error('Error updating organizational unit and user: ' . $e->getMessage());
-        
-                return response()->json(['error' => $e->getMessage()]);
+            } 
+            // Step 3: Create a new user if no user_id exists
+            elseif (!$request->filled('user_id') && $request->filled('edit_email') && $request->filled('password')) {
+                $user = User::create([
+                    'fname' => $request->edit_firstname,
+                    'lname' => $request->edit_lastname,
+                    'email' => $request->edit_email,
+                    'password' => Hash::make($request->password),
+                    'role' => 1,
+                    'ou_id' => $request->org_unit_id,
+                ]);
+
+                // Send email only if user was created and password exists
+                if ($user) {  
+                    Mail::to($user->email)->send(new OrgUnitCreated($user, $request->password, $orgUnit));
+                }
             }
-            
+
+            DB::commit(); // Commit transaction if everything is successful
+
+            // Success
+            Session::flash('message', 'Organizational Unit updated successfully' . ($request->filled('edit_email') ? ' with user' : ''));
+            return response()->json(['success' => 'Organizational unit updated successfully' . ($request->filled('edit_email') ? ' with user' : '')]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            // Log error
+            Log::error('Error updating organizational unit and user: ' . $e->getMessage());
+
+            return response()->json(['error' => $e->getMessage()]);
+        }
     }
+
 
     public function deleteOrgUnit(Request $request)
     {        
-        $organizationUnit = OrganizationUnits::findOrFail(decode_id($request->org_id));
-        $user = User::findOrFail(decode_id($request->user_id));
-        if ($organizationUnit && $user) {
+        $organizationUnit = $request->filled('org_id')? OrganizationUnits::findOrFail(decode_id($request->org_id)): null;
+        if ($organizationUnit) {
             $organizationUnit->delete();
-            $user->delete();
-            return redirect()->route('orgunit.index')->with('message', 'Organizational Unit and OU User deleted successfully');
+            if($request->filled('user_id')){
+                $user = User::findOrFail(decode_id($request->user_id));
+                $user->delete();
+                return redirect()->route('orgunit.index')->with('message', 'Organizational Unit and OU User deleted successfully');
+            }          
+            return redirect()->route('orgunit.index')->with('message', 'Organizational Unit deleted successfully');  
         }
     }
 
