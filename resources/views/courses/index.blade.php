@@ -99,6 +99,17 @@
                         <div id="ou_id_error" class="text-danger error_e"></div>            
                     </div>
                     @endif
+
+                    <div class="form-group">
+                        <label for="groups" class="form-label">Select Groups<span class="text-danger"></span></label>
+                        <select class="form-select groups-select" name="group_ids[]" multiple="multiple">
+                            @foreach($groups as $group)
+                            <option value="{{ $group->id }}">{{ $group->name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="group_ids_error" class="text-danger error_e"></div>
+                    </div>                    
+                    
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" aria-label="Default select example">
@@ -165,6 +176,17 @@
                         <div id="ou_id_error" class="text-danger error_e"></div>            
                     </div>
                     @endif
+
+                    <div class="form-group">
+                        <label for="groups" class="form-label">Select Groups<span class="text-danger"></span></label>
+                        <select class="form-select groups-select" name="group_ids[]" multiple="multiple">
+                            @foreach($groups as $group)
+                                <option value="{{ $group->id }}">{{ $group->name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="group_ids_error_up" class="text-danger error_e"></div>
+                    </div>               
+
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="updateCourse" class="btn btn-primary sbt_btn">Update</button>
@@ -204,23 +226,191 @@
 @section('js_scripts')
 
 <script>
+
+// function initializeSelect2() {
+//     $('.groups-select').select2({
+//         allowClear: true,
+//         multiple: true,
+//         dropdownParent: $('.modal:visible')
+//     });
+// }
+
+// $(document).ready(function() {
+//     $('#courseTable').DataTable();
+
+//     initializeSelect2();
+
+//     $("#createCourse").on('click', function(){
+//         $(".error_e").html('');
+//         $("#courses")[0].reset();
+//         $(".groups-select").val(null).trigger("change");
+//         $("#createCourseModal").modal('show');
+
+//         $("#createCourseModal").modal('show');
+
+//         $('#createCourseModal').on('shown.bs.modal', function () {
+//             initializeSelect2();
+//         });
+//     })
+
+//     $("#submitCourse").on("click", function(e){
+//         e.preventDefault();
+//         var formData = new FormData($('#courses')[0]);
+        
+//         $.ajax({
+//             url: '{{ url("/course/create") }}',
+//             type: 'POST',
+//             // data: $("#courses").serialize(),
+//             data: formData,
+//             processData: false,
+//             contentType: false,
+//             success: function(response) {
+//                 $('#createCourseModal').modal('hide');
+//                 location.reload();
+//             },
+//             error: function(xhr, status, error){
+//                 var errorMessage = JSON.parse(xhr.responseText);
+//                 var validationErrors = errorMessage.errors;
+//                 $.each(validationErrors, function(key,value){
+//                     var msg = '<p>'+value+'<p>';
+//                     $('#'+key+'_error').html(msg); 
+//                 }) 
+//             }
+//         });
+
+//     })
+
+//     // $('.edit-course-icon').click(function(e) {
+//     //     e.preventDefault();
+
+//     //     $('.error_e').html('');
+//     //     var courseId = $(this).data('course-id');
+//     //     $.ajax({
+//     //         url: "{{ url('/course/edit') }}", 
+//     //         type: 'GET',
+//     //         data: { id: courseId },
+//     //         success: function(response) {
+//     //             console.log(response);
+//     //             $('input[name="course_name"]').val(response.course.course_name);
+//     //             $('input[name="course_id"]').val(response.course.id);
+//     //             $('#edit_description').val(response.course.description);
+//     //             $('#edit_ou_id').val(response.course.ou_id);
+//     //             $('#edit_status').val(response.course.status);
+
+//     //             $('#editCourseModal').modal('show');
+//     //         },
+//     //         error: function(xhr, status, error) {
+//     //             console.error(xhr.responseText);
+//     //         }
+//     //     });
+//     // });
+
+//     $('.edit-course-icon').click(function(e) {
+//         e.preventDefault();
+
+//         $('.error_e').html('');  // Clear previous errors
+//         var courseId = $(this).data('course-id');  // Get course ID from button data attribute
+        
+//         // Make AJAX request to fetch course details
+//         $.ajax({
+//             url: "{{ url('/course/edit') }}",  // Make sure this URL is correct
+//             type: 'GET',
+//             data: { id: courseId },
+//             success: function(response) {
+//                 // Populate the modal fields with course data
+//                 $('input[name="course_name"]').val(response.course.course_name);
+//                 $('input[name="course_id"]').val(response.course.id);
+//                 $('#edit_description').val(response.course.description);
+//                 $('#edit_ou_id').val(response.course.ou_id);
+//                 $('#edit_status').val(response.course.status);
+
+//                 // Pre-select groups based on the course's existing groups
+//                 var selectedGroups = response.course.groups.map(function(group) {
+//                     return group.id;
+//                 });
+
+//                 // Dynamically set the selected groups in the dropdown
+//                 $('.groups-select').val(selectedGroups).trigger('change');  // Select the values in the dropdown
+                
+//                 // Show the edit modal
+//                 $('#editCourseModal').modal('show');
+//             },
+//             error: function(xhr, status, error) {
+//                 console.error(xhr.responseText);  // Log errors to console if AJAX fails
+//             }
+//         });
+//     });
+
+
+//     $('#updateCourse').on('click', function(e){
+//         e.preventDefault();
+//         var formData = new FormData($('#editCourse')[0]);
+//         $.ajax({
+//             url: "{{ url('course/update') }}",
+//             type: "POST",
+//             data: formData,
+//             processData: false,
+//             contentType: false,
+//             success: function(response){
+//                 $('#editCourseModal').modal('hide');
+//                 location.reload();
+//             },
+//             error: function(xhr, status, error){
+//                 var errorMessage = JSON.parse(xhr.responseText);
+//                 var validationErrors = errorMessage.errors;
+//                 $.each(validationErrors, function(key,value){
+//                     var msg = '<p>'+value+'<p>';
+//                     $('#'+key+'_error_up').html(msg); 
+//                 }) 
+//             }
+//         })
+//     })
+
+//     $('.delete-icon').click(function(e) {
+//     e.preventDefault();
+//         $('#deleteCourse').modal('show');
+//         var courseId = $(this).data('course-id');
+//         var courseName = $(this).closest('tr').find('.courseName').text();
+//         $('#append_name').html(courseName);
+//         $('#courseId').val(courseId);
+      
+//     });
+
+// });
+
+
+
+function initializeSelect2() {
+    $('.groups-select').select2({
+        allowClear: true,
+        multiple: true,
+        dropdownParent: $('.modal:visible'),
+    });
+}
+
 $(document).ready(function() {
     $('#courseTable').DataTable();
 
-    $("#createCourse").on('click', function(){
+    initializeSelect2();
+
+    $("#createCourse").on('click', function() {
         $(".error_e").html('');
         $("#courses")[0].reset();
+        $(".groups-select").val(null).trigger("change");
         $("#createCourseModal").modal('show');
-    })
 
-    $("#submitCourse").on("click", function(e){
+        $('#createCourseModal').on('shown.bs.modal', function() {
+            initializeSelect2();
+        });
+    });
+
+    $("#submitCourse").on("click", function(e) {
         e.preventDefault();
         var formData = new FormData($('#courses')[0]);
-        
+
         $.ajax({
             url: '{{ url("/course/create") }}',
             type: 'POST',
-            // data: $("#courses").serialize(),
             data: formData,
             processData: false,
             contentType: false,
@@ -228,17 +418,53 @@ $(document).ready(function() {
                 $('#createCourseModal').modal('hide');
                 location.reload();
             },
-            error: function(xhr, status, error){
+            error: function(xhr, status, error) {
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
-                $.each(validationErrors, function(key,value){
-                    var msg = '<p>'+value+'<p>';
-                    $('#'+key+'_error').html(msg); 
-                }) 
+                $.each(validationErrors, function(key, value) {
+                    var msg = '<p>' + value + '<p>';
+                    $('#' + key + '_error').html(msg);
+                });
             }
         });
+    });
 
-    })
+    // Edit Course functionality
+    // $('.edit-course-icon').click(function(e) {
+    //     e.preventDefault();
+
+    //     $('.error_e').html('');
+    //     var courseId = $(this).data('course-id');
+    //     $.ajax({
+    //         url: "{{ url('/course/edit') }}",
+    //         type: 'GET',
+    //         data: { id: courseId },
+    //         success: function(response) {
+    //             $('input[name="course_name"]').val(response.course.course_name);
+    //             $('input[name="course_id"]').val(response.course.id);
+    //             $('#edit_description').val(response.course.description);
+    //             $('#edit_ou_id').val(response.course.ou_id);
+    //             $('#edit_status').val(response.course.status);
+
+    //             // Pre-select groups based on the course's existing groups
+    //             var selectedGroups = response.course.groups.map(function(group) {
+    //                 return group.id;
+    //             });
+
+    //             // Dynamically set the selected groups in the dropdown
+    //             $('.groups-select').val(selectedGroups).trigger('change');
+
+    //             $('#editCourseModal').modal('show');
+    //             $('#editCourseModal').on('shown.bs.modal', function () {
+    //             initializeSelect2(); // Re-initialize select2 for groups select
+    //         });
+    //         },
+    //         error: function(xhr, status, error) {
+    //             console.error(xhr.responseText);
+    //         }
+    //     });
+    // });
+
 
     $('.edit-course-icon').click(function(e) {
         e.preventDefault();
@@ -246,18 +472,28 @@ $(document).ready(function() {
         $('.error_e').html('');
         var courseId = $(this).data('course-id');
         $.ajax({
-            url: "{{ url('/course/edit') }}", 
+            url: "{{ url('/course/edit') }}",
             type: 'GET',
             data: { id: courseId },
             success: function(response) {
-                console.log(response);
+                // Populate the modal fields with course data
                 $('input[name="course_name"]').val(response.course.course_name);
                 $('input[name="course_id"]').val(response.course.id);
                 $('#edit_description').val(response.course.description);
                 $('#edit_ou_id').val(response.course.ou_id);
                 $('#edit_status').val(response.course.status);
 
+                var selectedGroups = response.course.groups.map(function(group) {
+                    return group.id;
+                });
+
+                $('.groups-select').val(selectedGroups).trigger('change');
+
                 $('#editCourseModal').modal('show');
+
+                $('#editCourseModal').on('shown.bs.modal', function () {
+                    initializeSelect3();
+                });
             },
             error: function(xhr, status, error) {
                 console.error(xhr.responseText);
@@ -265,7 +501,25 @@ $(document).ready(function() {
         });
     });
 
-    $('#updateCourse').on('click', function(e){
+    // Initialize select2
+    function initializeSelect3() {
+        $('.groups-select').select2({
+            allowClear: true,
+            multiple: true,
+            dropdownParent: $('.modal:visible'),
+            templateResult: function(state) {
+                if (state.selected) {
+                    return $(
+                        // '<span style="display:none;">' + state.text + '</span>'
+                    );
+                }
+                return state.text;
+            }
+        });
+    }
+
+    // Update Course functionality
+    $('#updateCourse').on('click', function(e) {
         e.preventDefault();
         var formData = new FormData($('#editCourse')[0]);
         $.ajax({
@@ -274,32 +528,32 @@ $(document).ready(function() {
             data: formData,
             processData: false,
             contentType: false,
-            success: function(response){
+            success: function(response) {
                 $('#editCourseModal').modal('hide');
                 location.reload();
             },
-            error: function(xhr, status, error){
+            error: function(xhr, status, error) {
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
-                $.each(validationErrors, function(key,value){
-                    var msg = '<p>'+value+'<p>';
-                    $('#'+key+'_error_up').html(msg); 
-                }) 
+                $.each(validationErrors, function(key, value) {
+                    var msg = '<p>' + value + '<p>';
+                    $('#' + key + '_error_up').html(msg);
+                });
             }
-        })
-    })
+        });
+    });
 
+    // Delete Course functionality
     $('.delete-icon').click(function(e) {
-    e.preventDefault();
+        e.preventDefault();
         $('#deleteCourse').modal('show');
         var courseId = $(this).data('course-id');
         var courseName = $(this).closest('tr').find('.courseName').text();
         $('#append_name').html(courseName);
         $('#courseId').val(courseId);
-      
     });
-
 });
+
 </script>
 
 @endsection

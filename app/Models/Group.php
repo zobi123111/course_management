@@ -20,4 +20,9 @@ class Group extends Model
     {
         return $this->hasMany(User::class, 'ou_id', 'ou_id');
     }
+
+    public function courses()
+    {
+        return $this->belongsToMany(Courses::class, 'courses_group')->withTimestamps();
+    }
 }
