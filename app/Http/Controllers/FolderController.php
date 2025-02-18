@@ -44,43 +44,17 @@ class FolderController extends Controller
                 }
             ]
         ]);
+        Folder::create([
+            'ou_id' => $ouId,
+            'folder_name' => $request->folder_name,
+            'description' => $request->description,
+            'status' => $request->status,
+            'parent_id' => $request->parent_id, // Assign parent_id if provided
+        ]);
+
+        Session::flash('message', 'Folder created successfully.');
+        return response()->json(['success' => 'Folder created successfully.']);
     
-        // Determine correct OU ID
-        $ouId = (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id;
-    
-        // Determine the folder path based on parent_id
-        if ($request->parent_id) {
-            $parentFolder = Folder::find($request->parent_id);
-            if (!$parentFolder) {
-                return response()->json(['error' => 'Invalid parent folder.'], 400);
-            }
-            $path = public_path("storage/{$parentFolder->folder_name}/{$request->folder_name}");
-        } else {
-            $path = public_path("storage/{$request->folder_name}");
-        }
-    
-        // Check if folder already exists
-        if (File::exists($path)) {
-            return response()->json(['error' => 'Folder already exists.'], 400);
-        }
-    
-        // Create directory
-        $folderCreated = File::makeDirectory($path, 0777, true, true);
-    
-        if ($folderCreated) {
-            Folder::create([
-                'ou_id' => $ouId,
-                'folder_name' => $request->folder_name,
-                'description' => $request->description,
-                'status' => $request->status,
-                'parent_id' => $request->parent_id, // Assign parent_id if provided
-            ]);
-    
-            Session::flash('message', 'Folder created successfully.');
-            return response()->json(['success' => 'Folder created successfully.']);
-        } else {
-            return response()->json(['error' => 'Failed to create folder.'], 500);
-        }
     }
 
     public function getFolder(Request $request)
@@ -103,21 +77,14 @@ class FolderController extends Controller
                 }
             ]
         ]);
-
         $folder = Folder::findOrFail($request->folder_id);
-        $disk = Storage::disk('public'); // Change 'public' to your correct disk
-        if ($disk->exists($folder->folder_name)) {
-            $renameFolder = $disk->move($folder->folder_name, $request->folder_name);
-        } else {
-            return response()->json(['error' => 'Folder does not exist.'], 404);
-        }
-
-        if ($renameFolder) {
+        if ($folder) {
             $folder->update([
-                'ou_id' =>  (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
                 'folder_name' => $request->folder_name,
                 'description' => $request->description,
-                'status' => $request->status
+                'status'      => $request->status,
+                'parent_id'   => $request->parent_id,
+                'ou_id'       => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id
             ]);
 
             Session::flash('message', 'Folder updated successfully.');
