@@ -16,7 +16,9 @@
     </div>
     <br>
     <div id="update_success_msg"></div>
-    <table class="table" id="orgUnitTable">
+    <div class="card pt-4">
+        <div class="card-body">
+    <table class="table table-hover" id="orgUnitTable">
         <thead>
             <tr>
                 <th scope="col">Org Unit Name</th>
@@ -40,12 +42,12 @@
                 <td>{{ $val->lname}}</td>
                 <td>{{ $val->email}}</td> -->
                 <td>{{ $val->users_count }}</td>
-                <td><i class="fa fa-edit edit-orgunit-icon" style="font-size:25px; cursor: pointer;"
+                <td><i class="fa fa-edit edit-orgunit-icon" 
                         data-orgunit-id="{{ encode_id($val->id) }}"
                         data-user-id="{{ encode_id(optional($val->roleOneUsers)->id) }}">
                     </i>
                 </td>
-                <td><i class="fa-solid fa-trash delete-icon" style="font-size:25px; cursor: pointer;"
+                <td><i class="fa-solid fa-trash delete-icon" 
                         data-orgunit-id="{{ encode_id($val->id) }}"
                         data-user-id="{{ encode_id(optional($val->roleOneUsers)->id) }}">
                     </i>
@@ -55,6 +57,9 @@
         </tbody>
     </table>
 </div>
+</div>
+</div>
+
 
 <!-- Create Organizational  Unit-->
 <div class="modal fade" id="orgUnitModal" tabindex="-1" role="dialog" aria-labelledby="orgUnitModalLabel"

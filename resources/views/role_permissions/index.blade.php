@@ -18,7 +18,9 @@
         {{ session()->get('message') }}
     </div>
     @endif
-    <table class="table table-striped" id="role_table" style="padding-top: 10px;">
+    <div class="card pt-4">
+        <div class="card-body">
+    <table class="table table-hover" id="role_table" style="padding-top: 10px;">
         <thead>
             <tr>
                 <th scope="col">Role</th>
@@ -30,11 +32,9 @@
                 <th scope="col">Delete</th>
                 @endif
             </tr>
-            </tr>
         </thead>
         <tbody>
             @foreach($roles as $role)
-            <tr>
             <tr>
                 <td scope="row" class="fname">{{ $role->role_name }}</td>
                 <td>{{ ($role->status==1)? 'Active': 'Inactive' }}</td>
@@ -64,6 +64,8 @@
             @endforeach
         </tbody>
     </table>
+</div>
+</div>
 
 <form method="POST" id="deleteRoleFormId" >
     @csrf
@@ -94,6 +96,8 @@
 
 <script>
 $(document).ready(function() {
+    $('#role_table').DataTable();
+
     $(document).on('click', '.delete-icon', function (e) {
         e.preventDefault();
         var roleId = $(this).data('role-id');

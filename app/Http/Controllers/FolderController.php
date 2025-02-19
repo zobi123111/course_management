@@ -45,7 +45,7 @@ class FolderController extends Controller
             ]
         ]);
         Folder::create([
-            'ou_id' => $ouId,
+            'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id,
             'folder_name' => $request->folder_name,
             'description' => $request->description,
             'status' => $request->status,
