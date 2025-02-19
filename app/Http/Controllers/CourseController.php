@@ -30,8 +30,8 @@ class CourseController extends Controller
             // $groups = Group::where('ou_id', Auth()->user()->ou_id)->get();
         // }
 
-        $urganizationUnits = OrganizationUnits::all();
-        return view('courses.index',compact('courses','urganizationUnits', 'groups'));
+        $organizationUnits = OrganizationUnits::all();
+        return view('courses.index',compact('courses','organizationUnits', 'groups'));
     }
 
     public function create_course()

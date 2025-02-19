@@ -105,6 +105,8 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/folder/edit', [FolderController::class, 'getFolder'])->name('folder.edit');
     Route::post('/folder/update', [FolderController::class, 'updateFolder'])->name('folder.update');
     Route::post('/folder/delete', [FolderController::class, 'deleteFolder'])->name('folder.delete');
+    
+    Route::get('/folder/show/{folder_id}', [FolderController::class, 'showFolder'])->name('folder.show');
 
     //roles 
     Route::resource('roles', RolePermissionController::class);

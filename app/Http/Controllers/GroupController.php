@@ -16,7 +16,7 @@ class GroupController extends Controller
         $currentUser = auth()->user();
         // Fetch users with the same ouid as the logged-in user
         $users = User::where('ou_id', $currentUser->ou_id)->get();
-        $urganizationUnits = OrganizationUnits::all();
+        $organizationUnits = OrganizationUnits::all();
         if ($currentUser->role == 1 && empty($currentUser->ou_id)) {
             $groups = Group::all();
         } else {
@@ -33,7 +33,7 @@ class GroupController extends Controller
             return $group;
         });
         
-        return view('groups.index', compact('groups', 'users', 'urganizationUnits'));
+        return view('groups.index', compact('groups', 'users', 'organizationUnits'));
     }
 
     public function createGroup(Request $request)
