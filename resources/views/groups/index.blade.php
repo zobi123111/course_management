@@ -19,7 +19,9 @@
 @endif
 <br>
 
-<table class="table" id="groupTable">
+<div class="card pt-4">
+        <div class="card-body">
+    <table class="table table-hover" id="groupTable">
     <thead>
         <tr>
             <th scope="col">Group Name</th>
@@ -55,6 +57,9 @@
         @endforeach
     </tbody>
 </table>
+</div>
+</div>
+
 
 <!-- Create Groups-->
 <div class="modal fade" id="createGroupModal" tabindex="-1" role="dialog" aria-labelledby="groupModalLabel"
