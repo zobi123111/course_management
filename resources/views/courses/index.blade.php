@@ -44,6 +44,8 @@
                 <td>
                     @if($val->image)
                         <img src="{{ asset('storage/' . $val->image) }}" alt="Course Image" width="100px">
+                    @else
+                        <img src="{{ asset('/assets/img/profile-img.jpg') }}" alt="Course Image" width="100px">
                     @endif
                 </td>               
                 <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>

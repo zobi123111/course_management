@@ -259,19 +259,19 @@
                     <div class="form-group">
                         <label for="firstname" class="form-label">First Name<span class="text-danger">*</span></label>
                         <input type="text" name="edit_firstname" class="form-control">
-                        <input type="hidden" name="edit_form_id" id="edit_form_id" class="form-control">
+                        <input type="hidden" name="edit_form_id" id="edit_firstname_error_up" class="form-control">
 
                         <div id="fname_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="lastname" class="form-label">Last Name<span class="text-danger">*</span></label>
                         <input type="text" name="edit_lastname" class="form-control">
-                        <div id="lname_error_up" class="text-danger error_e"></div>
+                        <div id="edit_lastname_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Email<span class="text-danger">*</span></label>
                         <input type="email" name="edit_email" class="form-control">
-                        <div id="email_error_up" class="text-danger error_e"></div>
+                        <div id="edit_email_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="lastname" class="form-label">Image<span class="text-danger">*</span></label>
@@ -361,7 +361,7 @@
                             <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
                             @endforeach
                         </select>
-                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                        <div id="ou_id_error_up" class="text-danger error_e"></div>            
                     </div>
                     @endif
                     <div class="form-group">
@@ -376,6 +376,9 @@
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
                         <a href="#" type="button" id="updateForm" class="btn btn-primary sbt_btn">Update</a>
                     </div>
+
+                  <div class="loader" style="display: none;"></div>
+
                 </form>
             </div>
         </div>
@@ -612,8 +615,9 @@
 
         //
 
-        $('.edit-user-icon').click(function(e) {
-            e.preventDefault();
+        // $('.edit-user-icon').click(function(e) {
+        //     e.preventDefault();
+        $('#user_table').on('click', '.edit-user-icon', function() {
             $('.error_ee').html('');
             $("#editUserForm")[0].reset();
             var userId = $(this).data('user-id');
@@ -750,9 +754,9 @@
         // Use event delegation for update form button
         $(document).on('click', '#updateForm', function(e) {
             e.preventDefault();
-            $(".loader").fadeIn();
             var formData = new FormData($('#editUserForm')[0]);
-
+            
+            $(".loader").fadeIn('fast');
             $.ajax({
                 type: 'post',
                 url: "/users/update",
@@ -761,6 +765,7 @@
                 contentType: false,
                 success: function(response) {
                     $(".loader").fadeOut('slow');
+
                     $('#editUserDataModal').modal('hide');
                     $('#update_success_msg').html(`
                     <div class="alert alert-success fade show" role="alert">
@@ -768,10 +773,21 @@
                         ${response.message}
                     </div>
                     `).stop(true, true).fadeIn();
-                    location.reload();
+
+                    setTimeout(function() {
+                        $('#update_success_msg').fadeOut('slow');
+
+                    }, 5000);
+
+                    setTimeout(function() {
+                        location.reload();
+                    }, 100);
+                    // location.reload();
                 },
                 error: function(xhr, status, error) {
-                    $(".loader").fadeOut('slow');
+
+                    $(".loader").fadeOut("slow");
+
                     var errorMessage = JSON.parse(xhr.responseText);
                     var validationErrors = errorMessage.errors;
                     $.each(validationErrors, function(key, value) {
@@ -782,8 +798,10 @@
             });
         });
 
-        $('.delete-icon').click(function(e) {
-            e.preventDefault();
+        // $('.delete-icon').click(function(e) {
+        //     e.preventDefault();
+        $('#user_table').on('click', '.delete-icon', function() {
+
             $('#deleteUserModal').modal('show');
             var userId = $(this).data('user-id');
             var fname = $(this).closest('tr').find('.fname').text();
@@ -794,9 +812,9 @@
 
         });
 
-        setTimeout(function() {
-            $('#successMessage').fadeOut('fast');
-        }, 2000);
+        // setTimeout(function() {
+        //     $('#successMessage').fadeOut('slow');
+        // }, 20000);
 
     });
 </script>
