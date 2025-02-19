@@ -25,6 +25,9 @@
       <th scope="col">Description</th>
       <th scope="col">Status</th>
       @if(checkAllowedModule('folders','folder.edit')->isNotEmpty())
+      <th scope="col"><a href=""></a>View</th>
+      @endif
+      @if(checkAllowedModule('folders','folder.edit')->isNotEmpty())
       <th scope="col">Edit</th>
       @endif
       @if(checkAllowedModule('folders','folder.delete')->isNotEmpty())
@@ -62,7 +65,7 @@
                     @csrf
                     <!-- Parent Folder Selection -->
                     <div class="form-group">
-                        <label for="parent_id" class="form-label">Parent Folder</label>
+                        <label for="parent_id" class="form-label">Parent Folder<span class="text-danger">*</span></label>
                         <select class="form-select" name="parent_id" aria-label="Select Parent Folder">
                             <option value="">No Parent (Root Folder)</option>
                             @foreach($folders as $folder)
@@ -123,6 +126,17 @@
             <div class="modal-body">
                 <form id="editFolder" class="row g-3 needs-validation">
                     @csrf
+                    <!-- Parent Folder Selection -->
+                    <div class="form-group">
+                        <label for="parent_id" class="form-label">Parent Folder<span class="text-danger">*</span></label>
+                        <select class="form-select" name="parent_id" id="edit_parent_folder" aria-label="Select Parent Folder">
+                            <option value="">No Parent (Root Folder)</option>
+                            @foreach($folders as $folder)
+                                <option value="{{ $folder->id }}">{{ $folder->folder_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="parent_id_error_up" class="text-danger error_e"></div>
+                    </div>
                     <div class="form-group">
                         <label for="firstname" class="form-label">Folder Name<span class="text-danger">*</span></label>
                         <input type="text" name="folder_name" id="edit_folder_name" class="form-control">
@@ -238,6 +252,7 @@ $(document).ready(function() {
             data: { id: folderId },
             success: function(response) {
                 console.log(response);
+                $('#edit_parent_folder').val(response.folder.parent_id);
                 $('#edit_folder_name').val(response.folder.folder_name);
                 $('#folder_id').val(response.folder.id);
                 $('#edit_description').val(response.folder.description);
