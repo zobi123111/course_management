@@ -22,4 +22,20 @@ class Courses extends Model
     {
         return $this->hasMany(CourseLesson::class, 'course_id');
     }
+
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class, 'courses_group')->withTimestamps();
+    }
+
+    public function courseGroups()
+    {
+        return $this->hasMany(CourseGroup::class, 'courses_id');
+    }
+    // public function groups()
+    // {
+    //     return $this->belongsToMany(Group::class);
+
+    // }
 }
+

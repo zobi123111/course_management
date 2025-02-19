@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\UserCreated;
+use App\Models\OrganizationUnits;
 use Illuminate\Support\Facades\Storage;
 
 
