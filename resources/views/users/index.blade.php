@@ -220,7 +220,7 @@
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
                         <select class="form-select" name="ou_id" aria-label="Default select example">
                             <option value="">Select Org Unit</option>
-                            @foreach($urganizationUnits as $val)
+                            @foreach($organizationUnits as $val)
                             <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
                             @endforeach
                         </select>
@@ -360,7 +360,7 @@
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
                         <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
                             <option value="">Select Org Unit</option>
-                            @foreach($urganizationUnits as $val)
+                            @foreach($organizationUnits as $val)
                             <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
                             @endforeach
                         </select>

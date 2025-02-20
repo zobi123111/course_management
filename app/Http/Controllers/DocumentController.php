@@ -31,38 +31,50 @@ class DocumentController extends Controller
 
     public function createDocument(Request $request)
     {
-        // dd(auth()->user()->ou_id);
+        // Validate the incoming request
         $request->validate([
             'doc_title' => 'required',
             'version_no' => 'required',
             'issue_date' => 'required|date',
-            // 'expiry_date' => 'required|date',
             'expiry_date' => 'required|date|after:issue_date',
             'document_file' => 'required|file|mimes:pdf|max:2048',
-            'folder' => 'required',
             'status' => 'required',
-            'group' => "required",
-
+            'group' => 'required',
         ]);
-
-        $folder = Folder::find($request->folder);
-        // Handle file upload
-        if ($request->hasFile('document_file')) {
-            $filePath = $request->file('document_file')->store($folder->folder_name, 'public');
+    
+        // Initialize variables
+        $folder = null;
+        $filePath = null;
+    
+        // Check if a folder is selected
+        if ($request->filled('folder')) {
+            $folder = Folder::find($request->folder);
+    
+            if ($folder) {
+                // Store the file in the specified folder
+                $filePath = $request->file('document_file')->store("documents/{$folder->folder_name}", 'public');
+            } else {
+                return response()->json(['error' => 'Invalid folder specified.'], 400);
+            }
+        } else {
+            // Store the file in the default 'documents' folder
+            $filePath = $request->file('document_file')->store('documents', 'public');
         }
-
+    
+        // Create the document record in the database
         Document::create([
             'ou_id' => auth()->user()->ou_id ?? null,
-            'folder_id' => $folder->id,
+            'folder_id' => $folder->id ?? null,
             'group_id' => $request->group,
             'doc_title' => $request->doc_title,
             'version_no' => $request->version_no,
             'issue_date' => $request->issue_date,
             'expiry_date' => $request->expiry_date,
-            'document_file' => $filePath ?? null,
-            'status' => $request->status
+            'document_file' => $filePath,
+            'status' => $request->status,
         ]);
-
+    
+        // Flash success message and return JSON response
         Session::flash('message', 'Document added successfully.');
         return response()->json(['success' => 'Document added successfully.']);
     }
@@ -75,32 +87,32 @@ class DocumentController extends Controller
 
     public function updateDocument(Request $request)
     {
-        // dd(auth()->user()->ou_id);
-        // Validate the request, making 'document_file' optional
+        // Validate the request, making 'folder' optional
         $request->validate([
-            'folder' => 'required',
             'group' => 'required',
             'doc_title' => 'required',
             'version_no' => 'required',
             'issue_date' => 'required|date',
             'expiry_date' => 'required|date|after:issue_date',
             'document_file' => 'nullable|file|mimes:pdf|max:2048', // Optional file
-            'folder' => 'required', // Ensure folder selection
             'status' => 'required',
         ]);
 
         // Retrieve the document by ID
         $document = Document::findOrFail($request->document_id);
 
-        // Retrieve the current folder and new folder
+        // Retrieve the current folder and new folder (if provided)
         $currentFolder = Folder::find($document->folder_id);
-        $newFolder = Folder::find($request->folder);
+        $newFolder = $request->filled('folder') ? Folder::find($request->folder) : null;
 
-        if (!$newFolder) {
+        if ($request->filled('folder') && !$newFolder) {
             return response()->json(['error' => 'Folder not found.'], 404);
         }
 
         $filePath = $document->document_file; // Keep the existing file path by default
+
+        // Determine the storage path
+        $folderPath = $newFolder ? 'documents/' . $newFolder->folder_name : 'documents';
 
         // Handle file upload if a new file is provided
         if ($request->hasFile('document_file')) {
@@ -109,26 +121,23 @@ class DocumentController extends Controller
                 Storage::disk('public')->delete($document->document_file);
             }
 
-            // Store the new file inside the new folder
-            $filePath = $request->file('document_file')->store($newFolder->folder_name, 'public');
-        } else {
-            // If no new file is uploaded, check if the folder has changed
-            if ($currentFolder && $currentFolder->id !== $newFolder->id && $document->document_file) {
-                $oldPath = $document->document_file;
-                $newPath = str_replace($currentFolder->folder_name, $newFolder->folder_name, $oldPath);
+            // Store the new file inside the specified folder (if provided) or use default location
+            $filePath = $request->file('document_file')->store($folderPath, 'public');
+        } elseif ($newFolder && $currentFolder && $currentFolder->id !== $newFolder->id && $document->document_file) {
+            // If no new file is uploaded but the folder is changed, move the existing file
+            $oldPath = $document->document_file;
+            $newPath = str_replace('documents/' . $currentFolder->folder_name, 'documents/' . $newFolder->folder_name, $oldPath);
 
-                // Move the file to the new folder
-                if (Storage::disk('public')->exists($oldPath)) {
-                    Storage::disk('public')->move($oldPath, $newPath);
-                    $filePath = $newPath; // Update file path
-                }
+            if (Storage::disk('public')->exists($oldPath)) {
+                Storage::disk('public')->move($oldPath, $newPath);
+                $filePath = $newPath; // Update file path
             }
         }
 
         // Update the document
         $document->update([
             'ou_id' => auth()->user()->ou_id ?? null,
-            'folder_id' => $newFolder->id, // Update folder reference
+            'folder_id' => $newFolder->id ?? $document->folder_id, // Keep existing folder if none is provided
             'group_id' => $request->group,
             'doc_title' => $request->doc_title,
             'version_no' => $request->version_no,
@@ -142,6 +151,7 @@ class DocumentController extends Controller
         Session::flash('message', 'Document updated successfully.');
         return response()->json(['success' => 'Document updated successfully.']);
     }
+
 
     public function deleteDocument(Request $request)
     {        
