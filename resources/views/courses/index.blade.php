@@ -18,7 +18,9 @@
 </div>
 @endif
 <br>
-<table class="table" id="courseTable">
+<div class="card pt-4">
+        <div class="card-body">
+    <table class="table table-hover" id="courseTable">
   <thead>
     <tr>
       <th scope="col">Course Name</th>
@@ -44,14 +46,16 @@
                 <td>
                     @if($val->image)
                         <img src="{{ asset('storage/' . $val->image) }}" alt="Course Image" width="100px">
+                    @else
+                        <img src="{{ asset('/assets/img/profile-img.jpg') }}" alt="Course Image" width="100px">
                     @endif
                 </td>               
                 <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
                 @if(checkAllowedModule('courses','course.edit')->isNotEmpty())
-                    <td><i class="fa fa-edit edit-course-icon" style="font-size:25px; cursor: pointer;" data-course-id="{{ encode_id($val->id) }}" ></i></td>
+                    <td><i class="fa fa-edit edit-course-icon" data-course-id="{{ encode_id($val->id) }}" ></i></td>
                 @endif
                 @if(checkAllowedModule('courses','course.delete')->isNotEmpty())
-                    <td><i class="fa-solid fa-trash delete-icon" style="font-size:25px; cursor: pointer;" data-course-id="{{ encode_id($val->id) }}" ></i></td>
+                    <td><i class="fa-solid fa-trash delete-icon" data-course-id="{{ encode_id($val->id) }}" ></i></td>
                 @endif  
                 @if(checkAllowedModule('courses','course.show')->isNotEmpty())
                     <td><a href="{{ route('course.show', ['course_id' => encode_id($val->id)]) }}" class="btn btn-warning" id="viewCourse">View Course</a></td>
@@ -60,13 +64,15 @@
     @endforeach
   </tbody>
 </table>
+</div>
+</div>
 
 <!-- Create Courses-->
 <div class="modal fade" id="createCourseModal" tabindex="-1" role="dialog" aria-labelledby="courseModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="courseModalLabel">Create Organizational Unit</h5>
+                <h5 class="modal-title" id="courseModalLabel">Create Course</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -134,7 +140,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editCourseModalLabel">Edit Courses</h5>
+                <h5 class="modal-title" id="editCourseModalLabel">Edit Course</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">

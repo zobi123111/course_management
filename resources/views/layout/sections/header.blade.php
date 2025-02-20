@@ -3,8 +3,9 @@
 
       <div class="d-flex align-items-center justify-content-between">
           <a href="{{ url('dashboard') }}" class="logo d-flex align-items-center">
-              <img src="{{ url('assets/img/logo.png') }}" alt="">
-              <span class="d-none d-lg-block">Management</span>
+              <!-- <img src="{{ url('assets/img/logo.png') }}" alt=""> -->
+              <span class="d-none d-lg-block">{{env('PROJECT_NAME')}}</span>
+
           </a>
           <i class="bi bi-list toggle-sidebar-btn"></i>
       </div><!-- End Logo -->
@@ -19,7 +20,12 @@
               <li class="nav-item dropdown pe-3">
 
                   <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-                      <img src="assets/img/profile-img.jpg" alt="Profile" class="rounded-circle">
+                      {{-- <img src="assets/img/profile-img.jpg" alt="Profile" class="rounded-circle"> --}}
+                        @if(Auth::user()->image)
+                            <img src="{{ asset('storage/' .  Auth()->user()->image) }}" alt="Profile" class="rounded-circle">
+                        @else
+                            <img src="{{ asset('/assets/img/profile-img.jpg') }}" alt="Profile" class="rounded-circle">
+                        @endif
                         <span class="d-none d-md-block dropdown-toggle ps-2"> 
                             @if(Auth::check())
                                 {{ Auth::user()->fname }} {{ Auth::user()->lname }}

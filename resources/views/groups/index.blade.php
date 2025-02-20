@@ -19,11 +19,14 @@
 @endif
 <br>
 
-<table class="table" id="groupTable">
+<div class="card pt-4">
+        <div class="card-body">
+    <table class="table table-hover" id="groupTable">
     <thead>
         <tr>
             <th scope="col">Group Name</th>
             <th scope="col">User Count</th>
+            <th scope="col">OU</th>
             <th scope="col">Status</th>
             @if(checkAllowedModule('groups','group.edit')->isNotEmpty())
             <th scope="col">Edit</th>
@@ -38,6 +41,11 @@
         <tr>
             <td class="groupName">{{ $val->name }}</td>
             <td>{{ $val->user_count }}</td> <!-- Display user count -->
+            @if ($val->ounit)
+                <td>{{ $val->ounit->org_unit_name }}</td>
+            @else
+                <td>--</td>
+            @endif
             <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
             @if(checkAllowedModule('groups','group.edit')->isNotEmpty())
             <td>
@@ -55,6 +63,9 @@
         @endforeach
     </tbody>
 </table>
+</div>
+</div>
+
 
 <!-- Create Groups-->
 <div class="modal fade" id="createGroupModal" tabindex="-1" role="dialog" aria-labelledby="groupModalLabel"
@@ -151,7 +162,7 @@
                             <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
                             @endforeach
                         </select>
-                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                        <div id="ou_id_error_up" class="text-danger error_e"></div>            
                     </div>
                     @endif
                     <div class="form-group">

@@ -25,4 +25,9 @@ class Group extends Model
     {
         return $this->belongsToMany(Courses::class, 'courses_group')->withTimestamps();
     }
+
+    public function ounit()
+    {
+        return $this->belongsTo(OrganizationUnits::class, 'ou_id', 'id');
+    }
 }

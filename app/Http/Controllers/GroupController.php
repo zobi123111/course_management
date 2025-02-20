@@ -10,31 +10,66 @@ use Illuminate\Support\Facades\Session;
 
 class GroupController extends Controller
 {
+    // public function index()
+    // {
+    //     //Get the currently logged-in user
+    //     $currentUser = auth()->user();
+    //     // Fetch users with the same ouid as the logged-in user
+    //     $users = User::where('ou_id', $currentUser->ou_id)->get();
+    //     $urganizationUnits = OrganizationUnits::all();
+    //     if ($currentUser->role == 1 && empty($currentUser->ou_id)) {
+    //         $groups = Group::all();
+    //     } else {
+    //         $groups = Group::where('ou_id', $currentUser->ou_id)->get();
+    //     }
+        
+    //     // Process user counts safely
+    //     $groups = $groups->map(function ($group) {
+    //         // Decode user_ids only if it's a string
+    //         $userIds = is_string($group->user_ids) ? json_decode($group->user_ids, true) : $group->user_ids;
+            
+    //         // Ensure it's an array before counting
+    //         $group->user_count = is_array($userIds) ? count($userIds) : 0;
+    //         return $group;
+    //     });
+        
+    //     return view('groups.index', compact('groups', 'users', 'urganizationUnits'));
+    // }
+
     public function index()
     {
-        //Get the currently logged-in user
         $currentUser = auth()->user();
-        // Fetch users with the same ouid as the logged-in user
         $users = User::where('ou_id', $currentUser->ou_id)->get();
         $organizationUnits = OrganizationUnits::all();
+        
+        $groups = Group::all();
+
         if ($currentUser->role == 1 && empty($currentUser->ou_id)) {
             $groups = Group::all();
-        } else {
+        } 
+        elseif ($currentUser->role == 3) {
+            $userId = $currentUser->id;
+
+            $groups = $groups->filter(function ($group) use ($userId) {
+                $userIds = is_string($group->user_ids) ? json_decode($group->user_ids, true) : $group->user_ids;
+
+                return in_array($userId, $userIds);
+            });
+        } 
+        else {
             $groups = Group::where('ou_id', $currentUser->ou_id)->get();
         }
-        
-        // Process user counts safely
+
         $groups = $groups->map(function ($group) {
-            // Decode user_ids only if it's a string
             $userIds = is_string($group->user_ids) ? json_decode($group->user_ids, true) : $group->user_ids;
-            
-            // Ensure it's an array before counting
+
             $group->user_count = is_array($userIds) ? count($userIds) : 0;
             return $group;
         });
         
         return view('groups.index', compact('groups', 'users', 'organizationUnits'));
     }
+
 
     public function createGroup(Request $request)
     {   

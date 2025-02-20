@@ -9,8 +9,8 @@
     <meta content="" name="keywords">
 
     <!-- Favicons -->
-    <link href="{{ url('assets/img/favicon.png') }}" rel="icon">
-    <link href="{{ url('assets/img/apple-touch-icon.png') }}" rel="apple-touch-icon">
+    <!-- <link href="{{ url('assets/img/favicon.png') }}" rel="icon">
+    <link href="{{ url('assets/img/apple-touch-icon.png') }}" rel="apple-touch-icon"> -->
 
     <!-- Google Fonts -->
     <link href="https://fonts.gstatic.com" rel="preconnect">
@@ -51,13 +51,13 @@
       
       
       
-        .dropdown-menu li a::after {
+        /* .dropdown-menu li a::after {
             margin-right: 4px;
             position: absolute;
             right: 15px;
             content: "";
             font-family: fcicons !important;
-        }
+        } */
       
       
         #loader {
