@@ -17,7 +17,7 @@ class UserController extends Controller
     public function users()
     {
        $ou_id =  auth()->user()->ou_id;
-       $urganizationUnits = OrganizationUnits::all();
+       $organizationUnits = OrganizationUnits::all();
        if(empty($ou_id)){
            $users = User::all();
         }else{
@@ -25,7 +25,7 @@ class UserController extends Controller
        }
        $roles = Role::all();
 
-        return view('users.index', compact('users', 'roles', 'urganizationUnits'));
+        return view('users.index', compact('users', 'roles', 'organizationUnits'));
     }
 
     public function save_user(Request $request)

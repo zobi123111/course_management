@@ -19,7 +19,9 @@
 @endif
 <br>
 
-<table class="table" id="groupTable">
+<div class="card pt-4">
+        <div class="card-body">
+    <table class="table table-hover" id="groupTable">
     <thead>
         <tr>
             <th scope="col">Group Name</th>
@@ -61,6 +63,9 @@
         @endforeach
     </tbody>
 </table>
+</div>
+</div>
+
 
 <!-- Create Groups-->
 <div class="modal fade" id="createGroupModal" tabindex="-1" role="dialog" aria-labelledby="groupModalLabel"
@@ -94,7 +99,7 @@
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
                         <select class="form-select" name="ou_id" aria-label="Default select example">
                             <option value="">Select Org Unit</option>
-                            @foreach($urganizationUnits as $val)
+                            @foreach($organizationUnits as $val)
                             <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
                             @endforeach
                         </select>
@@ -153,7 +158,7 @@
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
                         <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
                             <option value="">Select Org Unit</option>
-                            @foreach($urganizationUnits as $val)
+                            @foreach($organizationUnits as $val)
                             <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
                             @endforeach
                         </select>

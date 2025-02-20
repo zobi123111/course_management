@@ -1,5 +1,5 @@
 
-@section('title', 'Folders')
+@section('title', 'Folder')
 @section('sub-title', 'Folders')
 @extends('layout.app')
 @section('content')
@@ -11,13 +11,6 @@
 </div>
 @endif
 
-@if(checkAllowedModule('courses','course.store')->isNotEmpty())
-<div class="create_btn">
-    <button class="btn btn-primary create-button" id="createFolder" data-toggle="modal"
-    data-target="#createFolderModal">Create Folders</button>
-</div>
-@endif
-<br>
 <table class="table" id="folderTable">
   <thead>
     <tr>
@@ -32,10 +25,10 @@
             <tr>
                 <td class="folderName">{{ $val->folder_name}}</td>
                 <td>{{ $val->description}}</td>
-                <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td> 
+                <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
                 <td>
-                 <a href="{{ route('folder.show', ['folder_id' =>  encode_id($val->id) ]) }}" class="text-decoration-none"> <i class="fa fa-eye" style="font-size:18px; cursor: pointer;" data-folder-id="{{ encode_id($val->id) }}"></i></a>   
-                @if(checkAllowedModule('folders','folder.edit')->isNotEmpty())
+                 <a href="{{ route('folder.show', ['folder_id' =>  encode_id($val->id)]) }}" class="text-decoration-none"> <i class="fa fa-eye" style="font-size:18px; cursor: pointer;" data-folder-id="{{ encode_id($val->id) }}"></i></a>   
+                 @if(checkAllowedModule('folders','folder.edit')->isNotEmpty())
                 <i class="fa fa-edit edit-folder-icon m-2" style="font-size:18px; cursor: pointer;" data-folder-id="{{ encode_id($val->id) }}" ></i>
                 @endif
                 @if(checkAllowedModule('folders','folder.delete')->isNotEmpty())
@@ -56,7 +49,7 @@
     @endforeach
   </ul>
 @else
-  <p>No documents available in the root directory.</p>
+  <p>No documents available in the current directory.</p>
 @endif
 
 <!-- Create Courses-->
@@ -70,13 +63,13 @@
             <div class="modal-body">
                 <form action="" id="folders" method="POST" class="row g-3 needs-validation">
                     @csrf
-                   <!-- Parent Folder Selection -->
+                    <!-- Parent Folder Selection -->
                     <div class="form-group">
                         <label for="parent_id" class="form-label">Parent Folder<span class="text-danger">*</span></label>
                         <select class="form-select" name="parent_id" aria-label="Select Parent Folder">
                             <option value="">No Parent (Root Folder)</option>
                             @foreach($folders as $folder)
-                                @include('folders.partials.folder_option', ['folder' => $folder, 'level' => 0])
+                                <option value="{{ $folder->id }}">{{ $folder->folder_name }}</option>
                             @endforeach
                         </select>
                         <div id="parent_id_error" class="text-danger error_e"></div>
@@ -259,8 +252,7 @@ $(document).ready(function() {
             data: { id: folderId },
             success: function(response) {
                 console.log(response);
-                // Set parent folder dropdown
-                $('#edit_parent_folder').val(response.folder.parent_id).trigger('change');
+                $('#edit_parent_folder').val(response.folder.id).trigger('change');
                 $('#edit_folder_name').val(response.folder.folder_name);
                 $('#folder_id').val(response.folder.id);
                 $('#edit_description').val(response.folder.description);

@@ -78,7 +78,6 @@ class CourseController extends Controller
     
         if ($role == 3) {
             $groups = Group::all();
-    
             $filteredGroups = $groups->filter(function ($group) use ($userId) {
                 $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);
                 
@@ -102,9 +101,9 @@ class CourseController extends Controller
             $groups = Group::all();
         }
     
-        $urganizationUnits = OrganizationUnits::all();
+        $organizationUnits = OrganizationUnits::all();
     
-        return view('courses.index', compact('courses', 'urganizationUnits', 'groups'));
+        return view('courses.index', compact('courses', 'organizationUnits', 'groups'));
     }
     
 

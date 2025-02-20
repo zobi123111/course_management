@@ -48,7 +48,9 @@
     </div>
     @endif
     <div id="update_success_msg"></div>
-    <table class="table" id="user_table">
+    <div class="card pt-4">
+        <div class="card-body">
+    <table class="table table-hover" id="user_table">
         <thead>
             <tr>
                 <th scope="col">Image</th>
@@ -101,6 +103,7 @@
             @endforeach
         </tbody>
     </table>
+    </div></div>
 </div>
 
 <!-- Create User -->
@@ -108,7 +111,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="userModalLabel">Create Employee</h5>
+                <h5 class="modal-title" id="userModalLabel">Create User</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -217,7 +220,7 @@
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
                         <select class="form-select" name="ou_id" aria-label="Default select example">
                             <option value="">Select Org Unit</option>
-                            @foreach($urganizationUnits as $val)
+                            @foreach($organizationUnits as $val)
                             <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
                             @endforeach
                         </select>
@@ -250,7 +253,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editUserDataModalLabel">Edit Employee</h5>
+                <h5 class="modal-title" id="editUserDataModalLabel">Edit User</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -357,7 +360,7 @@
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
                         <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
                             <option value="">Select Org Unit</option>
-                            @foreach($urganizationUnits as $val)
+                            @foreach($organizationUnits as $val)
                             <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
                             @endforeach
                         </select>

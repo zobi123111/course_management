@@ -40,7 +40,7 @@ class GroupController extends Controller
     {
         $currentUser = auth()->user();
         $users = User::where('ou_id', $currentUser->ou_id)->get();
-        $urganizationUnits = OrganizationUnits::all();
+        $organizationUnits = OrganizationUnits::all();
         
         $groups = Group::all();
 
@@ -67,7 +67,7 @@ class GroupController extends Controller
             return $group;
         });
         
-        return view('groups.index', compact('groups', 'users', 'urganizationUnits'));
+        return view('groups.index', compact('groups', 'users', 'organizationUnits'));
     }
 
 
