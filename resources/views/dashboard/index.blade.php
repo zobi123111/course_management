@@ -9,7 +9,7 @@
 
 
 <section class="section dashboard">
-  @if(auth()->user()->role == 1 )
+  @if(!empty(auth()->user()->is_owner) )
     <div class="row">
         <!-- Left side columns -->
         <div class="col-lg-8">
@@ -135,7 +135,7 @@
         </div>
       </div>
     </div>
-  @elseif (auth()->user()->role == 3 )
+  @elseif (empty(auth()->user()->is_owner) )
     <div class="row">
       <!-- Left side columns -->
       <div class="col-lg-8">

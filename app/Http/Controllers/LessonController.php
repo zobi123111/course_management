@@ -15,37 +15,7 @@ class LessonController extends Controller
     /**
      * Display a listing of the resource.
      */
-    // public function index()
-    // {
-    //     $id = Auth::user()->ou_id;
-    //     if(Auth::user()->role==1 && empty(Auth::user()->ou_id)){
-    //         $lessons = CourseLesson::all();
-    //     }else{            
-    //         $lessons = CourseLesson::where('ou_id', $id)->get();
-    //     }
-
-    //     // dd($lessons);
-    //     return view('lesson.show',compact('lessons'));
-    // }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-
-
-    // public function showCourse(Request $request,$course_id)
-    // {
-    //     // $course = Courses::with('courseLessons')->find(decode_id($course_id));
-    //     $course = Courses::with('courseLessons')->findOrFail(decode_id($course_id));
-
-    //     $breadcrumbs = [
-    //         ['title' => 'Courses', 'url' => route('course.index')],  // Link to the courses index
-    //         ['title' => $course->course_title, 'url' => ''],  // Current course title (no link for the current page)
-    //     ];
-
-    //     return view('courses.show', compact('course', 'breadcrumbs'));
-    // }
-
+    
     public function showCourse(Request $request, $course_id)
     {
 
@@ -58,8 +28,8 @@ class LessonController extends Controller
         // dd($course->course_name);
 
         $breadcrumbs = [
-            ['title' => 'Courses', 'url' => route('course.index')],  // Link to course index
-            ['title' => $course->course_name, 'url' => ''],  // Course title should show here
+            ['title' => 'Courses', 'url' => route('course.index')],
+            ['title' => $course->course_name, 'url' => ''],
         ];
 
         return view('courses.show', compact('course', 'breadcrumbs'));
@@ -104,31 +74,18 @@ class LessonController extends Controller
         return response()->json(['lesson'=> $lesson]);
     }
 
-    // public function showLesson(Request $request)
-    // {
-    //     $lesson = CourseLesson::with('sublessons')->findOrFail(decode_id($request->id));
-
-    //     // dd($lesson);
-    //     return view('lesson.show', compact('lesson'));
-    // }.
-
     public function showLesson(Request $request)
     {
-        // Fetch the lesson along with its sub-lessons
         $lesson = CourseLesson::with('sublessons')->findOrFail(decode_id($request->id));
 
-        // Fetch the associated course for the lesson
-        $course = $lesson->course;  // Assuming your `CourseLesson` model has a `course` relationship
+        $course = $lesson->course;
 
-        // Define the breadcrumb
         $breadcrumbs = [
             ['title' => 'Courses', 'url' => route('course.index')],
             ['title' => $course->course_name, 'url' => route('course.show', encode_id($course->id))],
-            ['title' => $lesson->lesson_title, 'url' => route('lesson.show', encode_id($lesson->id))],
-            ['title' => 'Lesson Details', 'url' => ''],
+            ['title' => $lesson->lesson_title, 'url' => ''],
         ];
 
-        // Pass the lesson and breadcrumb data to the view
         return view('lesson.show', compact('lesson', 'breadcrumbs'));
     }
 

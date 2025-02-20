@@ -3,13 +3,56 @@
 @extends('layout.app')
 @section('content')
 
+<style>
+    .course-image {
+        height: 200px;
+        object-fit: cover;
+        width: 100%;
+    }
 
+    .card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .card-body {
+        flex-grow: 1; /* Ensures the description area expands to fill remaining space */
+        min-height: 200px; /* Set the minimum height to ensure consistent card size */
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start; /* Ensures content is aligned at the top */
+    }
+
+    .card-footer {
+        display: flex;
+        justify-content: space-between; /* Align buttons in a row with space in between */
+        padding: 10px;
+        background-color: #f8f9fa;
+    }
+
+    .card-footer .btn {
+        /* flex: 1; */
+        /* margin: 0 5px; */
+    }
+
+    .card-text {
+        flex-grow: 1; /* Ensures the description takes available space */
+    }
+
+
+    .active-link a {
+       color: #0d6efd !important; /* Ensures the description takes available space */
+    }
+
+
+</style>
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         @foreach($breadcrumbs as $breadcrumb)
             @if($breadcrumb['url']) 
-                <li class="breadcrumb-item"><a href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['title'] }}</a></li>
+                <li class="breadcrumb-item active-link"  ><a href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['title'] }}</a></li>
             @else
                 <li class="breadcrumb-item active" aria-current="page">{{ $breadcrumb['title'] }}</li>
             @endif
@@ -51,18 +94,12 @@
 
  <!-- List group with Advanced Contents -->
 <div class="list-group">
-    @foreach($course->courseLessons as $val)
+    {{-- @foreach($course->courseLessons as $val)
         <div class="list-group-item " aria-current="true">
             <div class="d-flex w-100 justify-content-between">
                     <h5 class="mb-1 lessontitle"> {{ $val->lesson_title }}</h5>
                 <span>
-                {{-- <a href="{{ route('lesson.show', ['id' => encode_id($val->id)]) }}" style="text-decoration: none;">
-                    <i class="fa fa-eye" style="font-size:18px; cursor: pointer; margin-right: 5px;"></i>
-                </a>                     --}}
-                {{-- <a href="{{ route('lesson.show', ['id' => encode_id($val->id)]) }}" class="btn btn-warning" id="viewCourse"> 
-                    <i class="fa fa-eye" style="font-size:18px; cursor: pointer; margin-right: 5px;"></i>
-                    View Lesson
-                </a> --}}
+            
                 @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
                     <i class="fa fa-eye show-lesson-icon" style="font-size:18px; cursor: pointer; margin-right: 5px;" data-lesson-id="{{ encode_id($val->id) }}"></i>
                 @endif
@@ -78,23 +115,53 @@
             </div>
             <p class="mb-1">{{ $val->description }}</p>
         </div>
-    @endforeach
-    <!-- <a href="#" class="list-group-item list-group-item-action">
-        <div class="d-flex w-100 justify-content-between">
-        <h5 class="mb-1">List group item heading</h5>
-        <small class="text-muted">3 days ago</small>
+    @endforeach --}}
+
+    <div class="container-fluid">
+        <div class="row">
+            @foreach($course->courseLessons as $val)
+                <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                    <div class="card course-card">
+                        <div class="course-image-container" style="position: relative;">
+                            <span class="status-label" style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
+                                {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
+                            </span>
+                        </div>
+    
+                        <div class="card-body">
+                            <h5 class="card-title">{{ $val->lesson_title}}</h5>
+    
+                            <p class="card-text">
+                                {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
+                            </p>
+                        </div>
+    
+                        <div class="card-footer d-flex justify-content-between">
+
+                            @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
+                                <a href="javascript:void(0)" class="btn btn-light show-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
+                                    <i class="fa fa-edit"></i> Show
+                                </a>
+                            @endif
+
+                            @if(checkAllowedModule('courses', 'lesson.edit')->isNotEmpty())
+                                <a href="javascript:void(0)" class="btn btn-light edit-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
+                                    <i class="fa fa-edit"></i> Edit
+                                </a>
+                            @endif
+
+                            @if(checkAllowedModule('courses', 'lesson.delete')->isNotEmpty())
+                                <a href="javascript:void(0)" class="btn btn-light delete-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
+                                    <i class="fa-solid fa-trash"></i> Delete
+                                </a>
+                            @endif
+
+                        </div>
+                    </div>
+                </div>
+            @endforeach
         </div>
-        <p class="mb-1">Some placeholder content in a paragraph.</p>
-        <small class="text-muted">And some muted small print.</small>
-    </a>
-    <a href="#" class="list-group-item list-group-item-action">
-        <div class="d-flex w-100 justify-content-between">
-        <h5 class="mb-1">List group item heading</h5>
-        <small class="text-muted">3 days ago</small>
-        </div>
-        <p class="mb-1">Some placeholder content in a paragraph.</p>
-        <small class="text-muted">And some muted small print.</small>
-    </a> -->
+    </div>
 </div><!-- End List group Advanced Content -->
 
 

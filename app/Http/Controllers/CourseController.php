@@ -75,8 +75,10 @@ class CourseController extends Controller
         $userId = Auth::user()->id;
         $ouId = Auth::user()->ou_id;
         $role = Auth::user()->role;
+
+
     
-        if ($role == 3) {
+        if (checkAllowedModule('courses', 'course.index')->isNotEmpty()) {
             $groups = Group::all();
             $filteredGroups = $groups->filter(function ($group) use ($userId) {
                 $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);

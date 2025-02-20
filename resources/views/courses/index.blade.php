@@ -4,6 +4,50 @@
 @extends('layout.app')
 @section('content')
 
+
+<style>
+    .course-image {
+        height: 200px;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .card-body {
+        flex-grow: 1; /* Ensures the description area expands to fill remaining space */
+        min-height: 200px; /* Set the minimum height to ensure consistent card size */
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start; /* Ensures content is aligned at the top */
+    }
+
+    .card-footer {
+        display: flex;
+        justify-content: space-between; /* Align buttons in a row with space in between */
+        padding: 10px;
+        background-color: #f8f9fa;
+    }
+
+    .card-footer .btn {
+        /* flex: 1; */
+        /* margin: 0 5px; */
+    }
+
+    .card-text {
+        flex-grow: 1; /* Ensures the description takes available space */
+    }
+
+
+</style>
+
+
+
+
 @if(session()->has('message'))
 <div id="successMessage" class="alert alert-success fade show" role="alert">
   <i class="bi bi-check-circle me-1"></i>
@@ -19,52 +63,111 @@
 @endif
 <br>
 <div class="card pt-4">
-        <div class="card-body">
-    <table class="table table-hover" id="courseTable">
-  <thead>
-    <tr>
-      <th scope="col">Course Name</th>
-      <th scope="col">Description</th>
-      <th scope="col">Image</th>
-      <th scope="col">Status</th>
-      @if(checkAllowedModule('courses','course.edit')->isNotEmpty())
-      <th scope="col">Edit</th>
-      @endif
-      @if(checkAllowedModule('courses','course.delete')->isNotEmpty())
-      <th scope="col">Delete</th>
-      @endif
-      @if(checkAllowedModule('courses','course.show')->isNotEmpty())
-      <th scope="col">Lesson</th>
-      @endif
-    </tr>
-  </thead>
-  <tbody>
-    @foreach($courses as $val)
-            <tr>
-                <td class="courseName">{{ $val->course_name}}</td>
-                <td>{{ $val->description}}</td>
-                <td>
-                    @if($val->image)
-                        <img src="{{ asset('storage/' . $val->image) }}" alt="Course Image" width="100px">
-                    @else
-                        <img src="{{ asset('/assets/img/profile-img.jpg') }}" alt="Course Image" width="100px">
-                    @endif
-                </td>               
-                <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
+    <div class="card-body">
+        {{-- <table class="table table-hover" id="courseTable">
+            <thead>
+                <tr>
+                <th scope="col">Course Name</th>
+                <th scope="col">Description</th>
+                <th scope="col">Image</th>
+                <th scope="col">Status</th>
                 @if(checkAllowedModule('courses','course.edit')->isNotEmpty())
-                    <td><i class="fa fa-edit edit-course-icon" data-course-id="{{ encode_id($val->id) }}" ></i></td>
+                <th scope="col">Edit</th>
                 @endif
                 @if(checkAllowedModule('courses','course.delete')->isNotEmpty())
-                    <td><i class="fa-solid fa-trash delete-icon" data-course-id="{{ encode_id($val->id) }}" ></i></td>
-                @endif  
+                <th scope="col">Delete</th>
+                @endif
                 @if(checkAllowedModule('courses','course.show')->isNotEmpty())
-                    <td><a href="{{ route('course.show', ['course_id' => encode_id($val->id)]) }}" class="btn btn-warning" id="viewCourse">View Course</a></td>
-                @endif  
-            </tr> 
-    @endforeach
-  </tbody>
-</table>
-</div>
+                <th scope="col">Lesson</th>
+                @endif
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($courses as $val)
+                        <tr>
+                            <td class="courseName">{{ $val->course_name}}</td>
+                            <td>{{ $val->description}}</td>
+                            <td>
+                                @if($val->image)
+                                    <img src="{{ asset('storage/' . $val->image) }}" alt="Course Image" width="100px">
+                                @else
+                                    <img src="{{ asset('/assets/img/profile-img.jpg') }}" alt="Course Image" width="100px">
+                                @endif
+                            </td>               
+                            <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
+                            @if(checkAllowedModule('courses','course.edit')->isNotEmpty())
+                                <td><i class="fa fa-edit edit-course-icon" data-course-id="{{ encode_id($val->id) }}" ></i></td>
+                            @endif
+                            @if(checkAllowedModule('courses','course.delete')->isNotEmpty())
+                                <td><i class="fa-solid fa-trash delete-icon" data-course-id="{{ encode_id($val->id) }}" ></i></td>
+                            @endif  
+                            @if(checkAllowedModule('courses','course.show')->isNotEmpty())
+                                <td><a href="{{ route('course.show', ['course_id' => encode_id($val->id)]) }}" class="btn btn-warning" id="viewCourse">View Course</a></td>
+                            @endif  
+                        </tr> 
+                @endforeach
+            </tbody>
+        </table> --}}
+
+        <div class="container-fluid">
+            <div class="row">
+                @foreach($courses as $val)
+                    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                        <div class="card course-card">
+                            {{-- Course image and status --}}
+                            <div class="course-image-container" style="position: relative;">
+                                @if($val->image)
+                                    <img src="{{ asset('storage/' . $val->image) }}" class="card-img-top course-image" alt="Course Image">
+                                @else
+                                    <img src="{{ asset('/assets/img/profile-img.jpg') }}" class="card-img-top course-image" alt="Course Image">
+                                @endif
+        
+                                {{-- Status label positioned at the top-right corner --}}
+                                <span class="status-label" style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
+                                    {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
+                                </span>
+                            </div>
+        
+                            <div class="card-body">
+                                <h5 class="card-title">{{ $val->course_name}}</h5>
+        
+                                {{-- Limit description to 50 words --}}
+                                <p class="card-text">
+                                    {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
+                                </p>
+                            </div>
+        
+                            {{-- Action Buttons Row --}}
+                            <div class="card-footer d-flex justify-content-between">
+                                {{-- View Course Button --}}
+                                @if(checkAllowedModule('courses', 'course.show')->isNotEmpty())
+                                    <a href="{{ route('course.show', ['course_id' => encode_id($val->id)]) }}" class="btn btn-light">
+                                        <i class="fa fa-eye"></i> View Course
+                                    </a>
+                                @endif
+        
+                                {{-- Edit Button --}}
+                                @if(checkAllowedModule('courses', 'course.edit')->isNotEmpty())
+                                    <a href="javascript:void(0)" class="btn btn-light edit-course-icon" data-course-id="{{ encode_id($val->id) }}">
+                                        <i class="fa fa-edit"></i> Edit
+                                    </a>
+                                @endif
+        
+                                {{-- Delete Button --}}
+                                @if(checkAllowedModule('courses', 'course.delete')->isNotEmpty())
+                                    <a href="javascript:void(0)" class="btn btn-light delete-icon" data-course-id="{{ encode_id($val->id) }}">
+                                        <i class="fa-solid fa-trash"></i> Delete
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        
+        
+    </div>
 </div>
 
 <!-- Create Courses-->
@@ -233,159 +336,6 @@
 
 <script>
 
-// function initializeSelect2() {
-//     $('.groups-select').select2({
-//         allowClear: true,
-//         multiple: true,
-//         dropdownParent: $('.modal:visible')
-//     });
-// }
-
-// $(document).ready(function() {
-//     $('#courseTable').DataTable();
-
-//     initializeSelect2();
-
-//     $("#createCourse").on('click', function(){
-//         $(".error_e").html('');
-//         $("#courses")[0].reset();
-//         $(".groups-select").val(null).trigger("change");
-//         $("#createCourseModal").modal('show');
-
-//         $("#createCourseModal").modal('show');
-
-//         $('#createCourseModal').on('shown.bs.modal', function () {
-//             initializeSelect2();
-//         });
-//     })
-
-//     $("#submitCourse").on("click", function(e){
-//         e.preventDefault();
-//         var formData = new FormData($('#courses')[0]);
-        
-//         $.ajax({
-//             url: '{{ url("/course/create") }}',
-//             type: 'POST',
-//             // data: $("#courses").serialize(),
-//             data: formData,
-//             processData: false,
-//             contentType: false,
-//             success: function(response) {
-//                 $('#createCourseModal').modal('hide');
-//                 location.reload();
-//             },
-//             error: function(xhr, status, error){
-//                 var errorMessage = JSON.parse(xhr.responseText);
-//                 var validationErrors = errorMessage.errors;
-//                 $.each(validationErrors, function(key,value){
-//                     var msg = '<p>'+value+'<p>';
-//                     $('#'+key+'_error').html(msg); 
-//                 }) 
-//             }
-//         });
-
-//     })
-
-//     // $('.edit-course-icon').click(function(e) {
-//     //     e.preventDefault();
-
-//     //     $('.error_e').html('');
-//     //     var courseId = $(this).data('course-id');
-//     //     $.ajax({
-//     //         url: "{{ url('/course/edit') }}", 
-//     //         type: 'GET',
-//     //         data: { id: courseId },
-//     //         success: function(response) {
-//     //             console.log(response);
-//     //             $('input[name="course_name"]').val(response.course.course_name);
-//     //             $('input[name="course_id"]').val(response.course.id);
-//     //             $('#edit_description').val(response.course.description);
-//     //             $('#edit_ou_id').val(response.course.ou_id);
-//     //             $('#edit_status').val(response.course.status);
-
-//     //             $('#editCourseModal').modal('show');
-//     //         },
-//     //         error: function(xhr, status, error) {
-//     //             console.error(xhr.responseText);
-//     //         }
-//     //     });
-//     // });
-
-//     $('.edit-course-icon').click(function(e) {
-//         e.preventDefault();
-
-//         $('.error_e').html('');  // Clear previous errors
-//         var courseId = $(this).data('course-id');  // Get course ID from button data attribute
-        
-//         // Make AJAX request to fetch course details
-//         $.ajax({
-//             url: "{{ url('/course/edit') }}",  // Make sure this URL is correct
-//             type: 'GET',
-//             data: { id: courseId },
-//             success: function(response) {
-//                 // Populate the modal fields with course data
-//                 $('input[name="course_name"]').val(response.course.course_name);
-//                 $('input[name="course_id"]').val(response.course.id);
-//                 $('#edit_description').val(response.course.description);
-//                 $('#edit_ou_id').val(response.course.ou_id);
-//                 $('#edit_status').val(response.course.status);
-
-//                 // Pre-select groups based on the course's existing groups
-//                 var selectedGroups = response.course.groups.map(function(group) {
-//                     return group.id;
-//                 });
-
-//                 // Dynamically set the selected groups in the dropdown
-//                 $('.groups-select').val(selectedGroups).trigger('change');  // Select the values in the dropdown
-                
-//                 // Show the edit modal
-//                 $('#editCourseModal').modal('show');
-//             },
-//             error: function(xhr, status, error) {
-//                 console.error(xhr.responseText);  // Log errors to console if AJAX fails
-//             }
-//         });
-//     });
-
-
-//     $('#updateCourse').on('click', function(e){
-//         e.preventDefault();
-//         var formData = new FormData($('#editCourse')[0]);
-//         $.ajax({
-//             url: "{{ url('course/update') }}",
-//             type: "POST",
-//             data: formData,
-//             processData: false,
-//             contentType: false,
-//             success: function(response){
-//                 $('#editCourseModal').modal('hide');
-//                 location.reload();
-//             },
-//             error: function(xhr, status, error){
-//                 var errorMessage = JSON.parse(xhr.responseText);
-//                 var validationErrors = errorMessage.errors;
-//                 $.each(validationErrors, function(key,value){
-//                     var msg = '<p>'+value+'<p>';
-//                     $('#'+key+'_error_up').html(msg); 
-//                 }) 
-//             }
-//         })
-//     })
-
-//     $('.delete-icon').click(function(e) {
-//     e.preventDefault();
-//         $('#deleteCourse').modal('show');
-//         var courseId = $(this).data('course-id');
-//         var courseName = $(this).closest('tr').find('.courseName').text();
-//         $('#append_name').html(courseName);
-//         $('#courseId').val(courseId);
-      
-//     });
-
-// });
-
-
-
 function initializeSelect2() {
     $('.groups-select').select2({
         allowClear: true,
@@ -434,43 +384,6 @@ $(document).ready(function() {
             }
         });
     });
-
-    // Edit Course functionality
-    // $('.edit-course-icon').click(function(e) {
-    //     e.preventDefault();
-
-    //     $('.error_e').html('');
-    //     var courseId = $(this).data('course-id');
-    //     $.ajax({
-    //         url: "{{ url('/course/edit') }}",
-    //         type: 'GET',
-    //         data: { id: courseId },
-    //         success: function(response) {
-    //             $('input[name="course_name"]').val(response.course.course_name);
-    //             $('input[name="course_id"]').val(response.course.id);
-    //             $('#edit_description').val(response.course.description);
-    //             $('#edit_ou_id').val(response.course.ou_id);
-    //             $('#edit_status').val(response.course.status);
-
-    //             // Pre-select groups based on the course's existing groups
-    //             var selectedGroups = response.course.groups.map(function(group) {
-    //                 return group.id;
-    //             });
-
-    //             // Dynamically set the selected groups in the dropdown
-    //             $('.groups-select').val(selectedGroups).trigger('change');
-
-    //             $('#editCourseModal').modal('show');
-    //             $('#editCourseModal').on('shown.bs.modal', function () {
-    //             initializeSelect2(); // Re-initialize select2 for groups select
-    //         });
-    //         },
-    //         error: function(xhr, status, error) {
-    //             console.error(xhr.responseText);
-    //         }
-    //     });
-    // });
-
 
     $('.edit-course-icon').click(function(e) {
         e.preventDefault();
