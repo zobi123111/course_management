@@ -101,10 +101,11 @@
                     <div class="form-group">
                         <label for="email" class="form-label">Select Folder<span class="text-danger">*</span></label>
                         <select class="form-select" name="folder" aria-label="Default select example">
-                            <option value="">Select Folder</option>
-                            @foreach($folders as $val)
-                            <option value="{{ $val->id }}">{{ $val->folder_name }}</option>
-                            @endforeach
+                            <option value="">No Parent (Root Folder)</option>
+                                @foreach($folders as $folder)
+                                    @include('folders.partials.folder_option', ['folder' => $folder, 'level' => 0])
+                                @endforeach
+                        </select>
                         </select>
                         <div id="folder_error" class="text-danger error_e"></div>            
                     </div>
@@ -177,10 +178,13 @@
                     <div class="form-group">
                         <label for="email" class="form-label">Select Folder<span class="text-danger">*</span></label>
                         <select class="form-select" name="folder" id="edit_folder" aria-label="Default select example">
-                            <option value="">Select Folder</option>
-                            @foreach($folders as $val)
-                            <option value="{{ $val->id }}">{{ $val->folder_name }}</option>
-                            @endforeach
+                            <option value="">No Parent (Root Folder)</option>
+                                @foreach($folders as $folder)
+                                    @include('folders.partials.folder_option', [
+                                        'folder' => $folder, 
+                                        'level' => 0
+                                    ])
+                                @endforeach
                         </select>
                         <div id="folder_error_up" class="text-danger error_e"></div>            
                     </div>

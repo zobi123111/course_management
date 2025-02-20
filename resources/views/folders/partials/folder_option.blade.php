@@ -4,6 +4,9 @@
 
 @if($folder->children && $folder->children->count() > 0)
     @foreach($folder->children as $child)
-        @include('folders.partials.folder_option', ['folder' => $child, 'level' => $level + 1])
+        @include('folders.partials.folder_option', [
+            'folder' => $child, 
+            'level' => $level + 1
+        ])
     @endforeach
 @endif
