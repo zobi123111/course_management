@@ -3,6 +3,21 @@
 @extends('layout.app')
 @section('content')
 
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        @foreach($breadcrumbs as $breadcrumb)
+            @if($breadcrumb['url']) 
+                <li class="breadcrumb-item"><a href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['title'] }}</a></li>
+            @else
+                <li class="breadcrumb-item active" aria-current="page">{{ $breadcrumb['title'] }}</li>
+            @endif
+        @endforeach
+    </ol>
+</nav>
+<!-- End Breadcrumb -->
+
 @if(session()->has('message'))
 <div id="successMessage" class="alert alert-success fade show" role="alert">
   <i class="bi bi-check-circle me-1"></i>
@@ -26,7 +41,7 @@
                 <p class="card-text">{{ $course->description }}</p>
                 @if(checkAllowedModule('courses', 'lesson.store')->isNotEmpty())
                 <p class="card-text"><button class="btn btn-success" id="createLesson" data-toggle="modal"
-                data-target="#createLessonModal">Create Lesson</button></p>
+                    data-target="#createLessonModal">Create Lesson</button></p>
                 @endif
             </div>
         </div>
@@ -39,15 +54,18 @@
     @foreach($course->courseLessons as $val)
         <div class="list-group-item " aria-current="true">
             <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1"> {{ $val->title }}</h5>
+                    <h5 class="mb-1 lessontitle"> {{ $val->lesson_title }}</h5>
                 <span>
                 {{-- <a href="{{ route('lesson.show', ['id' => encode_id($val->id)]) }}" style="text-decoration: none;">
                     <i class="fa fa-eye" style="font-size:18px; cursor: pointer; margin-right: 5px;"></i>
                 </a>                     --}}
-                <a href="{{ route('lesson.show', ['id' => encode_id($val->id)]) }}" class="btn btn-warning" id="viewCourse"> 
+                {{-- <a href="{{ route('lesson.show', ['id' => encode_id($val->id)]) }}" class="btn btn-warning" id="viewCourse"> 
                     <i class="fa fa-eye" style="font-size:18px; cursor: pointer; margin-right: 5px;"></i>
                     View Lesson
-                </a>
+                </a> --}}
+                @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
+                    <i class="fa fa-eye show-lesson-icon" style="font-size:18px; cursor: pointer; margin-right: 5px;" data-lesson-id="{{ encode_id($val->id) }}"></i>
+                @endif
                 @if(checkAllowedModule('courses', 'lesson.edit')->isNotEmpty())
                     <i class="fa fa-edit edit-lesson-icon" style="font-size:18px; cursor: pointer; margin-right: 5px;" data-lesson-id="{{ encode_id($val->id) }}"></i>
                 @endif
@@ -122,9 +140,11 @@
                         <div id="status_error" class="text-danger error_e"></div>            
                     </div>
                     <div class="form-group">
-                        <label for="email" class="form-label">Task Based Grading<span class="text-danger">*</span></label>
+                        <label for="email" class="form-label">Task Based Grading
+                            {{-- <span class="text-danger">*</span> --}}
+                        </label>
                         <select class="form-select" name="task_grading" aria-label="Default select example">
-                            <option value="" >Select Garding</option>
+                            <option value="" >Select Grading</option>
                             <option value="N/A" >N/A</option>
                             <option value="Passed">Passed</option>
                             <option value="Further Training Required">Further Training Required</option>
@@ -133,9 +153,11 @@
                         <div id="status_error" class="text-danger error_e"></div>            
                     </div>
                     <div class="form-group">
-                        <label for="email" class="form-label">Competency Based Grading<span class="text-danger">*</span></label>
+                        <label for="email" class="form-label">Competency Based Grading
+                            {{-- <span class="text-danger">*</span> --}}
+                        </label>
                         <select class="form-select" name="comp_grading" aria-label="Default select example">
-                            <option value="" >Select Garding</option>
+                            <option value="" >Select Grading</option>
                             <option value="1" >1</option>
                             <option value="2">2</option>
                             <option value="3">3</option>
@@ -186,7 +208,7 @@
                     <div class="form-group">
                         <label for="comment" class="form-label">Comment<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="edit_comment" id="edit_comment" rows="3"></textarea>
-                        <div id="comment_error" class="text-danger error_e"></div>
+                        <div id="edit_comment_error_up" class="text-danger error_e"></div>
                     </div>                    
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
@@ -360,15 +382,42 @@ $(document).ready(function() {
         })
     })
 
+    // $('.delete-lesson-icon').click(function(e) {
+    //     e.preventDefault();
+    //     $('#deleteLesson').modal('show');
+    //     var lessonId = $(this).data('lesson-id');
+    //     var courseName = $(this).closest('tr').find('.courseName').text();
+    //     $('#append_name').html(courseName);
+    //     $('#lessonId').val(lessonId);
+      
+    // });
     $('.delete-lesson-icon').click(function(e) {
-    e.preventDefault();
+        e.preventDefault();
         $('#deleteLesson').modal('show');
         var lessonId = $(this).data('lesson-id');
-        var courseName = $(this).closest('tr').find('.courseName').text();
-        $('#append_name').html(courseName);
+        
+        var lessonTitle = $(this).closest('.list-group-item').find('.lessontitle').text().trim();
+        
+        console.log("Lesson Title: " + lessonTitle);
+        
+        if (!lessonTitle) {
+            lessonTitle = "Unknown Lesson";
+        }
+
+        $('#append_name').html(lessonTitle);
+        
         $('#lessonId').val(lessonId);
-      
     });
+
+
+
+    $('.show-lesson-icon').click(function(e) {
+        e.preventDefault();
+        
+        var lessonId = $(this).data('lesson-id');
+        window.location.href = "{{ url('lesson') }}/" + lessonId;
+    });
+
 
 });
 </script>

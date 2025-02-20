@@ -18,8 +18,7 @@ class OrganizationUnits extends Model
     }
 
     public function roleOneUsers()
-{
-    return $this->hasOne(User::class, 'ou_id', 'id')->where('role', 1);
-}
-    
+    {
+        return $this->hasOne(User::class, 'ou_id', 'id')->where('role', 1);
+    }    
 }

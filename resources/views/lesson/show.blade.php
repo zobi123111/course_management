@@ -2,6 +2,20 @@
 @extends('layout.app')
 @section('content')
 
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      @foreach($breadcrumbs as $breadcrumb)
+        @if($breadcrumb['url']) 
+          <li class="breadcrumb-item"><a href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['title'] }}</a></li>
+        @else
+          <li class="breadcrumb-item active" aria-current="page">{{ $breadcrumb['title'] }}</li>
+        @endif
+      @endforeach
+    </ol>
+  </nav>
+<!-- End Breadcrumb -->
+
 @if(session()->has('message'))
 <div id="successMessage" class="alert alert-success fade show" role="alert">
   <i class="bi bi-check-circle me-1"></i>
@@ -16,10 +30,12 @@
             <div class="card-body">
                 <h5 class="card-title">{{  $lesson->lesson_title  }}</h5>
                 <p class="card-text">{{ $lesson->description }}</p>
-                <p class="card-text">
-                    <button class="btn btn-success" id="createSubLessonBtn" data-bs-toggle="modal"
-                    data-bs-target="#createSubLessonModal">Create Sub-Lesson</button>
-                </p>
+                @if(checkAllowedModule('courses', 'sublesson.store')->isNotEmpty())
+                    <p class="card-text">
+                        <button class="btn btn-success" id="createSubLessonBtn" data-bs-toggle="modal"
+                        data-bs-target="#createSubLessonModal">Create Sub-Lesson</button>
+                    </p>
+                @endif
             </div>
         </div>
     </div>
@@ -32,7 +48,8 @@
     @foreach($lesson->subLessons as $val)
         <div class="list-group-item " aria-current="true">
             <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1"> {{ $val->title }}</h5>
+                    <h5 class="mb-1" data-sublesson-title="{{ $val->title }}">{{ $val->title }}</h5>
+
                 <span>                 
                 @if(checkAllowedModule('courses', 'sublesson.edit')->isNotEmpty())
                     <i class="fa fa-edit edit-lesson-icon" style="font-size:18px; cursor: pointer; margin-right: 5px;" data-lesson-id="{{ encode_id($val->id) }}"></i>
@@ -60,7 +77,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="subLessonForm" method="POST" class="row g-3 needs-validation">
+                <form id="subLessonForm" method="POST" class="row g-3 ">
                     @csrf
                     <div class="form-group">
                         <label for="sub_lesson_title" class="form-label">Sub-Lesson Title<span class="text-danger">*</span></label>
@@ -145,7 +162,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete this Sub-Lesson ?
+                    Are you sure you want to delete this Sub-Lesson "<strong><span id="append_sub_lesson_name"></span></strong>" ?
                     {{-- <strong><span id="append_sub_lesson_name"></span></strong> --}}
                 </div>
                 <div class="modal-footer">
@@ -318,13 +335,33 @@
     });
 
     // Show modal for deleting sub-lesson
-    $('body').on('click', '.delete-lesson-icon', function() {
-        var subLessonId = $(this).data('lesson-id');
-        var subLessonTitle = $(this).data('lesson-title');
-        $('#subLessonId').val(subLessonId);
-        $('#append_sub_lesson_name').html(subLessonTitle);
+    // $('body').on('click', '.delete-lesson-icon', function() {
+    //     var subLessonId = $(this).data('lesson-id');
+    //     var subLessonTitle = $(this).data('lesson-title');
+    //     $('#subLessonId').val(subLessonId);
+    //     $('#append_sub_lesson_name').html(subLessonTitle);
+    //     $('#deleteSubLessonModal').modal('show');
+    // });
+
+    $('body').on('click', '.delete-lesson-icon', function(e) {
+        e.preventDefault();
+
         $('#deleteSubLessonModal').modal('show');
+
+        var subLessonId = $(this).data('lesson-id');
+        var subLessonTitle = $(this).closest('.list-group-item').find('[data-sublesson-title]').data('sublessonTitle'); 
+
+        if (!subLessonTitle) {
+            subLessonTitle = "Unknown Sub-Lesson";
+        }
+
+        $('#append_sub_lesson_name').html(subLessonTitle);
+        $('#subLessonId').val(subLessonId);
+        
+        console.log("Sub-Lesson Title: " + subLessonTitle);
     });
+
+
 </script>
 
 
