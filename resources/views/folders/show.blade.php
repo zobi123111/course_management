@@ -21,7 +21,7 @@
     </tr>
   </thead>
   <tbody>
-    @foreach($folders as $val)
+    @foreach($subfolders as $val)
             <tr>
                 <td class="folderName">{{ $val->folder_name}}</td>
                 <td>{{ $val->description}}</td>
@@ -252,7 +252,7 @@ $(document).ready(function() {
             data: { id: folderId },
             success: function(response) {
                 console.log(response);
-                $('#edit_parent_folder').val(response.folder.id).trigger('change');
+                $('#edit_parent_folder').val(response.folder.parent_id).trigger('change');
                 $('#edit_folder_name').val(response.folder.folder_name);
                 $('#folder_id').val(response.folder.id);
                 $('#edit_description').val(response.folder.description);
