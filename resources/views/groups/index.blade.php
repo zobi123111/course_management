@@ -268,18 +268,20 @@ $(document).ready(function() {
                 id: groupId
             },
             success: function(response) {
+                console.log(response)
                 $('#edit_name').val(response.group.name);
                 $('#edit_group_id').val(response.group.id);
                 $('#edit_ou_id').val(response.group.ou_id);
                 $('#edit_status').val(response.group.status);
 
-                // Ensure user_ids is an array
-                let selectedUsers = response.group.user_ids ? response.group.user_ids.map(String) : []; // Convert to string if necessary
-                $('#edit_users').val(selectedUsers).trigger('change'); // Set selected values
+                let selectedUsers = response.group.user_ids ? response.group.user_ids.map(String) : [];
+
+                console.log(selectedUsers);
+                $('#edit_users').val(selectedUsers).trigger('change');
 
                 $('#editGroupModal').modal('show');
 
-                initializeSelect2(); // Ensure Select2 is re-initialized
+                initializeSelect2();
             },
             error: function(xhr) {
                 console.error(xhr.responseText);

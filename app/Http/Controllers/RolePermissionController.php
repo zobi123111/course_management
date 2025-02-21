@@ -127,17 +127,42 @@ class RolePermissionController extends Controller
         return redirect()->route('roles.edit', $en);
     }
 
-    public function destroy($roleId)
-    {
-        $en = $roleId;
-        $roleId = decode_id($roleId);
-        // Find the role and delete it along with its associated role permissions
-        $role = Role::findOrFail($roleId);
+    // public function destroy($roleId)
+    // {
+    //     $en = $roleId;
+    //     $roleId = decode_id($roleId);
+    //     $role = Role::findOrFail($roleId);
 
-        $role->rolePermissions()->delete();
-        $role->delete();
-        Session::flash('message', 'All permissions deleted successfully.');
-        return redirect()->route('roles.index');
+    //     // if ($role->users->count() > 0) {
+    //     //     Session::flash('error', 'Cannot delete this role. It is assigned to one or more users.');
+    //     //     return redirect()->route('roles.index');
+    //     // }
+    //     if ($role->users->count() > 0) {
+    //         $count = $role->users->count();
+    //         Session::flash('error', 'Cannot delete this role. It is assigned to one or more users.');
+    //         return redirect()->route('roles.index')->with('role_with_users', $count, true);
+    //     }
+
+    //     $role->rolePermissions()->delete();
+    //     $role->delete();
+    //     Session::flash('message', 'All permissions deleted successfully.');
+    //     return redirect()->route('roles.index');
+    // }
+
+    public function destroy($roleId)
+{
+    $roleId = decode_id($roleId);
+    $role = Role::findOrFail($roleId);
+
+    if ($role->users->count() > 0) {
+        Session::flash('error', 'Cannot delete this role. It is assigned to one or more users.');
+        return redirect()->route('roles.index')->with('role_with_users', $roleId);
     }
+
+    $role->rolePermissions()->delete();
+    $role->delete();
+    Session::flash('message', 'Role deleted successfully.');
+    return redirect()->route('roles.index');
+}
 
 }

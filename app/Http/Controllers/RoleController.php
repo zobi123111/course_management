@@ -11,6 +11,11 @@ class RoleController extends Controller
     public function index(Request $request)
     {
         $roles = Role::all();
+
+        foreach ($roles as $role) {
+            $role->isAssignedToUsers = $role->users->count() > 0;
+        }
+        
         return view('roles.index', compact('roles'));
     }   
 

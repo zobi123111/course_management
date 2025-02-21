@@ -2,12 +2,17 @@
 @extends('layout.app')
 @section('content')
 
+<style>
+    .active-link a {
+       color: #0d6efd !important; /* Ensures the description takes available space */
+    }
+</style>
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
       @foreach($breadcrumbs as $breadcrumb)
         @if($breadcrumb['url']) 
-          <li class="breadcrumb-item"><a href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['title'] }}</a></li>
+          <li class="breadcrumb-item active-link"><a href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['title'] }}</a></li>
         @else
           <li class="breadcrumb-item active" aria-current="page">{{ $breadcrumb['title'] }}</li>
         @endif
@@ -45,7 +50,7 @@
 
  <!-- List group with Advanced Contents -->
  <div class="list-group">
-    @foreach($lesson->subLessons as $val)
+    {{-- @foreach($lesson->subLessons as $val)
         <div class="list-group-item " aria-current="true">
             <div class="d-flex w-100 justify-content-between">
                     <h5 class="mb-1" data-sublesson-title="{{ $val->title }}">{{ $val->title }}</h5>
@@ -63,7 +68,54 @@
             </div>
             <p class="mb-1">{{ $val->description }}</p>
         </div>
-    @endforeach
+    @endforeach --}}
+
+    <div class="container-fluid">
+        <div class="row">
+            @foreach($lesson->subLessons as $val)
+                <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                    <div class="card course-card">
+    
+                        <div class="course-image-container" style="position: relative;">
+                            <span class="status-label" style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
+                                {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
+                            </span>
+                        </div>
+    
+                        <div class="card-body">
+                            <h5 class="card-title" data-sublesson-title="{{ $val->title }}">{{ $val->title}}</h5>
+    
+                            <p class="card-text">
+                                {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
+                            </p>
+                        </div>
+    
+                        <div class="card-footer d-flex justify-content-between">
+    
+                            {{-- @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
+                                <a href="javascript:void(0)" class="btn btn-light show-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
+                                    <i class="fa fa-edit"></i> Show
+                                </a>
+                            @endif --}}
+    
+                            @if(checkAllowedModule('courses', 'sublesson.edit')->isNotEmpty())
+                                <a href="javascript:void(0)" class="btn btn-light edit-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
+                                    <i class="fa fa-edit"></i> Edit
+                                </a>
+                            @endif
+    
+                            @if(checkAllowedModule('courses', 'sublesson.delete')->isNotEmpty())
+                                <a href="javascript:void(0)" class="btn btn-light delete-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
+                                    <i class="fa-solid fa-trash"></i> Delete
+                                </a>
+                            @endif
+    
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
 </div>
 
 <!-- End List group Advanced Content -->

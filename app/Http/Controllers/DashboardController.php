@@ -23,7 +23,7 @@ class DashboardController extends Controller
             $documents = Document::all();
 
         }
-        elseif(Auth::user()->role == 3){
+        elseif(checkAllowedModule('courses', 'course.index')->isNotEmpty()){
 
             $userId = Auth::user()->id;
 
@@ -31,7 +31,7 @@ class DashboardController extends Controller
     
             $filteredGroups = $groups->filter(function ($group) use ($userId) {
                 $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);
-                
+                 
                 return in_array($userId, $userIds);
             });
     

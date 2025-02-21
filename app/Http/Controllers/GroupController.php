@@ -39,15 +39,19 @@ class GroupController extends Controller
     public function index()
     {
         $currentUser = auth()->user();
-        $users = User::where('ou_id', $currentUser->ou_id)->get();
+        if ($currentUser->role == 1 && empty($currentUser->ou_id)) {
+            $users = User::all();
+        }else{
+            $users = User::where('ou_id', $currentUser->ou_id)->get();
+        }
         $organizationUnits = OrganizationUnits::all();
         
         $groups = Group::all();
 
         if ($currentUser->role == 1 && empty($currentUser->ou_id)) {
-            $groups = Group::all();
+            $groups = $groups;
         } 
-        elseif ($currentUser->role == 3) {
+        elseif (checkAllowedModule('groups', 'group.index')->isNotEmpty()) {
             $userId = $currentUser->id;
 
             $groups = $groups->filter(function ($group) use ($userId) {

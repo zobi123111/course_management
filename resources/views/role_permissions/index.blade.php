@@ -12,6 +12,13 @@
     <div id="successMessagea" class="alert alert-success" style="display: none;" role="alert">
         <i class="bi bi-check-circle me-1"></i>
     </div>
+
+    {{-- @if(session()->has('error'))
+        <div id="ErrorMessage" class="alert alert-danger fade show" role="alert">
+            <i class="bi bi-check-circle me-1"></i>
+            {{ session()->get('error') }}
+        </div>
+    @endif --}}
     @if(session()->has('message'))
     <div id="successMessage" class="alert alert-success fade show" role="alert">
         <i class="bi bi-check-circle me-1"></i>
@@ -37,31 +44,26 @@
             @foreach($roles as $role)
             <tr>
                 <td scope="row" class="fname">{{ $role->role_name }}</td>
-                <td>{{ ($role->status==1)? 'Active': 'Inactive' }}</td>
+                <td>{{ ($role->status == 1) ? 'Active' : 'Inactive' }}</td>
                 @if(checkAllowedModule('roles', 'roles.edit')->isNotEmpty())
                 <td><a href="{{ route('roles.edit', ['role' => encode_id($role->id)]) }}"><i
                             class="fa fa-edit edit-user-icon table_icon_style blue_icon_color"
                             data-user-id="{{ $role->id }}"></i></a></td>
                 @endif
                 @if(checkAllowedModule('roles', 'roles.destroy')->isNotEmpty())
-<!-- 
-                <td>
-                    <form action="{{ route('roles.destroy', ['role' => encode_id($role->id)]) }}" method="POST"
-                        style="display: inline;"
-                        onsubmit="return confirm('Are you sure you want to delete this role and all its permissions?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" style="border: none; background: none; cursor: pointer;">
-                            <i class="fa-solid fa-trash delete-icon table_icon_style blue_icon_color"></i>
-                        </button>
-                    </form>
-                </td> -->
-
-                <td><i class="fa-solid fa-trash delete-icon table_icon_style blue_icon_color"
-                data-role-id="{{ encode_id($role->id) }}"></i></td>
+                    <td>
+                        @if(session('role_with_users') == $role->id && $role->users->count() > 0)
+                            <button class="btn btn-danger disabled" disabled>Cannot Delete</button>
+                            {{-- <p class="btn btn-danger">Cannot delete this role. It is assigned to {{ $role->users->count() }} users.</p> --}}
+                        @else
+                            <i class="fa-solid fa-trash delete-icon table_icon_style blue_icon_color"
+                                data-role-id="{{ encode_id($role->id) }}"></i>
+                        @endif
+                    </td>
                 @endif
             </tr>
             @endforeach
+            
         </tbody>
     </table>
 </div>
@@ -78,11 +80,19 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete this role "<strong><span id="append_name"> </span></strong>" ?
+                    @if ($role->users->count() > 0)
+                        Cannot delete this role. It is assigned to <strong> {{ $role->users->count() }} users.</strong>
+                    @else
+                        Are you sure you want to delete this role "<strong><span id="append_name"> </span></strong>" ? 
+                    @endif
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary user_delete">Delete</button>
+                    @if ($role->users->count() > 0)
+                        <button type="submit" class="btn btn-primary disabled">Delete</button>
+                    @else
+                        <button type="submit" class="btn btn-primary ">Delete</button>
+                    @endif
                 </div>
             </div>
         </div>
@@ -95,21 +105,29 @@
 @section('js_scripts')
 
 <script>
+
 $(document).ready(function() {
+    @if(session('role_with_users'))
+    $('.delete-icon').each(function() {
+        var roleId = $(this).data('role-id');
+        var fname = $(this).closest('tr').find('.fname').text();
+        $('#append_name').html(fname);
+        $(this).closest('td').find('.btn-danger').removeClass('disabled');
+    });
+    @endif
+
     $('#role_table').DataTable();
 
-    $(document).on('click', '.delete-icon', function (e) {
+    $(document).on('click', '.delete-icon', function(e) {
         e.preventDefault();
         var roleId = $(this).data('role-id');
         var fname = $(this).closest('tr').find('.fname').text();
         $('#append_name').html(fname);
-         $('#deleteRoleFormId').attr('action', '/roles/' + roleId);
+        $('#deleteRoleFormId').attr('action', '/roles/' + roleId);
         $('#deleteRoleForm').modal('show');
-
     });
-
-    
 });
+
 
 
 </script>
