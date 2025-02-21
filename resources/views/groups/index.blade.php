@@ -256,8 +256,9 @@ $(document).ready(function() {
 
     })
 
-    $('.edit-group-icon').click(function(e) {
-        e.preventDefault();
+    // $('.edit-group-icon').click(function(e) {
+    //     e.preventDefault();
+    $('#groupTable').on('click', '.edit-group-icon', function() {
 
         $('.error_e').html('');
         var groupId = $(this).data('group-id');
@@ -322,8 +323,9 @@ $(document).ready(function() {
     });
 
     // Delete Group
-    $('.delete-group-icon').click(function(e) {
-    e.preventDefault();
+    // $('.delete-group-icon').click(function(e) {
+    // e.preventDefault();
+    $('#groupTable').on('click', '.delete-group-icon', function() {
         $('#deleteGroup').modal('show');
         var groupId = $(this).data('group-id');
         var groupName = $(this).closest('tr').find('.groupName').text();
@@ -336,6 +338,10 @@ $(document).ready(function() {
     $('#createGroupModal, #editGroupModal').on('shown.bs.modal', function() {
         initializeSelect2();
     });
+
+    setTimeout(function() {
+        $('#successMessage').fadeOut('slow');
+    }, 2000);
 
 });
 </script>

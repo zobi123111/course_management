@@ -5,7 +5,7 @@
 @section('content')
 
 
-<style>
+{{-- <style>
     .course-image {
         height: 200px;
         object-fit: cover;
@@ -19,16 +19,16 @@
     }
 
     .card-body {
-        flex-grow: 1; /* Ensures the description area expands to fill remaining space */
-        min-height: 200px; /* Set the minimum height to ensure consistent card size */
+        flex-grow: 1;
+        min-height: 200px;
         display: flex;
         flex-direction: column;
-        justify-content: flex-start; /* Ensures content is aligned at the top */
+        justify-content: flex-start;
     }
 
     .card-footer {
         display: flex;
-        justify-content: space-between; /* Align buttons in a row with space in between */
+        justify-content: space-between;
         padding: 10px;
         background-color: #f8f9fa;
     }
@@ -39,12 +39,77 @@
     }
 
     .card-text {
-        flex-grow: 1; /* Ensures the description takes available space */
+        flex-grow: 1;
+    }
+</style> --}}
+
+<style>
+    .course-image {
+        height: 200px;
+        object-fit: cover;
+        width: 100%;
     }
 
+    .course_card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
 
+    .course_card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-body {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    .card-footer {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        background-color: #f8f9fa;
+    }
+
+    .card-text {
+        flex-grow: 1;
+    }
+
+    .course-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .course-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Button hover effect */
+    .card-footer .btn {
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .card-footer .btn:hover {
+        background-color: #e2e6ea;
+        transform: translateY(-2px);
+    }
+
+    .status-label {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.9em;
+    }
 </style>
-
 
 
 
@@ -62,59 +127,14 @@
 </div>
 @endif
 <br>
+
 <div class="card pt-4">
     <div class="card-body">
-        {{-- <table class="table table-hover" id="courseTable">
-            <thead>
-                <tr>
-                <th scope="col">Course Name</th>
-                <th scope="col">Description</th>
-                <th scope="col">Image</th>
-                <th scope="col">Status</th>
-                @if(checkAllowedModule('courses','course.edit')->isNotEmpty())
-                <th scope="col">Edit</th>
-                @endif
-                @if(checkAllowedModule('courses','course.delete')->isNotEmpty())
-                <th scope="col">Delete</th>
-                @endif
-                @if(checkAllowedModule('courses','course.show')->isNotEmpty())
-                <th scope="col">Lesson</th>
-                @endif
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($courses as $val)
-                        <tr>
-                            <td class="courseName">{{ $val->course_name}}</td>
-                            <td>{{ $val->description}}</td>
-                            <td>
-                                @if($val->image)
-                                    <img src="{{ asset('storage/' . $val->image) }}" alt="Course Image" width="100px">
-                                @else
-                                    <img src="{{ asset('/assets/img/profile-img.jpg') }}" alt="Course Image" width="100px">
-                                @endif
-                            </td>               
-                            <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
-                            @if(checkAllowedModule('courses','course.edit')->isNotEmpty())
-                                <td><i class="fa fa-edit edit-course-icon" data-course-id="{{ encode_id($val->id) }}" ></i></td>
-                            @endif
-                            @if(checkAllowedModule('courses','course.delete')->isNotEmpty())
-                                <td><i class="fa-solid fa-trash delete-icon" data-course-id="{{ encode_id($val->id) }}" ></i></td>
-                            @endif  
-                            @if(checkAllowedModule('courses','course.show')->isNotEmpty())
-                                <td><a href="{{ route('course.show', ['course_id' => encode_id($val->id)]) }}" class="btn btn-warning" id="viewCourse">View Course</a></td>
-                            @endif  
-                        </tr> 
-                @endforeach
-            </tbody>
-        </table> --}}
-
         <div class="container-fluid">
             <div class="row">
-                @foreach($courses as $val)
+                @forelse($courses as $val)
                     <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
-                        <div class="card course-card">
-                            {{-- Course image and status --}}
+                        <div class="course_card course-card">
                             <div class="course-image-container" style="position: relative;">
                                 @if($val->image)
                                     <img src="{{ asset('storage/' . $val->image) }}" class="card-img-top course-image" alt="Course Image">
@@ -122,38 +142,32 @@
                                     <img src="{{ asset('/assets/img/profile-img.jpg') }}" class="card-img-top course-image" alt="Course Image">
                                 @endif
         
-                                {{-- Status label positioned at the top-right corner --}}
                                 <span class="status-label" style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
                                     {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
                                 </span>
                             </div>
         
                             <div class="card-body">
-                                <h5 class="card-title">{{ $val->course_name}}</h5>
+                                <h5 class="card-title courseName">{{ $val->course_name}}</h5>
         
-                                {{-- Limit description to 50 words --}}
                                 <p class="card-text">
                                     {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
                                 </p>
                             </div>
         
-                            {{-- Action Buttons Row --}}
                             <div class="card-footer d-flex justify-content-between">
-                                {{-- View Course Button --}}
                                 @if(checkAllowedModule('courses', 'course.show')->isNotEmpty())
                                     <a href="{{ route('course.show', ['course_id' => encode_id($val->id)]) }}" class="btn btn-light">
                                         <i class="fa fa-eye"></i> View Course
                                     </a>
                                 @endif
         
-                                {{-- Edit Button --}}
                                 @if(checkAllowedModule('courses', 'course.edit')->isNotEmpty())
                                     <a href="javascript:void(0)" class="btn btn-light edit-course-icon" data-course-id="{{ encode_id($val->id) }}">
                                         <i class="fa fa-edit"></i> Edit
                                     </a>
                                 @endif
         
-                                {{-- Delete Button --}}
                                 @if(checkAllowedModule('courses', 'course.delete')->isNotEmpty())
                                     <a href="javascript:void(0)" class="btn btn-light delete-icon" data-course-id="{{ encode_id($val->id) }}">
                                         <i class="fa-solid fa-trash"></i> Delete
@@ -162,11 +176,13 @@
                             </div>
                         </div>
                     </div>
-                @endforeach
+                @empty
+                    <div class="col-12">
+                        <h4 class="text-center">No courses available</h4>
+                    </div>
+                @endforelse
             </div>
         </div>
-        
-        
     </div>
 </div>
 
@@ -467,10 +483,16 @@ $(document).ready(function() {
         e.preventDefault();
         $('#deleteCourse').modal('show');
         var courseId = $(this).data('course-id');
-        var courseName = $(this).closest('tr').find('.courseName').text();
+        // var courseName = $(this).closest('h5').find('.courseName').text();
+        var courseName = $(this).closest('.course_card').find('.courseName').text();
+
         $('#append_name').html(courseName);
         $('#courseId').val(courseId);
     });
+
+    setTimeout(function() {
+        $('#successMessage').fadeOut('slow');
+    }, 2000);
 });
 
 </script>

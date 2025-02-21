@@ -107,7 +107,7 @@
 </div>
 
 <!-- Create User -->
-<div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-labelledby="userModalLabel" aria-hidden="true">
+<div class="modal fade" id="userModal" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="userModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -248,7 +248,7 @@
 <!--End of create user-->
 
 <!-- Edit user -->
-<div class="modal fade" id="editUserDataModal" tabindex="-1" role="dialog" aria-labelledby="editUserDataModalLabel"
+<div class="modal fade" id="editUserDataModal" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="editUserDataModalLabel"
     aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -815,9 +815,9 @@
 
         });
 
-        // setTimeout(function() {
-        //     $('#successMessage').fadeOut('slow');
-        // }, 20000);
+        setTimeout(function() {
+            $('#successMessage').fadeOut('slow');
+        }, 2000);
 
     });
 </script>

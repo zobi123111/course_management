@@ -3,7 +3,7 @@
 @extends('layout.app')
 @section('content')
 
-<style>
+{{-- <style>
     .course-image {
         height: 200px;
         object-fit: cover;
@@ -46,6 +46,75 @@
     }
 
 
+</style> --}}
+
+<style>
+    .course-image {
+        height: 200px;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .lesson_card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .lesson_card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-body {
+        flex-grow: 1;
+        /* min-height: 200px; */
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    .card-footer {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        background-color: #f8f9fa;
+    }
+
+    .card-text {
+        flex-grow: 1;
+    }
+
+    .course-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .course-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Button hover effect */
+    .card-footer .btn {
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .card-footer .btn:hover {
+        background-color: #e2e6ea;
+        transform: translateY(-2px);
+    }
+
+    .status-label {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.9em;
+    }
 </style>
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb">
@@ -93,76 +162,59 @@
 <!-- End Card with an image on left -->
 
  <!-- List group with Advanced Contents -->
-<div class="list-group">
-    {{-- @foreach($course->courseLessons as $val)
-        <div class="list-group-item " aria-current="true">
-            <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1 lessontitle"> {{ $val->lesson_title }}</h5>
-                <span>
+ <div class="card pt-4">
+    <div class="card-body">
+        <div class="list-group">
+            <div class="container-fluid">
+                <h3>Lessons</h3>
+                <div class="row">
+                    @foreach($course->courseLessons as $val)
+                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                            <div class="lesson_card course-card">
+                                <div class="course-image-container" style="position: relative;">
+                                    <span class="status-label" style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
+                                        {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </div>
             
-                @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
-                    <i class="fa fa-eye show-lesson-icon" style="font-size:18px; cursor: pointer; margin-right: 5px;" data-lesson-id="{{ encode_id($val->id) }}"></i>
-                @endif
-                @if(checkAllowedModule('courses', 'lesson.edit')->isNotEmpty())
-                    <i class="fa fa-edit edit-lesson-icon" style="font-size:18px; cursor: pointer; margin-right: 5px;" data-lesson-id="{{ encode_id($val->id) }}"></i>
-                @endif
-                @if(checkAllowedModule('courses', 'lesson.delete')->isNotEmpty())
-                    <i class="fa-solid fa-trash delete-lesson-icon" style="font-size:18px; cursor: pointer;"
-                    data-lesson-id="{{ encode_id($val->id) }}"></i>
-                @endif
-                </span>
+                                <div class="card-body">
+                                    <h5 class="card-title lessonName">{{ $val->lesson_title}}</h5>
+            
+                                    <p class="card-text">
+                                        {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
+                                    </p>
+                                </div>
+            
+                                <div class="card-footer d-flex justify-content-between">
 
-            </div>
-            <p class="mb-1">{{ $val->description }}</p>
-        </div>
-    @endforeach --}}
+                                    @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
+                                        <a href="javascript:void(0)" class="btn btn-light show-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
+                                            <i class="fa fa-edit"></i> Show
+                                        </a>
+                                    @endif
 
-    <div class="container-fluid">
-        <div class="row">
-            @foreach($course->courseLessons as $val)
-                <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
-                    <div class="card course-card">
-                        <div class="course-image-container" style="position: relative;">
-                            <span class="status-label" style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
-                                {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
-                            </span>
+                                    @if(checkAllowedModule('courses', 'lesson.edit')->isNotEmpty())
+                                        <a href="javascript:void(0)" class="btn btn-light edit-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
+                                            <i class="fa fa-edit"></i> Edit
+                                        </a>
+                                    @endif
+
+                                    @if(checkAllowedModule('courses', 'lesson.delete')->isNotEmpty())
+                                        <a href="javascript:void(0)" class="btn btn-light delete-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
+                                            <i class="fa-solid fa-trash"></i> Delete
+                                        </a>
+                                    @endif
+
+                                </div>
+                            </div>
                         </div>
-    
-                        <div class="card-body">
-                            <h5 class="card-title">{{ $val->lesson_title}}</h5>
-    
-                            <p class="card-text">
-                                {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
-                            </p>
-                        </div>
-    
-                        <div class="card-footer d-flex justify-content-between">
-
-                            @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
-                                <a href="javascript:void(0)" class="btn btn-light show-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
-                                    <i class="fa fa-edit"></i> Show
-                                </a>
-                            @endif
-
-                            @if(checkAllowedModule('courses', 'lesson.edit')->isNotEmpty())
-                                <a href="javascript:void(0)" class="btn btn-light edit-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
-                                    <i class="fa fa-edit"></i> Edit
-                                </a>
-                            @endif
-
-                            @if(checkAllowedModule('courses', 'lesson.delete')->isNotEmpty())
-                                <a href="javascript:void(0)" class="btn btn-light delete-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
-                                    <i class="fa-solid fa-trash"></i> Delete
-                                </a>
-                            @endif
-
-                        </div>
-                    </div>
+                    @endforeach
                 </div>
-            @endforeach
+            </div>
         </div>
+        <!-- End List group Advanced Content -->
     </div>
-</div><!-- End List group Advanced Content -->
+</div>
 
 
 <!-- Create Lesson-->
@@ -463,7 +515,9 @@ $(document).ready(function() {
         $('#deleteLesson').modal('show');
         var lessonId = $(this).data('lesson-id');
         
-        var lessonTitle = $(this).closest('.list-group-item').find('.lessontitle').text().trim();
+        // var lessonTitle = $(this).closest('.list-group-item').find('.lessontitle').text().trim();
+        var lessonTitle = $(this).closest('.lesson_card').find('.lessonName').text();
+
         
         console.log("Lesson Title: " + lessonTitle);
         
@@ -485,6 +539,10 @@ $(document).ready(function() {
         window.location.href = "{{ url('lesson') }}/" + lessonId;
     });
 
+
+    setTimeout(function() {
+        $('#successMessage').fadeOut('slow');
+    }, 2000);
 
 });
 </script>
