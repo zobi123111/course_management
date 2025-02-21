@@ -15,42 +15,26 @@ use Illuminate\Support\Facades\Storage;
 
 class CourseController extends Controller
 {
-    // public function index()
-    // {
-    //     $ouId = Auth::user()->ou_id;
-    //     if(Auth::user()->role==1 && empty(Auth::user()->ou_id)){
-    //         $courses = Courses::all();
-    //     }else{            
-    //         $courses = Courses::where('ou_id', $ouId)->get();
-    //     }
-
-    //     // if (Auth()->user()->role == 1 && empty(Auth()->user()->ou_id)) {
-    //         $groups = Group::all();
-    //     // } else {
-    //         // $groups = Group::where('ou_id', Auth()->user()->ou_id)->get();
-    //     // }
-
-    //     $urganizationUnits = OrganizationUnits::all();
-    //     return view('courses.index',compact('courses','urganizationUnits', 'groups'));
-    // }
-
-
+    
     // public function index()
     // {
     //     $userId = Auth::user()->id;
     //     $ouId = Auth::user()->ou_id;
     //     $role = Auth::user()->role;
 
-    //     if ($role == 3) {
-    //         // $groups = Group::whereRaw('FIND_IN_SET(?, user_ids)', [$userId])->get();
-    //         $groups = Group::whereJsonContains('user_ids', $userId)->get();
 
-
-    //         dd($groups);
-
-    //         $groupIds = $groups->pluck('id')->toArray();
-
-    //         $courses = Courses::whereIn('id', function($query) use ($groupIds) {
+    
+    //     if (checkAllowedModule('courses', 'course.index')->isNotEmpty()) {
+    //         $groups = Group::all();
+    //         $filteredGroups = $groups->filter(function ($group) use ($userId) {
+    //             $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);
+                
+    //             return in_array($userId, $userIds);
+    //         });
+    
+    //         $groupIds = $filteredGroups->pluck('id')->toArray();
+    
+    //         $courses = Courses::whereIn('id', function ($query) use ($groupIds) {
     //             $query->select('courses_id')
     //                 ->from('courses_group')
     //                 ->whereIn('group_id', $groupIds);
@@ -61,15 +45,15 @@ class CourseController extends Controller
     //         } else {
     //             $courses = Courses::where('ou_id', $ouId)->get();
     //         }
-
+    
+    //         $groups = Group::all();
     //     }
-    //     $groups = Group::all();
-
-    //     $urganizationUnits = OrganizationUnits::all();
-
-    //     return view('courses.index', compact('courses', 'urganizationUnits', 'groups'));
+    
+    //     $organizationUnits = OrganizationUnits::all();
+    
+    //     return view('courses.index', compact('courses', 'organizationUnits', 'groups'));
     // }
-
+    
     public function index()
     {
         $userId = Auth::user()->id;
@@ -78,7 +62,19 @@ class CourseController extends Controller
 
 
     
-        if (checkAllowedModule('courses', 'course.index')->isNotEmpty()) {
+        if (checkAllowedModule('courses', 'course.index')->isNotEmpty() && Auth()->user()->is_owner == 1) {
+
+            // dd("if working");
+
+            $courses = Courses::all();
+            $groups = Group::all();
+
+
+            
+        } elseif(checkAllowedModule('courses', 'course.index')->isNotEmpty()){
+
+            // dd("else if working");
+
             $groups = Group::all();
             $filteredGroups = $groups->filter(function ($group) use ($userId) {
                 $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);
@@ -93,7 +89,9 @@ class CourseController extends Controller
                     ->from('courses_group')
                     ->whereIn('group_id', $groupIds);
             })->get();
-        } else {
+
+        
+        }else {
             if ($role == 1 && empty($ouId)) {
                 $courses = Courses::all();
             } else {
@@ -107,7 +105,6 @@ class CourseController extends Controller
     
         return view('courses.index', compact('courses', 'organizationUnits', 'groups'));
     }
-    
 
 
     public function create_course()
