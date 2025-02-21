@@ -18,47 +18,57 @@
 </div>
 @endif
 <br>
-<table class="table" id="folderTable">
-  <thead>
-    <tr>
-      <th scope="col">Folder Name</th>
-      <th scope="col">Description</th>
-      <th scope="col">Status</th>
-      <th scope="col">Action</th>
-    </tr>
-  </thead>
-  <tbody>
-    @foreach($folders as $val)
+<div class="card pt-4">
+    <div class="card-body">
+    <h3 class="mb-3">Folders List</h3>
+        <table class="table table-hover" id="folderTable">
+        <thead>
             <tr>
-                <td class="folderName">{{ $val->folder_name}}</td>
-                <td>{{ $val->description}}</td>
-                <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td> 
-                <td>
-                 <a href="{{ route('folder.show', ['folder_id' =>  encode_id($val->id) ]) }}" class="text-decoration-none"> <i class="fa fa-eye" style="font-size:18px; cursor: pointer;" data-folder-id="{{ encode_id($val->id) }}"></i></a>   
-                @if(checkAllowedModule('folders','folder.edit')->isNotEmpty())
-                <i class="fa fa-edit edit-folder-icon m-2" style="font-size:18px; cursor: pointer;" data-folder-id="{{ encode_id($val->id) }}" ></i>
-                @endif
-                @if(checkAllowedModule('folders','folder.delete')->isNotEmpty())
-                <i class="fa-solid fa-trash delete-folder-icon" style="font-size:18px; cursor: pointer;" data-folder-id="{{ encode_id($val->id) }}" ></i>
-                @endif
-                </td>
-            </tr> 
-    @endforeach
-  </tbody>
-</table>
-<h3 class="m-2">Documents List</h3>
-@if($documents->isNotEmpty())
-  <ul>
-    @foreach($documents as $doc)
-      <li>
-        <a href="{{ Storage::url($doc->document_file) }}" target="_blank">{{ $doc->document_file }}</a>
-      </li>
-    @endforeach
-  </ul>
-@else
-  <p>No documents available in the root directory.</p>
-@endif
-
+            <th scope="col">Folder Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Status</th>
+            <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($folders as $val)
+                    <tr>
+                        <td class="folderName">{{ $val->folder_name}}</td>
+                        <td>{{ $val->description}}</td>
+                        <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>  
+                        <td>
+                        @if(checkAllowedModule('folders','folder.show')->isNotEmpty())
+                        <a href="{{ route('folder.show', ['folder_id' =>  encode_id($val->id) ]) }}" class="text-decoration-none"> <i class="fa fa-eye" style="font-size:18px; cursor: pointer;" data-folder-id="{{ encode_id($val->id) }}"></i></a>   
+                        @endif
+                        @if(checkAllowedModule('folders','folder.edit')->isNotEmpty())
+                        <i class="fa fa-edit edit-folder-icon m-2" style="font-size:18px; cursor: pointer;" data-folder-id="{{ encode_id($val->id) }}" ></i>
+                        @endif
+                        @if(checkAllowedModule('folders','folder.delete')->isNotEmpty())
+                        <i class="fa-solid fa-trash delete-folder-icon" style="font-size:18px; cursor: pointer;" data-folder-id="{{ encode_id($val->id) }}" ></i>
+                        @endif
+                        </td>
+                    </tr> 
+            @endforeach
+        </tbody>
+        </table>
+    </div>
+</div>
+<div class="card pt-4">
+    <div class="card-body">
+        <h3 class="mb-3">Documents List</h3>
+        @if($documents->isNotEmpty())
+        <ul>
+            @foreach($documents as $doc)
+            <li>
+                <a href="{{ Storage::url($doc->document_file) }}" target="_blank">{{ $doc->document_file }}</a>
+            </li>
+            @endforeach
+        </ul>
+        @else
+        <p>No documents available in the root directory.</p>
+        @endif
+    </div>
+</div>
 <!-- Create Courses-->
 <div class="modal fade" id="createFolderModal" tabindex="-1" role="dialog" aria-labelledby="folderModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog" role="document">
@@ -319,6 +329,10 @@ $(document).ready(function() {
         $('#folderId').val(folderId);
       
     });
+
+    setTimeout(function() {
+        $('#successMessage').fadeOut('slow');
+    }, 2000);
 
 });
 </script>

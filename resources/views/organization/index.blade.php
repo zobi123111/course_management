@@ -9,6 +9,12 @@
     {{ session()->get('message') }}
 </div>
 @endif
+@if(session()->has('error'))
+<div id="successMessage" class="alert alert-danger fade show" role="alert">
+    <i class="bi bi-check-circle me-1"></i>
+    {{ session()->get('message') }}
+</div>
+@endif
 <div class="main_cont_outer" >
     <div class="create_btn " >
         <button class="btn btn-primary create-button" id="createOrgUnit" data-toggle="modal"
