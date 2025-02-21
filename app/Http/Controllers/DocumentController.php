@@ -19,11 +19,11 @@ class DocumentController extends Controller
         $ou_id =  auth()->user()->ou_id;
         if(Auth::user()->role==1 && empty($ou_id)){
             $groups = Group::all();
-            $folders = Folder::all();
+            $folders = Folder::whereNull('parent_id')->with('children')->get();
             $documents = Document::all();
         }else{
             $groups = Group::where('ou_id', $ou_id)->get();
-            $folders = Folder::where('ou_id',$ou_id)->get();
+            $folders = Folder::where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children')->get();
             $documents = Document::where('ou_id',$ou_id)->get();
         }
         return view('documents.index',compact('documents', 'folders', 'groups'));

@@ -73,7 +73,7 @@
                    <!-- Parent Folder Selection -->
                     <div class="form-group">
                         <label for="parent_id" class="form-label">Parent Folder<span class="text-danger">*</span></label>
-                        <select class="form-select" name="parent_id" aria-label="Select Parent Folder">
+                        <select class="form-select" name="parent_id">
                             <option value="">No Parent (Root Folder)</option>
                             @foreach($folders as $folder)
                                 @include('folders.partials.folder_option', ['folder' => $folder, 'level' => 0])
@@ -136,10 +136,13 @@
                     <!-- Parent Folder Selection -->
                     <div class="form-group">
                         <label for="parent_id" class="form-label">Parent Folder<span class="text-danger">*</span></label>
-                        <select class="form-select" name="parent_id" id="edit_parent_folder" aria-label="Select Parent Folder">
-                        <option value="">No Parent (Root Folder)</option>
+                        <select class="form-select" name="parent_id" id="edit_parent_folder">
+                            <option value="">No Parent (Root Folder)</option>
                             @foreach($folders as $folder)
-                                @include('folders.partials.folder_option', ['folder' => $folder, 'level' => 0])
+                                @include('folders.partials.folder_option', [
+                                    'folder' => $folder, 
+                                    'level' => 0
+                                ])
                             @endforeach
                         </select>
                         <div id="parent_id_error_up" class="text-danger error_e"></div>
@@ -249,30 +252,40 @@ $(document).ready(function() {
     })
 
     $('.edit-folder-icon').click(function(e) {
-        e.preventDefault();
+    e.preventDefault();
 
-        $('.error_e').html('');
-        var folderId = $(this).data('folder-id');
-        $.ajax({
-            url: "{{ url('/folder/edit') }}", 
-            type: 'GET',
-            data: { id: folderId },
-            success: function(response) {
-                console.log(response);
-                // Set parent folder dropdown
-                $('#edit_parent_folder').val(response.folder.parent_id).trigger('change');
-                $('#edit_folder_name').val(response.folder.folder_name);
-                $('#folder_id').val(response.folder.id);
-                $('#edit_description').val(response.folder.description);
-                $('#edit_ou_id').val(response.folder.ou_id);
-                $('#edit_status').val(response.folder.status);
+    $('.error_e').html('');
+    var folderId = $(this).data('folder-id');
 
-                $('#editFolderModal').modal('show');
-            },
-            error: function(xhr, status, error) {
-                console.error(xhr.responseText);
-            }
-        });
+    $.ajax({
+        url: "{{ url('/folder/edit') }}", 
+        type: 'GET',
+        data: { id: folderId },
+        success: function(response) {
+            
+            let currentFolderId = response.current_folder_id;
+            let selectedParentId = response.selected_parent_id;
+
+            // Set parent folder dropdown
+            $('#edit_parent_folder').val(selectedParentId).trigger('change');
+
+            // Disable current folder in the dropdown to prevent self-selection
+            // $('#edit_parent_folder option').prop('disabled', false); // Re-enable all options
+            // $('#edit_parent_folder option[value="' + currentFolderId + '"]').prop('disabled', true);
+
+            // Set other form values
+            $('#edit_folder_name').val(response.folder.folder_name);
+            $('#folder_id').val(response.folder.id);
+            $('#edit_description').val(response.folder.description);
+            $('#edit_ou_id').val(response.folder.ou_id);
+            $('#edit_status').val(response.folder.status);
+
+            $('#editFolderModal').modal('show');
+        },
+        error: function(xhr, status, error) {
+            console.error(xhr.responseText);
+        }
+    });
     });
 
     $('#updateFolder').on('click', function(e){
