@@ -71,7 +71,7 @@ class CourseController extends Controller
 
 
             
-        } elseif(checkAllowedModule('courses', 'course.index')->isNotEmpty()){
+        } elseif(checkAllowedModule('courses', 'course.index')->isNotEmpty() && Auth()->user()->is_admin ==  0){
 
             // dd("else if working");
 
@@ -84,13 +84,22 @@ class CourseController extends Controller
     
             $groupIds = $filteredGroups->pluck('id')->toArray();
     
+            // $courses = Courses::whereIn('id', function ($query) use ($groupIds) {
+            //     $query->select('courses_id')
+            //         ->from('courses_group')
+            //         ->whereIn('group_id', $groupIds);
+            // })->get();
             $courses = Courses::whereIn('id', function ($query) use ($groupIds) {
                 $query->select('courses_id')
                     ->from('courses_group')
                     ->whereIn('group_id', $groupIds);
-            })->get();
+            // })->where('status', 1)
+        })->where('status', 1)
 
-        
+            ->get();
+            
+            // dd($courses);
+            
         }else {
             if ($role == 1 && empty($ouId)) {
                 $courses = Courses::all();

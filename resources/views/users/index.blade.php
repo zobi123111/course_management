@@ -277,6 +277,17 @@
                         <div id="edit_email_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
+                        <label for="password" class="form-label">Password<span class="text-danger">*</span></label>
+                        <input type="password" name="password" class="form-control">
+                        <div id="password_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmpassword" class="form-label">Confirm Password<span
+                                class="text-danger">*</span></label>
+                        <input type="password" name="password_confirmation" class="form-control" id="confirmpassword">
+                        <div id="password_confirmation_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
                         <label for="lastname" class="form-label">Image<span class="text-danger">*</span></label>
                         <input type="file" name="image" class="form-control" accept="image/*">
                         <div id="image_error" class="text-danger error_e"></div>
@@ -646,7 +657,7 @@
                     $('#edit_role option[value="' + userRoleId + '"]').attr('selected',
                         'selected');
 
-                        if (response.user.licence) {
+                        if (response.user.licence_required) {
                             $('#edit_licence_checkbox').prop('checked', true);
                             $('#edit_licence').val(response.user.licence).show().prop('required', true);
                             $('#edit_licence_file').show().prop('required', true);
@@ -665,7 +676,7 @@
                         
                         // Set passport checkbox and fields
 
-                        if (response.user.passport) {
+                        if (response.user.passport_required) {
                             $('#edit_passport_checkbox').prop('checked', true);
                             $('#edit_passport').val(response.user.passport).show().prop('required', true);
                             $('#edit_passport_file').show().prop('required', true);
@@ -697,7 +708,7 @@
                         }
 
                         // Set currency checkbox and field
-                        if (response.user.currency) {
+                        if (response.user.currency_required) {
                             $('#edit_currency_checkbox').prop('checked', true);
                             $('#edit_currency').val(response.user.currency).show().prop('required', true);
                         } else {
