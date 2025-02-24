@@ -1,4 +1,3 @@
-
 @section('title', 'Documents')
 @section('sub-title', 'Documents')
 @extends('layout.app')
