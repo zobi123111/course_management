@@ -56,7 +56,7 @@ class GroupController extends Controller
 
             $groups = $groups->filter(function ($group) use ($userId) {
                 $userIds = is_string($group->user_ids) ? json_decode($group->user_ids, true) : $group->user_ids;
-
+                $userIds = is_array($userIds) ? $userIds : [];
                 return in_array($userId, $userIds);
             });
         } 

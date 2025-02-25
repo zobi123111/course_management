@@ -108,7 +108,7 @@
                 @if(checkAllowedModule('courses', 'sublesson.store')->isNotEmpty())
                     <p class="card-text">
                         <button class="btn btn-success" id="createSubLessonBtn" data-bs-toggle="modal"
-                        data-bs-target="#createSubLessonModal">Create Sub-Lesson</button>
+                        data-bs-target="#createSubLessonModal">Create Task</button>
                     </p>
                 @endif
             </div>
@@ -123,7 +123,7 @@
     <div class="card-body">
         <div class="list-group">
             <div class="container-fluid">
-                <h3>Sub-Lessons</h3>
+                <h3>Tasks</h3>
                 <div class="row">
                     @foreach($lesson->subLessons as $val)
                         <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
@@ -181,14 +181,14 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="createSubLessonModalLabel">Create Sub-Lesson</h5>
+                <h5 class="modal-title" id="createSubLessonModalLabel">Create Task</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="subLessonForm" method="POST" class="row g-3 ">
                     @csrf
                     <div class="form-group">
-                        <label for="sub_lesson_title" class="form-label">Sub-Lesson Title<span class="text-danger">*</span></label>
+                        <label for="sub_lesson_title" class="form-label">Task Title<span class="text-danger">*</span></label>
                         <input type="text" name="sub_lesson_title" class="form-control">
                         <input type="hidden" name="lesson_id" class="form-control" value="{{ $lesson->id }}">
                         <div id="sub_lesson_title_error" class="text-danger error_e"></div>
@@ -222,14 +222,14 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editSubLessonModalLabel">Edit Sub-Lesson</h5>
+                <h5 class="modal-title" id="editSubLessonModalLabel">Edit Task</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="editSubLessonForm" class="row g-3 needs-validation">
                     @csrf
                     <div class="form-group">
-                        <label for="edit_sub_lesson_title" class="form-label">Sub-Lesson Title<span class="text-danger">*</span></label>
+                        <label for="edit_sub_lesson_title" class="form-label">Task Title<span class="text-danger">*</span></label>
                         <input type="text" name="edit_sub_lesson_title" class="form-control">
                         <input type="hidden" name="edit_sub_lesson_id" class="form-control">
                         <div id="edit_sub_lesson_title_error" class="text-danger error_e"></div>
@@ -270,7 +270,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete this Sub-Lesson "<strong><span id="append_sub_lesson_name"></span></strong>" ?
+                    Are you sure you want to delete this Task "<strong><span id="append_sub_lesson_name"></span></strong>" ?
                     {{-- <strong><span id="append_sub_lesson_name"></span></strong> --}}
                 </div>
                 <div class="modal-footer">

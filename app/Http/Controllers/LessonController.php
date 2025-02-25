@@ -155,8 +155,8 @@ class LessonController extends Controller
             'status' => $request->sub_status
         ]);
 
-        Session::flash('message', 'Sub Lesson created successfully.');
-        return response()->json(['success' => 'Sub Lesson created successfully.']);
+        Session::flash('message', 'Task created successfully.');
+        return response()->json(['success' => 'Test Task 1 created successfully.']);
     }
 
     public function getSubLesson(Request $request)
@@ -193,8 +193,8 @@ class LessonController extends Controller
             'status' => $request->edit_sub_status
         ]);
 
-        Session::flash('message','Sub-Lesson updated successfully.');
-        return response()->json(['success'=> 'Sub-Lesson updated successfully.']);
+        Session::flash('message','Task updated successfully.');
+        return response()->json(['success'=> 'Task updated successfully.']);
     }
 
     public function deleteSubLesson(Request $request)
@@ -206,7 +206,7 @@ class LessonController extends Controller
         if ($sublesson) {
             $lesson_id = $sublesson->lesson_id;
             $sublesson->delete();
-            return redirect()->route('lesson.show',['id' => encode_id($lesson_id)])->with('message', 'This Sub-lesson deleted successfully');
+            return redirect()->route('lesson.show',['id' => encode_id($lesson_id)])->with('message', 'This Task deleted successfully');
         }
     }
 

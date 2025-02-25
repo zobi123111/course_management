@@ -28,6 +28,76 @@ class UserController extends Controller
         return view('users.index', compact('users', 'roles', 'organizationUnits'));
     }
 
+    public function getData(Request $request)
+    {
+        $ou_id = auth()->user()->ou_id;
+
+        $query = User::query()
+                    ->leftJoin('roles', 'users.role', '=', 'roles.id')
+                    ->leftJoin('organization_units', 'users.ou_id', '=', 'organization_units.id')
+                    ->select('users.*', 'roles.role_name as position', 'organization_units.org_unit_name as organization');
+
+        if ($ou_id) {
+            $query->where('users.ou_id', $ou_id);
+        }
+
+        if ($search = $request->input('search.value')) {
+            $query->where(function($q) use ($search) {
+                $q->where('users.fname', 'like', "%$search%")
+                ->orWhere('users.lname', 'like', "%$search%")
+                ->orWhere('users.email', 'like', "%$search%")
+                ->orWhere('roles.role_name', 'like', "%$search%")
+                ->orWhere('organization_units.org_unit_name', 'like', "%$search%");
+                
+                if (strtolower($search) == 'active') {
+                    $q->orWhere('users.status', 1);
+                } elseif (strtolower($search) == 'inactive') {
+                    $q->orWhere('users.status', 0);
+                } else {
+                    $q->orWhere('users.status', 'like', "%$search%");
+                }
+            });
+        }
+
+        $orderColumn = $request->input('order.0.column');
+        $orderDirection = $request->input('order.0.dir');
+        $columns = ['users.id', 'users.image', 'users.fname', 'users.lname', 'users.email', 'roles.role_name', 'organization_units.org_unit_name', 'users.status'];
+
+        if ($orderColumn !== null && isset($columns[$orderColumn])) {
+            $column = $columns[$orderColumn];
+            $query->orderBy($column, $orderDirection);
+        }
+
+        $totalRecords = $query->count();
+
+        $users = $query->offset($request->input('start'))
+                    ->limit($request->input('length'))
+                    ->get();
+
+        $data = $users->map(function ($user) {
+            $organization = isset($user->organization) ? $user->organization : '--';
+            return [
+                'id' => $user->id,
+                'image' => $user->image,
+                'fname' => $user->fname,
+                'lname' => $user->lname,
+                'email' => $user->email,
+                'organization' => $organization,
+                'position' => $user->position,
+                'status' => $user->status == 1 ? 'Active' : 'Inactive',
+                'edit' => '',
+                'delete' => ''
+            ];
+        });
+
+        return response()->json([
+            'draw' => $request->input('draw'),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $totalRecords,
+            'data' => $data
+        ]);
+    }
+
     public function profile()
     {
         $id =  auth()->user()->id;

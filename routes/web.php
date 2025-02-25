@@ -43,6 +43,9 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('change-password', [LoginController::class, 'changePassword'])->name('update-password');
     Route::get('/users/profile', [UserController::class, 'profile'])->name('user.profile');
     Route::post('/users/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update');
+    Route::get('/users/data', [UserController::class, 'getData'])->name('users.data');
+    Route::get('/orgunit/data', [OrganizationController::class, 'getData'])->name('orgunit.data');
+
 });
 
 Route::middleware(['auth', 'role.permission'])->group(function () {
