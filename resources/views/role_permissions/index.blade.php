@@ -51,14 +51,9 @@
                             data-user-id="{{ $role->id }}"></i></a></td>
                 @endif
                 @if(checkAllowedModule('roles', 'roles.destroy')->isNotEmpty())
-                    <td>
-                        @if(session('role_with_users') == $role->id && $role->users->count() > 0)
-                            <button class="btn btn-danger disabled" disabled>Cannot Delete</button>
-                            {{-- <p class="btn btn-danger">Cannot delete this role. It is assigned to {{ $role->users->count() }} users.</p> --}}
-                        @else
+                    <td>                       
                             <i class="fa-solid fa-trash delete-icon table_icon_style blue_icon_color"
-                                data-role-id="{{ encode_id($role->id) }}"></i>
-                        @endif
+                                data-role-id="{{ encode_id($role->id) }}" data-users-count="{{ $role->users_count }}"></i>
                     </td>
                 @endif
             </tr>
@@ -80,19 +75,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    @if ($role->users->count() > 0)
-                        Cannot delete this role. It is assigned to <strong> {{ $role->users->count() }} users.</strong>
-                    @else
+                    <span class="show_users_count" style="display: none;">Cannot delete this role. It is assigned to <strong class="users_count"></strong> users</span>
+                    <span class="show_delete_user" style="display: none;">             
                         Are you sure you want to delete this role "<strong><span id="append_name"> </span></strong>" ? 
-                    @endif
+                    </span>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
-                    @if ($role->users->count() > 0)
-                        <button type="submit" class="btn btn-primary disabled">Delete</button>
-                    @else
-                        <button type="submit" class="btn btn-primary ">Delete</button>
-                    @endif
+                        <button type="submit" class="btn btn-primary delete-btn">Delete</button>
                 </div>
             </div>
         </div>
@@ -119,13 +109,30 @@ $(document).ready(function() {
     $('#role_table').DataTable();
 
     $(document).on('click', '.delete-icon', function(e) {
-        e.preventDefault();
-        var roleId = $(this).data('role-id');
-        var fname = $(this).closest('tr').find('.fname').text();
+    e.preventDefault();
+    
+    var roleId = $(this).data('role-id');
+    var usersCount = parseInt($(this).data('users-count')) || 0; // Convert to integer
+    var fname = $(this).closest('tr').find('.fname').text();
+
+    console.log("Users Count:", usersCount); // Debugging
+
+    // Hide both sections before showing the correct one
+    $('.show_users_count, .show_delete_user').hide();
+
+    if (usersCount > 0) { 
+        $('.show_users_count').show();
+        $('.users_count').html(usersCount);
+        $('.delete-btn').prop('disabled', true);
+    } else {
+        $('.show_delete_user').show();
         $('#append_name').html(fname);
         $('#deleteRoleFormId').attr('action', '/roles/' + roleId);
-        $('#deleteRoleForm').modal('show');
-    });
+        $('.delete-btn').prop('disabled', false);
+    }
+
+    $('#deleteRoleForm').modal('show'); // Ensure this is the correct modal ID
+});
 });
 
 

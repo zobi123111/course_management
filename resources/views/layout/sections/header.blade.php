@@ -40,7 +40,10 @@
                                 {{ Auth::user()->fname }} {{ Auth::user()->lname }}
                                 @endif
                             </h6>
-                          <span>{{ Auth::user()->roles->role_name }}</span>
+                          <span> {{ Auth::user()->roles->role_name }}</span><br>
+                          @if(auth()->user()->is_owner==0)
+                          <span> {{ auth()->user()->organization->org_unit_name  }}</span>
+                          @endif
                       </li>
                       <li>
                           <hr class="dropdown-divider">
@@ -75,7 +78,12 @@
                       <li>
                           <hr class="dropdown-divider">
                       </li>
-
+                      <li>
+                        <a class="dropdown-item d-flex align-items-center" href="{{ route('user.profile') }}">
+                            <i class="bi bi-person"></i>
+                            <span>My Profile</span>
+                        </a>
+                      </li>
                       <li>
                           <a class="dropdown-item d-flex align-items-center" href="{{ url('logout') }}">
                               <i class="bi bi-box-arrow-right"></i>

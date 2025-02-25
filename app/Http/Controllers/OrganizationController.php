@@ -57,7 +57,7 @@ class OrganizationController extends Controller
             'status.required' => 'Status field is required',
         ]);
     
-        DB::beginTransaction();
+        // DB::beginTransaction();
     
         try {
             // Step 1: Store the organizational unit data
@@ -68,31 +68,36 @@ class OrganizationController extends Controller
             ]);
     
             // Step 2: Store the user data only if email is provided
-            $user = null;
-            if ($request->filled('email') && $request->filled('firstname') && $request->filled('lastname')) {
-                $user = User::create([
-                    'fname' => $request->firstname,
-                    'lname' => $request->lastname,
-                    'email' => $request->email,
-                    'password' => Hash::make($request->password),
-                    'role' => 1,
-                    'ou_id' => $orgUnit->id,
-                ]);
-            }
+            if($orgUnit){                
+                $user = null;
+                if ($request->filled('email') && $request->filled('firstname') && $request->filled('lastname')) {
+                    $user = User::create([
+                        'fname' => $request->firstname,
+                        'lname' => $request->lastname,
+                        'email' => $request->email,
+                        'password' => Hash::make($request->password),
+                        'role' => 1,
+                        'ou_id' => $orgUnit->id,
+                    ]);
+                }
+            
+                if ($user) {  
+                    // Generate password to send in the email (if user exists and password is provided)
+                    $password = $request->password;
+                    
+                    // Send email
+                    Mail::to($user->email)->send(new OrgUnitCreated($user, $password, $orgUnit));
+                }
         
-            if ($user) {  
-                // Generate password to send in the email (if user exists and password is provided)
-                $password = $request->password;
-                
-                // Send email
-                Mail::to($user->email)->send(new OrgUnitCreated($user, $password, $orgUnit));
+                Session::flash('message', 'Organizational unit created successfully' . ($user ? ' with user' : ''));
+                return response()->json(['success' => 'Organizational unit created successfully' . ($user ? ' with user' : '')]);
+            }else{
+                Session::flash('error', 'Something went wrong while creating organizational unit, Please try after some time');
+                return response()->json(['error' => 'Something went wrong while creating organizational unit, Please try after some time']);
             }
-    
-            DB::commit(); // Commit transaction if everything is successful
+            // DB::commit(); // Commit transaction if everything is successful
     
             // Success response
-            Session::flash('message', 'Organizational unit created successfully' . ($user ? ' with user' : ''));
-            return response()->json(['success' => 'Organizational unit created successfully' . ($user ? ' with user' : '')]);
         } catch (\Exception $e) {
             DB::rollBack();
         
@@ -132,7 +137,7 @@ class OrganizationController extends Controller
     {
         // dd($request);
         $rules = [
-            'org_unit_name' => 'required|unique:organization_units,org_unit_name,' . $request->org_unit_id,
+            'org_unit_name' => 'required|unique:organization_units,org_unit_name,' . $request->org_unit_id . ',id',
             'description' => 'required',
             'status' => 'required',
         ];
@@ -229,6 +234,20 @@ class OrganizationController extends Controller
             return redirect()->route('orgunit.index')->with('message', 'Organizational Unit deleted successfully');  
         }
     }
+
+    public function showOrgUsers(Request $request)
+    {
+        // dd($request->ou_id);
+        $orgUnitUsers = User::where('ou_id', decode_id($request->ou_id))->get();
+         // Check if users exist
+        if ($orgUnitUsers->isEmpty()) {
+            return response()->json(['error' => 'No users found for this Organizational Unit.'], 404);
+        }
+
+        // Return users
+        return response()->json(['orgUnitUsers' => $orgUnitUsers]);
+
+        }
 
 
     
