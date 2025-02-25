@@ -57,10 +57,11 @@
                 <th scope="col">First Name</th>
                 <th scope="col">Last Name</th>
                 <th scope="col">Email</th>
-                @if(auth()->user()->ou_id == null)
+                @if(auth()->user()->is_owner == 1)
                 <th scope="col">OU</th>
+                <th scope="col">Position</th>
                 @endif
-                @if(auth()->user()->ou_id)
+                @if(!empty(auth()->user()->ou_id) && auth()->user()->is_owner == 0)
                 <th scope="col">Position</th>
                 @endif
 
@@ -84,11 +85,12 @@
                 <td scope="row" class="fname">{{ $val->fname }}</td>
                 <td scope="row" class="lname">{{ $val->lname }}</td>
                 <td>{{ $val->email }}</td>
-                @if(auth()->user()->ou_id == null)
+                @if(auth()->user()->is_owner == 1)
                 <td>{{ $val->organization ? $val->organization->org_unit_name : '--' }}</td>
+                <td>{{ $val->roles ? $val->roles->role_name : '--' }}</td>
                 @endif
-                @if(auth()->user()->ou_id)
-                    <td>{{ $val->roles ? $val->roles->role_name : '--' }}</td>
+                @if(!empty(auth()->user()->ou_id) && auth()->user()->is_owner == 0)
+                <td>{{ $val->roles ? $val->roles->role_name : '--' }}</td>
                 @endif
                 <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
                 @if(checkAllowedModule('users','user.get')->isNotEmpty())

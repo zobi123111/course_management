@@ -64,6 +64,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/orgunit/edit', [OrganizationController::class, 'getOrgUnit'])->name('orgunit.edit');
     Route::post('/orgunit/update', [OrganizationController::class, 'updateOrgUnit'])->name('orgunit.update');
     Route::post('/orgunit/delete', [OrganizationController::class, 'deleteOrgUnit'])->name('orgunit.delete');
+    Route::get('/orgunit/user_list', [OrganizationController::class, 'showOrgUsers'])->name('orgunit.user_list');
     
     //Courses 
     Route::get('/courses', [CourseController::class, 'index'])->name('course.index');

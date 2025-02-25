@@ -9,6 +9,12 @@
     {{ session()->get('message') }}
 </div>
 @endif
+@if(session()->has('error'))
+<div id="successMessage" class="alert alert-danger fade show" role="alert">
+    <i class="bi bi-check-circle me-1"></i>
+    {{ session()->get('message') }}
+</div>
+@endif
 <div class="main_cont_outer" >
     <div class="create_btn " >
         <button class="btn btn-primary create-button" id="createOrgUnit" data-toggle="modal"
@@ -41,7 +47,7 @@
                 <!-- <td>{{ $val->fname}}</td>
                 <td>{{ $val->lname}}</td>
                 <td>{{ $val->email}}</td> -->
-                <td>{{ $val->users_count }}</td>
+                <td> <a href="#" class="get_org_users" data-ou-id="{{ encode_id($val->id) }}"> {{ $val->users_count }} </a></td>
                 <td><i class="fa fa-edit edit-orgunit-icon" 
                         data-orgunit-id="{{ encode_id($val->id) }}"
                         data-user-id="{{ encode_id(optional($val->roleOneUsers)->id) }}">
@@ -60,6 +66,32 @@
 </div>
 </div>
 
+<!-- OU Users List Modal -->
+<div class="modal fade" id="orgUnitUsersModal" tabindex="-1" role="dialog" aria-labelledby="orgUnitUsersModalLabel"
+    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orgUnitUsersModalLabel">OU Users</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            <table class="table" id="orgUnitUsersTable">
+                <thead>
+                    <tr>
+                        <th scope="col">Image</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                    </tr>
+                </thead>
+                <tbody id="tblBody">                    
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End of OU Users List Modal-->
 
 <!-- Create Organizational  Unit-->
 <div class="modal fade" id="orgUnitModal" tabindex="-1" role="dialog" aria-labelledby="orgUnitModalLabel"
@@ -268,9 +300,7 @@ $(document).ready(function() {
         });
 
     })
-
-    $('.edit-orgunit-icon').click(function(e) {
-        e.preventDefault();
+    $('#orgUnitTable').on('click', '.edit-orgunit-icon', function() {
         $('.error_e').html('');
         $("#editOrgUnit")[0].reset();
         var orgUnitId = $(this).data('orgunit-id');
@@ -302,6 +332,54 @@ $(document).ready(function() {
             },
             error: function(xhr, status, error) {
                 console.error(xhr.responseText);
+            }
+        });
+    });
+
+    $('#orgUnitTable').on('click', '.get_org_users', function() {
+    var ou_id = $(this).data('ou-id');
+
+        $.ajax({               
+            url: "{{ url('/orgunit/user_list') }}",
+            type: 'GET',
+            data: { ou_id: ou_id },
+            success: function(response) {
+                console.log(response);
+
+                // Check if users exist
+                if (!response.orgUnitUsers || response.orgUnitUsers.length === 0) {
+                    alert('No users found for this Organizational Unit.');
+                    return;
+                }
+
+                // Clear previous data
+                $('#orgUnitUsersTable tbody').html('');
+
+                // Append new data
+                response.orgUnitUsers.forEach(user => {
+                    var imageUrl = user.image 
+                        ? "{{ asset('storage') }}/" + user.image 
+                        : "{{ asset('assets/img/no_image.png') }}"; // Default image if none provided
+                    
+                    var row = `
+                        <tr>
+                            <td><img src="${imageUrl}" alt="Profile Image" width="40" height="40" class="rounded-circle"></td>
+                            <td>${user.fname} ${user.lname}</td>
+                            <td>${user.email}</td>
+                        </tr>`;
+                    $('#orgUnitUsersTable tbody').append(row);
+                });
+
+                // Show modal
+                $('#orgUnitUsersModal').modal('show');
+            },
+            error: function(xhr, status, error) {
+                try {
+                    var response = JSON.parse(xhr.responseText); // Parse responseText to JSON
+                    alert(response.error || 'An unknown error occurred.');
+                } catch (e) {
+                    alert('Failed to fetch users. Please try again.');
+                }
             }
         });
     });

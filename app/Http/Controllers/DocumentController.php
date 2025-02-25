@@ -40,40 +40,29 @@ class DocumentController extends Controller
             'document_file' => 'required|file|mimes:pdf|max:2048',
             'status' => 'required',
             'group' => 'required',
+            'folder' => 'nullable|exists:folders,id' // Ensure folder exists if provided
         ]);
-    
-        // Initialize variables
-        $folder = null;
-        $filePath = null;
-    
-        // Check if a folder is selected
-        if ($request->filled('folder')) {
-            $folder = Folder::find($request->folder);
-    
-            if ($folder) {
-                // Store the file in the specified folder
-                $filePath = $request->file('document_file')->store("documents/{$folder->folder_name}", 'public');
-            } else {
-                return response()->json(['error' => 'Invalid folder specified.'], 400);
-            }
-        } else {
-            // Store the file in the default 'documents' folder
-            $filePath = $request->file('document_file')->store('documents', 'public');
-        }
-    
+
+        // Get the original filename
+        $originalFilename = $request->file('document_file')->getClientOriginalName();
+
+        // Store the file in the 'documents' folder
+        $filePath = $request->file('document_file')->store('documents', 'public');
+
         // Create the document record in the database
         Document::create([
             'ou_id' => auth()->user()->ou_id ?? null,
-            'folder_id' => $folder->id ?? null,
+            'folder_id' => $request->folder ?? null, // Store only folder ID, not folder name
             'group_id' => $request->group,
             'doc_title' => $request->doc_title,
             'version_no' => $request->version_no,
             'issue_date' => $request->issue_date,
             'expiry_date' => $request->expiry_date,
             'document_file' => $filePath,
+            'original_filename' => $originalFilename, // Store original filename
             'status' => $request->status,
         ]);
-    
+
         // Flash success message and return JSON response
         Session::flash('message', 'Document added successfully.');
         return response()->json(['success' => 'Document added successfully.']);
