@@ -158,6 +158,16 @@
                             @endforeach
                         </select>
                         <div id="role_name_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="multiple_roles" class="form-label">Select Multiple Roles<span
+                                class="text-danger"></span></label>
+                        <select class="form-select " name="extra_roles[]" id="multiple_roles" multiple="multiple">
+                            @foreach($roles as $val)
+                                <option value="{{ $val->id }}">{{ $val->role_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="role_ids_error" class="text-danger error_e"></div>
                     </div>                    
                     <!-- Licence -->
                     <div class="form-group">
@@ -434,7 +444,17 @@
 <script>
     
     $(document).ready(function() {
-        $('#user_table').DataTable();
+    $('#user_table').DataTable();
+
+    // Initialize Select2 globally on all user selection dropdowns
+    function initializeSelect2() {
+        $('.roles_select').select2({
+            allowClear: true,
+            dropdownParent: $('.modal:visible') // Fix for modals
+        });
+    }
+
+    initializeSelect2(); // Call on page load
 
         $('#licence_checkbox').change(function() {
             if (this.checked) {
@@ -513,7 +533,9 @@
         $('#createUser').on('click', function() {
             $('.error_e').html('');
             $('.alert-danger').css('display', 'none');
-            $('#userModal').modal('show');        
+            $('#userModal').modal('show');       
+            
+            initializeSelect2(); // Ensure Select2 is re-initialized
         });
 
         $('#saveuser').click(function(e) {
@@ -737,6 +759,7 @@
                     $('#secondary_role option[value="' + secondary_role + '"]').attr('selected',
                         'selected');
                     $('#editUserDataModal').modal('show');
+                    initializeSelect2();
                 },
                 error: function(xhr, status, error) {
                     console.error(xhr.responseText);
@@ -826,6 +849,11 @@
             $('#append_name').html(name);
             $('#userid').val(userId);
 
+        });
+
+        // Ensure Select2 works when modal is shown
+        $('#userModal, #editUserDataModal').on('shown.bs.modal', function() {
+            initializeSelect2();
         });
 
         setTimeout(function() {

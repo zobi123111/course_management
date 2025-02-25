@@ -42,6 +42,7 @@ class User extends Authenticatable
         'password',
         'password_flag',
         'ou_id',
+        'extra_roles',
     ];
 
     /**

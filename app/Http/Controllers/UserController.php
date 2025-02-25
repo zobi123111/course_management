@@ -157,7 +157,9 @@ class UserController extends Controller
                         $fail('The Organizational Unit (OU) is required for Super Admin.');
                     }
                 }
-            ]
+            ],
+            'extra_roles' => 'array',
+            'extra_roles.*' => 'exists:roles,id', // Ensure all user IDs exist
         ]);
 
         $licence_required = null;
@@ -235,6 +237,7 @@ class UserController extends Controller
             "custom_field_value" => $request->custom_field_value ?? null,
             'status' => $request->status,
             "ou_id" => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
+            "extra_roles" => !empty($request->extra_roles) ? json_encode($request->extra_roles) : json_encode([]),
         );
 
         // dd($store_user);
@@ -245,7 +248,7 @@ class UserController extends Controller
             // Generate password to send in the email
             $password = $request->password;
     
-            // Send email
+            // Send emailx
 
             Mail::to($store->email)->send(new UserCreated($store, $password));
 
@@ -493,6 +496,9 @@ class UserController extends Controller
                 $password =  $userToUpdate->password;
             }
 
+             // Handle Extra Roles
+    $extra_roles = $request->has('extra_roles') ? json_encode($request->extra_roles) : $userToUpdate->extra_roles;
+
             // Update User Information
             $userToUpdate->where('id', $request->edit_form_id)
                 ->update([
@@ -515,7 +521,8 @@ class UserController extends Controller
                     'currency' => $request->edit_currency ?? null,
                     'custom_field_name' => $request->edit_custom_field_name ?? null,
                     'custom_field_value' => $request->edit_custom_field_value ?? null,
-                    'password_flag' => $request->edit_update_password
+                    'password_flag' => $request->edit_update_password,
+                    'extra_roles' => $extra_roles,
                 ]);
 
             return response()->json(['success' => true, 'message' => "User data updated successfully"]);
