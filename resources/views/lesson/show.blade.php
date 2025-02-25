@@ -7,6 +7,76 @@
        color: #0d6efd !important; /* Ensures the description takes available space */
     }
 </style>
+
+
+<style>
+    .course-image {
+        height: 200px;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .sublesson_card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .sublesson_card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-body {
+        flex-grow: 1;
+        /* min-height: 200px; */
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    .card-footer {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        background-color: #f8f9fa;
+    }
+
+    .card-text {
+        flex-grow: 1;
+    }
+
+    .course-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .course-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Button hover effect */
+    .card-footer .btn {
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .card-footer .btn:hover {
+        background-color: #e2e6ea;
+        transform: translateY(-2px);
+    }
+
+    .status-label {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.9em;
+    }
+</style>
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -49,74 +119,60 @@
 
 
  <!-- List group with Advanced Contents -->
- <div class="list-group">
-    {{-- @foreach($lesson->subLessons as $val)
-        <div class="list-group-item " aria-current="true">
-            <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1" data-sublesson-title="{{ $val->title }}">{{ $val->title }}</h5>
-
-                <span>                 
-                @if(checkAllowedModule('courses', 'sublesson.edit')->isNotEmpty())
-                    <i class="fa fa-edit edit-lesson-icon" style="font-size:18px; cursor: pointer; margin-right: 5px;" data-lesson-id="{{ encode_id($val->id) }}"></i>
-                @endif
-                @if(checkAllowedModule('courses', 'sublesson.delete')->isNotEmpty())
-                    <i class="fa-solid fa-trash delete-lesson-icon" style="font-size:18px; cursor: pointer;"
-                    data-lesson-id="{{ encode_id($val->id) }}"></i>
-                @endif
-                </span>
-
-            </div>
-            <p class="mb-1">{{ $val->description }}</p>
-        </div>
-    @endforeach --}}
-
-    <div class="container-fluid">
-        <div class="row">
-            @foreach($lesson->subLessons as $val)
-                <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
-                    <div class="card course-card">
-    
-                        <div class="course-image-container" style="position: relative;">
-                            <span class="status-label" style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
-                                {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
-                            </span>
+ <div class="card pt-4">
+    <div class="card-body">
+        <div class="list-group">
+            <div class="container-fluid">
+                <h3>Sub-Lessons</h3>
+                <div class="row">
+                    @foreach($lesson->subLessons as $val)
+                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                            <div class="sublesson_card course-card">
+            
+                                <div class="course-image-container" style="position: relative;">
+                                    <span class="status-label" style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
+                                        {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </div>
+            
+                                <div class="card-body">
+                                    <h5 class="card-title SublessonName" data-sublesson-title="{{ $val->title }}">{{ $val->title}}</h5>
+            
+                                    <p class="card-text">
+                                        {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
+                                    </p>
+                                </div>
+            
+                                <div class="card-footer d-flex justify-content-between">
+            
+                                    {{-- @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
+                                        <a href="javascript:void(0)" class="btn btn-light show-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
+                                            <i class="fa fa-edit"></i> Show
+                                        </a>
+                                    @endif --}}
+            
+                                    @if(checkAllowedModule('courses', 'sublesson.edit')->isNotEmpty())
+                                        <a href="javascript:void(0)" class="btn btn-light edit-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
+                                            <i class="fa fa-edit"></i> Edit
+                                        </a>
+                                    @endif
+            
+                                    @if(checkAllowedModule('courses', 'sublesson.delete')->isNotEmpty())
+                                        <a href="javascript:void(0)" class="btn btn-light delete-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
+                                            <i class="fa-solid fa-trash"></i> Delete
+                                        </a>
+                                    @endif
+            
+                                </div>
+                            </div>
                         </div>
-    
-                        <div class="card-body">
-                            <h5 class="card-title" data-sublesson-title="{{ $val->title }}">{{ $val->title}}</h5>
-    
-                            <p class="card-text">
-                                {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
-                            </p>
-                        </div>
-    
-                        <div class="card-footer d-flex justify-content-between">
-    
-                            {{-- @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
-                                <a href="javascript:void(0)" class="btn btn-light show-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
-                                    <i class="fa fa-edit"></i> Show
-                                </a>
-                            @endif --}}
-    
-                            @if(checkAllowedModule('courses', 'sublesson.edit')->isNotEmpty())
-                                <a href="javascript:void(0)" class="btn btn-light edit-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
-                                    <i class="fa fa-edit"></i> Edit
-                                </a>
-                            @endif
-    
-                            @if(checkAllowedModule('courses', 'sublesson.delete')->isNotEmpty())
-                                <a href="javascript:void(0)" class="btn btn-light delete-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
-                                    <i class="fa-solid fa-trash"></i> Delete
-                                </a>
-                            @endif
-    
-                        </div>
-                    </div>
+                    @endforeach
                 </div>
-            @endforeach
+            </div>
         </div>
     </div>
 </div>
+
 
 <!-- End List group Advanced Content -->
 
@@ -231,88 +287,6 @@
 
 @section('js_scripts')
 
-{{-- <script>
-    // Show modal for creating sub-lesson
-    $("#createSubLessonBtn").on('click', function(){
-        $(".error_e").html('');
-        $("#subLessonForm")[0].reset();
-        $("#createSubLessonModal").modal('show');
-    });
-
-    // Handle form submission for creating sub-lesson
-    $("#subLessonForm").on("submit", function(e) {
-        e.preventDefault();
-        $.ajax({
-            url: '{{ url("/sub-lesson/create") }}',
-            type: 'POST',
-            data: $(this).serialize(),
-            success: function(response) {
-                $('#createSubLessonModal').modal('hide');
-                location.reload();
-            },
-            error: function(xhr) {
-                var errorMessage = JSON.parse(xhr.responseText);
-                var validationErrors = errorMessage.errors;
-                $.each(validationErrors, function(key, value) {
-                    var msg = '<p>' + value + '</p>';
-                    $('#' + key + '_error').html(msg);
-                });
-            }
-        });
-    });
-
-    // Show modal for editing sub-lesson
-    $('.edit-sub-lesson-icon').on('click', function() {
-        var subLessonId = $(this).data('sub-lesson-id');
-        $.ajax({
-            url: "{{ url('/sub-lesson/edit') }}",
-            type: 'GET',
-            data: { id: subLessonId },
-            success: function(response) {
-                $('input[name="edit_sub_lesson_title"]').val(response.subLesson.title);
-                $('input[name="edit_sub_lesson_id"]').val(response.subLesson.id);
-                $('#edit_sub_description').val(response.subLesson.description);
-                $('#edit_sub_status').val(response.subLesson.status);
-                $('#editSubLessonModal').modal('show');
-            },
-            error: function(xhr) {
-                console.error(xhr.responseText);
-            }
-        });
-    });
-
-    // Handle form submission for updating sub-lesson
-    $("#editSubLessonForm").on("submit", function(e) {
-        e.preventDefault();
-        $.ajax({
-            url: '{{ url("/sub-lesson/update") }}',
-            type: 'POST',
-            data: $(this).serialize(),
-            success: function(response) {
-                $('#editSubLessonModal').modal('hide');
-                location.reload();
-            },
-            error: function(xhr) {
-                var errorMessage = JSON.parse(xhr.responseText);
-                var validationErrors = errorMessage.errors;
-                $.each(validationErrors, function(key, value) {
-                    var msg = '<p>' + value + '</p>';
-                    $('#' + key + '_error').html(msg);
-                });
-            }
-        });
-    });
-
-    // Show modal for deleting sub-lesson
-    $('.delete-sub-lesson-icon').on('click', function() {
-        var subLessonId = $(this).data('sub-lesson-id');
-        var subLessonTitle = $(this).data('sub-lesson-title');
-        $('#subLessonId').val(subLessonId);
-        $('#append_sub_lesson_name').html(subLessonTitle);
-        $('#deleteSubLessonModal').modal('show');
-    });
-</script> --}}
-
 <script>
     // Show modal for creating sub-lesson
     $("#createSubLessonBtn").on('click', function(){
@@ -401,7 +375,7 @@
         $('#deleteSubLessonModal').modal('show');
 
         var subLessonId = $(this).data('lesson-id');
-        var subLessonTitle = $(this).closest('.list-group-item').find('[data-sublesson-title]').data('sublessonTitle'); 
+        var subLessonTitle = $(this).closest('.sublesson_card').find('.SublessonName').text();
 
         if (!subLessonTitle) {
             subLessonTitle = "Unknown Sub-Lesson";
@@ -412,6 +386,10 @@
         
         console.log("Sub-Lesson Title: " + subLessonTitle);
     });
+
+    setTimeout(function() {
+        $('#successMessage').fadeOut('slow');
+    }, 2000);
 
 
 </script>

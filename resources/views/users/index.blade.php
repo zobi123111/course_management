@@ -107,7 +107,7 @@
 </div>
 
 <!-- Create User -->
-<div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-labelledby="userModalLabel" aria-hidden="true">
+<div class="modal fade" id="userModal" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="userModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -248,7 +248,7 @@
 <!--End of create user-->
 
 <!-- Edit user -->
-<div class="modal fade" id="editUserDataModal" tabindex="-1" role="dialog" aria-labelledby="editUserDataModalLabel"
+<div class="modal fade" id="editUserDataModal" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="editUserDataModalLabel"
     aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -275,6 +275,17 @@
                         <label for="email" class="form-label">Email<span class="text-danger">*</span></label>
                         <input type="email" name="edit_email" class="form-control">
                         <div id="edit_email_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password<span class="text-danger">*</span></label>
+                        <input type="password" name="password" class="form-control">
+                        <div id="password_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmpassword" class="form-label">Confirm Password<span
+                                class="text-danger">*</span></label>
+                        <input type="password" name="password_confirmation" class="form-control" id="confirmpassword">
+                        <div id="password_confirmation_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="lastname" class="form-label">Image<span class="text-danger">*</span></label>
@@ -646,7 +657,7 @@
                     $('#edit_role option[value="' + userRoleId + '"]').attr('selected',
                         'selected');
 
-                        if (response.user.licence) {
+                        if (response.user.licence_required) {
                             $('#edit_licence_checkbox').prop('checked', true);
                             $('#edit_licence').val(response.user.licence).show().prop('required', true);
                             $('#edit_licence_file').show().prop('required', true);
@@ -665,7 +676,7 @@
                         
                         // Set passport checkbox and fields
 
-                        if (response.user.passport) {
+                        if (response.user.passport_required) {
                             $('#edit_passport_checkbox').prop('checked', true);
                             $('#edit_passport').val(response.user.passport).show().prop('required', true);
                             $('#edit_passport_file').show().prop('required', true);
@@ -697,7 +708,7 @@
                         }
 
                         // Set currency checkbox and field
-                        if (response.user.currency) {
+                        if (response.user.currency_required) {
                             $('#edit_currency_checkbox').prop('checked', true);
                             $('#edit_currency').val(response.user.currency).show().prop('required', true);
                         } else {
@@ -815,9 +826,9 @@
 
         });
 
-        // setTimeout(function() {
-        //     $('#successMessage').fadeOut('slow');
-        // }, 20000);
+        setTimeout(function() {
+            $('#successMessage').fadeOut('slow');
+        }, 2000);
 
     });
 </script>

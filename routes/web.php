@@ -41,6 +41,8 @@ Route::post('/reset/password', [LoginController::class, 'submitResetPasswordForm
 Route::group(['middleware' => ['auth']], function () {
     Route::get('change-password', [LoginController::class, 'showChangePasswordForm'])->name('change-password');
     Route::post('change-password', [LoginController::class, 'changePassword'])->name('update-password');
+    Route::get('/users/profile', [UserController::class, 'profile'])->name('user.profile');
+    Route::post('/users/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update');
 });
 
 Route::middleware(['auth', 'role.permission'])->group(function () {
@@ -49,6 +51,8 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     
     //Users Route
     Route::get('/users', [UserController::class, 'users'])->name('user.index');
+    // Route::get('/users/profile', [UserController::class, 'profile'])->name('user.profile');
+    // Route::post('/users/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update');
     Route::post('/users/save', [UserController::class, 'save_user'])->name('user.store');
     Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.get');
     Route::post('/users/update', [UserController::class, 'update'])->name('user.update');
