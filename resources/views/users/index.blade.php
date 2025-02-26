@@ -160,14 +160,14 @@
                         <div id="role_name_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="multiple_roles" class="form-label">Select Multiple Roles<span
+                        <label for="extra_roles" class="form-label">Select Multiple Roles<span
                                 class="text-danger"></span></label>
-                        <select class="form-select " name="extra_roles[]" id="multiple_roles" multiple="multiple">
+                        <select class="form-select " name="extra_roles[]" id="extra_roles" multiple="multiple">
                             @foreach($roles as $val)
                                 <option value="{{ $val->id }}">{{ $val->role_name }}</option>
                             @endforeach
                         </select>
-                        <div id="role_ids_error" class="text-danger error_e"></div>
+                        <div id="extra_roles_error" class="text-danger error_e"></div>
                     </div>                    
                     <!-- Licence -->
                     <div class="form-group">
@@ -314,7 +314,16 @@
                         </select>
                         <div id="edit_role_name_error_up" class="text-danger error_e"></div>
                     </div>       
-                    
+                    <div class="form-group">
+                        <label for="extra_roles" class="form-label">Select Multiple Roles<span
+                                class="text-danger"></span></label>
+                        <select class="form-select " name="extra_roles[]" id="edit_extra_roles" multiple="multiple">
+                            @foreach($roles as $val)
+                                <option value="{{ $val->id }}">{{ $val->role_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="extra_roles_error_up" class="text-danger error_e"></div>
+                    </div>    
                       <!-- Update Password Checkbox -->
                     <div class="form-group">
                         <label for="edit_update_password_checkbox" class="form-label">Update Password</label>
@@ -675,6 +684,13 @@
                     $('#edit_ou_id').val(response.user.ou_id);
                     $('#edit_status').val(response.user.status);
 
+                    // Set extra roles
+                    var extraRoles = response.user.extra_roles ? JSON.parse(response.user.extra_roles) : []; // Convert to array if needed
+                    $('#edit_extra_roles option').prop('selected', false); // Reset selection
+                    extraRoles.forEach(function(roleId) {
+                        $('#edit_extra_roles option[value="' + roleId + '"]').prop('selected', true);
+                    });
+
                     // Primary role
                     var userRoleId = response.user.role;
                     $('#role_id option').removeAttr('selected');
@@ -752,12 +768,6 @@
                                       
                         }
 
-                    //Secondary role
-                    var secondary_role = response.user.role_id1;
-                    //  $('#secondary_role').val('');
-                    $('#secondary_role option').removeAttr('selected');
-                    $('#secondary_role option[value="' + secondary_role + '"]').attr('selected',
-                        'selected');
                     $('#editUserDataModal').modal('show');
                     initializeSelect2();
                 },

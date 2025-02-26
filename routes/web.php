@@ -57,6 +57,11 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.get');
     Route::post('/users/update', [UserController::class, 'update'])->name('user.update');
     Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
+
+
+    Route::post('/users/switch_role', [UserController::class, 'switchRole'])->name('user.switch_role');
+
+
     
     //Organization Unit
     Route::get('/orgunit', [OrganizationController::class, 'index'])->name('orgunit.index');

@@ -26,7 +26,29 @@
 
     @include('layout.includes.js')
     <script type="text/javascript">
-    $(document).ready(function() {});
+    $(document).ready(function() {
+        $(document).on('change', '#switch_role', function() {
+            var role_id = $(this).val();
+
+            $.ajax({
+                url: "{{ url('/users/switch_role') }}",
+                type: 'POST',
+                data: {
+                    role_id: role_id,
+                    _token: "{{ csrf_token() }}"
+                },
+                success: function(response) {
+                    // alert(response);
+                    alert(response.message);
+                    location.reload(); // Refresh page to update permissions
+                },
+                error: function(xhr) {
+                    console.error(xhr.responseText);
+                    alert("Failed to switch role. Please try again.");
+                }
+            });
+        });
+    });
     </script>
     @yield('js_scripts')
 
