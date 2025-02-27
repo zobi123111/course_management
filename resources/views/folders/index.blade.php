@@ -22,8 +22,8 @@
     <div class="card-body">
         <h3 class="mb-3">Folders List</h3>
         <div class="table-responsive">
-            <table class="table table-bordered table-hover" id="folderTable">
-                <thead class="table-dark">
+            <table class="table table-bordered table-hover pt-3" id="folderTable" >
+                <thead class="table-custom-head">
                     <tr>
                     <th>#</th>
                     <th scope="col">Folder Name</th>
@@ -41,20 +41,20 @@
                                 <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>  
                                 <td>
                                 @if(checkAllowedModule('folders','folder.show')->isNotEmpty())
-                                    <a href="{{ route('folder.show', ['folder_id' =>  encode_id($val->id) ]) }}" class="btn btn-sm btn-success" title="View Folder">
+                                    <a href="{{ route('folder.show', ['folder_id' =>  encode_id($val->id) ]) }}" class="btn btn-sm btn-primary" title="View Folder">
                                         <i class="fa fa-eye"></i> View
                                     </a>   
                                 @endif
 
                                 @if(checkAllowedModule('folders','folder.edit')->isNotEmpty())
-                                    <button class="btn btn-sm btn-warning edit-folder-icon" data-folder-id="{{ encode_id($val->id) }}" title="Edit Folder">
+                                    <button class="btn btn-sm btn-secondary edit-folder-icon" data-folder-id="{{ encode_id($val->id) }}" title="Edit Folder">
                                         <i class="fa fa-edit"></i> Edit
                                     </button>
                                 @endif
 
                                 @if(checkAllowedModule('folders','folder.delete')->isNotEmpty())
-                                    <button class="btn btn-sm btn-danger delete-folder-icon" data-folder-id="{{ encode_id($val->id) }}" title="Delete Folder">
-                                        <i class="fa-solid fa-trash"></i> Delete
+                                    <button class="btn btn-sm btn-primary delete-folder-icon" data-folder-id="{{ encode_id($val->id) }}" title="Delete Folder">
+                                        <i class="fa fa-solid fa-trash"></i> Delete
                                     </button>
                                 @endif
                                 </td>
