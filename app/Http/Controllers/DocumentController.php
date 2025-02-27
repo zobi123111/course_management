@@ -10,6 +10,7 @@ use App\Models\Group;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 
 class DocumentController extends Controller
@@ -96,66 +97,52 @@ class DocumentController extends Controller
 
     public function updateDocument(Request $request)
     {
-        // Validate the request, making 'folder' optional
+        // Validate the incoming request
         $request->validate([
-            'group' => 'required',
             'doc_title' => 'required',
             'version_no' => 'required',
             'issue_date' => 'required|date',
             'expiry_date' => 'required|date|after:issue_date',
-            'document_file' => 'nullable|file|mimes:pdf|max:2048', // Optional file
+            'document_file' => 'nullable|file|mimes:pdf|max:2048', // File is optional
             'status' => 'required',
+            'group' => 'required',
+            'folder' => 'nullable|exists:folders,id' // Ensure folder exists if provided
         ]);
-
+    
         // Retrieve the document by ID
         $document = Document::findOrFail($request->document_id);
-
-        // Retrieve the current folder and new folder (if provided)
-        $currentFolder = Folder::find($document->folder_id);
-        $newFolder = $request->filled('folder') ? Folder::find($request->folder) : null;
-
-        if ($request->filled('folder') && !$newFolder) {
-            return response()->json(['error' => 'Folder not found.'], 404);
-        }
-
+    
+        // Handle file upload
         $filePath = $document->document_file; // Keep the existing file path by default
-
-        // Determine the storage path
-        $folderPath = $newFolder ? 'documents/' . $newFolder->folder_name : 'documents';
-
-        // Handle file upload if a new file is provided
+        $originalFilename = $document->original_filename; // Keep existing filename
+    
         if ($request->hasFile('document_file')) {
-            // Delete the old file if it exists
+            // Delete old file if it exists
             if ($document->document_file) {
                 Storage::disk('public')->delete($document->document_file);
             }
-
-            // Store the new file inside the specified folder (if provided) or use default location
-            $filePath = $request->file('document_file')->store($folderPath, 'public');
-        } elseif ($newFolder && $currentFolder && $currentFolder->id !== $newFolder->id && $document->document_file) {
-            // If no new file is uploaded but the folder is changed, move the existing file
-            $oldPath = $document->document_file;
-            $newPath = str_replace('documents/' . $currentFolder->folder_name, 'documents/' . $newFolder->folder_name, $oldPath);
-
-            if (Storage::disk('public')->exists($oldPath)) {
-                Storage::disk('public')->move($oldPath, $newPath);
-                $filePath = $newPath; // Update file path
-            }
+    
+            // Get original filename
+            $originalFilename = $request->file('document_file')->getClientOriginalName();
+    
+            // Store the new file in the 'documents' folder
+            $filePath = $request->file('document_file')->store('documents', 'public');
         }
-
-        // Update the document
+    
+        // Update the document in the database
         $document->update([
             'ou_id' => auth()->user()->ou_id ?? null,
-            'folder_id' => $newFolder->id ?? $document->folder_id, // Keep existing folder if none is provided
+            'folder_id' => $request->folder ?? $document->folder_id, // Keep existing folder if none is provided
             'group_id' => $request->group,
             'doc_title' => $request->doc_title,
             'version_no' => $request->version_no,
             'issue_date' => $request->issue_date,
             'expiry_date' => $request->expiry_date,
-            'document_file' => $filePath, // Keep old file or move it
+            'document_file' => $filePath,
+            'original_filename' => $originalFilename, // Maintain original filename
             'status' => $request->status,
         ]);
-
+    
         // Flash success message and return JSON response
         Session::flash('message', 'Document updated successfully.');
         return response()->json(['success' => 'Document updated successfully.']);
@@ -179,6 +166,75 @@ class DocumentController extends Controller
             // Return a success message
             return redirect()->route('document.index')->with('message', 'This Document deleted successfully');
         }
+    }
+
+    public function getDocuments(Request $request)
+    {
+        $columns = ['doc_title', 'version_no', 'issue_date', 'expiry_date', 'document_file', 'status'];
+        $limit = $request->input('length');
+        $start = $request->input('start');
+        $orderColumnIndex = $request->input('order')[0]['column'];
+        $orderDirection = $request->input('order')[0]['dir'];
+        $searchValue = strtolower($request->input('search')['value']); // Convert search input to lowercase
+    
+        // Query base
+        $query = Document::select('id', 'doc_title', 'version_no', 'issue_date', 'expiry_date', 'document_file', 'status');
+    
+        // Handle search filter
+        if (!empty($searchValue)) {
+            $query->where(function ($q) use ($searchValue) {
+                // Convert "Active" to 1 and "Inactive" to 0 using partial match
+                if (str_contains('active', $searchValue)) {
+                    $q->orWhere('status', 1);
+                }
+                if (str_contains('inactive', $searchValue)) {
+                    $q->orWhere('status', 0);
+                }
+                // General search for other columns
+                $q->orWhere('doc_title', 'like', "%{$searchValue}%")
+                  ->orWhere('version_no', 'like', "%{$searchValue}%")
+                  ->orWhere('issue_date', 'like', "%{$searchValue}%")
+                  ->orWhere('expiry_date', 'like', "%{$searchValue}%");
+            });
+        }
+    
+        // Get total records count
+        $totalRecords = Document::count();
+        $recordsFiltered = $query->count();
+    
+        // Apply sorting
+        $query->orderBy($columns[$orderColumnIndex], $orderDirection);
+    
+        // Apply pagination
+        $documents = $query->offset($start)->limit($limit)->get();
+    
+        // Format data for DataTables
+        $data = [];
+        foreach ($documents as $row) {
+            $data[] = [
+                'doc_title' => $row->doc_title,
+                'version_no' => $row->version_no,
+                'issue_date' => $row->issue_date,
+                'expiry_date' => $row->expiry_date,
+                'document' => $row->document_file
+                    ? '<a href="' . route('document.show', encode_id($row->id)) . '">View Document</a>'
+                    : 'No File uploaded',
+                'status' => ($row->status == 1) ? 'Active' : 'Inactive', // Convert boolean to text
+                'edit' => checkAllowedModule('documents', 'document.edit')->isNotEmpty()
+                    ? '<i class="fa fa-edit edit-document-icon" style="font-size:25px; cursor: pointer;" data-document-id="' . encode_id($row->id) . '"></i>'
+                    : '',
+                'delete' => checkAllowedModule('documents', 'document.delete')->isNotEmpty()
+                    ? '<i class="fa-solid fa-trash delete-document-icon" style="font-size:25px; cursor: pointer;" data-document-id="' . encode_id($row->id) . '"></i>'
+                    : '',
+            ];
+        }
+    
+        return response()->json([
+            'draw' => intval($request->input('draw')),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data,
+        ]);
     }
 
     public function showDocument(Request $request,$doc_id)

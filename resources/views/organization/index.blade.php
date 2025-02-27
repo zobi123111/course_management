@@ -285,10 +285,7 @@ $(document).ready(function() {
             { data: 'users_count', name: 'users_count' },
             { data: 'edit', name: 'edit', orderable: false, searchable: false },
             { data: 'delete', name: 'delete', orderable: false, searchable: false },
-        ],
-        language: {
-            url: "//cdn.datatables.net/plug-ins/1.10.22/i18n/English.json"
-        }
+        ]
     });
 
     $("#createOrgUnit").on('click', function() {

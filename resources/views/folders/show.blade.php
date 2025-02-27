@@ -1,57 +1,42 @@
 
-@section('title', 'Folder')
-@section('sub-title', 'Folders')
+@section('title', 'Sub Folder')
+@section('sub-title', 'Sub Folders')
 @extends('layout.app')
 @section('content')
 
 @if(session()->has('message'))
-<div id="successMessage" class="alert alert-success fade show" role="alert">
+<div id="alertMessage" class="alert alert-success fade show" role="alert">
   <i class="bi bi-check-circle me-1"></i>
   {{ session()->get('message') }}
 </div>
 @endif
+
+<nav>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ route('folder.index') }}">Folders</a></li>
+        @foreach($breadcrumbs as $breadcrumb)
+            @if ($loop->last)
+                <li class="breadcrumb-item active">{{ $breadcrumb['name'] }}</li>
+            @else
+                <li class="breadcrumb-item"><a href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['name'] }}</a></li>
+            @endif
+        @endforeach
+    </ol>
+</nav>
+
 <div class="card pt-4">
     <div class="card-body">
-    <h3 class="mb-3">Folders List</h3>
-        <table class="table table-bordered table-hover" id="folderTable">
-        <thead class="table-dark">
-            <tr>
-            <th>#</th>
-            <th scope="col">Folder Name</th>
-            <th scope="col">Description</th>
-            <th scope="col">Status</th>
-            <th scope="col">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($subfolders as $index => $val)
-                    <tr>
-                        <td>{{ $index + 1 }}</td>
-                        <td class="folderName">{{ $val->folder_name}}</td>
-                        <td>{{ $val->description}}</td>
-                        <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
-                        <td>
-                        @if(checkAllowedModule('folders', 'folder.show')->isNotEmpty())
-                            <a href="{{ route('folder.show', ['folder_id' => encode_id($val->id)]) }}" class="btn btn-sm btn-success" title="View Folder">
-                                <i class="fa fa-eye"></i> View
-                            </a> 
-                        @endif  
-
-                        @if(checkAllowedModule('folders', 'folder.edit')->isNotEmpty())
-                            <button class="btn btn-sm btn-warning edit-folder-icon" data-folder-id="{{ encode_id($val->id) }}" title="Edit Folder">
-                                <i class="fa fa-edit"></i> Edit
-                            </button>
-                        @endif
-
-                        @if(checkAllowedModule('folders', 'folder.delete')->isNotEmpty())
-                            <button class="btn btn-sm btn-danger delete-folder-icon" data-folder-id="{{ encode_id($val->id) }}" title="Delete Folder">
-                                <i class="fa-solid fa-trash"></i> Delete
-                            </button>
-                        @endif
-                        </td>
-                    </tr> 
-            @endforeach
-        </tbody>
+    <h3 class="mb-3">Sub Folders List</h3>
+        <table class="table table-bordered table-hover" id="subfoldersTable">
+            <thead class="table-dark">
+                <tr>
+                <th>#</th>
+                <th scope="col">Folder Name</th>
+                <th scope="col">Description</th>
+                <th scope="col">Status</th>
+                <th scope="col">Action</th>
+                </tr>
+            </thead>
         </table>
     </div>
 </div>
@@ -60,7 +45,7 @@
     <h3 class="mb-3">Documents List</h3>
         @if($documents->isNotEmpty())
             <div class="table-responsive">
-                <table id="docsTable" class="table table-bordered table-hover">
+                <table id="subFoldersDocsTable" class="table table-bordered table-hover">
                     <thead class="table-dark">
                         <tr>
                             <th>#</th>
@@ -68,24 +53,7 @@
                             <th>Uploaded On</th>
                             <th>Actions</th>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($documents as $index => $doc)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $doc->original_filename ?? basename($doc->document_file) }}</td>
-                            <td>{{ $doc->created_at->format('d M Y, h:i A') }}</td>
-                            <td>
-                                <a href="{{ Storage::url($doc->document_file) }}" class="btn btn-sm btn-primary" target="_blank">
-                                    <i class="fas fa-eye" style="color: black;"></i> View
-                                </a>
-                                <a href="{{ Storage::url($doc->document_file) }}" class="btn btn-sm btn-success" download>
-                                    <i class="fas fa-download"></i> Download
-                                </a>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
+                    </thead>                  
                 </table>
             </div>
         @else
@@ -249,8 +217,38 @@
 
 <script>
 $(document).ready(function() {
-    $('#folderTable').DataTable()
-    $('#docsTable').DataTable();
+    let folderId = "{{ request()->folder_id }}"; // Get current folder ID from request
+
+    $('#subfoldersTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{{ route('folders.subfolders.list') }}",
+            data: { folder_id: folderId } // Send folder_id as parameter
+        },
+        columns: [
+            { data: 'index', name: 'index', orderable: false, searchable: false },
+            { data: 'folder_name', name: 'folder_name' },
+            { data: 'description', name: 'description' },
+            { data: 'status', name: 'status' },
+            { data: 'actions', name: 'actions', orderable: false, searchable: false }
+        ]
+    });
+
+    $('#subFoldersDocsTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{{ route('subfolder.documents') }}",
+            data: { folder_id: folderId } // Send folder_id as parameter
+        },
+        columns: [
+            { data: 'index', name: 'index' },
+            { data: 'document_name', name: 'original_filename' },
+            { data: 'uploaded_on', name: 'created_at' },
+            { data: 'actions', name: 'actions', orderable: false, searchable: false }
+        ]
+    });
 
     $("#createFolder").on('click', function(){
         $(".error_e").html('');
@@ -283,7 +281,7 @@ $(document).ready(function() {
 
     })
 
-    $('.edit-folder-icon').click(function(e) {
+    $(document).on("click", ".edit-folder-icon", function(e) {
         e.preventDefault();
 
         $('.error_e').html('');
@@ -331,8 +329,8 @@ $(document).ready(function() {
         })
     })
 
-    $('.delete-folder-icon').click(function(e) {
-    e.preventDefault();
+    $(document).on("click", ".delete-folder-icon",function(e) {
+        e.preventDefault();
         $('#deleteFolder').modal('show');
         var folderId = $(this).data('folder-id');
         var folderName = $(this).closest('tr').find('.folderName').text();
@@ -340,6 +338,9 @@ $(document).ready(function() {
         $('#folderId').val(folderId);
       
     });
+    setTimeout(function() {
+        $('#alertMessage').fadeOut('slow');
+    }, 2000);
 
 });
 </script>

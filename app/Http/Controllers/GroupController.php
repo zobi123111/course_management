@@ -50,8 +50,7 @@ class GroupController extends Controller
 
         if ($currentUser->role == 1 && empty($currentUser->ou_id)) {
             $groups = $groups;
-        } 
-        elseif (checkAllowedModule('groups', 'group.index')->isNotEmpty()) {
+        } elseif (checkAllowedModule('groups', 'group.index')->isNotEmpty() && empty($currentUser->is_admin)) {
             $userId = $currentUser->id;
 
             $groups = $groups->filter(function ($group) use ($userId) {
@@ -59,8 +58,7 @@ class GroupController extends Controller
                 $userIds = is_array($userIds) ? $userIds : [];
                 return in_array($userId, $userIds);
             });
-        } 
-        else {
+        } else {
             $groups = Group::where('ou_id', $currentUser->ou_id)->get();
         }
 
