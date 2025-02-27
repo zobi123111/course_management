@@ -74,7 +74,7 @@
                 @endif  
             </tr>
         </thead>
-        <tbody>
+        {{-- <tbody>
             @foreach($users as $val)
             <tr>
                 @if($val->image)
@@ -103,7 +103,8 @@
                 @endif 
             </tr>
             @endforeach
-        </tbody>
+        </tbody> --}}
+        <tbody></tbody>
     </table>
     </div></div>
 </div>
@@ -434,7 +435,62 @@
 <script>
     
     $(document).ready(function() {
-        $('#user_table').DataTable();
+        // $('#user_table').DataTable();
+
+        $('#user_table').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                "url": "{{ route('users.data') }}",
+                "type": "GET",
+                "data": function(d) {
+                    return $.extend({}, d, {
+                        "extra_param": "value"
+                    });
+                }
+            },
+            "columns": [
+                { "data": "image" },
+                { "data": "fname" },
+                { "data": "lname" },
+                { "data": "email" },
+                @if(auth()->user()->is_owner == 1)
+                { "data": "organization" },
+                { "data": "position" },
+                @endif
+                @if(!empty(auth()->user()->ou_id) && auth()->user()->is_owner == 0)
+                { "data": "position" },
+                @endif
+                { "data": "status" },
+                @if(checkAllowedModule('users','user.get')->isNotEmpty())
+                { "data": "edit" },
+                @endif
+                @if(checkAllowedModule('users','user.destroy')->isNotEmpty())
+                { "data": "delete" }
+                @endif
+            ],
+            "order": [[1, 'asc']],
+            "columnDefs": [
+                {
+                    "targets": 0,
+                    "render": function(data, type, row) {
+                        return data ? `<img src="{{ asset('storage/${data}') }}" alt="User Image" class="rounded-circle" height="50px" width="50px">` : 'No Image';
+                    }
+                },
+                {
+                    "targets": -1,
+                    "render": function(data, type, row) {
+                        return `<i class="fa fa-edit edit-user-icon" style="font-size:18px; cursor: pointer;" data-user-id="${row.id}"></i>`;
+                    }
+                },
+                {
+                    "targets": -2,
+                    "render": function(data, type, row) {
+                        return `<i class="fa-solid fa-trash delete-icon" style="font-size:18px; cursor: pointer;" data-user-id="${row.id}"></i>`;
+                    }
+                }
+            ]
+        });
 
         $('#licence_checkbox').change(function() {
             if (this.checked) {

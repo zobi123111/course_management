@@ -38,7 +38,7 @@
                 <th scope="col">Delete</th>
             </tr>
         </thead>
-        <tbody>
+        {{-- <tbody>
             @foreach($organizationUnitsData as $val)
             <tr>
                 <td class="orgUnitName">{{ $val->org_unit_name}}</td>
@@ -60,7 +60,8 @@
                 </td>
             </tr>
             @endforeach
-        </tbody>
+        </tbody> --}}
+        <tbody></tbody>
     </table>
 </div>
 </div>
@@ -268,7 +269,27 @@
 <script>
 $(document).ready(function() {
 
-    $("#orgUnitTable").DataTable();
+    // $("#orgUnitTable").DataTable();
+
+    $('#orgUnitTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{{ route('orgunit.data') }}",
+            type: "GET",
+        },
+        columns: [
+            { data: 'org_unit_name', name: 'org_unit_name' },
+            { data: 'description', name: 'description' },
+            { data: 'status', name: 'status' },
+            { data: 'users_count', name: 'users_count' },
+            { data: 'edit', name: 'edit', orderable: false, searchable: false },
+            { data: 'delete', name: 'delete', orderable: false, searchable: false },
+        ],
+        language: {
+            url: "//cdn.datatables.net/plug-ins/1.10.22/i18n/English.json"
+        }
+    });
 
     $("#createOrgUnit").on('click', function() {
         $(".error_e").html('');
