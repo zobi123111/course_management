@@ -15,15 +15,25 @@ class DashboardController extends Controller
 {
     public function index() 
     {
-        if(Auth::user()->role==1 && empty(Auth::user()->ou_id)){
 
+
+        $user_count = 0;
+        $group_count = 0;
+        $folder_count = 0;
+
+        // dd(checkAllowedModule('dashboard', 'dashboard')->isNotEmpty());
+
+        if(Auth()->user()->is_owner ==  1){
+
+            // dd("If working");
             $user_count = user::count();
             $group_count = Group::count();
             $folder_count = Folder::count();
             $documents = Document::all();
 
         }
-        elseif(checkAllowedModule('courses', 'course.index')->isNotEmpty()){
+        elseif(checkAllowedModule('dashboard', 'dashboard')->isNotEmpty() && empty(Auth()->user()->is_admin)){
+            // dd("else If working");
 
             $userId = Auth::user()->id;
 
@@ -49,6 +59,7 @@ class DashboardController extends Controller
             $documents = Document::where('ou_id', Auth::user()->ou_id)->get();
 
         }else{
+            // dd("else working");
 
             $user_count = user::where('ou_id' , auth()->user()->ou_id)->count();
             $group_count = 0;

@@ -16,11 +16,31 @@ class DocumentController extends Controller
 {
     public function index()
     {
+
+        $userId = Auth::user()->id;
+
         $ou_id =  auth()->user()->ou_id;
-        if(Auth::user()->role==1 && empty($ou_id)){
+        if(checkAllowedModule('courses', 'document.index')->isNotEmpty() && Auth()->user()->is_owner ==  1){
             $groups = Group::all();
             $folders = Folder::whereNull('parent_id')->with('children')->get();
             $documents = Document::all();
+        }
+        elseif(checkAllowedModule('documents', 'document.index')->isNotEmpty() && Auth()->user()->is_admin ==  0){
+            $groups = Group::all();
+            $filteredGroups = $groups->filter(function ($group) use ($userId) {
+                $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);
+                
+                return in_array($userId, $userIds);
+            });
+    
+            $groupIds = $filteredGroups->pluck('id')->toArray();
+    
+            $documents = Document::whereIn('group_id', $groupIds)
+                        ->where('status', 1)
+                        ->get();
+
+            $folders = [];
+            
         }else{
             $groups = Group::where('ou_id', $ou_id)->get();
             $folders = Folder::where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children')->get();

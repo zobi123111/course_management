@@ -33,6 +33,61 @@ class OrganizationController extends Controller
         return view('organization.index', compact('organizationUnitsData'));
     }
 
+    public function getData(Request $request)
+    {
+        $query = OrganizationUnits::with(['roleOneUsers'])
+            ->withCount('users')
+            ->whereNull('deleted_at');
+
+        if ($search = $request->input('search.value')) {
+            $query->where(function($q) use ($search) {
+                $q->where('org_unit_name', 'like', "%$search%")
+                ->orWhere('description', 'like', "%$search%");
+
+                if (strtolower($search) == 'active') {
+                    $q->orWhere('status', 1);
+                } elseif (strtolower($search) == 'inactive') {
+                    $q->orWhere('status', 0);
+                } else {
+                    $q->orWhere('status', 'like', "%$search%");
+                }
+                
+            });
+        }
+
+        $orderColumn = $request->input('order.0.column');
+        $orderDirection = $request->input('order.0.dir');
+        $columns = ['org_unit_name', 'description', 'status', 'users_count'];
+
+        if ($orderColumn !== null && isset($columns[$orderColumn])) {
+            $column = $columns[$orderColumn];
+            $query->orderBy($column, $orderDirection);
+        }
+
+        $totalRecords = $query->count();
+
+        $organizationUnits = $query->offset($request->input('start'))
+            ->limit($request->input('length'))
+            ->get();
+
+        $data = $organizationUnits->map(function ($unit) {
+            return [
+                'org_unit_name' => $unit->org_unit_name,
+                'description' => $unit->description,
+                'status' => $unit->status == 1 ? 'Active' : 'Inactive',
+                'users_count' => $unit->users_count,
+                'edit' => '<i class="fa fa-edit edit-orgunit-icon" data-orgunit-id="' . encode_id($unit->id) . '"></i>',
+                'delete' => '<i class="fa-solid fa-trash delete-icon" data-orgunit-id="' . encode_id($unit->id) . '"></i>',
+            ];
+        });
+
+        return response()->json([
+            'draw' => $request->input('draw'),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $totalRecords,
+            'data' => $data
+        ]);
+    }
 
 
     public function saveOrgUnit(Request $request)
