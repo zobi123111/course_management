@@ -1,6 +1,5 @@
   <!-- ======= Header ======= -->
   <header id="header" class="header fixed-top d-flex align-items-center">
-
       <div class="d-flex align-items-center justify-content-between">
           <a href="{{ url('dashboard') }}" class="logo d-flex align-items-center">
               <!-- <img src="{{ url('assets/img/logo.png') }}" alt=""> -->
@@ -12,11 +11,17 @@
       <nav class="header-nav ms-auto">
           <ul class="d-flex align-items-center">
 
-              <li class="nav-item d-block d-lg-none">
-                  <a class="nav-link nav-icon search-bar-toggle " href="#">
-                      <i class="bi bi-search"></i>
-                  </a>
-              </li><!-- End Search Icon-->
+                <li class="nav-item">
+                    <select class="form-select" aria-label="Default select example" id="switch_role">
+                        <option disabled>Change Role To</option>
+                        @foreach(getMultipleRoles() as $val)
+                            <option value="{{ $val->id }}" 
+                                {{ session('current_role', auth()->user()->role) == $val->id ? 'selected' : '' }}>
+                                {{ $val->role_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </li>
               <li class="nav-item dropdown pe-3">
 
                   <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
@@ -98,3 +103,10 @@
       </nav><!-- End Icons Navigation -->
 
   </header><!-- End Header -->
+
+
+
+
+
+
+

@@ -227,7 +227,9 @@ class UserController extends Controller
                         $fail('The Organizational Unit (OU) is required for Super Admin.');
                     }
                 }
-            ]
+            ],
+            'extra_roles' => 'array',
+            'extra_roles.*' => 'exists:roles,id', // Ensure all user IDs exist
         ]);
 
         $licence_required = null;
@@ -305,6 +307,7 @@ class UserController extends Controller
             "custom_field_value" => $request->custom_field_value ?? null,
             'status' => $request->status,
             "ou_id" => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
+            "extra_roles" => !empty($request->extra_roles) ? json_encode($request->extra_roles) : json_encode([]),
         );
 
         // dd($store_user);
@@ -315,7 +318,7 @@ class UserController extends Controller
             // Generate password to send in the email
             $password = $request->password;
     
-            // Send email
+            // Send emailx
 
             Mail::to($store->email)->send(new UserCreated($store, $password));
 
@@ -324,141 +327,6 @@ class UserController extends Controller
         }
     }
     
-
-    // public function update(Request $request)
-    // {
-
-    //     // dd($request->all());
-    //     $userToUpdate = User::find($request->edit_form_id);
-    //         if($userToUpdate){
-    //             $validatedData = $request->validate([
-    //             'edit_firstname' => 'required',
-    //             'edit_lastname' => 'required',
-    //             'edit_email' => 'required|email',
-    //             'edit_role_name' => 'required',
-    //             'status' => 'required',
-    //             'ou_id' => [
-    //                 function ($attribute, $value, $fail) {
-    //                     if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
-    //                         $fail('The Organizational Unit (OU) is required for Super Admin.');
-    //                     }
-    //                 }
-    //             ]
-    //             ], [
-    //                 'edit_firstname.required' => 'The First Name is required',
-    //                 'edit_lastname.required' => 'The Last Name is required',
-    //                 'edit_email.required' => 'The Email is required',
-    //                 'edit_email.email' => 'Please enter a valid Email'
-    //             ]);
-            
-    //             if ($request->hasFile('image')) {
-    //                 if ($userToUpdate->image) {
-    //                     Storage::disk('public')->delete($userToUpdate->image);
-    //                 }
-            
-    //                 $filePath = $request->file('image')->store('users', 'public');
-    //             } else {
-    //                 $filePath = $userToUpdate->image;
-    //             }
-
-
-    //             if ($request->has('edit_licence_checkbox') && $request->edit_licence_checkbox) {
-    //                 // $request->validate([
-    //                 //     'edit_licence' => 'required|string',
-    //                 // ]);
-
-    //                 $userToUpdate->licence_required = 1;
-
-    //                 if ($request->hasFile('edit_licence_file')) {
-    //                     if ($userToUpdate->licence_file) {
-    //                         Storage::disk('public')->delete($userToUpdate->licence_file);
-    //                     }
-    //                     $licenceFilePath = $request->file('edit_licence_file')->store('licence_files', 'public');
-    //                 } else {
-    //                     $licenceFilePath = $userToUpdate->licence_file;
-    //                 }
-    //             } else {
-    //                 $licenceFilePath = $userToUpdate->licence_file;
-    //                 $userToUpdate->licence_required = null;
-    //             }
-
-    //             // Handle Passport Upload
-    //             if ($request->has('edit_passport_checkbox') && $request->edit_passport_checkbox) {
-    //                 // $request->validate([
-    //                 //     'edit_passport' => 'required|string',
-    //                 // ]);
-    //                 $userToUpdate->passport_required = 1;
-                    
-    //                 if ($request->hasFile('edit_passport_file')) {
-    //                     if ($userToUpdate->passport_file) {
-    //                         Storage::disk('public')->delete($userToUpdate->passport_file);
-    //                     }
-    //                     $passportFilePath = $request->file('edit_passport_file')->store('passport_files', 'public');
-    //                 } else {
-    //                     $passportFilePath = $userToUpdate->passport_file;
-    //                 }
-    //             } else {
-    //                 $passportFilePath = $userToUpdate->passport_file;
-    //             }
-
-    //             if ($request->has('edit_rating_checkbox') && $request->edit_rating_checkbox) {
-    //                 // $request->validate([
-    //                 //     'edit_rating' => 'required|integer|min:1|max:5',
-    //                 // ]);
-    //                 $userToUpdate->rating_required = 1;
-
-    //             }
-
-    //             if ($request->has('edit_currency_checkbox') && $request->edit_currency_checkbox) {
-    //                 // $request->validate([
-    //                 //     'edit_currency' => 'required|string',
-    //                 // ]);
-
-    //                 $userToUpdate->currency_required = 1;
-
-    //             }
-
-    //             if ($request->has('edit_custom_field_checkbox') && $request->edit_custom_field_checkbox) {
-    //                 $request->validate([
-    //                     'edit_custom_field_name' => 'required|string',
-    //                     'edit_custom_field_value' => 'required|string',
-    //                 ]);
-    //             }
-
-
-    //             if ($request->has('edit_custom_field_checkbox') && $request->edit_custom_field_checkbox) {
-    //                 $userToUpdate->password_flag = 1;
-    //             }
-
-                
-    //             $userToUpdate->where('id', $request->edit_form_id)
-    //             ->update([
-    //                 'Fname' => $validatedData['edit_firstname'],
-    //                 'Lname' => $validatedData['edit_lastname'],
-    //                 'email' => $validatedData['edit_email'], 
-    //                 'image' => $filePath,
-    //                 'role' => $validatedData['edit_role_name'],
-    //                 'status' => $validatedData['status'],
-    //                 "ou_id" => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
-    //                 // 'licence_required' => $licence_required ?? null,
-    //                 'licence' => $request->edit_licence ?? null,
-    //                 'licence_file' => $licenceFilePath  ?? null,
-    //                 // "passport_required" => $passport_required ?? null,
-    //                 'passport' => $request->edit_passport  ?? null,
-    //                 'passport_file' => $passportFilePath  ?? null,
-    //                 // "rating_required" => $rating_required ?? null,
-    //                 'rating' => $request->edit_rating ?? null,
-    //                 // "currency_required" => $currency_required ?? null,
-    //                 'currency' => $request->edit_currency ?? null,
-    //                 'custom_field_name' => $request->edit_custom_field_name ?? null,
-    //                 'custom_field_value' => $request->edit_custom_field_value ?? null,
-    //                 'password_flag' => $request->edit_update_password
-    //             ]);
-                
-    //             return response()->json(['success' => true,'message' => "User data updated successfully"]);
-    //     }
-    // }     
-
 
     public function update(Request $request)
     {
@@ -531,8 +399,7 @@ class UserController extends Controller
                 $passport_required = null;  // Set to null if checkbox is unchecked
                 $passportFilePath = $userToUpdate->passport_file;  // Retain the existing file if no new file is uploaded
             }
-
-
+            
             // Handle Currency Requirement
             if ($request->has('edit_currency_checkbox') && $request->edit_currency_checkbox) {
                 $currency_required = 1;
@@ -563,6 +430,9 @@ class UserController extends Controller
                 $password =  $userToUpdate->password;
             }
 
+             // Handle Extra Roles
+            $extra_roles = $request->has('extra_roles') ? json_encode($request->extra_roles) : $userToUpdate->extra_roles;
+
             // Update User Information
             $userToUpdate->where('id', $request->edit_form_id)
                 ->update([
@@ -585,7 +455,8 @@ class UserController extends Controller
                     'currency' => $request->edit_currency ?? null,
                     'custom_field_name' => $request->edit_custom_field_name ?? null,
                     'custom_field_value' => $request->edit_custom_field_value ?? null,
-                    'password_flag' => $request->edit_update_password
+                    'password_flag' => $request->edit_update_password,
+                    'extra_roles' => $extra_roles,
                 ]);
 
             return response()->json(['success' => true, 'message' => "User data updated successfully"]);
@@ -612,5 +483,37 @@ class UserController extends Controller
             $user->delete();
             return redirect()->route('user.index')->with('message', 'User deleted successfully');
         }
+    }
+
+    public function switchRole(Request $request)
+    {
+        // Validate input role ID
+        $request->validate([
+            'role_id' => 'required|exists:roles,id',
+        ]);
+    
+        $user = auth()->user();
+    
+        // Ensure extra_roles is properly decoded
+        $extra_roles = json_decode($user->extra_roles, true);
+        if (!is_array($extra_roles)) {
+            $extra_roles = [];
+        }
+    
+        // Merge main role and extra roles
+        $allowed_roles = array_merge([$user->role], $extra_roles);
+    
+        // Check if the requested role is allowed
+        if (!in_array($request->role_id, $allowed_roles)) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized role switch.'], 403);
+        }
+    
+        // Store selected role in session
+        session(['current_role' => $request->role_id]);
+    
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Role switched successfully!',
+        ], 200);
     }
 }
