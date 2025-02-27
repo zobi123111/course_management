@@ -39,7 +39,7 @@
                                 <td class="folderName">{{ $val->folder_name}}</td>
                                 <td>{{ $val->description}}</td>
                                 <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>  
-                                <td>
+                                <td class="folderbtncont">
                                 @if(checkAllowedModule('folders','folder.show')->isNotEmpty())
                                     <a href="{{ route('folder.show', ['folder_id' =>  encode_id($val->id) ]) }}" class="btn btn-sm btn-primary" title="View Folder">
                                         <i class="fa fa-eye"></i> View

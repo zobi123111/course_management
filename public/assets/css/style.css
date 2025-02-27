@@ -1257,3 +1257,7 @@ h6 {
 .table-custom-head {
   background: #becde7;
 }
+.folderbtncont{
+  display: flex;
+  column-gap: 15px;
+}
