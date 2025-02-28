@@ -28,8 +28,8 @@
     <div class="card-body">
         <h3 class="mb-3">Folders List</h3>
         <div class="table-responsive">
-            <table class="table table-bordered table-hover" id="folderTable">
-                <thead class="table-dark">
+            <table class="table table-bordered table-hover pt-3" id="folderTable" >
+                <thead class="table-custom-head">
                     <tr>
                     <th>#</th>
                     <th scope="col">Folder Name</th>

@@ -705,7 +705,14 @@ h6 {
 .sidebar-nav .nav-link.collapsed i {
   color: #899bbd;
 }
-
+.btn-primary i.fa:before {
+  color: #fff;
+}
+.btn-secondary {
+  background: transparent;
+  color: #0d6efd;
+  border-color: #0d6efd;
+}
 .sidebar-nav .nav-link .bi-chevron-down {
   margin-right: 0;
   transition: transform 0.2s ease-in-out;
@@ -1246,4 +1253,11 @@ h6 {
   color: #0d6efd;
   cursor: pointer;
   font-size: 18px;
+}
+.table-custom-head {
+  background: #becde7;
+}
+.folderbtncont{
+  display: flex;
+  column-gap: 15px;
 }
