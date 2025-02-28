@@ -44,7 +44,16 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/users/profile', [UserController::class, 'profile'])->name('user.profile');
     Route::post('/users/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update');
     Route::get('/users/data', [UserController::class, 'getData'])->name('users.data');
+
+    //Server-Side Datatable Routes
     Route::get('/orgunit/data', [OrganizationController::class, 'getData'])->name('orgunit.data');
+    Route::post('/users/switch_role', [UserController::class, 'switchRole'])->name('user.switch_role');
+    Route::get('/documents/data', [DocumentController::class, 'getDocuments'])->name('documents.data');
+    Route::get('/folders/list', [FolderController::class, 'getFolders'])->name('folders.list');
+    Route::get('/documents/root-list', [FolderController::class, 'getRootFolderDocuments'])->name('documents.root.list');
+    Route::get('/folders/subfolders-list', [FolderController::class, 'getSubfolders'])->name('folders.subfolders.list');
+    Route::get('/subfolder-documents', [FolderController::class, 'getSubfolderDocuments'])->name('subfolder.documents');
+
 
 });
 
@@ -62,7 +71,6 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
 
 
-    Route::post('/users/switch_role', [UserController::class, 'switchRole'])->name('user.switch_role');
 
 
     

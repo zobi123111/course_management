@@ -3,7 +3,7 @@
 @extends('layout.app')
 @section('content')
 
-@if(session()->has('message'))
+@if(session()->has('message'))  
 <div id="successMessage" class="alert alert-success fade show" role="alert">
   <i class="bi bi-check-circle me-1"></i>
   {{ session()->get('message') }}
@@ -17,50 +17,28 @@
 </div>
 @endif
 <br>
-<table class="table" id="documemtTable">
-  <thead>   
-    <tr>
-      <th scope="col">Document Title</th>
-      <th scope="col">Version Number</th>
-      <th scope="col">Issue date</th>
-      <th scope="col">Expiry Date</th>
-      <th scope="col">Document</th>
-      <th scope="col">Status</th>
-      @if(checkAllowedModule('documents','document.edit')->isNotEmpty())
-      <th scope="col">Edit</th>
-      @endif
-      @if(checkAllowedModule('documents','document.delete')->isNotEmpty())
-      <th scope="col">Delete</th>
-      @endif
-    </tr>
-  </thead>
-  <tbody>
-    @foreach($documents as $val)
-            <tr>
-                <td class="docTitle">{{ $val->doc_title}}</td>
-                <td>{{ $val->version_no}}</td>
-                <td>{{ $val->issue_date}}</td>
-                <td>{{ $val->expiry_date}}</td>
-                <td>
-                    @if($val->document_file)
-                    <!-- <a href="{{ asset('storage/'.$val->document_file) }}" target="_blank">View Document</a> -->
-                    <a href="{{ route('document.show', encode_id($val->id)) }}" >View Document</a>
-                    @else
-                    No File uploaded
+<div class="card pt-4">
+    <div class="card-body">
+        <table class="table" id="documentTable">
+            <thead>
+                <tr>
+                    <th>Document Title</th>
+                    <th>Version Number</th>
+                    <th>Issue Date</th>
+                    <th>Expiry Date</th>
+                    <th>Document</th>
+                    <th>Status</th>
+                    @if(checkAllowedModule('documents','document.edit')->isNotEmpty())
+                        <th>Edit</th>
                     @endif
-                </td>
-                <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
-                @if(checkAllowedModule('documents','document.edit')->isNotEmpty())
-                    <td><i class="fa fa-edit edit-document-icon" style="font-size:25px; cursor: pointer;" data-document-id="{{ encode_id($val->id) }}" ></i></td>
-                @endif
-                @if(checkAllowedModule('documents','document.delete')->isNotEmpty())
-                    <td><i class="fa-solid fa-trash delete-document-icon" style="font-size:25px; cursor: pointer;" data-document-id="{{ encode_id($val->id) }}" ></i></td>
-                @endif
-            </tr> 
-    @endforeach
-  </tbody>
-</table>
-
+                    @if(checkAllowedModule('documents','document.delete')->isNotEmpty())
+                        <th>Delete</th>
+                    @endif
+                </tr>
+            </thead>
+        </table>
+    </div>  
+</div>
 <!-- Create Document-->
 <div class="modal fade" id="createDocumentModal" tabindex="-1" role="dialog" aria-labelledby="documentModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog" role="document">
@@ -245,9 +223,27 @@
 
 <script>
 $(document).ready(function() {
-    $('#documemtTable').DataTable();
+    $('#documentTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('documents.data') }}",
+        columns: [
+            { data: 'doc_title', name: 'doc_title' },
+            { data: 'version_no', name: 'version_no' },
+            { data: 'issue_date', name: 'issue_date' },
+            { data: 'expiry_date', name: 'expiry_date' },
+            { data: 'document', name: 'document', orderable: false, searchable: false },
+            { data: 'status', name: 'status' },
+            @if(checkAllowedModule('documents','document.edit')->isNotEmpty())
+                { data: 'edit', name: 'edit', orderable: false, searchable: false },
+            @endif
+            @if(checkAllowedModule('documents','document.delete')->isNotEmpty())
+                { data: 'delete', name: 'delete', orderable: false, searchable: false },
+            @endif
+        ]
+    });
 
-    $("#createDocument").on('click', function(){
+    $(document).on("click","#createDocument", function(){
         $(".error_e").html('');
         $("#documentsForm")[0].reset();
         $("#createDocumentModal").modal('show');
@@ -280,9 +276,8 @@ $(document).ready(function() {
 
     })
 
-    $('.edit-document-icon').click(function(e) {
+    $(document).on("click",".edit-document-icon",function(e) {
         e.preventDefault();
-
         $('.error_e').html('');
         var documentId = $(this).data('document-id');
         $.ajax({
@@ -308,7 +303,7 @@ $(document).ready(function() {
         });
     });
 
-    $('#updateDocument').on('click', function(e){
+    $(document).on('click','#updateDocument', function(e){
         e.preventDefault();
 
         var formData = new FormData($('#editDocumentForm')[0]);
@@ -333,8 +328,8 @@ $(document).ready(function() {
         })
     })
 
-    $('.delete-document-icon').click(function(e) {
-    e.preventDefault();
+    $(document).on("click",".delete-document-icon", function(e) {
+        e.preventDefault();
         $('#deleteDocument').modal('show');
         var documentId = $(this).data('document-id');
         var documentName = $(this).closest('tr').find('.docTitle').text();
@@ -342,6 +337,10 @@ $(document).ready(function() {
         $('#documentId').val(documentId);
       
     });
+
+    setTimeout(function() {
+            $('#successMessage').fadeOut('slow');
+        }, 3000);
 
 });
 </script>

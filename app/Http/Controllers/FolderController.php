@@ -125,14 +125,173 @@ class FolderController extends Controller
         return response()->json(['success' => 'Folder updated successfully.']);
     }
 
+    // public function deleteFolder(Request $request)
+    // {
+    //     $folder = Folder::findOrFail(decode_id($request->folder_id));
+    //     if ($folder) {
+    //         $folder->delete();
+    //         return redirect()->route('folder.index')->with('message', 'This Folder deleted successfully');
+    //     }
+    // }
+
     public function deleteFolder(Request $request)
     {
         $folder = Folder::findOrFail(decode_id($request->folder_id));
-        if ($folder) {
-            $folder->delete();
-            return redirect()->route('folder.index')->with('message', 'This Folder deleted successfully');
+// dd($folder->children()->exists());
+        // Check if the folder has any subfolders
+        if ($folder->children()->exists()) {
+            return redirect()->back()->with('error', 'Cannot delete this folder because it contains subfolders.');
+        }
+
+        // Store parent_id before deletion to determine redirection
+        $parentFolderId = $folder->parent_id;
+
+        // Delete the folder
+        $folder->delete();
+
+        // Redirect logic based on parent folder existence
+        if ($parentFolderId) {
+            return redirect()->route('folder.show', ['folder_id' => encode_id($parentFolderId)])
+                            ->with('message', 'Folder deleted successfully.');
+        } else {
+            return redirect()->route('folder.index')->with('message', 'Folder deleted successfully.');
         }
     }
+    
+
+    public function getFolders(Request $request)
+    {
+        $query = Folder::query();
+    
+        // Apply search filter
+        if ($request->has('search') && !empty($request->search['value'])) {
+            $searchValue = $request->search['value'];
+    
+            $query->where(function ($q) use ($searchValue) {
+                $q->where('folder_name', 'LIKE', "%{$searchValue}%")
+                  ->orWhere('description', 'LIKE', "%{$searchValue}%");
+    
+                // Search by status (accepting "Active" or "Inactive" as input)
+                if (stripos('Active', $searchValue) !== false) {
+                    $q->orWhere('status', 1);
+                } elseif (stripos('Inactive', $searchValue) !== false) {
+                    $q->orWhere('status', 0);
+                }
+            });
+        }
+    
+        // Sorting
+        $orderColumn = $request->order[0]['column'];
+        $orderDirection = $request->order[0]['dir'];
+        $columns = ['id', 'folder_name', 'description', 'status']; // Columns index reference
+        $query->orderBy($columns[$orderColumn], $orderDirection);
+    
+        // Pagination
+        $totalRecords = Folder::count();
+        $filteredRecords = $query->count();
+        $folders = $query->offset($request->start)->limit($request->length)->get();
+    
+        // Prepare response data
+        $data = [];
+        foreach ($folders as $index => $val) {
+            $encodedId = encode_id($val->id);
+    
+            $actions = '';
+    
+            if (checkAllowedModule('folders', 'folder.show')->isNotEmpty()) {
+                $actions .= '<a href="'.route('folder.show', ['folder_id' => $encodedId]).'" class="btn btn-sm btn-success" title="View Folder">
+                                <i class="fa fa-eye"></i> View
+                            </a> ';
+            }
+    
+            if (checkAllowedModule('folders', 'folder.edit')->isNotEmpty()) {
+                $actions .= '<button class="btn btn-sm btn-warning edit-folder-icon" data-folder-id="'.$encodedId.'" title="Edit Folder">
+                                <i class="fa fa-edit"></i> Edit
+                            </button> ';
+            }
+    
+            if (checkAllowedModule('folders', 'folder.delete')->isNotEmpty()) {
+                $actions .= '<button class="btn btn-sm btn-danger delete-folder-icon" data-folder-id="'.$encodedId.'" title="Delete Folder">
+                                <i class="fa-solid fa-trash"></i> Delete
+                            </button>';
+            }
+    
+            $data[] = [
+                'DT_RowIndex' => $index + 1,
+                'folder_name' => $val->folder_name,
+                'description' => $val->description,
+                'status' => $val->status == 1 ? 'Active' : 'Inactive',
+                'actions' => $actions,
+            ];
+        }
+    
+        return response()->json([
+            'draw' => intval($request->draw),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $filteredRecords,
+            'data' => $data,
+        ]);
+    }
+
+    public function getRootFolderDocuments(Request $request)
+    {
+        $query = Document::whereNull('folder_id')->where('ou_id', Auth::user()->ou_id);
+        
+        // Get total records count
+        $totalRecords = $query->count();
+        $filteredRecords = $totalRecords;
+    
+        // Apply search filter
+        if ($request->has('search') && !empty($request->input('search')['value'])) {
+            $search = $request->input('search')['value'];
+            $query->where(function($q) use ($search) {
+                $q->where('original_filename', 'LIKE', "%$search%")
+                  ->orWhere('document_file', 'LIKE', "%$search%");
+            });
+            $filteredRecords = $query->count(); // Update count after filtering
+        }
+    
+        // Apply sorting
+        if ($request->has('order')) {
+            $columnIndex = $request->input('order')[0]['column'];
+            $sortDirection = $request->input('order')[0]['dir'];
+    
+            $columns = ['id', 'original_filename', 'created_at', 'id']; // Define actual columns
+            $query->orderBy($columns[$columnIndex], $sortDirection);
+        } else {
+            $query->orderBy('created_at', 'desc'); // Default sorting
+        }
+    
+        // Pagination
+        $limit = $request->input('length');
+        $offset = $request->input('start');
+        $documents = $query->skip($offset)->take($limit)->get();
+    
+        // Format data for DataTables
+        $data = [];
+        foreach ($documents as $index => $doc) {
+            $data[] = [
+                'index' => $offset + $index + 1,
+                'document_name' => $doc->original_filename ?? basename($doc->document_file),
+                'uploaded_on' => $doc->created_at->format('d M Y, h:i A'),
+                'actions' => '
+                    <a href="' . Storage::url($doc->document_file) . '" class="btn btn-sm btn-primary" target="_blank">
+                        <i class="fas fa-eye"></i> View
+                    </a>
+                    <a href="' . Storage::url($doc->document_file) . '" class="btn btn-sm btn-success" download>
+                        <i class="fas fa-download"></i> Download
+                    </a>'
+            ];
+        }
+    
+        return response()->json([
+            "draw" => intval($request->input('draw')),
+            "recordsTotal" => $totalRecords,
+            "recordsFiltered" => $filteredRecords,
+            "data" => $data
+        ]);
+    }
+
 
     public function showFolder(Request $request)
     {
@@ -146,17 +305,157 @@ class FolderController extends Controller
             $subfolders = Folder::where('parent_id', $folderId)->get(); // Fetch all subfolders
         } else {
             //Regular users see only folders in their assigned org unit
-            $folders = Folder::where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children')->get();
-    
+            $folders = Folder::where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children')->get();    
             $subfolders = Folder::where('ou_id', Auth::user()->ou_id)
                                 ->where('parent_id', $folderId)
                                 ->get(); // Fetch only their org unit's subfolders
         }
-    
         //Fetch documents of the selected folder
         $documents = Document::where('folder_id', $folderId)->get();
+
+        //Generate breadcrumbs
+        $breadcrumbs = $this->getBreadcrumbs($editingFolder);
     
-        return view('folders.show', compact('subfolders', 'folders', 'documents', 'editingFolder', 'organizationUnits'));
+        return view('folders.show', compact('subfolders', 'folders', 'documents', 'editingFolder', 'organizationUnits', 'breadcrumbs'));
+    }
+
+
+    public function getSubfolders(Request $request)
+    {
+        $folderId = decode_id($request->folder_id); // Decode the folder ID
+    
+        if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
+            $query = Folder::where('parent_id', $folderId); // Fetch all subfolders
+        } else {
+            $query = Folder::where('ou_id', Auth::user()->ou_id)
+                        ->where('parent_id', $folderId); // Fetch only org unit's subfolders
+        }
+    
+        // Get total records count
+        $totalRecords = $query->count();
+        $filteredRecords = $totalRecords;
+    
+        // Apply search filter (including status search)
+        if ($request->has('search') && !empty($request->input('search')['value'])) {
+            $searchValue = $request->input('search')['value'];
+            $query->where(function ($q) use ($searchValue) {
+                $q->where('folder_name', 'LIKE', "%{$searchValue}%")
+                  ->orWhere('description', 'LIKE', "%{$searchValue}%");
+    
+                // Search by status (accepting "Active" or "Inactive" as input)
+                if (stripos('Active', $searchValue) !== false) {
+                    $q->orWhere('status', 1);
+                } elseif (stripos('Inactive', $searchValue) !== false) {
+                    $q->orWhere('status', 0);
+                }
+            });
+    
+            $filteredRecords = $query->count(); // Update filtered records count
+        }
+    
+        // Apply sorting
+        if ($request->has('order')) {
+            $columnIndex = $request->input('order')[0]['column'];
+            $sortDirection = $request->input('order')[0]['dir'];
+    
+            $columns = ['id', 'folder_name', 'description', 'status', 'id']; // Define actual columns
+            $query->orderBy($columns[$columnIndex], $sortDirection);
+        } else {
+            $query->orderBy('created_at', 'desc'); // Default sorting
+        }
+    
+        // Pagination
+        $limit = $request->input('length');
+        $offset = $request->input('start');
+        $subfolders = $query->skip($offset)->take($limit)->get();
+    
+        // Format data for DataTables
+        $data = [];
+        foreach ($subfolders as $index => $val) {
+            $data[] = [
+                'index' => $offset + $index + 1,
+                'folder_name' => '<span class="folderName">' . $val->folder_name . '</span>',
+                'description' => $val->description,
+                'status' => ($val->status == 1) ? 'Active' : 'Inactive',
+                'actions' => view('folders.partials.actions', ['folder' => $val])->render()
+            ];
+        }
+    
+        return response()->json([
+            "draw" => intval($request->input('draw')),
+            "recordsTotal" => $totalRecords,
+            "recordsFiltered" => $filteredRecords,
+            "data" => $data
+        ]);
+    }
+
+    public function getSubfolderDocuments(Request $request)
+    {
+        $folderId = decode_id($request->folder_id);
+
+        $query = Document::where('folder_id', $folderId);
+
+        // Total record count before filtering
+        $totalRecords = $query->count();
+        $filteredRecords = $totalRecords;
+
+        // Search logic
+        if ($request->has('search') && !empty($request->input('search')['value'])) {
+            $searchValue = $request->input('search')['value'];
+
+            $query->where(function ($q) use ($searchValue) {
+                $q->where('original_filename', 'LIKE', "%{$searchValue}%")
+                ->orWhere('document_file', 'LIKE', "%{$searchValue}%");
+            });
+
+            $filteredRecords = $query->count();
+        }
+
+        // Sorting logic
+        if ($request->has('order')) {
+            $columnIndex = $request->input('order')[0]['column'];
+            $sortDirection = $request->input('order')[0]['dir'];
+
+            $columns = ['id', 'original_filename', 'created_at', 'id']; // Column mapping
+            $query->orderBy($columns[$columnIndex], $sortDirection);
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        // Pagination
+        $limit = $request->input('length');
+        $offset = $request->input('start');
+        $documents = $query->skip($offset)->take($limit)->get();
+
+        // Format DataTables response
+        $data = [];
+        foreach ($documents as $index => $doc) {
+            $documentUrl = Storage::url($doc->document_file);
+            $filename = $doc->original_filename ?? basename($doc->document_file);
+
+            $actions = '
+                <a href="' . $documentUrl . '" class="btn btn-sm btn-primary" target="_blank">
+                    <i class="fas fa-eye" style="color: black;"></i> View
+                </a>
+                <a href="' . $documentUrl . '" class="btn btn-sm btn-success" download>
+                    <i class="fas fa-download"></i> Download
+                </a>
+            ';
+
+            $data[] = [
+                'index' => $offset + $index + 1,
+                'document_name' => $filename,
+                'uploaded_on' => $doc->created_at->format('d M Y, h:i A'),
+                'actions' => $actions,
+            ];
+        }
+
+        return response()->json([
+            "draw" => intval($request->input('draw')),
+            "recordsTotal" => $totalRecords,
+            "recordsFiltered" => $filteredRecords,
+            "data" => $data
+        ]);
     }
 
     public function isDescendant($folderId, $parentId)
@@ -175,6 +474,19 @@ class FolderController extends Controller
         }
 
         return false;
+    }
+
+    private function getBreadcrumbs($folder)
+    {
+        $breadcrumbs = [];
+        while ($folder) {
+            $breadcrumbs[] = [
+                'name' => $folder->folder_name,
+                'url' => route('folder.show', ['folder_id' => encode_id($folder->id)])
+            ];
+            $folder = $folder->parent; // Assuming 'parent' is a relationship in the Folder model
+        }
+        return array_reverse($breadcrumbs); // Reverse to show Home → Parent → Subfolder
     }
 
     

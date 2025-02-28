@@ -4,45 +4,6 @@
 @extends('layout.app')
 @section('content')
 
-
-{{-- <style>
-    .course-image {
-        height: 200px;
-        object-fit: cover;
-        width: 100%;
-    }
-
-    .card {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-    }
-
-    .card-body {
-        flex-grow: 1;
-        min-height: 200px;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-    }
-
-    .card-footer {
-        display: flex;
-        justify-content: space-between;
-        padding: 10px;
-        background-color: #f8f9fa;
-    }
-
-    .card-footer .btn {
-        /* flex: 1; */
-        /* margin: 0 5px; */
-    }
-
-    .card-text {
-        flex-grow: 1;
-    }
-</style> --}}
-
 <style>
     .course-image {
         height: 200px;

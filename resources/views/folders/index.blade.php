@@ -5,9 +5,15 @@
 @section('content')
 
 @if(session()->has('message'))
-<div id="successMessage" class="alert alert-success fade show" role="alert">
+<div id="alertMessage" class="alert alert-success fade show" role="alert">
   <i class="bi bi-check-circle me-1"></i>
   {{ session()->get('message') }}
+</div>
+@endif
+@if(session()->has('error'))
+<div id="alertMessage" class="alert alert-danger fade show" role="alert">
+  <i class="bi bi-check-circle me-1"></i>
+  {{ session()->get('error') }}
 </div>
 @endif
 
@@ -31,36 +37,7 @@
                     <th scope="col">Status</th>
                     <th scope="col">Action</th>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach($folders as $index => $val)
-                            <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td class="folderName">{{ $val->folder_name}}</td>
-                                <td>{{ $val->description}}</td>
-                                <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>  
-                                <td class="folderbtncont">
-                                @if(checkAllowedModule('folders','folder.show')->isNotEmpty())
-                                    <a href="{{ route('folder.show', ['folder_id' =>  encode_id($val->id) ]) }}" class="btn btn-sm btn-primary" title="View Folder">
-                                        <i class="fa fa-eye"></i> View
-                                    </a>   
-                                @endif
-
-                                @if(checkAllowedModule('folders','folder.edit')->isNotEmpty())
-                                    <button class="btn btn-sm btn-secondary edit-folder-icon" data-folder-id="{{ encode_id($val->id) }}" title="Edit Folder">
-                                        <i class="fa fa-edit"></i> Edit
-                                    </button>
-                                @endif
-
-                                @if(checkAllowedModule('folders','folder.delete')->isNotEmpty())
-                                    <button class="btn btn-sm btn-primary delete-folder-icon" data-folder-id="{{ encode_id($val->id) }}" title="Delete Folder">
-                                        <i class="fa fa-solid fa-trash"></i> Delete
-                                    </button>
-                                @endif
-                                </td>
-                            </tr> 
-                    @endforeach
-                </tbody>
+                </thead>                
             </table>
         </div>
     </div>
@@ -79,23 +56,6 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach($documents as $index => $doc)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $doc->original_filename ?? basename($doc->document_file) }}</td>
-                            <td>{{ $doc->created_at->format('d M Y, h:i A') }}</td>
-                            <td>
-                                <a href="{{ Storage::url($doc->document_file) }}" class="btn btn-sm btn-primary" target="_blank">
-                                    <i class="fas fa-eye"></i> View
-                                </a>
-                                <a href="{{ Storage::url($doc->document_file) }}" class="btn btn-sm btn-success" download>
-                                    <i class="fas fa-download"></i> Download
-                                </a>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
                 </table>
             </div>
         @else
@@ -262,8 +222,29 @@
 
 <script>
 $(document).ready(function() {
-    $('#folderTable').DataTable();
-    $('#docsTable').DataTable();
+    $('#folderTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: '{{ route("folders.list") }}',
+        columns: [
+            { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+            { data: 'folder_name', name: 'folder_name', className: 'folderName' },
+            { data: 'description', name: 'description' },
+            { data: 'status', name: 'status' },
+            { data: 'actions', name: 'actions', orderable: false, searchable: false }
+        ]
+    });
+    $('#docsTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('documents.root.list') }}", // Define route for fetching root folder documents
+        columns: [
+            { data: 'index', name: 'index', orderable: false, searchable: false },
+            { data: 'document_name', name: 'document_name' },
+            { data: 'uploaded_on', name: 'uploaded_on' },
+            { data: 'actions', name: 'actions', orderable: false, searchable: false }
+        ]
+    });
 
     $("#createFolder").on('click', function(){
         $(".error_e").html('');
@@ -296,41 +277,41 @@ $(document).ready(function() {
 
     })
 
-    $('.edit-folder-icon').click(function(e) {
-    e.preventDefault();
+    $(document).on("click", ".edit-folder-icon", function(e) {
+        e.preventDefault();
 
-    $('.error_e').html('');
-    var folderId = $(this).data('folder-id');
+        $('.error_e').html('');
+        var folderId = $(this).data('folder-id');
 
-    $.ajax({
-        url: "{{ url('/folder/edit') }}", 
-        type: 'GET',
-        data: { id: folderId },
-        success: function(response) {
-            
-            let currentFolderId = response.current_folder_id;
-            let selectedParentId = response.selected_parent_id;
+        $.ajax({
+            url: "{{ url('/folder/edit') }}", 
+            type: 'GET',
+            data: { id: folderId },
+            success: function(response) {
+                
+                let currentFolderId = response.current_folder_id;
+                let selectedParentId = response.selected_parent_id;
 
-            // Set parent folder dropdown
-            $('#edit_parent_folder').val(selectedParentId).trigger('change');
+                // Set parent folder dropdown
+                $('#edit_parent_folder').val(selectedParentId).trigger('change');
 
-            // Disable current folder in the dropdown to prevent self-selection
-            // $('#edit_parent_folder option').prop('disabled', false); // Re-enable all options
-            // $('#edit_parent_folder option[value="' + currentFolderId + '"]').prop('disabled', true);
+                // Disable current folder in the dropdown to prevent self-selection
+                // $('#edit_parent_folder option').prop('disabled', false); // Re-enable all options
+                // $('#edit_parent_folder option[value="' + currentFolderId + '"]').prop('disabled', true);
 
-            // Set other form values
-            $('#edit_folder_name').val(response.folder.folder_name);
-            $('#folder_id').val(response.folder.id);
-            $('#edit_description').val(response.folder.description);
-            $('#edit_ou_id').val(response.folder.ou_id);
-            $('#edit_status').val(response.folder.status);
+                // Set other form values
+                $('#edit_folder_name').val(response.folder.folder_name);
+                $('#folder_id').val(response.folder.id);
+                $('#edit_description').val(response.folder.description);
+                $('#edit_ou_id').val(response.folder.ou_id);
+                $('#edit_status').val(response.folder.status);
 
-            $('#editFolderModal').modal('show');
-        },
-        error: function(xhr, status, error) {
-            console.error(xhr.responseText);
-        }
-    });
+                $('#editFolderModal').modal('show');
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
     });
 
     $('#updateFolder').on('click', function(e){
@@ -355,7 +336,7 @@ $(document).ready(function() {
         })
     })
 
-    $('.delete-folder-icon').click(function(e) {
+    $(document).on("click", ".delete-folder-icon", function(e) {
     e.preventDefault();
         $('#deleteFolder').modal('show');
         var folderId = $(this).data('folder-id');
@@ -366,7 +347,7 @@ $(document).ready(function() {
     });
 
     setTimeout(function() {
-        $('#successMessage').fadeOut('slow');
+        $('#alertMessage').fadeOut('slow');
     }, 2000);
 
 });
