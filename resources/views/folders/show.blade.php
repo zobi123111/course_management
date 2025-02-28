@@ -28,7 +28,7 @@
     <div class="card-body">
     <h3 class="mb-3">Sub Folders List</h3>
         <table class="table table-bordered table-hover" id="subfoldersTable">
-            <thead class="table-dark">
+            <thead class="table-custom-head">
                 <tr>
                 <th>#</th>
                 <th scope="col">Folder Name</th>
@@ -46,7 +46,7 @@
         @if($documents->isNotEmpty())
             <div class="table-responsive">
                 <table id="subFoldersDocsTable" class="table table-bordered table-hover">
-                    <thead class="table-dark">
+                    <thead class="table-custom-head">
                         <tr>
                             <th>#</th>
                             <th>Document Name</th>
@@ -231,7 +231,7 @@ $(document).ready(function() {
             { data: 'folder_name', name: 'folder_name' },
             { data: 'description', name: 'description' },
             { data: 'status', name: 'status' },
-            { data: 'actions', name: 'actions', orderable: false, searchable: false }
+            { data: 'actions', name: 'actions', className: 'folderbtncont', orderable: false, searchable: false }
         ]
     });
 
@@ -246,7 +246,7 @@ $(document).ready(function() {
             { data: 'index', name: 'index' },
             { data: 'document_name', name: 'original_filename' },
             { data: 'uploaded_on', name: 'created_at' },
-            { data: 'actions', name: 'actions', orderable: false, searchable: false }
+            { data: 'actions', name: 'actions', className: 'folderbtncont', orderable: false, searchable: false }
         ]
     });
 

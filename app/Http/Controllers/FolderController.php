@@ -163,6 +163,15 @@ class FolderController extends Controller
     {
         $query = Folder::query();
     
+        // Apply user-based folder filtering
+        if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
+            // Admin without OU restriction: Fetch all folders
+            $query->whereNull('parent_id')->with('children');
+        } else {
+            // Regular users: Fetch only their org unit folders
+            $query->where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children');
+        }
+    
         // Apply search filter
         if ($request->has('search') && !empty($request->search['value'])) {
             $searchValue = $request->search['value'];
@@ -181,8 +190,8 @@ class FolderController extends Controller
         }
     
         // Sorting
-        $orderColumn = $request->order[0]['column'];
-        $orderDirection = $request->order[0]['dir'];
+        $orderColumn = $request->order[0]['column'] ?? 1; // Default to 'folder_name' if not provided
+        $orderDirection = $request->order[0]['dir'] ?? 'asc';
         $columns = ['id', 'folder_name', 'description', 'status']; // Columns index reference
         $query->orderBy($columns[$orderColumn], $orderDirection);
     
@@ -195,26 +204,7 @@ class FolderController extends Controller
         $data = [];
         foreach ($folders as $index => $val) {
             $encodedId = encode_id($val->id);
-    
-            $actions = '';
-    
-            if (checkAllowedModule('folders', 'folder.show')->isNotEmpty()) {
-                $actions .= '<a href="'.route('folder.show', ['folder_id' => $encodedId]).'" class="btn btn-sm btn-success" title="View Folder">
-                                <i class="fa fa-eye"></i> View
-                            </a> ';
-            }
-    
-            if (checkAllowedModule('folders', 'folder.edit')->isNotEmpty()) {
-                $actions .= '<button class="btn btn-sm btn-warning edit-folder-icon" data-folder-id="'.$encodedId.'" title="Edit Folder">
-                                <i class="fa fa-edit"></i> Edit
-                            </button> ';
-            }
-    
-            if (checkAllowedModule('folders', 'folder.delete')->isNotEmpty()) {
-                $actions .= '<button class="btn btn-sm btn-danger delete-folder-icon" data-folder-id="'.$encodedId.'" title="Delete Folder">
-                                <i class="fa-solid fa-trash"></i> Delete
-                            </button>';
-            }
+            $actions = view('folders.partials.actions', ['folder' => $val])->render();
     
             $data[] = [
                 'DT_RowIndex' => $index + 1,
@@ -276,9 +266,9 @@ class FolderController extends Controller
                 'uploaded_on' => $doc->created_at->format('d M Y, h:i A'),
                 'actions' => '
                     <a href="' . Storage::url($doc->document_file) . '" class="btn btn-sm btn-primary" target="_blank">
-                        <i class="fas fa-eye"></i> View
+                        <i class="fa fas fa-eye"></i> View
                     </a>
-                    <a href="' . Storage::url($doc->document_file) . '" class="btn btn-sm btn-success" download>
+                    <a href="' . Storage::url($doc->document_file) . '" class="btn btn-sm btn-secondary" download>
                         <i class="fas fa-download"></i> Download
                     </a>'
             ];
@@ -435,9 +425,9 @@ class FolderController extends Controller
 
             $actions = '
                 <a href="' . $documentUrl . '" class="btn btn-sm btn-primary" target="_blank">
-                    <i class="fas fa-eye" style="color: black;"></i> View
+                    <i class="fa fas fa-eye" style="color: black;"></i> View
                 </a>
-                <a href="' . $documentUrl . '" class="btn btn-sm btn-success" download>
+                <a href="' . $documentUrl . '" class="btn btn-sm btn-secondary" download>
                     <i class="fas fa-download"></i> Download
                 </a>
             ';

@@ -16,14 +16,16 @@ class UserController extends Controller
 {
     public function users()
     {
-       $ou_id =  auth()->user()->ou_id;
-       $organizationUnits = OrganizationUnits::all();
-       if(empty($ou_id)){
-           $users = User::all();
-        }else{
-           $users = User::where('ou_id',$ou_id)->get();
-       }
-       $roles = Role::all();
+        $ou_id = auth()->user()->ou_id;
+        $organizationUnits = OrganizationUnits::all();
+
+        if (empty($ou_id)) {
+            $users = User::all();
+            $roles = Role::all(); // Get all roles
+        } else {
+            $users = User::where('ou_id', $ou_id)->get();
+            $roles = Role::where('id', '!=', 1)->get(); // Exclude role with id = 1
+        }
 
         return view('users.index', compact('users', 'roles', 'organizationUnits'));
     }
@@ -286,6 +288,10 @@ class UserController extends Controller
         if ($request->hasFile('passport_file')) {
             $passport_file = $request->file('passport_file')->store('user_documents', 'public');
         }
+
+        // Determine is_admin value
+        $is_admin = (!empty($request->ou_id) && $request->role_name==1)? 1 : null;
+
         $store_user = array(
             "fname" => $request->firstname,
             "lname" => $request->lastname,
@@ -308,6 +314,7 @@ class UserController extends Controller
             'status' => $request->status,
             "ou_id" => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
             "extra_roles" => !empty($request->extra_roles) ? json_encode($request->extra_roles) : json_encode([]),
+            "is_admin" => $is_admin
         );
 
         // dd($store_user);

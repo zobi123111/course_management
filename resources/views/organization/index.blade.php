@@ -4,13 +4,13 @@
 @section('content')
 
 @if(session()->has('message'))
-<div id="successMessage" class="alert alert-success fade show" role="alert">
+<div id="alertMessage" class="alert alert-success fade show" role="alert">
     <i class="bi bi-check-circle me-1"></i>
     {{ session()->get('message') }}
 </div>
 @endif
 @if(session()->has('error'))
-<div id="successMessage" class="alert alert-danger fade show" role="alert">
+<div id="alertMessage" class="alert alert-danger fade show" role="alert">
     <i class="bi bi-check-circle me-1"></i>
     {{ session()->get('message') }}
 </div>
@@ -435,6 +435,10 @@ $(document).ready(function() {
         $('#orgUnitId').val(orgUnitId);
         $('#userId').val(userId);
     });
+
+    setTimeout(function() {
+        $('#alertMessage').fadeOut('slow');
+    }, 2000);
 
 
 

@@ -12,8 +12,29 @@
         <span><strong>Expiry Date:</strong> {{ $document->expiry_date }}</span>
     </div>
     
-    <!-- PDF Viewer -->
-    <iframe src="{{ asset('storage/'.$document->document_file) }}" width="100%" height="600px"></iframe>
+@php
+    $file = asset('storage/' . $document->document_file); // Get file path
+    $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION)); // Extract extension
+
+    // Supported file types
+    $imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
+    $pdfTypes = ['pdf'];
+@endphp
+
+<div class="file-preview">
+    <!-- Show Images -->
+    @if(in_array($extension, $imageTypes))
+        <img src="{{ $file }}" alt="Uploaded Image" style="max-width: 100%; height: auto;">
+
+    <!-- Show PDFs -->
+    @elseif(in_array($extension, $pdfTypes))
+        <iframe src="{{ $file }}" width="100%" height="600px"></iframe>
+
+    <!-- Show Download Link for Other Files -->
+    @else
+        <p>No preview available. <a href="{{ $file }}" download>Download file</a>.</p>
+    @endif
+</div>
 
     <!-- Acknowledgment Form -->
     <form method="POST" id="docAcknowledgeForm">
