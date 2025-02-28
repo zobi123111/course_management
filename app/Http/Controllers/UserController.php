@@ -79,7 +79,7 @@ class UserController extends Controller
         $data = $users->map(function ($user) {
             $organization = isset($user->organization) ? $user->organization : '--';
             return [
-                'id' => $user->id,
+                'id' => encode_id($user->id),
                 'image' => $user->image,
                 'fname' => $user->fname,
                 'lname' => $user->lname,
@@ -474,7 +474,6 @@ class UserController extends Controller
     public function getUserById(Request $request) 
     {
         $user = User::find(decode_id($request->id));
-        // dd($user);
         if (!$user) {
             return response()->json(['error' => 'User not found']);
         }
