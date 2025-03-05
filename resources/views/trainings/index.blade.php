@@ -1,5 +1,5 @@
-@section('title', 'Groups')
-@section('sub-title', 'Groups')
+@section('title', 'Training Event')
+@section('sub-title', 'Training Event')
 @extends('layout.app')
 @section('content')
 
@@ -13,105 +13,79 @@
 
 @if(checkAllowedModule('groups','group.store')->isNotEmpty())
 <div class="create_btn">
-    <button class="btn btn-primary create-button" id="createGroup" data-toggle="modal"
-        data-target="#createGroupModal">Create Group</button>
+    <button class="btn btn-primary create-button" id="createTrainingEvent" data-toggle="modal"
+        data-target="#createTrainingEventModal">Create Training Event</button>
 </div>
 @endif
 <br>
 
 <div class="card pt-4">
         <div class="card-body">
-    <table class="table table-hover" id="groupTable">
+    <table class="table table-hover" id="trainingEventTable">
     <thead>
         <tr>
-            <th scope="col">Group Name</th>
-            <th scope="col">User Count</th>
-            <th scope="col">OU</th>
-            <th scope="col">Status</th>
-            @if(checkAllowedModule('groups','group.edit')->isNotEmpty())
+            <th scope="col">Event</th>
+            <th scope="col">Group</th>
+            <th scope="col">Instructor</th>
+            <th scope="col">Time</th>
+            @if(checkAllowedModule('training','training.edit')->isNotEmpty())
             <th scope="col">Edit</th>
             @endif
-            @if(checkAllowedModule('groups','group.delete')->isNotEmpty())
+            @if(checkAllowedModule('training','training.delete')->isNotEmpty())
             <th scope="col">Delete</th>
             @endif
         </tr>
     </thead>
     <tbody>
-        @foreach($groups as $val)
-        <tr>
-            <td class="groupName">{{ $val->name }}</td>
-            <td>{{ $val->user_count }}</td> <!-- Display user count -->
-            @if ($val->ounit)
-                <td>{{ $val->ounit->org_unit_name }}</td>
-            @else
-                <td>--</td>
-            @endif
-            <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
-            @if(checkAllowedModule('groups','group.edit')->isNotEmpty())
-            <td>
-                <i class="fa fa-edit edit-group-icon" style="font-size:25px; cursor: pointer;"
-                data-group-id="{{ encode_id($val->id) }}"></i>
-            </td>
-            @endif
-            @if(checkAllowedModule('groups','group.delete')->isNotEmpty())
-            <td>
-                <i class="fa-solid fa-trash delete-group-icon" style="font-size:25px; cursor: pointer;"
-                data-group-id="{{ encode_id($val->id) }}" data-group-name="{{ $val->name }}"></i>
-            </td>
-            @endif
-        </tr>
-        @endforeach
+      
     </tbody>
 </table>
 </div>
 </div>
 
 
-<!-- Create Groups-->
-<div class="modal fade" id="createGroupModal" tabindex="-1" role="dialog" aria-labelledby="groupModalLabel"
+<!-- Create Training Event-->
+<div class="modal fade" id="createTrainingEventModal" tabindex="-1" role="dialog" aria-labelledby="groupModalLabel"
     aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="groupModalLabel">Create New Group</h5>
+                <h5 class="modal-title" id="groupModalLabel">Create Training Event</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="" id="groups" method="POST" class="row g-3 needs-validation">
+                <form action="" id="training_event_form" method="POST" class="row g-3">
                     @csrf
                     <div class="form-group">
-                        <label for="name" class="form-label">Group Name<span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control">
+                        <label for="email" class="form-label">Select Course<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ou_id" aria-label="Default select example" id="select_org_unit">
+                            <option value="">Select Course</option>
+                        </select>
                         <div id="name_error" class="text-danger error_e"></div>
                     </div>
-                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                     <div class="form-group">
-                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <label for="email" class="form-label">Select Group<span class="text-danger">*</span></label>
                         <select class="form-select" name="ou_id" aria-label="Default select example" id="select_org_unit">
-                            <option value="">Select Org Unit</option>
-                            @foreach($organizationUnits as $val)
-                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                            @endforeach
+                            <option value="">Select Group</option>
                         </select>
-                        <div id="ou_id_error" class="text-danger error_e"></div>            
-                    </div>
-                    @endif
-                    <div class="form-group">
-                        <label for="users" class="form-label">Select Users<span class="text-danger"></span></label>
-                        <select class="form-select users-select" name="user_ids[]" multiple="multiple" id="usersDropdown">
-                            @foreach($users as $user)
-                            <option value="{{ $user->id }}">{{ $user->fname }} {{ $user->lname }}</option>
-                            @endforeach
-                        </select>
-                        <div id="user_ids_error" class="text-danger error_e"></div>
+                        <div id="name_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
-                        <select class="form-select" name="status" aria-label="Default select example">
-                            <option value="1" selected>Active</option>
-                            <option value="0">Inactive</option>
+                        <label for="email" class="form-label">Select Instructor<span class="text-danger">*</span></label>
+                        <select class="form-select" name="instructor_id" aria-label="Default select example" id="instructor">
+                            <option value="">Select Instructor</option>
                         </select>
-                        <div id="status_error" class="text-danger error_e"></div>            
+                        <div id="name_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Start Time<span class="text-danger">*</span></label>
+                        <input type="time" class="form-control" >
+                        <div id="strat_time_error" class="text-danger error_e"></div>            
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">End Time<span class="text-danger">*</span></label>
+                        <input type="time" class="form-control" >
+                        <div id="end_time_error" class="text-danger error_e"></div>            
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -122,66 +96,8 @@
         </div>
     </div>
 </div>
-<!--End of Groups-->
+<!--End of Training Event-->
 
-<!-- Edit Group Modal -->
-<div class="modal fade" id="editGroupModal" tabindex="-1" role="dialog" aria-labelledby="editGroupModalLabel"
-    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editGroupModalLabel">Edit Group</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="editGroupForm" class="row g-3 needs-validation">
-                    @csrf
-                    <input type="hidden" name="group_id" id="edit_group_id">
-                    <div class="form-group">
-                        <label for="edit_name" class="form-label">Group Name<span class="text-danger">*</span></label>
-                        <input type="text" name="name" id="edit_name" class="form-control">
-                        <div id="name_error_up" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit_users" class="form-label">Select Users<span
-                                class="text-danger"></span></label>
-                        <select class="form-select users-select" name="user_ids[]" id="edit_users" multiple="multiple">
-                            @foreach($users as $user)
-                            <option value="{{ $user->id }}">{{ $user->fname }} {{ $user->lname }}</option>
-                            @endforeach
-                        </select>
-                        <div id="user_ids_error_up" class="text-danger error_e"></div>
-                    </div>
-                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                    <div class="form-group">
-                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                        <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
-                            <option value="">Select Org Unit</option>
-                            @foreach($organizationUnits as $val)
-                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                            @endforeach
-                        </select>
-                        <div id="ou_id_error_up" class="text-danger error_e"></div>            
-                    </div>
-                    @endif
-                    <div class="form-group">
-                        <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
-                        <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
-                            <option value="1" selected>Active</option>
-                            <option value="0">Inactive</option>
-                        </select>
-                        <div id="status_error_up" class="text-danger error_e"></div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" id="updateGroup" class="btn btn-primary sbt_btn">Update</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-<!--End of Group Edit-->
 
 <!-- Delete Group Modal -->
 <form action="{{ url('group/delete') }}" id="deleteGroupForm" method="POST">
@@ -224,11 +140,10 @@ $(document).ready(function() {
 
     initializeSelect2(); // Call on page load
 
-    $("#createGroup").on('click', function() {
+    $("#createTrainingEvent").on('click', function() {
         $(".error_e").html('');
-        $("#groups")[0].reset();
-        $(".users-select").val(null).trigger("change"); // Reset Select2
-        $("#createGroupModal").modal('show');
+        $("#training_event_form")[0].reset();
+        $("#createTrainingEventModal").modal('show');
 
         initializeSelect2(); // Ensure Select2 is re-initialized
     })

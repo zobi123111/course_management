@@ -291,6 +291,7 @@ class UserController extends Controller
 
         // Determine is_admin value
         $is_admin = (!empty($request->ou_id) && $request->role_name==1)? 1 : null;
+        // dd($is_admin);
 
         $store_user = array(
             "fname" => $request->firstname,
@@ -440,6 +441,9 @@ class UserController extends Controller
              // Handle Extra Roles
             $extra_roles = $request->has('extra_roles') ? json_encode($request->extra_roles) : $userToUpdate->extra_roles;
 
+            // Determine is_admin value
+            $is_admin = (!empty($request->ou_id) && $request->edit_role_name==1)? 1 : null;
+
             // Update User Information
             $userToUpdate->where('id', $request->edit_form_id)
                 ->update([
@@ -464,6 +468,7 @@ class UserController extends Controller
                     'custom_field_value' => $request->edit_custom_field_value ?? null,
                     'password_flag' => $request->edit_update_password,
                     'extra_roles' => $extra_roles,
+                    'is_admin' => $is_admin
                 ]);
 
             return response()->json(['success' => true, 'message' => "User data updated successfully"]);
