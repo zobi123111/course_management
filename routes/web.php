@@ -138,6 +138,10 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
 
     //Training Event Route
     Route::get('/training', [TrainingEventsController::class, 'index'])->name('training.index');
+    Route::post('/training/create', [TrainingEventsController::class, 'createTrainingEvent'])->name('training.store');
+    Route::get('/training/edit', [TrainingEventsController::class, 'getTrainingEvent'])->name('training.edit');
+    Route::post('/training/update', [TrainingEventsController::class, 'updateTrainingEvent'])->name('training.update');
+    Route::post('/training/delete', [TrainingEventsController::class, 'deleteTrainingEvent'])->name('training.delete');
 
 });
 

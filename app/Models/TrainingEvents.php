@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TrainingEvents extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'ou_id',
         'course_id',
         'group_id',
         'instructor_id',
@@ -19,18 +19,23 @@ class TrainingEvents extends Model
         'end_time'
     ];
 
+    public function orgUnit()
+    {
+        return $this->belongsTo(OrganizationUnits::class, 'ou_id', 'id');
+    }
+
     public function course()
     {
-        return $this->belongsTo(Course::class, 'id');
+        return $this->belongsTo(Courses::class, 'course_id', 'id'); // Fixed foreign key
     }
 
     public function group()
     {
-        return $this->belongsTo(Group::class, 'id');
+        return $this->belongsTo(Group::class, 'group_id', 'id'); // Fixed foreign key
     }
 
     public function instructor()
     {
-        return $this->belongsTo(User::class, 'id');
+        return $this->belongsTo(User::class, 'instructor_id', 'id'); // Fixed foreign key
     }
 }

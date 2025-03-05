@@ -27,7 +27,8 @@
             <th scope="col">Event</th>
             <th scope="col">Group</th>
             <th scope="col">Instructor</th>
-            <th scope="col">Time</th>
+            <th scope="col">Start Time</th>
+            <th scope="col">End Time</th>
             @if(checkAllowedModule('training','training.edit')->isNotEmpty())
             <th scope="col">Edit</th>
             @endif
@@ -37,7 +38,27 @@
         </tr>
     </thead>
     <tbody>
-      
+        @foreach($trainingEvents as $event)
+        <tr>
+            <td class="eventName">{{ $event->course->course_name }}</td>
+            <td>{{ $event->group->name }}</td>
+            <td>{{ $event->instructor->fname }} {{ $event->instructor->lname }}</td>
+            <td>{{ $event->start_time }}</td>
+            <td>{{ $event->end_time }}</td>
+            @if(checkAllowedModule('training','training.edit')->isNotEmpty())
+            <td>
+                <i class="fa fa-edit edit-event-icon" style="font-size:25px; cursor: pointer;"
+                data-event-id="{{ encode_id($event->id) }}"></i>
+            </td>
+            @endif
+            @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+            <td>
+                <i class="fa-solid fa-trash delete-event-icon" style="font-size:25px; cursor: pointer;"
+                data-event-id="{{ encode_id($event->id) }}" ></i>
+            </td>
+            @endif
+        </tr>
+        @endforeach
     </tbody>
 </table>
 </div>
@@ -54,42 +75,51 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="" id="training_event_form" method="POST" class="row g-3">
+                <form action="" id="trainingEventForm" method="POST" class="row g-3">
                     @csrf
                     <div class="form-group">
                         <label for="email" class="form-label">Select Course<span class="text-danger">*</span></label>
-                        <select class="form-select" name="ou_id" aria-label="Default select example" id="select_org_unit">
+                        <select class="form-select" name="course_id" aria-label="Default select example" id="select_course">
                             <option value="">Select Course</option>
+                            @foreach($course as $val)
+                            <option value="{{ $val->id }}">{{ $val->course_name }}</option>
+                            @endforeach
                         </select>
-                        <div id="name_error" class="text-danger error_e"></div>
+                        <div id="course_id_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Select Group<span class="text-danger">*</span></label>
-                        <select class="form-select" name="ou_id" aria-label="Default select example" id="select_org_unit">
+                        <select class="form-select" name="group_id" aria-label="Default select example" id="select_group">
                             <option value="">Select Group</option>
+                            @foreach($group as $val)
+                            <option value="{{ $val->id }}">{{ $val->name }}</option>
+                            @endforeach
                         </select>
-                        <div id="name_error" class="text-danger error_e"></div>
+                        <div id="group_id_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Select Instructor<span class="text-danger">*</span></label>
-                        <select class="form-select" name="instructor_id" aria-label="Default select example" id="instructor">
+                        <select class="form-select" name="instructor_id" aria-label="Default select example" id="select_instructor">
                             <option value="">Select Instructor</option>
+                            @foreach($instructor as $val)
+                            <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
+                            @endforeach
                         </select>
-                        <div id="name_error" class="text-danger error_e"></div>
+                        <div id="instructor_id_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Start Time<span class="text-danger">*</span></label>
-                        <input type="time" class="form-control" >
-                        <div id="strat_time_error" class="text-danger error_e"></div>            
+                        <input type="time" name="start_time" class="form-control" >
+                        <div id="start_time_error" class="text-danger error_e"></div>            
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">End Time<span class="text-danger">*</span></label>
-                        <input type="time" class="form-control" >
+                        <input type="time" name="end_time" class="form-control" >
                         <div id="end_time_error" class="text-danger error_e"></div>            
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" id="submitGroup" class="btn btn-primary sbt_btn">Save</button>
+                        <button type="button" id="submitTrainingEvent" class="btn btn-primary sbt_btn">Save</button>
                     </div>
                 </form>
             </div>
@@ -98,25 +128,89 @@
 </div>
 <!--End of Training Event-->
 
+<!-- Edit Training Event-->
+<div class="modal fade" id="editTrainingEventModal" tabindex="-1" role="dialog" aria-labelledby="groupModalLabel"
+    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="groupModalLabel">Edit Training Event</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="" id="editTrainingEventForm" method="POST" class="row g-3">
+                    @csrf
+                    <input type="hidden" name="event_id" id="edit_event_id">
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Course<span class="text-danger">*</span></label>
+                        <select class="form-select" name="course_id" aria-label="Default select example" id="edit_select_course">
+                            <option value="">Select Course</option>
+                            @foreach($course as $val)
+                            <option value="{{ $val->id }}">{{ $val->course_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="course_id_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Group<span class="text-danger">*</span></label>
+                        <select class="form-select" name="group_id" aria-label="Default select example" id="edit_select_group">
+                            <option value="">Select Group</option>
+                            @foreach($group as $val)
+                            <option value="{{ $val->id }}">{{ $val->name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="group_id_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Instructor<span class="text-danger">*</span></label>
+                        <select class="form-select" name="instructor_id" aria-label="Default select example" id="edit_select_instructor">
+                            <option value="">Select Instructor</option>
+                            @foreach($instructor as $val)
+                            <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
+                            @endforeach
+                        </select>
+                        <div id="instructor_id_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Start Time<span class="text-danger">*</span></label>
+                        <input type="time" name="start_time" class="form-control" id="edit_start_time">
+                        <div id="start_time_error_up" class="text-danger error_e"></div>            
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">End Time<span class="text-danger">*</span></label>
+                        <input type="time" name="end_time" class="form-control" id="edit_end_time">
+                        <div id="end_time_error_up" class="text-danger error_e"></div>            
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" id="updateTrainingEvent" class="btn btn-primary sbt_btn">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End of Edit Training Event-->
+
 
 <!-- Delete Group Modal -->
-<form action="{{ url('group/delete') }}" id="deleteGroupForm" method="POST">
+<form action="{{ url('training/delete') }}" id="deleteTrainingEventForm" method="POST">
     @csrf
-    <div class="modal fade" id="deleteGroup" tabindex="-1" aria-labelledby="deleteGroupLabel" aria-hidden="true"
+    <div class="modal fade" id="deleteTrainingEvent" tabindex="-1" aria-labelledby="deleteEventLabel" aria-hidden="true"
         data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="deleteGroupLabel">Delete Group</h5>
-                    <input type="hidden" name="group_id" id="groupId">
+                    <h5 class="modal-title" id="deleteTrainingEventLabel">Delete Training Event</h5>
+                    <input type="hidden" name="event_id" id="eventId">
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete this Group "<strong><span id="append_name"></span></strong>"?
+                    Are you sure you want to delete this Training Event "<strong><span id="append_name"></span></strong>"?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" id="confirmDeleteGroup" class="btn btn-danger delete_group">Delete</button>
+                    <button type="submit" id="confirmDeleteTrainingEvent" class="btn btn-danger delete_group">Delete</button>
                 </div>
             </div>
         </div>
@@ -142,20 +236,20 @@ $(document).ready(function() {
 
     $("#createTrainingEvent").on('click', function() {
         $(".error_e").html('');
-        $("#training_event_form")[0].reset();
+        $("#trainingEventForm")[0].reset();
         $("#createTrainingEventModal").modal('show');
 
         initializeSelect2(); // Ensure Select2 is re-initialized
     })
 
-    $("#submitGroup").on("click", function(e) {
+    $("#submitTrainingEvent").on("click", function(e) {
         e.preventDefault();
         $.ajax({
-            url: '{{ url("/group/create") }}',
+            url: '{{ url("/training/create") }}',
             type: 'POST',
-            data: $("#groups").serialize(),
+            data: $("#trainingEventForm").serialize(),
             success: function(response) {
-                $('#createGroupModal').modal('hide');
+                $('#createTrainingEventModal').modal('hide');
                 location.reload();
             },
             error: function(xhr, status, error) {
@@ -172,31 +266,25 @@ $(document).ready(function() {
 
     // $('.edit-group-icon').click(function(e) {
     //     e.preventDefault();
-    $('#groupTable').on('click', '.edit-group-icon', function() {
-
+    $(document).on('click', '.edit-event-icon', function() {
         $('.error_e').html('');
-        var groupId = $(this).data('group-id');
+        var eventId = $(this).data('event-id');
         $.ajax({
-            url: "{{ url('/group/edit') }}",
+            url: "{{ url('/training/edit') }}",
             type: 'GET',
             data: {
-                id: groupId
+                eventId: eventId
             },
             success: function(response) {
                 console.log(response)
-                $('#edit_name').val(response.group.name);
-                $('#edit_group_id').val(response.group.id);
-                $('#edit_ou_id').val(response.group.ou_id);
-                $('#edit_status').val(response.group.status);
+                $('#edit_select_course').val(response.trainingEvent.course_id);
+                $('#edit_select_group').val(response.trainingEvent.group_id);
+                $('#edit_select_instructor').val(response.trainingEvent.instructor_id);
+                $('#edit_start_time').val(response.trainingEvent.start_time);
+                $('#edit_end_time').val(response.trainingEvent.end_time);
+                $('#edit_event_id').val(response.trainingEvent.id);
 
-                let selectedUsers = response.group.user_ids ? response.group.user_ids.map(String) : [];
-
-                console.log(selectedUsers);
-                $('#edit_users').val(selectedUsers).trigger('change');
-
-                $('#editGroupModal').modal('show');
-
-                initializeSelect2();
+                $('#editTrainingEventModal').modal('show');
             },
             error: function(xhr) {
                 console.error(xhr.responseText);
@@ -204,15 +292,14 @@ $(document).ready(function() {
         });
     });
 
-    $('#updateGroup').on('click', function(e) {
+    $('#updateTrainingEvent').on('click', function(e) {
         e.preventDefault();
-
         $.ajax({
-            url: "{{ url('/group/update') }}",
+            url: "{{ url('/training/update') }}",
             type: "POST",
-            data: $("#editGroupForm").serialize(),
+            data: $("#editTrainingEventForm").serialize(),
             success: function(response) {
-                $('#editGroupModal').modal('hide');
+                $('#editTrainingEventForm').modal('hide');
                 location.reload();
             },
             error: function(xhr, status, error) {
@@ -237,44 +324,14 @@ $(document).ready(function() {
     // });
 
     // Delete Group
-    $(document).on('click', '.delete-group-icon', function() {
-        $('#deleteGroup').modal('show');
-        var groupId = $(this).data('group-id');
-        var groupName = $(this).closest('tr').find('.groupName').text();
-        $('#append_name').html(groupName);
-        $('#groupId').val(groupId);
-      
+    $(document).on('click', '.delete-event-icon', function() {
+        $('#deleteTrainingEvent').modal('show');
+        var eventId = $(this).data('event-id');
+        var eventName = $(this).closest('tr').find('.eventName').text();
+        $('#append_name').html(eventName);
+        $('#eventId').val(eventId);      
     });
 
-    $(document).on("change", "#select_org_unit", function(){
-        var ou_id = $(this).val();
-        var $selectUser = $("#usersDropdown"); // Target dropdown
-
-        $.ajax({
-            url: "/group/get_ou_user/",
-            type: "GET",
-            data: { 'ou_id': ou_id },
-            dataType: "json",  // Ensures response is treated as JSON
-            success: function(response){
-                console.log(response);
-
-                if (response.orguser && Array.isArray(response.orguser)) { // Access `orguser` array
-                    var options = "<option value=''>Select User</option>"; // Default option
-                    
-                    response.orguser.forEach(function(value){ // Iterate over `orguser` array
-                        options += "<option value='" + value.id + "'>" + value.fname + " " + value.lname + "</option>";
-                    });
-
-                    $selectUser.html(options); // Replace existing options
-                } else {
-                    console.error("Invalid response format:", response);
-                }
-            },
-            error: function(xhr, status, error){
-                console.error(xhr.responseText);
-            } 
-        });
-    });
     // Ensure Select2 works when modal is shown
     $('#createGroupModal, #editGroupModal').on('shown.bs.modal', function() {
         initializeSelect2();
