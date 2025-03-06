@@ -64,14 +64,8 @@
                 @if(!empty(auth()->user()->ou_id) && auth()->user()->is_owner == 0)
                 <th scope="col">Position</th>
                 @endif
-
                 <th scope="col">Status</th>
-                @if(checkAllowedModule('users','user.get')->isNotEmpty())
-                <th scope="col">Edit</th>
-                @endif   
-                @if(checkAllowedModule('users','user.destroy')->isNotEmpty())
-                <th scope="col">Delete</th>
-                @endif  
+                <th scope="col">Action</th>
             </tr>
         </thead>
         {{-- <tbody>
@@ -93,14 +87,16 @@
                 <td>{{ $val->roles ? $val->roles->role_name : '--' }}</td>
                 @endif
                 <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
-                @if(checkAllowedModule('users','user.get')->isNotEmpty())
-                <td><i class="fa fa-edit edit-user-icon" style="font-size:18px; cursor: pointer;"
-                    data-user-id="{{ encode_id($val->id) }}"></i></td>
-                @endif    
-                @if(checkAllowedModule('users','user.destroy')->isNotEmpty())
-                <td><i class="fa-solid fa-trash delete-icon" style="font-size:18px; cursor: pointer;"
-                data-user-id="{{ encode_id($val->id) }}"></i></td>
-                @endif 
+                <td>
+                    @if(checkAllowedModule('users','user.get')->isNotEmpty())
+                    <i class="fa fa-edit edit-user-icon" style="font-size:18px; cursor: pointer;"
+                        data-user-id="{{ encode_id($val->id) }}"></i>
+                    @endif    
+                    @if(checkAllowedModule('users','user.destroy')->isNotEmpty())
+                    <i class="fa-solid fa-trash delete-icon" style="font-size:18px; cursor: pointer;"
+                    data-user-id="{{ encode_id($val->id) }}"></i>
+                    @endif 
+                </td>
             </tr>
             @endforeach
         </tbody> --}}
@@ -111,159 +107,163 @@
 
 <!-- Create User -->
 <div class="modal fade" id="userModal" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="userModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-xl" role="document"> <!-- Extra Large Modal -->
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="userModalLabel">Create User</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="" method="POST" id="Create_user" enctype="multipart/form-data" class="row g-3 needs-validation">
+                <form action="" method="POST" id="Create_user" enctype="multipart/form-data" class="needs-validation">
                     @csrf
-                    <div class="form-group">
-                        <label for="firstname" class="form-label">First Name<span class="text-danger">*</span></label>
-                        <input type="text" name="firstname" class="form-control">
-                        <div id="firstname_error" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="lastname" class="form-label">Last Name<span class="text-danger">*</span></label>
-                        <input type="text" name="lastname" class="form-control">
-                        <div id="lastname_error" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="email" class="form-label">Email<span class="text-danger">*</span></label>
-                        <input type="email" name="email" class="form-control">
-                        <div id="email_error" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="image" class="form-label">Image<span class="text-danger">*</span></label>
-                        <input type="file" name="image" class="form-control" accept="image/*">
-                        <div id="image_error" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="password" class="form-label">Password<span class="text-danger">*</span></label>
-                        <input type="password" name="password" class="form-control">
-                        <div id="password_error" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmpassword" class="form-label">Confirm Password<span
-                                class="text-danger">*</span></label>
-                        <input type="password" name="password_confirmation" class="form-control" id="confirmpassword">
-                        <div id="password_confirmation_error" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="role" class="form-label">Role<span class="text-danger">*</span></label>
-                        <select name="role_name" class="form-select" id="role">
-                            @foreach($roles as $val)
-                                <option value="{{ $val->id }}">{{ $val->role_name }}</option>
-                            @endforeach
-                        </select>
-                        <div id="role_name_error" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="extra_roles" class="form-label">Select Multiple Roles<span
-                                class="text-danger"></span></label>
-                        <select class="form-select " name="extra_roles[]" id="extra_roles" multiple="multiple">
-                            @foreach($roles as $val)
-                                <option value="{{ $val->id }}">{{ $val->role_name }}</option>
-                            @endforeach
-                        </select>
-                        <div id="extra_roles_error" class="text-danger error_e"></div>
-                    </div>                    
-                    <!-- Licence -->
-                    <div class="form-group">
-                        <label for="licence_checkbox" class="form-label">Licence</label>
-                        <input type="checkbox" name="licence_checkbox" id="licence_checkbox">
-                        <input type="text" name="licence" id="licence" class="form-control" style="display: none;" placeholder="Enter Licence Number">
-                        <div id="licence_error" class="text-danger error_e"></div>
-                        <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
-                        <div id="licence_file_error" class="text-danger error_e"></div>
-                    </div>
+                    <div class="row g-3 mb-3"> <!-- Bootstrap Grid -->
+                        <div class="col-md-6">
+                            <label for="firstname" class="form-label">First Name<span class="text-danger">*</span></label>
+                            <input type="text" name="firstname" class="form-control">
+                            <div id="firstname_error" class="text-danger error_e"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="lastname" class="form-label">Last Name<span class="text-danger">*</span></label>
+                            <input type="text" name="lastname" class="form-control">
+                            <div id="lastname_error" class="text-danger error_e"></div>
+                        </div>
 
-                    <!-- Passport -->
-                    <div class="form-group">
-                        <label for="passport_checkbox" class="form-label">Passport</label>
-                        <input type="checkbox" name="passport_checkbox" id="passport_checkbox">
-                        <input type="text" name="passport" id="passport" class="form-control" style="display: none;" placeholder="Enter Passport Number">
-                        <div id="passport_error" class="text-danger error_e"></div>
-                        <input type="file" name="passport_file" id="passport_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
-                        <div id="passport_file_error" class="text-danger error_e"></div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email<span class="text-danger">*</span></label>
+                            <input type="email" name="email" class="form-control">
+                            <div id="email_error" class="text-danger error_e"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="image" class="form-label">Image</label>
+                            <input type="file" name="image" class="form-control" accept="image/*">
+                            <div id="image_error" class="text-danger error_e"></div>
+                        </div>
 
-                    </div>
+                        <div class="col-md-6">
+                            <label for="password" class="form-label">Password<span class="text-danger">*</span></label>
+                            <input type="password" name="password" class="form-control">
+                            <div id="password_error" class="text-danger error_e"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="confirmpassword" class="form-label">Confirm Password<span class="text-danger">*</span></label>
+                            <input type="password" name="password_confirmation" class="form-control" id="confirmpassword">
+                            <div id="password_confirmation_error" class="text-danger error_e"></div>
+                        </div>
 
-                    <!-- Rating/s (Stars) -->
-                    <div class="form-group">
-                        <label for="rating_checkbox" class="form-label">Rating/s</label>
-                        <input type="checkbox" name="rating_checkbox" id="rating_checkbox">
-                        <div id="ratings" style="display: none;">
-                            <div id="ratingStars" class="rating-stars">
-                                <span class="star" data-value="1">&#9733;</span>
-                                <span class="star" data-value="2">&#9733;</span>
-                                <span class="star" data-value="3">&#9733;</span>
-                                <span class="star" data-value="4">&#9733;</span>
-                                <span class="star" data-value="5">&#9733;</span>
+                        <div class="col-md-6">
+                            <label for="role" class="form-label">Role<span class="text-danger">*</span></label>
+                            <select name="role_name" class="form-select" id="role">
+                                <option value="">Select role</option>
+                                @foreach($roles as $val)
+                                    <option value="{{ $val->id }}">{{ $val->role_name }}</option>
+                                @endforeach
+                            </select>
+                            <div id="role_name_error" class="text-danger error_e"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="extra_roles" class="form-label">Select Multiple Roles</label>
+                            <select class="form-select" name="extra_roles[]" id="extra_roles" multiple="multiple">
+                                <option value="">Select roles</option>
+                                @foreach($roles as $val)
+                                    <option value="{{ $val->id }}">{{ $val->role_name }}</option>
+                                @endforeach
+                            </select>
+                            <div id="extra_roles_error" class="text-danger error_e"></div>
+                        </div>
+
+                        <!-- Licence -->
+                        <div class="col-md-6">
+                            <label for="licence_checkbox" class="form-label">Licence</label>
+                            <input type="checkbox" name="licence_checkbox" id="licence_checkbox" class="ms-2"> <!-- Added margin start -->
+                            
+                            <label for="licence_verification_checkbox" class="form-label ms-4">Licence Verification required?</label>
+                            <input type="checkbox" name="licence_verification_checkbox" id="licence_verification_checkbox" class="ms-2">
+
+                            <input type="text" name="licence" id="licence" class="form-control mt-2" style="display: none;" placeholder="Enter Licence Number">
+                            <input type="file" name="licence_file" id="licence_file" class="form-control mt-2" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                        </div>
+
+                        <!-- Passport -->
+                        <div class="col-md-6">
+                            <label for="passport_checkbox" class="form-label">Passport</label>
+                            <input type="checkbox" name="passport_checkbox" id="passport_checkbox" class="ms-2">
+
+                            <label for="passport_verification_checkbox" class="form-label ms-4">Passport Verification required?</label>
+                            <input type="checkbox" name="passport_verification_checkbox" id="passport_verification_checkbox" class="ms-2">
+
+                            <input type="text" name="passport" id="passport" class="form-control mt-2" style="display: none;" placeholder="Enter Passport Number">
+                            <input type="file" name="passport_file" id="passport_file" class="form-control mt-2" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                        </div>
+
+                        <!-- Rating -->
+                        <div class="col-md-6">
+                            <label for="rating_checkbox" class="form-label">Rating/s</label>
+                            <input type="checkbox" name="rating_checkbox" id="rating_checkbox" class="ms-2">
+                            <div id="ratings" style="display: none;">
+                                <div id="ratingStars" class="rating-stars">
+                                    <span class="star" data-value="1">&#9733;</span>
+                                    <span class="star" data-value="2">&#9733;</span>
+                                    <span class="star" data-value="3">&#9733;</span>
+                                    <span class="star" data-value="4">&#9733;</span>
+                                    <span class="star" data-value="5">&#9733;</span>
+                                </div>
+                                <input type="hidden" name="rating" id="rating_value" value="">
                             </div>
-                            <input type="hidden" name="rating" id="rating_value" value="">
-                            <div id="rating_error" class="text-danger error_e"></div>
+                        </div>
+
+                        <!-- Currency -->
+                        <div class="col-md-6">
+                            <label for="currency" class="form-label">Currency</label>
+                            <input type="checkbox" name="currency_checkbox" id="currency_checkbox" class="ms-2">
+                            <input type="text" name="currency" id="currency" class="form-control mt-2" style="display: none;" placeholder="Enter Currency">
+                        </div>
+
+                        <!-- Custom Field -->
+                        <div class="col-md-6">
+                            <label for="custom_field_checkbox" class="form-label">Custom Field</label>
+                            <input type="checkbox" name="custom_field_checkbox" id="custom_field_checkbox" class="ms-2">
+                            <input type="text" name="custom_field_name" id="custom_field_name" style="display: none;" class="form-control mt-2" placeholder="Enter Custom Field Name">
+                            <input type="text" name="custom_field_value" id="custom_field_value" style="display: none;" class="form-control mt-2" placeholder="Enter Custom Field Value">
+                        </div>
+
+                        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                        <div class="col-md-6">
+                            <label for="ou_id" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                            <select class="form-select" name="ou_id">
+                                <option value="">Select Org Unit</option>
+                                @foreach($organizationUnits as $val)
+                                    <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @endif
+
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">Status<span class="text-danger">*</span></label>
+                            <select class="form-select" name="status">
+                                <option value="1" selected>Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
                         </div>
                     </div>
 
-
-                    <!-- Currency (Optional) -->
-                    <div class="form-group">
-                        <label for="currency" class="form-label">Currency</label>
-                        <input type="checkbox" name="currency_checkbox" id="currency_checkbox">
-                        <input type="text" name="currency" id="currency" class="form-control" style="display: none;" placeholder="Enter Currency">
-                        <div id="currency_error" class="text-danger error_e"></div>
-                    </div>
-
-                    <!-- Custom Field -->
-                    <div class="form-group">
-                        <label for="custom_field_checkbox" class="form-label">Custom Field</label>
-                        <input type="checkbox" name="custom_field_checkbox" id="custom_field_checkbox">
-                        {{-- <label for="custom_field_name" class="form-label">Custom Field Name</label> --}}
-                        <input type="text" name="custom_field_name" id="custom_field_name" style="display: none;" class="form-control" placeholder="Enter Custom Field Name">
-                        <div id="custom_field_name_error" class="text-danger error_e"></div>
-                        {{-- <label for="custom_field_value" class="form-label">Custom Field Value</label> --}}
-                        <input type="text" name="custom_field_value" id="custom_field_value" style="display: none;" class="form-control mt-3" placeholder="Enter Custom Field Value">
-                        <div id="custom_field_value_error" class="text-danger error_e"></div>
-                    </div>
-                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                    <div class="form-group">
-                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                        <select class="form-select" name="ou_id" aria-label="Default select example">
-                            <option value="">Select Org Unit</option>
-                            @foreach($organizationUnits as $val)
-                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                            @endforeach
-                        </select>
-                        <div id="ou_id_error" class="text-danger error_e"></div>            
-                    </div>
-                    @endif
-                    <div class="form-group">
-                        <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
-                        <select class="form-select" name="status" aria-label="Default select example">
-                            <option value="1" selected>Active</option>
-                            <option value="0">Inactive</option>
-                        </select>
-                        <div id="status_error" class="text-danger error_e"></div>            
-                    </div>
                     <div class="modal-footer">
-                        <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
-                        <a href="#" type="button" id="saveuser" class="btn btn-primary sbt_btn">Save </a>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary sbt_btn">Save</button>
                     </div>
-                  <div class="loader" style="display: none;"></div>
+                    <div class="loader" style="display: none;"></div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
 <!--End of create user-->
 
 <!-- Edit user -->
 <div class="modal fade" id="editUserDataModal" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="editUserDataModalLabel"
     aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="editUserDataModalLabel">Edit User</h5>
@@ -272,42 +272,44 @@
             <div class="modal-body">
                 <form action="" method="POST" id="editUserForm" class="row g-3 needs-validation">
                     @csrf
-                    <div class="form-group">
+                    <div class="row g-3 mb-3"> <!-- Bootstrap Grid -->
+                    <div class="col-md-6">
                         <label for="firstname" class="form-label">First Name<span class="text-danger">*</span></label>
                         <input type="text" name="edit_firstname" class="form-control">
                         <input type="hidden" name="edit_form_id" id="edit_firstname_error_up" class="form-control">
 
                         <div id="fname_error_up" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="lastname" class="form-label">Last Name<span class="text-danger">*</span></label>
                         <input type="text" name="edit_lastname" class="form-control">
                         <div id="edit_lastname_error_up" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="email" class="form-label">Email<span class="text-danger">*</span></label>
                         <input type="email" name="edit_email" class="form-control">
                         <div id="edit_email_error_up" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="password" class="form-label">Password<span class="text-danger">*</span></label>
                         <input type="password" name="password" class="form-control">
                         <div id="password_error_up" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="confirmpassword" class="form-label">Confirm Password<span
                                 class="text-danger">*</span></label>
                         <input type="password" name="password_confirmation" class="form-control" id="confirmpassword">
                         <div id="password_confirmation_error_up" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
-                        <label for="lastname" class="form-label">Image<span class="text-danger">*</span></label>
+                    <div class="col-md-6">
+                        <label for="lastname" class="form-label">Image<span class="text-danger"></span></label>
                         <input type="file" name="image" class="form-control" accept="image/*">
                         <div id="image_error" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="role" class="form-label">Role<span class="text-danger">*</span></label>
                         <select name="edit_role_name" class="form-select" id="edit_role">
+                        <option value="">Select role</option>
                             @foreach($roles as $val)
                             <option value="{{ $val->id }}">{{ $val->role_name }}</option>
                             @endforeach
@@ -315,10 +317,11 @@
                         </select>
                         <div id="edit_role_name_error_up" class="text-danger error_e"></div>
                     </div>       
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="extra_roles" class="form-label">Select Multiple Roles<span
                                 class="text-danger"></span></label>
                         <select class="form-select " name="extra_roles[]" id="edit_extra_roles" multiple="multiple">
+                        <option value="">Select roles</option>
                             @foreach($roles as $val)
                                 <option value="{{ $val->id }}">{{ $val->role_name }}</option>
                             @endforeach
@@ -326,7 +329,7 @@
                         <div id="extra_roles_error_up" class="text-danger error_e"></div>
                     </div>    
                       <!-- Update Password Checkbox -->
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="edit_update_password_checkbox" class="form-label">Update Password</label>
                         <input type="checkbox" name="edit_update_password_checkbox" id="edit_update_password_checkbox">
                         <input type="hidden" name="edit_update_password" id="edit_update_password" value="0">
@@ -334,7 +337,7 @@
 
 
                     <!-- Licence -->
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="edit_licence_checkbox" class="form-label">Licence</label>
                         <input type="checkbox" name="edit_licence_checkbox" id="edit_licence_checkbox">
                         <input type="text" name="edit_licence" id="edit_licence" class="form-control" style="display: none;" placeholder="Enter Licence Number">
@@ -344,7 +347,7 @@
                     </div>
 
                     <!-- Passport -->
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="edit_passport_checkbox" class="form-label">Passport</label>
                         <input type="checkbox" name="edit_passport_checkbox" id="edit_passport_checkbox">
                         <input type="text" name="edit_passport" id="edit_passport" class="form-control" style="display: none;" placeholder="Enter Passport Number">
@@ -355,7 +358,7 @@
                     </div>
 
                     <!-- Rating/s (Stars) -->
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="edit_rating_checkbox" class="form-label">Rating/s</label>
                         <input type="checkbox" name="edit_rating_checkbox" id="edit_rating_checkbox">
                         <div id="edit_ratings" style="display: none;">
@@ -372,7 +375,7 @@
                     </div>
 
                     <!-- Currency (Optional) -->
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="edit_currency" class="form-label">Currency</label>
                         <input type="checkbox" name="edit_currency_checkbox" id="edit_currency_checkbox">
                         <input type="text" name="edit_currency" id="edit_currency" class="form-control" style="display: none;" placeholder="Enter Currency">
@@ -380,7 +383,7 @@
                     </div>
 
                     <!-- Custom Field -->
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="edit_custom_field_checkbox" class="form-label">Custom Field</label>
                         <input type="checkbox" name="edit_custom_field_checkbox" id="edit_custom_field_checkbox">
                         <input type="text" name="edit_custom_field_name" id="edit_custom_field_name" style="display: none;" class="form-control" placeholder="Enter Custom Field Name">
@@ -389,7 +392,7 @@
                         <div id="edit_custom_field_value_error_up" class="text-danger error_e"></div>
                     </div>
                     @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
                         <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
                             <option value="">Select Org Unit</option>
@@ -400,7 +403,7 @@
                         <div id="ou_id_error_up" class="text-danger error_e"></div>            
                     </div>
                     @endif
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
                             <option value="1" selected>Active</option>
@@ -408,6 +411,7 @@
                         </select>
                         <div id="status_error_up" class="text-danger error_e"></div>
                     </div>  
+                    </div>
                     <div class="modal-footer">
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
                         <a href="#" type="button" id="updateForm" class="btn btn-primary sbt_btn">Update</a>
@@ -457,59 +461,46 @@
         // $('#user_table').DataTable();
 
         $('#user_table').DataTable({
-            "processing": true,
-            "serverSide": true,
-            "ajax": {
-                "url": "{{ route('users.data') }}",
-                "type": "GET",
-                "data": function(d) {
-                    return $.extend({}, d, {
-                        "extra_param": "value"
-                    });
-                }
-            },
-            "columns": [
-                { "data": "image" },
-                { "data": "fname", className: 'fname' },
-                { "data": "lname", className: 'lname' },
-                { "data": "email" },
-                @if(auth()->user()->is_owner == 1)
-                { "data": "organization" },
-                { "data": "position" },
-                @endif
-                @if(!empty(auth()->user()->ou_id) && auth()->user()->is_owner == 0)
-                { "data": "position" },
-                @endif
-                { "data": "status" },
-                @if(checkAllowedModule('users','user.get')->isNotEmpty())
-                { "data": "edit" },
-                @endif
-                @if(checkAllowedModule('users','user.destroy')->isNotEmpty())
-                { "data": "delete" }
-                @endif
-            ],
-            "order": [[1, 'asc']],
-            "columnDefs": [
-                {
-                    "targets": 0,
-                    "render": function(data, type, row) {
-                        return data ? `<img src="{{ asset('storage/${data}') }}" alt="User Image" class="rounded-circle" height="50px" width="50px">` : 'No Image';
-                    }
-                },
-                {
-                    "targets": -1,
-                    "render": function(data, type, row) {
-                        return `<i class="fa fa-edit edit-user-icon" style="font-size:18px; cursor: pointer;" data-user-id="${row.id}"></i>`;
-                    }
-                },
-                {
-                    "targets": -2,
-                    "render": function(data, type, row) {
-                        return `<i class="fa-solid fa-trash delete-icon" style="font-size:18px; cursor: pointer;" data-user-id="${row.id}"></i>`;
-                    }
-                }
-            ]
-        });
+    "processing": true,
+    "serverSide": true,
+    "ajax": {
+        "url": "{{ route('users.data') }}",
+        "type": "GET",
+        "data": function(d) {
+            d.extra_param = "value"; // Directly modifying the data object instead of returning a new one
+        }
+    },
+    "columns": [
+        { "data": "image" },
+        { "data": "fname", className: 'fname' },
+        { "data": "lname", className: 'lname' },
+        { "data": "email" },
+        @if(auth()->user()->is_owner == 1)
+        { "data": "organization" },
+        { "data": "position" },
+        @endif
+        @if(!empty(auth()->user()->ou_id) && auth()->user()->is_owner == 0)
+        { "data": "position" },
+        @endif
+        { "data": "status" },
+        { "data": "action", orderable: false, searchable: false } // Merged action column
+    ],
+    "order": [[1, 'asc']],
+    "columnDefs": [
+        {
+            "targets": 0,
+            "render": function(data) {
+                return data ? `<img src="/storage/${data}" alt="User Image" class="rounded-circle" height="50px" width="50px">` : 'No Image';
+            }
+        },
+        {
+            "targets": -1, // Last column (Actions)
+            "render": function(data) {
+                return data; // No need to check permissions in JS, just display the action buttons from the controller.
+            }
+        }
+    ]
+});
 
         $('#licence_checkbox').change(function() {
             if (this.checked) {

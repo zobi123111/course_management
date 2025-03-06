@@ -160,9 +160,10 @@
 
                            <!-- Licence -->
                             @if ($user->licence_required == 1)
+                            
                                 <div class="form-group col-sm-6">
                                     <label for="licence_checkbox" class="form-label"><strong>Licence <span class="text-danger">*</span> </strong></label>
-                                    <input type="text" name="licence" id="licence" value="{{ $user->licence ? $user->licence : ""}}" placeholder="Enter Passport Number" class="form-control">
+                                    <input type="text" name="licence" id="licence" value="{{ $user->licence ? $user->licence : ''}}" placeholder="Enter Licence Number" class="form-control">
                                     <div id="licence_error_up" class="text-danger error_e"></div>
                                     <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
                                     <div id="licence_file_error_up" class="text-danger error_e"></div>

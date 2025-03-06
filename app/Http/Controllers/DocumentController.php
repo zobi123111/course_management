@@ -19,7 +19,6 @@ class DocumentController extends Controller
     {
 
         $userId = Auth::user()->id;
-
         $ou_id =  auth()->user()->ou_id;
         if(checkAllowedModule('courses', 'document.index')->isNotEmpty() && Auth()->user()->is_owner ==  1){
             $groups = Group::all();
@@ -27,7 +26,7 @@ class DocumentController extends Controller
             $documents = Document::all();
         }
         elseif(checkAllowedModule('documents', 'document.index')->isNotEmpty() && Auth()->user()->is_admin ==  0){
-            $groups = Group::all();
+            $groups = Group::where('ou_id', $ou_id)->get();
             $filteredGroups = $groups->filter(function ($group) use ($userId) {
                 $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);                
                 return in_array($userId, $userIds);
@@ -45,6 +44,7 @@ class DocumentController extends Controller
             $groups = Group::where('ou_id', $ou_id)->get();
             $folders = Folder::where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children')->get();
             $documents = Document::where('ou_id',$ou_id)->get();
+            // dd($documents);
         }
         return view('documents.index',compact('documents', 'folders', 'groups'));
     }
@@ -176,20 +176,38 @@ class DocumentController extends Controller
         $orderDirection = $request->input('order')[0]['dir'];
         $searchValue = strtolower($request->input('search')['value']); // Convert search input to lowercase
     
-        // Query base
-        $query = Document::select('id', 'doc_title', 'version_no', 'issue_date', 'expiry_date', 'document_file', 'status');
+        $user = Auth()->user();
+        $userId = $user->id;
+        $ou_id = $user->ou_id;
     
-        // Handle search filter
+        // Determine which documents to fetch based on user role and permissions
+        if (checkAllowedModule('courses', 'document.index')->isNotEmpty() && $user->is_owner == 1) {
+            $query = Document::query();
+        } elseif (checkAllowedModule('documents', 'document.index')->isNotEmpty() && $user->is_admin == 0) {
+            $groups = Group::where('ou_id', $ou_id)->get();
+            $filteredGroups = $groups->filter(function ($group) use ($userId) {
+                $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);
+                return in_array($userId, $userIds);
+            });
+    
+            $groupIds = $filteredGroups->pluck('id')->toArray();
+            $query = Document::whereIn('group_id', $groupIds)->where('status', 1);
+        } else {
+            $query = Document::where('ou_id', $ou_id);
+        }
+    
+        // Select columns
+        $query->select('id', 'doc_title', 'version_no', 'issue_date', 'expiry_date', 'document_file', 'status');
+    
+        // Apply search filter
         if (!empty($searchValue)) {
             $query->where(function ($q) use ($searchValue) {
-                // Convert "Active" to 1 and "Inactive" to 0 using partial match
                 if (str_contains('active', $searchValue)) {
                     $q->orWhere('status', 1);
                 }
                 if (str_contains('inactive', $searchValue)) {
                     $q->orWhere('status', 0);
                 }
-                // General search for other columns
                 $q->orWhere('doc_title', 'like', "%{$searchValue}%")
                   ->orWhere('version_no', 'like', "%{$searchValue}%")
                   ->orWhere('issue_date', 'like', "%{$searchValue}%")
@@ -197,7 +215,7 @@ class DocumentController extends Controller
             });
         }
     
-        // Get total records count
+        // Get total records count before filtering
         $totalRecords = Document::count();
         $recordsFiltered = $query->count();
     
@@ -218,7 +236,7 @@ class DocumentController extends Controller
                 'document' => $row->document_file
                     ? '<a href="' . route('document.show', encode_id($row->id)) . '">View Document</a>'
                     : 'No File uploaded',
-                'status' => ($row->status == 1) ? 'Active' : 'Inactive', // Convert boolean to text
+                'status' => ($row->status == 1) ? 'Active' : 'Inactive',
                 'edit' => checkAllowedModule('documents', 'document.edit')->isNotEmpty()
                     ? '<i class="fa fa-edit edit-document-icon" style="font-size:25px; cursor: pointer;" data-document-id="' . encode_id($row->id) . '"></i>'
                     : '',
@@ -227,7 +245,6 @@ class DocumentController extends Controller
                     : '',
             ];
         }
-    
         return response()->json([
             'draw' => intval($request->input('draw')),
             'recordsTotal' => $totalRecords,
@@ -235,6 +252,7 @@ class DocumentController extends Controller
             'data' => $data,
         ]);
     }
+    
 
     public function showDocument(Request $request,$doc_id)
     {

@@ -29,12 +29,7 @@
             <th scope="col">Instructor</th>
             <th scope="col">Start Time</th>
             <th scope="col">End Time</th>
-            @if(checkAllowedModule('training','training.edit')->isNotEmpty())
-            <th scope="col">Edit</th>
-            @endif
-            @if(checkAllowedModule('training','training.delete')->isNotEmpty())
-            <th scope="col">Delete</th>
-            @endif
+            <th scope="col">Action</th>
         </tr>
     </thead>
     <tbody>
@@ -43,20 +38,18 @@
             <td class="eventName">{{ $event->course->course_name }}</td>
             <td>{{ $event->group->name }}</td>
             <td>{{ $event->instructor->fname }} {{ $event->instructor->lname }}</td>
-            <td>{{ $event->start_time }}</td>
-            <td>{{ $event->end_time }}</td>
-            @if(checkAllowedModule('training','training.edit')->isNotEmpty())
+            <td>{{ date('h:i A', strtotime($event->start_time)) }}</td>
+            <td>{{ date('h:i A', strtotime($event->end_time)) }}</td>
             <td>
+            @if(checkAllowedModule('training','training.edit')->isNotEmpty())
                 <i class="fa fa-edit edit-event-icon" style="font-size:25px; cursor: pointer;"
                 data-event-id="{{ encode_id($event->id) }}"></i>
-            </td>
             @endif
             @if(checkAllowedModule('training','training.delete')->isNotEmpty())
-            <td>
                 <i class="fa-solid fa-trash delete-event-icon" style="font-size:25px; cursor: pointer;"
                 data-event-id="{{ encode_id($event->id) }}" ></i>
-            </td>
             @endif
+            </td>
         </tr>
         @endforeach
     </tbody>

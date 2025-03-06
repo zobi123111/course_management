@@ -33,67 +33,89 @@ class UserController extends Controller
     public function getData(Request $request)
     {
         $ou_id = auth()->user()->ou_id;
-
+    
         $query = User::query()
-                    ->leftJoin('roles', 'users.role', '=', 'roles.id')
-                    ->leftJoin('organization_units', 'users.ou_id', '=', 'organization_units.id')
-                    ->select('users.*', 'roles.role_name as position', 'organization_units.org_unit_name as organization');
-
+            ->leftJoin('roles', 'users.role', '=', 'roles.id')
+            ->leftJoin('organization_units', 'users.ou_id', '=', 'organization_units.id')
+            ->select([
+                'users.id',
+                'users.image',
+                'users.fname',
+                'users.lname',
+                'users.email',
+                'roles.role_name as position',
+                'organization_units.org_unit_name as organization',
+                'users.status'
+            ]);
+    
         if ($ou_id) {
             $query->where('users.ou_id', $ou_id);
         }
-
+    
+        // **Search Filtering**
         if ($search = $request->input('search.value')) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('users.fname', 'like', "%$search%")
-                ->orWhere('users.lname', 'like', "%$search%")
-                ->orWhere('users.email', 'like', "%$search%")
-                ->orWhere('roles.role_name', 'like', "%$search%")
-                ->orWhere('organization_units.org_unit_name', 'like', "%$search%");
-                
-                if (strtolower($search) == 'active') {
+                  ->orWhere('users.lname', 'like', "%$search%")
+                  ->orWhere('users.email', 'like', "%$search%")
+                  ->orWhere('roles.role_name', 'like', "%$search%")
+                  ->orWhere('organization_units.org_unit_name', 'like', "%$search%");
+    
+                if (strtolower($search) === 'active') {
                     $q->orWhere('users.status', 1);
-                } elseif (strtolower($search) == 'inactive') {
+                } elseif (strtolower($search) === 'inactive') {
                     $q->orWhere('users.status', 0);
                 } else {
                     $q->orWhere('users.status', 'like', "%$search%");
                 }
             });
         }
-
-        $orderColumn = $request->input('order.0.column');
-        $orderDirection = $request->input('order.0.dir');
+    
+        // **Ordering**
         $columns = ['users.id', 'users.image', 'users.fname', 'users.lname', 'users.email', 'roles.role_name', 'organization_units.org_unit_name', 'users.status'];
-
+        $orderColumn = $request->input('order.0.column');
+        $orderDirection = $request->input('order.0.dir', 'asc');
+    
         if ($orderColumn !== null && isset($columns[$orderColumn])) {
-            $column = $columns[$orderColumn];
-            $query->orderBy($column, $orderDirection);
+            $query->orderBy($columns[$orderColumn], $orderDirection);
+        } else {
+            $query->orderBy('users.fname', 'asc'); // Default ordering
         }
-
+    
+        // **Pagination**
         $totalRecords = $query->count();
-
-        $users = $query->offset($request->input('start'))
-                    ->limit($request->input('length'))
-                    ->get();
-
-        $data = $users->map(function ($user) {
-            $organization = isset($user->organization) ? $user->organization : '--';
+        $users = $query->skip($request->input('start'))->take($request->input('length'))->get();
+    
+        // **Check Permissions Only Once**
+        $canEdit = checkAllowedModule('users', 'user.get')->isNotEmpty();
+        $canDelete = checkAllowedModule('users', 'user.destroy')->isNotEmpty();
+    
+        // **Format Data for DataTable**
+        $data = $users->map(function ($user) use ($canEdit, $canDelete) {
+            $editBtn = $canEdit 
+                ? '<i class="fa fa-edit edit-user-icon text-primary me-2" style="font-size:18px; cursor: pointer;" data-user-id="' . encode_id($user->id) . '"></i>' 
+                : '';
+    
+            $deleteBtn = $canDelete
+                ? '<i class="fa-solid fa-trash delete-icon text-danger" style="font-size:18px; cursor: pointer;" data-user-id="' . encode_id($user->id) . '"></i>' 
+                : '';
+    
             return [
                 'id' => encode_id($user->id),
-                'image' => $user->image,
+                'image' => $user->image ?: null,
                 'fname' => $user->fname,
                 'lname' => $user->lname,
                 'email' => $user->email,
-                'organization' => $organization,
+                'organization' => $user->organization ?? '--',
                 'position' => $user->position,
                 'status' => $user->status == 1 ? 'Active' : 'Inactive',
-                'edit' => '',
-                'delete' => ''
-            ];
+                'action' => $editBtn . ' ' . $deleteBtn, // **Final action buttons included here**
+            ];  
         });
-
+    
+        // **Return JSON Response**
         return response()->json([
-            'draw' => $request->input('draw'),
+            'draw' => intval($request->input('draw')),
             'recordsTotal' => $totalRecords,
             'recordsFiltered' => $totalRecords,
             'data' => $data
@@ -220,7 +242,7 @@ class UserController extends Controller
             'firstname' => 'required',
             'lastname' => 'required',
             'email' => 'required|email|max:255|unique:users,email',
-            'image' => 'required',
+            'file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:25600',
             'password' => 'required|min:6|confirmed',
             'status' => 'required',
             'ou_id' => [
@@ -345,6 +367,7 @@ class UserController extends Controller
                 'edit_firstname' => 'required',
                 'edit_lastname' => 'required',
                 'edit_email' => 'required|email',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:25600',
                 'edit_role_name' => 'required',
                 'password' => 'confirmed',
                 'status' => 'required',
