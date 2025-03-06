@@ -76,8 +76,8 @@ class OrganizationController extends Controller
                 'description' => $unit->description,
                 'status' => $unit->status == 1 ? 'Active' : 'Inactive',
                 'users_count' => $unit->users_count,
-                'edit' => '<i class="fa fa-edit edit-orgunit-icon" data-orgunit-id="' . encode_id($unit->id) . '"></i>',
-                'delete' => '<i class="fa-solid fa-trash delete-icon" data-orgunit-id="' . encode_id($unit->id) . '"></i>',
+                'edit' => '<i class="fa fa-edit edit-orgunit-icon" data-orgunit-id="' . encode_id($unit->id) . '" data-user-id="' . encode_id(optional($unit->roleOneUsers)->id) . '"></i>',
+                'delete' => '<i class="fa-solid fa-trash delete-icon" data-orgunit-id="' . encode_id($unit->id) . '" data-user-id="' . encode_id(optional($unit->roleOneUsers)->id) . '"></i>',
             ];
         });
 
@@ -93,7 +93,7 @@ class OrganizationController extends Controller
     public function saveOrgUnit(Request $request)
     {
         $rules = [
-            'org_unit_name' => 'required|unique:organization_units',
+            'org_unit_name' => 'required|unique:organization_units,org_unit_name,NULL,id,deleted_at,NULL',
             'description' => 'required',
             'status' => 'required',
         ];
@@ -133,6 +133,7 @@ class OrganizationController extends Controller
                         'password' => Hash::make($request->password),
                         'role' => 1,
                         'ou_id' => $orgUnit->id,
+                        'is_admin' => 1
                     ]);
                 }
             
@@ -252,6 +253,7 @@ class OrganizationController extends Controller
                     'password' => Hash::make($request->password),
                     'role' => 1,
                     'ou_id' => $request->org_unit_id,
+                    'is_admin' => 1
                 ]);
 
                 // Send email only if user was created and password exists

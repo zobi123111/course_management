@@ -39,32 +39,26 @@ class GroupController extends Controller
     public function index()
     {
         $currentUser = auth()->user();
-        if ($currentUser->role == 1 && empty($currentUser->ou_id)) {
-            $users = User::all();
-        }else{
-            $users = User::where('ou_id', $currentUser->ou_id)->get();
-        }
         $organizationUnits = OrganizationUnits::all();
-        
         $groups = Group::all();
 
         if ($currentUser->role == 1 && empty($currentUser->ou_id)) {
             $groups = $groups;
+            $users = User::all();
         } elseif (checkAllowedModule('groups', 'group.index')->isNotEmpty() && empty($currentUser->is_admin)) {
             $userId = $currentUser->id;
-
             $groups = $groups->filter(function ($group) use ($userId) {
                 $userIds = is_string($group->user_ids) ? json_decode($group->user_ids, true) : $group->user_ids;
                 $userIds = is_array($userIds) ? $userIds : [];
                 return in_array($userId, $userIds);
             });
         } else {
+            $users = User::where('ou_id', $currentUser->ou_id)->get();
             $groups = Group::where('ou_id', $currentUser->ou_id)->get();
         }
 
         $groups = $groups->map(function ($group) {
             $userIds = is_string($group->user_ids) ? json_decode($group->user_ids, true) : $group->user_ids;
-
             $group->user_count = is_array($userIds) ? count($userIds) : 0;
             return $group;
         });
@@ -144,5 +138,18 @@ class GroupController extends Controller
             $group->delete();
             return redirect()->route('group.index')->with('message', 'Group deleted successfully');
         }
+    }
+
+    public function getOrgUser(Request $request){
+        $orguser = User::where('ou_id', $request->ou_id)
+               ->whereNull('is_admin')
+               ->get();
+        if($orguser){
+            return response()->json(['orguser' => $orguser]);
+        }else{
+            return response()->json(['error'=> 'Org Users not found.']);
+        }
+
+
     }
 }

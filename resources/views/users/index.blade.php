@@ -470,8 +470,8 @@
             },
             "columns": [
                 { "data": "image" },
-                { "data": "fname" },
-                { "data": "lname" },
+                { "data": "fname", className: 'fname' },
+                { "data": "lname", className: 'lname' },
                 { "data": "email" },
                 @if(auth()->user()->is_owner == 1)
                 { "data": "organization" },
@@ -710,7 +710,7 @@
 
         // $('.edit-user-icon').click(function(e) {
         //     e.preventDefault();
-        $('#user_table').on('click', '.edit-user-icon', function() {
+        $(document).on('click', '.edit-user-icon', function() {
             $('.error_ee').html('');
             $("#editUserForm")[0].reset();
             var userId = $(this).data('user-id');
@@ -895,7 +895,7 @@
 
         // $('.delete-icon').click(function(e) {
         //     e.preventDefault();
-        $('#user_table').on('click', '.delete-icon', function() {
+        $(document).on('click', '.delete-icon', function() {
 
             $('#deleteUserModal').modal('show');
             var userId = $(this).data('user-id');

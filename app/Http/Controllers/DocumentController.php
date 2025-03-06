@@ -29,8 +29,7 @@ class DocumentController extends Controller
         elseif(checkAllowedModule('documents', 'document.index')->isNotEmpty() && Auth()->user()->is_admin ==  0){
             $groups = Group::all();
             $filteredGroups = $groups->filter(function ($group) use ($userId) {
-                $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);
-                
+                $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);                
                 return in_array($userId, $userIds);
             });
     
@@ -58,7 +57,7 @@ class DocumentController extends Controller
             'version_no' => 'required',
             'issue_date' => 'required|date',
             'expiry_date' => 'required|date|after:issue_date',
-            'document_file' => 'required|file|mimes:pdf|max:2048',
+            'document_file' => 'required|file|max:15360',
             'status' => 'required',
             'group' => 'required',
             'folder' => 'nullable|exists:folders,id' // Ensure folder exists if provided

@@ -84,20 +84,10 @@
                         <input type="text" name="name" class="form-control">
                         <div id="name_error" class="text-danger error_e"></div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="users" class="form-label">Select Users<span class="text-danger"></span></label>
-                        <select class="form-select users-select" name="user_ids[]" multiple="multiple">
-                            @foreach($users as $user)
-                            <option value="{{ $user->id }}">{{ $user->fname }} {{ $user->lname }}</option>
-                            @endforeach
-                        </select>
-                        <div id="user_ids_error" class="text-danger error_e"></div>
-                    </div>
                     @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                     <div class="form-group">
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                        <select class="form-select" name="ou_id" aria-label="Default select example">
+                        <select class="form-select" name="ou_id" aria-label="Default select example" id="select_org_unit">
                             <option value="">Select Org Unit</option>
                             @foreach($organizationUnits as $val)
                             <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
@@ -106,6 +96,15 @@
                         <div id="ou_id_error" class="text-danger error_e"></div>            
                     </div>
                     @endif
+                    <div class="form-group">
+                        <label for="users" class="form-label">Select Users<span class="text-danger"></span></label>
+                        <select class="form-select users-select" name="user_ids[]" multiple="multiple" id="usersDropdown">
+                            @foreach($users as $user)
+                            <option value="{{ $user->id }}">{{ $user->fname }} {{ $user->lname }}</option>
+                            @endforeach
+                        </select>
+                        <div id="user_ids_error" class="text-danger error_e"></div>
+                    </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" aria-label="Default select example">
@@ -313,19 +312,17 @@ $(document).ready(function() {
     })
 
     // Handle Delete Group Click
-    $('.delete-icon').click(function() {
-        var groupId = $(this).data('group-id');
-        var groupName = $(this).data('group-name');
+    // $('.delete-icon').click(function() {
+    //     var groupId = $(this).data('group-id');
+    //     var groupName = $(this).data('group-name');
 
-        $('#delete_group_id').val(groupId);
-        $('#delete_group_name').text(groupName);
-        $('#deleteGroup').modal('show');
-    });
+    //     $('#delete_group_id').val(groupId);
+    //     $('#delete_group_name').text(groupName);
+    //     $('#deleteGroup').modal('show');
+    // });
 
     // Delete Group
-    // $('.delete-group-icon').click(function(e) {
-    // e.preventDefault();
-    $('#groupTable').on('click', '.delete-group-icon', function() {
+    $(document).on('click', '.delete-group-icon', function() {
         $('#deleteGroup').modal('show');
         var groupId = $(this).data('group-id');
         var groupName = $(this).closest('tr').find('.groupName').text();
@@ -334,6 +331,35 @@ $(document).ready(function() {
       
     });
 
+    $(document).on("change", "#select_org_unit", function(){
+        var ou_id = $(this).val();
+        var $selectUser = $("#usersDropdown"); // Target dropdown
+
+        $.ajax({
+            url: "/group/get_ou_user/",
+            type: "GET",
+            data: { 'ou_id': ou_id },
+            dataType: "json",  // Ensures response is treated as JSON
+            success: function(response){
+                console.log(response);
+
+                if (response.orguser && Array.isArray(response.orguser)) { // Access `orguser` array
+                    var options = "<option value=''>Select User</option>"; // Default option
+                    
+                    response.orguser.forEach(function(value){ // Iterate over `orguser` array
+                        options += "<option value='" + value.id + "'>" + value.fname + " " + value.lname + "</option>";
+                    });
+
+                    $selectUser.html(options); // Replace existing options
+                } else {
+                    console.error("Invalid response format:", response);
+                }
+            },
+            error: function(xhr, status, error){
+                console.error(xhr.responseText);
+            } 
+        });
+    });
     // Ensure Select2 works when modal is shown
     $('#createGroupModal, #editGroupModal').on('shown.bs.modal', function() {
         initializeSelect2();

@@ -48,7 +48,7 @@
         @if($documents->isNotEmpty())
             <div class="table-responsive">
                 <table id="docsTable" class="table table-bordered table-hover">
-                    <thead class="table-dark">
+                    <thead class="table-custom-head">
                         <tr>
                             <th>#</th>
                             <th>Document Name</th>
@@ -231,7 +231,7 @@ $(document).ready(function() {
             { data: 'folder_name', name: 'folder_name', className: 'folderName' },
             { data: 'description', name: 'description' },
             { data: 'status', name: 'status' },
-            { data: 'actions', name: 'actions', orderable: false, searchable: false }
+            { data: 'actions', name: 'actions', className: 'folderbtncont', orderable: false, searchable: false }
         ]
     });
     $('#docsTable').DataTable({
@@ -242,7 +242,7 @@ $(document).ready(function() {
             { data: 'index', name: 'index', orderable: false, searchable: false },
             { data: 'document_name', name: 'document_name' },
             { data: 'uploaded_on', name: 'uploaded_on' },
-            { data: 'actions', name: 'actions', orderable: false, searchable: false }
+            { data: 'actions', name: 'actions', className: 'folderbtncont', orderable: false, searchable: false }
         ]
     });
 

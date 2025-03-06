@@ -16,14 +16,16 @@ class UserController extends Controller
 {
     public function users()
     {
-       $ou_id =  auth()->user()->ou_id;
-       $organizationUnits = OrganizationUnits::all();
-       if(empty($ou_id)){
-           $users = User::all();
-        }else{
-           $users = User::where('ou_id',$ou_id)->get();
-       }
-       $roles = Role::all();
+        $ou_id = auth()->user()->ou_id;
+        $organizationUnits = OrganizationUnits::all();
+
+        if (empty($ou_id)) {
+            $users = User::all();
+            $roles = Role::all(); // Get all roles
+        } else {
+            $users = User::where('ou_id', $ou_id)->get();
+            $roles = Role::where('id', '!=', 1)->get(); // Exclude role with id = 1
+        }
 
         return view('users.index', compact('users', 'roles', 'organizationUnits'));
     }
@@ -77,7 +79,7 @@ class UserController extends Controller
         $data = $users->map(function ($user) {
             $organization = isset($user->organization) ? $user->organization : '--';
             return [
-                'id' => $user->id,
+                'id' => encode_id($user->id),
                 'image' => $user->image,
                 'fname' => $user->fname,
                 'lname' => $user->lname,
@@ -286,6 +288,11 @@ class UserController extends Controller
         if ($request->hasFile('passport_file')) {
             $passport_file = $request->file('passport_file')->store('user_documents', 'public');
         }
+
+        // Determine is_admin value
+        $is_admin = (!empty($request->ou_id) && $request->role_name==1)? 1 : null;
+        // dd($is_admin);
+
         $store_user = array(
             "fname" => $request->firstname,
             "lname" => $request->lastname,
@@ -308,6 +315,7 @@ class UserController extends Controller
             'status' => $request->status,
             "ou_id" => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
             "extra_roles" => !empty($request->extra_roles) ? json_encode($request->extra_roles) : json_encode([]),
+            "is_admin" => $is_admin
         );
 
         // dd($store_user);
@@ -433,6 +441,9 @@ class UserController extends Controller
              // Handle Extra Roles
             $extra_roles = $request->has('extra_roles') ? json_encode($request->extra_roles) : $userToUpdate->extra_roles;
 
+            // Determine is_admin value
+            $is_admin = (!empty($request->ou_id) && $request->edit_role_name==1)? 1 : null;
+
             // Update User Information
             $userToUpdate->where('id', $request->edit_form_id)
                 ->update([
@@ -457,6 +468,7 @@ class UserController extends Controller
                     'custom_field_value' => $request->edit_custom_field_value ?? null,
                     'password_flag' => $request->edit_update_password,
                     'extra_roles' => $extra_roles,
+                    'is_admin' => $is_admin
                 ]);
 
             return response()->json(['success' => true, 'message' => "User data updated successfully"]);
@@ -467,7 +479,6 @@ class UserController extends Controller
     public function getUserById(Request $request) 
     {
         $user = User::find(decode_id($request->id));
-        // dd($user);
         if (!$user) {
             return response()->json(['error' => 'User not found']);
         }

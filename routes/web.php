@@ -13,6 +13,7 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\LessonController;
+use App\Http\Controllers\TrainingEventsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -110,6 +111,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/group/edit', [GroupController::class, 'getGroup'])->name('group.edit');
     Route::post('/group/update', [GroupController::class, 'updateGroup'])->name('group.update');
     Route::post('/group/delete', [GroupController::class, 'deleteGroup'])->name('group.delete');
+    Route::get('/group/get_ou_user/', [GroupController::class, 'getOrgUser'])->name('group.get_ou_user');
     
     //Documents Route
     Route::get('/documents', [DocumentController::class, 'index'])->name('document.index');
@@ -133,6 +135,13 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::resource('roles', RolePermissionController::class);
 
     // Route::get('/test', [CourseController::class, 'test'])->name('test.test');
+
+    //Training Event Route
+    Route::get('/training', [TrainingEventsController::class, 'index'])->name('training.index');
+    Route::post('/training/create', [TrainingEventsController::class, 'createTrainingEvent'])->name('training.store');
+    Route::get('/training/edit', [TrainingEventsController::class, 'getTrainingEvent'])->name('training.edit');
+    Route::post('/training/update', [TrainingEventsController::class, 'updateTrainingEvent'])->name('training.update');
+    Route::post('/training/delete', [TrainingEventsController::class, 'deleteTrainingEvent'])->name('training.delete');
 
 });
 
