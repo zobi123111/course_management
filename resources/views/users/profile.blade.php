@@ -132,7 +132,7 @@
                             @if ($user->currency_required == 1)
                                 <div class="form-group col-sm-6">
                                     <label for="currency" class="form-label"><strong>Currency <span class="text-danger">*</span> </strong></label>
-                                    <input type="text" name="currency" id="currency"  value="{{ $user->currency ? $user->currency : ""}}"  class="form-control" placeholder="Enter Currency">
+                                    <input type="text" name="currency" id="currency"  value="{{ $user->currency ? $user->currency : ''}}"  class="form-control" placeholder="Enter Currency">
                                     <div id="currency_error_up" class="text-danger error_e"></div>
                                 </div>
                             @endif
@@ -161,10 +161,15 @@
                            <!-- Licence -->
                             @if ($user->licence_required == 1)
                             
-                                <div class="form-group col-sm-6">
+                                <div class="col-sm-6">
                                     <label for="licence_checkbox" class="form-label"><strong>Licence <span class="text-danger">*</span> </strong></label>
                                     <input type="text" name="licence" id="licence" value="{{ $user->licence ? $user->licence : ''}}" placeholder="Enter Licence Number" class="form-control">
                                     <div id="licence_error_up" class="text-danger error_e"></div>
+                                    <label for="licence_" class="form-label mt-3"><strong>Expiry Date <span class="text-danger">*</span> </strong></label>
+                                    <label for="non_expiring_licence"><strong>Non-Expiring</strong></label>
+                                    <input type="checkbox" name="non_expiring_licence" id="non_expiring_licence" value='1' class="ms-2"  {{ ($user->licence_non_expiring==1) ? 'checked' : '' }}>
+                                    <input type="date" name="licence_expiry_date" id="licence_expiry_date" value="{{ $user->passport_expiry_date ? $user->licence_expiry_date : ''}}" class="form-control mt-3">
+                                    <div id="licence_expiry_date_error_up" class="text-danger error_e"></div>
                                     <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
                                     <div id="licence_file_error_up" class="text-danger error_e"></div>
                                     <input type="hidden" name="old_licence_file" value="{{ $user->licence_file }}">
@@ -182,8 +187,11 @@
                             @if ($user->passport_required == 1)
                                 <div class="form-group col-sm-6">
                                     <label for="passport_checkbox" class="form-label"><strong>Passport <span class="text-danger">*</span> </strong></label>
-                                    <input type="text" name="passport" id="passport" class="form-control" value="{{ $user->passport ? $user->passport : ""}}" placeholder="Enter Passport Number">
+                                    <input type="text" name="passport" id="passport" class="form-control" value="{{ $user->passport ? $user->passport : ''}}" placeholder="Enter Passport Number">
                                     <div id="passport_error_up" class="text-danger error_e"></div>
+                                    <label for="licence_" class="form-label mt-3"><strong>Expiry Date <span class="text-danger">*</span> </strong></label>
+                                    <input type="date" name="passport_expiry_date" id="passport_expiry_date" value="{{ $user->passport_expiry_date ? $user->passport_expiry_date : ''}}" class="form-control mt-3">
+                                    <div id="passport_expiry_date_error_up" class="text-danger error_e"></div>
                                     <input type="file" name="passport_file" id="passport_file" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
                                     <div id="passport_file_error_up" class="text-danger error_e"></div>
                                     <input type="hidden" name="old_passport_file" value="{{ $user->passport_file }}">
@@ -214,6 +222,7 @@
 @section('js_scripts')
 
 <script>
+
     // $('#ratingStars .star').on('click', function() {
     //         var rating = $(this).data('value');
     //         $('#rating_value').val(rating);
@@ -225,50 +234,67 @@
     //         }
     //     });
 
-
-    $(document).on('click', '#updateForm', function(e) {
-        e.preventDefault();
-        var formData = new FormData($('#userProfileForm')[0]);
-        
-        $(".loader").fadeIn('fast');
-        $.ajax({
-            type: 'post',
-            url: "/users/profile/update",
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                $(".loader").fadeOut('slow');
-
-                $('#editUserDataModal').modal('hide');
-                $('#update_success_msg').html(`
-                <div class="alert alert-success fade show" role="alert">
-                    <i class="bi bi-check-circle me-1"></i>
-                    ${response.message}
-                </div>
-                `).stop(true, true).fadeIn();
-
-                setTimeout(function() {
-                    $('#update_success_msg').fadeOut('slow');
-
-                }, 5000);
-
-                setTimeout(function() {
-                    location.reload();
-                }, 2000);
-                // location.reload();
-            },
-            error: function(xhr, status, error) {
-
-                $(".loader").fadeOut("slow");
-
-                var errorMessage = JSON.parse(xhr.responseText);
-                var validationErrors = errorMessage.errors;
-                $.each(validationErrors, function(key, value) {
-                    var html = '<p>' + value + '</p>';
-                    $('#' + key + '_error_up').html(html);
-                });
+    $(document).ready(function () {
+        function toggleExpiryDate() {
+            if ($('#non_expiring_licence').prop('checked')) {
+                $('#licence_expiry_date').val('').hide().prop('required', false);
+            } else {
+                $('#licence_expiry_date').show().prop('required', true);
             }
+        }
+
+        // Run on page load in case checkbox is pre-checked
+        toggleExpiryDate();
+
+        // Run on change when checkbox is clicked
+        $('#non_expiring_licence').change(function () {
+            toggleExpiryDate();
+        });
+
+        $(document).on('click', '#updateForm', function(e) {
+            e.preventDefault();
+            var formData = new FormData($('#userProfileForm')[0]);
+            
+            $(".loader").fadeIn('fast');
+            $.ajax({
+                type: 'post',
+                url: "/users/profile/update",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $(".loader").fadeOut('slow');
+
+                    $('#editUserDataModal').modal('hide');
+                    $('#update_success_msg').html(`
+                    <div class="alert alert-success fade show" role="alert">
+                        <i class="bi bi-check-circle me-1"></i>
+                        ${response.message}
+                    </div>
+                    `).stop(true, true).fadeIn();
+
+                    setTimeout(function() {
+                        $('#update_success_msg').fadeOut('slow');
+
+                    }, 5000);
+
+                    setTimeout(function() {
+                        location.reload();
+                    }, 2000);
+                    // location.reload();
+                },
+                error: function(xhr, status, error) {
+
+                    $(".loader").fadeOut("slow");
+
+                    var errorMessage = JSON.parse(xhr.responseText);
+                    var validationErrors = errorMessage.errors;
+                    $.each(validationErrors, function(key, value) {
+                        var html = '<p>' + value + '</p>';
+                        $('#' + key + '_error_up').html(html);
+                    });
+                }
+            });
         });
     });
 </script>
