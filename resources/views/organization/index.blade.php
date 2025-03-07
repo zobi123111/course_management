@@ -269,7 +269,6 @@
 <script>
 $(document).ready(function() {
 
-    // $("#orgUnitTable").DataTable();
 
     $('#orgUnitTable').DataTable({
         processing: true,
@@ -279,7 +278,7 @@ $(document).ready(function() {
             type: "GET",
         },
         columns: [
-            { data: 'org_unit_name', name: 'org_unit_name' },
+            { data: 'org_unit_name', name: 'org_unit_name', class: 'orgUnitName' },
             { data: 'description', name: 'description' },
             { data: 'status', name: 'status' },
             { data: 'users_count', name: 'users_count' },
@@ -318,7 +317,7 @@ $(document).ready(function() {
         });
 
     })
-    $('#orgUnitTable').on('click', '.edit-orgunit-icon', function() {
+    $(document).on('click', '.edit-orgunit-icon', function() {
         $('.error_e').html('');
         $("#editOrgUnit")[0].reset();
         var orgUnitId = $(this).data('orgunit-id');
@@ -425,7 +424,7 @@ $(document).ready(function() {
         })
     })
 
-    $('.delete-icon').click(function(e) {
+    $(document).on('click', '.delete-icon', function(e) {
         e.preventDefault();
         $('#deleteOrgUnitModal').modal('show');
         var orgUnitId = $(this).data('orgunit-id');

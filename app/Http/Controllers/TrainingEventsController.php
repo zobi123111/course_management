@@ -18,7 +18,9 @@ class TrainingEventsController extends Controller
         if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) {
             $course =  Courses::all();            
             $group =  Group::all();            
-            $instructor =  User::where('role', 2)->get();            
+            $instructor =  User::whereHas('roles', function ($query) {
+                $query->where('role_name', 'like', '%Instructor%');
+            })->with('roles')->get();          
             $trainingEvents = TrainingEvents::with(['course:id,course_name', 'group:id,name', 'instructor:id,fname,lname'])->get();
             // dd($trainingEvents);
         } elseif (checkAllowedModule('training', 'training.index')->isNotEmpty() && empty($currentUser->is_admin)) {
