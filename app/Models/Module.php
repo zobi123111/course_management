@@ -5,12 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Role extends Model
+class Module extends Model
 {
     use HasFactory;
 
-    // protected $fillable = ['role_name', 'status'];
-    protected $fillable = ['role_name'];
+    protected $fillable = ['name', 'route_name', 'page_id'];
+
+    public function page()
+    {
+        return $this->belongsTo(Page::class);
+    }
 
     public function rolePermissions()
     {

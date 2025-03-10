@@ -11,14 +11,14 @@
 
     <main id="main" class="main">
         <div id="app">
-                    <main class="col table-design">
-                        <div class="pagetitle">
-                            <h1>@yield('sub-title')</h1>
-                        </div><!-- End Page Title -->
-                        <!--begin::Main-->
-                        @yield('content')
-                        <!--end::Main-->
-                    </main>
+            <main class="col table-design">
+                <div class="pagetitle">
+                    <h1>@yield('sub-title')</h1>
+                </div><!-- End Page Title -->
+                <!--begin::Main-->
+                @yield('content')
+                <!--end::Main-->
+            </main>
         </div>
     </main>
 

@@ -4,7 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\RolePermissionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,8 +20,6 @@ use App\Http\Controllers\CourseController;
 |
 */
 
-
-
 // Login Route 
 Route::match(['get', 'post'], '/', [LoginController::class, 'index']);
 Route::match(['get', 'post'], '/login', [LoginController::class, 'login'])->name('login');
@@ -28,18 +29,73 @@ Route::post('/forgot-password', [LoginController::class, 'forgotPassword'])->nam
 Route::get('/reset/password/{token}', [LoginController::class, 'resetPassword']);
 Route::post('/reset/password', [LoginController::class, 'submitResetPasswordForm'])->name('submit.reset.password');
 
-// Dashboard Route
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-//Users Route
-Route::get('/users', [UserController::class, 'users'])->name('users.index');
-Route::post('/save_user', [UserController::class, 'save_user'])->name('save_user.index');
-Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.get');
-Route::post('/users/update', [UserController::class, 'update'])->name('user.update');
-Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
+// Route::group(['middleware' => ['auth']], function () {
 
-// Courses 
+Route::middleware(['auth', 'role.permission'])->group(function () {
+    // Dashboard Route
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    //Users Route
+    Route::get('/users', [UserController::class, 'users'])->name('users.index');
+    Route::post('/users/save', [UserController::class, 'save_user'])->name('user.index');
+    Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.get');
+    Route::post('/users/update', [UserController::class, 'update'])->name('user.update');
+    Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
+    
+    //Organization Unit
+    Route::get('/organization', [OrganizationController::class, 'index'])->name('orgunit.index');
+    Route::post('/orgunit/save', [OrganizationController::class, 'saveOrgUnit'])->name('orgunit.store');
+    Route::get('/orgunit/edit', [OrganizationController::class, 'getOrgUnit'])->name('orgunit.edit');
+    Route::post('/orgunit/update', [OrganizationController::class, 'updateOrgUnit'])->name('orgunit.update');
+    Route::post('/orgunit/delete', [OrganizationController::class, 'deleteOrgUnit'])->name('orgunit.delete');
+    
+    // Courses 
+    Route::get('/courses', [CourseController::class, 'index'])->name('course.index');
+    Route::post('/course/create', [CourseController::class, 'createCourse'])->name('course.store');
+    Route::get('/course/edit', [CourseController::class, 'getCourse'])->name('course.edit');
+    Route::post('/course/update', [CourseController::class, 'updateCourse'])->name('course.update');
+    Route::post('/course/delete', [CourseController::class, 'deleteCourse'])->name('course.delete');
+    Route::get('/course/show/{course_id}', [CourseController::class, 'showCourse'])->name('course.show');
 
-Route::get('/courses', [CourseController::class, 'index'])->name('course.index');
-Route::get('/create/course', [CourseController::class, 'create_course'])->name('create_course.index');
-Route::post('/store/course', [CourseController::class, 'store_course'])->name('store_course.index');
+    Route::post('/lesson/create', [CourseController::class, 'showLesson'])->name('lesson.store');
+
+    //Roles Route
+    // Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
+    // Route::post('/role/create', [RoleController::class, 'createRole'])->name('role.store');
+    // Route::post('/role/edit', [RoleController::class, 'getRoleById'])->name('role.get');
+    // Route::post('/users/update', [RoleController::class, 'update'])->name('user.update');
+    // Route::post('/users/delete', [RoleController::class, 'destroy'])->name('user.destroy');
+
+    //roles 
+    Route::resource('roles', RolePermissionController::class);
+
+});
+
+
+
+Route::get('/clear-cache', function() {
+    Artisan::call('optimize:clear');
+    return 'Application cache has been cleared';
+});
+
+Route::get('/migrate', function() {
+    // Run migrations
+    Artisan::call('migrate', ['--force' => true]); // '--force' to bypass confirmation
+
+    return 'Migrations have been executed successfully.';
+});
+
+Route::get('/user_seeder', function() {
+    // Specify the seeder class you want to run
+    Artisan::call('db:seed', ['--class' => 'UserSeeder', '--force' => true]); // '--force' for production
+
+    return 'UserSeeder has been executed successfully.';
+});
+
+Route::get('/role_Seeder', function() {
+    // Specify the seeder class you want to run
+    Artisan::call('db:seed', ['--class' => 'RoleSeeder', '--force' => true]); // '--force' for production
+
+    return 'RoleSeeder has been executed successfully.';
+});
