@@ -33,7 +33,6 @@ class UserController extends Controller
     public function getData(Request $request)
     {
         $ou_id = auth()->user()->ou_id;
-    
         $query = User::query()
             ->leftJoin('roles', 'users.role', '=', 'roles.id')
             ->leftJoin('organization_units', 'users.ou_id', '=', 'organization_units.id')
@@ -89,9 +88,11 @@ class UserController extends Controller
         // **Check Permissions Only Once**
         $canEdit = checkAllowedModule('users', 'user.get')->isNotEmpty();
         $canDelete = checkAllowedModule('users', 'user.destroy')->isNotEmpty();
+        $canView = checkAllowedModule('users', 'user.show')->isNotEmpty();
+        // dd($canView);
     
         // **Format Data for DataTable**
-        $data = $users->map(function ($user) use ($canEdit, $canDelete) {
+        $data = $users->map(function ($user) use ($canEdit, $canDelete, $canView) {
             $editBtn = $canEdit 
                 ? '<i class="fa fa-edit edit-user-icon text-primary me-2" style="font-size:18px; cursor: pointer;" data-user-id="' . encode_id($user->id) . '"></i>' 
                 : '';
@@ -99,6 +100,10 @@ class UserController extends Controller
             $deleteBtn = $canDelete
                 ? '<i class="fa-solid fa-trash delete-icon text-danger" style="font-size:18px; cursor: pointer;" data-user-id="' . encode_id($user->id) . '"></i>' 
                 : '';
+                
+                $viewBtn = $canView
+                ? '<a href="' . route("user.show", ["user_id" => encode_id($user->id)]) . '" class="view-icon" title="View User" style="font-size:18px; cursor: pointer;"><i class="fa fa-eye text-danger me-2"></i></a>': '';
+            
     
             return [
                 'id' => encode_id($user->id),
@@ -109,7 +114,7 @@ class UserController extends Controller
                 'organization' => $user->organization ?? '--',
                 'position' => $user->position,
                 'status' => $user->status == 1 ? 'Active' : 'Inactive',
-                'action' => $editBtn . ' ' . $deleteBtn, // **Final action buttons included here**
+                'action' => $viewBtn . ' ' . $editBtn . ' ' . $deleteBtn, // **Final action buttons included here**
             ];  
         });
     
@@ -272,7 +277,8 @@ class UserController extends Controller
         $validated = $request->validate([
             'firstname' => 'required',
             'lastname' => 'required',
-            'email' => 'required|email|max:255|unique:users,email',
+            // 'email' => 'required|email|max:255|unique:users,email',
+            'email' => 'required|email|max:255|unique:users,email,NULL,id,deleted_at,NULL',
             'file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:25600',
             'password' => 'required|min:6|confirmed',
             'status' => 'required',
@@ -341,7 +347,12 @@ class UserController extends Controller
     
 
         if ($request->hasFile('image')) {
-            $filePath = $request->file('image')->store('users', 'public');
+            $uploadedFile = $request->file('image');
+            $originalName = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME); // Get filename without extension
+            $extension = $uploadedFile->getClientOriginalExtension(); // Get file extension
+            $filename = $originalName . '_' . time() . '.' . $extension; // Append timestamp to avoid overwriting
+            
+            $filePath = $uploadedFile->storeAs('users', $filename, 'public'); // Save file with the modified name
         }
 
         if ($request->hasFile('licence_file')) {
@@ -430,13 +441,22 @@ class UserController extends Controller
 
             // Handle Image Upload
             if ($request->hasFile('image')) {
+                // Delete the existing image if present
                 if ($userToUpdate->image) {
                     Storage::disk('public')->delete($userToUpdate->image);
                 }
 
-                $filePath = $request->file('image')->store('users', 'public');
+                $uploadedFile = $request->file('image');
+                $originalName = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $extension = $uploadedFile->getClientOriginalExtension();
+                
+                // Append timestamp to avoid overwriting
+                $filename = $originalName . '_' . time() . '.' . $extension;
+
+                // Save file with the modified name
+                $filePath = $uploadedFile->storeAs('users', $filename, 'public');
             } else {
-                $filePath = $userToUpdate->image;
+                $filePath = $userToUpdate->image; // Retain old file if no new upload
             }
 
             // Handle Licence
@@ -561,6 +581,59 @@ class UserController extends Controller
             return redirect()->route('user.index')->with('message', 'User deleted successfully');
         }
     }
+
+    public function showUser(Request $request, $user_id)
+    { 
+        $user = User::with('roles', 'organization')->find(decode_id($user_id));
+    
+        if (!$user) {
+            return redirect()->back()->with('error', 'User not found.');
+        }
+    
+        // Fetch extra role names directly in one line
+        $extraRoles = Role::whereIn('id', json_decode($user->extra_roles ?? '[]'))->pluck('role_name')->toArray();
+    // dd($user);
+        return view('users.show', compact('user', 'extraRoles'));
+    }
+
+    public function docsVerify(Request $request)
+    {
+        // Decode the encoded userId
+        $decodedUserId = decode_id($request->userId);
+    
+        // Validate the incoming request
+        $request->validate([
+            'userId' => [
+                'required',
+                function ($attribute, $value, $fail) use ($decodedUserId) {
+                    // Check if the decoded userId exists in the users table
+                    if (!User::where('id', $decodedUserId)->exists()) {
+                        $fail('The selected user id is invalid.');
+                    }
+                },
+            ],
+            'documentType' => 'required|in:passport,licence',
+            'verified' => 'required|boolean',
+        ]);
+    
+        // Find the user using the decoded userId
+        $user = User::find($decodedUserId);
+        if (!$user) {
+            return response()->json(['error' => 'User not found.'], 404);
+        }
+    
+        // Determine which column to update
+        $column = $request->documentType . '_verified'; // Either 'passport_verified' or 'licence_verified'
+    
+        // Update the user record
+        $user->update([$column => $request->verified]);
+    
+        return response()->json(['success' => 'Verification status updated successfully.']);
+    }
+    
+    
+
+
 
     public function switchRole(Request $request)
     {

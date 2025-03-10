@@ -50,10 +50,11 @@
     <div id="update_success_msg"></div>
     <div class="card pt-4">
         <div class="card-body">
+            <div class="table-responsive">
     <table class="table table-hover" id="user_table">
         <thead>
             <tr>
-                <th scope="col">Image</th>
+                <th scope="col">Profile Picture</th>
                 <th scope="col">First Name</th>
                 <th scope="col">Last Name</th>
                 <th scope="col">Email</th>
@@ -102,6 +103,7 @@
         </tbody> --}}
         <tbody></tbody>
     </table>
+    </div>
     </div></div>
 </div>
 
@@ -133,7 +135,7 @@
                             <div id="email_error" class="text-danger error_e"></div>
                         </div>
                         <div class="col-md-6">
-                            <label for="image" class="form-label">Image<span class="text-danger"></span></label>
+                            <label for="image" class="form-label">Profile Picture<span class="text-danger"></span></label>
                             <input type="file" name="image" class="form-control" accept="image/*">
                             <div id="image_error" class="text-danger error_e"></div>
                         </div>
@@ -306,7 +308,7 @@
                             <div id="password_confirmation_error_up" class="text-danger error_e"></div>
                         </div>
                         <div class="col-md-6">
-                            <label for="lastname" class="form-label">Image<span class="text-danger"></span></label>
+                            <label for="lastname" class="form-label">Profile Picture<span class="text-danger"></span></label>
                             <input type="file" name="image" class="form-control" accept="image/*">
                             <div id="image_error" class="text-danger error_e"></div>
                         </div>
@@ -334,7 +336,7 @@
                         </div>    
                         <!-- Update Password Checkbox -->
                         <div class="col-md-6">
-                            <label for="edit_update_password_checkbox" class="form-label">Change on next logon</label>
+                            <label for="edit_update_password_checkbox" class="form-label">Password Change on next logon</label>
                             <input type="checkbox" name="edit_update_password_checkbox" id="edit_update_password_checkbox">
                             <input type="hidden" name="edit_update_password" id="edit_update_password" value="0">
                         </div>

@@ -162,23 +162,36 @@
                             @if ($user->licence_required == 1)
                             
                                 <div class="col-sm-6">
-                                    <label for="licence_checkbox" class="form-label"><strong>Licence <span class="text-danger">*</span> </strong></label>
-                                    <input type="text" name="licence" id="licence" value="{{ $user->licence ? $user->licence : ''}}" placeholder="Enter Licence Number" class="form-control">
+                                    <label for="licence_checkbox" class="form-label">
+                                        <strong>Licence <span class="text-danger">*</span></strong>
+                                        @if ($user->licence_verified)
+                                            <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
+                                        @endif
+                                    </label>
+                                    <input type="text" name="licence" id="licence" value="{{ $user->licence ? $user->licence : ''}}" placeholder="Enter Licence Number" class="form-control" {{ $user->licence ? 'disabled' : '' }}>
                                     <div id="licence_error_up" class="text-danger error_e"></div>
-                                    <label for="licence_" class="form-label mt-3"><strong>Expiry Date <span class="text-danger">*</span> </strong></label>
-                                    <label for="non_expiring_licence"><strong>Non-Expiring</strong></label>
-                                    <input type="checkbox" name="non_expiring_licence" id="non_expiring_licence" value='1' class="ms-2"  {{ ($user->licence_non_expiring==1) ? 'checked' : '' }}>
-                                    <input type="date" name="licence_expiry_date" id="licence_expiry_date" value="{{ $user->passport_expiry_date ? $user->licence_expiry_date : ''}}" class="form-control mt-3">
+                                    <label for="licence_expiry_date" class="form-label mt-3"><strong>Expiry Date <span class="text-danger">*</span></strong></label>
+                                    <input type="date" name="licence_expiry_date" id="licence_expiry_date" value="{{ $user->licence_expiry_date ?? '' }}" class="form-control mt-3" {{ $user->licence_expiry_date ? 'disabled' : '' }}>
+
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="non_expiring_licence" name="non_expiring_licence" value="1" {{ $user->licence_non_expiring ? 'checked disabled' : '' }}>
+                                        <label class="form-check-label" for="non_expiring_licence"><strong>Non-Expiring Licence</strong></label>
+                                    </div>
                                     <div id="licence_expiry_date_error_up" class="text-danger error_e"></div>
-                                    <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
+                                    <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png" {{ $user->licence_file ? 'disabled' : '' }}>
                                     <div id="licence_file_error_up" class="text-danger error_e"></div>
                                     <input type="hidden" name="old_licence_file" value="{{ $user->licence_file }}">
 
                                     @if ($user->licence_file)
-                                        <div class="mt-3 col-md-4">
-                                            <button type="button" onclick="window.open('{{ asset('storage/' . $user->licence_file) }}', '_blank')" class="btn btn-info">View Current Licence File</button>
+                                        <div class="mt-3">
+                                            <a href="{{ asset('storage/' . $user->licence_file) }}" target="_blank" 
+                                                class="btn btn-outline-primary btn-sm d-flex align-items-center" 
+                                                style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
+                                                <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View Licence
+                                            </a>
                                         </div>
                                     @endif
+
 
                                 </div>
                             @endif
@@ -186,23 +199,42 @@
                             <!-- Passport -->
                             @if ($user->passport_required == 1)
                                 <div class="form-group col-sm-6">
-                                    <label for="passport_checkbox" class="form-label"><strong>Passport <span class="text-danger">*</span> </strong></label>
-                                    <input type="text" name="passport" id="passport" class="form-control" value="{{ $user->passport ? $user->passport : ''}}" placeholder="Enter Passport Number">
+                                    <label for="passport_checkbox" class="form-label">
+                                        <strong>Passport <span class="text-danger">*</span> </strong>
+                                        @if($user->passport_verified)
+                                            <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
+                                        @endif
+                                    </label>
+                                    <input type="text" name="passport" id="passport" class="form-control" 
+                                        value="{{ $user->passport ? $user->passport : ''}}" placeholder="Enter Passport Number" {{ $user->passport ? 'disabled' : '' }}>
                                     <div id="passport_error_up" class="text-danger error_e"></div>
-                                    <label for="licence_" class="form-label mt-3"><strong>Expiry Date <span class="text-danger">*</span> </strong></label>
-                                    <input type="date" name="passport_expiry_date" id="passport_expiry_date" value="{{ $user->passport_expiry_date ? $user->passport_expiry_date : ''}}" class="form-control mt-3">
+
+                                    <label for="licence_" class="form-label mt-3">
+                                        <strong>Expiry Date <span class="text-danger">*</span> </strong>
+                                    </label>
+                                    <input type="date" name="passport_expiry_date" id="passport_expiry_date" 
+                                        value="{{ $user->passport_expiry_date ? $user->passport_expiry_date : ''}}" 
+                                        class="form-control mt-3" {{ $user->passport_expiry_date ? 'disabled' : '' }}>
                                     <div id="passport_expiry_date_error_up" class="text-danger error_e"></div>
-                                    <input type="file" name="passport_file" id="passport_file" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
+
+                                    <input type="file" name="passport_file" id="passport_file" class="form-control mt-3" 
+                                        accept=".pdf,.jpg,.jpeg,.png" {{ $user->passport_file ? 'disabled' : '' }}>
                                     <div id="passport_file_error_up" class="text-danger error_e"></div>
+
                                     <input type="hidden" name="old_passport_file" value="{{ $user->passport_file }}">
 
                                     @if ($user->passport_file)
-                                        <div class="mt-3 col-md-4">
-                                            <button type="button" onclick="window.open('{{ asset('storage/' . $user->passport_file) }}', '_blank')" class="btn btn-info">View Current Passport File</button>
+                                        <div class="mt-3">
+                                            <a href="{{ asset('storage/' . $user->passport_file) }}" target="_blank" 
+                                                class="btn btn-outline-primary btn-sm d-flex align-items-center" 
+                                                style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
+                                                <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View Passport
+                                            </a>
                                         </div>
                                     @endif
                                 </div>
                             @endif
+
                             
                         </div>
     
@@ -235,21 +267,28 @@
     //     });
 
     $(document).ready(function () {
-        function toggleExpiryDate() {
-            if ($('#non_expiring_licence').prop('checked')) {
+        function toggleFields() {
+            const isNonExpiringChecked = $('#non_expiring_licence').prop('checked');
+            const isExpiryDateFilled = $('#licence_expiry_date').val().trim() !== '';
+            if (isExpiryDateFilled) {
+                $('#non_expiring_licence').prop('checked', false).parent().hide();
+            } else {
+                $('#non_expiring_licence').parent().show();
+            }
+
+            if (isNonExpiringChecked) {
                 $('#licence_expiry_date').val('').hide().prop('required', false);
             } else {
                 $('#licence_expiry_date').show().prop('required', true);
             }
         }
 
-        // Run on page load in case checkbox is pre-checked
-        toggleExpiryDate();
+        // Initialize the fields on page load
+        toggleFields();
 
-        // Run on change when checkbox is clicked
-        $('#non_expiring_licence').change(function () {
-            toggleExpiryDate();
-        });
+        // Event listeners
+        $('#non_expiring_licence').change(toggleFields);
+        $('#licence_expiry_date').on('input', toggleFields);
 
         $(document).on('click', '#updateForm', function(e) {
             e.preventDefault();
