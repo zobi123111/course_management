@@ -1261,3 +1261,16 @@ h6 {
   display: flex;
   column-gap: 15px;
 }
+
+.sidebar .logo-bottom {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  cursor: pointer;
+}
+
+.course_logo {
+  position: absolute;
+    bottom: 20px;
+}

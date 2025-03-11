@@ -1,11 +1,30 @@
   <!-- ======= Header ======= -->
   <header id="header" class="header fixed-top d-flex align-items-center">
       <div class="d-flex align-items-center justify-content-between">
-          <a href="{{ url('dashboard') }}" class="logo d-flex align-items-center">
-              <!-- <img src="{{ url('assets/img/logo.png') }}" alt=""> -->
-              <span class="d-none d-lg-block">{{env('PROJECT_NAME')}}</span>
-
+      <?php 
+        $org_detail = ou_logo(); 
+        if ($org_detail && $org_detail->org_logo) { 
+        ?>
+            <a href="{{ url('dashboard') }}" class="logo d-flex align-items-center">
+                <img id="org_logo_preview" src="{{ asset('storage/organization_logo/' . $org_detail->org_logo) }}" alt="Organization Logo" style="max-width: 200px; margin-top: 10px;">
+                <span class="d-none d-lg-block">{{ $org_detail->org_unit_name }} </span>  
+            </a>
+        <?php 
+        } else{?>
+          <a href="https://altcruise.co.uk/dashboard" class="logo d-flex align-items-center logo-bottom">
+              <img src="https://altcruise.co.uk/assets/img/logo.png" alt="">
+              <span class="d-none d-lg-block">Management</span>
           </a>
+      <?php   }
+        ?>
+
+
+          <!-- <a href="https://altcruise.co.uk/dashboard" class="logo d-flex align-items-center logo-bottom">
+              <img src="https://altcruise.co.uk/assets/img/logo.png" alt="">
+              <span class="d-none d-lg-block">Courses Management</span>
+          </a> -->
+
+
           <i class="bi bi-list toggle-sidebar-btn"></i>
       </div><!-- End Logo -->
       <nav class="header-nav ms-auto">
@@ -47,7 +66,8 @@
                             </h6>
                           <span> {{ Auth::user()->roles->role_name }}</span><br>
                           @if(auth()->user()->is_owner==0)
-                          <span> {{ auth()->user()->organization->org_unit_name  }}</span>
+                          <span>{{ optional(auth()->user()->organization)->org_unit_name }}</span>
+
                           @endif
                       </li>
                       <li>
@@ -100,8 +120,10 @@
               </li><!-- End Profile Nav -->
 
           </ul>
+    
+       
       </nav><!-- End Icons Navigation -->
-
+  
   </header><!-- End Header -->
 
 

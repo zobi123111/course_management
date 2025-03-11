@@ -99,6 +99,7 @@ class LoginController extends Controller
 
     public function forgotPassword(Request $request)
     {
+       
         $request->validate([
             'email' => 'required|email',
         ]);
@@ -106,17 +107,19 @@ class LoginController extends Controller
         //----------------------------------------------
         //dummy data
         $email = $request->email;
+      
         $recipient = User::where('email', $email)->first();
-
+       
         if ($recipient) {
             $token = Str::random(64);
             DB::table('password_reset_tokens')->updateOrInsert(
                 ['email' => $email],
                 ['token' => $token, 'created_at' => Carbon::now()]
             );
-            //  $resetUrl = '/reset/password/' . $token . '?email=' . urlencode($email);
-            //  dd($resetUrl);
+             $resetUrl = '/reset/password/' . $token . '?email=' . urlencode($email);
+           
             $resetLink = url('/reset/password/' . $token . '?email=' . urlencode($email));
+         
             Mail::send('emailtemplates.password_reset', ['resetLink' => $resetLink, 'user' => $recipient], function ($message) use ($email) {
                 $message->to($email)
                     ->subject('Reset Your Password');

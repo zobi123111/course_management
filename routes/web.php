@@ -47,7 +47,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/users/data', [UserController::class, 'getData'])->name('users.data');
 
     //Server-Side Datatable Routes
-    Route::get('/orgunit/data', [OrganizationController::class, 'getData'])->name('orgunit.data');
+    Route::get('/orgunit/data', [OrganizationController::class, 'getData'])->name('orgunit.data');  
     Route::post('/users/switch_role', [UserController::class, 'switchRole'])->name('user.switch_role');
     Route::get('/documents/data', [DocumentController::class, 'getDocuments'])->name('documents.data');
     Route::get('/folders/list', [FolderController::class, 'getFolders'])->name('folders.list');
@@ -63,7 +63,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     //Users Route
-    Route::get('/users', [UserController::class, 'users'])->name('user.index');
+    Route::get('/users', [UserController::class, 'getData'])->name('user.index');
     // Route::get('/users/profile', [UserController::class, 'profile'])->name('user.profile');
     // Route::post('/users/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update');
     Route::post('/users/save', [UserController::class, 'save_user'])->name('user.store');
