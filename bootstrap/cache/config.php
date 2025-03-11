@@ -1,9 +1,9 @@
 <?php return array (
   'app' => 
   array (
-    'name' => 'Courses Management',
+    'name' => 'AvMS',
     'env' => 'local',
-    'debugg' => true,
+    'debug' => true,
     'url' => 'http://localhost',
     'asset_url' => '/',
     'timezone' => 'UTC',
@@ -241,7 +241,7 @@
         'driver' => 'octane',
       ),
     ),
-    'prefix' => 'courses_management_cache_',
+    'prefix' => 'avms_cache_',
   ),
   'cors' => 
   array (
@@ -340,7 +340,7 @@
       'options' => 
       array (
         'cluster' => 'redis',
-        'prefix' => 'courses_management_database_',
+        'prefix' => 'avms_database_',
       ),
       'default' => 
       array (
@@ -397,6 +397,23 @@
     'links' => 
     array (
       'F:\\course_management\\public\\storage' => 'F:\\course_management\\storage\\app/public',
+    ),
+  ),
+  'hashids' => 
+  array (
+    'default' => 'main',
+    'connections' => 
+    array (
+      'main' => 
+      array (
+        'salt' => 'your-secret-salt',
+        'length' => 8,
+      ),
+      'alternative' => 
+      array (
+        'salt' => 'CM123456',
+        'length' => 8,
+      ),
     ),
   ),
   'hashing' => 
@@ -552,7 +569,7 @@
     'from' => 
     array (
       'address' => 'noreply@code4each.com',
-      'name' => 'Courses Management',
+      'name' => 'AvMS',
     ),
     'markdown' => 
     array (
@@ -675,7 +692,7 @@
       0 => 2,
       1 => 100,
     ),
-    'cookie' => 'courses_management_session',
+    'cookie' => 'avms_session',
     'path' => '/',
     'domain' => NULL,
     'secure' => NULL,
