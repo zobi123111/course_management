@@ -532,9 +532,17 @@ $("#enable_prerequisites").change(function () {
                 <div class="form-group">
                     <label class="form-label">Prerequisite Type</label>
                     <div>
-                        <input type="radio" name="prerequisite_type[${index}]" value="number"> Number
-                        <input type="radio" name="prerequisite_type[${index}]" value="text"> Text
-                        <input type="radio" name="prerequisite_type[${index}]" value="file"> File
+                      <label for="prerequisite_type_number_${index}">
+                            <input type="radio" id="prerequisite_type_number_${index}" name="prerequisite_type[${index}]" value="number"> Number
+                        </label>
+
+                        <label for="prerequisite_type_text_${index}">
+                            <input type="radio" id="prerequisite_type_text_${index}" name="prerequisite_type[${index}]" value="text"> Text
+                        </label>
+
+                        <label for="prerequisite_type_file_${index}">
+                            <input type="radio" id="prerequisite_type_file_${index}" name="prerequisite_type[${index}]" value="file"> File
+                        </label>
                     </div>
                 </div>
 
