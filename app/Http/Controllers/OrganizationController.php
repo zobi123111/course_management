@@ -75,7 +75,7 @@ class OrganizationController extends Controller
                 'org_unit_name' => $unit->org_unit_name,
                 'description' => $unit->description,
                 'status' => $unit->status == 1 ? 'Active' : 'Inactive',
-                'users_count' => $unit->users_count,
+                'users_count' =>  ($unit->users_count==0)? $unit->users_count: '<a href="#" class="get_org_users" data-ou-id="' . encode_id($unit->id) . '" >'.$unit->users_count.'</a>',
                 'edit' => '<i class="fa fa-edit edit-orgunit-icon" data-orgunit-id="' . encode_id($unit->id) . '" data-user-id="' . encode_id(optional($unit->roleOneUsers)->id) . '"></i>',
                 'delete' => '<i class="fa-solid fa-trash delete-icon" data-orgunit-id="' . encode_id($unit->id) . '" data-user-id="' . encode_id(optional($unit->roleOneUsers)->id) . '"></i>',
             ];
