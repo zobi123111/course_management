@@ -32,18 +32,19 @@ class UserController extends Controller
     // }
 
 
-    public function getData(Request $request)
+public function getData(Request $request)
 {
     $ou_id = auth()->user()->ou_id; 
     $organizationUnits = OrganizationUnits::all();
 
     if (empty($ou_id)) {
         $users = User::all();
-        $roles = Role::all(); // Get all roles
-    } else {
+        $roles = Role::all(); 
+    } else { 
         $users = User::where('ou_id', $ou_id)->get();
-        $roles = Role::where('id', '!=', 1)->get(); // Exclude role with id = 1
+        $roles = Role::where('id', '!=', 1)->get(); 
     }
+   
 
     if ($request->ajax()) {
         $query = User::query()
@@ -59,8 +60,6 @@ class UserController extends Controller
                 'organization_units.org_unit_name as organization',
                 'users.status'
             ]);
-
-
         return DataTables::of($query)
         ->filterColumn('position', function($query, $keyword) {
             $query->where('roles.role_name', 'LIKE', "%{$keyword}%");
