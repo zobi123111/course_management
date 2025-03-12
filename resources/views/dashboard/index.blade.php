@@ -1,9 +1,18 @@
 @section('title', 'Dashboard')
-@if (Auth()->user()->role == 3)
-  @section('sub-title', 'Welcome to Student Dashboard')
-@else
-  @section('sub-title', 'Welcome to Dashboard')
-@endif
+
+@php
+$currentUser = Auth()->user();
+    if (checkAllowedModule('dashboard', 'dashboard')->isNotEmpty() && empty($currentUser->is_admin) && empty($currentUser->is_owner)) {        
+        $subTitle = "Welcome to " . $currentUser->organization->org_unit_name . " Dashboard";
+    } elseif (checkAllowedModule('dashboard', 'dashboard')->isNotEmpty() && $currentUser->is_admin == 1) {                                                                                                                                            
+        $subTitle = "Welcome to " . $currentUser->organization->org_unit_name . " Dashboard";
+    } else {
+        $subTitle = "Welcome to Admin Dashboard"; 
+    }
+@endphp
+
+@section('sub-title', $subTitle)
+
 @extends('layout.app')
 @section('content')
 

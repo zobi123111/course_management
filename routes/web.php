@@ -144,6 +144,9 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/training/edit', [TrainingEventsController::class, 'getTrainingEvent'])->name('training.edit');
     Route::post('/training/update', [TrainingEventsController::class, 'updateTrainingEvent'])->name('training.update');
     Route::post('/training/delete', [TrainingEventsController::class, 'deleteTrainingEvent'])->name('training.delete');
+    Route::get('/training/get_ou_groups_and_instructors/', [TrainingEventsController::class, 'getOrgGroupsAndInstructors'])->name('training.get_ou_groups_and_instructors');
+
+    Route::get('/training/show/{event_id}', [TrainingEventsController::class, 'showTrainingEvent'])->name('training.show');
 
 });
 
