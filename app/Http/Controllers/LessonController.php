@@ -9,6 +9,8 @@ use App\Models\Courses;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+use App\Models\LessonPrerequisite;
+use App\Models\LessonPrerequisiteDetail;
 
 class LessonController extends Controller
 {
@@ -20,7 +22,7 @@ class LessonController extends Controller
     {
 
         // dd($course_id);
-        $course = Courses::with('courseLessons')->findOrFail(decode_id($course_id));
+        $course = Courses::with('courseLessons', 'prerequisites')->findOrFail(decode_id($course_id));
 
         // $course = Courses::findOrFail(decode_id($course_id));
 
@@ -70,7 +72,7 @@ class LessonController extends Controller
 
     public function getLesson(Request $request)
     {
-        $lesson = CourseLesson::findOrFail(decode_id($request->id));
+        $lesson = CourseLesson::with('prerequisites')->findOrFail(decode_id($request->id));
         return response()->json(['lesson'=> $lesson]);
     }
 
@@ -116,8 +118,33 @@ class LessonController extends Controller
             'lesson_title' => $request->edit_lesson_title,
             'description' => $request->edit_description,
             'comment' => $comment,
-            'status' => $request->edit_status
+            'status' => $request->edit_status,
+            'enable_prerequisites' => (int) $request->input('enable_prerequisites', 0),
         ]);
+
+        // Handle Prerequisites
+        if ((int) $request->input('enable_prerequisites', 0)) {
+            $lesson->prerequisites()->delete(); 
+
+            if ($request->has('prerequisite_details')) {
+                foreach ($request->prerequisite_details as $index => $detail) {
+                    if (!empty($detail)) {
+                        LessonPrerequisite::create([
+                            'lesson_id' => $lesson->id,
+                            'course_id' => $lesson->course_id,
+                            'prerequisite_detail' => $detail,
+                            'prerequisite_type' => $request->prerequisite_type[$index] ?? 'text',
+                        ]);
+                    }
+                }
+            }
+        } else {
+            $lesson->prerequisites()->delete();
+            LessonPrerequisiteDetail::where('lesson_id', $lesson->id)
+                ->where('created_by', auth()->id())
+                ->where('course_id', $lesson->course_id)
+                ->delete();
+        }
 
         Session::flash('message','Lesson updated successfully.');
         return response()->json(['success'=> 'Lesson updated successfully.']);
@@ -249,5 +276,46 @@ class LessonController extends Controller
     public function destroy(SubLesson $sub_lesson)
     {
         //
+    }
+
+    
+    public function prerequisitesStore(Request $request, Courses $course, CourseLesson $lesson) {
+
+        $request->validate([
+            'prerequisite_details.*' => 'nullable',
+        ]);
+        LessonPrerequisiteDetail::where('course_id', $course->id)
+        ->where('lesson_id', $lesson->id)
+        ->where('created_by', auth()->id())
+        ->delete();
+        foreach ($lesson->prerequisites as $index => $prerequisite) {
+            $detail = $request->input("prerequisite_details.$index");
+    
+            if ($prerequisite->prerequisite_type == 'file' && $request->hasFile("prerequisite_details.$index")) {
+                $file = $request->file("prerequisite_details.$index");
+                $path = $file->store('prerequisites', 'public');
+    
+                LessonPrerequisiteDetail::create([
+                    'course_id' => $course->id,
+                    'lesson_id' => $lesson->id,
+                    'prerequisite_type' => $prerequisite->prerequisite_type,
+                    'prerequisite_detail' => null,
+                    'file_path' => $path,
+                    'created_by' => auth()->id(),
+                ]);
+            } else {
+                // dd("uu");
+                LessonPrerequisiteDetail::create([
+                    'course_id' => $course->id,
+                    'prerequisite_type' => $prerequisite->prerequisite_type,
+                    'prerequisite_detail' => $detail,
+                    'file_path' => null,
+                    'lesson_id' => $lesson->id,
+                    'created_by' => auth()->id(),
+                ]);
+            }
+        }
+    
+        return back()->with('success', 'Prerequisites saved successfully.');
     }
 }

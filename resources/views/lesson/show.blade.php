@@ -172,7 +172,74 @@
         </div>
     </div>
 </div>
+@if ($lesson->prerequisites->count() > 0)
+    <div class="card pt-4">
+        <div class="card-body">
+            <h3>Prerequisites</h3>
+            <form action="{{ route('lesson.prerequisites.store', ['course' => $lesson->course_id, 'lesson' => $lesson->id]) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="list-group">
+                    <div class="container-fluid">
+                        <div class="row">
+                            @foreach ($lesson->prerequisites as $index => $prerequisite)
+                                @php
+                                    // Get saved prerequisite for the logged-in user
+                                    $savedPrerequisite = $lesson->prerequisiteDetails()
+                                        ->where('created_by', auth()->id())
+                                        ->where('prerequisite_type', $prerequisite->prerequisite_type)
+                                        ->first();
+                                @endphp
 
+                                <div class="col-md-6 mb-3">
+                                    <div class="card shadow-sm">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Prerequisite {{ $index + 1 }}</h5>
+
+                                            <label for="prerequisite_{{ $index }}">
+                                                <strong>{{ $prerequisite->prerequisite_detail }}</strong>
+                                            </label>
+
+                                            @if ($prerequisite->prerequisite_type == 'number')
+                                                <input type="number" 
+                                                       class="form-control" 
+                                                       name="prerequisite_details[{{ $index }}]" 
+                                                       value="{{ old('prerequisite_details.' . $index, $savedPrerequisite->prerequisite_detail ?? '') }}"
+                                                       placeholder="Enter number">
+                                            @elseif ($prerequisite->prerequisite_type == 'text')
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       name="prerequisite_details[{{ $index }}]" 
+                                                       value="{{ old('prerequisite_details.' . $index, $savedPrerequisite->prerequisite_detail ?? '') }}"
+                                                       placeholder="Enter text">
+                                            @elseif ($prerequisite->prerequisite_type == 'file')
+                                                <input type="file" 
+                                                       class="form-control" 
+                                                       name="prerequisite_details[{{ $index }}]">
+                                                
+                                                @if (!empty($savedPrerequisite->file_path))
+                                                    <p class="mt-2">
+                                                        <strong>Existing File:</strong> 
+                                                        <a href="{{ asset('storage/' . $savedPrerequisite->file_path) }}" 
+                                                           target="_blank" 
+                                                           class="btn btn-sm btn-outline-primary">
+                                                            View File
+                                                        </a>
+                                                    </p>
+                                                @endif
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div> <!-- end row -->
+                    </div> <!-- end container-fluid -->
+                </div> <!-- end list-group -->
+
+                <button type="submit" class="btn btn-primary mt-3">Save Prerequisites</button>
+            </form>
+        </div> <!-- end card-body -->
+    </div> <!-- end card -->
+@endif
 
 <!-- End List group Advanced Content -->
 

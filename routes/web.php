@@ -14,7 +14,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\TrainingEventsController;
-
+use App\Http\Controllers\PrerequisiteController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -55,6 +55,13 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/folders/subfolders-list', [FolderController::class, 'getSubfolders'])->name('folders.subfolders.list');
     Route::get('/subfolder-documents', [FolderController::class, 'getSubfolderDocuments'])->name('subfolder.documents');
 
+    Route::post('/prerequisites/save', [PrerequisiteController::class, 'store'])->name('prerequisites.save');
+
+    Route::post('/courses/{course}/prerequisites/store', [PrerequisiteController::class, 'store'])
+    ->name('course.prerequisites.store');
+    Route::post('/lessons/{course}/{lesson}/prerequisites/store', [LessonController::class, 'prerequisitesStore'])
+    ->name('lesson.prerequisites.store');
+
 
 });
 
@@ -70,6 +77,8 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.get');
     Route::post('/users/update', [UserController::class, 'update'])->name('user.update');
     Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
+    Route::get('/users/show/{user_id}', [UserController::class, 'showUser'])->name('user.show');
+    Route::post('/users/verify', [UserController::class, 'docsVerify'])->name('user.verify');
 
 
 
@@ -142,6 +151,9 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/training/edit', [TrainingEventsController::class, 'getTrainingEvent'])->name('training.edit');
     Route::post('/training/update', [TrainingEventsController::class, 'updateTrainingEvent'])->name('training.update');
     Route::post('/training/delete', [TrainingEventsController::class, 'deleteTrainingEvent'])->name('training.delete');
+    Route::get('/training/get_ou_groups_and_instructors/', [TrainingEventsController::class, 'getOrgGroupsAndInstructors'])->name('training.get_ou_groups_and_instructors');
+
+    Route::get('/training/show/{event_id}', [TrainingEventsController::class, 'showTrainingEvent'])->name('training.show');
 
 });
 
