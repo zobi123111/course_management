@@ -216,6 +216,74 @@
     </div>
 </div>
 
+@if ($course->prerequisites->count() > 0)
+    <div class="card pt-4">
+        <div class="card-body">
+            <h3>Prerequisites</h3>
+            <form action="{{ route('course.prerequisites.store', $course->id) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="list-group">
+                    <div class="container-fluid">
+                        <div class="row">
+                            @foreach ($course->prerequisites as $index => $prerequisite)
+                                @php
+                                    // Get saved prerequisite for the logged-in user
+                                    $savedPrerequisite = $course->prerequisiteDetails()
+                                        ->where('created_by', auth()->id())
+                                        ->where('prerequisite_type', $prerequisite->prerequisite_type)
+                                        ->first();
+                                @endphp
+
+                                <div class="col-md-6 mb-3">
+                                    <div class="card shadow-sm">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Prerequisite {{ $index + 1 }}</h5>
+
+                                            <label for="prerequisite_{{ $index }}">
+                                                <strong>{{ $prerequisite->prerequisite_detail }}</strong>
+                                            </label>
+
+                                            @if ($prerequisite->prerequisite_type == 'number')
+                                                <input type="number" 
+                                                       class="form-control" 
+                                                       name="prerequisite_details[{{ $index }}]" 
+                                                       value="{{ old('prerequisite_details.' . $index, $savedPrerequisite->prerequisite_detail ?? '') }}"
+                                                       placeholder="Enter number">
+                                            @elseif ($prerequisite->prerequisite_type == 'text')
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       name="prerequisite_details[{{ $index }}]" 
+                                                       value="{{ old('prerequisite_details.' . $index, $savedPrerequisite->prerequisite_detail ?? '') }}"
+                                                       placeholder="Enter text">
+                                            @elseif ($prerequisite->prerequisite_type == 'file')
+                                                <input type="file" 
+                                                       class="form-control" 
+                                                       name="prerequisite_details[{{ $index }}]">
+                                                
+                                                @if (!empty($savedPrerequisite->file_path))
+                                                    <p class="mt-2">
+                                                        <strong>Existing File:</strong> 
+                                                        <a href="{{ asset('storage/' . $savedPrerequisite->file_path) }}" 
+                                                           target="_blank" 
+                                                           class="btn btn-sm btn-outline-primary">
+                                                            View File
+                                                        </a>
+                                                    </p>
+                                                @endif
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div> <!-- end row -->
+                    </div> <!-- end container-fluid -->
+                </div> <!-- end list-group -->
+
+                <button type="submit" class="btn btn-primary mt-3">Save Prerequisites</button>
+            </form>
+        </div> <!-- end card-body -->
+    </div> <!-- end card -->
+@endif
 
 <!-- Create Lesson-->
 <div class="modal fade" id="createLessonModal" tabindex="-1" role="dialog" aria-labelledby="lessonModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -337,6 +405,19 @@
                         </select>
                         <div id="status_error_up" class="text-danger error_e"></div>
                     </div>
+                    <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" id="enable_prerequisites"> Enable Prerequisites
+                    </label>
+                </div>
+                <div id="prerequisites_container" style="display: none;">
+                    <div id="prerequisite_items">
+                        <div class="prerequisite-item">
+                        </div>
+                    </div>
+                    <button type="button" id="addPrerequisite" class="btn btn-primary mt-2">Add More</button>
+
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="updateLesson" class="btn btn-primary sbt_btn">Update</button>
@@ -443,6 +524,14 @@ $(document).ready(function() {
                 $('input[name="lesson_id"]').val(response.lesson.id);
                 $('#edit_description').val(response.lesson.description);
                 $('#edit_status').val(response.lesson.status);
+
+                if (response.lesson.enable_prerequisites) {
+                    $('#enable_prerequisites').prop('checked', true);
+                    $('#prerequisites_container').show();
+                } else {
+                    $('#enable_prerequisites').prop('checked', false);
+                    $('#prerequisites_container').hide();
+                }
                 
                 if (response.lesson.comment) {
                     $('#edit_comment').val(response.lesson.comment);
@@ -459,6 +548,20 @@ $(document).ready(function() {
                     $('#edit_comment_required').prop('checked', false);
                     $('#edit_comment').prop('required', false);
                 }
+
+                  // Clear old prerequisites
+                $('#prerequisite_items').empty();
+                let prerequisites = response.lesson.prerequisites;
+                    if (prerequisites.length > 0) {
+                        prerequisites.forEach((prerequisite, index) => {
+                            let prerequisiteHtml = generatePrerequisiteHtml(prerequisite, index);
+                            $('#prerequisite_items').append(prerequisiteHtml);
+                        });
+                    } else {
+                        // Show a single empty prerequisite form if there are none
+                        let prerequisiteHtml = generatePrerequisiteHtml({ prerequisite_detail: '', prerequisite_type: 'text' }, 0);
+                        $('#prerequisite_items').append(prerequisiteHtml);
+                    }
 
                 $('#editLessonModal').modal('show');
             },
@@ -481,11 +584,11 @@ $(document).ready(function() {
 
     $('#updateLesson').on('click', function(e){
         e.preventDefault();
-
+        let data = $("#editLesson").serialize() + "&enable_prerequisites=" + ($('#enable_prerequisites').is(':checked') ? 1 : 0);
         $.ajax({
             url: "{{ url('lesson/update') }}",
             type: "POST",
-            data: $("#editLesson").serialize(),
+            data: data,
             success: function(response){
                 $('#editlessonModal').modal('hide');
                 location.reload();
@@ -544,7 +647,78 @@ $(document).ready(function() {
         $('#successMessage').fadeOut('slow');
     }, 2000);
 
+// Toggle prerequisites section
+$("#enable_prerequisites").change(function () {
+        if ($(this).is(":checked")) {
+            $("#prerequisites_container").show();
+        } else {
+            $("#prerequisites_container").hide();
+            // $("#prerequisite_items").empty();
+        }
+    });
+
+    // Add new prerequisite
+    $("#addPrerequisite").click(function () {
+        let index = $(".prerequisite-item").length;
+        let prerequisiteHTML = `
+            <div class="prerequisite-item border p-2 mt-2">
+                <div class="form-group">
+                    <label class="form-label">Prerequisite Detail</label>
+                    <input type="text" class="form-control" name="prerequisite_details[]">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Prerequisite Type</label>
+                    <div>
+                        <input type="radio" name="prerequisite_type[${index}]" value="number"> Number
+                        <input type="radio" name="prerequisite_type[${index}]" value="text"> Text
+                        <input type="radio" name="prerequisite_type[${index}]" value="file"> File
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-danger remove-prerequisite">X</button>
+            </div>
+        `;
+        $("#prerequisite_items").append(prerequisiteHTML);
+    });
+
+    // Remove prerequisite
+    $(document).on("click", ".remove-prerequisite", function () {
+        $(this).closest(".prerequisite-item").remove();
+    });
+
 });
+
+function generatePrerequisiteHtml(prerequisite, index) {
+    return `
+        <div class="prerequisite-item border p-2 mt-2">
+            <div class="form-group">
+                <label class="form-label">Prerequisite Detail</label>
+                <input type="text" class="form-control" name="prerequisite_details[]" value="${prerequisite.prerequisite_detail}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Prerequisite Type</label>
+                <div>
+                   <label for="prerequisite_number_${index}">
+                        <input type="radio" id="prerequisite_number_${index}" name="prerequisite_type[${index}]" value="number" ${prerequisite.prerequisite_type === 'number' ? 'checked' : ''}> Number
+                    </label>
+
+                    <label for="prerequisite_text_${index}">
+                        <input type="radio" id="prerequisite_text_${index}" name="prerequisite_type[${index}]" value="text" ${prerequisite.prerequisite_type === 'text' ? 'checked' : ''}> Text
+                    </label>
+
+                    <label for="prerequisite_file_${index}">
+                        <input type="radio" id="prerequisite_file_${index}" name="prerequisite_type[${index}]" value="file" ${prerequisite.prerequisite_type === 'file' ? 'checked' : ''}> File
+                    </label>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-danger remove-prerequisite">X</button>
+        </div>
+    `;
+}
+
 </script>
 
 @endsection

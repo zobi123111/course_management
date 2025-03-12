@@ -6,7 +6,8 @@ use App\Models\CourseGroup;
 use Illuminate\Http\Request;
 use App\Models\Courses;
 use App\Models\OrganizationUnits;
-use App\Models\CourseLesson;
+use App\Models\CoursePrerequisiteDetail;
+use App\Models\CoursePrerequisite;
 use App\Models\Group;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -179,7 +180,7 @@ class CourseController extends Controller
 
     public function getCourse(Request $request)
     {
-        $course = Courses::with('groups')->findOrFail(decode_id($request->id));
+        $course = Courses::with('groups', 'prerequisites')->findOrFail(decode_id($request->id));
 
         $allGroups = Group::all();
 
@@ -209,6 +210,9 @@ class CourseController extends Controller
             'description' => 'required',
             'status' => 'required',
             'group_ids' => 'required',
+            'enable_prerequisites' => 'nullable|boolean',
+            'prerequisite_details' => 'nullable|array',
+            'prerequisite_type' => 'nullable|array',
             'ou_id' => [
                 function ($attribute, $value, $fail) {
                     if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
@@ -236,11 +240,34 @@ class CourseController extends Controller
             'course_name' => $request->course_name,
             'description' => $request->description,
             'image' => $filePath,
-            'status' => $request->status
+            'status' => $request->status,
+            'enable_prerequisites' => (int) $request->input('enable_prerequisites', 0),
         ]);
 
         if ($request->has('group_ids')) {
             $course->groups()->sync($request->group_ids);
+        }
+
+         // Handle Prerequisites
+         if ((int) $request->input('enable_prerequisites', 0)) {
+            $course->prerequisites()->delete(); // Remove old prerequisites
+
+            if ($request->has('prerequisite_details')) {
+                foreach ($request->prerequisite_details as $index => $detail) {
+                    if (!empty($detail)) {
+                        CoursePrerequisite::create([
+                            'course_id' => $course->id,
+                            'prerequisite_detail' => $detail,
+                            'prerequisite_type' => $request->prerequisite_type[$index] ?? 'text',
+                        ]);
+                    }
+                }
+            }
+        }else{
+            $course->prerequisites()->delete();
+            CoursePrerequisiteDetail::where('course_id', $course->id)
+            ->where('created_by', auth()->id())
+            ->delete();
         }
 
         Session::flash('message','Course updated successfully.');

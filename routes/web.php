@@ -14,7 +14,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\TrainingEventsController;
-
+use App\Http\Controllers\PrerequisiteController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -54,6 +54,13 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/documents/root-list', [FolderController::class, 'getRootFolderDocuments'])->name('documents.root.list');
     Route::get('/folders/subfolders-list', [FolderController::class, 'getSubfolders'])->name('folders.subfolders.list');
     Route::get('/subfolder-documents', [FolderController::class, 'getSubfolderDocuments'])->name('subfolder.documents');
+
+    Route::post('/prerequisites/save', [PrerequisiteController::class, 'store'])->name('prerequisites.save');
+
+    Route::post('/courses/{course}/prerequisites/store', [PrerequisiteController::class, 'store'])
+    ->name('course.prerequisites.store');
+    Route::post('/lessons/{course}/{lesson}/prerequisites/store', [LessonController::class, 'prerequisitesStore'])
+    ->name('lesson.prerequisites.store');
 
 
 });
