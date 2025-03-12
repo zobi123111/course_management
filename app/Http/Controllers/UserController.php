@@ -14,24 +14,25 @@ use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
-    public function users()
-    {
-        $ou_id = auth()->user()->ou_id;
-        $organizationUnits = OrganizationUnits::all();
+    // public function users()
+    // {
+    //     // $ou_id = auth()->user()->ou_id; 
+    //     // $organizationUnits = OrganizationUnits::all();
 
-        if (empty($ou_id)) {
-            $users = User::all();
-            $roles = Role::all(); // Get all roles
-        } else {
-            $users = User::where('ou_id', $ou_id)->get();
-            $roles = Role::where('id', '!=', 1)->get(); // Exclude role with id = 1
-        }
+    //     // if (empty($ou_id)) {
+    //     //     $users = User::all();
+    //     //     $roles = Role::all(); // Get all roles
+    //     // } else {
+    //     //     $users = User::where('ou_id', $ou_id)->get();
+    //     //     $roles = Role::where('id', '!=', 1)->get(); // Exclude role with id = 1
+    //     // }
 
-        return view('users.index', compact('users', 'roles', 'organizationUnits'));
-    }
+    //      return view('users.index');
+    // }
 
     public function getData(Request $request)
     {
+        if (request()->ajax()) {
         $ou_id = auth()->user()->ou_id;
         $query = User::query()
             ->leftJoin('roles', 'users.role', '=', 'roles.id')
@@ -71,15 +72,21 @@ class UserController extends Controller
         }
     
         // **Ordering**
-        $columns = ['users.id', 'users.image', 'users.fname', 'users.lname', 'users.email', 'roles.role_name', 'organization_units.org_unit_name', 'users.status'];
+  // **Ordering**
+        $columns = [
+            'users.id', 'users.image', 'users.fname', 'users.lname', 
+            'users.email', 'roles.role_name', 'organization_units.org_unit_name', 'users.status'
+        ];
+
         $orderColumn = $request->input('order.0.column');
         $orderDirection = $request->input('order.0.dir', 'asc');
-    
+
         if ($orderColumn !== null && isset($columns[$orderColumn])) {
             $query->orderBy($columns[$orderColumn], $orderDirection);
         } else {
             $query->orderBy('users.fname', 'asc'); // Default ordering
         }
+
     
         // **Pagination**
         $totalRecords = $query->count();
@@ -125,6 +132,21 @@ class UserController extends Controller
             'recordsFiltered' => $totalRecords,
             'data' => $data
         ]);
+    }else{
+        $ou_id = auth()->user()->ou_id; 
+        $organizationUnits = OrganizationUnits::all();
+
+        if (empty($ou_id)) {
+            $users = User::all();
+            $roles = Role::all(); // Get all roles
+        } else {
+            $users = User::where('ou_id', $ou_id)->get();
+            $roles = Role::where('id', '!=', 1)->get(); // Exclude role with id = 1
+        }
+
+        return view('users.index', compact('users', 'roles', 'organizationUnits'));
+
+    }
     }
 
     public function profile()
@@ -367,7 +389,7 @@ class UserController extends Controller
         // dd($is_admin);
 
         $store_user = array(
-            "fname" => $request->firstname,
+            "fname" => $request->firstname, 
             "lname" => $request->lastname,
             "email" => $request->email,
             'image' => $filePath ?? null,

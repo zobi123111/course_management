@@ -69,39 +69,9 @@
                 <th scope="col">Action</th>
             </tr>
         </thead>
-        {{-- <tbody>
-            @foreach($users as $val)
-            <tr>
-                @if($val->image)
-                    <td scope="row"><img src="{{ asset('storage/' . $val->image) }}" alt="Course Image"  class="rounded-circle" height="50px" width="50px"></td>
-                @else
-                    <td><p>No Image</p></td>
-                @endif
-                <td scope="row" class="fname">{{ $val->fname }}</td>
-                <td scope="row" class="lname">{{ $val->lname }}</td>
-                <td>{{ $val->email }}</td>
-                @if(auth()->user()->is_owner == 1)
-                <td>{{ $val->organization ? $val->organization->org_unit_name : '--' }}</td>
-                <td>{{ $val->roles ? $val->roles->role_name : '--' }}</td>
-                @endif
-                @if(!empty(auth()->user()->ou_id) && auth()->user()->is_owner == 0)
-                <td>{{ $val->roles ? $val->roles->role_name : '--' }}</td>
-                @endif
-                <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
-                <td>
-                    @if(checkAllowedModule('users','user.get')->isNotEmpty())
-                    <i class="fa fa-edit edit-user-icon" style="font-size:18px; cursor: pointer;"
-                        data-user-id="{{ encode_id($val->id) }}"></i>
-                    @endif    
-                    @if(checkAllowedModule('users','user.destroy')->isNotEmpty())
-                    <i class="fa-solid fa-trash delete-icon" style="font-size:18px; cursor: pointer;"
-                    data-user-id="{{ encode_id($val->id) }}"></i>
-                    @endif 
-                </td>
-            </tr>
-            @endforeach
-        </tbody> --}}
-        <tbody></tbody>
+        <tbody>
+
+        </tbody>
     </table>
     </div>
     </div></div>
@@ -468,48 +438,42 @@
 <script>
     
     $(document).ready(function() {
-        // $('#user_table').DataTable();
+    $('#user_table').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                "url": "{{ route('users.data') }}",
+                "type": "GET",
+                "data": function(d) {
+                    d.extra_param = "value"; // Directly modifying the data object instead of returning a new one
+                }
+            },
+        "columns": [
+            { "data": "image", orderable: true }, // Images should not be sortable
+            { "data": "fname", className: 'fname', orderable: true },
+            { "data": "lname", className: 'lname', orderable: true },
+            { "data": "email", orderable: true },
+            { "data": "organization", orderable: true },
+            { "data": "position", orderable: true },
+            { "data": "status", orderable: true },
+            { "data": "action", orderable: true } // Actions should not be sortable
+        ],
 
-        $('#user_table').DataTable({
-    "processing": true,
-    "serverSide": true,
-    "ajax": {
-        "url": "{{ route('users.data') }}",
-        "type": "GET",
-        "data": function(d) {
-            d.extra_param = "value"; // Directly modifying the data object instead of returning a new one
-        }
-    },
-    "columns": [
-        { "data": "image" },
-        { "data": "fname", className: 'fname' },
-        { "data": "lname", className: 'lname' },
-        { "data": "email" },
-        @if(auth()->user()->is_owner == 1)
-        { "data": "organization" },
-        { "data": "position" },
-        @endif
-        @if(!empty(auth()->user()->ou_id) && auth()->user()->is_owner == 0)
-        { "data": "position" },
-        @endif
-        { "data": "status" },
-        { "data": "action", orderable: false, searchable: false } // Merged action column
-    ],
-    "order": [[1, 'asc']],
-    "columnDefs": [
-        {
-            "targets": 0,
-            "render": function(data) {
-                return data ? `<img src="/storage/${data}" alt="User Image" class="rounded-circle" height="50px" width="50px">` : 'No Image';
-            }
-        },
-        {
-            "targets": -1, // Last column (Actions)
-            "render": function(data) {
-                return data; // No need to check permissions in JS, just display the action buttons from the controller.
-            }
-        }
-    ]
+            "order": [[1, 'asc']],
+            "columnDefs": [
+                {
+                    "targets": 0,
+                    "render": function(data) {
+                        return data ? `<img src="/storage/${data}" alt="User Image" class="rounded-circle" height="50px" width="50px">` : 'No Image';
+                    }
+                },
+                {
+                    "targets": -1, // Last column (Actions)
+                    "render": function(data) {
+                        return data; // No need to check permissions in JS, just display the action buttons from the controller.
+                    }
+                }
+            ]
 });
 
         $('#licence_checkbox').change(function() {
@@ -607,7 +571,7 @@
                         url: '{{ url("/users/save") }}',
                         type: 'POST',
                         data: formData,
-                        processData: false,
+                        processData: false, 
                         contentType: false,
                         success: function(response) {
                             // $('#loader').hide();

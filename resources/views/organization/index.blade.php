@@ -38,7 +38,7 @@
                 <th scope="col">Delete</th>
             </tr>
         </thead>
-        {{-- <tbody>
+        {{-- <tbody> 
             @foreach($organizationUnitsData as $val)
             <tr>
                 <td class="orgUnitName">{{ $val->org_unit_name}}</td>
@@ -96,7 +96,7 @@
 
 <!-- Create Organizational  Unit-->
 <div class="modal fade" id="orgUnitModal" tabindex="-1" role="dialog" aria-labelledby="orgUnitModalLabel"
-    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false" enctype="multipart/form-data">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -141,6 +141,11 @@
                         <div id="email_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
+                            <label for="image" class="form-label">Image</label>
+                            <input type="file" name="organization_logo" class="form-control" accept="image/*">
+                            <div id="organization_logo_error" class="text-danger error_e"></div>           
+                    </div>
+                    <div class="form-group">
                         <label for="password" class="form-label">Password<span class="text-danger"></span></label>
                         <input type="password" name="password" class="form-control">
                         <div id="password_error" class="text-danger error_e"></div>
@@ -151,7 +156,7 @@
                         <input type="password" name="password_confirmation" class="form-control" id="confirmpassword">
                         <div id="password_confirmation_error" class="text-danger error_e"></div>
                     </div>
-                    <div class="modal-footer">
+                    <div class="modal-footer"> 
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
                         <a href="#" type="button" id="submitOrgUnit" class="btn btn-primary sbt_btn">Save </a>
                     </div>
@@ -165,7 +170,7 @@
 
 <!-- Edit Organizational  Unit-->
 <div class="modal fade" id="editOrgUnitModal" tabindex="-1" role="dialog" aria-labelledby="editOrgUnitModalLabel"
-    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false" enctype="multipart/form-data">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -210,6 +215,12 @@
                         <label for="email" class="form-label">Email<span class="text-danger"></span></label>
                         <input type="email" name="edit_email" class="form-control">
                         <div id="edit_email_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                            <label for="image" class="form-label">Image</label>
+                            <input type="file" name="org_logo" class="form-control" accept="image/*">
+                            <div id="org_logo_error_up" class="text-danger error_e"></div>  
+                            <img id="org_logo_preview" src="" alt="Organization Logo" style="max-width: 200px; display: none; margin-top: 10px;">    
                     </div>
                     <div class="create_org_admin" style="display: none;">
                         <div class="form-group">
@@ -296,20 +307,24 @@ $(document).ready(function() {
     $("#submitOrgUnit").on("click", function(e) {
         e.preventDefault();
         $(".loader").fadeIn();
+        var formData = new FormData($('#orgUnit')[0]);
         $.ajax({
-            url: '{{ url("/orgunit/save") }}',
+            url: '{{ url("/orgunit/save") }}', 
             type: 'POST',
-            data: $("#orgUnit").serialize(),
-            success: function(response) {
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) { 
                 $(".loader").fadeOut("slow");
                 $('#orgUnitModal').modal('hide');
                 location.reload();
             },
             error: function(xhr, status, error) {
                 $(".loader").fadeOut("slow");
-                var errorMessage = JSON.parse(xhr.responseText);
+                var errorMessage = JSON.parse(xhr.responseText); 
                 var validationErrors = errorMessage.errors;
                 $.each(validationErrors, function(key, value) {
+                    console.log(key);
                     var msg = '<p>' + value + '<p>';
                     $('#' + key + '_error').html(msg);
                 })
@@ -330,11 +345,19 @@ $(document).ready(function() {
                 userId: userId
             },
             success: function(response) {
+                console.log(response.organizationUnit);
                 if (response.organizationUnit) {
                     $('input[name="org_unit_name"]').val(response.organizationUnit.org_unit_name || '');
                     $('input[name="org_unit_id"]').val(response.organizationUnit.id || '');
                     $('#edit_description').val(response.organizationUnit.description || '');
                     $('#edit_status').val(response.organizationUnit.status || '').trigger('change'); // Useful for select fields
+                    $('#edit_org_logo').val(response.organizationUnit.org_logo || '');
+                    if (response.organizationUnit.org_logo) {
+                        let imagePath = '/storage/organization_logo/' + response.organizationUnit.org_logo; // Adjust the path as per your storage setup
+                        $('#org_logo_preview').attr('src', imagePath).show();
+                    } else {
+                        $('#org_logo_preview').hide(); // Hide if no image is available
+                    }
                 }
                 if (response.user) {
                     $('input[name="edit_firstname"]').val(response.user.fname || '');
@@ -404,10 +427,13 @@ $(document).ready(function() {
     $('#updateOrgUnit').on('click', function(e) {
         e.preventDefault();
         $(".loader").fadeIn();
+        var formData = new FormData($('#editOrgUnit')[0]);
         $.ajax({
             url: "{{ url('orgunit/update') }}",
             type: "POST",
-            data: $("#editOrgUnit").serialize(),
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(response) {
                 $('#editOrgUnitModal').modal('hide');
                 location.reload();

@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\UserCreated;
 use App\Mail\OrgUnitCreated;
 
-class OrganizationController extends Controller
+class OrganizationController extends Controller 
 {
     public function index()
     {
@@ -24,7 +24,7 @@ class OrganizationController extends Controller
         ->whereNull('deleted_at')
         ->get();
         // $organizationUnitsData = OrganizationUnits::with(['roleOneUsers'])
-        // ->withCount(['users as non_role_one_users_count' => function ($query) {
+        // ->withCount(['users as non_role_one_users_count' => function ($query) { 
         //     $query->where('role', '!=', 1);
         // }])
         // ->whereNull('deleted_at')
@@ -92,12 +92,15 @@ class OrganizationController extends Controller
 
     public function saveOrgUnit(Request $request)
     {
+    
         $rules = [
             'org_unit_name' => 'required|unique:organization_units,org_unit_name,NULL,id,deleted_at,NULL',
             'description' => 'required',
             'status' => 'required',
+            'organization_logo' => 'required|mimes:jpeg,png,jpg,gif,svg|max:25600',
+
         ];
-    
+       //  dd($request->organization_logo);
         if ($request->filled('email') || $request->filled('firstname') || $request->filled('lastname')) {
             $rules = array_merge($rules, [
                 'firstname' => 'required',
@@ -116,11 +119,31 @@ class OrganizationController extends Controller
     
         try {
             // Step 1: Store the organizational unit data
+            $logo_name = [];
+            if ($request->hasFile('organization_logo')) {
+                $file = $request->file('organization_logo');
+                
+                // Get the original file name
+                $fileName = $file->getClientOriginalName();
+                
+                // Store the file with the same name in the 'organization_logo' folder
+                $filePath = $file->storeAs('organization_logo', $fileName, 'public');
+                
+                // Store only the file name if needed
+                $logo_name[] = $fileName;
+            }
+            
+
             $orgUnit = OrganizationUnits::create([
                 'org_unit_name' => $request->org_unit_name,
                 'description' => $request->description,
-                'status' => $request->status
+                'status' => $request->status,
+                'org_logo' => $logo_name[0] ?? null
             ]);
+          
+
+  
+           
     
             // Step 2: Store the user data only if email is provided
             if($orgUnit){                
@@ -135,6 +158,7 @@ class OrganizationController extends Controller
                         'ou_id' => $orgUnit->id,
                         'is_admin' => 1
                     ]);
+             
                 }
             
                 if ($user) {  
@@ -181,6 +205,7 @@ class OrganizationController extends Controller
         if (!$request->filled('orgId') && !$request->filled('userId')) {
             return response()->json(['error' => 'At least one of orgId or userId is required'], 400);
         }
+    
 
         return response()->json([
             'organizationUnit' => $organizationUnit,
@@ -191,12 +216,24 @@ class OrganizationController extends Controller
 
     public function updateOrgUnit(Request $request)
     {
-        // dd($request);
+     
         $rules = [
             'org_unit_name' => 'required|unique:organization_units,org_unit_name,' . $request->org_unit_id . ',id',
             'description' => 'required',
             'status' => 'required',
+            'org_logo' => 'required|mimes:jpeg,png,jpg,gif,svg|max:25600'
         ];
+      $logo_name = [];
+        if ($request->hasFile('org_logo')) {
+        $file = $request->file('org_logo');
+        $fileName = $file->getClientOriginalName(); // Get the original file name
+        $filePath = $file->storeAs('organization_logo', $fileName, 'public');
+        
+        // If you want to store only the filename instead of the path:
+        $storedFileName = basename($filePath);
+        $logo_name[] = ($fileName);
+    }
+     
 
         if ($request->filled('user_id') && ($request->filled('edit_email') || $request->filled('edit_firstname') || $request->filled('edit_lastname'))) {
             $rules = array_merge($rules, [
@@ -233,6 +270,7 @@ class OrganizationController extends Controller
                 'org_unit_name' => $request->org_unit_name,
                 'description' => $request->description,
                 'status' => $request->status,
+               'org_logo' => $logo_name[0] ?? null
             ]);
 
             // Step 2: Update existing user
