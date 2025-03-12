@@ -28,6 +28,10 @@
                                  {{ session()->get('message') }}
                           </div>
                     @endif
+                    @if(session()->has('error'))
+                        <span class="text-danger credential_error">The provided credentials do not match our records.</span>
+                    @endif
+                 
                   <form class="row g-3 needs-validation" novalidate id="login_form" >
                     @csrf
                     <div class="col-12">

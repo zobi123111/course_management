@@ -438,43 +438,38 @@
 <script>
     
     $(document).ready(function() {
-    $('#user_table').DataTable({
-            "processing": true,
-            "serverSide": true,
-            "ajax": {
-                "url": "{{ route('users.data') }}",
-                "type": "GET",
-                "data": function(d) {
-                    d.extra_param = "value"; // Directly modifying the data object instead of returning a new one
+$('#user_table').DataTable({
+    processing: true,
+    serverSide: true,
+    ajax: "{{ route('users.data') }}",
+    columns: [
+        { 
+            data: 'image', 
+            name: 'image', 
+            orderable: false, 
+            searchable: false, 
+            render: function(data) {
+                if(data) {
+                    let baseUrl = "{{ url('storage') }}";
+                    return `<img src="${baseUrl}/${data}" width="50" height="50" class="img-thumbnail"/>`;
                 }
-            },
-        "columns": [
-            { "data": "image", orderable: true }, // Images should not be sortable
-            { "data": "fname", className: 'fname', orderable: true },
-            { "data": "lname", className: 'lname', orderable: true },
-            { "data": "email", orderable: true },
-            { "data": "organization", orderable: true },
-            { "data": "position", orderable: true },
-            { "data": "status", orderable: true },
-            { "data": "action", orderable: true } // Actions should not be sortable
-        ],
-
-            "order": [[1, 'asc']],
-            "columnDefs": [
-                {
-                    "targets": 0,
-                    "render": function(data) {
-                        return data ? `<img src="/storage/${data}" alt="User Image" class="rounded-circle" height="50px" width="50px">` : 'No Image';
-                    }
-                },
-                {
-                    "targets": -1, // Last column (Actions)
-                    "render": function(data) {
-                        return data; // No need to check permissions in JS, just display the action buttons from the controller.
-                    }
-                }
-            ]
+                return '<span class="text-muted">No Image</span>';
+            }
+        },
+        { data: 'fname', name: 'fname' },
+        { data: 'lname', name: 'lname' },
+        { data: 'email', name: 'email' },
+        { data: 'position', name: 'position' },
+        @if(auth()->user()->is_owner == 1)
+                    { data: 'organization', name: 'organization' },
+        @endif
+        { data: 'status', name: 'status' },
+        { data: 'action', name: 'action', orderable: false, searchable: false }
+    ]   
 });
+
+
+
 
         $('#licence_checkbox').change(function() {
             if (this.checked) {
@@ -861,15 +856,14 @@
         // $('.delete-icon').click(function(e) {
         //     e.preventDefault();
         $(document).on('click', '.delete-icon', function() {
-
             $('#deleteUserModal').modal('show');
             var userId = $(this).data('user-id');
-            var fname = $(this).closest('tr').find('.fname').text();
-            var lname = $(this).closest('tr').find('.lname').text();
+            var row = $(this).closest('tr');
+            var fname = row.find('td:eq(1)').text(); // Assuming 'fname' is in the 2nd column
+            var lname = row.find('td:eq(2)').text();
             var name = fname + ' ' + lname;
             $('#append_name').html(name);
             $('#userid').val(userId);
-
         });
 
         // Ensure Select2 works when modal is shown
