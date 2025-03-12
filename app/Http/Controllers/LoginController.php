@@ -116,7 +116,7 @@ class LoginController extends Controller
                 ['email' => $email],
                 ['token' => $token, 'created_at' => Carbon::now()]
             );
-             $resetUrl = '/reset/password/' . $token . '?email=' . urlencode($email);
+           
            
             $resetLink = url('/reset/password/' . $token . '?email=' . urlencode($email));
          
@@ -127,9 +127,10 @@ class LoginController extends Controller
 
             return redirect()->back()->with('message', 'Password reset link has been sent to your email.');
         } else {
-            return response()->json([
-                'message' => 'Email address not found.'
-            ], 404);
+            return redirect()->back()->with('error', 'Email address not found.'); 
+            // return response()->json([
+            //     'message' => 'Email address not found.'
+            // ]);
         }
         return redirect()->back()->with('message', 'We have mailed your password reset link!');
     }
