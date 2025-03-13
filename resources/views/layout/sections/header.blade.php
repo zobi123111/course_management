@@ -6,14 +6,14 @@
         if ($org_detail && $org_detail->org_logo) { 
         ?>
             <a href="{{ url('dashboard') }}" class="logo d-flex align-items-center">
-                <img id="org_logo_preview" src="{{ asset('storage/organization_logo/' . $org_detail->org_logo) }}" alt="Organization Logo" style="max-width: 200px; margin-top: 10px;">
+                <img id="org_logo_preview" class="avms_logo" src="{{ asset('storage/organization_logo/' . $org_detail->org_logo) }}" alt="Organization Logo">
                 <span class="d-none d-lg-block">{{ $org_detail->org_unit_name }} </span>  
             </a>
         <?php 
         } else{?>
           <a href="https://altcruise.co.uk/dashboard" class="logo d-flex align-items-center logo-bottom">
-              <img src="https://altcruise.co.uk/assets/img/logo.png" alt="">
-              <span class="d-none d-lg-block">Management</span>
+          <img src="{{env('PROJECT_LOGO')}}" alt="" class="avms_logo">
+              <!-- <span class="d-none d-lg-block">Management</span> -->
           </a>
       <?php   }
         ?>

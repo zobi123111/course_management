@@ -14,13 +14,14 @@
           @endforeach
       </ul>
     <div class="course_logo">
-     <?php 
+    <?php 
         $org_detail = ou_logo(); 
         if ($org_detail && $org_detail->org_logo) { 
         ?>
             <a href="{{ url('dashboard') }}" class="logo d-flex align-items-center">
-            <img src="https://altcruise.co.uk/assets/img/logo.png" alt="">
-                <span class="d-none d-lg-block">Management</span>  
+            <img src="{{env('PROJECT_LOGO')}}" alt="" class="avms_logo">
+            <!-- <img src="https://altcruise.co.uk/assets/img/logo.png" alt="">
+                <span class="d-none d-lg-block">Management</span>   -->
             </a>
         <?php  } ?>
         </div>

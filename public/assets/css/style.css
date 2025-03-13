@@ -364,10 +364,10 @@ h6 {
   }
 }
 
-.logo img {
+/* .logo img {
   max-height: 26px;
   margin-right: 6px;
-}
+} */
 
 .logo span {
   font-size: 26px;
@@ -1285,4 +1285,7 @@ h6 {
   border-radius: 50%;
   padding: 0px 7px;
   line-height: 23px;
+}
+.avms_logo{
+  width: 20%;
 }
