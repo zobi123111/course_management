@@ -259,7 +259,9 @@
                                                 <input type="file" 
                                                        class="form-control" 
                                                        name="prerequisite_details[{{ $index }}]">
-                                                
+                                                       @error("prerequisite_details.$index")
+                                                            <span class="text-danger">{{ $message }}</span>
+                                                        @enderror
                                                 @if (!empty($savedPrerequisite->file_path))
                                                     <p class="mt-2">
                                                         <strong>Existing File:</strong> 
