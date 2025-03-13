@@ -31,8 +31,7 @@ class UserController extends Controller
     //      return view('users.index');
     // }
 
-
-public function getData(Request $request)
+    public function getData(Request $request)
 {
     $ou_id = auth()->user()->ou_id; 
     $organizationUnits = OrganizationUnits::all();
@@ -95,128 +94,6 @@ public function getData(Request $request)
     return view('users.index', compact('roles', 'organizationUnits'));
 }
 
-    
-    
-
-//     public function getData(Request $request)
-//     {
-//         if (request()->ajax()) {
-//         $ou_id = auth()->user()->ou_id;
-//         $query = User::query()
-//             ->leftJoin('roles', 'users.role', '=', 'roles.id')
-//             ->leftJoin('organization_units', 'users.ou_id', '=', 'organization_units.id')
-//             ->select([
-//                 'users.id',
-//                 'users.image',
-//                 'users.fname',
-//                 'users.lname',
-//                 'users.email',
-//                 'roles.role_name as position',
-//                 'organization_units.org_unit_name as organization',
-//                 'users.status'
-//             ]);
-    
-//         if ($ou_id) {
-//             $query->where('users.ou_id', $ou_id);
-//         }
-    
-//         // **Search Filtering**
-//         if ($search = $request->input('search.value')) {
-//             $query->where(function ($q) use ($search) {
-//                 $q->where('users.fname', 'like', "%$search%")
-//                   ->orWhere('users.lname', 'like', "%$search%")
-//                   ->orWhere('users.email', 'like', "%$search%")
-//                   ->orWhere('roles.role_name', 'like', "%$search%")
-//                   ->orWhere('organization_units.org_unit_name', 'like', "%$search%");
-    
-//                 if (strtolower($search) === 'active') {
-//                     $q->orWhere('users.status', 1);
-//                 } elseif (strtolower($search) === 'inactive') {
-//                     $q->orWhere('users.status', 0);
-//                 } else {
-//                     $q->orWhere('users.status', 'like', "%$search%");
-//                 }
-//             });
-//         }
-    
-//         // **Ordering**
-//   // **Ordering**
-//         $columns = [
-//             'users.id', 'users.image', 'users.fname', 'users.lname', 
-//             'users.email', 'roles.role_name', 'organization_units.org_unit_name', 'users.status'
-//         ];
-
-//         $orderColumn = $request->input('order.0.column');
-//         $orderDirection = $request->input('order.0.dir', 'asc');
-
-//         if ($orderColumn !== null && isset($columns[$orderColumn])) {
-//             $query->orderBy($columns[$orderColumn], $orderDirection);
-//         } else {
-//             $query->orderBy('users.fname', 'asc'); // Default ordering
-//         }
-
-    
-//         // **Pagination**
-//         $totalRecords = $query->count();
-//         $users = $query->skip($request->input('start'))->take($request->input('length'))->get();
-    
-
-        // **Check Permissions Only Once**
-        $canEdit = checkAllowedModule('users', 'user.get')->isNotEmpty();
-        $canDelete = checkAllowedModule('users', 'user.destroy')->isNotEmpty();
-        $canView = checkAllowedModule('users', 'user.show')->isNotEmpty();
-        // dd($canView);
-    
-        // **Format Data for DataTable**
-        $data = $users->map(function ($user) use ($canEdit, $canDelete, $canView) {
-            $editBtn = $canEdit 
-                ? '<i class="fa fa-edit edit-user-icon text-primary me-2" style="font-size:18px; cursor: pointer;" data-user-id="' . encode_id($user->id) . '"></i>' 
-                : '';
-    
-            $deleteBtn = $canDelete
-                ? '<i class="fa-solid fa-trash delete-icon text-danger" style="font-size:18px; cursor: pointer;" data-user-id="' . encode_id($user->id) . '"></i>' 
-                : '';
-                
-                $viewBtn = $canView
-                ? '<a href="' . route("user.show", ["user_id" => encode_id($user->id)]) . '" class="view-icon" title="View User" style="font-size:18px; cursor: pointer;"><i class="fa fa-eye text-danger me-2"></i></a>': '';
-            
-    
-            return [
-                'id' => encode_id($user->id),
-                'image' => $user->image ?: null,
-                'fname' => $user->fname,
-                'lname' => $user->lname,
-                'email' => $user->email,
-                'organization' => $user->organization ?? '--',
-                'position' => $user->position,
-                'status' => $user->status == 1 ? 'Active' : 'Inactive',
-                'action' => $viewBtn . ' ' . $editBtn . ' ' . $deleteBtn, // **Final action buttons included here**
-            ];  
-        });
-  
-//         // **Return JSON Response**
-//         return response()->json([
-//             'draw' => intval($request->input('draw')),
-//             'recordsTotal' => $totalRecords,
-//             'recordsFiltered' => $totalRecords,
-//             'data' => $data
-//         ]);
-//     }else{
-//         $ou_id = auth()->user()->ou_id; 
-//         $organizationUnits = OrganizationUnits::all();
-
-//         if (empty($ou_id)) {
-//             $users = User::all();
-//             $roles = Role::all(); // Get all roles
-//         } else {
-//             $users = User::where('ou_id', $ou_id)->get();
-//             $roles = Role::where('id', '!=', 1)->get(); // Exclude role with id = 1
-//         }
-
-//         return view('users.index', compact('users', 'roles', 'organizationUnits'));
-
-//     }
-//     }
 
     public function profile()
     {
