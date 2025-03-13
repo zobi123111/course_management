@@ -271,7 +271,37 @@
                             @endforeach
                         </select>
                         <div id="group_ids_error_up" class="text-danger error_e"></div>
-                    </div>               
+                    </div>              
+                    <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" id="enable_prerequisites"> Enable Prerequisites
+                    </label>
+                </div>
+
+                <div id="prerequisites_container" style="display: none;">
+                    <div id="prerequisite_items">
+                        <div class="prerequisite-item ">
+                            <div class="form-group">
+                                <label class="form-label">Prerequisite Detail</label>
+                                <input type="text" class="form-control" name="prerequisite_details[]">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Prerequisite Type</label>
+                                <div>
+                                    <input type="radio" name="prerequisite_type[0]" value="number"> Number
+                                    <input type="radio" name="prerequisite_type[0]" value="text"> Text
+                                    <input type="radio" name="prerequisite_type[0]" value="file"> File
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-danger remove-prerequisite">X</button>
+
+                        </div>
+                    </div>
+                    <button type="button" id="addPrerequisite" class="btn btn-primary mt-2">Add More</button>
+
+                    </div> 
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -379,6 +409,30 @@ $(document).ready(function() {
                 $('#edit_ou_id').val(response.course.ou_id);
                 $('#edit_status').val(response.course.status);
 
+                if (response.course.enable_prerequisites) {
+                    $('#enable_prerequisites').prop('checked', true);
+                    $('#prerequisites_container').show();
+                } else {
+                    $('#enable_prerequisites').prop('checked', false);
+                    $('#prerequisites_container').hide();
+                }
+
+          // Clear old prerequisites
+          $('#prerequisite_items').empty();
+          let prerequisites = response.course.prerequisites;
+ 
+            if (prerequisites.length > 0) {
+                prerequisites.forEach((prerequisite, index) => {
+                    let prerequisiteHtml = generatePrerequisiteHtml(prerequisite, index);
+                    $('#prerequisite_items').append(prerequisiteHtml);
+                });
+            } else {
+                // Show a single empty prerequisite form if there are none
+                let prerequisiteHtml = generatePrerequisiteHtml({ prerequisite_detail: '', prerequisite_type: 'text' }, 0);
+                $('#prerequisite_items').append(prerequisiteHtml);
+            }
+
+
                 var selectedGroups = response.course.groups.map(function(group) {
                     return group.id;
                 });
@@ -418,6 +472,7 @@ $(document).ready(function() {
     $('#updateCourse').on('click', function(e) {
         e.preventDefault();
         var formData = new FormData($('#editCourse')[0]);
+        formData.append('enable_prerequisites', $('#enable_prerequisites').is(':checked') ? 1 : 0);
         $.ajax({
             url: "{{ url('course/update') }}",
             type: "POST",
@@ -454,7 +509,83 @@ $(document).ready(function() {
     setTimeout(function() {
         $('#successMessage').fadeOut('slow');
     }, 2000);
+// Toggle prerequisites section
+$("#enable_prerequisites").change(function () {
+        if ($(this).is(":checked")) {
+            $("#prerequisites_container").show();
+        } else {
+            $("#prerequisites_container").hide();
+            // $("#prerequisite_items").empty();
+        }
+    });
+
+    // Add new prerequisite
+    $("#addPrerequisite").click(function () {
+        let index = $(".prerequisite-item").length;
+        let prerequisiteHTML = `
+            <div class="prerequisite-item border p-2 mt-2">
+                <div class="form-group">
+                    <label class="form-label">Prerequisite Detail</label>
+                    <input type="text" class="form-control" name="prerequisite_details[]">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Prerequisite Type</label>
+                    <div>
+                      <label for="prerequisite_type_number_${index}">
+                            <input type="radio" id="prerequisite_type_number_${index}" name="prerequisite_type[${index}]" value="number"> Number
+                        </label>
+
+                        <label for="prerequisite_type_text_${index}">
+                            <input type="radio" id="prerequisite_type_text_${index}" name="prerequisite_type[${index}]" value="text"> Text
+                        </label>
+
+                        <label for="prerequisite_type_file_${index}">
+                            <input type="radio" id="prerequisite_type_file_${index}" name="prerequisite_type[${index}]" value="file"> File
+                        </label>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-danger remove-prerequisite">X</button>
+            </div>
+        `;
+        $("#prerequisite_items").append(prerequisiteHTML);
+    });
+
+    // Remove prerequisite
+    $(document).on("click", ".remove-prerequisite", function () {
+        $(this).closest(".prerequisite-item").remove();
+    });
 });
+function generatePrerequisiteHtml(prerequisite, index) {
+    return `
+        <div class="prerequisite-item border p-2 mt-2">
+            <div class="form-group">
+                <label class="form-label">Prerequisite Detail</label>
+                <input type="text" class="form-control" name="prerequisite_details[]" value="${prerequisite.prerequisite_detail}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Prerequisite Type</label>
+                <div>
+                   <label for="prerequisite_number_${index}">
+                        <input type="radio" id="prerequisite_number_${index}" name="prerequisite_type[${index}]" value="number" ${prerequisite.prerequisite_type === 'number' ? 'checked' : ''}> Number
+                    </label>
+
+                    <label for="prerequisite_text_${index}">
+                        <input type="radio" id="prerequisite_text_${index}" name="prerequisite_type[${index}]" value="text" ${prerequisite.prerequisite_type === 'text' ? 'checked' : ''}> Text
+                    </label>
+
+                    <label for="prerequisite_file_${index}">
+                        <input type="radio" id="prerequisite_file_${index}" name="prerequisite_type[${index}]" value="file" ${prerequisite.prerequisite_type === 'file' ? 'checked' : ''}> File
+                    </label>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-danger remove-prerequisite">X</button>
+        </div>
+    `;
+}
 
 </script>
 

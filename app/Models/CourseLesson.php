@@ -10,7 +10,7 @@ class CourseLesson extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    protected $fillable = ['course_id','lesson_title','description','comment','status'];
+    protected $fillable = ['course_id','lesson_title','description','comment','status', 'enable_prerequisites'];
 
     public function course()
     {
@@ -20,6 +20,17 @@ class CourseLesson extends Model
     public function sublessons()
     {
         return $this->hasMany(SubLesson::class, 'lesson_id');
+    }
+
+    public function prerequisites()
+    {
+        return $this->hasMany(LessonPrerequisite::class, 'lesson_id');
+    }
+
+    public function prerequisiteDetails()
+    {
+        return $this->hasMany(LessonPrerequisiteDetail::class, 'lesson_id')
+        ->where('created_by', auth()->id());
     }
 
 }
