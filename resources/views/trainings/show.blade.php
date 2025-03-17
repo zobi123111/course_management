@@ -533,8 +533,8 @@
                     </div>
                     <div class="btn-container">
                         <button type="submit" class="btn btn-save" id="submitGrading">Save</button>
-                        <button type="button" class="btn btn-cancel">Cancel</button>
-                        <button type="button" class="btn btn-incomplete">Incomplete</button>
+                        <!-- <button type="button" class="btn btn-cancel">Cancel</button>
+                        <button type="button" class="btn btn-incomplete">Incomplete</button> -->
                     </div>
                 </form>
             </div>
@@ -572,8 +572,8 @@
 
                             <div class="btn-container">
                                 <button type="submit" class="btn btn-save">Save</button>
-                                <button type="button" class="btn btn-cancel">Cancel</button>
-                                <button type="button" class="btn btn-incomplete">Incomplete</button>
+                                <!-- <button type="button" class="btn btn-cancel">Cancel</button>
+                                <button type="button" class="btn btn-incomplete">Incomplete</button> -->
                             </div>
                         </div>
                     </form>
