@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Group;
 use App\Models\Courses;
+use App\Models\CourseLesson;
+use App\Models\SubLesson;
 use App\Models\User;
 use App\Models\OrganizationUnits;
 use App\Models\TrainingEvents;
@@ -174,7 +176,13 @@ class TrainingEventsController extends Controller
         } else {
             $groupUsers = collect(); // Return empty collection if no users found
         }
-        return view('trainings.show', compact('trainingEvent', 'groupUsers'));
+
+        // Ensure course exists before accessing course_id
+        $courseLessons = $trainingEvent->course 
+        ? CourseLesson::with('sublessons')->where('course_id', $trainingEvent->course->id)->get() 
+        : collect();
+        // dd($courseLessons);;
+        return view('trainings.show', compact('trainingEvent', 'groupUsers', 'courseLessons'));
     }
     
 }

@@ -17,8 +17,7 @@ class UserController extends Controller
 {
 
 
-
-public function getData(Request $request)
+    public function getData(Request $request)
 {
     $ou_id = auth()->user()->ou_id; 
     $organizationUnits = OrganizationUnits::all();

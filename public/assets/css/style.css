@@ -364,10 +364,10 @@ h6 {
   }
 }
 
-.logo img {
+/* .logo img {
   max-height: 26px;
   margin-right: 6px;
-}
+} */
 
 .logo span {
   font-size: 26px;
@@ -1228,7 +1228,7 @@ h6 {
   padding: 20px 0;
   font-size: 14px;
   transition: all 0.3s;
-  border-top: 1px solid #cddfff;
+  /* border-top: 1px solid #cddfff; */
 }
 
 .footer .copyright {
@@ -1285,4 +1285,10 @@ h6 {
   border-radius: 50%;
   padding: 0px 7px;
   line-height: 23px;
+}
+.avms_logo{
+  width: 20%;
+}
+.avms_logo_login{
+  width: 30%;
 }

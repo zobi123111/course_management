@@ -20,6 +20,11 @@ class PrerequisiteController extends Controller
     
             if ($prerequisite->prerequisite_type == 'file' && $request->hasFile("prerequisite_details.$index")) {
                 $file = $request->file("prerequisite_details.$index");
+                if (!in_array($file->getClientOriginalExtension(), ['jpg', 'jpeg', 'png', 'pdf']) || $file->getSize() > 2048000) {
+                    return back()->withErrors([
+                        "prerequisite_details.$index" => 'Invalid file type or size. Only JPG, JPEG, PNG, and PDF files under 2MB are allowed.',
+                    ])->withInput();
+                }
                 $path = $file->store('prerequisites', 'public');
     
                 CoursePrerequisiteDetail::create([
