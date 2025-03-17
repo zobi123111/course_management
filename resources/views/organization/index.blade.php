@@ -216,12 +216,22 @@
                         <input type="email" name="edit_email" class="form-control">
                         <div id="edit_email_error_up" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                             <label for="image" class="form-label">Image</label>
                             <input type="file" name="org_logo" class="form-control" accept="image/*">
                             <div id="org_logo_error_up" class="text-danger error_e"></div>  
                             <img id="org_logo_preview" src="" alt="Organization Logo" style="max-width: 200px; display: none; margin-top: 10px;">    
+                    </div> -->
+                    <div class="form-group">
+                        <label for="image" class="form-label">Image</label>
+                        <input type="file" name="org_logo" id="org_logo" class="form-control" accept="image/*">
+                        <small id="org_logo_filename" class="text-muted"></small> <!-- Show file name here -->
+                        <div id="org_logo_error_up" class="text-danger error_e"></div>  
+                        <img id="org_logo_preview" src="" alt="Organization Logo" style="max-width: 200px; display: none; margin-top: 10px;">    
                     </div>
+
+                    <input type="hidden" name="existing_org_logo" id="existing_org_logo"> <!-- Hidden input to store existing filename -->
+
                     <div class="create_org_admin" style="display: none;">
                         <div class="form-group">
                             <label for="password" class="form-label">Password<span class="text-danger"></span></label>
@@ -345,7 +355,6 @@ $(document).ready(function() {
                 userId: userId
             },
             success: function(response) {
-                console.log(response.organizationUnit);
                 if (response.organizationUnit) {
                     $('input[name="org_unit_name"]').val(response.organizationUnit.org_unit_name || '');
                     $('input[name="org_unit_id"]').val(response.organizationUnit.id || '');
@@ -353,11 +362,21 @@ $(document).ready(function() {
                     $('#edit_status').val(response.organizationUnit.status || '').trigger('change'); // Useful for select fields
                     $('#edit_org_logo').val(response.organizationUnit.org_logo || '');
                     if (response.organizationUnit.org_logo) {
-                        let imagePath = '/storage/organization_logo/' + response.organizationUnit.org_logo; // Adjust the path as per your storage setup
+                        let fileName = response.organizationUnit.org_logo;
+                        let imagePath = '/storage/organization_logo/' + fileName; // Adjust the path as per your storage setup 
                         $('#org_logo_preview').attr('src', imagePath).show();
-                    } else {
-                        $('#org_logo_preview').hide(); // Hide if no image is available
+                        $('#org_logo_filename').text('Current File: ' + fileName);
+                        $('#existing_org_logo').val(fileName);
                     }
+
+                    // Show selected file name when a new file is chosen
+                    $('#org_logo').on('change', function() {
+                        let file = this.files[0];
+                        if (file) {
+                            $('#org_logo_filename').text('Selected File: ' + file.name);
+                        }
+                    });
+
                 }
                 if (response.user) {
                     $('input[name="edit_firstname"]').val(response.user.fname || '');
@@ -424,7 +443,7 @@ $(document).ready(function() {
         });
     });
 
-    $('#updateOrgUnit').on('click', function(e) {
+    $('#updateOrgUnit').on('click', function(e) { 
         e.preventDefault();
         $(".loader").fadeIn();
         var formData = new FormData($('#editOrgUnit')[0]);

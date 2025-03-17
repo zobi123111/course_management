@@ -57,7 +57,7 @@ class DocumentController extends Controller
             'version_no' => 'required',
             'issue_date' => 'required|date',
             'expiry_date' => 'required|date|after:issue_date',
-            'document_file' => 'required|file|max:15360',
+            'document_file' => 'required|file',
             'status' => 'required',
             'group' => 'required',
             'folder' => 'nullable|exists:folders,id' // Ensure folder exists if provided

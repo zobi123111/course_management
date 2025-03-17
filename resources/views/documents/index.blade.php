@@ -94,7 +94,7 @@
                             <option value="{{ $group->id }}">{{ $group->name }}</option>
                             @endforeach
                         </select>
-                        <div id="group_error" class="text-danger error_e"></div>
+                        <div id="group_error" class="text-danger error_e"></div> 
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
@@ -108,6 +108,7 @@
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="submitDocument" class="btn btn-primary sbt_btn">Save </button>
                     </div>
+                    <div class="loader" style="display: none;"></div>
                 </form>
             </div>
         </div>
@@ -251,7 +252,7 @@ $(document).ready(function() {
 
     $("#submitDocument").on("click", function(e){
         e.preventDefault();
-
+        $(".loader").fadeIn();
         var formData = new FormData($('#documentsForm')[0]);
         
         $.ajax({
@@ -261,10 +262,12 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function(response) {
+                $(".loader").fadeOut("slow");
                 $('#createDocumentModal').modal('hide');
                 location.reload();
             },
             error: function(xhr, status, error){
+                $(".loader").fadeOut("slow");
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
                 $.each(validationErrors, function(key,value){
@@ -285,7 +288,6 @@ $(document).ready(function() {
             type: 'GET',
             data: {  id: documentId },
             success: function(response) {
-                console.log(response.document.folder_id);
                 $('#edit_doc_title').val(response.document.doc_title);
                 $('#edit_version_no').val(response.document.version_no);
                 $('#document_id').val(response.document.id);
@@ -304,8 +306,9 @@ $(document).ready(function() {
     });
 
     $(document).on('click','#updateDocument', function(e){
+     
+        $(".loader").fadeIn('fast');
         e.preventDefault();
-
         var formData = new FormData($('#editDocumentForm')[0]);
         $.ajax({
             url: "{{ url('/document/update') }}",
@@ -314,6 +317,7 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function(response){
+                $(".loader").fadeIn('fast');
                 $('#editDocumentModal').modal('hide');
                 location.reload();
             },
