@@ -35,16 +35,17 @@ class UserController extends Controller
 {
     $ou_id = auth()->user()->ou_id; 
     $organizationUnits = OrganizationUnits::all();
+    $roles = Role::all(); 
 
     if (empty($ou_id)) {
         $users = User::all();
-        $roles = Role::all(); 
+        // dd($roles);
     } else { 
         $users = User::where('ou_id', $ou_id)->get();
-        $roles = Role::where('id', '!=', 1)->get(); 
+        // $roles = Role::where('id', '!=', 1)->get(); 
+        // dd($roles);
     }
    
-
     if ($request->ajax()) {
         $query = User::query()
             ->leftJoin('roles', 'users.role', '=', 'roles.id')

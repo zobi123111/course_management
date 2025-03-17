@@ -218,7 +218,7 @@ class OrganizationController extends Controller
     {
      
         $rules = [
-            'org_unit_name' => 'required|unique:organization_units,org_unit_name,' . $request->org_unit_id . ',id',
+            'org_unit_name' => 'required|unique:organization_units,org_unit_name,' . $request->org_unit_id . ',id,deleted_at,NULL',
             'description' => 'required',
             'status' => 'required',
             'org_logo' => 'required|mimes:jpeg,png,jpg,gif,svg|max:25600'

@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('competency_gradings', function (Blueprint $table) {
+        Schema::create('overall_assessments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('event_id')->constrained('training_events')->onDelete('cascade');
-            $table->foreignId('lesson_id')->constrained('course_lessons')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->text('competency_grade');
+            $table->text('result')->nullable();
+            $table->text('remarks')->nullable();
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('competency_grading');
+        Schema::dropIfExists('overall_assessment');
     }
 };

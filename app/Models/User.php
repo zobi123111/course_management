@@ -80,5 +80,15 @@ class User extends Authenticatable
     public function roles(){
         return $this->belongsTo(Role::class, 'role', 'id');
     }
+
+    public function taskGrades()
+    {
+        return $this->hasMany(TaskGrading::class, 'user_id');
+    }
+
+    public function competencyGrades()
+    {
+        return $this->hasMany(CompetencyGrading::class, 'user_id');
+    }
     
 }

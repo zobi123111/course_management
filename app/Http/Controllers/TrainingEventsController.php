@@ -6,11 +6,14 @@ use Illuminate\Http\Request;
 use App\Models\Group;
 use App\Models\Courses;
 use App\Models\CourseLesson;
-use App\Models\SubLesson;
 use App\Models\User;
 use App\Models\OrganizationUnits;
 use App\Models\TrainingEvents;
+use App\Models\TaskGrading;
+use App\Models\CompetencyGrading;
+use App\Models\OverallAssessment;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\DB;
 
 
 class TrainingEventsController extends Controller
@@ -30,12 +33,19 @@ class TrainingEventsController extends Controller
         } elseif (checkAllowedModule('training', 'training.index')->isNotEmpty() && empty($currentUser->is_admin)) {
             $course =  Courses::where('ou_id', $currentUser->ou_id)->get();    
             $group =  Group::where('ou_id', $currentUser->ou_id)->get();            
-            $instructor =  User::where('role', 2)->get();        
-            $trainingEvents =  TrainingEvents::where('ou_id', $currentUser->ou_id)->get();  
+            $instructor =  User::whereHas('roles', function ($query) {
+                $query->where('role_name', 'like', '%Instructor%');
+            })->with('roles')->get();       
+            $trainingEvents =  TrainingEvents::where('ou_id', $currentUser->ou_id)->where('instructor_id', $currentUser->id)->get();  
         }else{
             $group =  Group::where('ou_id', $currentUser->ou_id)->get();            
             $course =  Courses::where('ou_id', $currentUser->ou_id)->get();    
-            $instructor =  User::where('ou_id', $currentUser->ou_id)->where('role', 2)->get();            
+            $instructor = User::where('ou_id', $currentUser->ou_id)
+            ->whereHas('roles', function ($query) {
+                $query->where('role_name', 'like', '%Instructor%');
+            })
+            ->with('roles')
+            ->get();            
             $trainingEvents =  TrainingEvents::where('ou_id', $currentUser->ou_id)->get();            
         }
         return view('trainings.index', compact('group', 'course', 'instructor', 'organizationUnits', 'trainingEvents'));
@@ -172,17 +182,118 @@ class TrainingEventsController extends Controller
             ? json_decode($trainingEvent->group->user_ids, true) 
             : $trainingEvent->group->user_ids;
             // Fetch users only if decoding is successful
-            $groupUsers = is_array($userIds) ? User::whereIn('id', $userIds)->get() : collect();
+            $groupUsers = is_array($userIds) 
+            ? User::whereIn('id', $userIds)
+                ->with([
+                    'taskGrades' => function ($query) use ($event_id) {
+                        $query->where('event_id', decode_id($event_id));
+                    },
+                    'competencyGrades' => function ($query) use ($event_id) {
+                        $query->where('event_id', decode_id($event_id));
+                    }
+                ])
+                ->get() 
+            : collect();
         } else {
             $groupUsers = collect(); // Return empty collection if no users found
         }
-
         // Ensure course exists before accessing course_id
         $courseLessons = $trainingEvent->course 
         ? CourseLesson::with('sublessons')->where('course_id', $trainingEvent->course->id)->get() 
         : collect();
+
+        // Fetch overall assessments for users in this event
+        $overallAssessments = OverallAssessment::where('event_id', $trainingEvent->id)
+        ->whereIn('user_id', $groupUsers->pluck('id'))
+        ->pluck('result', 'user_id'); // Get result indexed by user_id
+
+        $overallRemarks = OverallAssessment::where('event_id', $trainingEvent->id)
+        ->whereIn('user_id', $groupUsers->pluck('id'))
+        ->pluck('remarks', 'user_id'); // Get remark indexed by user_id
         // dd($courseLessons);;
-        return view('trainings.show', compact('trainingEvent', 'groupUsers', 'courseLessons'));
+        return view('trainings.show', compact('trainingEvent', 'groupUsers', 'courseLessons', 'overallAssessments', 'overallRemarks'));
     }
+
+
+    public function createGrading(Request $request)
+    {
+
+        DB::beginTransaction();
+
+        try {
+            $event_id = $request->event_id;
+
+            // Store or Update Task Grading
+            if ($request->has('task_grade')) {
+                foreach ($request->task_grade as $lesson_id => $subLessons) {
+                    foreach ($subLessons as $sub_lesson_id => $users) {
+                        foreach ($users as $user_id => $task_grade) {
+                            TaskGrading::updateOrCreate(
+                                [
+                                    'event_id' => $event_id,
+                                    'lesson_id' => $lesson_id,
+                                    'sub_lesson_id' => $sub_lesson_id,
+                                    'user_id' => $user_id
+                                ],
+                                ['task_grade' => $task_grade]
+                            );
+                        }
+                    }
+                }
+            }
+
+            // Store or Update Competency Grading
+            if ($request->has('comp_grade')) {
+                foreach ($request->comp_grade as $lesson_id => $users) {
+                    foreach ($users as $user_id => $competency_grade) {
+                        CompetencyGrading::updateOrCreate(
+                            [
+                                'event_id' => $event_id,
+                                'lesson_id' => $lesson_id,
+                                'user_id' => $user_id
+                            ],
+                            ['competency_grade' => $competency_grade]
+                        );
+                    }
+                }
+            }
+
+            DB::commit();
+            Session::flash('message', 'student grading updated successfully.');
+            return response()->json(['success' => true, 'message'=> 'student grading updated successfully.']);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function storeOverallAssessment(Request $request)
+    {
+        // Validate request
+        $request->validate([
+            'event_id' => 'required|integer|exists:training_events,id',
+            'user_id' => 'required|integer|exists:users,id',
+            'result' => 'required|string',
+            'remarks' => 'nullable|string'
+        ]);
+
+        // Create or update overall assessment
+        OverallAssessment::updateOrCreate(
+            [
+                'event_id' => $request->event_id,
+                'user_id' => $request->user_id
+            ],
+            [
+                'result' => $request->result,
+                'remarks' => $request->remarks
+            ]
+        );
+
+        Session::flash('message', 'Overall Assessment saved successfully.');
+        return response()->json(['success' => true, 'message' => 'Overall Assessment saved successfully.']);
+    }
+
+    
     
 }
