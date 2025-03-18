@@ -287,7 +287,7 @@
     .assessment-wrapper .option {
         background: #222;
         color: white;
-        border: 1px solid white;
+        border: 1px solid white;    
         padding: 10px 15px;
         cursor: pointer;
         border-radius: 5px;
@@ -303,7 +303,7 @@
         height: 100px;
         background: #ffffff;
         /* / border: none; / */
-        color: white;
+        /* color: white; */
         padding: 10px;
         border-radius: 5px;
     }
@@ -446,7 +446,7 @@
                                                                     <label class="radio-label">
                                                                         <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}][{{ $user->id }}]" value="N/A" {{ $selectedGrade == 'N/A' ? 'checked' : '' }}>
                                                                         <span class="custom-radio">N/A</span>
-                                                                    </label>
+                                                                    </label>                                                                    
                                                                 </td>
                                                                 <td>
                                                                     <label class="radio-label">
@@ -463,6 +463,7 @@
                                                             </tr>
                                                         </tbody>
                                                     </table>
+                                                    <span class="custom-radio competent task_grade_{{ $lesson->id }}_{{ $sublesson->id }}_{{ $user->id }}"></span>                                                                    
                                                 </div>
                                                 @endforeach
                                             </div>
@@ -502,6 +503,7 @@
                                                 $selectedCompetencyGrade = optional($user->competencyGrades->where('lesson_id', $lesson->id)->first())->competency_grade;
                                             @endphp
                                             <div class="main-tabledesign">
+                                            <input type="hidden" name="cg_user_id[]" value="{{ $user->id }}">
                                                 <h5>{{ $user->fname }} {{ $user->lname }}</h5>
                                                 <table>
                                                     <tbody>
@@ -513,10 +515,11 @@
                                                                     <span class="custom-radio">{{ $i }}</span>
                                                                 </label>
                                                             </td>
-                                                            @endfor
+                                                            @endfor                                                            
                                                         </tr>
                                                     </tbody>
                                                 </table>
+                                                <span class="custom-radio competent comp_grade_{{ $lesson->id }}_{{ $user->id }}"></span>
                                             </div>
                                             @endforeach
                                         </div>
@@ -552,14 +555,38 @@
                                 @php 
                                     $userResult = $overallAssessments[$user->id] ?? ''; 
                                 @endphp
-                                    <input type="radio" name="user_result_{{ $user->id }}" value="Competent - Ready for OPC/LPC"  {{ $userResult == 'Competent - Ready for OPC/LPC' ? 'checked' : '' }}>
-                                    <span class="custom-radio">Competent - Ready for OPC/LPC</span>
-                                    <input type="radio" name="user_result_{{ $user->id }}" value="Further training required" {{ $userResult == 'Further training required' ? 'checked' : '' }}>
-                                    <span class="custom-radio">Further training required</span>
-                                    <input type="radio" name="user_result_{{ $user->id }}" value="Incomplete" {{ $userResult == 'Incomplete' ? 'checked' : '' }}>
-                                    <span class="custom-radio">Incomplete</span>
-                                    <input type="radio" name="user_result_{{ $user->id }}" value="Stand-In" {{ $userResult == 'Stand-In' ? 'checked' : '' }}>
-                                    <span class="custom-radio">Stand-In</span>
+                                    <div class="main-tabledesign">
+                                        <table>
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <label class="radio-label">
+                                                        <input type="radio" name="user_result_{{ $user->id }}" value="Competent - Ready for OPC/LPC"  {{ $userResult == 'Competent - Ready for OPC/LPC' ? 'checked' : '' }}>
+                                                        <span class="custom-radio">Competent - Ready for OPC/LPC</span>
+                                                        </label>                                                                    
+                                                    </td>
+                                                    <td>
+                                                        <label class="radio-label">
+                                                        <input type="radio" name="user_result_{{ $user->id }}" value="Further training required" {{ $userResult == 'Further training required' ? 'checked' : '' }}>
+                                                        <span class="custom-radio">Further training required</span>
+                                                        </label>
+                                                    </td>
+                                                    <td>
+                                                        <label class="radio-label">
+                                                            <input type="radio" name="user_result_{{ $user->id }}" value="Incomplete" {{ $userResult == 'Incomplete' ? 'checked' : '' }}>
+                                                            <span class="custom-radio">Incomplete</span>
+                                                        </label>
+                                                    </td>                                                                    
+                                                    <td>
+                                                        <label class="radio-label">
+                                                            <input type="radio" name="user_result_{{ $user->id }}" value="Stand-In" {{ $userResult == 'Stand-In' ? 'checked' : '' }}>
+                                                            <span class="custom-radio">Stand-In</span>
+                                                        </label>
+                                                    </td>                                                                    
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
 
@@ -614,14 +641,24 @@
                 },
                 error: function (xhr, status, error) {
                     console.log(xhr.responseText);
-                    alert("Error: " + xhr.responseText);
+                    // alert("Error: " + xhr.responseText);
+                    $(".loader").fadeOut("slow");
+                    var errorMessage = JSON.parse(xhr.responseText);
+                    var validationErrors = errorMessage.errors;
+                    $.each(validationErrors, function (key, value) {
+                        // Correct selector using attribute selector
+                        let errorElement = $('.' + key);
+                        if (errorElement.length > 0) {
+                            errorElement.html('<span class="error-text" style="color:red;">' + value + '</span>');
+                        }
+                    });
                 }
             });
         });
 
         $(document).on('submit', '.overallAssessmentForm', function (e) {
             e.preventDefault();
-            $(".loader").fadeIn();
+            // $(".loader").fadeIn();
             let form = $(this);
             let userId = form.data('user-id');
             let event_id = form.find('input[name="event_id"]').val();
@@ -657,6 +694,13 @@
                 error: function (xhr) {
                     alert("Something went wrong. Please try again.");
                     console.log(xhr.responseText);
+                    // $(".loader").fadeOut("slow");
+                    var errorMessage = JSON.parse(xhr.responseText);
+                    var validationErrors = errorMessage.errors;
+                    $.each(validationErrors, function(key, value) {
+                        var html1 = '<p>' + value + '</p>';
+                        $('#' + key + '_error').html(html1);
+                    });
                 }
             });
         });
