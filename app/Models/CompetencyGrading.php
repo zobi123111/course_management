@@ -10,12 +10,10 @@ class CompetencyGrading extends Model
     use HasFactory;
 
     protected $fillable = [
+        'event_id',
         'lesson_id',
         'user_id',
-        'competency_grade',
-        'result',
-        'remarks',
-        'manager_attention_required',
+        'competency_grade'
     ];
 
     /**

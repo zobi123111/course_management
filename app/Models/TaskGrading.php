@@ -10,6 +10,7 @@ class TaskGrading extends Model
     use HasFactory;
 
     protected $fillable = [
+        'event_id',
         'lesson_id',
         'sub_lesson_id',
         'user_id',
