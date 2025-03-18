@@ -196,7 +196,11 @@ class FolderController extends Controller
         $query->orderBy($columns[$orderColumn], $orderDirection);
     
         // Pagination
-        $totalRecords = Folder::count();
+       // $totalRecords = Folder::count();
+        $totalRecords = Folder::query()->whereNull('parent_id')->count(); // Count only top-level folders
+        $filteredRecords = $query->count(); // Count filtered results
+
+       // dd($totalRecords);
         $filteredRecords = $query->count();
         $folders = $query->offset($request->start)->limit($request->length)->get();
     

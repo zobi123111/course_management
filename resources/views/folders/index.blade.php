@@ -53,7 +53,7 @@
                             <th>#</th>
                             <th>Document Name</th>
                             <th>Uploaded On</th>
-                            <th>Actions</th>
+                            <th>Actions</th>  
                         </tr>
                     </thead>
                 </table>
@@ -222,7 +222,7 @@
 
 <script>
 $(document).ready(function() {
-    $('#folderTable').DataTable({
+    $('#folderTable').DataTable({ 
         processing: true,
         serverSide: true,
         ajax: '{{ route("folders.list") }}',

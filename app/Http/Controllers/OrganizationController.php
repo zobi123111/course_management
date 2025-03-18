@@ -221,7 +221,7 @@ class OrganizationController extends Controller
             'org_unit_name' => 'required|unique:organization_units,org_unit_name,' . $request->org_unit_id . ',id,deleted_at,NULL',
             'description' => 'required',
             'status' => 'required',
-            'org_logo' => 'required|mimes:jpeg,png,jpg,gif,svg|max:25600'
+           'org_logo' => 'nullable|mimes:jpeg,png,jpg,gif,svg|max:25600' 
         ];
       $logo_name = [];
         if ($request->hasFile('org_logo')) {
@@ -270,7 +270,7 @@ class OrganizationController extends Controller
                 'org_unit_name' => $request->org_unit_name,
                 'description' => $request->description,
                 'status' => $request->status,
-               'org_logo' => $logo_name[0] ?? null
+               'org_logo' => $logo_name[0] ?? $request->existing_org_logo
             ]);
 
             // Step 2: Update existing user

@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Page;
 use App\Models\User;
 use App\Models\Role;
-use App\Models\OrganizationUnits;   
 
 function encode_id($id)
 {
@@ -153,13 +152,6 @@ function getMultipleRoles()
 
     // Fetch role details
     return Role::whereIn('id', $multiple_roles)->get(); 
-}
-
-function ou_logo()
-{
-    $ou_id = Auth::user()->ou_id;  
-    $org_detail = OrganizationUnits::where('id', $ou_id)->first(); // Fetch only one record
-    return $org_detail;
 }
 
 ?>

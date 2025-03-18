@@ -15,21 +15,7 @@ use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
 {
-    // public function users()
-    // {
-    //     // $ou_id = auth()->user()->ou_id; 
-    //     // $organizationUnits = OrganizationUnits::all();
 
-    //     // if (empty($ou_id)) {
-    //     //     $users = User::all();
-    //     //     $roles = Role::all(); // Get all roles
-    //     // } else {
-    //     //     $users = User::where('ou_id', $ou_id)->get();
-    //     //     $roles = Role::where('id', '!=', 1)->get(); // Exclude role with id = 1
-    //     // }
-
-    //      return view('users.index');
-    // }
 
     public function getData(Request $request)
 {
@@ -131,27 +117,6 @@ class UserController extends Controller
 
                 // Handle Licence File Upload
                 if ($userToUpdate->licence_required == 1) {
-
-                    $request->validate([
-                        'licence' => 'required',
-                        'licence_file' => (!$userToUpdate->licence_file ? 'required|' : '') . 'file|mimes:pdf,jpg,jpeg,png|max:25600',
-                        'licence_expiry_date' => 'nullable|date|required_without:non_expiring_licence',
-                        'non_expiring_licence' => 'nullable|boolean',
-                    ]);                    
-
-                    if($request->has('licence_expiry_date') && $request->licence_expiry_date){
-                        $licence_expiry_date = $request->licence_expiry_date;
-                    }else{
-                        $licence_expiry_date = $userToUpdate->licence_expiry_date;
-                    }
-                   
-                    if($request->has('non_expiring_licence') && $request->non_expiring_licence){
-                        $non_expiring_licence = $request->non_expiring_licence;
-                    }else{
-                        $non_expiring_licence = $userToUpdate->licence_non_expiring;
-                    }
-
-
                     if ($request->hasFile('licence_file')) {
                         // Delete old licence file if it exists
                         if ($userToUpdate->licence_file) {
@@ -170,19 +135,6 @@ class UserController extends Controller
 
                 // Handle Passport File Upload
                 if ($userToUpdate->passport_required == 1) {
-
-                    $request->validate([
-                        'passport'=> 'required',
-                        'passport_file' => (!$userToUpdate->passport_file ? 'required|' : '') . 'file|mimes:pdf,jpg,jpeg,png|max:25600', // Max 25MB (25600 KB)
-                        'passport_expiry_date' => 'required|date',
-                    ]);
-
-                    if($request->has('passport_expiry_date') && $request->passport_expiry_date){
-                        $passport_expiry_date = $request->passport_expiry_date;
-                    }else{
-                        $passport_expiry_date = $userToUpdate->passport_expiry_date;
-                    }
-
                     if ($request->hasFile('passport_file')) {
                         // Delete old passport file if it exists
                         if ($userToUpdate->passport_file) {
@@ -207,6 +159,12 @@ class UserController extends Controller
 
                 // }
 
+                if ($userToUpdate->currency_required == 1) {
+                    $request->validate([
+                        'currency' => 'required|string',
+                    ]);
+                }
+
                 // if ($request->has('edit_custom_field_checkbox') && $request->edit_custom_field_checkbox) {
                 //     $request->validate([
                 //         'edit_custom_field_name' => 'required|string',
@@ -225,9 +183,6 @@ class UserController extends Controller
                     // 'image' => $filePath,
                     'licence' => $request->licence ?? null,
                     'licence_file' => $licenceFilePath  ?? null,
-                    'licence_expiry_date' => $licence_expiry_date  ?? null,
-                    'licence_non_expiring' => $non_expiring_licence  ?? 0,
-                    'passport_expiry_date' => $passport_expiry_date  ?? null,
                     'passport' => $request->passport  ?? null,
                     'passport_file' => $passportFilePath  ?? null,
                     // 'rating' => $request->edit_rating ?? null,
@@ -246,8 +201,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'firstname' => 'required',
             'lastname' => 'required',
-            // 'email' => 'required|email|max:255|unique:users,email',
-            'email' => 'required|email|max:255|unique:users,email,NULL,id,deleted_at,NULL',
+            'email' => 'required|email|max:255|unique:users,email',
             'file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:25600',
             'password' => 'required|min:6|confirmed',
             'status' => 'required',
@@ -266,8 +220,6 @@ class UserController extends Controller
         $passport_required = null;
         $rating_required = null;
         $currency_required = null;
-        $licence_verification_required = 0;
-        $passport_verification_required = 0;
 
         if ($request->has('licence_checkbox') && $request->licence_checkbox) {
             // $request->validate([
@@ -275,14 +227,6 @@ class UserController extends Controller
             //     'licence_file' => 'required|mimes:pdf,jpg,jpeg,png',
             // ]);
             $licence_required = 1;
-        }
-
-        if ($request->has('licence_verification_required') && $request->licence_verification_required) {
-            $licence_verification_required = 1;
-        }
-
-        if ($request->has('passport_verification_required') && $request->passport_verification_required) {
-            $passport_verification_required = 1;
         }
 
         if ($request->has('passport_checkbox') && $request->passport_checkbox) {
@@ -316,12 +260,7 @@ class UserController extends Controller
     
 
         if ($request->hasFile('image')) {
-            $uploadedFile = $request->file('image');
-            $originalName = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME); // Get filename without extension
-            $extension = $uploadedFile->getClientOriginalExtension(); // Get file extension
-            $filename = $originalName . '_' . time() . '.' . $extension; // Append timestamp to avoid overwriting
-            
-            $filePath = $uploadedFile->storeAs('users', $filename, 'public'); // Save file with the modified name
+            $filePath = $request->file('image')->store('users', 'public');
         }
 
         if ($request->hasFile('licence_file')) {
@@ -331,6 +270,7 @@ class UserController extends Controller
         if ($request->hasFile('passport_file')) {
             $passport_file = $request->file('passport_file')->store('user_documents', 'public');
         }
+
         // Determine is_admin value
         $is_admin = (!empty($request->ou_id) && $request->role_name==1)? 1 : null;
         // dd($is_admin);
@@ -345,8 +285,6 @@ class UserController extends Controller
             'licence_required' => $licence_required,
             "licence" => $request->licence ?? null,
             "licence_file" => $licence_file ?? null,
-            "licence_admin_verification_required" => $licence_verification_required ?? 0,
-            "passport_admin_verification_required" => $passport_verification_required ?? 0,
             "passport_required" => $passport_required,
             "passport" => $request->passport ?? null,
             "passport_file" => $passport_file ?? null,
@@ -410,22 +348,13 @@ class UserController extends Controller
 
             // Handle Image Upload
             if ($request->hasFile('image')) {
-                // Delete the existing image if present
                 if ($userToUpdate->image) {
                     Storage::disk('public')->delete($userToUpdate->image);
                 }
 
-                $uploadedFile = $request->file('image');
-                $originalName = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $extension = $uploadedFile->getClientOriginalExtension();
-                
-                // Append timestamp to avoid overwriting
-                $filename = $originalName . '_' . time() . '.' . $extension;
-
-                // Save file with the modified name
-                $filePath = $uploadedFile->storeAs('users', $filename, 'public');
+                $filePath = $request->file('image')->store('users', 'public');
             } else {
-                $filePath = $userToUpdate->image; // Retain old file if no new upload
+                $filePath = $userToUpdate->image;
             }
 
             // Handle Licence
@@ -512,7 +441,6 @@ class UserController extends Controller
                     'licence' => $request->edit_licence ?? null,
                     'licence_required' => $licence_required,
                     'licence_file' => $licenceFilePath ?? null,
-
                     'passport_required' => $passport_required,
                     'passport' => $request->edit_passport ?? null,
                     'passport_file' => $passportFilePath ?? null,
@@ -525,7 +453,7 @@ class UserController extends Controller
                     'extra_roles' => $extra_roles,
                     'is_admin' => $is_admin
                 ]);
-            Session::flash('message', 'User data updated successfully');
+
             return response()->json(['success' => true, 'message' => "User data updated successfully"]);
         }
     }
@@ -550,59 +478,6 @@ class UserController extends Controller
             return redirect()->route('user.index')->with('message', 'User deleted successfully');
         }
     }
-
-    public function showUser(Request $request, $user_id)
-    { 
-        $user = User::with('roles', 'organization')->find(decode_id($user_id));
-    
-        if (!$user) {
-            return redirect()->back()->with('error', 'User not found.');
-        }
-    
-        // Fetch extra role names directly in one line
-        $extraRoles = Role::whereIn('id', json_decode($user->extra_roles ?? '[]'))->pluck('role_name')->toArray();
-    // dd($user);
-        return view('users.show', compact('user', 'extraRoles'));
-    }
-
-    public function docsVerify(Request $request)
-    {
-        // Decode the encoded userId
-        $decodedUserId = decode_id($request->userId);
-    
-        // Validate the incoming request
-        $request->validate([
-            'userId' => [
-                'required',
-                function ($attribute, $value, $fail) use ($decodedUserId) {
-                    // Check if the decoded userId exists in the users table
-                    if (!User::where('id', $decodedUserId)->exists()) {
-                        $fail('The selected user id is invalid.');
-                    }
-                },
-            ],
-            'documentType' => 'required|in:passport,licence',
-            'verified' => 'required|boolean',
-        ]);
-    
-        // Find the user using the decoded userId
-        $user = User::find($decodedUserId);
-        if (!$user) {
-            return response()->json(['error' => 'User not found.'], 404);
-        }
-    
-        // Determine which column to update
-        $column = $request->documentType . '_verified'; // Either 'passport_verified' or 'licence_verified'
-    
-        // Update the user record
-        $user->update([$column => $request->verified]);
-    
-        return response()->json(['success' => 'Verification status updated successfully.']);
-    }
-    
-    
-
-
 
     public function switchRole(Request $request)
     {
