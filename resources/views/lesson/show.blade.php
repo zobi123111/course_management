@@ -105,7 +105,7 @@
             <div class="card-body">
                 <h5 class="card-title">{{  $lesson->lesson_title  }}</h5>
                 <p class="card-text">{{ $lesson->description }}</p>
-                @if(checkAllowedModule('courses', 'sublesson.store')->isNotEmpty())
+                @if(checkAllowedModule('courses', 'sub-lesson.store')->isNotEmpty())
                     <p class="card-text">
                         <button class="btn btn-success" id="createSubLessonBtn" data-bs-toggle="modal"
                         data-bs-target="#createSubLessonModal">Create Task</button>
@@ -151,13 +151,13 @@
                                         </a>
                                     @endif --}}
             
-                                    @if(checkAllowedModule('courses', 'sublesson.edit')->isNotEmpty())
+                                    @if(checkAllowedModule('courses', 'sub-lesson.edit')->isNotEmpty())
                                         <a href="javascript:void(0)" class="btn btn-light edit-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
                                             <i class="fa fa-edit"></i> Edit
                                         </a>
                                     @endif
             
-                                    @if(checkAllowedModule('courses', 'sublesson.delete')->isNotEmpty())
+                                    @if(checkAllowedModule('courses', 'sub-lesson.delete')->isNotEmpty())
                                         <a href="javascript:void(0)" class="btn btn-light delete-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
                                             <i class="fa-solid fa-trash"></i> Delete
                                         </a>

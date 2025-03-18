@@ -4,9 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\RoleController;
 use App\Http\Controllers\CourseController;
-use App\Http\Controllers\CourseLessonController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\GroupController;
@@ -154,6 +152,8 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/training/delete', [TrainingEventsController::class, 'deleteTrainingEvent'])->name('training.delete');
     Route::get('/training/get_ou_groups_and_instructors/', [TrainingEventsController::class, 'getOrgGroupsAndInstructors'])->name('training.get_ou_groups_and_instructors');
     Route::get('/training/show/{event_id}', [TrainingEventsController::class, 'showTrainingEvent'])->name('training.show');
+    Route::post('/training/store_grading', [TrainingEventsController::class, 'createGrading'])->name('training.store_grading');
+    Route::post('/training/overall_assessment', [TrainingEventsController::class, 'storeOverallAssessment'])->name('training.overall_assessment');
 
     // Resources Routes
     Route::get('/resource', [ResourceController::class, 'resource_list'])->name('resource.index');
