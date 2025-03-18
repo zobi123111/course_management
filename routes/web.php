@@ -15,6 +15,7 @@ use App\Http\Controllers\FolderController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\TrainingEventsController;
 use App\Http\Controllers\PrerequisiteController;
+use App\Http\Controllers\ResourceController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -61,7 +62,7 @@ Route::group(['middleware' => ['auth']], function () {
     ->name('course.prerequisites.store');
     Route::post('/lessons/{course}/{lesson}/prerequisites/store', [LessonController::class, 'prerequisitesStore'])
     ->name('lesson.prerequisites.store');
-
+ 
 
 });
 
@@ -152,8 +153,10 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/training/update', [TrainingEventsController::class, 'updateTrainingEvent'])->name('training.update');
     Route::post('/training/delete', [TrainingEventsController::class, 'deleteTrainingEvent'])->name('training.delete');
     Route::get('/training/get_ou_groups_and_instructors/', [TrainingEventsController::class, 'getOrgGroupsAndInstructors'])->name('training.get_ou_groups_and_instructors');
-
     Route::get('/training/show/{event_id}', [TrainingEventsController::class, 'showTrainingEvent'])->name('training.show');
+
+    // Resources Routes
+    Route::get('/resource', [ResourceController::class, 'resource_list'])->name('resource.index');
 
 });
 
