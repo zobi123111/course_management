@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TaskGrading extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'event_id',
@@ -15,6 +17,7 @@ class TaskGrading extends Model
         'sub_lesson_id',
         'user_id',
         'task_grade',
+        'created_by',
     ];
 
     /**

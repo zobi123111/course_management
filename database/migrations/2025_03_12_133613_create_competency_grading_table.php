@@ -17,7 +17,9 @@ return new class extends Migration
             $table->foreignId('lesson_id')->constrained('course_lessons')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->text('competency_grade');
+            $table->unsignedBigInteger('created_by'); // Added column without foreign key constraint
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
