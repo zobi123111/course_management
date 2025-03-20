@@ -618,7 +618,7 @@
 
         $(document).on("submit", "#gradingFrom", function(e) {
             e.preventDefault(); // Prevent default form submission
-            $(".loader").fadeIn();
+            // $(".loader").fadeIn();
 
             let formData = new FormData(this);
             console.log(formData);
@@ -631,10 +631,10 @@
                 contentType: false,
                 success: function (response) {
                     if (response.success) {
-                        $(".loader").fadeOut("slow");
+                        // $(".loader").fadeOut("slow");
                         alert("Grading saved successfully!");
-                        $(this)[0].reset();
                         location.reload(); // Reload to reflect changes
+                        // $(this)[0].reset();
                     } else {
                         alert("Something went wrong. Please try again.");
                     }

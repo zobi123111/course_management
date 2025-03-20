@@ -267,6 +267,17 @@
                         <textarea class="form-control" name="sub_description" rows="3"></textarea>
                         <div id="sub_description_error" class="text-danger error_e"></div>
                     </div>
+                    <!-- Grading Type Selection -->
+                    <div class="form-group">
+                        <label class="form-label">Grading Type<span class="text-danger">*</span></label>
+                        <div>
+                            <input type="radio" name="grade_type" value="pass_fail" id="grade_pass_fail">
+                            <label for="grade_pass_fail">Pass/Fail</label>
+
+                            <input type="radio" name="grade_type" value="score" id="grade_score" >
+                            <label for="grade_score">Score (1-5)</label>
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label for="sub_status" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="sub_status" aria-label="Select status">
@@ -308,6 +319,18 @@
                         <textarea class="form-control" name="edit_sub_description" id="edit_sub_description" rows="3"></textarea>
                         <div id="edit_sub_description_error" class="text-danger error_e"></div>
                     </div>     
+                      <!-- Grading Type Selection -->
+                    <div class="form-group">
+                        <label class="form-label">Grading Type<span class="text-danger">*</span></label>
+                        <div>
+                            <input type="radio" name="edit_grade_type" value="pass_fail" id="edit_grade_pass_fail">
+                            <label for="edit_grade_pass_fail">Pass/Fail</label>
+
+                            <input type="radio" name="edit_grade_type" value="score" id="edit_grade_score">
+                            <label for="edit_grade_score">Score (1-5)</label>
+                        </div>
+                        <div id="edit_grade_type_error" class="text-danger error_e"></div>
+                    </div>
                     <div class="form-group">
                         <label for="edit_sub_status" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="edit_sub_status" id="edit_sub_status">
@@ -399,6 +422,15 @@
                 $('input[name="edit_sub_lesson_id"]').val(response.subLesson.id);
                 $('#edit_sub_description').val(response.subLesson.description);
                 $('#edit_sub_status').val(response.subLesson.status);
+
+                // Set the correct grading type radio button
+                if (response.subLesson.grade_type === "pass_fail") {
+                    $('#edit_grade_pass_fail').prop('checked', true);
+                } else if (response.subLesson.grade_type === "score") {
+                    $('#edit_grade_score').prop('checked', true);
+                }
+
+                // Show the modal
                 $('#editSubLessonModal').modal('show');
             },
             error: function(xhr) {
@@ -406,6 +438,7 @@
             }
         });
     });
+
 
     // Handle form submission for updating sub-lesson
     $("#editSubLessonForm").on("submit", function(e) {

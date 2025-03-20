@@ -11,6 +11,7 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\LessonController;
+use App\Http\Controllers\SubLessonController;
 use App\Http\Controllers\TrainingEventsController;
 use App\Http\Controllers\PrerequisiteController;
 /*
@@ -106,11 +107,11 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/lesson/delete', [LessonController::class, 'deleteLesson'])->name('lesson.delete');
 
     //Sub-Lesson 
-    Route::post('/sub-lesson/create', [LessonController::class, 'createSubLesson'])->name('sub-lesson.store');
-    Route::get('/sub-lesson/edit', [LessonController::class, 'getSubLesson'])->name('sub-lesson.edit');
-    Route::get('/sub-lesson/{id}', [LessonController::class, 'showSubLesson'])->name('sub-lesson.show');
-    Route::post('/sub-lesson/update', [LessonController::class, 'updateSubLesson'])->name('sub-lesson.update');
-    Route::post('/sub-lesson/delete', [LessonController::class, 'deleteSubLesson'])->name('sub-lesson.delete');
+    Route::post('/sub-lesson/create', [SubLessonController::class, 'createSubLesson'])->name('sub-lesson.store');
+    Route::get('/sub-lesson/edit', [SubLessonController::class, 'getSubLesson'])->name('sub-lesson.edit');
+    Route::get('/sub-lesson/{id}', [SubLessonController::class, 'showSubLesson'])->name('sub-lesson.show');
+    Route::post('/sub-lesson/update', [SubLessonController::class, 'updateSubLesson'])->name('sub-lesson.update');
+    Route::post('/sub-lesson/delete', [SubLessonController::class, 'deleteSubLesson'])->name('sub-lesson.delete');
 
     //Groups Route
     Route::get('/groups', [GroupController::class, 'index'])->name('group.index');
@@ -154,6 +155,8 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/training/show/{event_id}', [TrainingEventsController::class, 'showTrainingEvent'])->name('training.show');
     Route::post('/training/store_grading', [TrainingEventsController::class, 'createGrading'])->name('training.store_grading');
     Route::post('/training/overall_assessment', [TrainingEventsController::class, 'storeOverallAssessment'])->name('training.overall_assessment');
+    // Route::get('/grading', [TrainingEventsController::class, 'getStudentGrading'])->name('grading.list');
+    Route::get('/training/grading-list/{event_id}', [TrainingEventsController::class, 'getStudentGrading'])->name('training.grading-list');
 
 });
 

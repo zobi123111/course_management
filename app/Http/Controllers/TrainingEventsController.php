@@ -14,7 +14,7 @@ use App\Models\CompetencyGrading;
 use App\Models\OverallAssessment;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
+
 
 class TrainingEventsController extends Controller
 {
@@ -36,7 +36,20 @@ class TrainingEventsController extends Controller
             $instructor =  User::whereHas('roles', function ($query) {
                 $query->where('role_name', 'like', '%Instructor%');
             })->with('roles')->get();       
-            $trainingEvents =  TrainingEvents::where('ou_id', $currentUser->ou_id)->where('instructor_id', $currentUser->id)->get();  
+
+            if (hasUserRole($currentUser, 'Instructor')) {
+                // For instructors: filter by instructor_id
+                $trainingEvents = TrainingEvents::where('ou_id', $currentUser->ou_id)
+                    ->where('instructor_id', $currentUser->id)
+                    ->get();
+            } else {
+                // For students: check if the current user's id exists in the group's user_ids JSON column
+                $trainingEvents = TrainingEvents::where('ou_id', $currentUser->ou_id)
+                    ->whereHas('group', function ($query) use ($currentUser) {
+                        $query->whereJsonContains('user_ids', (string)$currentUser->id);
+                    })
+                    ->get();
+            }
         }else{
             $group =  Group::where('ou_id', $currentUser->ou_id)->get();            
             $course =  Courses::where('ou_id', $currentUser->ou_id)->get();    
@@ -215,61 +228,14 @@ class TrainingEventsController extends Controller
 
     public function createGrading(Request $request)
     {
-        $errors = [];
-
-        // Get all submitted lesson, sub-lesson, and user IDs
-        $lessons = $request->tg_lesson_id ?? [];
-        $subLessons = $request->tg_subLesson_id ?? [];
-        $users = $request->tg_user_id ?? [];
-        $cgUsers = $request->cg_user_id ?? []; // Lessons for competency grading
-        $cgLessons = $request->cg_lesson_id ?? []; // Lessons for competency grading
-
-        // Convert indexed arrays to associative for easier validation
-        $lessons = array_flip($lessons);
-        $subLessons = array_flip($subLessons);
-        $users = array_flip($users);
-        $cgLessons = array_flip($cgLessons);
-        
-        // Validate task_grade
-        foreach ($lessons as $lesson_id => $val) {
-            foreach ($subLessons as $sub_lesson_id => $val) {
-                foreach ($users as $user_id => $val) {
-                    if (!isset($request->task_grade[$lesson_id][$sub_lesson_id][$user_id])) {
-                        $user = User::find($user_id);
-                        if ($user) {
-                            $errors["task_grade_{$lesson_id}_{$sub_lesson_id}_{$user_id}"] = 
-                                "Please select a task grade for {$user->fname} {$user->lname}.";
-                        }
-                    }
-                }
-            }
-        }
-
-        // Validate comp_grade using cg_lesson_id
-        foreach ($cgLessons as $lesson_id => $val) {
-            foreach ($users as $user_id => $val) {
-                if (!isset($request->comp_grade[$lesson_id][$user_id])) {
-                    $user = User::find($user_id);
-                    if ($user) {
-                    $errors["comp_grade_{$lesson_id}_{$user_id}"] = 
-                        "Please select a competency grade for {$user->fname} {$user->lname}.";
-                    }
-                }
-            }
-        }
-
-        // If there are errors, return them as JSON
-        if (!empty($errors)) {
-            return response()->json(['success' => false, 'errors' => $errors], 500);
-        }
-
-        // If validator fails, return validation errors
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
+        // Validate the request
+        $request->validate([
+            'event_id' => 'required|integer|exists:training_events,id',
+            'task_grade' => 'nullable|array',
+            'task_grade.*.*.*' => 'required|string|in:N/A,Further training required,Competent',
+            'comp_grade' => 'nullable|array',
+            'comp_grade.*.*' => 'required|integer|min:1|max:5',
+        ]);
 
         DB::beginTransaction();
 
@@ -354,6 +320,36 @@ class TrainingEventsController extends Controller
         Session::flash('message', 'Overall Assessment saved successfully.');
         return response()->json(['success' => true, 'message' => 'Overall Assessment saved successfully.']);
     }
+
+    public function getStudentGrading(Request $request,$event_id)
+    {
+        $userId = auth()->user()->id;
+        $ouId = auth()->user()->ou_id;
+
+        $events = TrainingEvents::where('ou_id', $ouId)->where('id', decode_id($event_id))
+            ->whereHas('taskGradings', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->with([
+                'taskGradings' => function ($query) use ($userId) {
+                $query->where('user_id', $userId)
+                      ->with('lesson:id,lesson_title') // Load only lesson_name
+                      ->with('subLesson:id,title'); // Load only sub_lesson_name
+                },
+                'competencyGradings' => function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                },
+                'overallAssessments' => function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                },
+                'course:id,course_name',  // Load only course name
+                'group:id,name',   // Load only group name
+                'instructor:id,fname,lname' // Load only instructor name
+            ])
+            ->get();
+        return view('trainings.grading-list', compact('events'));
+    }
+
 
     
     
