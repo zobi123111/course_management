@@ -7,10 +7,10 @@
           <div class="row justify-content-center">
             <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
 
-              <div class="d-flex justify-content-center py-4">
-                <a href="#" class="logo d-flex align-items-center w-auto">
-                  <img src="assets/img/logo.png" alt="">
-                  <span class="d-none d-lg-block">Management</span>
+            <div class="d-flex justify-content-center py-4 text-center">
+                <a href="#" class="">
+                <img src="{{env('PROJECT_LOGO')}}" alt="" class="avms_logo_login">
+                <!-- <span class="d-none d-lg-block">{{env('PROJECT_NAME')}}</span> -->
                 </a>
               </div><!-- End Logo -->
 
@@ -28,6 +28,10 @@
                                  {{ session()->get('message') }}
                           </div>
                     @endif
+                    @if(session()->has('error'))
+                        <span class="text-danger credential_error">The provided credentials do not match our records.</span>
+                    @endif
+                 
                   <form class="row g-3 needs-validation" novalidate id="login_form" >
                     @csrf
                     <div class="col-12">
@@ -57,7 +61,7 @@
                     </div>
                     <div class="col-12">
                       <!-- <p class="small mb-0">Don't have account? <a href="pages-register.html">Create an account</a></p> -->
-                       <!-- <p class="small mb-0"><a href="{{ url('forgot-password') }} ">Forgot Password ? </a></p> -->
+                       <p class="small mb-0"><a href="{{ url('forgot-password') }} ">Forgot Password ? </a></p>
                     </div>
                   
                   </form>

@@ -364,10 +364,10 @@ h6 {
   }
 }
 
-.logo img {
+/* .logo img {
   max-height: 26px;
   margin-right: 6px;
-}
+} */
 
 .logo span {
   font-size: 26px;
@@ -684,9 +684,9 @@ h6 {
   align-items: center;
   font-size: 15px;
   font-weight: 600;
-  color: #4154f1;
+  color: #012970;
   transition: 0.3;
-  background: #f6f9ff;
+  /* background: #f6f9ff; */
   padding: 10px 15px;
   border-radius: 4px;
 }
@@ -694,7 +694,7 @@ h6 {
 .sidebar-nav .nav-link i {
   font-size: 16px;
   margin-right: 10px;
-  color: #4154f1;
+  color: #012970;
 }
 
 .sidebar-nav .nav-link.collapsed {
@@ -705,21 +705,32 @@ h6 {
 .sidebar-nav .nav-link.collapsed i {
   color: #899bbd;
 }
-
-.sidebar-nav .nav-link:hover {
-  color: #4154f1;
-  background: #f6f9ff;
+.btn-primary i.fa:before {
+  color: #fff;
 }
-
-.sidebar-nav .nav-link:hover i {
-  color: #4154f1;
+.btn-secondary {
+  background: transparent;
+  color: #0d6efd;
+  border-color: #0d6efd;
 }
-
 .sidebar-nav .nav-link .bi-chevron-down {
   margin-right: 0;
   transition: transform 0.2s ease-in-out;
 }
-
+.sidebar-nav .nav-link.active {
+  background: #f6f9ff;
+  color:  #0d6efd;
+}
+.sidebar-nav .nav-link.active i {
+  color:  #0d6efd;
+}
+.sidebar-nav .nav-link:hover {
+  color:  #0d6efd;
+  background: #f6f9ff;
+}
+.sidebar-nav .nav-link:hover i {
+  color:  #0d6efd;
+}
 .sidebar-nav .nav-link:not(.collapsed) .bi-chevron-down {
   transform: rotate(180deg);
 }
@@ -1217,7 +1228,7 @@ h6 {
   padding: 20px 0;
   font-size: 14px;
   transition: all 0.3s;
-  border-top: 1px solid #cddfff;
+  /* border-top: 1px solid #cddfff; */
 }
 
 .footer .copyright {
@@ -1237,4 +1248,47 @@ h6 {
   display: flex;
   row-gap: 10px;
   flex-direction: column;
+}
+.fa-brands:before, .fa-regular:before, .fa-solid:before, .fa:before, .fab:before, .far:before, .fas:before{
+  color: #0d6efd;
+  cursor: pointer;
+  font-size: 18px;
+}
+.table-custom-head {
+  background: #becde7;
+}
+.folderbtncont{
+  display: flex;
+  column-gap: 15px;
+}
+
+.sidebar .logo-bottom {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  cursor: pointer;
+}
+
+.course_logo {
+  position: absolute;
+    bottom: 20px;
+}
+.prerequisite-item {
+  position: relative;
+}
+.remove-prerequisite {
+  position: absolute;
+  right: -6px;
+  top: -18px;
+  font-size: 13px;
+  border-radius: 50%;
+  padding: 0px 7px;
+  line-height: 23px;
+}
+.avms_logo{
+  width: 20%;
+}
+.avms_logo_login{
+  width: 30%;
 }
