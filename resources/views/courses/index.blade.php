@@ -112,7 +112,7 @@
                                 <h5 class="card-title courseName">{{ $val->course_name}}</h5>
         
                                 <p class="card-text">
-                                    {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
+                                    {{ \Illuminate\Support\Str::words($val->description, 50, '...') }} 
                                 </p>
                             </div>
         
@@ -185,6 +185,17 @@
                         <div id="ou_id_error" class="text-danger error_e"></div>            
                     </div>
                     @endif
+
+                    <div class="form-group">
+                        <label for="groups" class="form-label">Assigned Resource<span class="text-danger"></span></label>
+                        <select class="form-select resources-select" name="resources[]" multiple="multiple">
+                       
+                            @foreach($resource as $val)
+                            <option value="{{ $val->id }}">{{ $val->name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="resources_error" class="text-danger error_e"></div>
+                    </div>  
 
                     <div class="form-group">
                         <label for="groups" class="form-label">Select Groups<span class="text-danger"></span></label>
@@ -262,6 +273,16 @@
                         <div id="ou_id_error" class="text-danger error_e"></div>            
                     </div>
                     @endif
+                    <div class="form-group">
+                        <label for="groups" class="form-label">Assigned Resource<span class="text-danger"></span></label>
+                        <select class="form-select resources-select" name="resources[]" multiple="multiple">
+                       
+                            @foreach($resource as $val)
+                            <option value="{{ $val->id }}">{{ $val->name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="resources_error_up" class="text-danger error_e"></div>
+                    </div>  
 
                     <div class="form-group">
                         <label for="groups" class="form-label">Select Groups<span class="text-danger"></span></label>
@@ -349,6 +370,14 @@ function initializeSelect2() {
         multiple: true,
         dropdownParent: $('.modal:visible'),
     });
+    
+    $(".resources-select").select2({
+        maximumSelectionLength: 3,
+        placeholder: 'Select the Resource',
+        allowClear: true,
+        dropdownParent: $('.modal:visible'),
+    });
+
 }
 
 $(document).ready(function() {
@@ -402,6 +431,7 @@ $(document).ready(function() {
             type: 'GET',
             data: { id: courseId },
             success: function(response) {
+                console.log(response.course.courses_resources);
                 // Populate the modal fields with course data
                 $('input[name="course_name"]').val(response.course.course_name);
                 $('input[name="course_id"]').val(response.course.id);
@@ -420,6 +450,7 @@ $(document).ready(function() {
           // Clear old prerequisites
           $('#prerequisite_items').empty();
           let prerequisites = response.course.prerequisites;
+          let courses_resources = response.course.courses_resources;
  
             if (prerequisites.length > 0) {
                 prerequisites.forEach((prerequisite, index) => {
@@ -431,13 +462,37 @@ $(document).ready(function() {
                 let prerequisiteHtml = generatePrerequisiteHtml({ prerequisite_detail: '', prerequisite_type: 'text' }, 0);
                 $('#prerequisite_items').append(prerequisiteHtml);
             }
+        
 
-
+               // console.log(response.course.coursesResources);
                 var selectedGroups = response.course.groups.map(function(group) {
+                  
                     return group.id;
                 });
-
+               console.log("ddd" +selectedGroups);
                 $('.groups-select').val(selectedGroups).trigger('change');
+              console.log(response.courseResources)
+                var courseResources = response.courseResources.map(function(group) {
+                  
+                  return group.resources_id;
+              });
+              console.log("hh" +courseResources);
+              $('.resources-select').val(courseResources).trigger('change');
+
+               
+                // let assignedResources = response.courseResources.map(resource => resource.courses_id);
+                // console.log(assignedResources);
+                //   // Loop through options and mark assigned ones as selected
+                // $('.resources-select option').each(function() {
+                //     if (assignedResources.includes(parseInt($(this).val()))) {
+                //         $(this).prop('selected', true);
+                //     }
+                // });
+
+                // If using Select2 or other UI plugins, trigger an update
+                $('.resources-select').trigger('change');
+
+        
 
                 $('#editCourseModal').modal('show');
 
@@ -454,6 +509,21 @@ $(document).ready(function() {
     // Initialize select2
     function initializeSelect3() {
         $('.groups-select').select2({
+            allowClear: true,
+            multiple: true,
+            dropdownParent: $('.modal:visible'),
+            templateResult: function(state) {
+                if (state.selected) {
+                    return $(
+                        // '<span style="display:none;">' + state.text + '</span>'
+                    );
+                }
+                return state.text;
+            }
+        });
+
+        // Multi Select Resource select box
+        $('.resources-select').select2({
             allowClear: true,
             multiple: true,
             dropdownParent: $('.modal:visible'),

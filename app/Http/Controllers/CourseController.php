@@ -12,6 +12,8 @@ use App\Models\Group;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Resource;
+use App\Models\CourseResources;
 
 
 class CourseController extends Controller
@@ -112,8 +114,9 @@ class CourseController extends Controller
         }
     
         $organizationUnits = OrganizationUnits::all();
+        $resource  = Resource::all();
     
-        return view('courses.index', compact('courses', 'organizationUnits', 'groups'));
+        return view('courses.index', compact('courses', 'organizationUnits', 'groups', 'resource'));
     }
 
 
@@ -125,7 +128,8 @@ class CourseController extends Controller
     public function createCourse(Request $request)
     {
         // dd($request->all());
-        $request->validate([            
+        $request->validate([  
+            'resources' => 'required',          
             'course_name' => 'required|unique:courses',
             'description' => 'required',
             'image' => 'required',
@@ -164,7 +168,8 @@ class CourseController extends Controller
         //     }
         // }
 
-        $course->groups()->attach($request->group_ids);
+        $course->groups()->attach($request->group_ids); 
+        $course->resources()->attach($request->resources);
 
         Session::flash('message', 'Course created successfully.');
         return response()->json(['success' => 'Course created successfully.']);
@@ -180,13 +185,16 @@ class CourseController extends Controller
 
     public function getCourse(Request $request)
     {
+       // dd((decode_id($request->id)));
         $course = Courses::with('groups', 'prerequisites')->findOrFail(decode_id($request->id));
-
         $allGroups = Group::all();
+        $courseResources = CourseResources::where('courses_id', decode_id($request->id))->get();
+      
 
         return response()->json([
             'course' => $course,
-            'allGroups' => $allGroups
+            'allGroups' => $allGroups,
+            'courseResources' => $courseResources
         ]);
     }
 
@@ -206,6 +214,7 @@ class CourseController extends Controller
     {
 
         $request->validate([
+            'resources' => 'required',          
             'course_name' => 'required',
             'description' => 'required',
             'status' => 'required',
@@ -246,6 +255,9 @@ class CourseController extends Controller
 
         if ($request->has('group_ids')) {
             $course->groups()->sync($request->group_ids);
+        }
+        if ($request->has('resources')) {
+            $course->resources()->sync($request->resources);
         }
 
          // Handle Prerequisites

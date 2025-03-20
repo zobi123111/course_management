@@ -23,11 +23,18 @@ class Courses extends Model
         return $this->hasMany(CourseLesson::class, 'course_id');
     }
 
-    public function groups()
+    public function groups() 
     {
-        return $this->belongsToMany(Group::class, 'courses_group')->withTimestamps();
+        return $this->belongsToMany(Group::class, 'courses_group')->withTimestamps();  
     }
 
+
+    public function resources()  
+    {
+        return $this->belongsToMany(Resource::class, 'course_resources', 'courses_id', 'resources_id')->withTimestamps();  
+    } 
+    
+    
     public function courseGroups()
     {
         return $this->hasMany(CourseGroup::class, 'courses_id');
@@ -38,9 +45,14 @@ class Courses extends Model
 
     // }
 
-    public function prerequisites()
+    public function coursesResources() 
     {
-        return $this->hasMany(CoursePrerequisite::class, 'course_id');
+        return $this->belongsToMany(CourseResources::class, 'course_resources')->withTimestamps();  
+    }
+
+    public function prerequisites() 
+    {
+        return $this->hasMany(CoursePrerequisite::class, 'course_id'); 
     }
     
     public function prerequisiteDetails()

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use App\Models\Module; 
 
 class ModulesSeeder extends Seeder
 {
@@ -13,6 +14,7 @@ class ModulesSeeder extends Seeder
      */
     public function run(): void
     {
+        Module::truncate();
         DB::table('modules')->insert([
             ['name' => 'List', 'route_name' => 'dashboard', 'page_id' => 1, 'created_at' => null, 'updated_at' => null],
             ['name' => 'List', 'route_name' => 'user.index', 'page_id' => 2, 'created_at' => null, 'updated_at' => null],
@@ -53,6 +55,10 @@ class ModulesSeeder extends Seeder
             ['name' => 'Add', 'route_name' => 'folder.store', 'page_id' => 9, 'created_at' => null, 'updated_at' => null],
             ['name' => 'Edit', 'route_name' => 'folder.edit', 'page_id' => 9, 'created_at' => null, 'updated_at' => null],
             ['name' => 'Delete', 'route_name' => 'folder.delete', 'page_id' => 9, 'created_at' => null, 'updated_at' => null],
+
+            ['name' => 'Add', 'route_name' => 'resource.store', 'page_id' => 10, 'created_at' => null, 'updated_at' => null],
+            ['name' => 'Edit', 'route_name' => 'resource.edit', 'page_id' => 10, 'created_at' => null, 'updated_at' => null],
+            ['name' => 'Delete', 'route_name' => 'resource.delete', 'page_id' => 10, 'created_at' => null, 'updated_at' => null],
         ]);
     }
 }

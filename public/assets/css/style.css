@@ -1292,3 +1292,8 @@ h6 {
 .avms_logo_login{
   width: 30%;
 }
+
+img#courseresource_img {
+  height: 44px;
+  width: 66px;
+}

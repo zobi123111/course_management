@@ -155,11 +155,22 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/training/store_grading', [TrainingEventsController::class, 'createGrading'])->name('training.store_grading');
     Route::post('/training/overall_assessment', [TrainingEventsController::class, 'storeOverallAssessment'])->name('training.overall_assessment');
 
-    // Resources Routes
-    Route::get('/resource', [ResourceController::class, 'resource_list'])->name('resource.index');
+
+
+    
+     
 
 });
-
+// Resources Routes
+    Route::get('/resource', [ResourceController::class, 'resource_list'])->name('resource.index');
+    Route::post('/resource/save', [ResourceController::class, 'save'])->name('save.index');
+    Route::get('/resource/edit', [ResourceController::class, 'edit'])->name('edit.index');
+    Route::post('/resourse/update', [ResourceController::class, 'update'])->name('update.index');
+    Route::post('/resource/delete', [ResourceController::class, 'delete'])->name('delete.index');
+    Route::post('/resource/getcourseResource', [ResourceController::class, 'getcourseResource'])->name('getcourseResource.index');
+    // Booking Request
+      Route::get('/booking/bookresource/{course_id}', [ResourceController::class, 'bookresource'])->name('bookresource.index');
+      Route::post('/booking/store', [ResourceController::class, 'store'])->name('store.index');
 
 
 Route::get('/clear-cache', function() {
