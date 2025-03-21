@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\LessonPrerequisite;
 use App\Models\LessonPrerequisiteDetail;
 
-class LessonController extends Controller
+class LessonController extends Controller 
 {
     /**
      * Display a listing of the resource.
@@ -20,15 +20,7 @@ class LessonController extends Controller
     
     public function showCourse(Request $request, $course_id)
     {
-
-        // dd($course_id);
         $course = Courses::with('courseLessons', 'prerequisites')->findOrFail(decode_id($course_id));
-
-        // $course = Courses::findOrFail(decode_id($course_id));
-
-
-        // dd($course->course_name);
-
         $breadcrumbs = [
             ['title' => 'Courses', 'url' => route('course.index')],
             ['title' => $course->course_name, 'url' => ''],

@@ -15,7 +15,7 @@ class GroupController extends Controller
     //     //Get the currently logged-in user
     //     $currentUser = auth()->user();
     //     // Fetch users with the same ouid as the logged-in user
-    //     $users = User::where('ou_id', $currentUser->ou_id)->get();
+    //     $users = User::where('ou_id', $currentUser->ou_id)->get() ;
     //     $urganizationUnits = OrganizationUnits::all();
     //     if ($currentUser->role == 1 && empty($currentUser->ou_id)) {
     //         $groups = Group::all();
@@ -52,6 +52,7 @@ class GroupController extends Controller
                 $userIds = is_array($userIds) ? $userIds : [];
                 return in_array($userId, $userIds);
             });
+            $users = User::all();
         } else {
             $users = User::where('ou_id', $currentUser->ou_id)->get();
             $groups = Group::where('ou_id', $currentUser->ou_id)->get();

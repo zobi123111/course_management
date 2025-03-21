@@ -14,19 +14,21 @@ use App\Models\CompetencyGrading;
 use App\Models\OverallAssessment;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
+use App\Models\Resource;
 
 
 class TrainingEventsController extends Controller
-{
+{ 
     public function index()
     {
         $currentUser = auth()->user();
         $organizationUnits = OrganizationUnits::all();
+        $resurces =  Resource::all();
         if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) {
             $course =  Courses::all();            
             $group =  Group::all();            
             $instructor =  User::whereHas('roles', function ($query) {
-                $query->where('role_name', 'like', '%Instructor%');
+                $query->where('role_name', 'like', '%Instructor%'); 
             })->with('roles')->get();          
             $trainingEvents = TrainingEvents::with(['course:id,course_name', 'group:id,name', 'instructor:id,fname,lname'])->get();
             // dd($trainingEvents);
@@ -59,9 +61,10 @@ class TrainingEventsController extends Controller
             })
             ->with('roles')
             ->get();            
-            $trainingEvents =  TrainingEvents::where('ou_id', $currentUser->ou_id)->get();            
+            $trainingEvents =  TrainingEvents::where('ou_id', $currentUser->ou_id)->get();   
+                
         }
-        return view('trainings.index', compact('group', 'course', 'instructor', 'organizationUnits', 'trainingEvents'));
+        return view('trainings.index', compact('group', 'course', 'instructor', 'organizationUnits', 'trainingEvents', 'resurces'));
     }
 
     public function createTrainingEvent(Request $request)
@@ -187,8 +190,10 @@ class TrainingEventsController extends Controller
 
     public function showTrainingEvent(Request $request, $event_id)
     {
+      
         $trainingEvent = TrainingEvents::with(['course:id,course_name', 'group:id,name,user_ids', 'instructor:id,fname,lname'])
         ->find(decode_id($event_id));
+      //  dd($trainingEvent);
         if ($trainingEvent && !empty($trainingEvent->group->user_ids)) {
             // Ensure user_ids is an array (convert from JSON if needed)
             $userIds = is_string($trainingEvent->group->user_ids) 

@@ -14,6 +14,7 @@ use App\Http\Controllers\LessonController;
 use App\Http\Controllers\SubLessonController;
 use App\Http\Controllers\TrainingEventsController;
 use App\Http\Controllers\PrerequisiteController;
+use App\Http\Controllers\ResourceController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -60,7 +61,7 @@ Route::group(['middleware' => ['auth']], function () {
     ->name('course.prerequisites.store');
     Route::post('/lessons/{course}/{lesson}/prerequisites/store', [LessonController::class, 'prerequisitesStore'])
     ->name('lesson.prerequisites.store');
-
+ 
 
 });
 
@@ -151,15 +152,28 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/training/update', [TrainingEventsController::class, 'updateTrainingEvent'])->name('training.update');
     Route::post('/training/delete', [TrainingEventsController::class, 'deleteTrainingEvent'])->name('training.delete');
     Route::get('/training/get_ou_groups_and_instructors/', [TrainingEventsController::class, 'getOrgGroupsAndInstructors'])->name('training.get_ou_groups_and_instructors');
-
     Route::get('/training/show/{event_id}', [TrainingEventsController::class, 'showTrainingEvent'])->name('training.show');
     Route::post('/training/store_grading', [TrainingEventsController::class, 'createGrading'])->name('training.store_grading');
     Route::post('/training/overall_assessment', [TrainingEventsController::class, 'storeOverallAssessment'])->name('training.overall_assessment');
     // Route::get('/grading', [TrainingEventsController::class, 'getStudentGrading'])->name('grading.list');
     Route::get('/training/grading-list/{event_id}', [TrainingEventsController::class, 'getStudentGrading'])->name('training.grading-list');
 
-});
 
+
+    
+     
+
+});
+// Resources Routes
+    Route::get('/resource', [ResourceController::class, 'resource_list'])->name('resource.index');
+    Route::post('/resource/save', [ResourceController::class, 'save'])->name('save.index');
+    Route::get('/resource/edit', [ResourceController::class, 'edit'])->name('edit.index');
+    Route::post('/resourse/update', [ResourceController::class, 'update'])->name('update.index');
+    Route::post('/resource/delete', [ResourceController::class, 'delete'])->name('delete.index');
+    Route::post('/resource/getcourseResource', [ResourceController::class, 'getcourseResource'])->name('getcourseResource.index');
+    // Booking Request
+      Route::get('/booking/bookresource/{course_id}', [ResourceController::class, 'bookresource'])->name('bookresource.index');
+      Route::post('/booking/store', [ResourceController::class, 'store'])->name('store.index');
 
 
 Route::get('/clear-cache', function() {

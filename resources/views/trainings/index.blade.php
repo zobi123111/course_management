@@ -130,6 +130,16 @@
                         </select>
                         <div id="instructor_id_error" class="text-danger error_e"></div>
                     </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Resource<span class="text-danger">*</span></label>
+                        <select class="form-select" name="instructor_id" aria-label="Default select example" id="select_instructor">
+                            <option value="">Select Resource</option>
+                            @foreach($resurces as $val)
+                            <option value="{{ $val->id }}">{{ $val->class }} </option>
+                            @endforeach
+                        </select>
+                        <div id="instructor_id_error" class="text-danger error_e"></div>
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="submitTrainingEvent" class="btn btn-primary sbt_btn">Save</button>
