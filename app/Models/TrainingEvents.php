@@ -38,4 +38,28 @@ class TrainingEvents extends Model
     {
         return $this->belongsTo(User::class, 'instructor_id', 'id'); // Fixed foreign key
     }
+
+        /**
+     * Relationship with TaskGrading
+     */
+    public function taskGradings()
+    {
+        return $this->hasMany(TaskGrading::class, 'event_id', 'id');
+    }
+
+    /**
+     * Relationship with CompetencyGrading
+     */
+    public function competencyGradings()
+    {
+        return $this->hasMany(CompetencyGrading::class, 'event_id', 'id');
+    }
+
+    /**
+     * Relationship with OverallAssessment
+     */
+    public function overallAssessments()
+    {
+        return $this->hasMany(OverallAssessment::class, 'event_id', 'id');
+    }
 }

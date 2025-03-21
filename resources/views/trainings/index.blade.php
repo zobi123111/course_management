@@ -29,7 +29,7 @@
             <th scope="col">Instructor</th>
             <th scope="col">Start Time</th>
             <th scope="col">End Time</th>
-            @if(checkAllowedModule('training','training.show')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty())
+            @if(checkAllowedModule('training','training.show')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.grading-list')->isNotEmpty())
             <th scope="col">Action</th>
             @endif
         </tr>
@@ -53,6 +53,9 @@
             @if(checkAllowedModule('training','training.delete')->isNotEmpty())
                 <i class="fa-solid fa-trash delete-event-icon" style="font-size:25px; cursor: pointer;"
                 data-event-id="{{ encode_id($event->id) }}" ></i>
+            @endif
+            @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
+            <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;"><i class="fa fa-eye text-danger me-2"></i></a>
             @endif
             </td>
         </tr>
@@ -427,3 +430,4 @@ $(document).ready(function() {
 </script>
 
 @endsection
+

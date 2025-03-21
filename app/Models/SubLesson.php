@@ -18,6 +18,7 @@ class SubLesson extends Model
         'lesson_id',
         'title',
         'description',
+        'grade_type',
         'status',
 
     ];

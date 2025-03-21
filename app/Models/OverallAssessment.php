@@ -23,7 +23,7 @@ class OverallAssessment extends Model
     // Define relationships
     public function event()
     {
-        return $this->belongsTo(TrainingEvent::class, 'event_id');
+        return $this->belongsTo(TrainingEvents::class, 'event_id');
     }
 
     public function user()
