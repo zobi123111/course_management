@@ -76,75 +76,126 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="" id="trainingEventForm" method="POST" class="row g-3">
-                    @csrf
-                    <div class="form-group">
-                        <label for="email" class="form-label">Select Course<span class="text-danger">*</span></label>
-                        <select class="form-select" name="course_id" aria-label="Default select example" id="select_course">
-                            <option value="">Select Course</option>
-                            @foreach($course as $val)
-                            <option value="{{ $val->id }}">{{ $val->course_name }}</option>
-                            @endforeach
-                        </select>
-                        <div id="course_id_error" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="email" class="form-label">Start Time<span class="text-danger">*</span></label>
-                        <input type="time" name="start_time" class="form-control" >
-                        <div id="start_time_error" class="text-danger error_e"></div>            
-                    </div>
-                    <div class="form-group">
-                        <label for="email" class="form-label">End Time<span class="text-danger">*</span></label>
-                        <input type="time" name="end_time" class="form-control" >
-                        <div id="end_time_error" class="text-danger error_e"></div>            
-                    </div>
-                    @if(auth()->user()->is_owner == 1)
-                        <div class="form-group">
-                            <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                            <select class="form-select select_org_unit" name="ou_id" aria-label="Default select example" id="select_org_unit">
-                                <option value="">Select Org Unit</option>
-                                @foreach($organizationUnits as $val)
-                                <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                                @endforeach
-                            </select>
-                            <div id="ou_id_error" class="text-danger error_e"></div>            
-                        </div>
-                    @endif
-                    <div class="form-group">
-                        <label for="email" class="form-label">Select Group<span class="text-danger">*</span></label>
-                        <select class="form-select" name="group_id" aria-label="Default select example" id="select_group" >
-                            <option value="">Select Group</option>
-                            @foreach($group as $val)
-                            <option value="{{ $val->id }}">{{ $val->name }}</option>
-                            @endforeach
-                        </select>
-                        <div id="group_id_error" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="email" class="form-label">Select Instructor<span class="text-danger">*</span></label>
-                        <select class="form-select" name="instructor_id" aria-label="Default select example" id="select_instructor">
-                            <option value="">Select Instructor</option>
-                            @foreach($instructor as $val)
-                            <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
-                            @endforeach
-                        </select>
-                        <div id="instructor_id_error" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="email" class="form-label">Select Resource<span class="text-danger">*</span></label>
-                        <select class="form-select" name="instructor_id" aria-label="Default select example" id="select_instructor">
-                            <option value="">Select Resource</option>
-                            @foreach($resurces as $val)
-                            <option value="{{ $val->id }}">{{ $val->class }} </option>
-                            @endforeach
-                        </select>
-                        <div id="instructor_id_error" class="text-danger error_e"></div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" id="submitTrainingEvent" class="btn btn-primary sbt_btn">Save</button>
-                    </div>
-                </form>
+            <form action="" id="trainingEventForm" method="POST" class="row g-3">
+                @csrf
+
+                <!-- Select Course -->
+                <div class="form-group">
+                    <label class="form-label">Select Course<span class="text-danger">*</span></label>
+                    <select class="form-select" name="course_id" id="select_course">
+                        <option value="">Select Course</option>
+                        @foreach($course as $val)
+                        <option value="{{ $val->id }}">{{ $val->course_name }}</option>
+                        @endforeach
+                    </select>
+                    <div id="course_id_error" class="text-danger error_e"></div>
+                </div>
+
+                <!-- Start Date & Time -->
+                <div class="form-group">
+                    <label class="form-label">Start Date & Time<span class="text-danger">*</span></label>
+                    <input type="datetime-local" name="start_time" class="form-control" id="start_time">
+                    <div id="start_time_error" class="text-danger error_e"></div>
+                </div>
+
+                <!-- End Date & Time -->
+                <div class="form-group">
+                    <label class="form-label">End Date & Time<span class="text-danger">*</span></label>
+                    <input type="datetime-local" name="end_time" class="form-control" id="end_time">
+                    <div id="end_time_error" class="text-danger error_e"></div>
+                </div>
+
+                <!-- Departure Airfield -->
+                <div class="form-group">
+                    <label class="form-label">Departure Airfield (4-letter code)<span class="text-danger">*</span></label>
+                    <input type="text" name="departure_airfield" class="form-control" maxlength="4">
+                    <div id="departure_airfield_error" class="text-danger error_e"></div>
+                </div>
+
+                <!-- Destination Airfield -->
+                <div class="form-group">
+                    <label class="form-label">Destination Airfield (4-letter code)<span class="text-danger">*</span></label>
+                    <input type="text" name="destination_airfield" class="form-control" maxlength="4">
+                    <div id="destination_airfield_error" class="text-danger error_e"></div>
+                </div>
+                @if(auth()->user()->is_owner == 1)
+                <div class="form-group">
+                    <label class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                    <select class="form-select" name="ou_id" id="select_org_unit">
+                        <option value="">Select Org Unit</option>
+                        @foreach($organizationUnits as $val)
+                        <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                        @endforeach
+                    </select>
+                    <div id="ou_id_error" class="text-danger error_e"></div>
+                </div>
+                @endif
+                <!-- Select Group -->
+                <!-- <div class="form-group">
+                    <label class="form-label">Select Group<span class="text-danger">*</span></label>
+                    <select class="form-select" name="group_id" id="select_group">
+                        <option value="">Select Group</option>
+                        @foreach($group as $val)
+                        <option value="{{ $val->id }}">{{ $val->name }}</option>
+                        @endforeach
+                    </select>
+                    <div id="group_id_error" class="text-danger error_e"></div>
+                </div> -->
+
+                 <!-- Select User -->
+                <div class="form-group">
+                    <label class="form-label">Select Student<span class="text-danger">*</span></label>
+                    <select class="form-select" name="student_id" id="select_user">
+                        <option value="">Select Student</option>
+                        @foreach($student as $val)
+                        <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
+                        @endforeach
+                    </select>
+                    <div id="group_id_error" class="text-danger error_e"></div>
+                </div>
+
+                <!-- Select Instructor -->
+                <div class="form-group">
+                    <label class="form-label">Select Instructor<span class="text-danger">*</span></label>
+                    <select class="form-select" name="instructor_id" id="select_instructor">
+                        <option value="">Select Instructor</option>
+                        @foreach($instructor as $val)
+                        <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
+                        @endforeach
+                    </select>
+                    <div id="instructor_id_error" class="text-danger error_e"></div>
+                </div>
+
+                <!-- Select Resource -->
+                <div class="form-group">
+                    <label class="form-label">Select Resource<span class="text-danger">*</span></label>
+                    <select class="form-select" name="resource_id" id="select_resource">
+                        <option value="">Select Resource</option>
+                        @foreach($resurces as $val)
+                        <option value="{{ $val->id }}">{{ $val->class }}</option>
+                        @endforeach
+                    </select>
+                    <div id="resource_id_error" class="text-danger error_e"></div>
+                </div>
+
+                <!-- Total Time (Calculated) -->
+                <div class="form-group">
+                    <label class="form-label">Total Time (hh:mm)</label>
+                    <input type="text" name="total_time" class="form-control" id="total_time" readonly>
+                </div>
+
+                <!-- License Number (Extracted from user profile) -->
+                <div class="form-group">
+                    <label class="form-label">License Number</label>
+                    <input type="text" name="licence_number" class="form-control" value="{{ auth()->user()->licence_number }}" readonly>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" id="submitTrainingEvent" class="btn btn-primary sbt_btn">Save</button>
+                </div>
+            </form>
             </div>
         </div>
     </div>
@@ -161,67 +212,113 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="" id="editTrainingEventForm" method="POST" class="row g-3">
-                    @csrf
-                    <input type="hidden" name="event_id" id="edit_event_id">
-                    <div class="form-group">
-                        <label for="email" class="form-label">Select Course<span class="text-danger">*</span></label>
-                        <select class="form-select" name="course_id" aria-label="Default select example" id="edit_select_course">
-                            <option value="">Select Course</option>
-                            @foreach($course as $val)
+            <form action="" id="editTrainingEventForm" method="POST" class="row g-3">
+                @csrf
+                <input type="hidden" name="event_id" id="edit_event_id">
+                
+                <div class="form-group">
+                    <label class="form-label">Select Course<span class="text-danger">*</span></label>
+                    <select class="form-select" name="course_id" id="edit_select_course">
+                        <option value="">Select Course</option>
+                        @foreach($course as $val)
                             <option value="{{ $val->id }}">{{ $val->course_name }}</option>
-                            @endforeach
-                        </select>
-                        <div id="course_id_error_up" class="text-danger error_e"></div>
-                    </div>
+                        @endforeach
+                    </select>
+                    <div id="course_id_error_up" class="text-danger error_e"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Start Date & Time<span class="text-danger">*</span></label>
+                    <input type="datetime-local" name="start_time" class="form-control" id="edit_start_time">
+                    <div id="start_time_error_up" class="text-danger error_e"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">End Date & Time<span class="text-danger">*</span></label>
+                    <input type="datetime-local" name="end_time" class="form-control" id="edit_end_time">
+                    <div id="end_time_error_up" class="text-danger error_e"></div>
+                </div>
+
+                @if(auth()->user()->is_owner == 1)
                     <div class="form-group">
-                        <label for="email" class="form-label">Start Time<span class="text-danger">*</span></label>
-                        <input type="time" name="start_time" class="form-control" id="edit_start_time">
-                        <div id="start_time_error_up" class="text-danger error_e"></div>            
-                    </div>
-                    <div class="form-group">
-                        <label for="email" class="form-label">End Time<span class="text-danger">*</span></label>
-                        <input type="time" name="end_time" class="form-control" id="edit_end_time">
-                        <div id="end_time_error_up" class="text-danger error_e"></div>            
-                    </div>
-                    @if(auth()->user()->is_owner == 1)
-                        <div class="form-group">
-                            <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                            <select class="form-select select_org_unit" name="ou_id" id="edit_ou_id" aria-label="Default select example">
-                                <option value="">Select Org Unit</option>
-                                @foreach($organizationUnits as $val)
+                        <label class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select select_org_unit" name="ou_id" id="edit_ou_id">
+                            <option value="">Select Org Unit</option>
+                            @foreach($organizationUnits as $val)
                                 <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                                @endforeach
-                            </select>
-                            <div id="ou_id_error_up" class="text-danger error_e"></div>            
-                        </div>
-                    @endif
-                    
-                    <div class="form-group">
-                        <label for="email" class="form-label">Select Group<span class="text-danger">*</span></label>
-                        <select class="form-select" name="group_id" aria-label="Default select example" id="edit_select_group">
-                            <option value="">Select Group</option>
-                            @foreach($group as $val)
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error_up" class="text-danger error_e"></div>
+                    </div>
+                @endif
+
+                <!-- <div class="form-group">
+                    <label class="form-label">Select Group<span class="text-danger">*</span></label>
+                    <select class="form-select" name="group_id" id="edit_select_group">
+                        <option value="">Select Group</option>
+                        @foreach($group as $val)
                             <option value="{{ $val->id }}">{{ $val->name }}</option>
-                            @endforeach
-                        </select>
-                        <div id="group_id_error_up" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="email" class="form-label">Select Instructor<span class="text-danger">*</span></label>
-                        <select class="form-select" name="instructor_id" aria-label="Default select example" id="edit_select_instructor">
-                            <option value="">Select Instructor</option>
-                            @foreach($instructor as $val)
+                        @endforeach
+                    </select>
+                    <div id="group_id_error_up" class="text-danger error_e"></div>
+                </div> -->
+
+                <div class="form-group">
+                    <label class="form-label">Select Student<span class="text-danger">*</span></label>
+                    <select class="form-select" name="student_id" id="edit_select_user">
+                        <option value="">Select Student</option>
+                        @foreach($student as $val)
+                        <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
+                        @endforeach
+                    </select>
+                    <div id="group_id_error" class="text-danger error_e"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Select Instructor<span class="text-danger">*</span></label>
+                    <select class="form-select" name="instructor_id" id="edit_select_instructor">
+                        <option value="">Select Instructor</option>
+                        @foreach($instructor as $val)
                             <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
-                            @endforeach
-                        </select>
-                        <div id="instructor_id_error_up" class="text-danger error_e"></div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" id="updateTrainingEvent" class="btn btn-primary sbt_btn">Update</button>
-                    </div>
-                </form>
+                        @endforeach
+                    </select>
+                    <div id="instructor_id_error_up" class="text-danger error_e"></div>
+                </div>
+
+                <!-- New Fields -->
+                <div class="form-group">
+                    <label class="form-label">Select Resource</label>
+                    <select class="form-select" name="resource_id" id="edit_select_resource">
+                        <option value="">Select Resource</option>
+                        @foreach($resurces as $val)
+                            <option value="{{ $val->id }}">{{ $val->resource_name }}</option>
+                        @endforeach
+                    </select>
+                    <div id="resource_id_error_up" class="text-danger error_e"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Departure Airfield</label>
+                    <input type="text" name="departure_airfield" class="form-control" id="edit_departure_airfield">
+                    <div id="departure_airfield_error_up" class="text-danger error_e"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Destination Airfield</label>
+                    <input type="text" name="destination_airfield" class="form-control" id="edit_destination_airfield">
+                    <div id="destination_airfield_error_up" class="text-danger error_e"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Licence Number</label>
+                    <input type="text" name="licence_number" class="form-control" id="edit_licence_number">
+                    <div id="licence_number_error_up" class="text-danger error_e"></div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" id="updateTrainingEvent" class="btn btn-primary sbt_btn">Update</button>
+                </div>
+            </form>
             </div>
         </div>
     </div>
@@ -260,6 +357,29 @@
 $(document).ready(function() {
     $('#groupTable').DataTable();
 
+
+    $('#start_time, #end_time').on('change', function () {
+        calculateTotalTime();
+    });
+
+    function calculateTotalTime() {
+        let start = $('#start_time').val();
+        let end = $('#end_time').val();
+
+        if (start && end) {
+            let startTime = new Date(start);
+            let endTime = new Date(end);
+
+            if (endTime > startTime) {
+                let diff = new Date(endTime - startTime);
+                let hours = diff.getUTCHours();
+                let minutes = diff.getUTCMinutes();
+                $('#total_time').val(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`);
+            } else {
+                $('#total_time').val('');
+            }
+        }
+    }
     // Initialize Select2 globally on all user selection dropdowns
     function initializeSelect2() {
         $('.users-select').select2({
@@ -269,6 +389,32 @@ $(document).ready(function() {
     }
 
     initializeSelect2(); // Call on page load
+
+
+    $('#select_user').change(function() {
+        var userId = $(this).val();
+
+        if (userId) {
+            $.ajax({
+                url: "{{ url('/training/get-licence-number') }}" + "?user_id=" + userId, // Append user_id in URL
+                type: "GET",
+                success: function(response) {
+                    if (response.success) {
+                        $('#licence_number').val(response.licence_number);
+                    } else {
+                        $('#licence_number').val('');
+                        alert('License number not found!');
+                    }
+                },
+                error: function(xhr) {
+                    console.error(xhr.responseText);
+                }
+            });
+        } else {
+            $('#licence_number').val('');
+        }
+    });
+
 
     $("#createTrainingEvent").on('click', function() {
         $(".error_e").html('');
@@ -305,6 +451,7 @@ $(document).ready(function() {
     $(document).on('click', '.edit-event-icon', function() {
         $('.error_e').html('');
         var eventId = $(this).data('event-id');
+
         $.ajax({
             url: "{{ url('/training/edit') }}",
             type: 'GET',
@@ -312,22 +459,39 @@ $(document).ready(function() {
                 eventId: eventId
             },
             success: function(response) {
-                console.log(response)
-                $('#edit_select_course').val(response.trainingEvent.course_id);
-                $('#edit_select_group').val(response.trainingEvent.group_id);
-                $('#edit_select_instructor').val(response.trainingEvent.instructor_id);
-                $('#edit_start_time').val(response.trainingEvent.start_time);
-                $('#edit_end_time').val(response.trainingEvent.end_time);
-                $('#edit_event_id').val(response.trainingEvent.id);
-                $('#edit_ou_id').val(response.trainingEvent.ou_id);
+                console.log(response);
+                if (response.success) {
+                    $('#edit_select_course').val(response.trainingEvent.course_id);
+                    $('#edit_select_group').val(response.trainingEvent.group_id);
+                    $('#edit_select_instructor').val(response.trainingEvent.instructor_id);
+                    $('#edit_select_resource').val(response.trainingEvent.resource_id);
+                    $('#edit_departure_airfield').val(response.trainingEvent.departure_airfield);
+                    $('#edit_destination_airfield').val(response.trainingEvent.destination_airfield);
+                    $('#edit_total_time').val(response.trainingEvent.total_time);
+                    $('#edit_licence_number').val(response.trainingEvent.licence_number);
 
-                $('#editTrainingEventModal').modal('show');
+                    // Convert datetime format for input[type="datetime-local"]
+                    $('#edit_start_time').val(response.trainingEvent.start_time.replace(" ", "T"));
+                    $('#edit_end_time').val(response.trainingEvent.end_time.replace(" ", "T"));
+
+                    $('#edit_event_id').val(response.trainingEvent.id);
+
+                    if (response.trainingEvent.ou_id) {
+                        $('#edit_ou_id').val(response.trainingEvent.ou_id);
+                    }
+
+                    $('#editTrainingEventModal').modal('show');
+                } else {
+                    console.error("Error: Invalid response format");
+                }
             },
             error: function(xhr) {
                 console.error(xhr.responseText);
+                alert('Something went wrong! Please try again.');
             }
         });
     });
+
 
     $('#updateTrainingEvent').on('click', function(e) {
         e.preventDefault();

@@ -441,6 +441,7 @@
                                                     <h5>{{ $user->fname }} {{ $user->lname }}</h5>
                                                     <table>
                                                         <tbody>
+                                                            @if($sublesson->grade_type=='pass_fail')
                                                             <tr>
                                                                 <td>
                                                                     <label class="radio-label">
@@ -461,6 +462,18 @@
                                                                     </label>
                                                                 </td>
                                                             </tr>
+                                                            @else
+                                                            <tr>
+                                                                @for ($i = 1; $i <= 5; $i++)
+                                                                <td>
+                                                                    <label class="radio-label">
+                                                                        <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}][{{ $user->id }}]" value="{{ $i }}"   {{ old("task_grade.$lesson->id.$sublesson->id.$user->id", $selectedGrade) == $i ? 'checked' : '' }}>
+                                                                        <span class="custom-radio">{{ $i }}</span>
+                                                                    </label>
+                                                                </td>
+                                                                @endfor                                                            
+                                                            </tr>
+                                                            @endif
                                                         </tbody>
                                                     </table>
                                                     <span class="custom-radio competent task_grade_{{ $lesson->id }}_{{ $sublesson->id }}_{{ $user->id }}"></span>                                                                    
@@ -704,6 +717,10 @@
                 }
             });
         });
+
+        setTimeout(function() {
+            $('#successMessage').fadeOut('slow');
+        }, 2000);
 
     });
 </script>

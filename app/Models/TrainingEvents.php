@@ -14,9 +14,15 @@ class TrainingEvents extends Model
         'ou_id',
         'course_id',
         'group_id',
+        'student_id',
         'instructor_id',
         'start_time',
-        'end_time'
+        'end_time',
+        'departure_airfield',
+        'destination_airfield',
+        'resource_id',
+        'total_time',
+        'licence_number'
     ];
 
     public function orgUnit()

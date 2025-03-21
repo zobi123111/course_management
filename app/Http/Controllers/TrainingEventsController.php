@@ -10,11 +10,13 @@ use App\Models\User;
 use App\Models\OrganizationUnits;
 use App\Models\TrainingEvents;
 use App\Models\TaskGrading;
+use App\Models\Resource;
 use App\Models\CompetencyGrading;
 use App\Models\OverallAssessment;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
-use App\Models\Resource;
+use Illuminate\Validation\Rule;
+
 
 
 class TrainingEventsController extends Controller
@@ -25,19 +27,37 @@ class TrainingEventsController extends Controller
         $organizationUnits = OrganizationUnits::all();
         $resurces =  Resource::all();
         if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) {
+            // $resurces =  Resource::all();
             $course =  Courses::all();            
             $group =  Group::all();            
             $instructor =  User::whereHas('roles', function ($query) {
                 $query->where('role_name', 'like', '%Instructor%'); 
             })->with('roles')->get();          
+            $student =  User::whereHas('roles', function ($query) {
+                $query->where('role_name', 'like', '%Student%'); 
+            })->with('roles')->get();          
             $trainingEvents = TrainingEvents::with(['course:id,course_name', 'group:id,name', 'instructor:id,fname,lname'])->get();
             // dd($trainingEvents);
         } elseif (checkAllowedModule('training', 'training.index')->isNotEmpty() && empty($currentUser->is_admin)) {
             $course =  Courses::where('ou_id', $currentUser->ou_id)->get();    
-            $group =  Group::where('ou_id', $currentUser->ou_id)->get();            
-            $instructor =  User::whereHas('roles', function ($query) {
+            $group =  Group::where('ou_id', $currentUser->ou_id)->get();   
+            // $resurces =  Resource::where('ou_id',$currentUser->ou_id)->get();
+
+            $instructor =  User::where('ou_id', $currentUser->ou_id)
+            ->where(function ($query) {
+                $query->whereNull('is_admin')->orWhere('is_admin', false);
+            })
+            ->whereHas('roles', function ($query) {
                 $query->where('role_name', 'like', '%Instructor%');
-            })->with('roles')->get();       
+            })->with('roles')->get(); 
+
+            $student =  User::where('ou_id', $currentUser->ou_id)
+            ->where(function ($query) {
+                $query->whereNull('is_admin')->orWhere('is_admin', false);
+            })
+            ->whereHas('roles', function ($query) {
+                $query->where('role_name', 'like', '%Student%'); 
+            })->with('roles')->get();    
 
             if (hasUserRole($currentUser, 'Instructor')) {
                 // For instructors: filter by instructor_id
@@ -54,17 +74,39 @@ class TrainingEventsController extends Controller
             }
         }else{
             $group =  Group::where('ou_id', $currentUser->ou_id)->get();            
-            $course =  Courses::where('ou_id', $currentUser->ou_id)->get();    
+            $course =  Courses::where('ou_id', $currentUser->ou_id)->get(); 
+            // $resurces =  Resource::where('ou_id',$currentUser->ou_id)->get();       
             $instructor = User::where('ou_id', $currentUser->ou_id)
+            ->where(function ($query) {
+                $query->whereNull('is_admin')->orWhere('is_admin', false);
+            })
             ->whereHas('roles', function ($query) {
                 $query->where('role_name', 'like', '%Instructor%');
+            })->with('roles')->get();    
+
+            $student =  User::where('ou_id', $currentUser->ou_id)
+            ->where(function ($query) {
+                $query->whereNull('is_admin')->orWhere('is_admin', false);
             })
-            ->with('roles')
-            ->get();            
+            ->whereHas('roles', function ($query) {
+                $query->where('role_name', 'like', '%Student%'); 
+            })->with('roles')->get();      
+
             $trainingEvents =  TrainingEvents::where('ou_id', $currentUser->ou_id)->get();   
                 
         }
-        return view('trainings.index', compact('group', 'course', 'instructor', 'organizationUnits', 'trainingEvents', 'resurces'));
+        return view('trainings.index', compact('group', 'course', 'instructor', 'organizationUnits', 'trainingEvents', 'resurces', 'student'));
+    }
+
+    public function getStudentLicenseNumber(Request $request,$user_id)
+    {
+        // dd($request->all());
+        $user = User::find($user_id);
+        if ($user) {
+            return response()->json(['success' => true, 'licence_number' => $user->licence_number]);
+        } else {
+            return response()->json(['success' => false]);
+        }
     }
 
     public function createTrainingEvent(Request $request)
@@ -72,10 +114,14 @@ class TrainingEventsController extends Controller
         // Validate request data
         $request->validate([
             'course_id' => 'required|exists:courses,id',
-            'group_id' => 'required|exists:groups,id',
+            'student_id' => 'required|exists:users,id',
             'instructor_id' => 'required|exists:users,id',
-            'start_time' => 'required|date_format:H:i', // Validating time format (HH:MM)
-            'end_time' => 'required|date_format:H:i|after:start_time', // Ensuring end_time is after start_time
+            'start_time' => 'required|date_format:Y-m-d\TH:i', // Validating datetime-local format
+            'end_time' => 'required|date_format:Y-m-d\TH:i|after:start_time', // Ensuring end_time is after start_time
+            'departure_airfield' => 'required|string|size:4', // Ensuring exactly 4-letter airfield code
+            'destination_airfield' => 'required|string|size:4',
+            'resource_id' => 'required|exists:resources,id',
+            'total_time' => 'required|date_format:H:i', // Total time as hh:mm from user input
             'ou_id' => [
                 function ($attribute, $value, $fail) {
                     if (auth()->user()->is_owner == 1 && empty($value)) {
@@ -83,19 +129,26 @@ class TrainingEventsController extends Controller
                     }
                 }
             ],
+            'licence_number' => 'nullable|string',
         ]);
     
         // Create a new training event
         $trainingEvent = TrainingEvents::create([
-            "ou_id" => (auth()->user()->is_owner == 1) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
+            "ou_id" => (auth()->user()->is_owner == 1) ? $request->ou_id : auth()->user()->ou_id,
             'course_id' => $request->course_id,
             'group_id' => $request->group_id,
             'instructor_id' => $request->instructor_id,
+            'resource_id' => $request->resource_id,
             'start_time' => $request->start_time,
-            'end_time' => $request->end_time
+            'end_time' => $request->end_time,
+            'departure_airfield' => strtoupper($request->departure_airfield), // Convert to uppercase
+            'destination_airfield' => strtoupper($request->destination_airfield),
+            'total_time' => $request->total_time, // Using the user-provided total time
+            'licence_number' => $request->licence_number ?? auth()->user()->licence_number,
         ]);
     
         Session::flash('message', 'Training event created successfully.');
+    
         // Return JSON response
         return response()->json([
             'success' => true,
@@ -103,6 +156,7 @@ class TrainingEventsController extends Controller
             'trainingEvent' => $trainingEvent
         ], 201);
     }
+    
 
     public function getTrainingEvent(Request $request)
     {
@@ -117,49 +171,60 @@ class TrainingEventsController extends Controller
 
     public function updateTrainingEvent(Request $request)
     {
-        // Validate request
+        // Convert start_time and end_time to proper format
         $request->merge([
-            'start_time' => date('H:i', strtotime($request->start_time)),
-            'end_time' => date('H:i', strtotime($request->end_time)),
+            'start_time' => date('Y-m-d H:i:s', strtotime($request->start_time)),
+            'end_time' => date('Y-m-d H:i:s', strtotime($request->end_time)),
         ]);
+    
+        // Validate request
         $request->validate([
             'course_id' => 'required|exists:courses,id',
-            'group_id' => 'required|exists:groups,id',
+            'student_id' => 'required|exists:users,id',
             'instructor_id' => 'required|exists:users,id',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i',
+            'start_time' => 'required|date_format:Y-m-d H:i:s',
+            'end_time' => 'required|date_format:Y-m-d H:i:s|after:start_time',
             'ou_id' => [
-                    function ($attribute, $value, $fail) {
-                        if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
-                            $fail('The Organizational Unit (OU) is required for Super Admin.');
-                        }
+                function ($attribute, $value, $fail) {
+                    if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
+                        $fail('The Organizational Unit (OU) is required for Super Admin.');
                     }
-                ]
+                }
+            ],
+            'resource_id' => 'nullable|exists:resources,id',
+            'departure_airfield' => 'nullable|string|max:255',
+            'destination_airfield' => 'nullable|string|max:255',
+            'licence_number' => 'nullable|string|max:255',
         ]);
-
+    
         // Find the training event
         $trainingEvent = TrainingEvents::find($request->event_id);
-
+    
         if (!$trainingEvent) {
             return response()->json(['message' => 'Training event not found'], 404);
         }
-
+    
         // Update fields
         $trainingEvent->update([
             "ou_id" => (auth()->user()->is_owner == 1) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
             'course_id' => $request->course_id,
-            'group_id' => $request->group_id,
+            'student_id' => $request->student_id,
             'instructor_id' => $request->instructor_id,
             'start_time' => $request->start_time,
-            'end_time' => $request->end_time
+            'end_time' => $request->end_time,
+            'resource_id' => $request->resource_id,
+            'departure_airfield' => $request->departure_airfield,
+            'destination_airfield' => $request->destination_airfield,
+            'licence_number' => $request->licence_number,
         ]);
-
+    
         Session::flash('message', 'Training event updated successfully.');
         return response()->json([
             'message' => 'Training event updated successfully',
             'trainingEvent' => $trainingEvent
         ]);
     }
+    
 
     public function deleteTrainingEvent(Request $request)
     {
@@ -237,7 +302,7 @@ class TrainingEventsController extends Controller
         $request->validate([
             'event_id' => 'required|integer|exists:training_events,id',
             'task_grade' => 'nullable|array',
-            'task_grade.*.*.*' => 'required|string|in:N/A,Further training required,Competent',
+            'task_grade.*.*.*' => ['required', 'string', Rule::in(['N/A', 'Further training required', 'Competent', '1', '2', '3', '4', '5'])],
             'comp_grade' => 'nullable|array',
             'comp_grade.*.*' => 'required|integer|min:1|max:5',
         ]);
