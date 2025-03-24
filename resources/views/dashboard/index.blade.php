@@ -91,7 +91,7 @@ $currentUser = Auth()->user();
                                     <i class="ri-briefcase-2-fill dashboard_icon"></i>
                                 </div>
                                 <div class="ps-3">
-                                    <h6>{{ $folder_count }}</h6>
+                                    <h6>{{ $folder_count }}</h6> 
                                 </div>
                             </div>
                         </div>
@@ -210,7 +210,7 @@ $currentUser = Auth()->user();
               @endif
                   <div class="card info-card customers-card">
                       <div class="card-body">
-                          <h5 class="card-title">Folders</h5>
+                          <h5 class="card-title">Folderss</h5>
 
                           <div class="d-flex align-items-center">
                               <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
@@ -227,6 +227,31 @@ $currentUser = Auth()->user();
               @endif
           </div>
           <!-- End Folder Card -->
+
+                   <!-- Resource  Card -->
+                   <div class="col-xxl-4 col-xl-12">
+            
+                  <a href="{{ url('resource/approval') }}" class="text-decoration-none">
+            
+                  <div class="card info-card customers-card">
+                      <div class="card-body">
+                          <h5 class="card-title">Resource Request</h5>
+
+                          <div class="d-flex align-items-center">
+                              <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                  <i class="ri-briefcase-2-fill dashboard_icon"></i>
+                              </div>
+                              <div class="ps-3">
+                                  <h6>{{ $requestCount }}</h6>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              @if(auth()->user()->role == 3 )
+                  </a>
+              @endif
+          </div>
+          <!-- End Resource  Card -->
 
         </div>
       </div>
