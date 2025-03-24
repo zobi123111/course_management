@@ -157,6 +157,8 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/training/overall_assessment', [TrainingEventsController::class, 'storeOverallAssessment'])->name('training.overall_assessment');
     // Route::get('/grading', [TrainingEventsController::class, 'getStudentGrading'])->name('grading.list');
     Route::get('/training/grading-list/{event_id}', [TrainingEventsController::class, 'getStudentGrading'])->name('training.grading-list');
+    Route::get('/training/get-licence-number/{user_id}', [TrainingEventsController::class, 'getStudentLicenseNumber'])->name('training.get-licence-number');
+
 
 
 
