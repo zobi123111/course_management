@@ -95,28 +95,10 @@ class ResourceController extends Controller
     {
     //    dd($request->all());
         $validated =   request()->validate([
-            'name' => 'required',
-            'registration' => 'required',
-            'type' => 'required',
-            'class' => 'required',
-            'note' => 'required',
-            'Hours_from_RTS' => 'required',
-            'Date_from_RTS' => 'required',
-            'Date_for_maintenance' => 'required',
-            'Hours_Remaining' => 'required',
-            'resource_logo' => 'required',
+            'name' => 'required'
         ],
         [
-            'name.required'            => 'The Name field is required.',
-            'registration.required'    => 'The Registration field is required.',
-            'type.required'            => 'The Type field is required.',
-            'class.required'           => 'The Class field is required.',
-            'note.required'            => 'The Note field is required.',
-            'Hours_from_RTS.required'  => 'The Hours from RTS field is required.',
-            'Date_from_RTS.required'   => 'The Date from RTS field is required.',
-            'Date_for_maintenance.required' => 'The Date for maintenance field is required.',
-            'Hours_Remaining.required'  => 'The Hours Remaining field is required.',
-            'resource_logo.required'  => 'The Resource_logo field is required.'
+            'name.required'            => 'The Name field is required.'
         ]);
 
         if($validated)
@@ -133,6 +115,7 @@ class ResourceController extends Controller
             "registration"  =>  $request->registration,
             "type"  =>  $request->type,
             "class"  =>  $request->class,
+            "other"  =>  $request->other,
             "note"  =>  $request->note,
             "hours_from_rts"  =>  $request->Hours_from_RTS,
             "date_from_rts"  =>  $request->Date_from_RTS,
@@ -153,28 +136,10 @@ class ResourceController extends Controller
     public function update(Request $request)
     {
         $validated =   request()->validate([
-            'edit_name' => 'required',
-            'edit_registration' => 'required',
-            'edit_type' => 'required',
-            'edit_class' => 'required',
-            'edit_note' => 'required',
-            'edit_Hours_from_RTS' => 'required',
-            'edit_Date_from_RTS' => 'required',
-            'edit_Date_for_maintenance' => 'required',
-            'edit_Hours_Remaining' => 'required',
-            //'resource_logo' => 'required',
+            'edit_name' => 'required'
         ],
         [
-            'edit_name.required'            => 'The Name field is required.',
-            'edit_registration.required'    => 'The Registration field is required.',
-            'edit_type.required'            => 'The Type field is required.',
-            'edit_class.required'           => 'The Class field is required.',
-            'edit_note.required'            => 'The Note field is required.',
-            'edit_Hours_from_RTS.required'  => 'The Hours from RTS field is required.',
-            'edit_Date_from_RTS.required'   => 'The Date from RTS field is required.',
-            'edit_Date_for_maintenance.required' => 'The Date for maintenance field is required.',
-            'edit_Hours_Remaining.required'  => 'The Hours Remaining field is required.',
-           // 'resource_logo.required'  => 'The Resource_logo field is required.'
+            'edit_name.required'            => 'The Name field is required.'
         ]);
 
         $logo_name = [];
@@ -184,7 +149,7 @@ class ResourceController extends Controller
             $filePath = $file->storeAs('resource_logo', $fileName, 'public');
             
             // If you want to store only the filename instead of the path:
-            $storedFileName = basename($filePath);
+            $storedFileName = basename($filePath); 
             $logo_name[] = ($fileName);
     }
 
@@ -193,6 +158,7 @@ class ResourceController extends Controller
         "registration"  =>  $request->edit_registration,
         "type"  =>  $request->edit_type,
         "class"  =>  $request->edit_class,
+        "other"  =>  $request->edit_other,
         "note"  =>  $request->edit_note,
         "hours_from_rts"  =>  $request->edit_Hours_from_RTS,
         "date_from_rts"  =>  $request->edit_Date_from_RTS,
@@ -231,7 +197,7 @@ class ResourceController extends Controller
     public function bookresource(Request $request, $course_id)
     {
         $course_id = decode_id($course_id);
-
+       //dd($course_id);
         $courseResources = CourseResources::where('courses_id', $course_id)
                             ->with('resource')
                             ->get();
@@ -290,6 +256,8 @@ class ResourceController extends Controller
 
     // Save bookings if not duplicate
     $userId = Auth::user()->id;
+    $ou_id = Auth::user()->ou_id;
+ 
     foreach ($checkedResources as $row) {
         $exists = BookedResource::where('user_id', $userId)
             ->where('course_id', $row['courses_id'])
@@ -299,6 +267,7 @@ class ResourceController extends Controller
         if (!$exists) {
             BookedResource::create([
                 "user_id" => $userId,
+                "ou_id" => $ou_id,
                 "course_id" => $row['courses_id'],
                 "resource_id" => $row['id'],
                 "start_date" => $row['start_date'],
@@ -309,6 +278,56 @@ class ResourceController extends Controller
     }
     Session::flash('message','Resource Booked successfully.');
     return response()->json(['suceess' => 'suceess' ]);
+}
+
+public function resource_approval()
+{
+    $ou_id    = Auth::user()->ou_id;
+    $is_admin = Auth::user()->is_admin;
+
+    
+    if($is_admin== 1){
+        $pending_approval = BookedResource::with('resource:id,name', 'user:id,fname,lname')->where('ou_id', $ou_id)->get();
+        return view('booking.approval', compact('pending_approval'));
+    }else{
+        $pending_approval = [];
+        return view('booking.approval', compact('pending_approval'));
+    }
+    
+   
+}
+
+public function approve_request(Request $request)
+{
+   $booking_id = $request->booking_id;
+
+   $approve = array(
+     "status" => 1
+   );
+
+   $approve_request = BookedResource::where('id', $booking_id)->update($approve);
+   if($approve_request)
+   {
+    Session::flash('message','Request Approved Successfully');
+    return response()->json(['success' => 'success' ]);
+   }
+
+}
+
+public function reject_request(Request $request)
+{
+    $booking_id = $request->booking_id;
+
+    $approve = array(
+      "status" => 2
+    );
+ 
+    $approve_request = BookedResource::where('id', $booking_id)->update($approve);
+    if($approve_request)
+    {
+     Session::flash('message','Request Rejected Successfully');
+     return response()->json(['success' => 'success' ]);
+    }
 }
 
     

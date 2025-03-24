@@ -169,8 +169,12 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/resource/delete', [ResourceController::class, 'delete'])->name('delete.index');
     Route::post('/resource/getcourseResource', [ResourceController::class, 'getcourseResource'])->name('getcourseResource.index');
     // Booking Request
-      Route::get('/booking/bookresource/{course_id}', [ResourceController::class, 'bookresource'])->name('bookresource.index');
-      Route::post('/booking/store', [ResourceController::class, 'store'])->name('store.index');
+    Route::get('/booking/bookresource/{course_id}', [ResourceController::class, 'bookresource'])->name('bookresource.index');
+    Route::post('/booking/store', [ResourceController::class, 'store'])->name('store.index');
+    // Approval
+    Route::get('/resource/approval', [ResourceController::class, 'resource_approval'])->name('resource.approval');
+    Route::post('/resource/approve/request', [ResourceController::class, 'approve_request'])->name('approve_request.index');
+    Route::post('/resource/reject/request', [ResourceController::class, 'reject_request'])->name('reject_request.index');
 
 
 Route::get('/clear-cache', function() {

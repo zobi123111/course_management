@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Group;
 use App\Models\Folder;
 use App\Models\Document;
+use App\Models\BookedResource;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -15,13 +16,10 @@ class DashboardController extends Controller
 {
     public function index() 
     {
-
-
         $user_count = 0;
         $group_count = 0;
         $folder_count = 0;
-
-        // dd(checkAllowedModule('dashboard', 'dashboard')->isNotEmpty());
+       
 
         if(Auth()->user()->is_owner ==  1){
 
@@ -30,7 +28,8 @@ class DashboardController extends Controller
             $group_count = Group::count();
             $folder_count = Folder::count();
             $documents = Document::all();
-
+           
+         
         }
         elseif(checkAllowedModule('dashboard', 'dashboard')->isNotEmpty() && empty(Auth()->user()->is_admin)){
             // dd("else If working");
@@ -56,6 +55,7 @@ class DashboardController extends Controller
             $user_count = $courses->count();
             $group_count = $filteredGroups->count();
             $folder_count = 0;
+            $requestCount = 0;
             $documents = Document::where('ou_id', Auth::user()->ou_id)->get();
 
         }else{
@@ -64,7 +64,11 @@ class DashboardController extends Controller
             $user_count = user::where('ou_id' , auth()->user()->ou_id)->count();
             $group_count = 0;
             $folder_count = 0;
+            $requestCount = 0;
             $documents = Document::where('ou_id', Auth::user()->ou_id)->get();
+            $ou_id    = Auth::user()->ou_id;
+            $requestCount = BookedResource::with('resource:id,name', 'user:id,fname,lname')->where('ou_id', $ou_id)->get()->count();
+          
 
         }
 
@@ -72,6 +76,6 @@ class DashboardController extends Controller
         $readDocuments = $documents->where('acknowledged', 1)->count();
         $unreadDocuments = $totalDocuments-$readDocuments;
 
-        return view('dashboard.index', compact('user_count', 'group_count', 'folder_count', 'totalDocuments','readDocuments','unreadDocuments'));
+        return view('dashboard.index', compact('user_count', 'group_count', 'folder_count', 'totalDocuments','readDocuments','unreadDocuments', 'requestCount'));
     }
 }
