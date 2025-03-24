@@ -277,7 +277,7 @@
             type: "GET",
         },
         columns: [
-            { data: 'name', name: 'name' },
+            { data: 'name', name: 'name' ,class:'resource_name'},
             { data: 'registration', name: 'registration', class: 'orgUnitName' },
             { data: 'class', name: 'class' },
             { data: 'type', name: 'type' },
@@ -477,53 +477,7 @@ function autoDisableFields(formType) {
         })
     })
 
-//     $('#resourceTable').on('click', '.get_org_users', function() {
-//     var ou_id = $(this).data('ou-id');
 
-//         $.ajax({               
-//             url: "{{ url('/orgunit/user_list') }}",
-//             type: 'GET',
-//             data: { ou_id: ou_id },
-//             success: function(response) {
-//                 console.log(response);
-
-//                 // Check if users exist
-//                 if (!response.orgUnitUsers || response.orgUnitUsers.length === 0) {
-//                     alert('No users found for this Organizational Unit.');
-//                     return;
-//                 }
-
-//                 // Clear previous data
-//                 $('#orgUnitUsersTable tbody').html('');
-
-//                 // Append new data
-//                 response.orgUnitUsers.forEach(user => {
-//                     var imageUrl = user.image 
-//                         ? "{{ asset('storage') }}/" + user.image 
-//                         : "{{ asset('assets/img/no_image.png') }}"; // Default image if none provided
-                    
-//                     var row = `
-//                         <tr>
-//                             <td><img src="${imageUrl}" alt="Profile Image" width="40" height="40" class="rounded-circle"></td>
-//                             <td>${user.fname} ${user.lname}</td>
-//                             <td>${user.email}</td>
-//                         </tr>`;
-//                     $('#orgUnitUsersTable tbody').append(row);
-//                 });
-
-//                 // Show modal
-//                 $('#orgUnitUsersModal').modal('show');
-//             },
-//             error: function(xhr, status, error) {
-//                 try {
-//                     var response = JSON.parse(xhr.responseText); // Parse responseText to JSON
-//                     alert(response.error || 'An unknown error occurred.');
-//                 } catch (e) {
-//                     alert('Failed to fetch users. Please try again.');
-//                 }
-//             }
-//         });
-//     });
 
 
 
@@ -532,8 +486,8 @@ function autoDisableFields(formType) {
         $('#deleteresourceModal').modal('show');
         var resourceId = $(this).data('resource-id');
      
-        var orgUnitName = $(this).closest('tr').find('.orgUnitName').text();
-        $('#append_name').html(orgUnitName);
+        var resource_name = $(this).closest('tr').find('.resource_name').text();
+        $('#append_name').html(resource_name);
         $('#resource_id').val(resourceId);
        
     });
