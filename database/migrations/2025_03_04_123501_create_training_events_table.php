@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('instructor_id')->nullable();
             $table->time('start_time')->nullable(); // Use time or datetime
             $table->time('end_time')->nullable();
+            $table->softDeletes(); 
             $table->timestamps();
 
             // Adding Foreign Key Constraints (Optional)

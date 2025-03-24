@@ -158,14 +158,8 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     // Route::get('/grading', [TrainingEventsController::class, 'getStudentGrading'])->name('grading.list');
     Route::get('/training/grading-list/{event_id}', [TrainingEventsController::class, 'getStudentGrading'])->name('training.grading-list');
     Route::get('/training/get-licence-number/{user_id}', [TrainingEventsController::class, 'getStudentLicenseNumber'])->name('training.get-licence-number');
-
-
-
-
-    
-     
-
 });
+
 // Resources Routes
     Route::get('/resource', [ResourceController::class, 'resource_list'])->name('resource.index');
     Route::post('/resource/save', [ResourceController::class, 'save'])->name('save.index');
@@ -174,8 +168,8 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/resource/delete', [ResourceController::class, 'delete'])->name('delete.index');
     Route::post('/resource/getcourseResource', [ResourceController::class, 'getcourseResource'])->name('getcourseResource.index');
     // Booking Request
-      Route::get('/booking/bookresource/{course_id}', [ResourceController::class, 'bookresource'])->name('bookresource.index');
-      Route::post('/booking/store', [ResourceController::class, 'store'])->name('store.index');
+    Route::get('/booking/bookresource/{course_id}', [ResourceController::class, 'bookresource'])->name('bookresource.index');
+    Route::post('/booking/store', [ResourceController::class, 'store'])->name('store.index');
 
 
 Route::get('/clear-cache', function() {
