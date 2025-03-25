@@ -10,6 +10,7 @@ class BookedResource extends Model
     use HasFactory;
     protected $fillable = [
         'user_id',
+        'ou_id',
         'course_id',
         'resource_id',
         'start_date',
@@ -21,5 +22,11 @@ class BookedResource extends Model
     {
         return $this->belongsTo(Resource::class, 'resource_id', 'id');
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+    
 
 }

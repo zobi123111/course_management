@@ -29,8 +29,8 @@
             <tr>
                 <th scope="col">Name</th>
                 <th scope="col">Registration</th>
-                <th scope="col">Type</th>
                 <th scope="col">Class</th>
+                <th scope="col">Type</th>
                 <th scope="col">Note</th>
                 <th scope="col">Edit</th>
                 <th scope="col">Delete</th>
@@ -91,48 +91,52 @@
                         <div id="name_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="registration" class="form-label">Registration<span
-                                class="text-danger">*</span></label>
+                        <label for="registration" class="form-label">Registration</label>
                         <input type="number" name="registration" class="form-control">
                         <div id="registration_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="Type" class="form-label">Type<span class="text-danger">*</span></label>
-                        <input type="text" name="type" class="form-control">
-                        <div id="type_error" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="Class" class="form-label">Class<span class="text-danger">*</span></label>
+                        <label for="Class" class="form-label">Class</label>
                         <input type="text" name="class" class="form-control">
                         <div id="class_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="Note" class="form-label">Note<span class="text-danger">*</span></label>
+                        <label for="Type" class="form-label">Type</label>
+                        <input type="text" name="type" class="form-control">
+                        <div id="type_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="Class" class="form-label">Others</label>
+                        <input type="text" name="other" class="form-control">
+                        <div id="other _error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="Note" class="form-label">Note</label>
                         <input type="text" name="note" class="form-control">
                         <div id="note_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="Hours from RTS" class="form-label">Hours from RTS<span class="text-danger">*</span></label>
+                        <label for="Hours from RTS" class="form-label">Hours from RTS</label>
                         <input type="number" name="Hours_from_RTS" class="form-control">
                         <div id="Hours_from_RTS_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="Date from RTS" class="form-label">Date from RTS<span class="text-danger">*</span></label>
+                        <label for="Date from RTS" class="form-label">Date from RTS</label>
                         <input type="date" name="Date_from_RTS" class="form-control">
                         <div id="Date_from_RTS_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                            <label for="image" class="form-label">Image</label><span class="text-danger">*</span>
+                            <label for="image" class="form-label">Image</label>
                             <input type="file" name="resource_logo" class="form-control" accept="image/*">
                             <div id="resource_logo_error" class="text-danger error_e"></div>           
                     </div>
                     <div class="form-group">
-                        <label for="Date for maintenance" class="form-label">Date for maintenance<span class="text-danger">*</span></label>
+                        <label for="Date for maintenance" class="form-label">Date for maintenance</label>
                         <input type="date" name="Date_for_maintenance" class="form-control">
                         <div id="Date_for_maintenance_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="Hours_Remaining" class="form-label">Hours Remaining<span class="text-danger">*</span></label>
+                        <label for="Hours_Remaining" class="form-label">Hours Remaining</label>
                         <input type="number" name="Hours_Remaining" id="Hours_Remaining" class="form-control" min="0" step="1">
                         <div id="Hours_Remaining_error" class="text-danger error_e"></div>
                     </div>
@@ -167,35 +171,39 @@
                         <div id="edit_name_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="registration" class="form-label">Registration<span
-                                 class="text-danger">*</span></label>
+                        <label for="registration" class="form-label">Registration</label>
                         <input type="text" name="edit_registration" class="form-control">
                         <input type="hidden" name="resourse_id" class="form-control">
                         
                         <div id="edit_registration_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="Type" class="form-label">Type<span class="text-danger">*</span></label>
-                        <input type="text" name="edit_type" class="form-control">
-                        <div id="edit_type_error_up" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="Class" class="form-label">Class<span class="text-danger">*</span></label>
+                        <label for="Class" class="form-label">Class</label>
                         <input type="text" name="edit_class" class="form-control">
                         <div id="edit_class_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="Note" class="form-label">Note<span class="text-danger">*</span></label>
+                        <label for="Type" class="form-label">Type</label>
+                        <input type="text" name="edit_type" class="form-control">
+                        <div id="edit_type_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="Class" class="form-label">Other</label>
+                        <input type="text" name="edit_other" class="form-control">
+                        <div id="other_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="Note" class="form-label">Note</label>
                         <input type="text" name="edit_note" class="form-control">
                         <div id="edit_note_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="Hours from RTS" class="form-label">Hours from RTS<span class="text-danger">*</span></label>
+                        <label for="Hours from RTS" class="form-label">Hours from RTS</label>
                         <input type="number" name="edit_Hours_from_RTS" class="form-control">
                         <div id="edit_Hours_from_RTS_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="Date from RTS" class="form-label">Date from RTS<span class="text-danger">*</span></label>
+                        <label for="Date from RTS" class="form-label">Date from RTS</label>
                         <input type="date" name="edit_Date_from_RTS" class="form-control">
                         <div id="edit_Date_from_RTS_error_up" class="text-danger error_e"></div>
                     </div>
@@ -209,12 +217,12 @@
                     </div>
                     <input type="hidden" name="existing_resourse_logo" id="existing_resourse_logo"> <!-- Hidden input to store existing filename -->
                     <div class="form-group">
-                        <label for="Date for maintenance" class="form-label">Date for maintenance<span class="text-danger">*</span></label>
+                        <label for="Date for maintenance" class="form-label">Date for maintenance</label>
                         <input type="date" name="edit_Date_for_maintenance" class="form-control">
                         <div id="edit_Date_for_maintenance_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="Hours_Remaining" class="form-label">Hours Remaining<span class="text-danger">*</span></label>
+                        <label for="Hours_Remaining" class="form-label">Hours Remaining</label>
                         <input type="number" name="edit_Hours_Remaining" id="Hours_Remaining" class="form-control" min="0" step="1">
                         <div id="edit_Hours_Remaining_error_up" class="text-danger error_e"></div>
                     </div>
@@ -269,10 +277,10 @@
             type: "GET",
         },
         columns: [
-            { data: 'name', name: 'name' },
+            { data: 'name', name: 'name' ,class:'resource_name'},
             { data: 'registration', name: 'registration', class: 'orgUnitName' },
-            { data: 'type', name: 'type' },
             { data: 'class', name: 'class' },
+            { data: 'type', name: 'type' },
             { data: 'note', name: 'note' },
             { data: 'edit', name: 'edit', orderable: false, searchable: false },
             { data: 'delete', name: 'delete', orderable: false, searchable: false },
@@ -282,8 +290,43 @@
     $("#create_resource").on('click', function() { 
         $(".error_e").html('');
         $("#createResourceForm")[0].reset();
-        $("#createResourceModel").modal('show');
+        $("#createResourceModel").modal('show'); 
     })
+
+    $(document).ready(function () {
+    function toggleAndClearFields(selectedField, formType) {
+        let fields = ["class", "type", "other"];
+        fields.forEach(field => {
+            let fieldName = formType + field;
+            if (field !== selectedField) {
+                $("input[name='" + fieldName + "']").val("").prop("disabled", true).css("background-color", "#e9ecef"); // Clear & disable
+            } else {
+                $("input[name='" + fieldName + "']").prop("disabled", false).css("background-color", ""); // Enable selected
+            }
+        });
+    }
+
+    function initFieldRestrictions(formType) {
+        $("input[name='" + formType + "class'], input[name='" + formType + "type'], input[name='" + formType + "other']").on("input", function () {
+            let selectedName = $(this).attr("name").replace(formType, "");
+            if ($(this).val().trim() !== "") {
+                toggleAndClearFields(selectedName, formType);
+            } else {
+                $("input[name='" + formType + "class'], input[name='" + formType + "type'], input[name='" + formType + "other']")
+                    .prop("disabled", false)
+                    .css("background-color", "");
+            }
+        });
+    }
+
+    // Initialize for edit modal only
+    initFieldRestrictions("");
+    initFieldRestrictions("edit_");
+});
+
+
+
+
 
     $("#save_resource").on("click", function(e) {
         e.preventDefault();
@@ -315,7 +358,6 @@
                 })
             }
         });
-
     })
     $(document).on('click', '.edit-resource-icon', function() { 
         $('.error_e').html('');
@@ -336,6 +378,7 @@
                     $('input[name="edit_registration"]').val(response.resourcedata.registration || '');
                     $('input[name="edit_type"]').val(response.resourcedata.type || '');
                     $('input[name="edit_class"]').val(response.resourcedata.class || '');
+                    $('input[name="edit_other"]').val(response.resourcedata.other || '');
                      $('input[name="edit_note"]').val(response.resourcedata.note || '');
                      $('input[name="edit_Hours_from_RTS"]').val(response.resourcedata.hours_from_rts || '');
                     $('input[name="edit_Date_from_RTS"]').val(response.resourcedata.date_from_rts || '');
@@ -372,7 +415,7 @@
                             $('#org_logo_filename').text('Selected File: ' + file.name);
                         }
                     });
-
+                    autoDisableFields("edit_");
                 }
            
                 $('#editOrgUnitModal').modal('show');
@@ -382,6 +425,31 @@
             }
         });
     });
+    // Function to disable and grey out other fields if one is filled
+function autoDisableFields(formType) {
+    let fields = ["class", "type", "other"];
+    let selectedField = null;
+
+    // Check which field has data
+    fields.forEach(field => {
+        let fieldName = formType + field;
+        if ($("input[name='" + fieldName + "']").val().trim() !== "") {
+            selectedField = field;
+        }
+    });
+
+    // If one field has data, disable others
+    if (selectedField) {
+        fields.forEach(field => {
+            let fieldName = formType + field;
+            if (field !== selectedField) {
+                $("input[name='" + fieldName + "']").val("").prop("disabled", true).css("background-color", "#e9ecef");
+            } else {
+                $("input[name='" + fieldName + "']").prop("disabled", false).css("background-color", "");
+            }
+        });
+    }
+}
         $('#update_resourse').on('click', function(e) { 
         e.preventDefault();
         $(".loader").fadeIn();
@@ -409,53 +477,7 @@
         })
     })
 
-//     $('#resourceTable').on('click', '.get_org_users', function() {
-//     var ou_id = $(this).data('ou-id');
 
-//         $.ajax({               
-//             url: "{{ url('/orgunit/user_list') }}",
-//             type: 'GET',
-//             data: { ou_id: ou_id },
-//             success: function(response) {
-//                 console.log(response);
-
-//                 // Check if users exist
-//                 if (!response.orgUnitUsers || response.orgUnitUsers.length === 0) {
-//                     alert('No users found for this Organizational Unit.');
-//                     return;
-//                 }
-
-//                 // Clear previous data
-//                 $('#orgUnitUsersTable tbody').html('');
-
-//                 // Append new data
-//                 response.orgUnitUsers.forEach(user => {
-//                     var imageUrl = user.image 
-//                         ? "{{ asset('storage') }}/" + user.image 
-//                         : "{{ asset('assets/img/no_image.png') }}"; // Default image if none provided
-                    
-//                     var row = `
-//                         <tr>
-//                             <td><img src="${imageUrl}" alt="Profile Image" width="40" height="40" class="rounded-circle"></td>
-//                             <td>${user.fname} ${user.lname}</td>
-//                             <td>${user.email}</td>
-//                         </tr>`;
-//                     $('#orgUnitUsersTable tbody').append(row);
-//                 });
-
-//                 // Show modal
-//                 $('#orgUnitUsersModal').modal('show');
-//             },
-//             error: function(xhr, status, error) {
-//                 try {
-//                     var response = JSON.parse(xhr.responseText); // Parse responseText to JSON
-//                     alert(response.error || 'An unknown error occurred.');
-//                 } catch (e) {
-//                     alert('Failed to fetch users. Please try again.');
-//                 }
-//             }
-//         });
-//     });
 
 
 
@@ -464,8 +486,8 @@
         $('#deleteresourceModal').modal('show');
         var resourceId = $(this).data('resource-id');
      
-        var orgUnitName = $(this).closest('tr').find('.orgUnitName').text();
-        $('#append_name').html(orgUnitName);
+        var resource_name = $(this).closest('tr').find('.resource_name').text();
+        $('#append_name').html(resource_name);
         $('#resource_id').val(resourceId);
        
     });
