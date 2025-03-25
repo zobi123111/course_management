@@ -159,11 +159,11 @@
         </div>
     </div>
 </div>
+@if(auth()->user()->role == 3 || auth()->user()->role == 18)
 <!-- End Card with an image on left -->
 <div class="resourceBooking_btn"><a href="{{ url('/booking/bookresource/' . encode_id($course->id)) }}" class="btn btn-primary">Booking Request</a>
-
-
 </div>
+@endif
  <!-- List group with Advanced Contents -->
  <div class="card pt-4">
     <div class="card-body">

@@ -28,6 +28,7 @@
                     <th>Expiry Date</th>
                     <th>Document</th>
                     <th>Status</th>
+                    <th>Acknowledged</th>
                     @if(checkAllowedModule('documents','document.edit')->isNotEmpty())
                         <th>Edit</th>
                     @endif
@@ -235,6 +236,7 @@ $(document).ready(function() {
             { data: 'expiry_date', name: 'expiry_date' },
             { data: 'document', name: 'document', orderable: false, searchable: false },
             { data: 'status', name: 'status' },
+            { data: 'acknowledged', name: 'acknowledged' },
             @if(checkAllowedModule('documents','document.edit')->isNotEmpty())
                 { data: 'edit', name: 'edit', orderable: false, searchable: false },
             @endif

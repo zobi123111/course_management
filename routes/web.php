@@ -121,6 +121,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/group/update', [GroupController::class, 'updateGroup'])->name('group.update');
     Route::post('/group/delete', [GroupController::class, 'deleteGroup'])->name('group.delete');
     Route::get('/group/get_ou_user/', [GroupController::class, 'getOrgUser'])->name('group.get_ou_user');
+    Route::get('/group/get_ou_group/', [GroupController::class, 'getOrgroup'])->name('group.getOrgroup');
     
     //Documents Route
     Route::get('/documents', [DocumentController::class, 'index'])->name('document.index');

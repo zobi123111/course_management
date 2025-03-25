@@ -161,11 +161,6 @@ function ou_logo()
     return $org_detail;
 }
 
-function ou_logo()
-{
-    $ou_id = Auth::user()->ou_id;  
-    $org_detail = OrganizationUnits::where('id', $ou_id)->first(); // Fetch only one record
-    return $org_detail;
-}
+
 
 ?>

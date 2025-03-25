@@ -24,6 +24,7 @@ class DocumentController extends Controller
             $groups = Group::all();
             $folders = Folder::whereNull('parent_id')->with('children')->get();
             $documents = Document::all();
+            
         }
         elseif(checkAllowedModule('documents', 'document.index')->isNotEmpty() && Auth()->user()->is_admin ==  0){
             $groups = Group::where('ou_id', $ou_id)->get();
@@ -39,12 +40,13 @@ class DocumentController extends Controller
                         ->get();
 
             $folders = [];
-            
+           
         }else{
+          
             $groups = Group::where('ou_id', $ou_id)->get();
             $folders = Folder::where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children')->get();
             $documents = Document::where('ou_id',$ou_id)->get();
-            // dd($documents);
+            
         }
         return view('documents.index',compact('documents', 'folders', 'groups'));
     }
@@ -67,7 +69,8 @@ class DocumentController extends Controller
         $originalFilename = $request->file('document_file')->getClientOriginalName();
 
         // Store the file in the 'documents' folder
-        $filePath = $request->file('document_file')->store('documents', 'public');
+       // $filePath = $request->file('document_file')->store('documents', 'public');
+        $filePath =  $request->file('document_file')->storeAs('documents', $originalFilename, 'public');
 
         // Create the document record in the database
         Document::create([
@@ -102,7 +105,7 @@ class DocumentController extends Controller
             'version_no' => 'required',
             'issue_date' => 'required|date',
             'expiry_date' => 'required|date|after:issue_date',
-            'document_file' => 'nullable|file|mimes:pdf|max:2048', // File is optional
+            'document_file' => 'nullable|file|max:2048', // File is optional
             'status' => 'required',
             'group' => 'required',
             'folder' => 'nullable|exists:folders,id' // Ensure folder exists if provided
@@ -125,7 +128,8 @@ class DocumentController extends Controller
             $originalFilename = $request->file('document_file')->getClientOriginalName();
     
             // Store the new file in the 'documents' folder
-            $filePath = $request->file('document_file')->store('documents', 'public');
+          //  $filePath = $request->file('document_file')->store('documents', 'public');
+            $filePath =  $request->file('document_file')->storeAs('documents', $originalFilename, 'public');
         }
     
         // Update the document in the database
@@ -170,16 +174,16 @@ class DocumentController extends Controller
     public function getDocuments(Request $request)
     {
         $columns = ['doc_title', 'version_no', 'issue_date', 'expiry_date', 'document_file', 'status'];
-        $limit = $request->input('length');
-        $start = $request->input('start');
-        $orderColumnIndex = $request->input('order')[0]['column'];
-        $orderDirection = $request->input('order')[0]['dir'];
-        $searchValue = strtolower($request->input('search')['value']); // Convert search input to lowercase
-    
-        $user = Auth()->user();
+        $limit = $request->input('length', 10); // Default to 10 if not provided
+        $start = $request->input('start', 0);
+        $orderColumnIndex = $request->input('order')[0]['column'] ?? 0;
+        $orderDirection = $request->input('order')[0]['dir'] ?? 'asc';
+        $searchValue = strtolower($request->input('search')['value'] ?? ''); // Convert search input to lowercase
+
+        $user = Auth::user();
         $userId = $user->id;
         $ou_id = $user->ou_id;
-    
+
         // Determine which documents to fetch based on user role and permissions
         if (checkAllowedModule('courses', 'document.index')->isNotEmpty() && $user->is_owner == 1) {
             $query = Document::query();
@@ -189,16 +193,16 @@ class DocumentController extends Controller
                 $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);
                 return in_array($userId, $userIds);
             });
-    
+
             $groupIds = $filteredGroups->pluck('id')->toArray();
             $query = Document::whereIn('group_id', $groupIds)->where('status', 1);
         } else {
             $query = Document::where('ou_id', $ou_id);
         }
-    
-        // Select columns
-        $query->select('id', 'doc_title', 'version_no', 'issue_date', 'expiry_date', 'document_file', 'status');
-    
+
+        // Get total record count before filtering
+        $totalRecords = $query->count();
+
         // Apply search filter
         if (!empty($searchValue)) {
             $query->where(function ($q) use ($searchValue) {
@@ -209,22 +213,21 @@ class DocumentController extends Controller
                     $q->orWhere('status', 0);
                 }
                 $q->orWhere('doc_title', 'like', "%{$searchValue}%")
-                  ->orWhere('version_no', 'like', "%{$searchValue}%")
-                  ->orWhere('issue_date', 'like', "%{$searchValue}%")
-                  ->orWhere('expiry_date', 'like', "%{$searchValue}%");
+                ->orWhere('version_no', 'like', "%{$searchValue}%")
+                ->orWhere('issue_date', 'like', "%{$searchValue}%")
+                ->orWhere('expiry_date', 'like', "%{$searchValue}%");
             });
         }
-    
-        // Get total records count before filtering
-        $totalRecords = Document::count();
+
+        // Get filtered record count
         $recordsFiltered = $query->count();
-    
+
         // Apply sorting
         $query->orderBy($columns[$orderColumnIndex], $orderDirection);
-    
-        // Apply pagination
+
+        // Apply pagination (ensures 10 entries per page)
         $documents = $query->offset($start)->limit($limit)->get();
-    
+
         // Format data for DataTables
         $data = [];
         foreach ($documents as $row) {
@@ -237,6 +240,9 @@ class DocumentController extends Controller
                     ? '<a href="' . route('document.show', encode_id($row->id)) . '">View Document</a>'
                     : 'No File uploaded',
                 'status' => ($row->status == 1) ? 'Active' : 'Inactive',
+                'acknowledged' => ($row->acknowledged == 1) 
+                        ? '<span style="color: green;">✔</span>' 
+                        : '<span style="color: red;">❌</span>',
                 'edit' => checkAllowedModule('documents', 'document.edit')->isNotEmpty()
                     ? '<i class="fa fa-edit edit-document-icon" style="font-size:25px; cursor: pointer;" data-document-id="' . encode_id($row->id) . '"></i>'
                     : '',
@@ -245,6 +251,7 @@ class DocumentController extends Controller
                     : '',
             ];
         }
+
         return response()->json([
             'draw' => intval($request->input('draw')),
             'recordsTotal' => $totalRecords,
@@ -252,6 +259,93 @@ class DocumentController extends Controller
             'data' => $data,
         ]);
     }
+
+
+    // public function getDocuments(Request $request)
+    // {
+    //     $columns = ['doc_title', 'version_no', 'issue_date', 'expiry_date', 'document_file', 'status'];
+    //     $limit = $request->input('length');
+    //     $start = $request->input('start');
+    //     $orderColumnIndex = $request->input('order')[0]['column'];
+    //     $orderDirection = $request->input('order')[0]['dir'];
+    //     $searchValue = strtolower($request->input('search')['value']); // Convert search input to lowercase
+    
+    //     $user = Auth()->user();
+    //     $userId = $user->id;
+    //     $ou_id = $user->ou_id;
+    
+    //     // Determine which documents to fetch based on user role and permissions
+    //     if (checkAllowedModule('courses', 'document.index')->isNotEmpty() && $user->is_owner == 1) {
+    //         $query = Document::query();
+    //     } elseif (checkAllowedModule('documents', 'document.index')->isNotEmpty() && $user->is_admin == 0) {
+    //         $groups = Group::where('ou_id', $ou_id)->get();
+    //         $filteredGroups = $groups->filter(function ($group) use ($userId) {
+    //             $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);
+    //             return in_array($userId, $userIds);
+    //         });
+    
+    //         $groupIds = $filteredGroups->pluck('id')->toArray();
+    //         $query = Document::whereIn('group_id', $groupIds)->where('status', 1);
+    //     } else {
+    //         $query = Document::where('ou_id', $ou_id);
+    //     }
+    
+    //     // Select columns
+    //     $query->select('id', 'doc_title', 'version_no', 'issue_date', 'expiry_date', 'document_file', 'status');
+    
+    //     // Apply search filter
+    //     if (!empty($searchValue)) {
+    //         $query->where(function ($q) use ($searchValue) {
+    //             if (str_contains('active', $searchValue)) {
+    //                 $q->orWhere('status', 1);
+    //             }
+    //             if (str_contains('inactive', $searchValue)) {
+    //                 $q->orWhere('status', 0);
+    //             }
+    //             $q->orWhere('doc_title', 'like', "%{$searchValue}%")
+    //               ->orWhere('version_no', 'like', "%{$searchValue}%")
+    //               ->orWhere('issue_date', 'like', "%{$searchValue}%")
+    //               ->orWhere('expiry_date', 'like', "%{$searchValue}%");
+    //         });
+    //     }
+    
+    //     // Get total records count before filtering
+    //     $totalRecords = Document::count();
+    //     $recordsFiltered = $query->count();
+    
+    //     // Apply sorting
+    //     $query->orderBy($columns[$orderColumnIndex], $orderDirection);
+    
+    //     // Apply pagination
+    //     $documents = $query->offset($start)->limit($limit)->get();
+    
+    //     // Format data for DataTables
+    //     $data = [];
+    //     foreach ($documents as $row) {
+    //         $data[] = [
+    //             'doc_title' => $row->doc_title,
+    //             'version_no' => $row->version_no,
+    //             'issue_date' => $row->issue_date,
+    //             'expiry_date' => $row->expiry_date,
+    //             'document' => $row->document_file
+    //                 ? '<a href="' . route('document.show', encode_id($row->id)) . '">View Document</a>'
+    //                 : 'No File uploaded',
+    //             'status' => ($row->status == 1) ? 'Active' : 'Inactive',
+    //             'edit' => checkAllowedModule('documents', 'document.edit')->isNotEmpty()
+    //                 ? '<i class="fa fa-edit edit-document-icon" style="font-size:25px; cursor: pointer;" data-document-id="' . encode_id($row->id) . '"></i>'
+    //                 : '',
+    //             'delete' => checkAllowedModule('documents', 'document.delete')->isNotEmpty()
+    //                 ? '<i class="fa-solid fa-trash delete-document-icon" style="font-size:25px; cursor: pointer;" data-document-id="' . encode_id($row->id) . '"></i>'
+    //                 : '',
+    //         ];
+    //     }
+    //     return response()->json([
+    //         'draw' => intval($request->input('draw')),
+    //         'recordsTotal' => $totalRecords,
+    //         'recordsFiltered' => $recordsFiltered,
+    //         'data' => $data,
+    //     ]);
+    // }
     
 
     public function showDocument(Request $request,$doc_id)

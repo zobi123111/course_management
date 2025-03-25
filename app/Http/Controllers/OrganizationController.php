@@ -23,13 +23,6 @@ class OrganizationController extends Controller
         ->withCount('users') // Count all users linked to organization
         ->whereNull('deleted_at')
         ->get();
-        // $organizationUnitsData = OrganizationUnits::with(['roleOneUsers'])
-        // ->withCount(['users as non_role_one_users_count' => function ($query) { 
-        //     $query->where('role', '!=', 1);
-        // }])
-        // ->whereNull('deleted_at')
-        // ->get();
-        // dd($organizationUnitsData);
         return view('organization.index', compact('organizationUnitsData'));
     }
 
@@ -64,7 +57,7 @@ class OrganizationController extends Controller
             $query->orderBy($column, $orderDirection);
         }
 
-        $totalRecords = $query->count();
+        $totalRecords = $query->count(); 
 
         $organizationUnits = $query->offset($request->input('start'))
             ->limit($request->input('length'))
