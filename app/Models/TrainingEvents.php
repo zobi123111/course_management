@@ -16,11 +16,12 @@ class TrainingEvents extends Model
         'group_id',
         'student_id',
         'instructor_id',
+        'resource_id',
+        'event_date',
         'start_time',
         'end_time',
         'departure_airfield',
         'destination_airfield',
-        'resource_id',
         'total_time',
         'licence_number'
     ];
@@ -43,6 +44,16 @@ class TrainingEvents extends Model
     public function instructor()
     {
         return $this->belongsTo(User::class, 'instructor_id', 'id'); // Fixed foreign key
+    }
+
+    public function resource()
+    {
+        return $this->belongsTo(Resource::class, 'resource_id', 'id'); // Fixed foreign key
+    }
+
+    public function student()
+    {
+        return $this->belongsTo(User::class, 'student_id', 'id'); // Fixed foreign key
     }
 
         /**
