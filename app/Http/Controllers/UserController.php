@@ -15,71 +15,68 @@ use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
 {
-
-
-public function getData(Request $request)
-{
-    $ou_id = auth()->user()->ou_id; 
-    $organizationUnits = OrganizationUnits::all();
-    $roles = Role::all(); 
-
-    if (empty($ou_id)) {
-        $users = User::all();
-        // dd($roles);
-    } else { 
-        $users = User::where('ou_id', $ou_id)->get();
-        // $roles = Role::where('id', '!=', 1)->get(); 
-        // dd($roles);
-    }
-   
-    if ($request->ajax()) {
-        $query = User::query()
-            ->leftJoin('roles', 'users.role', '=', 'roles.id')
-            ->leftJoin('organization_units', 'users.ou_id', '=', 'organization_units.id')
-            ->select([
-                'users.id',
-                'users.image',
-                'users.fname',
-                'users.lname',
-                'users.email',
-                'roles.role_name as position',
-                'organization_units.org_unit_name as organization',
-                'users.status'
-            ]);
-        return DataTables::of($query)
-        ->filterColumn('position', function($query, $keyword) {
-            $query->where('roles.role_name', 'LIKE', "%{$keyword}%");
-        })
-        ->filterColumn('organization', function($query, $keyword) {
-            $query->where('organization_units.org_unit_name', 'LIKE', "%{$keyword}%");
-        })
-            ->addColumn('status', function ($user) {
-                return $user->status == 1 ? '<span class="badge bg-success">Active</span>' 
-                                          : '<span class="badge bg-danger">Inactive</span>';
+    public function getData(Request $request)
+    {
+        $ou_id = auth()->user()->ou_id;       
+        $organizationUnits = OrganizationUnits::all();
+        $roles = Role::all(); 
+    
+        if (empty($ou_id)) { 
+            $users = User::all();
+        } else {  
+            $users = User::where('ou_id', $ou_id)->get();
+        }
+        if ($request->ajax()) {
+            $query = User::query()
+                    ->leftJoin('roles', 'users.role', '=', 'roles.id')
+                    ->leftJoin('organization_units', 'users.ou_id', '=', 'organization_units.id')
+                    ->select([
+                        'users.id',
+                        'users.image',
+                        'users.fname',
+                        'users.lname',
+                        'users.email',
+                        'roles.role_name as position',
+                        'organization_units.org_unit_name as organization',
+                        'users.status'
+                    ]);
+                    if (!empty($ou_id)) {
+                        $query->where('users.ou_id', $ou_id);
+                    }
+            return DataTables::of($query)
+            ->filterColumn('position', function($query, $keyword) {
+                $query->where('roles.role_name', 'LIKE', "%{$keyword}%");
             })
-            ->addColumn('action', function ($row) {
-                $viewUrl = url('users/show/' . encode_id($row->id));
-                $editBtn = '<i class="fa fa-edit edit-user-icon text-primary me-2" 
-                                style="font-size:18px; cursor: pointer;" 
-                                data-user-id="' . encode_id($row->id) . '">
-                            </i>';
-                
-                $viewBtn = '<a href="' . $viewUrl . '" class="view-icon" title="View User" 
-                                style="font-size:18px; cursor: pointer;">
-                                <i class="fa fa-eye text-danger me-2"></i>
-                            </a>';
-                $delete =  '<i class="fa-solid fa-trash delete-icon text-danger" 
-                                style="font-size:18px; cursor: pointer;" 
-                                data-user-id="' . encode_id($row->id) . '">
-                            </i>';
-                return $viewBtn . ' ' . $editBtn . ' ' . $delete;
+            ->filterColumn('organization', function($query, $keyword) {
+                $query->where('organization_units.org_unit_name', 'LIKE', "%{$keyword}%");
             })
-            ->rawColumns(['status', 'action'])
-            ->make(true);
+                ->addColumn('status', function ($user) {
+                    return $user->status == 1 ? '<span class="badge bg-success">Active</span>' 
+                                              : '<span class="badge bg-danger">Inactive</span>';
+                })
+                ->addColumn('action', function ($row) {
+                    $viewUrl = url('users/show/' . encode_id($row->id));
+                    $editBtn = '<i class="fa fa-edit edit-user-icon text-primary me-2" 
+                                    style="font-size:18px; cursor: pointer;" 
+                                    data-user-id="' . encode_id($row->id) . '">
+                                </i>';
+                    
+                    $viewBtn = '<a href="' . $viewUrl . '" class="view-icon" title="View User" 
+                                    style="font-size:18px; cursor: pointer;">
+                                    <i class="fa fa-eye text-danger me-2"></i>
+                                </a>';
+                    $delete =  '<i class="fa-solid fa-trash delete-icon text-danger" 
+                                    style="font-size:18px; cursor: pointer;" 
+                                    data-user-id="' . encode_id($row->id) . '">
+                                </i>';
+                    return $viewBtn . ' ' . $editBtn . ' ' . $delete;
+                })
+                ->rawColumns(['status', 'action'])
+                ->make(true);
+        }
+    
+         return view('users.index', compact('roles', 'organizationUnits'));
     }
-
-    return view('users.index', compact('roles', 'organizationUnits'));
-}
 
 
     public function profile()

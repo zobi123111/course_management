@@ -28,6 +28,7 @@ class DashboardController extends Controller
             $group_count = Group::count();
             $folder_count = Folder::count();
             $documents = Document::all();
+            $requestCount = 0;
            
          
         }

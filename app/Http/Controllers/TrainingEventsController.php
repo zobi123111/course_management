@@ -100,11 +100,49 @@ class TrainingEventsController extends Controller
     }
 
 
-    public function getStudentLicenseNumber(Request $request,$user_id)
+
+    public function getOrgStudentsInstructorsResources(Request $request,$ou_id)
+    {
+        // $ou_id = ($ou_id)? $ou_id: auth()->user()->ou_id;
+        $students = User::where('ou_id', $ou_id)
+        ->where(function ($query) {
+            $query->whereNull('is_admin')->orWhere('is_admin', false);
+        })
+        ->whereHas('roles', function ($query) {
+            $query->where('role_name', 'like', '%Student%');
+        })->with('roles')->get();
+
+        $instructors = User::where('ou_id', $ou_id)
+                ->where(function ($query) {
+                    $query->whereNull('is_admin')->orWhere('is_admin', false);
+                })
+                ->whereHas('roles', function ($query) {
+                    $query->where('role_name', 'like', '%Instructor%');
+                })->with('roles')->get();
+
+        // $resources = Resource::where('ou_id', $ou_id)->get();
+
+        if ($students) {
+            // return response()->json(['success' => true, 'students' => $students, 'instructors' => $instructors, 'resources' => $resources]);
+            return response()->json(['success' => true, 'students' => $students, 'instructors' => $instructors]);
+        } else {
+            return response()->json(['success' => false]);
+        }
+    }
+    public function getStudentLicenseNumberAndCourses(Request $request,$user_id,$ou_id)
     {
         $user = User::find($user_id);
+        $groups = Group::where('ou_id', $ou_id)
+        ->whereJsonContains('user_ids', strval($user_id)) // Ensure user_id is a string
+        ->pluck('id'); // Get only the group IDs
+        
+        $courses = Courses::with('groups') // Load only the groups relationship
+        ->whereHas('groups', function ($query) use ($groups) {
+            $query->whereIn('groups.id', $groups);
+        })
+        ->get();        
         if ($user) {
-            return response()->json(['success' => true, 'licence_number' => $user->licence]);
+            return response()->json(['success' => true, 'licence_number' => $user->licence, 'courses' => $courses]);
         } else {
             return response()->json(['success' => false]);
         }
@@ -287,23 +325,23 @@ class TrainingEventsController extends Controller
         }        
     }
 
-    public function getOrgGroupsAndInstructors(Request $request)
-    {
-        $orgUnitGroups = Group::where('ou_id', $request->ou_id)
-               ->get();
-        $ouInstructors = User::where('ou_id', $request->ou_id)
-        ->whereHas('roles', function ($query) {
-            $query->where('role_name', 'like', '%Instructor%');
-        })
-        ->with('roles')
-        ->get();
+    // public function getOrgGroupsAndInstructors(Request $request)
+    // {
+    //     $orgUnitGroups = Group::where('ou_id', $request->ou_id)
+    //            ->get();
+    //     $ouInstructors = User::where('ou_id', $request->ou_id)
+    //     ->whereHas('roles', function ($query) {
+    //         $query->where('role_name', 'like', '%Instructor%');
+    //     })
+    //     ->with('roles')
+    //     ->get();
            
-        if($orgUnitGroups){
-            return response()->json(['orgUnitGroups' => $orgUnitGroups, 'ouInstructors'=> $ouInstructors]);
-        }else{
-            return response()->json(['error'=> 'Org Unit Groups not found.']);
-        }
-    }
+    //     if($orgUnitGroups){
+    //         return response()->json(['orgUnitGroups' => $orgUnitGroups, 'ouInstructors'=> $ouInstructors]);
+    //     }else{
+    //         return response()->json(['error'=> 'Org Unit Groups not found.']);
+    //     }
+    // }
 
     public function showTrainingEvent(Request $request, $event_id)
     {
@@ -314,8 +352,11 @@ class TrainingEventsController extends Controller
         // Fetch the single student
         $student = $trainingEvent->student;
         // Ensure course exists before accessing course_id
-        $courseLessons = $trainingEvent->course ? CourseLesson::with('sublessons')->where('course_id', $trainingEvent->course->id)->whereHas('sublessons')->get() : collect(); // Only fetch lessons that have sublessons
-
+        $courseLessons = $trainingEvent->course 
+        ? CourseLesson::with('sublessons')
+        ->where('course_id', $trainingEvent->course->id)
+        ->get() : collect();
+    
         // Fetch the overall assessment for the single student
         $overallAssessments = OverallAssessment::where('event_id', $trainingEvent->id)
         ->where('user_id', $student->id ?? null)

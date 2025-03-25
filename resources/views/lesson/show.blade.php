@@ -254,38 +254,48 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="subLessonForm" method="POST" class="row g-3 ">
+                <form id="subLessonForm" method="POST" class="row g-3">
                     @csrf
-                    <div class="form-group">
-                        <label for="sub_lesson_title" class="form-label">Task Title<span class="text-danger">*</span></label>
-                        <input type="text" name="sub_lesson_title" class="form-control">
-                        <input type="hidden" name="lesson_id" class="form-control" value="{{ $lesson->id }}">
-                        <div id="sub_lesson_title_error" class="text-danger error_e"></div>
+                    <input type="hidden" name="lesson_id" value="{{ $lesson->id }}">
+
+                    <!-- Mandatory Checkbox in the top-right corner -->
+                    <div class="form-group d-flex justify-content-between align-items-center">
+                        <label for="sub_lesson_title" class="form-label">Task Title <span class="text-danger">*</span></label>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="mandatory" id="mandatoryCheckbox" value="1" checked>
+                            <label class="form-check-label" for="mandatoryCheckbox">Mandatory Item</label>
+                        </div>
                     </div>
+                    <input type="text" name="sub_lesson_title" class="form-control">
+                    <div id="sub_lesson_title_error" class="text-danger error_e"></div>
+
                     <div class="form-group">
-                        <label for="sub_description" class="form-label">Description<span class="text-danger">*</span></label>
+                        <label for="sub_description" class="form-label">Description <span class="text-danger">*</span></label>
                         <textarea class="form-control" name="sub_description" rows="3"></textarea>
                         <div id="sub_description_error" class="text-danger error_e"></div>
                     </div>
+
                     <!-- Grading Type Selection -->
                     <div class="form-group">
-                        <label class="form-label">Grading Type<span class="text-danger">*</span></label>
+                        <label class="form-label">Grading Type <span class="text-danger">*</span></label>
                         <div>
                             <input type="radio" name="grade_type" value="pass_fail" id="grade_pass_fail">
                             <label for="grade_pass_fail">Pass/Fail</label>
 
-                            <input type="radio" name="grade_type" value="score" id="grade_score" >
+                            <input type="radio" name="grade_type" value="score" id="grade_score">
                             <label for="grade_score">Score (1-5)</label>
                         </div>
                     </div>
+
                     <div class="form-group">
-                        <label for="sub_status" class="form-label">Status<span class="text-danger">*</span></label>
-                        <select class="form-select" name="sub_status" aria-label="Select status">
+                        <label for="sub_status" class="form-label">Status <span class="text-danger">*</span></label>
+                        <select class="form-select" name="sub_status">
                             <option value="1" selected>Active</option>
                             <option value="0">Inactive</option>
                         </select>
-                        <div id="sub_status_error" class="text-danger error_e"></div>            
+                        <div id="sub_status_error" class="text-danger error_e"></div>
                     </div>
+
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="submit" id="submitSubLesson" class="btn btn-primary sbt_btn">Save</button>
@@ -295,6 +305,7 @@
         </div>
     </div>
 </div>
+
 <!-- End Create Sub-Lesson Modal -->
 
 <!-- Edit Sub-Lesson Modal -->
@@ -308,20 +319,28 @@
             <div class="modal-body">
                 <form id="editSubLessonForm" class="row g-3 needs-validation">
                     @csrf
-                    <div class="form-group">
-                        <label for="edit_sub_lesson_title" class="form-label">Task Title<span class="text-danger">*</span></label>
-                        <input type="text" name="edit_sub_lesson_title" class="form-control">
-                        <input type="hidden" name="edit_sub_lesson_id" class="form-control">
-                        <div id="edit_sub_lesson_title_error" class="text-danger error_e"></div>
+                    <input type="hidden" name="edit_sub_lesson_id" class="form-control">
+
+                    <!-- Mandatory Checkbox in the top-right corner -->
+                    <div class="form-group d-flex justify-content-between align-items-center">
+                        <label for="edit_sub_lesson_title" class="form-label">Task Title <span class="text-danger">*</span></label>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="edit_mandatory" id="editMandatoryCheckbox">
+                            <label class="form-check-label" for="editMandatoryCheckbox">Mandatory Item</label>
+                        </div>
                     </div>
+                    <input type="text" name="edit_sub_lesson_title" class="form-control">
+                    <div id="edit_sub_lesson_title_error" class="text-danger error_e"></div>
+
                     <div class="form-group">
-                        <label for="edit_sub_description" class="form-label">Description<span class="text-danger">*</span></label>
+                        <label for="edit_sub_description" class="form-label">Description <span class="text-danger">*</span></label>
                         <textarea class="form-control" name="edit_sub_description" id="edit_sub_description" rows="3"></textarea>
                         <div id="edit_sub_description_error" class="text-danger error_e"></div>
-                    </div>     
-                      <!-- Grading Type Selection -->
+                    </div>
+
+                    <!-- Grading Type Selection -->
                     <div class="form-group">
-                        <label class="form-label">Grading Type<span class="text-danger">*</span></label>
+                        <label class="form-label">Grading Type <span class="text-danger">*</span></label>
                         <div>
                             <input type="radio" name="edit_grade_type" value="pass_fail" id="edit_grade_pass_fail">
                             <label for="edit_grade_pass_fail">Pass/Fail</label>
@@ -331,14 +350,16 @@
                         </div>
                         <div id="edit_grade_type_error" class="text-danger error_e"></div>
                     </div>
+
                     <div class="form-group">
-                        <label for="edit_sub_status" class="form-label">Status<span class="text-danger">*</span></label>
+                        <label for="edit_sub_status" class="form-label">Status <span class="text-danger">*</span></label>
                         <select class="form-select" name="edit_sub_status" id="edit_sub_status">
-                            <option value="1" selected>Active</option>
+                            <option value="1">Active</option>
                             <option value="0">Inactive</option>
                         </select>
                         <div id="edit_sub_status_error" class="text-danger error_e"></div>
                     </div>
+
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="submit" id="updateSubLesson" class="btn btn-primary sbt_btn">Update</button>
@@ -348,6 +369,7 @@
         </div>
     </div>
 </div>
+
 <!-- End Edit Sub-Lesson Modal -->
 
 <!-- Sub-Lesson Delete Modal -->
@@ -430,6 +452,13 @@
                     $('#edit_grade_score').prop('checked', true);
                 }
 
+                // Handle Mandatory Item checkbox
+                if (response.subLesson.is_mandatory == 1) {
+                    $('#editMandatoryCheckbox').prop('checked', true);
+                } else {
+                    $('#editMandatoryCheckbox').prop('checked', false);
+                }
+
                 // Show the modal
                 $('#editSubLessonModal').modal('show');
             },
@@ -440,9 +469,11 @@
     });
 
 
+
     // Handle form submission for updating sub-lesson
     $("#editSubLessonForm").on("submit", function(e) {
         e.preventDefault();
+        console.log($(this).serialize());
         $.ajax({
             url: '{{ url("/sub-lesson/update") }}',
             type: 'POST',

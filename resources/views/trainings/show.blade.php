@@ -604,35 +604,31 @@
                         <div class="row mb-3">
                             <label class="col-sm-2 col-form-label">Result</label>
                             <div class="col-sm-10 buttons">
-                                @php 
-                                    $userResult = $overallAssessments[$student->id] ?? ''; 
-                                    
-                                @endphp
                                 <div class="main-tabledesign">
                                     <table>
                                         <tbody>
                                             <tr>
                                                 <td>
                                                     <label class="radio-label">
-                                                        <input type="radio" name="user_result_{{ $student->id }}" value="Competent - Ready for OPC/LPC" {{ $overallAssessments->result == 'Competent - Ready for OPC/LPC' ? 'checked' : '' }}>
+                                                        <input type="radio" name="user_result_{{ $student->id }}" value="Competent - Ready for OPC/LPC" {{ isset($overallAssessments) && isset($overallAssessments->result) && $overallAssessments->result == 'Competent - Ready for OPC/LPC' ? 'checked' : '' }} >
                                                         <span class="custom-radio">Competent - Ready for OPC/LPC</span>
                                                     </label>                                                                    
                                                 </td>
                                                 <td>
                                                     <label class="radio-label">
-                                                        <input type="radio" name="user_result_{{ $student->id }}" value="Further training required" {{ $overallAssessments->result == 'Further training required' ? 'checked' : '' }}>
+                                                        <input type="radio" name="user_result_{{ $student->id }}" value="Further training required" {{ isset($overallAssessments) && isset($overallAssessments->result) && $overallAssessments->result == 'Further training required' ? 'checked' : '' }}>
                                                         <span class="custom-radio">Further training required</span>
                                                     </label>
                                                 </td>
                                                 <td>
                                                     <label class="radio-label">
-                                                        <input type="radio" name="user_result_{{ $student->id }}" value="Incomplete" {{ $overallAssessments->result == 'Incomplete' ? 'checked' : '' }}>
+                                                        <input type="radio" name="user_result_{{ $student->id }}" value="Incomplete" {{ isset($overallAssessments) && isset($overallAssessments->result) && $overallAssessments->result == 'Incomplete' ? 'checked' : '' }}>
                                                         <span class="custom-radio">Incomplete</span>
                                                     </label>
                                                 </td>                                                                    
                                                 <td>
                                                     <label class="radio-label">
-                                                        <input type="radio" name="user_result_{{ $student->id }}" value="Stand-In" {{ $userResult == 'Stand-In' ? 'checked' : '' }}>
+                                                        <input type="radio" name="user_result_{{ $student->id }}" value="Stand-In" {{ isset($overallAssessments) && isset($overallAssessments->result) && $overallAssessments->result == 'Stand-In' ? 'checked' : '' }}>
                                                         <span class="custom-radio">Stand-In</span>
                                                     </label>
                                                 </td>                                                                    
