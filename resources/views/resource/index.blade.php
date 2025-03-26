@@ -84,6 +84,19 @@
             <div class="modal-body">
                 <form action="" id="createResourceForm" method="POST" class="row g-3 needs-validation" enctype="multipart/form-data">
                     @csrf
+
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ou_id" aria-label="Default select example" id="select_org_unit">
+                            <option value="">Select Org Unit</option>
+                            @foreach($organizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                    </div>
+                    @endif
                     <div class="form-group">
                         <label for="registration" class="form-label">Name<span
                                 class="text-danger">*</span></label>
@@ -164,6 +177,17 @@
             <div class="modal-body">
             <form action="" id="editResource" method="POST" class="row g-3 needs-validation">
                     @csrf
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select" name="edit_ou_id" aria-label="Default select example" id="edit_select_org_unit">
+                            <option value="">Select Org Unit</option>
+                            @foreach($organizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>            
+                    </div>
+                    @endif
                     <div class="form-group">
                         <label for="registration" class="form-label">Name<span
                                 class="text-danger">*</span></label>
@@ -324,10 +348,6 @@
     initFieldRestrictions("edit_");
 });
 
-
-
-
-
     $("#save_resource").on("click", function(e) {
         e.preventDefault();
         $(".loader").fadeIn();
@@ -385,6 +405,7 @@
                     $('input[name="edit_Date_for_maintenance"]').val(response.resourcedata.date_for_maintenance || '');
                      $('input[name="edit_Hours_Remaining"]').val(response.resourcedata.hours_remaining || '');
                      $('input[name="resourse_id"]').val(response.resourcedata.id || '');
+                     $('#edit_select_org_unit').val(response.resourcedata.ou_id).trigger('change');
 
                   
                      if (response.resourcedata.resource_logo) {
@@ -395,7 +416,6 @@
 
                             // Now, set the new values
                             let fileName = response.resourcedata.resource_logo;
-                            console.log(fileName);
                             let imagePath = '/storage/resource_logo/' + fileName; // Adjust the path as per your storage setup 
                             $('#resourse_logo_preview').attr('src', imagePath).show();
                             $('#resorse_logo_filename').text('Current File: ' + fileName);

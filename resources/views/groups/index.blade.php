@@ -79,11 +79,6 @@
             <div class="modal-body">
                 <form action="" id="groups" method="POST" class="row g-3 needs-validation">
                     @csrf
-                    <div class="form-group">
-                        <label for="name" class="form-label">Group Name<span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control">
-                        <div id="name_error" class="text-danger error_e"></div>
-                    </div>
                     @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                     <div class="form-group">
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
@@ -96,6 +91,12 @@
                         <div id="ou_id_error" class="text-danger error_e"></div>            
                     </div>
                     @endif
+                    <div class="form-group">
+                        <label for="name" class="form-label">Group Name<span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control">
+                        <div id="name_error" class="text-danger error_e"></div>
+                    </div>
+                
                     <div class="form-group">
                         <label for="users" class="form-label">Select Users<span class="text-danger"></span></label>
                         <select class="form-select users-select" name="user_ids[]" multiple="multiple" id="usersDropdown">
@@ -137,6 +138,18 @@
                 <form id="editGroupForm" class="row g-3 needs-validation">
                     @csrf
                     <input type="hidden" name="group_id" id="edit_group_id">
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
+                            <option value="">Select Org Unit</option>
+                            @foreach($organizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error_up" class="text-danger error_e"></div>            
+                    </div>
+                    @endif
                     <div class="form-group">
                         <label for="edit_name" class="form-label">Group Name<span class="text-danger">*</span></label>
                         <input type="text" name="name" id="edit_name" class="form-control">
@@ -152,18 +165,7 @@
                         </select>
                         <div id="user_ids_error_up" class="text-danger error_e"></div>
                     </div>
-                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                    <div class="form-group">
-                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                        <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
-                            <option value="">Select Org Unit</option>
-                            @foreach($organizationUnits as $val)
-                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                            @endforeach
-                        </select>
-                        <div id="ou_id_error_up" class="text-danger error_e"></div>            
-                    </div>
-                    @endif
+                  
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
@@ -268,7 +270,6 @@ $(document).ready(function() {
                 id: groupId
             },
             success: function(response) {
-                console.log(response)
                 $('#edit_name').val(response.group.name);
                 $('#edit_group_id').val(response.group.id);
                 $('#edit_ou_id').val(response.group.ou_id);
@@ -331,7 +332,7 @@ $(document).ready(function() {
       
     });
 
-    $(document).on("change", "#select_org_unit", function(){
+    $(document).on("change", "#select_org_unit", function(){ 
         var ou_id = $(this).val();
         var $selectUser = $("#usersDropdown"); // Target dropdown
 

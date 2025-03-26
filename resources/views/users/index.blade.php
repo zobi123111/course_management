@@ -458,35 +458,35 @@
 <script>
     
     $(document).ready(function() {
-$('#user_table').DataTable({
-    processing: true,
-    serverSide: true,
-    ajax: "{{ route('users.data') }}",
-    columns: [
-        { 
-            data: 'image', 
-            name: 'image', 
-            orderable: false, 
-            searchable: false, 
-            render: function(data) {
-                if(data) {
-                    let baseUrl = "{{ url('storage') }}";
-                    return `<img src="${baseUrl}/${data}" width="50" height="50" class="img-thumbnail"/>`;
+    $('#user_table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('users.data') }}",
+        columns: [
+            { 
+                data: 'image', 
+                name: 'image', 
+                orderable: false, 
+                searchable: false, 
+                render: function(data) {
+                    if(data) {
+                        let baseUrl = "{{ url('storage') }}";
+                        return `<img src="${baseUrl}/${data}" width="50" height="50" class="img-thumbnail"/>`;
+                    }
+                    return '<span class="text-muted">No Image</span>';
                 }
-                return '<span class="text-muted">No Image</span>';
-            }
-        },
-        { data: 'fname', name: 'fname' },
-        { data: 'lname', name: 'lname' },
-        { data: 'email', name: 'email' },
-        { data: 'position', name: 'position' },
-        @if(auth()->user()->is_owner == 1)
-                    { data: 'organization', name: 'organization' },
-        @endif
-        { data: 'status', name: 'status' },
-        { data: 'action', name: 'action', orderable: false, searchable: false }
-    ]   
-});
+            },
+            { data: 'fname', name: 'fname' },
+            { data: 'lname', name: 'lname' },
+            { data: 'email', name: 'email' },
+            { data: 'position', name: 'position' },
+            @if(auth()->user()->is_owner == 1)
+                        { data: 'organization', name: 'organization' },
+            @endif
+            { data: 'status', name: 'status' },
+            { data: 'action', name: 'action', orderable: false, searchable: false }
+        ]   
+    });
 
 
 

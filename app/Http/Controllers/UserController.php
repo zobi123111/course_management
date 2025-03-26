@@ -15,37 +15,46 @@ use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
 {
-    public function getData(Request $request)
-    {
-        $ou_id = auth()->user()->ou_id;       
-        $organizationUnits = OrganizationUnits::all();
-        $roles = Role::all(); 
-    
-        if (empty($ou_id)) { 
-            $users = User::all();
-        } else {  
-            $users = User::where('ou_id', $ou_id)->get();
-        }
-        if ($request->ajax()) {
-            $query = User::query()
-                    ->leftJoin('roles', 'users.role', '=', 'roles.id')
-                    ->leftJoin('organization_units', 'users.ou_id', '=', 'organization_units.id')
-                    ->select([
-                        'users.id',
-                        'users.image',
-                        'users.fname',
-                        'users.lname',
-                        'users.email',
-                        'roles.role_name as position',
-                        'organization_units.org_unit_name as organization',
-                        'users.status'
-                    ]);
-                    if (!empty($ou_id)) {
-                        $query->where('users.ou_id', $ou_id);
-                    }
-            return DataTables::of($query)
-            ->filterColumn('position', function($query, $keyword) {
-                $query->where('roles.role_name', 'LIKE', "%{$keyword}%");
+
+public function getData(Request $request)
+{
+    $ou_id = auth()->user()->ou_id; 
+  
+    $organizationUnits = OrganizationUnits::all();
+    $roles = Role::all(); 
+
+    if (empty($ou_id)) { 
+        $users = User::all();
+    } else {  
+        $users = User::where('ou_id', $ou_id)->get();
+    }
+    if ($request->ajax()) {
+        $query = User::query()
+                ->leftJoin('roles', 'users.role', '=', 'roles.id')
+                ->leftJoin('organization_units', 'users.ou_id', '=', 'organization_units.id')
+                ->select([
+                    'users.id',
+                    'users.image',
+                    'users.fname',
+                    'users.lname',
+                    'users.email',
+                    'roles.role_name as position',
+                    'organization_units.org_unit_name as organization',
+                    'users.status'
+                ]);
+                if (!empty($ou_id)) {
+                    $query->where('users.ou_id', $ou_id);
+                }
+        return DataTables::of($query)
+        ->filterColumn('position', function($query, $keyword) {
+            $query->where('roles.role_name', 'LIKE', "%{$keyword}%");
+        })
+        ->filterColumn('organization', function($query, $keyword) {
+            $query->where('organization_units.org_unit_name', 'LIKE', "%{$keyword}%");
+        })
+            ->addColumn('status', function ($user) {
+                return $user->status == 1 ? '<span class="badge bg-success">Active</span>' 
+                                          : '<span class="badge bg-danger">Inactive</span>';
             })
             ->filterColumn('organization', function($query, $keyword) {
                 $query->where('organization_units.org_unit_name', 'LIKE', "%{$keyword}%");
@@ -95,16 +104,6 @@ class UserController extends Controller
 
         // dd($userToUpdate);
             if($userToUpdate){
-                            
-                // if ($request->hasFile('image')) {
-                //     if ($userToUpdate->image) {
-                //         Storage::disk('public')->delete($userToUpdate->image);
-                //     }
-            
-                //     $filePath = $request->file('image')->store('users', 'public');
-                // } else {
-                //     $filePath = $userToUpdate->image;
-                // }
 
                 if ($userToUpdate->currency_required == 1) {
                     $request->validate([
@@ -148,44 +147,20 @@ class UserController extends Controller
                     $passportFilePath = $userToUpdate->passport_file;
                 }
 
-                // if ($request->has('edit_rating_checkbox') && $request->edit_rating_checkbox) {
-                //     // $request->validate([
-                //     //     'edit_rating' => 'required|integer|min:1|max:5',
-                //     // ]);
-                //     $userToUpdate->rating_required = 1;
-
-                // }
-
                 if ($userToUpdate->currency_required == 1) {
                     $request->validate([
                         'currency' => 'required|string',
                     ]);
                 }
 
-                // if ($request->has('edit_custom_field_checkbox') && $request->edit_custom_field_checkbox) {
-                //     $request->validate([
-                //         'edit_custom_field_name' => 'required|string',
-                //         'edit_custom_field_value' => 'required|string',
-                //     ]);
-                // }
-
-
-                // if ($request->has('edit_custom_field_checkbox') && $request->edit_custom_field_checkbox) {
-                //     $userToUpdate->password_flag = 1;
-                // }
-
                 
                 $userToUpdate->where('id', $request->id)
                 ->update([
-                    // 'image' => $filePath,
                     'licence' => $request->licence ?? null,
                     'licence_file' => $licenceFilePath  ?? null,
                     'passport' => $request->passport  ?? null,
                     'passport_file' => $passportFilePath  ?? null,
-                    // 'rating' => $request->edit_rating ?? null,
                     'currency' => $request->currency ?? null,
-                    // 'custom_field_name' => $request->edit_custom_field_name ?? null,
-                    // 'custom_field_value' => $request->edit_custom_field_value ?? null,
                 ]);
                 
                 return response()->json(['success' => true,'message' => "User profile updated successfully"]);
@@ -227,24 +202,14 @@ class UserController extends Controller
         }
 
         if ($request->has('passport_checkbox') && $request->passport_checkbox) {
-            // $request->validate([
-            //     'passport' => 'required|string',
-            //     'passport_file' => 'required|mimes:pdf,jpg,jpeg,png',
-            // ]);
             $passport_required = 1;
         }
 
         if ($request->has('rating_checkbox') && $request->rating_checkbox) {
-            // $request->validate([
-            //     'rating' => 'required|integer|min:1|max:5',
-            // ]);
             $rating_required = 1;
         }
 
         if ($request->has('currency_checkbox') && $request->currency_checkbox) {
-            // $request->validate([
-            //     'currency' => 'required|string',
-            // ]);
             $currency_required = 1;
         }
 

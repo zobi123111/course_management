@@ -16,6 +16,7 @@ class ResourceController extends Controller
 {
     public function resource_list(Request $request)
     {
+        $organizationUnits = OrganizationUnits::all();
         if ($request->ajax()) {
             $query = Resource::query();
 
@@ -62,7 +63,7 @@ class ResourceController extends Controller
                 'data' => $data
             ]);
         } else {
-            return view('resource.index');
+            return view('resource.index', compact('organizationUnits'));
         }
     }
 
@@ -111,6 +112,7 @@ class ResourceController extends Controller
                 $logo_name[] = $fileName;
             }
            $resource_data = array(
+            'ou_id'         => $request->ou_id ?? null, 
             'name'         => $request->name, 
             "registration"  =>  $request->registration,
             "type"  =>  $request->type,
@@ -154,6 +156,7 @@ class ResourceController extends Controller
     }
 
     $resource_data = array(
+        'ou_id'         => $request->edit_ou_id ?? null, 
         "name"  =>  $request->edit_name,
         "registration"  =>  $request->edit_registration,
         "type"  =>  $request->edit_type,
@@ -204,6 +207,7 @@ class ResourceController extends Controller
         $userId = Auth::user()->id;
    
         $selected_course     = BookedResource::where('course_id', $course_id)->with('resource')->where('user_id', $userId)->get();  
+       
 
         $pending_resources   = BookedResource::where('course_id', $course_id)->with('resource')->where('user_id', $userId)->where('status', 0)->get(); 
 

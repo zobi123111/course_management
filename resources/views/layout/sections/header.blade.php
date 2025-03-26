@@ -7,7 +7,7 @@
         ?>
             <a href="{{ url('dashboard') }}" class="logo d-flex align-items-center">
                 <img id="org_logo_preview" class="avms_logo" src="{{ asset('storage/organization_logo/' . $org_detail->org_logo) }}" alt="Organization Logo">
-                <span class="d-none d-lg-block">{{ $org_detail->org_unit_name }} </span>  
+                <span class="d-none d-lg-block">{{ $org_detail->org_unit_name ?? '' }} </span>  
             </a>
         <?php 
         } else{?>
