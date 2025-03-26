@@ -83,6 +83,18 @@
             <form action="" id="trainingEventForm" method="POST" class="row g-3">
                 @csrf
 
+                @if(auth()->user()->is_owner == 1)
+                <div class="form-group">
+                    <label class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                    <select class="form-select" name="ou_id" id="select_org_unit">
+                        <option value="">Select Org Unit</option>
+                        @foreach($organizationUnits as $val)
+                        <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                        @endforeach
+                    </select>
+                    <div id="ou_id_error" class="text-danger error_e"></div>
+                </div>
+                @endif
                 <!-- Select User -->
                 <div class="form-group">
                     <label class="form-label">Select Student<span class="text-danger">*</span></label>
@@ -137,19 +149,7 @@
                     <label class="form-label">Destination Airfield (4-letter code)<span class="text-danger">*</span></label>
                     <input type="text" name="destination_airfield" class="form-control" maxlength="4">
                     <div id="destination_airfield_error" class="text-danger error_e"></div>
-                </div>
-                @if(auth()->user()->is_owner == 1)
-                <div class="form-group">
-                    <label class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                    <select class="form-select" name="ou_id" id="select_org_unit">
-                        <option value="">Select Org Unit</option>
-                        @foreach($organizationUnits as $val)
-                        <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                        @endforeach
-                    </select>
-                    <div id="ou_id_error" class="text-danger error_e"></div>
-                </div>
-                @endif
+                </div>                
                 <!-- Select Group -->
                 <!-- <div class="form-group">
                     <label class="form-label">Select Group<span class="text-danger">*</span></label>
@@ -225,6 +225,18 @@
             <form action="" id="editTrainingEventForm" method="POST" class="row g-3">
                 @csrf
                 <input type="hidden" name="event_id" id="edit_event_id">
+                @if(auth()->user()->is_owner == 1)
+                    <div class="form-group">
+                        <label class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select select_org_unit" name="ou_id" id="edit_ou_id">
+                            <option value="">Select Org Unit</option>
+                            @foreach($organizationUnits as $val)
+                                <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error_up" class="text-danger error_e"></div>
+                    </div>
+                @endif
                 <div class="form-group">
                     <label class="form-label">Select Student<span class="text-danger">*</span></label>
                     <select class="form-select" name="student_id" id="edit_select_user">
@@ -262,20 +274,6 @@
                     <input type="time" name="end_time" class="form-control" id="edit_end_time">
                     <div id="end_time_error_up" class="text-danger error_e"></div>
                 </div>
-
-                @if(auth()->user()->is_owner == 1)
-                    <div class="form-group">
-                        <label class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                        <select class="form-select select_org_unit" name="ou_id" id="edit_ou_id">
-                            <option value="">Select Org Unit</option>
-                            @foreach($organizationUnits as $val)
-                                <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                            @endforeach
-                        </select>
-                        <div id="ou_id_error_up" class="text-danger error_e"></div>
-                    </div>
-                @endif
-
                 <!-- <div class="form-group">
                     <label class="form-label">Select Group<span class="text-danger">*</span></label>
                     <select class="form-select" name="group_id" id="edit_select_group">
@@ -424,23 +422,113 @@ $(document).ready(function() {
     initializeSelect2(); // Call on page load
 
 
-    $('#select_user').change(function() {
+    $(document).on('change', '#select_org_unit, #edit_ou_id', function() {
+        var ou_id = $(this).val();
+
+        // Determine which modal is being used
+        var isEditModal = $(this).attr('id') === 'edit_ou_id';
+
+        // Select correct dropdowns based on the modal
+        var studentDropdown = isEditModal ? $('#edit_select_user') : $('#select_user');
+        var instructorDropdown = isEditModal ? $('#edit_select_instructor') : $('#select_instructor');
+        var resourceDropdown = isEditModal ? $('#edit_select_resource') : $('#select_resource');
+
+        $.ajax({
+            url: "{{ url('/training/get_ou_students_instructors_resources') }}/" + ou_id, // Append ou_id in URL
+            type: "GET",
+            dataType: "json",
+            success: function(response) {
+
+                // Clear and populate Students dropdown
+                studentDropdown.empty();
+                if (response.students && response.students.length > 0) {
+                    studentDropdown.append('<option value="">Select Student</option>'); // Default option
+                    $.each(response.students, function(index, student) {
+                        studentDropdown.append('<option value="' + student.id + '">' + student.fname + ' ' + student.lname + '</option>');
+                    });
+                } else {
+                    alert('No students found for the selected organization unit.');
+                    studentDropdown.append('<option value="">Select Student</option>'); // Keep default option
+                }
+
+                // Clear and populate Instructors dropdown
+                instructorDropdown.empty();
+                if (response.instructors && response.instructors.length > 0) {
+                    instructorDropdown.append('<option value="">Select Instructor</option>'); // Default option
+                    $.each(response.instructors, function(index, instructor) {
+                        instructorDropdown.append('<option value="' + instructor.id + '">' + instructor.fname + ' ' + instructor.lname + '</option>');
+                    });
+                } else {
+                    alert('No instructors found for the selected organization unit.');
+                    instructorDropdown.append('<option value="">Select Instructor</option>'); // Keep default option
+                }
+
+                // Clear and populate Resources dropdown
+                // resourceDropdown.empty();
+                // if (response.resources && response.resources.length > 0) {
+                //     resourceDropdown.append('<option value="">Select Resource</option>'); // Default option
+                //     $.each(response.resources, function(index, resource) {
+                //         resourceDropdown.append('<option value="' + resource.id + '">' + resource.class + '</option>');
+                //     });
+                // } else {
+                //     alert('No resources found for the selected organization unit.');
+                //     resourceDropdown.append('<option value="">Select Resource</option>'); // Keep default option
+                // }
+            },
+            error: function(xhr) {
+                console.error(xhr.responseText);
+                alert('Error fetching data. Please try again.');
+            }
+        });
+    });
+
+
+    $(document).on('change', '#select_user, #edit_select_user', function() {
         var userId = $(this).val();
-        console.log(userId);
+
+        // Determine which modal is being used
+        var isEditModal = $(this).attr('id') === 'edit_select_user';
+
+        // Select the correct fields based on the modal
+        var ouDropdown = isEditModal ? $('#edit_ou_id') : $('#select_org_unit');
+        var licenceNumberField = isEditModal ? $('#edit_licence_number') : $('#licence_number');
+        var courseDropdown = isEditModal ? $('#edit_select_course') : $('#select_course');
+
+        // Get the selected Organization Unit ID (OU ID)
+        var ou_id = ouDropdown.length ? ouDropdown.val() : '{{ auth()->user()->ou_id }}';
+
+        console.log("User ID:", userId);
+        console.log("OU ID:", ou_id);
+
         if (userId) {
             $.ajax({
-                url: "{{ url('/training/get-licence-number') }}/" + userId, // Append user_id in URL
+                url: "{{ url('/training/get_licence_number_and_courses') }}/" + userId + '/' + ou_id,
                 type: "GET",
                 success: function(response) {
+                    console.log(response);
                     if (response.success) {
-                        if(response.licence_number){
-                            $('#licence_number').val(response.licence_number);
-                        }else{
+                        // Update license number if available
+                        if (response.licence_number) {
+                            licenceNumberField.val(response.licence_number);
+                        } else {
                             alert('License number not found!');
+                            licenceNumberField.val('');
                         }
+
+                        // Update courses dropdown
+                        var courseOptions = '<option value="">Select Course</option>'; // Default option
+                        if (response.courses && response.courses.length > 0) {
+                            $.each(response.courses, function(index, course) {
+                                courseOptions += '<option value="' + course.id + '">' + course.course_name + '</option>';
+                            });
+                        } else {
+                            alert('No courses found!'); // Notify user
+                        }
+                        courseDropdown.html(courseOptions); // Update dropdown
                     } else {
-                        $('#licence_number').val('');
+                        licenceNumberField.val('');
                         alert('License number not found!');
+                        courseDropdown.html('<option value="">Select Course</option>'); // Clear courses
                     }
                 },
                 error: function(xhr) {
@@ -448,9 +536,12 @@ $(document).ready(function() {
                 }
             });
         } else {
-            $('#licence_number').val('');
+            licenceNumberField.val('');
+            courseDropdown.html('<option value="">Select Course</option>'); // Reset dropdown
         }
     });
+
+
 
 
     $("#createTrainingEvent").on('click', function() {
@@ -572,54 +663,54 @@ $(document).ready(function() {
         $('#eventId').val(eventId);      
     });
 
-    $(document).on("change", ".select_org_unit", function () {
-        var ou_id = $(this).val();
-        var $select_group, $select_instructor;
+    // $(document).on("change", ".select_org_unit", function () {
+    //     var ou_id = $(this).val();
+    //     var $select_group, $select_instructor;
 
-        // Determine if the event was triggered from the main form or the edit modal
-        if ($(this).attr("id") === "edit_ou_id") {
-            $select_group = $("#edit_select_group"); // Edit modal group dropdown
-            $select_instructor = $("#edit_select_instructor"); // Edit modal instructor dropdown
-        } else {
-            $select_group = $("#select_group"); // Main form group dropdown
-            $select_instructor = $("#select_instructor"); // Main form instructor dropdown
-        }
+    //     // Determine if the event was triggered from the main form or the edit modal
+    //     if ($(this).attr("id") === "edit_ou_id") {
+    //         $select_group = $("#edit_select_group"); // Edit modal group dropdown
+    //         $select_instructor = $("#edit_select_instructor"); // Edit modal instructor dropdown
+    //     } else {
+    //         $select_group = $("#select_group"); // Main form group dropdown
+    //         $select_instructor = $("#select_instructor"); // Main form instructor dropdown
+    //     }
 
-        $.ajax({
-            url: "/training/get_ou_groups_and_instructors/",
-            type: "GET",
-            data: { 'ou_id': ou_id },
-            dataType: "json",
-            success: function (response) {
-                console.log(response);
+    //     $.ajax({
+    //         url: "/training/get_ou_groups_and_instructors/",
+    //         type: "GET",
+    //         data: { 'ou_id': ou_id },
+    //         dataType: "json",
+    //         success: function (response) {
+    //             console.log(response);
 
-                // Populate Organization Unit Groups
-                if (response.orgUnitGroups && Array.isArray(response.orgUnitGroups)) {
-                    var groupOptions = "<option value=''>Select Group</option>";
-                    response.orgUnitGroups.forEach(function (value) {
-                        groupOptions += "<option value='" + value.id + "'>" + value.name + "</option>";
-                    });
-                    $select_group.html(groupOptions);
-                } else {
-                    console.error("Invalid response format for groups:", response);
-                }
+    //             // Populate Organization Unit Groups
+    //             if (response.orgUnitGroups && Array.isArray(response.orgUnitGroups)) {
+    //                 var groupOptions = "<option value=''>Select Group</option>";
+    //                 response.orgUnitGroups.forEach(function (value) {
+    //                     groupOptions += "<option value='" + value.id + "'>" + value.name + "</option>";
+    //                 });
+    //                 $select_group.html(groupOptions);
+    //             } else {
+    //                 console.error("Invalid response format for groups:", response);
+    //             }
 
-                // Populate Instructors
-                if (response.ouInstructors && Array.isArray(response.ouInstructors)) {
-                    var instructorOptions = "<option value=''>Select Instructor</option>";
-                    response.ouInstructors.forEach(function (value) {
-                        instructorOptions += "<option value='" + value.id + "'>" + value.fname + " " + value.lname + "</option>";
-                    });
-                    $select_instructor.html(instructorOptions);
-                } else {
-                    console.error("Invalid response format for instructors:", response);
-                }
-            },
-            error: function (xhr, status, error) {
-                console.error(xhr.responseText);
-            }
-        });
-    });
+    //             // Populate Instructors
+    //             if (response.ouInstructors && Array.isArray(response.ouInstructors)) {
+    //                 var instructorOptions = "<option value=''>Select Instructor</option>";
+    //                 response.ouInstructors.forEach(function (value) {
+    //                     instructorOptions += "<option value='" + value.id + "'>" + value.fname + " " + value.lname + "</option>";
+    //                 });
+    //                 $select_instructor.html(instructorOptions);
+    //             } else {
+    //                 console.error("Invalid response format for instructors:", response);
+    //             }
+    //         },
+    //         error: function (xhr, status, error) {
+    //             console.error(xhr.responseText);
+    //         }
+    //     });
+    // });
 
 
     $("#editModal").on("show.bs.modal", function(){

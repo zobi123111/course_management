@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('lesson_id');
             $table->string('title');
             $table->text('description')->nullable();
+            $table->boolean('is_mandatory')->default(1);
             $table->boolean('status')->default(1);
             $table->timestamps();
     

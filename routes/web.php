@@ -151,14 +151,15 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/training/edit', [TrainingEventsController::class, 'getTrainingEvent'])->name('training.edit');
     Route::post('/training/update', [TrainingEventsController::class, 'updateTrainingEvent'])->name('training.update');
     Route::post('/training/delete', [TrainingEventsController::class, 'deleteTrainingEvent'])->name('training.delete');
-    Route::get('/training/get_ou_groups_and_instructors/', [TrainingEventsController::class, 'getOrgGroupsAndInstructors'])->name('training.get_ou_groups_and_instructors');
+    // Route::get('/training/get_ou_groups_and_instructors/', [TrainingEventsController::class, 'getOrgGroupsAndInstructors'])->name('training.get_ou_groups_and_instructors');
     Route::get('/training/show/{event_id}', [TrainingEventsController::class, 'showTrainingEvent'])->name('training.show');
     Route::post('/training/store_grading', [TrainingEventsController::class, 'createGrading'])->name('training.store_grading');
     Route::post('/training/overall_assessment', [TrainingEventsController::class, 'storeOverallAssessment'])->name('training.overall_assessment');
     // Route::get('/grading', [TrainingEventsController::class, 'getStudentGrading'])->name('grading.list');
     Route::get('/training/grading-list/{event_id}', [TrainingEventsController::class, 'getStudentGrading'])->name('training.grading-list');
-    Route::get('/training/get-licence-number/{user_id}', [TrainingEventsController::class, 'getStudentLicenseNumber'])->name('training.get-licence-number');
+    Route::get('/training/get_ou_students_instructors_resources/{ou_id}', [TrainingEventsController::class, 'getOrgStudentsInstructorsResources'])->name('training.get_ou_students_instructors_resources');
 });
+Route::get('/training/get_licence_number_and_courses/{user_id}/{ou_id}', [TrainingEventsController::class, 'getStudentLicenseNumberAndCourses'])->name('training.get_licence_number_and_courses');
 
 // Resources Routes
     Route::get('/resource', [ResourceController::class, 'resource_list'])->name('resource.index');

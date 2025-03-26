@@ -154,12 +154,6 @@ function getMultipleRoles()
     // Fetch role details
     return Role::whereIn('id', $multiple_roles)->get(); 
 }
-function ou_logo()
-{
-    $ou_id = Auth::user()->ou_id;  
-    $org_detail = OrganizationUnits::where('id', $ou_id)->first(); // Fetch only one record
-    return $org_detail;
-}
 
 function ou_logo()
 {
@@ -168,4 +162,20 @@ function ou_logo()
     return $org_detail;
 }
 
+function hasUserRole($user, $roleName)
+{
+    if (!$user->relationLoaded('roles')) {
+        $user->load('roles');
+    }
+    
+    return collect($user->roles)->contains(function ($role) use ($roleName) {
+        // If $role is an integer, retrieve the Role model.
+        if (is_int($role)) {
+            $roleObj = Role::find($role);
+            return $roleObj && stripos($roleObj->role_name, $roleName) !== false;
+        }
+        // Otherwise, assume $role is a model instance.
+        return isset($role->role_name) && stripos($role->role_name, $roleName) !== false;
+    });
+}
 ?>
