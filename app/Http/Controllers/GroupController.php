@@ -55,7 +55,7 @@ class GroupController extends Controller
             });
             $users = User::all();
         } else {
-            $users = User::where('ou_id', $currentUser->ou_id)->get();
+            $users = User::where('ou_id', $currentUser->ou_id)->whereNull('is_admin')->get();
             $groups = Group::where('ou_id', $currentUser->ou_id)->get();
         }
 
@@ -73,7 +73,7 @@ class GroupController extends Controller
     {   
         // dd($request);
         $request->validate([
-            'name' => 'required|unique:groups|max:255',
+            'name' => 'required|max:255|unique:groups,name,NULL,id,deleted_at,NULL',
             'user_ids' => 'array',
             'user_ids.*' => 'exists:users,id', // Ensure all user IDs exist
             'status' => 'required',
@@ -107,7 +107,7 @@ class GroupController extends Controller
     {
         // dd($request);
         $request->validate([
-            'name' => 'required',
+            'name' => 'required|max:255|unique:groups,name,' . $request->group_id . ',id,deleted_at,NULL',
             'user_ids' => 'array',
             'user_ids.*' => 'exists:users,id',
             'status' => 'required',

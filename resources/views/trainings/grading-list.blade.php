@@ -18,8 +18,7 @@
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">{{ $event->course?->course_name }}</h5>
                 <small>
-                    Instructor: {{ $event->instructor?->fname }} {{ $event->instructor?->lname }} | 
-                    Group: {{ $event->group?->name }}
+                    Instructor: {{ $event->instructor?->fname }} {{ $event->instructor?->lname }}
                 </small>
             </div>
             <div class="card-body">
