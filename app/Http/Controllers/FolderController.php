@@ -22,7 +22,7 @@ class FolderController extends Controller
             $documents = Document::whereNull('folder_id')->get();
             // dd($documents);
         } else {
-            
+           
             // Regular users: Fetch only their org unit folders
             $folders = Folder::where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children')->get();
             $documents = Document::whereNull('folder_id')->where('ou_id', Auth::user()->ou_id)->get();

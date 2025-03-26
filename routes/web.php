@@ -131,6 +131,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/document/delete', [DocumentController::class, 'deleteDocument'])->name('document.delete');
     Route::get('/document/show/{doc_id}', [DocumentController::class, 'showDocument'])->name('document.show');
     Route::post('/document/acknowledge', [DocumentController::class, 'acknowledgeDocument'])->name('document.acknowledge');
+    Route::get('/document/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('document.getOrgfolder');
     
     //Folders Route
     Route::get('/folders', [FolderController::class, 'index'])->name('folder.index');

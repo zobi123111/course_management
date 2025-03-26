@@ -22,4 +22,9 @@ class Folder extends Model
     {
         return $this->hasMany(Folder::class, 'parent_id');
     }
+
+    public function childrenRecursive()
+{
+    return $this->hasMany(Folder::class, 'parent_id')->with('childrenRecursive');
+}
 }

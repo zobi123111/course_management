@@ -69,11 +69,13 @@ class CourseController extends Controller
             // dd("if working");
             $courses = Courses::all();
             $groups = Group::all();  
+            $resource  = Resource::all();
         } 
         elseif(checkAllowedModule('courses', 'course.index')->isNotEmpty() && Auth()->user()->is_admin ==  0)
         {
            // dd("else if working");
             $groups = Group::all();
+            $resource  = Resource::all();
 
             $filteredGroups = $groups->filter(function ($group) use ($userId) {
                 $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);              
@@ -90,17 +92,18 @@ class CourseController extends Controller
         }
         else 
         {
-       
+       //  dd("asds");
             if ($role == 1 && empty($ouId)) {
                 $courses = Courses::all();
             } else {
                 $courses = Courses::where('ou_id', $ouId)->get();
             }
             $groups = Group::where('ou_id', $ouId)->get();
+            $resource  = Resource::where('ou_id', $ouId)->get();
         }
     
         $organizationUnits = OrganizationUnits::all();
-        $resource  = Resource::all();
+        
     
         return view('courses.index', compact('courses', 'organizationUnits', 'groups', 'resource'));
     }
@@ -219,7 +222,7 @@ class CourseController extends Controller
 
         $course = Courses::findOrFail($request->course_id);
         $course->update([
-            'ou_id' =>  (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
+           'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->editou_id : (auth()->user()->ou_id ?? null),
             'course_name' => $request->course_name,
             'description' => $request->description,
             'image' => $filePath,

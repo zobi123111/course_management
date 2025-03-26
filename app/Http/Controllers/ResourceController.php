@@ -17,8 +17,15 @@ class ResourceController extends Controller
     public function resource_list(Request $request)
     {
         $organizationUnits = OrganizationUnits::all();
+        $ou_id =  auth()->user()->ou_id;
         if ($request->ajax()) {
-            $query = Resource::query();
+            if(Auth()->user()->is_owner ==  1){
+                $query = Resource::query();
+            }
+            else{
+                $query = Resource::where('ou_id', $ou_id);
+            }
+            
 
             // Get total records count before applying filters
             $totalRecords = $query->count();
