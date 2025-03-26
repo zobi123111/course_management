@@ -16,8 +16,6 @@ use Yajra\DataTables\Facades\DataTables;
 class UserController extends Controller
 {
 
-
-
 public function getData(Request $request)
 {
     $ou_id = auth()->user()->ou_id; 
@@ -58,29 +56,36 @@ public function getData(Request $request)
                 return $user->status == 1 ? '<span class="badge bg-success">Active</span>' 
                                           : '<span class="badge bg-danger">Inactive</span>';
             })
-            ->addColumn('action', function ($row) {
-                $viewUrl = url('users/show/' . encode_id($row->id));
-                $editBtn = '<i class="fa fa-edit edit-user-icon text-primary me-2" 
-                                style="font-size:18px; cursor: pointer;" 
-                                data-user-id="' . encode_id($row->id) . '">
-                            </i>';
-                
-                $viewBtn = '<a href="' . $viewUrl . '" class="view-icon" title="View User" 
-                                style="font-size:18px; cursor: pointer;">
-                                <i class="fa fa-eye text-danger me-2"></i>
-                            </a>';
-                $delete =  '<i class="fa-solid fa-trash delete-icon text-danger" 
-                                style="font-size:18px; cursor: pointer;" 
-                                data-user-id="' . encode_id($row->id) . '">
-                            </i>';
-                return $viewBtn . ' ' . $editBtn . ' ' . $delete;
+            ->filterColumn('organization', function($query, $keyword) {
+                $query->where('organization_units.org_unit_name', 'LIKE', "%{$keyword}%");
             })
-            ->rawColumns(['status', 'action'])
-            ->make(true);
+                ->addColumn('status', function ($user) {
+                    return $user->status == 1 ? '<span class="badge bg-success">Active</span>' 
+                                              : '<span class="badge bg-danger">Inactive</span>';
+                })
+                ->addColumn('action', function ($row) {
+                    $viewUrl = url('users/show/' . encode_id($row->id));
+                    $editBtn = '<i class="fa fa-edit edit-user-icon text-primary me-2" 
+                                    style="font-size:18px; cursor: pointer;" 
+                                    data-user-id="' . encode_id($row->id) . '">
+                                </i>';
+                    
+                    $viewBtn = '<a href="' . $viewUrl . '" class="view-icon" title="View User" 
+                                    style="font-size:18px; cursor: pointer;">
+                                    <i class="fa fa-eye text-danger me-2"></i>
+                                </a>';
+                    $delete =  '<i class="fa-solid fa-trash delete-icon text-danger" 
+                                    style="font-size:18px; cursor: pointer;" 
+                                    data-user-id="' . encode_id($row->id) . '">
+                                </i>';
+                    return $viewBtn . ' ' . $editBtn . ' ' . $delete;
+                })
+                ->rawColumns(['status', 'action'])
+                ->make(true);
+        }
+    
+         return view('users.index', compact('roles', 'organizationUnits'));
     }
-
-     return view('users.index', compact('roles', 'organizationUnits'));
-}
 
 
     public function profile()

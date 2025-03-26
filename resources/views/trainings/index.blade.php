@@ -25,8 +25,10 @@
     <thead>
         <tr>
             <th scope="col">Event</th>
-            <th scope="col">Group</th>
+            <th scope="col">Student</th>
             <th scope="col">Instructor</th>
+            <th scope="col">Resource</th>
+            <th scope="col">Event Date</th>
             <th scope="col">Start Time</th>
             <th scope="col">End Time</th>
             @if(checkAllowedModule('training','training.show')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.grading-list')->isNotEmpty())
@@ -37,9 +39,11 @@
     <tbody>
         @foreach($trainingEvents as $event)
         <tr>
-            <td class="eventName">{{ $event->course->course_name }}</td>
-            <td>{{ $event->group?->name }}</td>
+            <td class="eventName">{{ $event->course?->course_name }}</td>
+            <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
             <td>{{ $event->instructor?->fname }} {{ $event->instructor?->lname }}</td>
+            <td>{{ $event->resource?->name }}</td>
+            <td>{{ date('d-m-y', strtotime($event->event_date)) }}</td>
             <td>{{ date('h:i A', strtotime($event->start_time)) }}</td>
             <td>{{ date('h:i A', strtotime($event->end_time)) }}</td>
             <td>
@@ -79,29 +83,57 @@
             <form action="" id="trainingEventForm" method="POST" class="row g-3">
                 @csrf
 
+                @if(auth()->user()->is_owner == 1)
+                <div class="form-group">
+                    <label class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                    <select class="form-select" name="ou_id" id="select_org_unit">
+                        <option value="">Select Org Unit</option>
+                        @foreach($organizationUnits as $val)
+                        <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                        @endforeach
+                    </select>
+                    <div id="ou_id_error" class="text-danger error_e"></div>
+                </div>
+                @endif
+                <!-- Select User -->
+                <div class="form-group">
+                    <label class="form-label">Select Student<span class="text-danger">*</span></label>
+                    <select class="form-select" name="student_id" id="select_user">
+                        <option value="">Select Student</option>
+                        @foreach($students as $val)
+                        <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
+                        @endforeach
+                    </select>
+                    <div id="student_id_error" class="text-danger error_e"></div>
+                </div>
                 <!-- Select Course -->
                 <div class="form-group">
                     <label class="form-label">Select Course<span class="text-danger">*</span></label>
                     <select class="form-select" name="course_id" id="select_course">
                         <option value="">Select Course</option>
-                        @foreach($course as $val)
+                        @foreach($courses as $val)
                         <option value="{{ $val->id }}">{{ $val->course_name }}</option>
                         @endforeach
                     </select>
                     <div id="course_id_error" class="text-danger error_e"></div>
                 </div>
-
+                <!-- Event Date-->
+                <div class="form-group">
+                    <label class="form-label">Event Date<span class="text-danger">*</span></label>
+                    <input type="date" name="event_date" class="form-control" id="event_date">
+                    <div id="event_date_error" class="text-danger error_e"></div>
+                </div>
                 <!-- Start Date & Time -->
                 <div class="form-group">
-                    <label class="form-label">Start Date & Time<span class="text-danger">*</span></label>
-                    <input type="datetime-local" name="start_time" class="form-control" id="start_time">
+                    <label class="form-label">Start Time<span class="text-danger">*</span></label>
+                    <input type="time" name="start_time" class="form-control" id="start_time">
                     <div id="start_time_error" class="text-danger error_e"></div>
                 </div>
 
                 <!-- End Date & Time -->
                 <div class="form-group">
-                    <label class="form-label">End Date & Time<span class="text-danger">*</span></label>
-                    <input type="datetime-local" name="end_time" class="form-control" id="end_time">
+                    <label class="form-label">End Time<span class="text-danger">*</span></label>
+                    <input type="time" name="end_time" class="form-control" id="end_time">
                     <div id="end_time_error" class="text-danger error_e"></div>
                 </div>
 
@@ -117,49 +149,25 @@
                     <label class="form-label">Destination Airfield (4-letter code)<span class="text-danger">*</span></label>
                     <input type="text" name="destination_airfield" class="form-control" maxlength="4">
                     <div id="destination_airfield_error" class="text-danger error_e"></div>
-                </div>
-                @if(auth()->user()->is_owner == 1)
-                <div class="form-group">
-                    <label class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                    <select class="form-select" name="ou_id" id="select_org_unit">
-                        <option value="">Select Org Unit</option>
-                        @foreach($organizationUnits as $val)
-                        <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                        @endforeach
-                    </select>
-                    <div id="ou_id_error" class="text-danger error_e"></div>
-                </div>
-                @endif
+                </div>                
                 <!-- Select Group -->
                 <!-- <div class="form-group">
                     <label class="form-label">Select Group<span class="text-danger">*</span></label>
                     <select class="form-select" name="group_id" id="select_group">
                         <option value="">Select Group</option>
-                        @foreach($group as $val)
+                        @foreach($groups as $val)
                         <option value="{{ $val->id }}">{{ $val->name }}</option>
                         @endforeach
                     </select>
                     <div id="group_id_error" class="text-danger error_e"></div>
                 </div> -->
 
-                 <!-- Select User -->
-                <div class="form-group">
-                    <label class="form-label">Select Student<span class="text-danger">*</span></label>
-                    <select class="form-select" name="student_id" id="select_user">
-                        <option value="">Select Student</option>
-                        @foreach($student as $val)
-                        <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
-                        @endforeach
-                    </select>
-                    <div id="group_id_error" class="text-danger error_e"></div>
-                </div>
-
                 <!-- Select Instructor -->
                 <div class="form-group">
                     <label class="form-label">Select Instructor<span class="text-danger">*</span></label>
                     <select class="form-select" name="instructor_id" id="select_instructor">
                         <option value="">Select Instructor</option>
-                        @foreach($instructor as $val)
+                        @foreach($instructors as $val)
                         <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
                         @endforeach
                     </select>
@@ -171,7 +179,7 @@
                     <label class="form-label">Select Resource<span class="text-danger">*</span></label>
                     <select class="form-select" name="resource_id" id="select_resource">
                         <option value="">Select Resource</option>
-                        @foreach($resurces as $val)
+                        @foreach($resources as $val)
                         <option value="{{ $val->id }}">{{ $val->class }}</option>
                         @endforeach
                     </select>
@@ -180,14 +188,16 @@
 
                 <!-- Total Time (Calculated) -->
                 <div class="form-group">
-                    <label class="form-label">Total Time (hh:mm)</label>
+                    <label class="form-label">Total Time (hh:mm)<span class="text-danger">*</span></label>
                     <input type="text" name="total_time" class="form-control" id="total_time" readonly>
+                    <div id="total_time_error" class="text-danger error_e"></div>
                 </div>
 
                 <!-- License Number (Extracted from user profile) -->
                 <div class="form-group">
                     <label class="form-label">License Number</label>
-                    <input type="text" name="licence_number" class="form-control" value="{{ auth()->user()->licence_number }}" readonly>
+                    <input type="text" name="licence_number" class="form-control" id="licence_number" value="{{ auth()->user()->licence_number }}" readonly>
+                    <div id="licence_number_error" class="text-danger error_e"></div>
                 </div>
 
                 <!-- Modal Footer -->
@@ -215,30 +225,6 @@
             <form action="" id="editTrainingEventForm" method="POST" class="row g-3">
                 @csrf
                 <input type="hidden" name="event_id" id="edit_event_id">
-                
-                <div class="form-group">
-                    <label class="form-label">Select Course<span class="text-danger">*</span></label>
-                    <select class="form-select" name="course_id" id="edit_select_course">
-                        <option value="">Select Course</option>
-                        @foreach($course as $val)
-                            <option value="{{ $val->id }}">{{ $val->course_name }}</option>
-                        @endforeach
-                    </select>
-                    <div id="course_id_error_up" class="text-danger error_e"></div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Start Date & Time<span class="text-danger">*</span></label>
-                    <input type="datetime-local" name="start_time" class="form-control" id="edit_start_time">
-                    <div id="start_time_error_up" class="text-danger error_e"></div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">End Date & Time<span class="text-danger">*</span></label>
-                    <input type="datetime-local" name="end_time" class="form-control" id="edit_end_time">
-                    <div id="end_time_error_up" class="text-danger error_e"></div>
-                </div>
-
                 @if(auth()->user()->is_owner == 1)
                     <div class="form-group">
                         <label class="form-label">Select Org Unit<span class="text-danger">*</span></label>
@@ -251,50 +237,53 @@
                         <div id="ou_id_error_up" class="text-danger error_e"></div>
                     </div>
                 @endif
-
-                <!-- <div class="form-group">
-                    <label class="form-label">Select Group<span class="text-danger">*</span></label>
-                    <select class="form-select" name="group_id" id="edit_select_group">
-                        <option value="">Select Group</option>
-                        @foreach($group as $val)
-                            <option value="{{ $val->id }}">{{ $val->name }}</option>
-                        @endforeach
-                    </select>
-                    <div id="group_id_error_up" class="text-danger error_e"></div>
-                </div> -->
-
                 <div class="form-group">
                     <label class="form-label">Select Student<span class="text-danger">*</span></label>
                     <select class="form-select" name="student_id" id="edit_select_user">
                         <option value="">Select Student</option>
-                        @foreach($student as $val)
+                        @foreach($students as $val)
                         <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
                         @endforeach
                     </select>
                     <div id="group_id_error" class="text-danger error_e"></div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Select Instructor<span class="text-danger">*</span></label>
-                    <select class="form-select" name="instructor_id" id="edit_select_instructor">
-                        <option value="">Select Instructor</option>
-                        @foreach($instructor as $val)
-                            <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
+                    <label class="form-label">Select Course<span class="text-danger">*</span></label>
+                    <select class="form-select" name="course_id" id="edit_select_course">
+                        <option value="">Select Course</option>
+                        @foreach($courses as $val)
+                            <option value="{{ $val->id }}">{{ $val->course_name }}</option>
                         @endforeach
                     </select>
-                    <div id="instructor_id_error_up" class="text-danger error_e"></div>
+                    <div id="course_id_error_up" class="text-danger error_e"></div>
+                </div>
+                <!-- Event Date-->
+                <div class="form-group">
+                    <label class="form-label">Event Date<span class="text-danger">*</span></label>
+                    <input type="date" name="event_date" class="form-control" id="edit_event_date">
+                    <div id="event_date_error" class="text-danger error_e"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Start Time<span class="text-danger">*</span></label>
+                    <input type="time" name="start_time" class="form-control" id="edit_start_time">
+                    <div id="start_time_error_up" class="text-danger error_e"></div>
                 </div>
 
-                <!-- New Fields -->
                 <div class="form-group">
-                    <label class="form-label">Select Resource</label>
-                    <select class="form-select" name="resource_id" id="edit_select_resource">
-                        <option value="">Select Resource</option>
-                        @foreach($resurces as $val)
-                            <option value="{{ $val->id }}">{{ $val->resource_name }}</option>
+                    <label class="form-label">End Time<span class="text-danger">*</span></label>
+                    <input type="time" name="end_time" class="form-control" id="edit_end_time">
+                    <div id="end_time_error_up" class="text-danger error_e"></div>
+                </div>
+                <!-- <div class="form-group">
+                    <label class="form-label">Select Group<span class="text-danger">*</span></label>
+                    <select class="form-select" name="group_id" id="edit_select_group">
+                        <option value="">Select Group</option>
+                        @foreach($groups as $val)
+                            <option value="{{ $val->id }}">{{ $val->name }}</option>
                         @endforeach
                     </select>
-                    <div id="resource_id_error_up" class="text-danger error_e"></div>
-                </div>
+                    <div id="group_id_error_up" class="text-danger error_e"></div>
+                </div> -->
 
                 <div class="form-group">
                     <label class="form-label">Departure Airfield</label>
@@ -307,7 +296,34 @@
                     <input type="text" name="destination_airfield" class="form-control" id="edit_destination_airfield">
                     <div id="destination_airfield_error_up" class="text-danger error_e"></div>
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Select Instructor<span class="text-danger">*</span></label>
+                    <select class="form-select" name="instructor_id" id="edit_select_instructor">
+                        <option value="">Select Instructor</option>
+                        @foreach($instructors as $val)
+                            <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
+                        @endforeach
+                    </select>
+                    <div id="instructor_id_error_up" class="text-danger error_e"></div>
+                </div>
 
+                <!-- New Fields -->
+                <div class="form-group">
+                    <label class="form-label">Select Resource</label>
+                    <select class="form-select" name="resource_id" id="edit_select_resource">
+                        <option value="">Select Resource</option>
+                        @foreach($resources as $val)
+                            <option value="{{ $val->id }}">{{ $val->class }}</option>
+                        @endforeach
+                    </select>
+                    <div id="resource_id_error_up" class="text-danger error_e"></div>
+                </div>
+                <!-- Total Time (Calculated) -->
+                <div class="form-group">
+                    <label class="form-label">Total Time (hh:mm)<span class="text-danger">*</span></label>
+                    <input type="text" name="total_time" class="form-control" id="edit_total_time" readonly>
+                    <div id="total_time_error_up" class="text-danger error_e"></div>
+                </div>
                 <div class="form-group">
                     <label class="form-label">Licence Number</label>
                     <input type="text" name="licence_number" class="form-control" id="edit_licence_number">
@@ -358,28 +374,43 @@ $(document).ready(function() {
     $('#groupTable').DataTable();
 
 
-    $('#start_time, #end_time').on('change', function () {
-        calculateTotalTime();
+   // Attach event listeners for both create and edit fields
+    $('#start_time, #end_time, #edit_start_time, #edit_end_time').on('change', function () {
+        calculateTotalTime($(this).closest('form')); // Pass the form context
     });
 
-    function calculateTotalTime() {
-        let start = $('#start_time').val();
-        let end = $('#end_time').val();
+    function calculateTotalTime(form) {
+        let startInput = form.find('input[name="start_time"], input[name="edit_start_time"]');
+        let endInput = form.find('input[name="end_time"], input[name="edit_end_time"]');
+        let totalTimeInput = form.find('input[name="total_time"], input[name="edit_total_time"]');
+
+        let start = startInput.val();
+        let end = endInput.val();
 
         if (start && end) {
-            let startTime = new Date(start);
-            let endTime = new Date(end);
+            let [startHours, startMinutes] = start.split(':').map(Number);
+            let [endHours, endMinutes] = end.split(':').map(Number);
 
-            if (endTime > startTime) {
-                let diff = new Date(endTime - startTime);
-                let hours = diff.getUTCHours();
-                let minutes = diff.getUTCMinutes();
-                $('#total_time').val(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`);
+            let startTotalMinutes = startHours * 60 + startMinutes;
+            let endTotalMinutes = endHours * 60 + endMinutes;
+
+            if (endTotalMinutes > startTotalMinutes) {
+                let diffMinutes = endTotalMinutes - startTotalMinutes;
+                let hours = Math.floor(diffMinutes / 60);
+                let minutes = diffMinutes % 60;
+
+                let formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+                
+                totalTimeInput.val(formattedTime);
             } else {
-                $('#total_time').val('');
+                totalTimeInput.val('00:00'); 
             }
+        } else {
+            totalTimeInput.val('00:00');
         }
     }
+
+
     // Initialize Select2 globally on all user selection dropdowns
     function initializeSelect2() {
         $('.users-select').select2({
@@ -391,19 +422,113 @@ $(document).ready(function() {
     initializeSelect2(); // Call on page load
 
 
-    $('#select_user').change(function() {
+    $(document).on('change', '#select_org_unit, #edit_ou_id', function() {
+        var ou_id = $(this).val();
+
+        // Determine which modal is being used
+        var isEditModal = $(this).attr('id') === 'edit_ou_id';
+
+        // Select correct dropdowns based on the modal
+        var studentDropdown = isEditModal ? $('#edit_select_user') : $('#select_user');
+        var instructorDropdown = isEditModal ? $('#edit_select_instructor') : $('#select_instructor');
+        var resourceDropdown = isEditModal ? $('#edit_select_resource') : $('#select_resource');
+
+        $.ajax({
+            url: "{{ url('/training/get_ou_students_instructors_resources') }}/" + ou_id, // Append ou_id in URL
+            type: "GET",
+            dataType: "json",
+            success: function(response) {
+
+                // Clear and populate Students dropdown
+                studentDropdown.empty();
+                if (response.students && response.students.length > 0) {
+                    studentDropdown.append('<option value="">Select Student</option>'); // Default option
+                    $.each(response.students, function(index, student) {
+                        studentDropdown.append('<option value="' + student.id + '">' + student.fname + ' ' + student.lname + '</option>');
+                    });
+                } else {
+                    alert('No students found for the selected organization unit.');
+                    studentDropdown.append('<option value="">Select Student</option>'); // Keep default option
+                }
+
+                // Clear and populate Instructors dropdown
+                instructorDropdown.empty();
+                if (response.instructors && response.instructors.length > 0) {
+                    instructorDropdown.append('<option value="">Select Instructor</option>'); // Default option
+                    $.each(response.instructors, function(index, instructor) {
+                        instructorDropdown.append('<option value="' + instructor.id + '">' + instructor.fname + ' ' + instructor.lname + '</option>');
+                    });
+                } else {
+                    alert('No instructors found for the selected organization unit.');
+                    instructorDropdown.append('<option value="">Select Instructor</option>'); // Keep default option
+                }
+
+                // Clear and populate Resources dropdown
+                // resourceDropdown.empty();
+                // if (response.resources && response.resources.length > 0) {
+                //     resourceDropdown.append('<option value="">Select Resource</option>'); // Default option
+                //     $.each(response.resources, function(index, resource) {
+                //         resourceDropdown.append('<option value="' + resource.id + '">' + resource.class + '</option>');
+                //     });
+                // } else {
+                //     alert('No resources found for the selected organization unit.');
+                //     resourceDropdown.append('<option value="">Select Resource</option>'); // Keep default option
+                // }
+            },
+            error: function(xhr) {
+                console.error(xhr.responseText);
+                alert('Error fetching data. Please try again.');
+            }
+        });
+    });
+
+
+    $(document).on('change', '#select_user, #edit_select_user', function() {
         var userId = $(this).val();
+
+        // Determine which modal is being used
+        var isEditModal = $(this).attr('id') === 'edit_select_user';
+
+        // Select the correct fields based on the modal
+        var ouDropdown = isEditModal ? $('#edit_ou_id') : $('#select_org_unit');
+        var licenceNumberField = isEditModal ? $('#edit_licence_number') : $('#licence_number');
+        var courseDropdown = isEditModal ? $('#edit_select_course') : $('#select_course');
+
+        // Get the selected Organization Unit ID (OU ID)
+        var ou_id = ouDropdown.length ? ouDropdown.val() : '{{ auth()->user()->ou_id }}';
+
+        console.log("User ID:", userId);
+        console.log("OU ID:", ou_id);
 
         if (userId) {
             $.ajax({
-                url: "{{ url('/training/get-licence-number') }}" + "?user_id=" + userId, // Append user_id in URL
+                url: "{{ url('/training/get_licence_number_and_courses') }}/" + userId + '/' + ou_id,
                 type: "GET",
                 success: function(response) {
+                    console.log(response);
                     if (response.success) {
-                        $('#licence_number').val(response.licence_number);
+                        // Update license number if available
+                        if (response.licence_number) {
+                            licenceNumberField.val(response.licence_number);
+                        } else {
+                            alert('License number not found!');
+                            licenceNumberField.val('');
+                        }
+
+                        // Update courses dropdown
+                        var courseOptions = '<option value="">Select Course</option>'; // Default option
+                        if (response.courses && response.courses.length > 0) {
+                            $.each(response.courses, function(index, course) {
+                                courseOptions += '<option value="' + course.id + '">' + course.course_name + '</option>';
+                            });
+                        } else {
+                            alert('No courses found!'); // Notify user
+                        }
+                        courseDropdown.html(courseOptions); // Update dropdown
                     } else {
-                        $('#licence_number').val('');
+                        licenceNumberField.val('');
                         alert('License number not found!');
+                        courseDropdown.html('<option value="">Select Course</option>'); // Clear courses
                     }
                 },
                 error: function(xhr) {
@@ -411,9 +536,12 @@ $(document).ready(function() {
                 }
             });
         } else {
-            $('#licence_number').val('');
+            licenceNumberField.val('');
+            courseDropdown.html('<option value="">Select Course</option>'); // Reset dropdown
         }
     });
+
+
 
 
     $("#createTrainingEvent").on('click', function() {
@@ -461,8 +589,10 @@ $(document).ready(function() {
             success: function(response) {
                 console.log(response);
                 if (response.success) {
+                    $('#edit_select_user').val(response.trainingEvent.student_id);
                     $('#edit_select_course').val(response.trainingEvent.course_id);
                     $('#edit_select_group').val(response.trainingEvent.group_id);
+                    $('#edit_event_date').val(response.trainingEvent.event_date);
                     $('#edit_select_instructor').val(response.trainingEvent.instructor_id);
                     $('#edit_select_resource').val(response.trainingEvent.resource_id);
                     $('#edit_departure_airfield').val(response.trainingEvent.departure_airfield);
@@ -533,54 +663,54 @@ $(document).ready(function() {
         $('#eventId').val(eventId);      
     });
 
-    $(document).on("change", ".select_org_unit", function () {
-        var ou_id = $(this).val();
-        var $select_group, $select_instructor;
+    // $(document).on("change", ".select_org_unit", function () {
+    //     var ou_id = $(this).val();
+    //     var $select_group, $select_instructor;
 
-        // Determine if the event was triggered from the main form or the edit modal
-        if ($(this).attr("id") === "edit_ou_id") {
-            $select_group = $("#edit_select_group"); // Edit modal group dropdown
-            $select_instructor = $("#edit_select_instructor"); // Edit modal instructor dropdown
-        } else {
-            $select_group = $("#select_group"); // Main form group dropdown
-            $select_instructor = $("#select_instructor"); // Main form instructor dropdown
-        }
+    //     // Determine if the event was triggered from the main form or the edit modal
+    //     if ($(this).attr("id") === "edit_ou_id") {
+    //         $select_group = $("#edit_select_group"); // Edit modal group dropdown
+    //         $select_instructor = $("#edit_select_instructor"); // Edit modal instructor dropdown
+    //     } else {
+    //         $select_group = $("#select_group"); // Main form group dropdown
+    //         $select_instructor = $("#select_instructor"); // Main form instructor dropdown
+    //     }
 
-        $.ajax({
-            url: "/training/get_ou_groups_and_instructors/",
-            type: "GET",
-            data: { 'ou_id': ou_id },
-            dataType: "json",
-            success: function (response) {
-                console.log(response);
+    //     $.ajax({
+    //         url: "/training/get_ou_groups_and_instructors/",
+    //         type: "GET",
+    //         data: { 'ou_id': ou_id },
+    //         dataType: "json",
+    //         success: function (response) {
+    //             console.log(response);
 
-                // Populate Organization Unit Groups
-                if (response.orgUnitGroups && Array.isArray(response.orgUnitGroups)) {
-                    var groupOptions = "<option value=''>Select Group</option>";
-                    response.orgUnitGroups.forEach(function (value) {
-                        groupOptions += "<option value='" + value.id + "'>" + value.name + "</option>";
-                    });
-                    $select_group.html(groupOptions);
-                } else {
-                    console.error("Invalid response format for groups:", response);
-                }
+    //             // Populate Organization Unit Groups
+    //             if (response.orgUnitGroups && Array.isArray(response.orgUnitGroups)) {
+    //                 var groupOptions = "<option value=''>Select Group</option>";
+    //                 response.orgUnitGroups.forEach(function (value) {
+    //                     groupOptions += "<option value='" + value.id + "'>" + value.name + "</option>";
+    //                 });
+    //                 $select_group.html(groupOptions);
+    //             } else {
+    //                 console.error("Invalid response format for groups:", response);
+    //             }
 
-                // Populate Instructors
-                if (response.ouInstructors && Array.isArray(response.ouInstructors)) {
-                    var instructorOptions = "<option value=''>Select Instructor</option>";
-                    response.ouInstructors.forEach(function (value) {
-                        instructorOptions += "<option value='" + value.id + "'>" + value.fname + " " + value.lname + "</option>";
-                    });
-                    $select_instructor.html(instructorOptions);
-                } else {
-                    console.error("Invalid response format for instructors:", response);
-                }
-            },
-            error: function (xhr, status, error) {
-                console.error(xhr.responseText);
-            }
-        });
-    });
+    //             // Populate Instructors
+    //             if (response.ouInstructors && Array.isArray(response.ouInstructors)) {
+    //                 var instructorOptions = "<option value=''>Select Instructor</option>";
+    //                 response.ouInstructors.forEach(function (value) {
+    //                     instructorOptions += "<option value='" + value.id + "'>" + value.fname + " " + value.lname + "</option>";
+    //                 });
+    //                 $select_instructor.html(instructorOptions);
+    //             } else {
+    //                 console.error("Invalid response format for instructors:", response);
+    //             }
+    //         },
+    //         error: function (xhr, status, error) {
+    //             console.error(xhr.responseText);
+    //         }
+    //     });
+    // });
 
 
     $("#editModal").on("show.bs.modal", function(){
