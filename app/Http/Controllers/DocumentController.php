@@ -107,7 +107,7 @@ class DocumentController extends Controller
             'document_file' => 'nullable|file|max:2048', // File is optional
             'status' => 'required',
             'group' => 'required',
-            'folder' => 'nullable|exists:folders,id' // Ensure folder exists if provided
+            'folder' => 'required|nullable|exists:folders,id' // Ensure folder exists if provided
         ]);
     
         // Retrieve the document by ID
@@ -372,12 +372,13 @@ class DocumentController extends Controller
 
     public function getOrgfolder(Request $request)
     {
+        // dd($request->ou_id);
         $org_group = Group::where('ou_id', $request->ou_id)->get();
         $org_folder = Folder::where('ou_id', $request->ou_id)
-                    ->whereNull('parent_id') 
-                    ->with('childrenRecursive') 
-                    ->get();
-       
+                     ->whereNull('parent_id') 
+                     ->with('childrenRecursive') 
+                     ->get();
+        
         if($org_group){
                 return response()->json(['org_group' => $org_group, 'org_folder' => $org_folder]);
             }else{

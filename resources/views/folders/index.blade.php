@@ -56,7 +56,7 @@
                             <th>Actions</th>  
                         </tr>
                     </thead>
-                </table>
+                </table> 
             </div>
         @else
             <p class="alert alert-warning">No documents available in the root directory.</p>
@@ -75,9 +75,21 @@
                 <form action="" id="folders" method="POST" class="row g-3 needs-validation">
                     @csrf
                    <!-- Parent Folder Selection -->
+                   @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ou_id" aria-label="Default select example" id="select_org_unit">
+                            <option value="">Select Org Unit</option>
+                            @foreach($organizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                    </div>
+                    @endif
                     <div class="form-group">
                         <label for="parent_id" class="form-label">Parent Folder<span class="text-danger">*</span></label>
-                        <select class="form-select" name="parent_id">
+                        <select class="form-select all-folders" name="parent_id">
                             <option value="">No Parent (Root Folder)</option>
                             @foreach($folders as $folder)
                                 @include('folders.partials.folder_option', ['folder' => $folder, 'level' => 0])
@@ -95,18 +107,7 @@
                         <textarea class="form-control" name="description"  rows="3"></textarea>
                         <div id="description_error" class="text-danger error_e"></div>
                     </div>
-                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                    <div class="form-group">
-                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                        <select class="form-select" name="ou_id" aria-label="Default select example">
-                            <option value="">Select Org Unit</option>
-                            @foreach($organizationUnits as $val)
-                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                            @endforeach
-                        </select>
-                        <div id="ou_id_error" class="text-danger error_e"></div>            
-                    </div>
-                    @endif
+             
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" aria-label="Default select example">
@@ -137,10 +138,22 @@
             <div class="modal-body">
                 <form id="editFolder" class="row g-3 needs-validation">
                     @csrf
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example" >
+                            <option value="">Select Org Unit</option>
+                            @foreach($organizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                    </div>
+                    @endif
                     <!-- Parent Folder Selection -->
                     <div class="form-group">
                         <label for="parent_id" class="form-label">Parent Folder<span class="text-danger">*</span></label>
-                        <select class="form-select" name="parent_id" id="edit_parent_folder">
+                        <select class="form-select all-folders" name="parent_id" id="edit_parent_folder">
                             <option value="">No Parent (Root Folder)</option>
                             @foreach($folders as $folder)
                                 @include('folders.partials.folder_option', [
@@ -162,18 +175,7 @@
                         <textarea class="form-control" name="description" id="edit_description" rows="3"></textarea>
                         <div id="description_error_up" class="text-danger error_e"></div>
                     </div>
-                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                    <div class="form-group">
-                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                        <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
-                            <option value="">Select Org Unit</option>
-                            @foreach($organizationUnits as $val)
-                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                            @endforeach
-                        </select>
-                        <div id="ou_id_error" class="text-danger error_e"></div>            
-                    </div>
-                    @endif
+           
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
@@ -234,7 +236,7 @@ $(document).ready(function() {
             { data: 'actions', name: 'actions', className: 'folderbtncont', orderable: false, searchable: false }
         ]
     });
-    $('#docsTable').DataTable({
+    $('#docsTable').DataTable({ 
         processing: true,
         serverSide: true,
         ajax: "{{ route('documents.root.list') }}", // Define route for fetching root folder documents
@@ -282,7 +284,7 @@ $(document).ready(function() {
 
         $('.error_e').html('');
         var folderId = $(this).data('folder-id');
-
+        var $folderSelect = $(".all-folders");
         $.ajax({
             url: "{{ url('/folder/edit') }}", 
             type: 'GET',
@@ -305,6 +307,30 @@ $(document).ready(function() {
                 $('#edit_description').val(response.folder.description);
                 $('#edit_ou_id').val(response.folder.ou_id);
                 $('#edit_status').val(response.folder.status);
+                if (response.org_folders) { 
+                var options = "<option value=''>No Parent (Root Folder)</option>";
+
+                // Recursive function to generate folder options with indentation
+                function generateFolderOptions(folder, level) {
+                    var indent = "&nbsp;&nbsp;&nbsp;&nbsp;".repeat(level); // Indentation
+                    var option = `<option value="${folder.id}">${indent}${folder.folder_name}</option>`;
+
+                    if (folder.children_recursive && folder.children_recursive.length > 0) {
+                        folder.children_recursive.forEach(child => {
+                            option += generateFolderOptions(child, level + 1);
+                        });
+                    }
+                    return option;
+                }
+
+                // Process only the top-level folders
+                response.org_folders.forEach(function(folder) {
+                    options += generateFolderOptions(folder, 0);
+                });
+
+                $folderSelect.html(options);
+                 $folderSelect.trigger("change");
+            }
 
                 $('#editFolderModal').modal('show');
             },
@@ -322,15 +348,23 @@ $(document).ready(function() {
             type: "POST",
             data: $("#editFolder").serialize(),
             success: function(response){
+              
+               if(response.error){
+                $('#editFolderModal').modal('show');
+                $('#parent_id_error_up').html(response.error);
+               }else{
                 $('#editFolderModal').modal('hide');
                 location.reload();
+               }
             },
             error: function(xhr, status, error){
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
+                console.log(validationErrors);
                 $.each(validationErrors, function(key,value){
                     var msg = '<p>'+value+'<p>';
-                    $('#'+key+'_error_up').html(msg); 
+                    $('#'+key+'_error_up').html(msg);  
+
                 }) 
             }
         })
@@ -349,6 +383,91 @@ $(document).ready(function() {
     setTimeout(function() {
         $('#alertMessage').fadeOut('slow');
     }, 2000);
+
+
+$(document).on("change", "#select_org_unit", function(){ 
+    var ou_id = $(this).val();  
+    var $folderSelect = $(".all-folders"); 
+
+    $.ajax({
+        url: "/folder/get_ou_folder/",
+        type: "GET",
+        data: { 'ou_id': ou_id },
+        dataType: "json",
+        success: function(response){
+            if (response.org_folder && Array.isArray(response.org_folder)) { 
+                var options = "<option value=''>No Parent (Root Folder)</option>";
+
+                // Recursive function to generate folder options with indentation
+                function generateFolderOptions(folder, level) {
+                    var indent = "&nbsp;&nbsp;&nbsp;&nbsp;".repeat(level); // Indentation
+                    var option = `<option value="${folder.id}">${indent}${folder.folder_name}</option>`;
+
+                    if (folder.children_recursive && folder.children_recursive.length > 0) {
+                        folder.children_recursive.forEach(child => {
+                            option += generateFolderOptions(child, level + 1);
+                        });
+                    }
+                    return option;
+                }
+
+                // Process only the top-level folders
+                response.org_folder.forEach(function(folder) {
+                    options += generateFolderOptions(folder, 0);
+                });
+
+                $folderSelect.html(options);
+                $folderSelect.trigger("change");
+            }
+        },
+        error: function(xhr, status, error){
+            console.error(xhr.responseText);
+        } 
+    });
+});
+
+$(document).on("change", "#edit_ou_id", function(){ 
+    var ou_id = $(this).val(); 
+    var $folderSelect = $(".all-folders");
+
+    $.ajax({
+        url: "/folder/get_ou_folder/",
+        type: "GET",
+        data: { 'ou_id': ou_id },
+        dataType: "json",
+        success: function(response){
+      
+
+            if (response.org_folder && Array.isArray(response.org_folder)) { 
+                var options = "<option value=''>No Parent (Root Folder)</option>";
+
+                // Recursive function to generate folder options with indentation
+                function generateFolderOptions(folder, level) {
+                    var indent = "&nbsp;&nbsp;&nbsp;&nbsp;".repeat(level); // Indentation
+                    var option = `<option value="${folder.id}">${indent}${folder.folder_name}</option>`;
+
+                    if (folder.children_recursive && folder.children_recursive.length > 0) {
+                        folder.children_recursive.forEach(child => {
+                            option += generateFolderOptions(child, level + 1);
+                        });
+                    }
+                    return option;
+                }
+
+                // Process only the top-level folders
+                response.org_folder.forEach(function(folder) {
+                    options += generateFolderOptions(folder, 0);
+                });
+
+                $folderSelect.html(options);
+                $folderSelect.trigger("change");
+            }
+        },
+        error: function(xhr, status, error){
+            console.error(xhr.responseText);
+        } 
+    });
+});
 
 });
 </script>

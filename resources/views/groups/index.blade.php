@@ -28,7 +28,7 @@
             <th scope="col">User Count</th>
             <th scope="col">OU</th>
             <th scope="col">Status</th>
-            @if(checkAllowedModule('groups','group.edit')->isNotEmpty())
+            @if(checkAllowedModule('groups','group.edit')->isNotEmpty()) 
             <th scope="col">Edit</th>
             @endif
             @if(checkAllowedModule('groups','group.delete')->isNotEmpty())
@@ -260,7 +260,6 @@ $(document).ready(function() {
     // $('.edit-group-icon').click(function(e) {
     //     e.preventDefault();
     $('#groupTable').on('click', '.edit-group-icon', function() {
-
         $('.error_e').html('');
         var groupId = $(this).data('group-id');
         $.ajax({
@@ -335,7 +334,7 @@ $(document).ready(function() {
     $(document).on("change", "#select_org_unit, #edit_ou_id", function() { 
         var ou_id = $(this).val();
         var $selectUser = $(this).attr("id") === "select_org_unit" ? $("#usersDropdown") : $("#edit_users");
-
+            $selectUser.html("");
         $.ajax({
             url: "/group/get_ou_user/",
             type: "GET",

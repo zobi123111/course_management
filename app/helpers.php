@@ -173,4 +173,11 @@ function hasUserRole($user, $roleName)
         return isset($role->role_name) && stripos($role->role_name, $roleName) !== false;
     });
 }
+
+function ou_logo()
+{
+    $ou_id = Auth::user()->ou_id;  
+    $org_detail = OrganizationUnits::where('id', $ou_id)->first(); // Fetch only one record
+    return $org_detail;
+}
 ?>

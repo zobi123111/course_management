@@ -65,6 +65,8 @@ class FolderController extends Controller
     public function getFolder(Request $request)
     {
         $folder = Folder::findOrFail(decode_id($request->id));
+        $ou_id = $folder->ou_id;
+        $org_folders = Folder::where('ou_id', $ou_id)->whereNull('parent_id') ->with('childrenRecursive') ->get();
 
         // Fetch all folders to display in the dropdown
         if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
@@ -78,6 +80,7 @@ class FolderController extends Controller
         return response()->json([
             'folders' => $folders,
             'folder' => $folder,
+            'org_folders' => $org_folders,
             'current_folder_id' => $folder->id,
             'selected_parent_id' => $folder->parent_id
         ]);
@@ -106,15 +109,15 @@ class FolderController extends Controller
     
         // Prevent setting the folder as its own parent
         if ($request->parent_id == $folder->id) {
-            return response()->json(['error' => 'A folder cannot be its own parent.'], 400);
+            return response()->json(['error' => 'A folder cannot be its own parent.']);
         }
     
         // Prevent moving a folder into its own subfolder (infinite loop prevention)
         if ($this->isDescendant($folder->id, $request->parent_id)) {
-            return response()->json(['error' => 'Cannot move a folder into its own subfolder.'], 400);
+            return response()->json(['error' => 'Cannot move a folder into its own subfolder.']);
         }
-
-        // Update folder
+        // dd((auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id);
+        // Update Parent folder
         $folder->update([
             'folder_name' => $request->folder_name,
             'description' => $request->description,
@@ -122,6 +125,18 @@ class FolderController extends Controller
             'parent_id'   => $request->parent_id,
             'ou_id'       => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id
         ]);
+
+        // update child folder
+        $check_parent = Folder::where('id', $request->folder_id)
+                        ->whereNull('parent_id')
+                        ->exists();
+    
+    if ($check_parent) {
+        // Update child folders' ou_id
+        Folder::where('parent_id', $request->folder_id)->update(['ou_id' => $request->ou_id]);
+    }
+
+
         Session::flash('message', 'Folder updated successfully.');
         return response()->json(['success' => 'Folder updated successfully.']);
     }
@@ -554,6 +569,20 @@ class FolderController extends Controller
             $folder = $folder->parent; // Assuming 'parent' is a relationship in the Folder model
         }
         return array_reverse($breadcrumbs); // Reverse to show Home → Parent → Subfolder
+    }
+ 
+    public function getOrgfolder(Request $request)
+    {
+        $org_folder = Folder::where('ou_id', $request->ou_id)
+                    ->whereNull('parent_id') 
+                    ->with('childrenRecursive') 
+                    ->get();
+       
+        if($org_folder){
+                return response()->json(['org_folder' => $org_folder]);
+            }else{
+                return response()->json(['error'=> 'No group Found']);
+            }
     }
 
     

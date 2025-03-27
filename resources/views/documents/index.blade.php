@@ -180,7 +180,7 @@
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Select Folder<span class="text-danger">*</span></label>
-                        <select class="form-select all-folders" name="folder" id="edit_folder" aria-label="Default select example">
+                        <select class="form-select edit-all-folders" name="folder" id="edit_folder" aria-label="Default select example">
                             <option value="">No Parent (Root Folder)</option>
                                 @foreach($folders as $folder)
                                     @include('folders.partials.folder_option', [
@@ -310,7 +310,7 @@ $(document).ready(function() {
         $('.error_e').html('');
         var $groupSelect = $(".group-select"); 
        
-        var $folderSelect = $(".all-folders");
+        var $folderSelect = $(".edit-all-folders");
         var documentId = $(this).data('document-id');
         $.ajax({
             url: "{{ url('/document/edit') }}", 
@@ -467,7 +467,7 @@ $(document).on("change", "#select_org_unit", function(){
 $(document).on("change", "#edit_select_org_unit", function(){ 
     var ou_id = $(this).val(); 
     var $groupSelect = $(".group-select"); 
-    var $folderSelect = $(".all-folders");
+    var $folderSelect = $(".edit-all-folders");
 
     $.ajax({
         url: "/document/get_ou_folder/",
@@ -484,7 +484,7 @@ $(document).on("change", "#edit_select_org_unit", function(){
                     $groupSelect.html(options); 
                     $groupSelect.trigger("change");
                 } 
-
+console.log(response.org_folder, 'oooooo')  
             if (response.org_folder && Array.isArray(response.org_folder)) { 
                 var options = "<option value=''>No Parent (Root Folder)</option>";
 
@@ -507,6 +507,8 @@ $(document).on("change", "#edit_select_org_unit", function(){
                 });
 
                 $folderSelect.html(options);
+                // $folderSelect.html('<option value="">Select Folder</option>');
+
                 $folderSelect.trigger("change");
             }
         },
