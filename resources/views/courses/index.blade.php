@@ -444,13 +444,7 @@ $(document).ready(function() {
                 $('#edit_description').val(response.course.description);
                 $('#edit_ou_id').val(response.course.ou_id);
                 $('#edit_status').val(response.course.status);
-                $('#edit_select_org_unit')
-                    .val(response.course.ou_id)
-                    .trigger('change')
-                    .promise()
-                    .done(function() {
-                        $('#edit_select_org_unit').click(); // Trigger click after change event is processed
-                    });
+                $('#edit_select_org_unit').val(response.course.ou_id);
                     if (response.resources) {
                         var $resourcesSelect = $('#resources-select');
                         $resourcesSelect.empty(); // Clear previous options
@@ -465,8 +459,6 @@ $(document).ready(function() {
 
                         $resourcesSelect.trigger('change'); // Ensure changes reflect in the select box
                     }
-                
-
                  // Collect all resource IDs
                     let selectedResources = response.courseResources.map(val => val.resources_id);
                            
@@ -496,13 +488,9 @@ $(document).ready(function() {
                 let prerequisiteHtml = generatePrerequisiteHtml({ prerequisite_detail: '', prerequisite_type: 'text' }, 0);
                 $('#prerequisite_items').append(prerequisiteHtml);
             }
-        
-
-               
                 var selectedGroups = response.course.groups.map(function(group) {
                     return group.id;
                 });
-              
                 $('.groups-select').val(selectedGroups).trigger('change');
                 var courseResources = response.courseResources.map(function(group) {
                   return group.resources_id;
@@ -678,7 +666,7 @@ function generatePrerequisiteHtml(prerequisite, index) {
 $(document).on("change", "#select_org_unit", function(){ 
         var ou_id = $(this).val(); 
         var $groupSelect = $(".groups-select"); 
-        var $resourceSelect = $(".resources-select");
+   
            
         $.ajax({
             url: "/group/get_ou_group/",
@@ -717,32 +705,30 @@ $(document).on("change", "#select_org_unit", function(){
     });
 
 
-    // Edit ou 
-    $(document).on("change", "#edit_select_org_unit", function(){ 
+    // Edit ou   
+    
+        $('#edit_select_org_unit').on('change', function() { 
         var ou_id = $(this).val(); 
         var $groupSelect = $(".groups-select"); 
         var $resourceSelect = $(".resources-select");
-           
+        $groupSelect.empty().append("<option value=''>Select Group</option>").trigger("change");
         $.ajax({
             url: "/group/get_ou_group/",
             type: "GET",
             data: { 'ou_id': ou_id },
             dataType: "json",  // Ensures response is treated as JSON
             success: function(response){
-              
                 if (response.org_group && Array.isArray(response.org_group)) { 
                     var options = "<option value=''>Select Group </option>"; 
-                    
                     response.org_group.forEach(function(value){
                         options += "<option value='" + value.id + "'>" + value.name  + "</option>";
                     });
                     $groupSelect.html(options); 
                     $groupSelect.trigger("change");
                 } 
+
                 if (response.org_resource && Array.isArray(response.org_resource)) { 
-                 
                     var options = "<option value=''>Select Resource </option>"; 
-                    
                     response.org_resource.forEach(function(value){
                         options += "<option value='" + value.id + "'>" + value.name  + "</option>";
                     });
