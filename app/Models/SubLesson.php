@@ -18,12 +18,14 @@ class SubLesson extends Model
         'lesson_id',
         'title',
         'description',
+        'grade_type',
+        'is_mandatory',
         'status',
 
     ];
 
 
-    public function lesson()
+    public function lesson()    
     {
         return $this->belongsTo(CourseLesson::class, 'lesson_id');
     }

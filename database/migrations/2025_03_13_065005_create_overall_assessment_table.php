@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('event_id')->constrained('training_events')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->text('result')->nullable();
-            $table->text('remarks')->nullable();
+            $table->string('remarks')->nullable();
             $table->unsignedBigInteger('created_by'); // Added column without foreign key constraint
             $table->timestamps();
             $table->softDeletes();

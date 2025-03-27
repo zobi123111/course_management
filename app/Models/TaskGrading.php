@@ -43,4 +43,12 @@ class TaskGrading extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Get the training-event associated with the grading.
+     */
+    public function event()
+    {
+        return $this->belongsTo(TrainingEvents::class, 'event_id');
+    }
 }

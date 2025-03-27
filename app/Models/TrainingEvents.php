@@ -14,9 +14,16 @@ class TrainingEvents extends Model
         'ou_id',
         'course_id',
         'group_id',
+        'student_id',
         'instructor_id',
+        'resource_id',
+        'event_date',
         'start_time',
-        'end_time'
+        'end_time',
+        'departure_airfield',
+        'destination_airfield',
+        'total_time',
+        'licence_number'
     ];
 
     public function orgUnit()
@@ -37,5 +44,39 @@ class TrainingEvents extends Model
     public function instructor()
     {
         return $this->belongsTo(User::class, 'instructor_id', 'id'); // Fixed foreign key
+    }
+
+    public function resource()
+    {
+        return $this->belongsTo(Resource::class, 'resource_id', 'id'); // Fixed foreign key
+    }
+
+    public function student()
+    {
+        return $this->belongsTo(User::class, 'student_id', 'id'); // Fixed foreign key
+    }
+
+        /**
+     * Relationship with TaskGrading
+     */
+    public function taskGradings()
+    {
+        return $this->hasMany(TaskGrading::class, 'event_id', 'id');
+    }
+
+    /**
+     * Relationship with CompetencyGrading
+     */
+    public function competencyGradings()
+    {
+        return $this->hasMany(CompetencyGrading::class, 'event_id', 'id');
+    }
+
+    /**
+     * Relationship with OverallAssessment
+     */
+    public function overallAssessments()
+    {
+        return $this->hasMany(OverallAssessment::class, 'event_id', 'id');
     }
 }

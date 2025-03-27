@@ -12,6 +12,8 @@ use App\Models\Group;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Resource;
+use App\Models\CourseResources;
 
 
 class CourseController extends Controller
@@ -64,56 +66,46 @@ class CourseController extends Controller
 
     
         if (checkAllowedModule('courses', 'course.index')->isNotEmpty() && Auth()->user()->is_owner == 1) {
-
             // dd("if working");
-
             $courses = Courses::all();
+            $groups = Group::all();  
+            $resource  = Resource::all();
+        } 
+        elseif(checkAllowedModule('courses', 'course.index')->isNotEmpty() && Auth()->user()->is_admin ==  0)
+        {
+           // dd("else if working");
             $groups = Group::all();
+            $resource  = Resource::all();
 
-
-            
-        } elseif(checkAllowedModule('courses', 'course.index')->isNotEmpty() && Auth()->user()->is_admin ==  0){
-
-            // dd("else if working");
-
-            $groups = Group::all();
             $filteredGroups = $groups->filter(function ($group) use ($userId) {
-                $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);
-                
+                $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);              
                 return in_array($userId, $userIds);
             });
-    
             $groupIds = $filteredGroups->pluck('id')->toArray();
-    
-            // $courses = Courses::whereIn('id', function ($query) use ($groupIds) {
-            //     $query->select('courses_id')
-            //         ->from('courses_group')
-            //         ->whereIn('group_id', $groupIds);
-            // })->get();
             $courses = Courses::whereIn('id', function ($query) use ($groupIds) {
                 $query->select('courses_id')
-                    ->from('courses_group')
-                    ->whereIn('group_id', $groupIds);
-            // })->where('status', 1)
-        })->where('status', 1)
-
-            ->get();
-            
-            // dd($courses);
-            
-        }else {
+                        ->from('courses_group')
+                        ->whereIn('group_id', $groupIds);
+                        })->where('status', 1)
+                            ->get();
+                     //  dump($courses);     
+        }
+        else 
+        {
+       //  dd("asds");
             if ($role == 1 && empty($ouId)) {
                 $courses = Courses::all();
             } else {
                 $courses = Courses::where('ou_id', $ouId)->get();
             }
-    
-            $groups = Group::all();
+            $groups = Group::where('ou_id', $ouId)->get();
+            $resource  = Resource::where('ou_id', $ouId)->get();
         }
     
         $organizationUnits = OrganizationUnits::all();
+        
     
-        return view('courses.index', compact('courses', 'organizationUnits', 'groups'));
+        return view('courses.index', compact('courses', 'organizationUnits', 'groups', 'resource'));
     }
 
 
@@ -125,7 +117,8 @@ class CourseController extends Controller
     public function createCourse(Request $request)
     {
         // dd($request->all());
-        $request->validate([            
+        $request->validate([  
+            'resources' => 'required',          
             'course_name' => 'required|unique:courses',
             'description' => 'required',
             'image' => 'required',
@@ -155,38 +148,30 @@ class CourseController extends Controller
             'status' => $request->status
         ]);
 
-        // if ($request->has('group_ids')) {
-        //     foreach ($request->group_ids as $group_id) {
-        //         CourseGroup::create([
-        //             'course_id' => $course->id,
-        //             'group_id' => $group_id
-        //         ]);
-        //     }
-        // }
-
-        $course->groups()->attach($request->group_ids);
+        $course->groups()->attach($request->group_ids); 
+        $course->resources()->attach($request->resources);
 
         Session::flash('message', 'Course created successfully.');
         return response()->json(['success' => 'Course created successfully.']);
     }
 
 
-    // public function getCourse(Request $request)
-    // {
-    //     $course = Courses::with('groups')->findOrFail(decode_id($request->id));
-
-    //     return response()->json(['course'=> $course]);
-    // }
 
     public function getCourse(Request $request)
     {
+       // dd((decode_id($request->id)));
         $course = Courses::with('groups', 'prerequisites')->findOrFail(decode_id($request->id));
-
+     
+        $ou_id = $course->ou_id;
         $allGroups = Group::all();
-
+        $courseResources = CourseResources::where('courses_id', decode_id($request->id))->get();
+        $resources = Resource::where('ou_id', $ou_id)->get();
+      
         return response()->json([
             'course' => $course,
-            'allGroups' => $allGroups
+            'allGroups' => $allGroups,
+            'courseResources' => $courseResources,
+            'resources' => $resources
         ]);
     }
 
@@ -206,6 +191,7 @@ class CourseController extends Controller
     {
 
         $request->validate([
+            'resources' => 'required',          
             'course_name' => 'required',
             'description' => 'required',
             'status' => 'required',
@@ -236,7 +222,7 @@ class CourseController extends Controller
 
         $course = Courses::findOrFail($request->course_id);
         $course->update([
-            'ou_id' =>  (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
+           'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->editou_id : (auth()->user()->ou_id ?? null),
             'course_name' => $request->course_name,
             'description' => $request->description,
             'image' => $filePath,
@@ -246,6 +232,9 @@ class CourseController extends Controller
 
         if ($request->has('group_ids')) {
             $course->groups()->sync($request->group_ids);
+        }
+        if ($request->has('resources')) {
+            $course->resources()->sync($request->resources);
         }
 
          // Handle Prerequisites

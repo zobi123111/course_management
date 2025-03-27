@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Group;
 use App\Models\User;
 use App\Models\OrganizationUnits;
+use App\Models\Resource;
 use Illuminate\Support\Facades\Session;
 
 class GroupController extends Controller
@@ -15,7 +16,7 @@ class GroupController extends Controller
     //     //Get the currently logged-in user
     //     $currentUser = auth()->user();
     //     // Fetch users with the same ouid as the logged-in user
-    //     $users = User::where('ou_id', $currentUser->ou_id)->get();
+    //     $users = User::where('ou_id', $currentUser->ou_id)->get() ;
     //     $urganizationUnits = OrganizationUnits::all();
     //     if ($currentUser->role == 1 && empty($currentUser->ou_id)) {
     //         $groups = Group::all();
@@ -52,8 +53,9 @@ class GroupController extends Controller
                 $userIds = is_array($userIds) ? $userIds : [];
                 return in_array($userId, $userIds);
             });
+            $users = User::all();
         } else {
-            $users = User::where('ou_id', $currentUser->ou_id)->get();
+            $users = User::where('ou_id', $currentUser->ou_id)->whereNull('is_admin')->get();
             $groups = Group::where('ou_id', $currentUser->ou_id)->get();
         }
 
@@ -71,7 +73,7 @@ class GroupController extends Controller
     {   
         // dd($request);
         $request->validate([
-            'name' => 'required|unique:groups|max:255',
+            'name' => 'required|max:255|unique:groups,name,NULL,id,deleted_at,NULL',
             'user_ids' => 'array',
             'user_ids.*' => 'exists:users,id', // Ensure all user IDs exist
             'status' => 'required',
@@ -105,7 +107,7 @@ class GroupController extends Controller
     {
         // dd($request);
         $request->validate([
-            'name' => 'required',
+            'name' => 'required|max:255|unique:groups,name,' . $request->group_id . ',id,deleted_at,NULL',
             'user_ids' => 'array',
             'user_ids.*' => 'exists:users,id',
             'status' => 'required',
@@ -151,5 +153,17 @@ class GroupController extends Controller
         }
 
 
+    }
+
+    public function getOrgroup(Request $request)
+    {
+        $org_group = Group::where('ou_id', $request->ou_id)->get();
+        $org_resource = Resource::where('ou_id', $request->ou_id)->get();
+
+            if($org_group){
+                return response()->json(['org_group' => $org_group, 'org_resource' => $org_resource]);
+            }else{
+                return response()->json(['error'=> 'No group Found']);
+            }
     }
 }

@@ -16,7 +16,7 @@
         height: 100%;
     }
 
-    .card-body {
+    .card-body { 
         flex-grow: 1; /* Ensures the description area expands to fill remaining space */
         min-height: 200px; /* Set the minimum height to ensure consistent card size */
         display: flex;
@@ -159,8 +159,11 @@
         </div>
     </div>
 </div>
+@if(auth()->user()->role == 3 || auth()->user()->role == 18)
 <!-- End Card with an image on left -->
-
+<div class="resourceBooking_btn"><a href="{{ url('/booking/bookresource/' . encode_id($course->id)) }}" class="btn btn-primary">Booking Request</a>
+</div>
+@endif
  <!-- List group with Advanced Contents -->
  <div class="card pt-4">
     <div class="card-body">
@@ -511,7 +514,7 @@ $(document).ready(function() {
 
     })
 
-    $('.edit-lesson-icon').click(function(e) {
+    $('.edit-lesson-icon').click(function(e) { 
         e.preventDefault();
 
         $('.error_e').html('');
@@ -521,7 +524,6 @@ $(document).ready(function() {
             type: 'GET',
             data: { id: lessonId },
             success: function(response) {
-                console.log(response);
                 $('input[name="edit_lesson_title"]').val(response.lesson.lesson_title);
                 $('input[name="lesson_id"]').val(response.lesson.id);
                 $('#edit_description').val(response.lesson.description);
@@ -728,6 +730,26 @@ function generatePrerequisiteHtml(prerequisite, index) {
         </div>
     `;
 }
+
+// $('#resourceBooking_btn').click(function(e) { 
+//     var courseid = $(this).data('courseid');
+ 
+//     data = {courseid:courseid, "_token": "{{ csrf_token() }}"};
+//     $.ajax({
+//             url: "{{ url('resource/getcourseResource') }}",
+//             type: "POST",
+//             data: data,
+//             success: function(response){
+//                 // $('#editlessonModal').modal('hide');
+//                 // location.reload();
+//             },
+//             error: function(xhr, status, error){
+//                 var errorMessage = JSON.parse(xhr.responseText);
+//                 var validationErrors = errorMessage.errors;
+              
+//             }
+//         })
+// });
 
 </script>
 

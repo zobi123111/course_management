@@ -196,13 +196,30 @@
                         <div class="col-md-6">
                             <label for="custom_field_checkbox" class="form-label">Custom Field</label>
                             <input type="checkbox" name="custom_field_checkbox" id="custom_field_checkbox" class="ms-2">
-                            {{-- <label for="custom_field_name" class="form-label">Custom Field Name</label> --}}
-                            <input type="text" name="custom_field_name" id="custom_field_name" style="display: none;" class="form-control" placeholder="Enter Custom Field Name">
+
+                            
+                            <!-- <input type="text" name="custom_field_name" id="custom_field_name" style="display: none;" class="form-control" placeholder="Enter Custom Field Name">
                             <div id="custom_field_name_error" class="text-danger error_e"></div>
-                            {{-- <label for="custom_field_value" class="form-label">Custom Field Value</label> --}}
+                        
                             <input type="text" name="custom_field_value" id="custom_field_value" style="display: none;" class="form-control mt-3" placeholder="Enter Custom Field Value">
-                            <div id="custom_field_value_error" class="text-danger error_e"></div>
+                            <div id="custom_field_value_error" class="text-danger error_e"></div> -->
+                            
                         </div>
+                        <div class="col-md-12">
+                        <label for="customfield_filelabel" id="customfield_filelabel" class="form-label" style="display: none;">File</label>
+                            <input type="checkbox" name="custom_file_checkbox" id="custom_file_checkbox" class="ms-2" style="display: none;">
+
+                        <label for="customfield_textlabel" id="customfield_textlabel" class="form-label" style="display: none;">Text</label>
+                            <input type="checkbox" name="custom_text_checkbox" id="custom_text_checkbox" class="ms-2" style="display: none;">
+                            <div class="col-md-6">
+                         <input type="file" name="custom_file" id="custom_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                         <input type="text" name="custom_text" id="custom_text" class="form-control mt-3" placeholder="Enter the Text" style="display: none;" >
+                         </div> 
+                         </div>
+                         <!-- <div class="col-md-6">
+                         <input type="file" name="custom_file" id="custom_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                         <input type="text" name="custom_text" id="custom_text" class="form-control mt-3" style="display: none;" >
+                         </div> -->
                         @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                         <div class="col-md-6">
                             <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
@@ -366,9 +383,12 @@
                         <div class="col-md-6">
                             <label for="edit_custom_field_checkbox" class="form-label">Custom Field</label>
                             <input type="checkbox" name="edit_custom_field_checkbox" id="edit_custom_field_checkbox" class="ms-2">
+
                             <input type="text" name="edit_custom_field_name" id="edit_custom_field_name" style="display: none;" class="form-control" placeholder="Enter Custom Field Name">
+
                             <div id="edit_custom_field_name_error_up" class="text-danger error_e"></div>
                             <input type="text" name="edit_custom_field_value" id="edit_custom_field_value" style="display: none;" class="form-control mt-3" placeholder="Enter Custom Field Value">
+
                             <div id="edit_custom_field_value_error_up" class="text-danger error_e"></div>
                         </div>
                         @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
@@ -438,40 +458,40 @@
 <script>
     
     $(document).ready(function() {
-$('#user_table').DataTable({
-    processing: true,
-    serverSide: true,
-    ajax: "{{ route('users.data') }}",
-    columns: [
-        { 
-            data: 'image', 
-            name: 'image', 
-            orderable: false, 
-            searchable: false, 
-            render: function(data) {
-                if(data) {
-                    let baseUrl = "{{ url('storage') }}";
-                    return `<img src="${baseUrl}/${data}" width="50" height="50" class="img-thumbnail"/>`;
+    $('#user_table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('users.data') }}",
+        columns: [
+            { 
+                data: 'image', 
+                name: 'image', 
+                orderable: false, 
+                searchable: false, 
+                render: function(data) {
+                    if(data) {
+                        let baseUrl = "{{ url('storage') }}";
+                        return `<img src="${baseUrl}/${data}" width="50" height="50" class="img-thumbnail"/>`;
+                    }
+                    return '<span class="text-muted">No Image</span>';
                 }
-                return '<span class="text-muted">No Image</span>';
-            }
-        },
-        { data: 'fname', name: 'fname' },
-        { data: 'lname', name: 'lname' },
-        { data: 'email', name: 'email' },
-        { data: 'position', name: 'position' },
-        @if(auth()->user()->is_owner == 1)
-                    { data: 'organization', name: 'organization' },
-        @endif
-        { data: 'status', name: 'status' },
-        { data: 'action', name: 'action', orderable: false, searchable: false }
-    ]   
-});
+            },
+            { data: 'fname', name: 'fname' },
+            { data: 'lname', name: 'lname' },
+            { data: 'email', name: 'email' },
+            { data: 'position', name: 'position' },
+            @if(auth()->user()->is_owner == 1)
+                        { data: 'organization', name: 'organization' },
+            @endif
+            { data: 'status', name: 'status' },
+            { data: 'action', name: 'action', orderable: false, searchable: false }
+        ]   
+    });
 
 
 
 
-        $('#licence_checkbox').change(function() {
+        $('#licence_checkbox').change(function() { 
             if (this.checked) {
                 $('#licence').show().prop('required', true);
                 $('#licence_file').show().prop('required', true);
@@ -482,6 +502,38 @@ $('#user_table').DataTable({
                 $('#licence_file').val('');
                 $('#licence_error').hide().prop('required', false);
                 $('#licence_file_error').hide().prop('required', false);
+            }
+        });
+    // Custom field 
+        $('#custom_field_checkbox').change(function() { 
+            if (this.checked) {
+                $('#customfield_filelabel').show();
+                $('#custom_file_checkbox').show();
+                $('#customfield_textlabel').show();
+                $('#custom_text_checkbox').show();
+            } else {
+           $('#customfield_filelabel').hide();
+                $('#custom_file_checkbox').hide();
+                $('#customfield_textlabel').hide();
+                $('#custom_text_checkbox').hide();
+            }
+        });
+
+    // Custom field  file 
+        $('#custom_file_checkbox').change(function() { 
+            if (this.checked) {
+                $('#custom_file').show();
+            } else {
+           $('#custom_file').hide();
+            }
+        });
+
+    // Custom text  
+        $('#custom_text_checkbox').change(function() { 
+            if (this.checked) {
+                $('#custom_text').show();
+            } else {
+           $('#custom_text').hide();
             }
         });
 

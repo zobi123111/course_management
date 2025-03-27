@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\LessonPrerequisite;
 use App\Models\LessonPrerequisiteDetail;
 
-class LessonController extends Controller
+class LessonController extends Controller 
 {
     /**
      * Display a listing of the resource.
@@ -20,15 +20,7 @@ class LessonController extends Controller
     
     public function showCourse(Request $request, $course_id)
     {
-
-        // dd($course_id);
         $course = Courses::with('courseLessons', 'prerequisites')->findOrFail(decode_id($course_id));
-
-        // $course = Courses::findOrFail(decode_id($course_id));
-
-
-        // dd($course->course_name);
-
         $breadcrumbs = [
             ['title' => 'Courses', 'url' => route('course.index')],
             ['title' => $course->course_name, 'url' => ''],
@@ -161,81 +153,7 @@ class LessonController extends Controller
     }
 
      
-    /**
-        * SUB LESSON FUNCTIONS
-    */
 
-    
-    public function createSubLesson(Request $request)
-    {
-        // dd($request->all());
-        $request->validate([            
-            'sub_lesson_title' => 'required',
-            'sub_description' => 'required',
-            'sub_status' => 'required|boolean',
-        ]);
-
-        SubLesson::create([
-            'lesson_id' => $request->lesson_id,
-            'title' => $request->sub_lesson_title,
-            'description' => $request->sub_description,
-            'status' => $request->sub_status
-        ]);
-
-        Session::flash('message', 'Task created successfully.');
-        return response()->json(['success' => 'Test Task 1 created successfully.']);
-    }
-
-    public function getSubLesson(Request $request)
-    {
-        // dd(decode_id($request->id));
-        $subLesson = SubLesson::findOrFail(decode_id($request->id));
-        return response()->json(['subLesson'=> $subLesson]);
-    }
-
-
-    public function updateSubLesson(Request $request)
-    {
-
-        // dd($request->all());
-        $request->validate([
-            'edit_sub_lesson_title' => 'required',
-            'edit_sub_description' => 'required',
-            'edit_sub_status' => 'required'
-        ]);
-
-        // if ($request->has('edit_comment_required') && $request->edit_comment_required) {
-        //     $request->validate([
-        //         'edit_comment' => 'required|string',
-        //     ]);
-        // }
-
-        // $comment = $request->has('edit_comment_required') && !$request->edit_comment_required ? null : $request->edit_comment;
-        
-        // dd($request);
-        $lesson = SubLesson::findOrFail($request->edit_sub_lesson_id);
-        $lesson->update([
-            'title' => $request->edit_sub_lesson_title,
-            'description' => $request->edit_sub_description,
-            'status' => $request->edit_sub_status
-        ]);
-
-        Session::flash('message','Task updated successfully.');
-        return response()->json(['success'=> 'Task updated successfully.']);
-    }
-
-    public function deleteSubLesson(Request $request)
-    {
-        $sublesson = SubLesson::findOrFail(decode_id($request->sub_lesson_id));
-        
-        // dd($sublesson);
-
-        if ($sublesson) {
-            $lesson_id = $sublesson->lesson_id;
-            $sublesson->delete();
-            return redirect()->route('lesson.show',['id' => encode_id($lesson_id)])->with('message', 'This Task deleted successfully');
-        }
-    }
 
     
     /**

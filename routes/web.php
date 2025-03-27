@@ -11,8 +11,10 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\LessonController;
+use App\Http\Controllers\SubLessonController;
 use App\Http\Controllers\TrainingEventsController;
 use App\Http\Controllers\PrerequisiteController;
+use App\Http\Controllers\ResourceController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -59,7 +61,7 @@ Route::group(['middleware' => ['auth']], function () {
     ->name('course.prerequisites.store');
     Route::post('/lessons/{course}/{lesson}/prerequisites/store', [LessonController::class, 'prerequisitesStore'])
     ->name('lesson.prerequisites.store');
-
+ 
 
 });
 
@@ -106,11 +108,11 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/lesson/delete', [LessonController::class, 'deleteLesson'])->name('lesson.delete');
 
     //Sub-Lesson 
-    Route::post('/sub-lesson/create', [LessonController::class, 'createSubLesson'])->name('sub-lesson.store');
-    Route::get('/sub-lesson/edit', [LessonController::class, 'getSubLesson'])->name('sub-lesson.edit');
-    Route::get('/sub-lesson/{id}', [LessonController::class, 'showSubLesson'])->name('sub-lesson.show');
-    Route::post('/sub-lesson/update', [LessonController::class, 'updateSubLesson'])->name('sub-lesson.update');
-    Route::post('/sub-lesson/delete', [LessonController::class, 'deleteSubLesson'])->name('sub-lesson.delete');
+    Route::post('/sub-lesson/create', [SubLessonController::class, 'createSubLesson'])->name('sub-lesson.store');
+    Route::get('/sub-lesson/edit', [SubLessonController::class, 'getSubLesson'])->name('sub-lesson.edit');
+    Route::get('/sub-lesson/{id}', [SubLessonController::class, 'showSubLesson'])->name('sub-lesson.show');
+    Route::post('/sub-lesson/update', [SubLessonController::class, 'updateSubLesson'])->name('sub-lesson.update');
+    Route::post('/sub-lesson/delete', [SubLessonController::class, 'deleteSubLesson'])->name('sub-lesson.delete');
 
     //Groups Route
     Route::get('/groups', [GroupController::class, 'index'])->name('group.index');
@@ -119,6 +121,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/group/update', [GroupController::class, 'updateGroup'])->name('group.update');
     Route::post('/group/delete', [GroupController::class, 'deleteGroup'])->name('group.delete');
     Route::get('/group/get_ou_user/', [GroupController::class, 'getOrgUser'])->name('group.get_ou_user');
+    Route::get('/group/get_ou_group/', [GroupController::class, 'getOrgroup'])->name('group.getOrgroup');
     
     //Documents Route
     Route::get('/documents', [DocumentController::class, 'index'])->name('document.index');
@@ -128,6 +131,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/document/delete', [DocumentController::class, 'deleteDocument'])->name('document.delete');
     Route::get('/document/show/{doc_id}', [DocumentController::class, 'showDocument'])->name('document.show');
     Route::post('/document/acknowledge', [DocumentController::class, 'acknowledgeDocument'])->name('document.acknowledge');
+    Route::get('/document/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('document.getOrgfolder');
     
     //Folders Route
     Route::get('/folders', [FolderController::class, 'index'])->name('folder.index');
@@ -149,14 +153,30 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/training/edit', [TrainingEventsController::class, 'getTrainingEvent'])->name('training.edit');
     Route::post('/training/update', [TrainingEventsController::class, 'updateTrainingEvent'])->name('training.update');
     Route::post('/training/delete', [TrainingEventsController::class, 'deleteTrainingEvent'])->name('training.delete');
-    Route::get('/training/get_ou_groups_and_instructors/', [TrainingEventsController::class, 'getOrgGroupsAndInstructors'])->name('training.get_ou_groups_and_instructors');
-
+    // Route::get('/training/get_ou_groups_and_instructors/', [TrainingEventsController::class, 'getOrgGroupsAndInstructors'])->name('training.get_ou_groups_and_instructors');
     Route::get('/training/show/{event_id}', [TrainingEventsController::class, 'showTrainingEvent'])->name('training.show');
     Route::post('/training/store_grading', [TrainingEventsController::class, 'createGrading'])->name('training.store_grading');
     Route::post('/training/overall_assessment', [TrainingEventsController::class, 'storeOverallAssessment'])->name('training.overall_assessment');
-
+    // Route::get('/grading', [TrainingEventsController::class, 'getStudentGrading'])->name('grading.list');
+    Route::get('/training/grading-list/{event_id}', [TrainingEventsController::class, 'getStudentGrading'])->name('training.grading-list');
+    Route::get('/training/get_ou_students_instructors_resources/{ou_id}', [TrainingEventsController::class, 'getOrgStudentsInstructorsResources'])->name('training.get_ou_students_instructors_resources');
 });
+Route::get('/training/get_licence_number_and_courses/{user_id}/{ou_id}', [TrainingEventsController::class, 'getStudentLicenseNumberAndCourses'])->name('training.get_licence_number_and_courses');
 
+// Resources Routes
+    Route::get('/resource', [ResourceController::class, 'resource_list'])->name('resource.index');
+    Route::post('/resource/save', [ResourceController::class, 'save'])->name('save.index');
+    Route::get('/resource/edit', [ResourceController::class, 'edit'])->name('edit.index');
+    Route::post('/resourse/update', [ResourceController::class, 'update'])->name('update.index');
+    Route::post('/resource/delete', [ResourceController::class, 'delete'])->name('delete.index');
+    Route::post('/resource/getcourseResource', [ResourceController::class, 'getcourseResource'])->name('getcourseResource.index');
+    // Booking Request
+    Route::get('/booking/bookresource/{course_id}', [ResourceController::class, 'bookresource'])->name('bookresource.index');
+    Route::post('/booking/store', [ResourceController::class, 'store'])->name('store.index');
+    // Approval
+    Route::get('/resource/approval', [ResourceController::class, 'resource_approval'])->name('resource.approval');
+    Route::post('/resource/approve/request', [ResourceController::class, 'approve_request'])->name('approve_request.index');
+    Route::post('/resource/reject/request', [ResourceController::class, 'reject_request'])->name('reject_request.index');
 
 
 Route::get('/clear-cache', function() {

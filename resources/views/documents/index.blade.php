@@ -28,6 +28,7 @@
                     <th>Expiry Date</th>
                     <th>Document</th>
                     <th>Status</th>
+                    <th>Acknowledged</th>
                     @if(checkAllowedModule('documents','document.edit')->isNotEmpty())
                         <th>Edit</th>
                     @endif
@@ -39,7 +40,7 @@
         </table>
     </div>  
 </div>
-<!-- Create Document-->
+<!-- Create Document--> 
 <div class="modal fade" id="createDocumentModal" tabindex="-1" role="dialog" aria-labelledby="documentModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -50,6 +51,18 @@
             <div class="modal-body">
                 <form id="documentsForm" method="POST" class="row g-3 needs-validation" enctype="multipart/form-data">
                     @csrf
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ou_id" aria-label="Default select example" id="select_org_unit">
+                            <option value="">Select Org Unit</option>
+                            @foreach($organizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                    </div>
+                    @endif
                     <div class="form-group">
                         <label for="firstname" class="form-label">Document Title<span class="text-danger">*</span></label>
                         <input type="text" name="doc_title" class="form-control">
@@ -77,7 +90,7 @@
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Select Folder<span class="text-danger">*</span></label>
-                        <select class="form-select" name="folder" aria-label="Default select example">
+                        <select class="form-select all-folders" name="folder" aria-label="Default select example">
                             <option value="">No Parent (Root Folder)</option>
                                 @foreach($folders as $folder)
                                     @include('folders.partials.folder_option', ['folder' => $folder, 'level' => 0])
@@ -127,6 +140,18 @@
             <div class="modal-body">
                 <form id="editDocumentForm" method="POST"  class="row g-3 needs-validation" enctype="multipart/form-data">
                     @csrf
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ou_id" aria-label="Default select example"  id="edit_select_org_unit">
+                            <option value="">Select Org Unit</option>
+                            @foreach($organizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                    </div>
+                    @endif
                     <div class="form-group">
                         <label for="firstname" class="form-label">Document Title<span class="text-danger">*</span></label>
                         <input type="text" name="doc_title" id="edit_doc_title" class="form-control">
@@ -155,7 +180,7 @@
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Select Folder<span class="text-danger">*</span></label>
-                        <select class="form-select" name="folder" id="edit_folder" aria-label="Default select example">
+                        <select class="form-select all-folders" name="folder" id="edit_folder" aria-label="Default select example">
                             <option value="">No Parent (Root Folder)</option>
                                 @foreach($folders as $folder)
                                     @include('folders.partials.folder_option', [
@@ -164,7 +189,7 @@
                                     ])
                                 @endforeach
                         </select>
-                        <div id="folder_error_up" class="text-danger error_e"></div>            
+                        <div id="folder_error_up" class="text-danger error_e"></div>          
                     </div>
                     <div class="form-group">
                         <label for="users" class="form-label">Assign to Group<span class="text-danger">*</span></label>
@@ -174,7 +199,7 @@
                             <option value="{{ $group->id }}">{{ $group->name }}</option>
                             @endforeach
                         </select>
-                        <div id="user_ids_error" class="text-danger error_e"></div>
+                        <div id="group_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
@@ -235,6 +260,7 @@ $(document).ready(function() {
             { data: 'expiry_date', name: 'expiry_date' },
             { data: 'document', name: 'document', orderable: false, searchable: false },
             { data: 'status', name: 'status' },
+            { data: 'acknowledged', name: 'acknowledged' },
             @if(checkAllowedModule('documents','document.edit')->isNotEmpty())
                 { data: 'edit', name: 'edit', orderable: false, searchable: false },
             @endif
@@ -282,21 +308,61 @@ $(document).ready(function() {
     $(document).on("click",".edit-document-icon",function(e) {
         e.preventDefault();
         $('.error_e').html('');
+        var $groupSelect = $(".group-select"); 
+       
+        var $folderSelect = $(".all-folders");
         var documentId = $(this).data('document-id');
         $.ajax({
             url: "{{ url('/document/edit') }}", 
             type: 'GET',
             data: {  id: documentId },
             success: function(response) {
+                console.log(response.group);
+                if (response.group && Array.isArray(response.group)) { 
+                    var options = "<option value=''>Select Group </option>"; 
+                    
+                    response.group.forEach(function(value){
+                        options += "<option value='" + value.id + "'>" + value.name  + "</option>";
+                    });
+                    $groupSelect.html(options); 
+                    $groupSelect.trigger("change");
+                } 
+                if (response.folders) { 
+                var options = "<option value=''>No Parent (Root Folder)</option>";
+
+                // Recursive function to generate folder options with indentation
+                function generateFolderOptions(folder, level) {
+                    var indent = "&nbsp;&nbsp;&nbsp;&nbsp;".repeat(level); // Indentation
+                    var option = `<option value="${folder.id}">${indent}${folder.folder_name}</option>`;
+
+                    if (folder.children_recursive && folder.children_recursive.length > 0) {
+                        folder.children_recursive.forEach(child => {
+                            option += generateFolderOptions(child, level + 1);
+                        });
+                    }
+                    return option;
+                }
+
+                // Process only the top-level folders
+                response.folders.forEach(function(folder) {
+                    options += generateFolderOptions(folder, 0);
+                });
+
+                $folderSelect.html(options);
+                 $folderSelect.trigger("change");
+            }
                 $('#edit_doc_title').val(response.document.doc_title);
                 $('#edit_version_no').val(response.document.version_no);
                 $('#document_id').val(response.document.id);
                 $('#edit_issue_date').val(response.document.issue_date);
                 $('#edit_expiry_date').val(response.document.expiry_date);
                 $('#edit_folder').val(response.document.folder_id);
-                $('#edit_group').val(response.document.group_id);
+                var selectedGroups = response.document.folder_id;
+              
+                $('#edit_group').val(response.document.group_id).trigger('change');
                 $('#edit_status').val(response.document.status);
-
+                $('#edit_select_org_unit').val(response.document.ou_id); 
+                  
                 $('#editDocumentModal').modal('show');
             },
             error: function(xhr, status, error) {
@@ -306,7 +372,6 @@ $(document).ready(function() {
     });
 
     $(document).on('click','#updateDocument', function(e){
-     
         $(".loader").fadeIn('fast');
         e.preventDefault();
         var formData = new FormData($('#editDocumentForm')[0]);
@@ -346,7 +411,114 @@ $(document).ready(function() {
             $('#successMessage').fadeOut('slow');
         }, 3000);
 
+$(document).on("change", "#select_org_unit", function(){ 
+    var ou_id = $(this).val(); 
+    var $groupSelect = $(".group-select"); 
+    var $folderSelect = $(".all-folders");
+
+    $.ajax({
+        url: "/document/get_ou_folder/",
+        type: "GET",
+        data: { 'ou_id': ou_id },
+        dataType: "json",
+        success: function(response){
+            if (response.org_group && Array.isArray(response.org_group)) { 
+                    var options = "<option value=''>Select Group </option>"; 
+                    
+                    response.org_group.forEach(function(value){
+                        options += "<option value='" + value.id + "'>" + value.name  + "</option>";
+                    });
+                    $groupSelect.html(options); 
+                    $groupSelect.trigger("change");
+                } 
+
+            if (response.org_folder && Array.isArray(response.org_folder)) { 
+                var options = "<option value=''>No Parent (Root Folder)</option>";
+
+                // Recursive function to generate folder options with indentation
+                function generateFolderOptions(folder, level) {
+                    var indent = "&nbsp;&nbsp;&nbsp;&nbsp;".repeat(level); // Indentation
+                    var option = `<option value="${folder.id}">${indent}${folder.folder_name}</option>`;
+
+                    if (folder.children_recursive && folder.children_recursive.length > 0) {
+                        folder.children_recursive.forEach(child => {
+                            option += generateFolderOptions(child, level + 1);
+                        });
+                    }
+                    return option;
+                }
+
+                // Process only the top-level folders
+                response.org_folder.forEach(function(folder) {
+                    options += generateFolderOptions(folder, 0);
+                });
+
+                $folderSelect.html(options);
+                $folderSelect.trigger("change");
+            }
+        },
+        error: function(xhr, status, error){
+            console.error(xhr.responseText);
+        } 
+    });
 });
+
+
+$(document).on("change", "#edit_select_org_unit", function(){ 
+    var ou_id = $(this).val(); 
+    var $groupSelect = $(".group-select"); 
+    var $folderSelect = $(".all-folders");
+
+    $.ajax({
+        url: "/document/get_ou_folder/",
+        type: "GET",
+        data: { 'ou_id': ou_id },
+        dataType: "json",
+        success: function(response){
+            if (response.org_group && Array.isArray(response.org_group)) { 
+                    var options = "<option value=''>Select Group </option>"; 
+                    
+                    response.org_group.forEach(function(value){
+                        options += "<option value='" + value.id + "'>" + value.name  + "</option>";
+                    });
+                    $groupSelect.html(options); 
+                    $groupSelect.trigger("change");
+                } 
+
+            if (response.org_folder && Array.isArray(response.org_folder)) { 
+                var options = "<option value=''>No Parent (Root Folder)</option>";
+
+                // Recursive function to generate folder options with indentation
+                function generateFolderOptions(folder, level) {
+                    var indent = "&nbsp;&nbsp;&nbsp;&nbsp;".repeat(level); // Indentation
+                    var option = `<option value="${folder.id}">${indent}${folder.folder_name}</option>`;
+
+                    if (folder.children_recursive && folder.children_recursive.length > 0) {
+                        folder.children_recursive.forEach(child => {
+                            option += generateFolderOptions(child, level + 1);
+                        });
+                    }
+                    return option;
+                }
+
+                // Process only the top-level folders
+                response.org_folder.forEach(function(folder) {
+                    options += generateFolderOptions(folder, 0);
+                });
+
+                $folderSelect.html(options);
+                $folderSelect.trigger("change");
+            }
+        },
+        error: function(xhr, status, error){
+            console.error(xhr.responseText);
+        } 
+    });
+});
+
+
+});
+
 </script>
 
 @endsection

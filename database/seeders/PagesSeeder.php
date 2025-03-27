@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Models\Page; 
 
 
 class PagesSeeder extends Seeder
@@ -15,7 +16,8 @@ class PagesSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('menus')->insert([
+        Page::truncate();
+        DB::table('pages')->insert([
             [
                 'id' => 1,
                 'name' => 'Dashboard',
@@ -90,7 +92,17 @@ class PagesSeeder extends Seeder
                 'id' => 8,
                 'name' => 'Folders',
                 'position' => 8,
-                'route_name' => 'folders',
+                'route_name' => 'folders', 
+                'icon' => 'bi bi-person',
+                'parent_page_id' => null,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'id' => 9,
+                'name' => 'Folders',
+                'position' => 9,
+                'route_name' => 'Resources', 
                 'icon' => 'bi bi-person',
                 'parent_page_id' => null,
                 'created_at' => Carbon::now(),

@@ -14,19 +14,20 @@ use File;
 class FolderController extends Controller
 {
     public function index()
-    {
-        $organizationUnits = OrganizationUnits::all();
-        if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
+    {  //dd(Auth::user()->ou_id);
+;        $organizationUnits = OrganizationUnits::all();
+        if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {;
             // Admin without OU restriction: Fetch all folders with their children
             $folders = Folder::whereNull('parent_id')->with('children')->get();
             $documents = Document::whereNull('folder_id')->get();
             // dd($documents);
         } else {
+           
             // Regular users: Fetch only their org unit folders
             $folders = Folder::where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children')->get();
             $documents = Document::whereNull('folder_id')->where('ou_id', Auth::user()->ou_id)->get();
         }
-        // dd($folders);
+    
         return view('folders.index',compact('folders', 'documents', 'organizationUnits'));
     }
 
@@ -157,75 +158,147 @@ class FolderController extends Controller
             return redirect()->route('folder.index')->with('message', 'Folder deleted successfully.');
         }
     }
+
+      public function getFolders(Request $request)
+        {
+            $query = Folder::query();
+            // Apply user-based folder filtering
+            if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
+                // Admin without OU restriction: Fetch all folders
+                $query->whereNull('parent_id')->with('children');
+            } else {
+                // Regular users: Fetch only their org unit folders
+                $query->where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children');
+            }
+
+            // Get total record count before filtering
+            $totalRecords = (clone $query)->count();
+
+            // Clone the query for filtering
+            $filteredQuery = clone $query;
+
+            // Apply search filter
+            if ($request->has('search') && !empty($request->search['value'])) {
+                $searchValue = $request->search['value'];
+
+                $filteredQuery->where(function ($q) use ($searchValue) {
+                    $q->where('folder_name', 'LIKE', "%{$searchValue}%")
+                    ->orWhere('description', 'LIKE', "%{$searchValue}%");
+
+                    // Search by status (accepting "Active" or "Inactive" as input)
+                    if (stripos('Active', $searchValue) !== false) {
+                        $q->orWhere('status', 1);
+                    } elseif (stripos('Inactive', $searchValue) !== false) {
+                        $q->orWhere('status', 0);
+                    }
+                });
+            }
+
+            // Get the filtered record count
+            $filteredRecords = $filteredQuery->count();
+
+            // Sorting
+            $orderColumn = $request->order[0]['column'] ?? 1; // Default to 'folder_name' if not provided
+            $orderDirection = $request->order[0]['dir'] ?? 'asc';
+            $columns = ['id', 'folder_name', 'description', 'status']; // Columns index reference
+
+            $filteredQuery->orderBy($columns[$orderColumn], $orderDirection);
+
+            // Pagination
+            $folders = $filteredQuery->offset($request->start)->limit($request->length)->get();
+
+            // Prepare response data
+            $data = [];
+            foreach ($folders as $index => $val) {
+                $encodedId = encode_id($val->id);
+                $actions = view('folders.partials.actions', ['folder' => $val])->render();
+
+                $data[] = [
+                    'DT_RowIndex' => $index + 1,
+                    'folder_name' => $val->folder_name,
+                    'description' => $val->description,
+                    'status' => $val->status == 1 ? 'Active' : 'Inactive',
+                    'actions' => $actions,
+                ];
+            }
+
+            return response()->json([
+                'draw' => intval($request->draw),
+                'recordsTotal' => $totalRecords,
+                'recordsFiltered' => $filteredRecords,
+                'data' => $data,
+            ]);
+        }
+
     
 
-    public function getFolders(Request $request)
-    {
-        $query = Folder::query();
+    // public function getFolders(Request $request)
+    // {
+    //     $query = Folder::query();
     
-        // Apply user-based folder filtering
-        if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
-            // Admin without OU restriction: Fetch all folders
-            $query->whereNull('parent_id')->with('children');
-        } else {
-            // Regular users: Fetch only their org unit folders
-            $query->where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children');
-        }
+    //     // Apply user-based folder filtering
+    //     if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
+    //         // Admin without OU restriction: Fetch all folders
+    //         $query->whereNull('parent_id')->with('children');
+    //     } else {
+    //         // Regular users: Fetch only their org unit folders
+    //         $query->where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children');
+    //     }
     
-        // Apply search filter
-        if ($request->has('search') && !empty($request->search['value'])) {
-            $searchValue = $request->search['value'];
+    //     // Apply search filter
+    //     if ($request->has('search') && !empty($request->search['value'])) {
+    //         $searchValue = $request->search['value'];
     
-            $query->where(function ($q) use ($searchValue) {
-                $q->where('folder_name', 'LIKE', "%{$searchValue}%")
-                  ->orWhere('description', 'LIKE', "%{$searchValue}%");
+    //         $query->where(function ($q) use ($searchValue) {
+    //             $q->where('folder_name', 'LIKE', "%{$searchValue}%")
+    //               ->orWhere('description', 'LIKE', "%{$searchValue}%");
     
-                // Search by status (accepting "Active" or "Inactive" as input)
-                if (stripos('Active', $searchValue) !== false) {
-                    $q->orWhere('status', 1);
-                } elseif (stripos('Inactive', $searchValue) !== false) {
-                    $q->orWhere('status', 0);
-                }
-            });
-        }
+    //             // Search by status (accepting "Active" or "Inactive" as input)
+    //             if (stripos('Active', $searchValue) !== false) {
+    //                 $q->orWhere('status', 1);
+    //             } elseif (stripos('Inactive', $searchValue) !== false) {
+    //                 $q->orWhere('status', 0);
+    //             }
+    //         });
+    //     }
     
-        // Sorting
-        $orderColumn = $request->order[0]['column'] ?? 1; // Default to 'folder_name' if not provided
-        $orderDirection = $request->order[0]['dir'] ?? 'asc';
-        $columns = ['id', 'folder_name', 'description', 'status']; // Columns index reference
-        $query->orderBy($columns[$orderColumn], $orderDirection);
+    //     // Sorting
+    //     $orderColumn = $request->order[0]['column'] ?? 1; // Default to 'folder_name' if not provided
+    //     $orderDirection = $request->order[0]['dir'] ?? 'asc';
+    //     $columns = ['id', 'folder_name', 'description', 'status']; // Columns index reference
+    //     $query->orderBy($columns[$orderColumn], $orderDirection);
     
-        // Pagination
-       // $totalRecords = Folder::count();
-        $totalRecords = Folder::query()->whereNull('parent_id')->count(); // Count only top-level folders
-        $filteredRecords = $query->count(); // Count filtered results
+    //     // Pagination
+    //    // $totalRecords = Folder::count();
+    //     $totalRecords = Folder::query()->whereNull('parent_id')->count(); // Count only top-level folders
+    //     $filteredRecords = $query->count(); // Count filtered results
 
-       // dd($totalRecords);
-        $filteredRecords = $query->count();
-        $folders = $query->offset($request->start)->limit($request->length)->get();
+    //    // dd($totalRecords);
+    //     $filteredRecords = $query->count();
+    //     $folders = $query->offset($request->start)->limit($request->length)->get();
     
-        // Prepare response data
-        $data = [];
-        foreach ($folders as $index => $val) {
-            $encodedId = encode_id($val->id);
-            $actions = view('folders.partials.actions', ['folder' => $val])->render();
+    //     // Prepare response data
+    //     $data = [];
+    //     foreach ($folders as $index => $val) {
+    //         $encodedId = encode_id($val->id);
+    //         $actions = view('folders.partials.actions', ['folder' => $val])->render();
     
-            $data[] = [
-                'DT_RowIndex' => $index + 1,
-                'folder_name' => $val->folder_name,
-                'description' => $val->description,
-                'status' => $val->status == 1 ? 'Active' : 'Inactive',
-                'actions' => $actions,
-            ];
-        }
+    //         $data[] = [
+    //             'DT_RowIndex' => $index + 1,
+    //             'folder_name' => $val->folder_name,
+    //             'description' => $val->description,
+    //             'status' => $val->status == 1 ? 'Active' : 'Inactive',
+    //             'actions' => $actions,
+    //         ];
+    //     }
     
-        return response()->json([
-            'draw' => intval($request->draw),
-            'recordsTotal' => $totalRecords,
-            'recordsFiltered' => $filteredRecords,
-            'data' => $data,
-        ]);
-    }
+    //     return response()->json([
+    //         'draw' => intval($request->draw),
+    //         'recordsTotal' => $totalRecords,
+    //         'recordsFiltered' => $filteredRecords,
+    //         'data' => $data,
+    //     ]);
+    // }
 
     public function getRootFolderDocuments(Request $request)
     {

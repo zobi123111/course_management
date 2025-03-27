@@ -112,7 +112,7 @@
                                 <h5 class="card-title courseName">{{ $val->course_name}}</h5>
         
                                 <p class="card-text">
-                                    {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
+                                    {{ \Illuminate\Support\Str::words($val->description, 50, '...') }} 
                                 </p>
                             </div>
         
@@ -158,6 +158,18 @@
             <div class="modal-body">
                 <form action="" id="courses" method="POST" enctype="multipart/form-data" class="row g-3 needs-validation">
                     @csrf
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ou_id" aria-label="Default select example" id="select_org_unit">
+                            <option value="">Select Org Unit</option>
+                            @foreach($organizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                    </div>
+                    @endif
                     <div class="form-group">
                         <label for="firstname" class="form-label">Course Name<span class="text-danger">*</span></label>
                         <input type="text" name="course_name" class="form-control">
@@ -173,19 +185,15 @@
                         <input type="file" name="image" class="form-control" accept="image/*">
                         <div id="image_error" class="text-danger error_e"></div>
                     </div>
-                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                     <div class="form-group">
-                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                        <select class="form-select" name="ou_id" aria-label="Default select example">
-                            <option value="">Select Org Unit</option>
-                            @foreach($organizationUnits as $val)
-                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                        <label for="groups" class="form-label">Assigned Resource<span class="text-danger"></span></label>
+                        <select class="form-select resources-select" name="resources[]" multiple="multiple">
+                            @foreach($resource as $val)
+                            <option value="{{ $val->id }}">{{ $val->name }}</option>
                             @endforeach
                         </select>
-                        <div id="ou_id_error" class="text-danger error_e"></div>            
-                    </div>
-                    @endif
-
+                        <div id="resources_error" class="text-danger error_e"></div>
+                    </div>  
                     <div class="form-group">
                         <label for="groups" class="form-label">Select Groups<span class="text-danger"></span></label>
                         <select class="form-select groups-select" name="group_ids[]" multiple="multiple">
@@ -226,6 +234,18 @@
             <div class="modal-body">
                 <form id="editCourse" class="row g-3 needs-validation">
                     @csrf
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select" name="editou_id" aria-label="Default select example" id="edit_select_org_unit">
+                            <option value="">Select Org Unit</option>
+                            @foreach($organizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                    </div>
+                    @endif
                     <div class="form-group">
                         <label for="firstname" class="form-label">Course Name<span class="text-danger">*</span></label>
                         <input type="text" name="course_name" class="form-control">
@@ -250,7 +270,7 @@
                         </select>
                         <div id="status_error_up" class="text-danger error_e"></div>
                     </div>
-                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <!-- @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                     <div class="form-group">
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
                         <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
@@ -261,7 +281,16 @@
                         </select>
                         <div id="ou_id_error" class="text-danger error_e"></div>            
                     </div>
-                    @endif
+                    @endif -->
+                    <div class="form-group">
+                        <label for="groups" class="form-label">Assigned Resource<span class="text-danger"></span></label>
+                        <select class="form-select resources-select" name="resources[]" multiple="multiple" id="resources-select" >
+                            @foreach($resource as $val)
+                            <option value="{{ $val->id }}">{{ $val->name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="resources_error_up" class="text-danger error_e"></div>
+                    </div>  
 
                     <div class="form-group">
                         <label for="groups" class="form-label">Select Groups<span class="text-danger"></span></label>
@@ -346,22 +375,28 @@
 function initializeSelect2() {
     $('.groups-select').select2({
         allowClear: true,
+        placeholder: 'Select the Group',
         multiple: true,
         dropdownParent: $('.modal:visible'),
     });
+    
+    $(".resources-select").select2({
+        maximumSelectionLength: 3,
+        placeholder: 'Select the Resource',
+        allowClear: true,
+        dropdownParent: $('.modal:visible'),
+    });
+
 }
 
 $(document).ready(function() {
     $('#courseTable').DataTable();
-
     initializeSelect2();
-
     $("#createCourse").on('click', function() {
         $(".error_e").html('');
         $("#courses")[0].reset();
         $(".groups-select").val(null).trigger("change");
         $("#createCourseModal").modal('show');
-
         $('#createCourseModal').on('shown.bs.modal', function() {
             initializeSelect2();
         });
@@ -369,6 +404,7 @@ $(document).ready(function() {
 
     $("#submitCourse").on("click", function(e) {
         e.preventDefault();
+        $('.error_e').html('');
         var formData = new FormData($('#courses')[0]);
 
         $.ajax({
@@ -394,7 +430,6 @@ $(document).ready(function() {
 
     $('.edit-course-icon').click(function(e) {
         e.preventDefault();
-
         $('.error_e').html('');
         var courseId = $(this).data('course-id');
         $.ajax({
@@ -402,12 +437,33 @@ $(document).ready(function() {
             type: 'GET',
             data: { id: courseId },
             success: function(response) {
+              //  console.log(response.resources);
                 // Populate the modal fields with course data
                 $('input[name="course_name"]').val(response.course.course_name);
                 $('input[name="course_id"]').val(response.course.id);
                 $('#edit_description').val(response.course.description);
                 $('#edit_ou_id').val(response.course.ou_id);
                 $('#edit_status').val(response.course.status);
+                $('#edit_select_org_unit').val(response.course.ou_id);
+                    if (response.resources) {
+                        var $resourcesSelect = $('#resources-select');
+                        $resourcesSelect.empty(); // Clear previous options
+
+                        // Append new options
+                        response.resources.forEach(function(resource) {
+                            var isSelected = response.courseResources.some(cr => cr.resources_id === resource.id);
+                            $resourcesSelect.append(
+                                `<option value="${resource.id}" ${isSelected ? 'selected' : ''}>${resource.name}</option>`
+                            );
+                        });
+
+                        $resourcesSelect.trigger('change'); // Ensure changes reflect in the select box
+                    }
+                 // Collect all resource IDs
+                    let selectedResources = response.courseResources.map(val => val.resources_id);
+                           
+                // Set multiple selected values
+                $("#resources-select").val(selectedResources).trigger("change");
 
                 if (response.course.enable_prerequisites) {
                     $('#enable_prerequisites').prop('checked', true);
@@ -420,6 +476,7 @@ $(document).ready(function() {
           // Clear old prerequisites
           $('#prerequisite_items').empty();
           let prerequisites = response.course.prerequisites;
+          let courses_resources = response.course.courses_resources;
  
             if (prerequisites.length > 0) {
                 prerequisites.forEach((prerequisite, index) => {
@@ -431,14 +488,18 @@ $(document).ready(function() {
                 let prerequisiteHtml = generatePrerequisiteHtml({ prerequisite_detail: '', prerequisite_type: 'text' }, 0);
                 $('#prerequisite_items').append(prerequisiteHtml);
             }
-
-
                 var selectedGroups = response.course.groups.map(function(group) {
                     return group.id;
                 });
-
                 $('.groups-select').val(selectedGroups).trigger('change');
+                var courseResources = response.courseResources.map(function(group) {
+                  return group.resources_id;
+              });
+              
+              $('.resources-select').val(courseResources).trigger('change');
 
+                // If using Select2 or other UI plugins, trigger an update
+                $('.resources-select').trigger('change');
                 $('#editCourseModal').modal('show');
 
                 $('#editCourseModal').on('shown.bs.modal', function () {
@@ -454,6 +515,21 @@ $(document).ready(function() {
     // Initialize select2
     function initializeSelect3() {
         $('.groups-select').select2({
+            allowClear: true,
+            multiple: true,
+            dropdownParent: $('.modal:visible'),
+            templateResult: function(state) {
+                if (state.selected) {
+                    return $(
+                        // '<span style="display:none;">' + state.text + '</span>'
+                    );
+                }
+                return state.text;
+            }
+        });
+
+        // Multi Select Resource select box
+        $('.resources-select').select2({
             allowClear: true,
             multiple: true,
             dropdownParent: $('.modal:visible'),
@@ -586,6 +662,90 @@ function generatePrerequisiteHtml(prerequisite, index) {
         </div>
     `;
 }
+
+$(document).on("change", "#select_org_unit", function(){ 
+        var ou_id = $(this).val(); 
+        var $groupSelect = $(".groups-select"); 
+   
+           
+        $.ajax({
+            url: "/group/get_ou_group/",
+            type: "GET",
+            data: { 'ou_id': ou_id },
+            dataType: "json",  // Ensures response is treated as JSON
+            success: function(response){
+              
+                if (response.org_group && Array.isArray(response.org_group)) { 
+                    var options = "<option value=''>Select Group </option>"; 
+                    
+                    response.org_group.forEach(function(value){
+                        options += "<option value='" + value.id + "'>" + value.name  + "</option>";
+                    });
+                    $groupSelect.html(options); 
+                    $groupSelect.trigger("change");
+                } 
+                if (response.org_resource && Array.isArray(response.org_resource)) { 
+                 
+                    var options = "<option value=''>Select Resource </option>"; 
+                    
+                    response.org_resource.forEach(function(value){
+                        options += "<option value='" + value.id + "'>" + value.name  + "</option>";
+                    });
+                    $resourceSelect.html(options); 
+                    $resourceSelect.trigger("change");
+                }
+                else {
+                    console.error("Invalid response format:", response);
+                }
+            },
+            error: function(xhr, status, error){
+                console.error(xhr.responseText);
+            } 
+        });
+    });
+
+
+    // Edit ou   
+    
+        $('#edit_select_org_unit').on('change', function() { 
+        var ou_id = $(this).val(); 
+        var $groupSelect = $(".groups-select"); 
+        var $resourceSelect = $(".resources-select");
+        $groupSelect.empty().append("<option value=''>Select Group</option>").trigger("change");
+        $.ajax({
+            url: "/group/get_ou_group/",
+            type: "GET",
+            data: { 'ou_id': ou_id },
+            dataType: "json",  // Ensures response is treated as JSON
+            success: function(response){
+                if (response.org_group && Array.isArray(response.org_group)) { 
+                    var options = "<option value=''>Select Group </option>"; 
+                    response.org_group.forEach(function(value){
+                        options += "<option value='" + value.id + "'>" + value.name  + "</option>";
+                    });
+                    $groupSelect.html(options); 
+                    $groupSelect.trigger("change");
+                } 
+
+                if (response.org_resource && Array.isArray(response.org_resource)) { 
+                    var options = "<option value=''>Select Resource </option>"; 
+                    response.org_resource.forEach(function(value){
+                        options += "<option value='" + value.id + "'>" + value.name  + "</option>";
+                    });
+                    $resourceSelect.html(options); 
+                    $resourceSelect.trigger("change");
+                }
+                else {
+                    console.error("Invalid response format:", response);
+                }
+            },
+            error: function(xhr, status, error){
+                console.error(xhr.responseText);
+            } 
+        });
+    });
+
+
 
 </script>
 
