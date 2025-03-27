@@ -64,7 +64,10 @@
                                 {{ Auth::user()->fname }} {{ Auth::user()->lname }}
                                 @endif
                             </h6>
-                          <span> {{ Auth::user()->roles->role_name }}</span><br>
+                         
+                          <span> {{ Auth::user()?->roles?->role_name }}</span>
+
+                          <br>
                           @if(auth()->user()->is_owner==0)
                           <span>{{ optional(auth()->user()->organization)->org_unit_name }}</span>
 

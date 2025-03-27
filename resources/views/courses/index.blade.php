@@ -186,7 +186,7 @@
                         <div id="image_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="groups" class="form-label">Assigned Resource<span class="text-danger"></span></label>
+                        <label for="groups" class="form-label">Assigned Resource<span class="text-danger">*</span></label>
                         <select class="form-select resources-select" name="resources[]" multiple="multiple">
                             @foreach($resource as $val)
                             <option value="{{ $val->id }}">{{ $val->name }}</option>
@@ -195,7 +195,7 @@
                         <div id="resources_error" class="text-danger error_e"></div>
                     </div>  
                     <div class="form-group">
-                        <label for="groups" class="form-label">Select Groups<span class="text-danger"></span></label>
+                        <label for="groups" class="form-label">Select Groups<span class="text-danger">*</span></label>
                         <select class="form-select groups-select" name="group_ids[]" multiple="multiple">
                             @foreach($groups as $group)
                             <option value="{{ $group->id }}">{{ $group->name }}</option>
@@ -428,89 +428,182 @@ $(document).ready(function() {
         });
     });
 
-    $('.edit-course-icon').click(function(e) {
-        e.preventDefault();
-        $('.error_e').html('');
-        var courseId = $(this).data('course-id');
-        $.ajax({
-            url: "{{ url('/course/edit') }}",
-            type: 'GET',
-            data: { id: courseId },
-            success: function(response) {
-              //  console.log(response.resources);
-                // Populate the modal fields with course data
-                $('input[name="course_name"]').val(response.course.course_name);
-                $('input[name="course_id"]').val(response.course.id);
-                $('#edit_description').val(response.course.description);
-                $('#edit_ou_id').val(response.course.ou_id);
-                $('#edit_status').val(response.course.status);
-                $('#edit_select_org_unit').val(response.course.ou_id);
-                    if (response.resources) {
-                        var $resourcesSelect = $('#resources-select');
-                        $resourcesSelect.empty(); // Clear previous options
+    // $('.edit-course-icon').click(function(e) {
+    //     e.preventDefault();
+    //     $('.error_e').html('');
+    //     var courseId = $(this).data('course-id');
+    //     $.ajax({
+    //         url: "{{ url('/course/edit') }}",
+    //         type: 'GET',
+    //         data: { id: courseId },
+    //         success: function(response) {
+    //           //  console.log(response.resources);
+    //             // Populate the modal fields with course data
+    //             $('input[name="course_name"]').val(response.course.course_name);
+    //             $('input[name="course_id"]').val(response.course.id);
+    //             $('#edit_description').val(response.course.description);
+    //             $('#edit_ou_id').val(response.course.ou_id);
+    //             $('#edit_status').val(response.course.status);
+    //             $('#edit_select_org_unit').val(response.course.ou_id);
+    //                 if (response.resources) {
+    //                     var $resourcesSelect = $('#resources-select');
+    //                     $resourcesSelect.empty(); // Clear previous options
 
-                        // Append new options
-                        response.resources.forEach(function(resource) {
-                            var isSelected = response.courseResources.some(cr => cr.resources_id === resource.id);
-                            $resourcesSelect.append(
-                                `<option value="${resource.id}" ${isSelected ? 'selected' : ''}>${resource.name}</option>`
+    //                     // Append new options
+    //                     response.resources.forEach(function(resource) {
+    //                         var isSelected = response.courseResources.some(cr => cr.resources_id === resource.id);
+    //                         $resourcesSelect.append(
+    //                             `<option value="${resource.id}" ${isSelected ? 'selected' : ''}>${resource.name}</option>`
+    //                         );
+    //                     });
+
+    //                     $resourcesSelect.trigger('change'); // Ensure changes reflect in the select box
+    //                 }
+    //              // Collect all resource IDs
+    //                 let selectedResources = response.courseResources.map(val => val.resources_id);
+                           
+    //             // Set multiple selected values
+    //             $("#resources-select").val(selectedResources).trigger("change");
+
+    //             if (response.course.enable_prerequisites) {
+    //                 $('#enable_prerequisites').prop('checked', true);
+    //                 $('#prerequisites_container').show();
+    //             } else {
+    //                 $('#enable_prerequisites').prop('checked', false);
+    //                 $('#prerequisites_container').hide();
+    //             }
+
+    //       // Clear old prerequisites
+    //       $('#prerequisite_items').empty();
+    //       let prerequisites = response.course.prerequisites;
+    //       let courses_resources = response.course.courses_resources;
+ 
+    //         if (prerequisites.length > 0) {
+    //             prerequisites.forEach((prerequisite, index) => {
+    //                 let prerequisiteHtml = generatePrerequisiteHtml(prerequisite, index);
+    //                 $('#prerequisite_items').append(prerequisiteHtml);
+    //             });
+    //         } else {
+    //             // Show a single empty prerequisite form if there are none
+    //             let prerequisiteHtml = generatePrerequisiteHtml({ prerequisite_detail: '', prerequisite_type: 'text' }, 0);
+    //             $('#prerequisite_items').append(prerequisiteHtml);
+    //         }
+    //             var selectedGroups = response.course.groups.map(function(group) {
+    //                 return group.id;
+    //             });
+    //             $('.groups-select').val(selectedGroups).trigger('change');
+    //             var courseResources = response.courseResources.map(function(group) {
+    //               return group.resources_id;
+    //           });
+              
+    //           $('.resources-select').val(courseResources).trigger('change');
+
+    //             // If using Select2 or other UI plugins, trigger an update
+    //             $('.resources-select').trigger('change');
+    //             $('#editCourseModal').modal('show');
+
+    //             $('#editCourseModal').on('shown.bs.modal', function () {
+    //                 initializeSelect3();
+    //             });
+    //         },
+    //         error: function(xhr, status, error) {
+    //             console.error(xhr.responseText);
+    //         }
+    //     });
+    // });
+
+    $('.edit-course-icon').click(function(e) {
+    e.preventDefault();
+    $('.error_e').html('');
+    var courseId = $(this).data('course-id');
+
+    $.ajax({
+        url: "{{ url('/course/edit') }}",
+        type: 'GET',
+        data: { id: courseId },
+        success: function(response) {
+            // Populate course data
+            $('input[name="course_name"]').val(response.course.course_name);
+            $('input[name="course_id"]').val(response.course.id);
+            $('#edit_description').val(response.course.description);
+            $('#edit_ou_id').val(response.course.ou_id);
+            $('#edit_status').val(response.course.status);
+            $('#edit_select_org_unit').val(response.course.ou_id);
+
+            // Populate Resources
+            if (response.resources) {
+                var $resourcesSelect = $('.resources-select');
+                $resourcesSelect.empty();
+                response.resources.forEach(function(resource) {
+                    var isSelected = response.courseResources.some(cr => cr.resources_id === resource.id);
+                    $resourcesSelect.append(
+                        `<option value="${resource.id}" ${isSelected ? 'selected' : ''}>${resource.name}</option>`
+                    );
+                });
+                $resourcesSelect.val(response.courseResources.map(cr => cr.resources_id)).trigger('change');
+            }
+
+            // Fetch and Populate Groups Based on OU
+            $.ajax({
+                url: "{{ url('/group/get_ou_group') }}",
+                type: 'GET',
+                data: { ou_id: response.course.ou_id },
+                dataType: 'json',
+                success: function(groupResponse) {
+                    var $groupSelect = $('.groups-select');
+                    $groupSelect.empty();
+                    
+                    if (groupResponse.org_group && Array.isArray(groupResponse.org_group)) {
+                        $groupSelect.append(`<option value=''>Select Group</option>`);
+                        groupResponse.org_group.forEach(function(group) {
+                            $groupSelect.append(
+                                `<option value="${group.id}">${group.name}</option>`
                             );
                         });
 
-                        $resourcesSelect.trigger('change'); // Ensure changes reflect in the select box
+                        // Set selected groups
+                        var selectedGroups = response.course.groups.map(g => g.id);
+                        $groupSelect.val(selectedGroups).trigger('change');
                     }
-                 // Collect all resource IDs
-                    let selectedResources = response.courseResources.map(val => val.resources_id);
-                           
-                // Set multiple selected values
-                $("#resources-select").val(selectedResources).trigger("change");
-
-                if (response.course.enable_prerequisites) {
-                    $('#enable_prerequisites').prop('checked', true);
-                    $('#prerequisites_container').show();
-                } else {
-                    $('#enable_prerequisites').prop('checked', false);
-                    $('#prerequisites_container').hide();
+                },
+                error: function(xhr) {
+                    console.error("Error loading groups:", xhr.responseText);
                 }
+            });
 
-          // Clear old prerequisites
-          $('#prerequisite_items').empty();
-          let prerequisites = response.course.prerequisites;
-          let courses_resources = response.course.courses_resources;
- 
+            // Handle Prerequisites
+            if (response.course.enable_prerequisites) {
+                $('#enable_prerequisites').prop('checked', true);
+                $('#prerequisites_container').show();
+            } else {
+                $('#enable_prerequisites').prop('checked', false);
+                $('#prerequisites_container').hide();
+            }
+
+            $('#prerequisite_items').empty();
+            let prerequisites = response.course.prerequisites;
             if (prerequisites.length > 0) {
                 prerequisites.forEach((prerequisite, index) => {
                     let prerequisiteHtml = generatePrerequisiteHtml(prerequisite, index);
                     $('#prerequisite_items').append(prerequisiteHtml);
                 });
             } else {
-                // Show a single empty prerequisite form if there are none
                 let prerequisiteHtml = generatePrerequisiteHtml({ prerequisite_detail: '', prerequisite_type: 'text' }, 0);
                 $('#prerequisite_items').append(prerequisiteHtml);
             }
-                var selectedGroups = response.course.groups.map(function(group) {
-                    return group.id;
-                });
-                $('.groups-select').val(selectedGroups).trigger('change');
-                var courseResources = response.courseResources.map(function(group) {
-                  return group.resources_id;
-              });
-              
-              $('.resources-select').val(courseResources).trigger('change');
 
-                // If using Select2 or other UI plugins, trigger an update
-                $('.resources-select').trigger('change');
-                $('#editCourseModal').modal('show');
+            $('#editCourseModal').modal('show');
 
-                $('#editCourseModal').on('shown.bs.modal', function () {
-                    initializeSelect3();
-                });
-            },
-            error: function(xhr, status, error) {
-                console.error(xhr.responseText);
-            }
-        });
+            $('#editCourseModal').on('shown.bs.modal', function () {
+                initializeSelect3();
+            });
+        },
+        error: function(xhr) {
+            console.error(xhr.responseText);
+        }
     });
+});
+
 
     // Initialize select2
     function initializeSelect3() {
@@ -663,9 +756,10 @@ function generatePrerequisiteHtml(prerequisite, index) {
     `;
 }
 
-$(document).on("change", "#select_org_unit", function(){ 
+    $(document).on("change", "#select_org_unit", function(){ 
         var ou_id = $(this).val(); 
         var $groupSelect = $(".groups-select"); 
+        var $resourceSelect = $(".resources-select");
    
            
         $.ajax({
@@ -686,12 +780,14 @@ $(document).on("change", "#select_org_unit", function(){
                 } 
                 if (response.org_resource && Array.isArray(response.org_resource)) { 
                  
-                    var options = "<option value=''>Select Resource </option>"; 
+                    var resource = "<option value=''>Select Resource </option>"; 
                     
                     response.org_resource.forEach(function(value){
-                        options += "<option value='" + value.id + "'>" + value.name  + "</option>";
+                        resource += "<option value='" + value.id + "'>" + value.name  + "</option>";
+
+                        console.log(resource)
                     });
-                    $resourceSelect.html(options); 
+                    $resourceSelect.html(resource); 
                     $resourceSelect.trigger("change");
                 }
                 else {
