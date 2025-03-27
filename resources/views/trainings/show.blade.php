@@ -541,7 +541,7 @@
                             </div>
                             <div id="comptency" class="accordion-collapse collapse" data-bs-parent="#faq-group-2">
                                 <div class="accordion-body">
-                                    @foreach($courseLessons as $lesson)
+                                @foreach($courseLessons->filter(fn($lesson) => $lesson->sublessons->isNotEmpty()) as $lesson)
                                     <div class="custom-box">
                                         <div class="header">
                                             <span class="rmk">RMK</span>
