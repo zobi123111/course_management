@@ -335,6 +335,9 @@ $(document).ready(function() {
     $(document).on("change", "#select_org_unit, #edit_ou_id", function() { 
         var ou_id = $(this).val();
         var $selectUser = $(this).attr("id") === "select_org_unit" ? $("#usersDropdown") : $("#edit_users");
+         // Store the currently selected users
+        var selectedUsers = $selectUser.val() || [];
+        console.log(selectedUsers);
 
         $.ajax({
             url: "/group/get_ou_user/",
@@ -352,6 +355,8 @@ $(document).ready(function() {
                             options += "<option value='" + value.id + "'>" + value.fname + " " + value.lname + "</option>";
                         });
                         $selectUser.html(options); // Update dropdown with new users
+                        // Restore previously selected users
+                        $selectUser.val(selectedUsers).trigger('change');
                     } else {
                         $selectUser.html(""); // Clear dropdown if no users are found
                         console.warn("No users found, keeping existing list.");
@@ -367,9 +372,12 @@ $(document).ready(function() {
     });
 
 
-    // Ensure Select2 works when modal is shown
-    $('#createGroupModal, #editGroupModal').on('shown.bs.modal', function() {
-        initializeSelect2();
+
+    $(document).on("shown.bs.modal", "#createGroupModal, #editGroupModal", function(event) {
+        if (event.target.id === "editGroupModal") {
+            $("#edit_ou_id").trigger("change"); // Trigger change event only for the edit modal
+        }
+        initializeSelect2(); // Ensure Select2 initializes for both modals
     });
 
     setTimeout(function() {
