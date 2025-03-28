@@ -44,7 +44,7 @@
     @if(checkAllowedModule('users','user.store')->isNotEmpty())
     <div class="create_btn">
         <a href="#" class="btn btn-primary create-button" id="createUser" data-toggle="modal"
-            data-target="#userModal">Create User</a>
+            data-target="#userModal">Create Users</a>
     </div>
     @endif
     <div id="update_success_msg"></div>
