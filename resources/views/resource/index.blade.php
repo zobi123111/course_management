@@ -32,8 +32,12 @@
                 <th scope="col">Class</th>
                 <th scope="col">Type</th>
                 <th scope="col">Note</th>
+                @if(checkAllowedModule('resource','edit.index')->isNotEmpty())
                 <th scope="col">Edit</th>
+                @endif
+                @if(checkAllowedModule('resource','delete.index')->isNotEmpty())
                 <th scope="col">Delete</th>
+                @endif
             </tr>
         </thead>
    
@@ -306,8 +310,12 @@
             { data: 'class', name: 'class' },
             { data: 'type', name: 'type' },
             { data: 'note', name: 'note' },
+            @if(checkAllowedModule('resource','edit.index')->isNotEmpty())
             { data: 'edit', name: 'edit', orderable: false, searchable: false },
+            @endif
+            @if(checkAllowedModule('resource','delete.index')->isNotEmpty())
             { data: 'delete', name: 'delete', orderable: false, searchable: false },
+            @endif
         ]
     });
 

@@ -54,7 +54,7 @@
     <table class="table table-hover" id="user_table">
         <thead>
             <tr>
-                <th scope="col">Profile Picture</th>
+                <th scope="col">Profile Picture</th> 
                 <th scope="col">First Name</th>
                 <th scope="col">Last Name</th>
                 <th scope="col">Email</th>

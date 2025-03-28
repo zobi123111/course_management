@@ -179,5 +179,4 @@ function hasUserRole($user, $roleName)
         return isset($role->role_name) && stripos($role->role_name, $roleName) !== false;
     });
 }
-
 ?>
