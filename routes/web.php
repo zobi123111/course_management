@@ -15,6 +15,9 @@ use App\Http\Controllers\SubLessonController;
 use App\Http\Controllers\TrainingEventsController;
 use App\Http\Controllers\PrerequisiteController;
 use App\Http\Controllers\ResourceController;
+
+
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
