@@ -26,6 +26,7 @@
                     <th>Version Number</th>
                     <th>Issue Date</th>
                     <th>Expiry Date</th>
+                    <th>Assigned Group</th>
                     <th>Document</th>
                     <th>Status</th>
                     <th>Acknowledged</th>
@@ -258,6 +259,7 @@ $(document).ready(function() {
             { data: 'version_no', name: 'version_no' },
             { data: 'issue_date', name: 'issue_date' },
             { data: 'expiry_date', name: 'expiry_date' },
+            { data: 'assigned_group', name: 'assigned_group' },
             { data: 'document', name: 'document', orderable: false, searchable: false },
             { data: 'status', name: 'status' },
             { data: 'acknowledged', name: 'acknowledged' },

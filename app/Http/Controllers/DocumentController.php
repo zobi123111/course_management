@@ -185,19 +185,20 @@ class DocumentController extends Controller
 
         // Determine which documents to fetch based on user role and permissions
         if (checkAllowedModule('courses', 'document.index')->isNotEmpty() && $user->is_owner == 1) {
-            $query = Document::query();
+            $query = Document::with('group:id,name'); // Fetch group name along with documents
         } elseif (checkAllowedModule('documents', 'document.index')->isNotEmpty() && $user->is_admin == 0) {
             $groups = Group::where('ou_id', $ou_id)->get();
             $filteredGroups = $groups->filter(function ($group) use ($userId) {
                 $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);
                 return in_array($userId, $userIds);
             });
-
+        
             $groupIds = $filteredGroups->pluck('id')->toArray();
-            $query = Document::whereIn('group_id', $groupIds)->where('status', 1);
+            $query = Document::with('group:id,name')->whereIn('group_id', $groupIds)->where('status', 1);
         } else {
-            $query = Document::where('ou_id', $ou_id);
+            $query = Document::with('group:id,name')->where('ou_id', $ou_id);
         }
+        
 
         // Get total record count before filtering
         $totalRecords = $query->count();
@@ -235,13 +236,16 @@ class DocumentController extends Controller
                 'version_no' => $row->version_no,
                 'issue_date' => $row->issue_date,
                 'expiry_date' => $row->expiry_date,
+                'assigned_group' => $row->group_id
+                    ? '<a href="' . route('document.user_list', encode_id($row->group_id)) . '">'.$row->group?->name.'</a>'
+                    : 'No Group Assigned',
                 'document' => $row->document_file
                     ? '<a href="' . route('document.show', encode_id($row->id)) . '">View Document</a>'
                     : 'No File uploaded',
                 'status' => ($row->status == 1) ? 'Active' : 'Inactive',
-                'acknowledged' => ($row->acknowledged == 1) 
-                        ? '<span style="color: green;">✔</span>' 
-                        : '<span style="color: red;">❌</span>',
+                'acknowledged' => in_array(auth()->user()->id, json_decode($row->acknowledge_by ?? '[]', true)) 
+                    ? '<span style="color: green;">✔</span>' 
+                    : '<span style="color: red;">❌</span>',
                 'edit' => checkAllowedModule('documents', 'document.edit')->isNotEmpty()
                     ? '<i class="fa fa-edit edit-document-icon" style="font-size:25px; cursor: pointer;" data-document-id="' . encode_id($row->id) . '"></i>'
                     : '',
@@ -353,22 +357,57 @@ class DocumentController extends Controller
         return view('documents.show',compact('document'));
     }
 
+    // public function getDocUserList(Request $request,$group_id)
+    // {
+
+    // }
+
+    // public function acknowledgeDocument(Request $request)
+    // {
+    //     $request->validate([
+    //         'document_id' => 'required|exists:documents,id',
+    //         'acknowledged' => 'required|boolean',
+    //     ]);
+    
+    //     $document = Document::findOrFail($request->document_id);
+    //     if($document){
+    //         $document->update(['acknowledged' => $request->acknowledged]); // Assuming you have an 'acknowledged' column
+    //         return response()->json(['success' => 'Document acknowledged successfully.']);
+    //     }else{
+    //         return response()->json(['error' => 'Something went wrong, Please try after some time.']);
+    //     }
+    
+    // }
+
     public function acknowledgeDocument(Request $request)
     {
+        $userId = auth()->user()->id;
         $request->validate([
             'document_id' => 'required|exists:documents,id',
-            'acknowledged' => 'required|boolean',
+            'acknowledged' => 'required|integer|in:' . $userId, // Ensures only the logged-in user ID is submitted
         ]);
-    
+        
         $document = Document::findOrFail($request->document_id);
-        if($document){
-            $document->update(['acknowledged' => $request->acknowledged]); // Assuming you have an 'acknowledged' column
+        
+        // dd($document);
+        if ($document) {
+            // Decode the existing acknowledged users (if any)
+            $acknowledgedUsers = json_decode($document->acknowledge_by ?? '[]', true);
+
+            // Check if the logged-in user already acknowledged the document
+            if (!in_array($userId, $acknowledgedUsers)) {
+                $acknowledgedUsers[] = $userId; // Add logged-in user's ID
+            }
+
+            // Update the document with the new acknowledge_by array
+            $document->update(['acknowledge_by' => json_encode($acknowledgedUsers)]);
+
             return response()->json(['success' => 'Document acknowledged successfully.']);
-        }else{
-            return response()->json(['error' => 'Something went wrong, Please try after some time.']);
         }
-    
+
+        return response()->json(['error' => 'Something went wrong, please try again later.'], 500);
     }
+
 
     public function getOrgfolder(Request $request)
     {
