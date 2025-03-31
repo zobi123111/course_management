@@ -28,7 +28,7 @@
         <thead>
             <tr>
                 <th scope="col">Name</th>
-                <th scope="col">Registration</th>
+                <th scope="col">Registration</th> 
                 <th scope="col">Class</th>
                 <th scope="col">Type</th>
                 <th scope="col">Note</th>
@@ -88,8 +88,8 @@
             <div class="modal-body">
                 <form action="" id="createResourceForm" method="POST" class="row g-3 needs-validation" enctype="multipart/form-data">
                     @csrf
-
                     @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                       
                     <div class="form-group">
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
                         <select class="form-select" name="ou_id" aria-label="Default select example" id="select_org_unit">

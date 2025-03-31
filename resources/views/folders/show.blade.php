@@ -231,7 +231,7 @@ $(document).ready(function() {
             { data: 'folder_name', name: 'folder_name' },
             { data: 'description', name: 'description' },
             { data: 'status', name: 'status' },
-            { data: 'actions', name: 'actions', className: 'folderbtncont', orderable: false, searchable: false }
+            { data: 'actions', name: 'actions', className: 'folderbtncont', orderable: false, searchable: false } 
         ]
     });
 

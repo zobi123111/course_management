@@ -484,7 +484,7 @@ $(document).on("change", "#edit_select_org_unit", function(){
                     $groupSelect.html(options); 
                     $groupSelect.trigger("change");
                 } 
-console.log(response.org_folder, 'oooooo')  
+ 
             if (response.org_folder && Array.isArray(response.org_folder)) { 
                 var options = "<option value=''>No Parent (Root Folder)</option>";
 

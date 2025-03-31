@@ -4,8 +4,8 @@
     </a> 
 @endif  
 
-@if(checkAllowedModule('folders', 'folder.edit')->isNotEmpty())
-    <button class="btn btn-sm btn-secondary edit-folder-icon" data-folder-id="{{ encode_id($folder->id) }}" title="Edit Folder">
+@if(checkAllowedModule('folders', 'folder.edit')->isNotEmpty()) 
+    <button class="btn btn-sm btn-secondary edit-folder-icon" data-folder-id="{{ encode_id($folder->id) }}" title="Edit Folder">  
         <i class="fa fa-edit"></i> Edit
     </button>
 @endif

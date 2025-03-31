@@ -106,7 +106,7 @@ class ResourceController extends Controller
             'name' => 'required'
         ],
         [
-            'name.required'            => 'The Name field is required.'
+            'name.required' => 'The Name field is required.'
         ]);
 
         if($validated)
@@ -119,7 +119,7 @@ class ResourceController extends Controller
                 $logo_name[] = $fileName;
             }
            $resource_data = array(
-            'ou_id'         => $request->ou_id ?? null, 
+            'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : (auth()->user()->ou_id ?? null),
             'name'         => $request->name, 
             "registration"  =>  $request->registration,
             "type"  =>  $request->type,
@@ -148,7 +148,7 @@ class ResourceController extends Controller
             'edit_name' => 'required'
         ],
         [
-            'edit_name.required'            => 'The Name field is required.'
+            'edit_name.required'  => 'The Name field is required.'
         ]);
 
         $logo_name = [];
@@ -163,7 +163,8 @@ class ResourceController extends Controller
     }
 
     $resource_data = array(
-        'ou_id'         => $request->edit_ou_id ?? null, 
+        // 'ou_id'         => $request->edit_ou_id ?? null, 
+        'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->edit_ou_id : (auth()->user()->ou_id ?? null),
         "name"  =>  $request->edit_name,
         "registration"  =>  $request->edit_registration,
         "type"  =>  $request->edit_type,
@@ -238,10 +239,7 @@ class ResourceController extends Controller
                             ->distinct()
                             ->get()
                             ->toArray();
-                           // dd($rejected_resources);
-    
-      
-
+                          
         return view('booking.index', compact('courseResources','pending_resources', 'selected_course', 'approved_resources', 'rejected_resources'));
     }
 

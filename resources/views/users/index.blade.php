@@ -152,6 +152,50 @@
                             <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
                             <div id="licence_file_error" class="text-danger error_e"></div>
                         </div>
+                      
+                         <!--   // Medical  -->
+                        <div class="col-md-6">
+                            <label for="licence_checkbox" class="form-label">Medical</label>
+                            <input type="checkbox" name="medical_checkbox" id="medical_checkbox" class="ms-2" value="1">
+                            <label for="licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
+                            <input type="checkbox" name="medical_verification_required" id="medical_verification_required" class="ms-2" value="1">
+                             <div class="col-md-6 medical_issued_div" style="display:none">
+                            <label for="extra_roles" class="form-label">Medical Issued By<span
+                                        class="text-danger"></span></label>
+                              <select class="form-select " name="issued_by" id="issued_by" >
+                                <option value="">Select Issued By</option>
+                                    <option value="UKCAA">UK CAA</option>
+                                    <option value="EASA">EASA</option>
+                                    <option value="FAA">FAA</option>
+                                </select>
+
+                            </div>
+                        <div class="col-md-6 medical_class_div" style="display:none">
+                                <label for="extra_roles" class="form-label">Medical Class<span
+                                        class="text-danger"></span></label>
+                                <select class="form-select " name="medical_class" id="medical_class" >
+                                        <option value="">Select the Class</option>
+                                        <option value="class1">Class 1</option>
+                                        <option value="class2">Class 2</option>
+                                </select>
+                                <div id="medical_issue_date_div">
+                                <label for="extra_roles" class="form-label">Medical Issue Date<span
+                                class="text-danger"></span></label>
+                                <input type="date" name="medical_issue_date" id="medical_issue_date" class="form-control"  placeholder="Medical Issue Date">
+                                </div>
+                           <div id="medical_expiry_date_div">
+                           <label for="extra_roles" class="form-label">Medical Expiry Date<span
+                           class="text-danger"></span></label>
+                           <input type="date" name="medical_expiry_date" id="medical_expiry_date" class="form-control"  placeholder="Medical Expiry Date" >
+                            </div>
+                           <div id="medical_detail_div">
+                           <label for="extra_roles" class="form-label">Medical Detail <span
+                           class="text-danger"></span></label>
+                           <input type="text" name="medical_detail" id="medical_detail" class="form-control"  placeholder="Enter the Detail">
+                             </div>
+                          
+                            </div>
+                        </div>
 
                         <!-- Passport -->
                         <div class="col-md-6">
@@ -193,18 +237,11 @@
                         </div>
 
                         <!-- Custom Field -->
-                        <div class="col-md-6">
+                        <div class="col-md-6"> 
                             <label for="custom_field_checkbox" class="form-label">Custom Field</label>
                             <input type="checkbox" name="custom_field_checkbox" id="custom_field_checkbox" class="ms-2">
-
-                            
-                            <!-- <input type="text" name="custom_field_name" id="custom_field_name" style="display: none;" class="form-control" placeholder="Enter Custom Field Name">
-                            <div id="custom_field_name_error" class="text-danger error_e"></div>
-                        
-                            <input type="text" name="custom_field_value" id="custom_field_value" style="display: none;" class="form-control mt-3" placeholder="Enter Custom Field Value">
-                            <div id="custom_field_value_error" class="text-danger error_e"></div> -->
-                            
                         </div>
+
                         <div class="col-md-12">
                         <label for="customfield_filelabel" id="customfield_filelabel" class="form-label" style="display: none;">File</label>
                             <input type="checkbox" name="custom_file_checkbox" id="custom_file_checkbox" class="ms-2" style="display: none;">
@@ -212,14 +249,12 @@
                         <label for="customfield_textlabel" id="customfield_textlabel" class="form-label" style="display: none;">Text</label>
                             <input type="checkbox" name="custom_text_checkbox" id="custom_text_checkbox" class="ms-2" style="display: none;">
                             <div class="col-md-6">
-                         <input type="file" name="custom_file" id="custom_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
-                         <input type="text" name="custom_text" id="custom_text" class="form-control mt-3" placeholder="Enter the Text" style="display: none;" >
+                         <input type="date" name="custom_field_date" id="custom_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                         <input type="text" name="custom_field_text" id="custom_text" class="form-control mt-3" placeholder="Enter the Text" style="display: none;" >
                          </div> 
                          </div>
-                         <!-- <div class="col-md-6">
-                         <input type="file" name="custom_file" id="custom_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
-                         <input type="text" name="custom_text" id="custom_text" class="form-control mt-3" style="display: none;" >
-                         </div> -->
+                         <div id="customfield_error" class="text-danger error_e"></div>   
+
                         @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                         <div class="col-md-6">
                             <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
@@ -340,6 +375,47 @@
                             <input type="file" name="edit_licence_file" id="edit_licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
                             <div id="edit_licence_file_error_up" class="text-danger error_e"></div>
                         </div>
+                 <!--   // Medical  -->
+                        <div class="col-md-6">
+                            <label for="licence_checkbox" class="form-label">Medical</label>
+                            <input type="checkbox" name="editmedical_checkbox" id="editmedical_checkbox" class="ms-2" value="1">
+                            <label for="licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
+                            <input type="checkbox" name="editmedical_verification_required" id="editmedical_verification_required" class="ms-2" value="1">
+                             <div class="col-md-6 editmedical_issued_div" style="display:none">
+                                <label for="extra_roles" class="form-label">Medical Issued By<span
+                                        class="text-danger"></span></label>
+                              <select class="form-select " name="editissued_by" id="editissued_by" >
+                                <option value="">Select Issued By</option>
+                                    <option value="UKCAA">UK CAA</option>
+                                    <option value="EASA">EASA</option>
+                                    <option value="FAA">FAA</option>
+                                </select>
+                        </div>
+                        <div class="col-md-6 editmedical_class_div" style="display:none">
+                                <label for="extra_roles" class="form-label">Medical Class<span
+                                        class="text-danger"></span></label>
+                                <select class="form-select " name="editmedical_class" id="editmedical_class" >
+                                        <option value="">Select the Class</option>
+                                        <option value="class1">Class 1</option>
+                                        <option value="class2">Class 2</option>
+                                </select>
+                            <div id="editmedical_issue_date_div">
+                                <label for="extra_roles" class="form-label">Medical Issue Date<span
+                                class="text-danger"></span></label>
+                                <input type="date" name="editmedical_issue_date" id="editmedical_issue_date" class="form-control"  placeholder="Medical Issue Date">
+                            </div>
+                            <div id="editmedical_expiry_date_dev">
+                                <label for="extra_roles" class="form-label">Medical Expiry Date<span
+                                class="text-danger"></span></label>
+                               <input type="date" name="editmedical_expiry_date" id="editmedical_expiry_date" class="form-control"  placeholder="Medical Expiry Date" >
+                            </div>
+                            <div id="editmedical_detail_div">
+                                <label for="extra_roles" class="form-label">Medical Detail <span
+                                class="text-danger"></span></label>
+                               <input type="text" name="editmedical_detail" id="editmedical_detail" class="form-control"  placeholder="Enter the Detail">
+                            </div>
+                            </div>
+                        </div>
 
                         <!-- Passport -->
                         <div class="col-md-6">
@@ -379,18 +455,23 @@
                             <div id="edit_currency_error_up" class="text-danger error_e"></div>
                         </div>
 
-                        <!-- Custom Field -->
-                        <div class="col-md-6">
-                            <label for="edit_custom_field_checkbox" class="form-label">Custom Field</label>
-                            <input type="checkbox" name="edit_custom_field_checkbox" id="edit_custom_field_checkbox" class="ms-2">
-
-                            <input type="text" name="edit_custom_field_name" id="edit_custom_field_name" style="display: none;" class="form-control" placeholder="Enter Custom Field Name">
-
-                            <div id="edit_custom_field_name_error_up" class="text-danger error_e"></div>
-                            <input type="text" name="edit_custom_field_value" id="edit_custom_field_value" style="display: none;" class="form-control mt-3" placeholder="Enter Custom Field Value">
-
-                            <div id="edit_custom_field_value_error_up" class="text-danger error_e"></div>
+                       <!-- Custom Field -->
+                        <div class="col-md-12"> 
+                            <label for="custom_field_checkbox" class="form-label">Custom Field</label>
+                            <input type="checkbox" name="custom_field_checkbox" id="editcustom_field_checkbox" class="ms-2">
                         </div>
+
+                        <div class="col-md-6">
+                        <label for="customfield_filelabel" id="editcustomfield_filelabel" class="form-label" style="display: none;">File</label>
+                            <input type="checkbox" name="editcustom_file_checkbox" id="editcustom_file_checkbox" style="display: none;" class="ms-2" >
+
+                        <label for="customfield_textlabel" id="editcustomfield_textlabel" class="form-label" style="display: none;">Text</label>
+                            <input type="checkbox" name="editcustom_text_checkbox" id="editcustom_text_checkbox" class="ms-2" style="display: none;">
+                        <div class="col-md-6">
+                         <input type="date" name="editcustom_field_date" id="editcustom_file" class="form-control mt-3" style="display: none;"  accept=".pdf,.jpg,.jpeg,.png">
+                         <input type="text" name="editcustom_field_text" id="editcustom_text" class="form-control mt-3" style="display: none;" placeholder="Enter the Text">
+                         </div> 
+                         </div>
                         @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                         <div class="col-md-6">
                             <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
@@ -507,35 +588,85 @@
     // Custom field 
         $('#custom_field_checkbox').change(function() { 
             if (this.checked) {
+              
                 $('#customfield_filelabel').show();
                 $('#custom_file_checkbox').show();
                 $('#customfield_textlabel').show();
                 $('#custom_text_checkbox').show();
-            } else {
-           $('#customfield_filelabel').hide();
+            } else {  
+                $('#customfield_filelabel').hide();
                 $('#custom_file_checkbox').hide();
                 $('#customfield_textlabel').hide();
                 $('#custom_text_checkbox').hide();
+                $('#custom_text').hide(); 
+                $('#custom_file').hide(); 
+                $('#custom_file_checkbox').prop('checked', false);
+                $('#custom_text_checkbox').prop('checked', false);
+                $('#custom_text').val('');
+            }
+        });
+        $('#editcustom_field_checkbox').change(function() { 
+            if (this.checked) {
+                $('#editcustomfield_filelabel').show();
+                $('#editcustom_file_checkbox').show();
+                $('#editcustomfield_textlabel').show();
+                $('#editcustom_text_checkbox').show();
+            } else {
+                $('#editcustomfield_filelabel').hide();
+                $('#editcustom_file_checkbox').hide();
+                $('#editcustomfield_textlabel').hide();
+                $('#editcustom_text_checkbox').hide();
+                $('#editcustom_text').hide(); 
+                $('#editcustom_file').hide(); 
+                $('#editcustom_file_checkbox').prop('checked', false);
+                $('#editcustom_text_checkbox').prop('checked', false);
+               // $('#editcustom_text').val('');
             }
         });
 
-    // Custom field  file 
-        $('#custom_file_checkbox').change(function() { 
+        // Custom field file checkbox
+        $('#custom_file_checkbox').change(function() {
             if (this.checked) {
-                $('#custom_file').show();
+                $('#custom_text_checkbox').prop('checked', false); 
+                $('#custom_text').hide(); 
+                $('#custom_file').show(); 
             } else {
-           $('#custom_file').hide();
+                $('#custom_file').hide(); 
+            }
+        });
+        $('#editcustom_file_checkbox').change(function() {
+            if (this.checked) {
+                $('#editcustom_text_checkbox').prop('checked', false); 
+                $('#editcustom_text').hide(); 
+                $('#editcustom_file').show(); 
+               // $('#editcustom_file_checkbox').val('');
+            } else {
+                $('#editcustom_file').hide(); 
             }
         });
 
-    // Custom text  
-        $('#custom_text_checkbox').change(function() { 
+        // Custom text checkbox
+        $('#custom_text_checkbox').change(function() {
             if (this.checked) {
-                $('#custom_text').show();
+                $('#custom_file_checkbox').prop('checked', false); 
+                $('#custom_file').hide(); 
+                $('#custom_text').show(); 
             } else {
-           $('#custom_text').hide();
+                $('#custom_text').hide(); 
             }
         });
+
+        $('#editcustom_text_checkbox').change(function() {
+            if (this.checked) { 
+                $('#editcustom_file_checkbox').prop('checked', false); 
+                $('#editcustom_file').hide(); 
+                $('#editcustom_text').show(); 
+               // $('#editcustom_file').val(''); 
+            } else { 
+                $('#editcustom_text').hide(); 
+            }
+        });
+
 
         $('#passport_checkbox').change(function() {
             if (this.checked) {
@@ -586,6 +717,33 @@
             }
         });
 
+        // Medical
+        $('#medical_checkbox').change(function() { 
+            if (this.checked) {
+                $('.medical_issued_div').show();
+                $('.medical_class_div').show();
+               
+            } else {  
+                $('.medical_issued_div').hide();
+                $('.medical_class_div').hide();
+              
+            
+            }
+        });
+        // Edit Medical
+        $('#editmedical_checkbox').change(function() { 
+            if (this.checked) {
+                $('.editmedical_issued_div').show();
+                $('.editmedical_class_div').show();
+               
+            } else {  
+                $('.editmedical_issued_div').hide();
+                $('.editmedical_class_div').hide();
+              
+            
+            }
+        });
+
         $('#ratingStars .star').on('click', function() {
             var rating = $(this).data('value');
             $('#rating_value').val(rating);
@@ -605,15 +763,13 @@
             initializeSelect2(); // Ensure Select2 is re-initialized
         });
 
-        $('#saveuser').click(function(e) {
+             $('#saveuser').click(function(e) {
                     e.preventDefault();
                     // $('#loader').show();
                     $(".loader").fadeIn();
-        
                     $('.error_e').html('');
-        
+               
                     var formData = new FormData($('#Create_user')[0]);
-        
                     $.ajax({
                         url: '{{ url("/users/save") }}',
                         type: 'POST',
@@ -621,7 +777,6 @@
                         processData: false, 
                         contentType: false,
                         success: function(response) {
-                            // $('#loader').hide();
                             $(".loader").fadeOut("slow");
                             $('#userModal').modal('hide');
                             location.reload();
@@ -735,6 +890,7 @@
                 url: "{{ url('users/edit') }}",
                 data: vdata,
                 success: function(response) {
+                    console.log(response.user);
                     $('input[name="edit_firstname"]').val(response.user.fname);
                     $('input[name="edit_lastname"]').val(response.user.lname);
                     $('input[name="edit_email"]').val(response.user.email);
@@ -813,6 +969,48 @@
                             $('#edit_currency_checkbox').prop('checked', false);
                             $('#edit_currency').hide().prop('required', false);
                         }
+                        if(response.user.custom_field_file || response.user.custom_field_text){
+                               $('#editcustomfield_filelabel').show();
+                                $('#editcustom_file_checkbox').show();
+                                $('#editcustomfield_textlabel').show();
+                                $('#editcustom_text_checkbox').show();
+                            $('#editcustom_field_checkbox').prop('checked', true);
+                            if(response.user.custom_field_file){
+                                   $('#editcustom_file_checkbox').prop('checked', true); 
+                                    $('#editcustom_text').hide(); 
+                                    $('#editcustom_file').show(); 
+                                    $('#editcustom_file').val(response.user.custom_field_file);
+
+                            }else{
+                                $('#editcustom_text_checkbox').prop('checked', true); 
+                                    $('#editcustom_text').show(); 
+                                    $('#editcustom_file').hide(); 
+                                    $('#editcustom_text').val(response.user.custom_field_text);
+                            }
+                           
+                        }
+                        if(response.user.medical==1){
+                            $('#editmedical_checkbox').prop('checked', true);
+                            $('.editmedical_issued_div').show();
+                            $('.editmedical_class_div').show();
+                            $('#editmedical_issue_date').val();
+                            $('#editmedical_expiry_date').val(response.user.medical_expirydate);
+                            $('#editmedical_issue_date').val(response.user.medical_issuedate);
+                            $('#editmedical_detail').val(response.user.medical_restriction);
+
+                            // Normalize values before setting
+                            let issuedBy = response.user.medical_issuedby ? response.user.medical_issuedby.trim() : "";
+                            let medicalClass = response.user.medical_class ? response.user.medical_class.trim() : "";
+
+                            $('#editissued_by').val(issuedBy);
+                            $('#editmedical_class').val(medicalClass);
+                        }
+                        if(response.user.medical_adminRequired==1){
+                            $('#editmedical_verification_required').prop('checked', true);
+                            
+                        }
+                     
+
 
                         // Set custom field checkbox and fields
                         if (response.user.custom_field_name && response.user.custom_field_value) {
@@ -892,9 +1090,7 @@
                     // location.reload();
                 },
                 error: function(xhr, status, error) {
-
                     $(".loader").fadeOut("slow");
-
                     var errorMessage = JSON.parse(xhr.responseText);
                     var validationErrors = errorMessage.errors;
                     $.each(validationErrors, function(key, value) {
