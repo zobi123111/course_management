@@ -186,6 +186,16 @@
                         <div id="image_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
+                        <label for="duration" class="form-label">Course Duration<span class="text-danger">*</span></label>
+                        <select class="form-select" name="duration_type" id="duration_type">
+                            <option value="">Select Duration Type</option>
+                            <option value="hours">Hours</option>
+                            <option value="events">Events</option>
+                        </select>
+                        <input type="number" name="duration_value" class="form-control mt-2" placeholder="Enter number of hours/events">
+                        <div id="duration_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
                         <label for="groups" class="form-label">Assigned Resource<span class="text-danger"></span></label>
                         <select class="form-select resources-select" name="resources[]" multiple="multiple">
                             @foreach($resource as $val)
@@ -263,13 +273,16 @@
                         <div id="image_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
-                        <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
-                            <option value="1" selected>Active</option>
-                            <option value="0">Inactive</option>
+                        <label for="duration" class="form-label">Course Duration<span class="text-danger">*</span></label>
+                        <select class="form-select" name="duration_type" id="edit_duration_type">
+                            <option value="">Select Duration Type</option>
+                            <option value="hours">Hours</option>
+                            <option value="events">Events</option>
                         </select>
-                        <div id="status_error_up" class="text-danger error_e"></div>
+                        <input type="number" name="duration_value" class="form-control mt-2" id="edit_duration_value" placeholder="Enter number of hours/events">
+                        <div id="duration_error_up" class="text-danger error_e"></div>
                     </div>
+
                     <!-- @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                     <div class="form-group">
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
@@ -300,36 +313,40 @@
                             @endforeach
                         </select>
                         <div id="group_ids_error_up" class="text-danger error_e"></div>
-                    </div>              
+                    </div>  
                     <div class="form-group">
-                    <label class="form-label">
-                        <input type="checkbox" id="enable_prerequisites"> Enable Prerequisites
-                    </label>
-                </div>
-
-                <div id="prerequisites_container" style="display: none;">
-                    <div id="prerequisite_items">
-                        <div class="prerequisite-item ">
-                            <div class="form-group">
-                                <label class="form-label">Prerequisite Detail</label>
-                                <input type="text" class="form-control" name="prerequisite_details[]">
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Prerequisite Type</label>
-                                <div>
-                                    <input type="radio" name="prerequisite_type[0]" value="number"> Number
-                                    <input type="radio" name="prerequisite_type[0]" value="text"> Text
-                                    <input type="radio" name="prerequisite_type[0]" value="file"> File
-                                </div>
-                            </div>
-
-                            <button type="button" class="btn btn-danger remove-prerequisite">X</button>
-
-                        </div>
+                        <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
+                        <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
+                            <option value="1" selected>Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                        <div id="status_error_up" class="text-danger error_e"></div>
+                    </div>            
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="enable_prerequisites"> Enable Prerequisites
+                        </label>
                     </div>
-                    <button type="button" id="addPrerequisite" class="btn btn-primary mt-2">Add More</button>
+                    <div id="prerequisites_container" style="display: none;">
+                        <div id="prerequisite_items">
+                            <div class="prerequisite-item ">
+                                <div class="form-group">
+                                    <label class="form-label">Prerequisite Detail</label>
+                                    <input type="text" class="form-control" name="prerequisite_details[]">
+                                </div>
 
+                                <div class="form-group">
+                                    <label class="form-label">Prerequisite Type</label>
+                                    <div>
+                                        <input type="radio" name="prerequisite_type[0]" value="number"> Number
+                                        <input type="radio" name="prerequisite_type[0]" value="text"> Text
+                                        <input type="radio" name="prerequisite_type[0]" value="file"> File
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-danger remove-prerequisite">X</button>
+                            </div>
+                        </div>
+                         <button type="button" id="addPrerequisite" class="btn btn-primary mt-2">Add More</button>
                     </div> 
 
                     <div class="modal-footer">
@@ -442,6 +459,8 @@ $(document).ready(function() {
                 $('input[name="course_name"]').val(response.course.course_name);
                 $('input[name="course_id"]').val(response.course.id);
                 $('#edit_description').val(response.course.description);
+                $('#edit_duration_type').val(response.course.duration_type);
+                $('#edit_duration_value').val(response.course.duration_value);
                 $('#edit_ou_id').val(response.course.ou_id);
                 $('#edit_status').val(response.course.status);
                 $('#edit_select_org_unit').val(response.course.ou_id);

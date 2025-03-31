@@ -178,31 +178,30 @@ class DocumentController extends Controller
         $orderColumnIndex = $request->input('order')[0]['column'] ?? 0;
         $orderDirection = $request->input('order')[0]['dir'] ?? 'asc';
         $searchValue = strtolower($request->input('search')['value'] ?? ''); // Convert search input to lowercase
-
+    
         $user = Auth::user();
         $userId = $user->id;
         $ou_id = $user->ou_id;
-
+    
         // Determine which documents to fetch based on user role and permissions
         if (checkAllowedModule('courses', 'document.index')->isNotEmpty() && $user->is_owner == 1) {
-            $query = Document::with('group:id,name'); // Fetch group name along with documents
+            $query = Document::with('group:id,name,user_ids'); // Fetch group details with user IDs
         } elseif (checkAllowedModule('documents', 'document.index')->isNotEmpty() && $user->is_admin == 0) {
             $groups = Group::where('ou_id', $ou_id)->get();
             $filteredGroups = $groups->filter(function ($group) use ($userId) {
                 $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);
                 return in_array($userId, $userIds);
             });
-        
+    
             $groupIds = $filteredGroups->pluck('id')->toArray();
-            $query = Document::with('group:id,name')->whereIn('group_id', $groupIds)->where('status', 1);
+            $query = Document::with('group:id,name,user_ids')->whereIn('group_id', $groupIds)->where('status', 1);
         } else {
-            $query = Document::with('group:id,name')->where('ou_id', $ou_id);
+            $query = Document::with('group:id,name,user_ids')->where('ou_id', $ou_id);
         }
-        
-
+    
         // Get total record count before filtering
         $totalRecords = $query->count();
-
+    
         // Apply search filter
         if (!empty($searchValue)) {
             $query->where(function ($q) use ($searchValue) {
@@ -213,38 +212,57 @@ class DocumentController extends Controller
                     $q->orWhere('status', 0);
                 }
                 $q->orWhere('doc_title', 'like', "%{$searchValue}%")
-                ->orWhere('version_no', 'like', "%{$searchValue}%")
-                ->orWhere('issue_date', 'like', "%{$searchValue}%")
-                ->orWhere('expiry_date', 'like', "%{$searchValue}%");
+                    ->orWhere('version_no', 'like', "%{$searchValue}%")
+                    ->orWhere('issue_date', 'like', "%{$searchValue}%")
+                    ->orWhere('expiry_date', 'like', "%{$searchValue}%");
             });
         }
-
+    
         // Get filtered record count
         $recordsFiltered = $query->count();
-
+    
         // Apply sorting
         $query->orderBy($columns[$orderColumnIndex], $orderDirection);
-
+    
         // Apply pagination (ensures 10 entries per page)
         $documents = $query->offset($start)->limit($limit)->get();
-
+    
         // Format data for DataTables
         $data = [];
         foreach ($documents as $row) {
+            // Ensure the document has a valid group before accessing its user IDs
+            if (!empty($row->group) && !empty($row->group->user_ids)) {
+                // Convert user_ids string to array safely
+                $groupUserIds = is_array($row->group->user_ids) 
+                    ? $row->group->user_ids 
+                    : explode(',', trim($row->group->user_ids));
+            }
+    
+            // Get acknowledged user IDs from the document
+            $acknowledgedUsers = json_decode($row->acknowledge_by ?? '[]', true);
+    
+            // Check if all group users have acknowledged the document
+            $isFullyAcknowledged = !empty($groupUserIds) && !array_diff($groupUserIds, $acknowledgedUsers);
+    
             $data[] = [
                 'doc_title' => $row->doc_title,
                 'version_no' => $row->version_no,
                 'issue_date' => $row->issue_date,
                 'expiry_date' => $row->expiry_date,
-                'assigned_group' => $row->group_id
-                    ? '<a href="' . route('document.user_list', encode_id($row->group_id)) . '">'.$row->group?->name.'</a>'
+                'assigned_group' => $row->group_id 
+                    ? ($row->group 
+                        ? (auth()->user()->is_admin == 1 || auth()->user()->is_owner == 1 
+                            ? '<a href="#" class="get_group_users" data-doc-id="' . encode_id($row->id) . '">' . $row->group->name . '</a>' 
+                            : $row->group->name
+                        )
+                        : 'Group Not Found') 
                     : 'No Group Assigned',
                 'document' => $row->document_file
                     ? '<a href="' . route('document.show', encode_id($row->id)) . '">View Document</a>'
                     : 'No File uploaded',
                 'status' => ($row->status == 1) ? 'Active' : 'Inactive',
-                'acknowledged' => in_array(auth()->user()->id, json_decode($row->acknowledge_by ?? '[]', true)) 
-                    ? '<span style="color: green;">✔</span>' 
+                'acknowledged' => $isFullyAcknowledged
+                    ? '<span style="color: green;">✔</span>'
                     : '<span style="color: red;">❌</span>',
                 'edit' => checkAllowedModule('documents', 'document.edit')->isNotEmpty()
                     ? '<i class="fa fa-edit edit-document-icon" style="font-size:25px; cursor: pointer;" data-document-id="' . encode_id($row->id) . '"></i>'
@@ -254,7 +272,7 @@ class DocumentController extends Controller
                     : '',
             ];
         }
-
+    
         return response()->json([
             'draw' => intval($request->input('draw')),
             'recordsTotal' => $totalRecords,
@@ -262,6 +280,7 @@ class DocumentController extends Controller
             'data' => $data,
         ]);
     }
+    
 
 
     // public function getDocuments(Request $request)
@@ -357,10 +376,37 @@ class DocumentController extends Controller
         return view('documents.show',compact('document'));
     }
 
-    // public function getDocUserList(Request $request,$group_id)
-    // {
-
-    // }
+    public function getDocUserList(Request $request)
+    {
+        $doc_id = decode_id($request->doc_id);
+        $document = Document::where('id', $doc_id)->with('group')->first();
+    
+        // Check if document exists
+        if (!$document || !$document->group) {
+            return response()->json(['error' => 'Document or Group Not Found.'], 404);
+        }
+    
+        // Ensure user_ids is an array
+        $groupUserIds = is_array($document->group->user_ids) 
+            ? $document->group->user_ids 
+            : explode(',', $document->group->user_ids ?? '');
+    
+        // Get acknowledged user IDs from document
+        $acknowledgedUsers = json_decode($document->acknowledge_by ?? '[]', true);
+    
+        // Get users from group and check acknowledgment status
+        $groupUsers = User::whereIn('id', $groupUserIds)
+            ->select('id', 'fname', 'lname', 'email', 'image')
+            ->get()
+            ->map(function ($user) use ($acknowledgedUsers) {
+                $user->acknowledged = in_array($user->id, $acknowledgedUsers);
+                return $user;
+            });
+    
+        return response()->json(['groupUsers' => $groupUsers]);
+    }
+    
+    
 
     // public function acknowledgeDocument(Request $request)
     // {
