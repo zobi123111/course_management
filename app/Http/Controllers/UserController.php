@@ -64,20 +64,20 @@ public function getData(Request $request)
                                               : '<span class="badge bg-danger">Inactive</span>';
                 })
                 ->addColumn('action', function ($row) {
-                    $viewUrl = url('users/show/' . encode_id($row->id));
-                    $editBtn = '<i class="fa fa-edit edit-user-icon text-primary me-2" 
-                                    style="font-size:18px; cursor: pointer;" 
-                                    data-user-id="' . encode_id($row->id) . '">
-                                </i>';
-                    
-                    $viewBtn = '<a href="' . $viewUrl . '" class="view-icon" title="View User" 
-                                    style="font-size:18px; cursor: pointer;">
-                                    <i class="fa fa-eye text-danger me-2"></i>
-                                </a>';
+                    $viewUrl = url('users/show/' . encode_id($row->id));         
+                        $editBtn = '<i class="fa fa-edit edit-user-icon text-primary me-2" 
+                                        style="font-size:18px; cursor: pointer;" 
+                                        data-user-id="' . encode_id($row->id) . '">
+                                    </i>';
+                          
+                        $viewBtn = '<a href="' . $viewUrl . '" class="view-icon" title="View User" 
+                                        style="font-size:18px; cursor: pointer;">
+                                        <i class="fa fa-eye text-danger me-2"></i>
+                                    </a>';            
                     $delete =  '<i class="fa-solid fa-trash delete-icon text-danger" 
                                     style="font-size:18px; cursor: pointer;" 
                                     data-user-id="' . encode_id($row->id) . '">
-                                </i>';
+                                </i>';           
                     return $viewBtn . ' ' . $editBtn . ' ' . $delete;
                 })
                 ->rawColumns(['status', 'action'])
@@ -441,6 +441,54 @@ public function getData(Request $request)
         }
     }
 
+    public function showUser(Request $request, $user_id)
+    { 
+        $user = User::with('roles', 'organization')->find(decode_id($user_id));
+    
+        if (!$user) {
+            return redirect()->back()->with('error', 'User not found.');
+        }
+    
+        // Fetch extra role names directly in one line
+        $extraRoles = Role::whereIn('id', json_decode($user->extra_roles ?? '[]'))->pluck('role_name')->toArray();
+    // dd($user);
+        return view('users.show', compact('user', 'extraRoles'));
+    }
+
+    public function docsVerify(Request $request)
+    {
+        // Decode the encoded userId
+        $decodedUserId = decode_id($request->userId);
+    
+        // Validate the incoming request
+        $request->validate([
+            'userId' => [
+                'required',
+                function ($attribute, $value, $fail) use ($decodedUserId) {
+                    // Check if the decoded userId exists in the users table
+                    if (!User::where('id', $decodedUserId)->exists()) {
+                        $fail('The selected user id is invalid.');
+                    }
+                },
+            ],
+            'documentType' => 'required|in:passport,licence',
+            'verified' => 'required|boolean',
+        ]);
+    
+        // Find the user using the decoded userId
+        $user = User::find($decodedUserId);
+        if (!$user) {
+            return response()->json(['error' => 'User not found.'], 404);
+        }
+    
+        // Determine which column to update
+        $column = $request->documentType . '_verified'; // Either 'passport_verified' or 'licence_verified'
+    
+        // Update the user record
+        $user->update([$column => $request->verified]);
+    
+        return response()->json(['success' => 'Verification status updated successfully.']);
+    }
     public function switchRole(Request $request)
     {
         // Validate input role ID

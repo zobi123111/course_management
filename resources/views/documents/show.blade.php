@@ -39,10 +39,10 @@
     <!-- Acknowledgment Form -->
     <form method="POST" id="docAcknowledgeForm">
         @csrf
-        <input type="hidden" name="document_id" value="{{ $document->id }}">
-        
+        <input type="hidden" name="document_id" value="{{ $document->id }}">        
         <div class="mt-3 text-center">
-            <input type="checkbox" id="acknowledged" name="acknowledged" value="1" {{ ($document->acknowledged==1)? 'checked': '' }}>
+            <!-- <input type="checkbox" id="acknowledged" name="acknowledged" value="1" {{ ($document->acknowledged==1)? 'checked': '' }}> -->
+            <input type="checkbox" id="acknowledged" name="acknowledged" value="{{ auth()->user()->id }}" {{ in_array(auth()->user()->id, json_decode($document->acknowledge_by ?? '[]', true)) ? 'checked disabled' : '' }}>
             <label for="acknowledged">I have read and acknowledged this document</label>
             <div class="create_btn">
             <a href="{{ route('document.index') }}" class="btn btn-primary create-button btn_primary_color" id="backBtn"><i class="bi bi-arrow-left-circle-fill"> </i>back</a>
