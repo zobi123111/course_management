@@ -127,42 +127,58 @@ $subTitle = "Welcome to Admin Dashboard";
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Documents Pie Chart</h5>
+                    <p>Total Documents: <strong>{{ $totalDocuments }}</strong></p>
 
                     <!-- Pie Chart -->
                     <canvas id="pieChart" style="max-height: 400px;"></canvas>
 
                     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                     <script>
-                    document.addEventListener("DOMContentLoaded", () => {
-                        let ctx = document.querySelector('#pieChart').getContext('2d');
-                        new Chart(ctx, {
-                            type: 'pie',
-                            data: {
-                                labels: ['Total Documents', 'Read Documents', 'Unread Documents'],
-                                datasets: [{
-                                    label: 'Document Statistics',
-                      data: [
-                        {{ $totalDocuments }},
-                        {{ $readDocuments }},
-                        {{ $unreadDocuments }}
-                                    ],
-                                    backgroundColor: [
-                                        'rgb(54, 162, 235)', // Blue
-                                        'rgb(75, 192, 192)', // Green
-                                        'rgb(255, 99, 132)' // Red
-                                    ],
-                                    hoverOffset: 4
-                                }]
-                            }
+                        document.addEventListener("DOMContentLoaded", () => {
+                            let ctx = document.querySelector('#pieChart').getContext('2d');
+                            
+                            new Chart(ctx, {
+                                type: 'pie',
+                                data: {
+                                    labels: ['Read Documents', 'Unread Documents'],
+                                    datasets: [{
+                                        label: 'Document Statistics',
+                                        data: [
+                                            {{ $readDocuments }},
+                                            {{ $unreadDocuments }}
+                                        ],
+                                        backgroundColor: [
+                                            'rgb(75, 192, 192)', // Green (Read)
+                                            'rgb(255, 99, 132)'  // Red (Unread)
+                                        ],
+                                        hoverOffset: 4
+                                    }]
+                                },
+                                options: {
+                                    plugins: {
+                                        tooltip: {
+                                            callbacks: {
+                                                label: function(tooltipItem) {
+                                                    let value = tooltipItem.raw;
+                                                    let percentage = ((value / {{ $totalDocuments }}) * 100).toFixed(2);
+                                                    return `${tooltipItem.label}: ${value} (${percentage}%)`;
+                                                }
+                                            }
+                                        },
+                                        legend: {
+                                            position: 'bottom'
+                                        }
+                                    }
+                                }
+                            });
                         });
-                    });
                     </script>
                     <!-- End Pie Chart -->
-
                 </div>
             </div>
         </div>
     </div>
+
     @elseif (auth()->user()->is_admin==1)
     <div class="row">         
                 <!-- Users Card -->
@@ -291,35 +307,51 @@ $subTitle = "Welcome to Admin Dashboard";
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Documents Pie Chart</h5>
+                    <p>Total Documents: <strong>{{ $totalDocuments }}</strong></p>
 
                     <!-- Pie Chart -->
                     <canvas id="pieChart" style="max-height: 400px;"></canvas>
 
                     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                     <script>
-                    document.addEventListener("DOMContentLoaded", () => {
-                        let ctx = document.querySelector('#pieChart').getContext('2d');
-                        new Chart(ctx, {
-                            type: 'pie',
-                            data: {
-                                labels: ['Total Documents', 'Read Documents', 'Unread Documents'],
-                                datasets: [{
-                                    label: 'Document Statistics',
-                    data: [
-                        {{ $totalDocuments }},
-                        {{ $readDocuments }},
-                        {{ $unreadDocuments }}
-                                    ],
-                                    backgroundColor: [
-                                        'rgb(54, 162, 235)', // Blue
-                                        'rgb(75, 192, 192)', // Green
-                                        'rgb(255, 99, 132)' // Red
-                                    ],
-                                    hoverOffset: 4
-                                }]
-                            }
+                        document.addEventListener("DOMContentLoaded", () => {
+                            let ctx = document.querySelector('#pieChart').getContext('2d');
+                            
+                            new Chart(ctx, {
+                                type: 'pie',
+                                data: {
+                                    labels: ['Read Documents', 'Unread Documents'],
+                                    datasets: [{
+                                        label: 'Document Statistics',
+                                        data: [
+                                            {{ $readDocuments }},
+                                            {{ $unreadDocuments }}
+                                        ],
+                                        backgroundColor: [
+                                            'rgb(75, 192, 192)', // Green (Read)
+                                            'rgb(255, 99, 132)'  // Red (Unread)
+                                        ],
+                                        hoverOffset: 4
+                                    }]
+                                },
+                                options: {
+                                    plugins: {
+                                        tooltip: {
+                                            callbacks: {
+                                                label: function(tooltipItem) {
+                                                    let value = tooltipItem.raw;
+                                                    let percentage = ((value / {{ $totalDocuments }}) * 100).toFixed(2);
+                                                    return `${tooltipItem.label}: ${value} (${percentage}%)`;
+                                                }
+                                            }
+                                        },
+                                        legend: {
+                                            position: 'bottom'
+                                        }
+                                    }
+                                }
+                            });
                         });
-                    });
                     </script>
                     <!-- End Pie Chart -->
                 </div>
@@ -378,7 +410,7 @@ $subTitle = "Welcome to Admin Dashboard";
                 <!-- End Group Card -->
 
                 <!-- Folder Card -->
-                <div class="col-xxl-3 col-xl-12">
+                <!-- <div class="col-xxl-3 col-xl-12">
                         @if(checkAllowedModule('folders','folder.index')->isNotEmpty())
                         <a href="{{ route('folder.index') }}" class="text-decoration-none">
                         @endif
@@ -396,7 +428,7 @@ $subTitle = "Welcome to Admin Dashboard";
                                 </div>
                             </div>
                         </a>
-                </div>
+                </div> -->
                 <!-- End Folder Card -->
 
                 <!-- Resource  Card -->
@@ -422,46 +454,59 @@ $subTitle = "Welcome to Admin Dashboard";
                     </a>
                 </div>
                 <!-- End Resource  Card -->
-
-
     </div>
     <div class="row">
         <div class="col-lg-6">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Documents Pie Chart</h5>
+                    <p>Total Documents: <strong>{{ $totalDocuments }}</strong></p>
 
                     <!-- Pie Chart -->
                     <canvas id="pieChart" style="max-height: 400px;"></canvas>
 
                     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                     <script>
-                    document.addEventListener("DOMContentLoaded", () => {
-                        let ctx = document.querySelector('#pieChart').getContext('2d');
-                        new Chart(ctx, {
-                            type: 'pie',
-                            data: {
-                                labels: ['Total Documents', 'Read Documents', 'Unread Documents'],
-                                datasets: [{
-                                    label: 'Document Statistics',
-                      data: [
-                        {{ $totalDocuments }},
-                        {{ $readDocuments }},
-                        {{ $unreadDocuments }}
-                                    ],
-                                    backgroundColor: [
-                                        'rgb(54, 162, 235)', // Blue
-                                        'rgb(75, 192, 192)', // Green
-                                        'rgb(255, 99, 132)' // Red
-                                    ],
-                                    hoverOffset: 4
-                                }]
-                            }
+                        document.addEventListener("DOMContentLoaded", () => {
+                            let ctx = document.querySelector('#pieChart').getContext('2d');
+                            
+                            new Chart(ctx, {
+                                type: 'pie',
+                                data: {
+                                    labels: ['Read Documents', 'Unread Documents'],
+                                    datasets: [{
+                                        label: 'Document Statistics',
+                                        data: [
+                                            {{ $readDocuments }},
+                                            {{ $unreadDocuments }}
+                                        ],
+                                        backgroundColor: [
+                                            'rgb(75, 192, 192)', // Green (Read)
+                                            'rgb(255, 99, 132)'  // Red (Unread)
+                                        ],
+                                        hoverOffset: 4
+                                    }]
+                                },
+                                options: {
+                                    plugins: {
+                                        tooltip: {
+                                            callbacks: {
+                                                label: function(tooltipItem) {
+                                                    let value = tooltipItem.raw;
+                                                    let percentage = ((value / {{ $totalDocuments }}) * 100).toFixed(2);
+                                                    return `${tooltipItem.label}: ${value} (${percentage}%)`;
+                                                }
+                                            }
+                                        },
+                                        legend: {
+                                            position: 'bottom'
+                                        }
+                                    }
+                                }
+                            });
                         });
-                    });
                     </script>
                     <!-- End Pie Chart -->
-
                 </div>
             </div>
         </div>
