@@ -34,6 +34,7 @@
                 <th scope="col">Last Name</th>
                 <th scope="col">Email</th> -->
                 <th scope="col">Users Count</th>
+                <th scope="col">Permission</th>
                 <th scope="col">Edit</th>
                 <th scope="col">Delete</th>
             </tr>
@@ -48,6 +49,9 @@
                 <td>{{ $val->lname}}</td>
                 <td>{{ $val->email}}</td> -->
                 <td> <a href="#" class="get_org_users" data-ou-id="{{ encode_id($val->id) }}"> {{ $val->users_count }} </a></td>
+                <td> 
+                    <a href="#" class="get_org_permission btn btn-primary" data-ou-id="{{ encode_id($val->id) }}">Permission</a>
+                </td>
                 <td><i class="fa fa-edit edit-orgunit-icon" 
                         data-orgunit-id="{{ encode_id($val->id) }}"
                         data-user-id="{{ encode_id(optional($val->roleOneUsers)->id) }}">
@@ -93,6 +97,42 @@
     </div>
 </div>
 <!--End of OU Users List Modal-->
+
+
+<!-- permission modal -->
+
+<div class="modal fade" id="permissionModal" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="permissionModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="permissionModalLabel">Manage Permissions</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="permissionForm">
+                    @foreach($pages as $page)
+                        <div class="form-check">
+                            <input class="form-check-input permission-checkbox" type="checkbox" value="{{ $page->id }}" id="page_{{ $page->id }}">
+                            <label class="form-check-label" for="page_{{ $page->id }}">
+                                {{ $page->name }}
+                            </label>
+                        </div>
+                    @endforeach
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="savePermissions">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- end permission modal -->
+
 
 <!-- Create Organizational  Unit-->
 <div class="modal fade" id="orgUnitModal" tabindex="-1" role="dialog" aria-labelledby="orgUnitModalLabel"
@@ -303,6 +343,16 @@ $(document).ready(function() {
             { data: 'description', name: 'description' },
             { data: 'status', name: 'status' },
             { data: 'users_count', name: 'users_count' },
+            // { 
+            //     data: 'id', 
+            //     name: 'permission', 
+            //     orderable: false, 
+            //     searchable: false,
+            //     render: function(data, type, row) {
+            //         return `<a href="#" class="get_org_permission btn btn-primary">Permission</a>`;
+            //     }
+            // },
+            { data: 'permission', name: 'permission', orderable: false, searchable: false },
             { data: 'edit', name: 'edit', orderable: false, searchable: false },
             { data: 'delete', name: 'delete', orderable: false, searchable: false },
         ]
@@ -395,9 +445,86 @@ $(document).ready(function() {
         });
     });
 
+    // $(document).on('click', '.get_org_permission', function() {
+    //     var ou_id = $(this).data('ou-id');
+
+    //     $('#permissionModal').modal('show');
+
+    //     $.ajax({
+    //         url: "{{ url('/orgunit/user_list') }}",
+    //         type: 'GET',
+    //         data: { ou_id: ou_id },
+    //         success: function(response) {
+    //             $('#permissionContent').html(response);
+    //         },
+    //         error: function(xhr, status, error) {
+    //             $('#permissionContent').html('<p class="text-danger">Failed to load permissions.</p>');
+    //         }
+    //     });
+    // });
+
+   
+
+    $(document).on('click', '.get_org_permission', function() {
+        var ou_id = $(this).data('ou-id');
+
+        console.log(ou_id);
+        $('#permissionModal').modal('show');
+
+        $.ajax({
+            url: "{{ url('/orgunit/get_permissions') }}",
+            type: 'GET',
+            data: { ou_id: ou_id },
+            success: function(response) {
+                console.log(response);
+                $('.permission-checkbox').prop('checked', false);
+
+                if (response.permissions) {
+                    let existingPermissions = JSON.parse(response.permissions);
+                    existingPermissions.forEach(id => {
+                        $('#page_' + id).prop('checked', true);
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Failed to fetch permissions.");
+            }
+        });
+
+        // Save Permissions
+        $('#savePermissions').off('click').on('click', function() {
+            var selectedPermissions = [];
+
+            $('.permission-checkbox:checked').each(function() {
+                selectedPermissions.push($(this).val());
+            });
+
+            $.ajax({
+                url: "{{ url('/orgunit/permission_store') }}",
+                type: 'POST',
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    ou_id: ou_id,
+                    permissions: JSON.stringify(selectedPermissions)
+                },
+                success: function(response) {
+                    $('#permissionModal').modal('hide');
+                    location.reload();
+                },
+                error: function(xhr, status, error) {
+                    alert('Failed to save permissions. Try again.');
+                }
+            });
+        });
+    });
+
+    // Ensure modal can close
+    $(document).on('click', '[data-dismiss="modal"]', function() {
+        $('#permissionModal').modal('hide');
+    });
+
     $('#orgUnitTable').on('click', '.get_org_users', function() {
     var ou_id = $(this).data('ou-id');
-
         $.ajax({               
             url: "{{ url('/orgunit/user_list') }}",
             type: 'GET',
@@ -418,7 +545,7 @@ $(document).ready(function() {
                 response.orgUnitUsers.forEach(user => {
                     var imageUrl = user.image 
                         ? "{{ asset('storage') }}/" + user.image 
-                        : "{{ asset('assets/img/no_image.png') }}"; // Default image if none provided
+                        : "{{ asset('assets/img/no_image.png') }}";
                     
                     var row = `
                         <tr>

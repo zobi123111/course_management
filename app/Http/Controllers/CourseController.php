@@ -118,12 +118,12 @@ class CourseController extends Controller
     {
         // dd($request->all());
         $request->validate([  
-            'resources' => 'required',          
             'course_name' => 'required|unique:courses',
             'description' => 'required',
             'image' => 'required',
             'status' => 'required|boolean',
-            'group_ids' => 'required',
+            // 'resources' => 'required',          
+            // 'group_ids' => 'required',
             'ou_id' => [
                 function ($attribute, $value, $fail) {
                     if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
@@ -133,7 +133,7 @@ class CourseController extends Controller
             ]
             ],
             [
-            'group_ids.required' => 'Groups are required.'
+            // 'group_ids.required' => 'Groups are required.'
         ]);
 
         if ($request->hasFile('image')) {
@@ -191,11 +191,11 @@ class CourseController extends Controller
     {
 
         $request->validate([
-            'resources' => 'required',          
             'course_name' => 'required',
             'description' => 'required',
             'status' => 'required',
-            'group_ids' => 'required',
+            // 'resources' => 'required',          
+            // 'group_ids' => 'required',
             'enable_prerequisites' => 'nullable|boolean',
             'prerequisite_details' => 'nullable|array',
             'prerequisite_type' => 'nullable|array',

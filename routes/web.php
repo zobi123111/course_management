@@ -15,6 +15,7 @@ use App\Http\Controllers\SubLessonController;
 use App\Http\Controllers\TrainingEventsController;
 use App\Http\Controllers\PrerequisiteController;
 use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\SettingController;
 
 
 
@@ -46,6 +47,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('change-password', [LoginController::class, 'showChangePasswordForm'])->name('change-password');
     Route::post('change-password', [LoginController::class, 'changePassword'])->name('update-password');
     Route::get('/users/profile', [UserController::class, 'profile'])->name('user.profile');
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [SettingController::class, 'store'])->name('settings.store');
     Route::post('/users/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update');
     Route::get('/users/data', [UserController::class, 'getData'])->name('users.data');
 
@@ -65,6 +68,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/lessons/{course}/{lesson}/prerequisites/store', [LessonController::class, 'prerequisitesStore'])
     ->name('lesson.prerequisites.store');
  
+    Route::get('/orgunit/get_permissions', [OrganizationController::class, 'getPermissions'])->name('orgunit.getPermissions');  
+    Route::post('/orgunit/permission_store', [OrganizationController::class, 'storePermissions'])->name('orgunit.storePermissions');  
 
 });
 

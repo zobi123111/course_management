@@ -12,7 +12,17 @@
         <?php 
         } else{?>
           <a href="https://altcruise.co.uk/dashboard" class="logo d-flex align-items-center logo-bottom">
-          <img src="{{env('PROJECT_LOGO')}}" alt="" class="avms_logo">
+
+            @php
+                $setting = settingData();
+            @endphp
+
+            @if(isset($setting->site_image))
+                <img src="{{ asset('storage/' . $setting->site_image) }}" alt="" class="avms_logo">
+            @else
+                <img src="{{env('PROJECT_LOGO')}}" alt="" class="avms_logo">
+            @endif
+
               <!-- <span class="d-none d-lg-block">Management</span> -->
           </a>
       <?php   }
@@ -103,21 +113,31 @@
                 <span>Need Help?</span>
               </a>
             </li> -->
-                      <li>
-                          <hr class="dropdown-divider">
-                      </li>
-                      <li>
-                        <a class="dropdown-item d-flex align-items-center" href="{{ route('user.profile') }}">
-                            <i class="bi bi-person"></i>
-                            <span>My Profile</span>
-                        </a>
-                      </li>
-                      <li>
-                          <a class="dropdown-item d-flex align-items-center" href="{{ url('logout') }}">
-                              <i class="bi bi-box-arrow-right"></i>
-                              <span>Sign Out</span>
-                          </a>
-                      </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="{{ route('user.profile') }}">
+                                <i class="bi bi-person"></i>
+                                <span>My Profile</span>
+                            </a>
+                        </li>
+
+                        @if(Auth::user()->is_owner == 1)
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="{{ route('settings.index') }}">
+                                <i class="bi bi-gear"></i>
+                                <span>Settings</span>
+                            </a>
+                        </li>
+                        @endif
+                    
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="{{ url('logout') }}">
+                                <i class="bi bi-box-arrow-right"></i>
+                                <span>Sign Out</span>
+                            </a>
+                        </li>
 
                   </ul><!-- End Profile Dropdown Items -->
               </li><!-- End Profile Nav -->

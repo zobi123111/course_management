@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\OrganizationUnits;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Page;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +24,9 @@ class OrganizationController extends Controller
         ->withCount('users') // Count all users linked to organization
         ->whereNull('deleted_at')
         ->get();
-        return view('organization.index', compact('organizationUnitsData'));
+
+        $pages = Page::all();
+        return view('organization.index', compact('organizationUnitsData', 'pages'));
     }
 
     public function getData(Request $request)
@@ -69,6 +72,7 @@ class OrganizationController extends Controller
                 'description' => $unit->description,
                 'status' => $unit->status == 1 ? 'Active' : 'Inactive',
                 'users_count' =>  ($unit->users_count==0)? $unit->users_count: '<a href="#" class="get_org_users" data-ou-id="' . encode_id($unit->id) . '" >'.$unit->users_count.'</a>',
+                'permission' => '<a href="#" class="get_org_permission btn btn-primary" data-ou-id="' . encode_id($unit->id) . '" >'.'Permission'.'</a>',
                 'edit' => '<i class="fa fa-edit edit-orgunit-icon" data-orgunit-id="' . encode_id($unit->id) . '" data-user-id="' . encode_id(optional($unit->roleOneUsers)->id) . '"></i>',
                 'delete' => '<i class="fa-solid fa-trash delete-icon" data-orgunit-id="' . encode_id($unit->id) . '" data-user-id="' . encode_id(optional($unit->roleOneUsers)->id) . '"></i>',
             ];
@@ -82,6 +86,28 @@ class OrganizationController extends Controller
         ]);
     }
 
+
+    public function storePermissions(Request $request)
+    {
+
+        $ou_id = decode_id($request->ou_id);
+        $permissions = $request->permissions;
+
+        DB::table('organization_units')
+            ->where('id', $ou_id)
+            ->update(['permission' => $permissions]);
+
+        Session::flash('message', 'Permissions saved successfully');
+        return response()->json(['success' => 'Permissions saved successfully']);
+    }
+
+    public function getPermissions(Request $request)
+    {
+        $ou_id = decode_id($request->ou_id);
+        $organizationUnit = DB::table('organization_units')->where('id', $ou_id)->first();
+
+        return response()->json(['permissions' => $organizationUnit->permission]);
+    }
 
     public function saveOrgUnit(Request $request)
     {
