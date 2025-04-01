@@ -248,9 +248,9 @@ public function getData(Request $request)
                     'log_type' => 'Profile Update',
                     'description' => implode(', ', $changes),
                 ]);
-            }
+ //   Session::flash('message', 'User saved successfully');
+     return response()->json(['success' => true,'message' => "User profile updated successfully"]);
 
-            return response()->json(['success' => true, 'message' => "User profile updated successfully"]);
         }
 
     public function save_user(Request $request)
@@ -604,9 +604,10 @@ public function getData(Request $request)
 
     public function docsVerify(Request $request)
     {
+       // dump($request->all());
         // Decode the encoded userId
         $decodedUserId = decode_id($request->userId);
-    
+       // dump($request->documentType);
         // Validate the incoming request
         $request->validate([
             'userId' => [
@@ -618,10 +619,10 @@ public function getData(Request $request)
                     }
                 },
             ],
-            'documentType' => 'required|in:passport,licence',
+            'documentType' => 'required|in:passport,licence,medical',
             'verified' => 'required|boolean',
         ]);
-    
+   
         // Find the user using the decoded userId
         $user = User::find($decodedUserId);
         if (!$user) {
@@ -629,7 +630,9 @@ public function getData(Request $request)
         }
     
         // Determine which column to update
+
         $column = $request->documentType . '_verified'; // Either 'passport_verified' or 'licence_verified'
+      
     
         // Update the user record
         $user->update([$column => $request->verified]);

@@ -59,6 +59,7 @@ class User extends Authenticatable
         'medical_issuedate',
         'medical_expirydate',
         'medical_restriction',
+        'medical_verified',
         'is_admin'  
     ];
 
