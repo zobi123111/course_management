@@ -19,15 +19,21 @@ class UserController extends Controller
 public function getData(Request $request)
 {
     $ou_id = auth()->user()->ou_id; 
+    $is_owner = auth()->user()->is_owner; 
   
     $organizationUnits = OrganizationUnits::all();
     $roles = Role::all(); 
-
-    if (empty($ou_id)) { 
+    if ($is_owner) { 
         $users = User::all();
     } else {  
         $users = User::where('ou_id', $ou_id)->get();
     }
+
+    // if (empty($ou_id)) { 
+    //     $users = User::all();
+    // } else {  
+    //     $users = User::where('ou_id', $ou_id)->get();
+    // }
     if ($request->ajax()) {
         $query = User::query()
                 ->leftJoin('roles', 'users.role', '=', 'roles.id')
@@ -42,9 +48,12 @@ public function getData(Request $request)
                     'organization_units.org_unit_name as organization',
                     'users.status'
                 ]);
-                if (!empty($ou_id)) {
+                if (!$is_owner && !empty($ou_id)) {
                     $query->where('users.ou_id', $ou_id);
                 }
+                // if (!empty($ou_id)) {
+                //     $query->where('users.ou_id', $ou_id);
+                // }
         return DataTables::of($query)
         ->filterColumn('position', function($query, $keyword) {
             $query->where('roles.role_name', 'LIKE', "%{$keyword}%");
@@ -64,20 +73,33 @@ public function getData(Request $request)
                                               : '<span class="badge bg-danger">Inactive</span>';
                 })
                 ->addColumn('action', function ($row) {
-                    $viewUrl = url('users/show/' . encode_id($row->id));         
-                        $editBtn = '<i class="fa fa-edit edit-user-icon text-primary me-2" 
-                                        style="font-size:18px; cursor: pointer;" 
-                                        data-user-id="' . encode_id($row->id) . '">
-                                    </i>';
-                          
+                    $viewUrl = url('users/show/' . encode_id($row->id)); 
+                    $viewBtn = '';
+                    $editBtn = '';
+                    $delete = '';
+
+                    if(checkAllowedModule('users','user.index')->isNotEmpty())  {
                         $viewBtn = '<a href="' . $viewUrl . '" class="view-icon" title="View User" 
-                                        style="font-size:18px; cursor: pointer;">
-                                        <i class="fa fa-eye text-danger me-2"></i>
-                                    </a>';            
-                    $delete =  '<i class="fa-solid fa-trash delete-icon text-danger" 
-                                    style="font-size:18px; cursor: pointer;" 
-                                    data-user-id="' . encode_id($row->id) . '">
-                                </i>';           
+                                      style="font-size:18px; cursor: pointer;">
+                                      <i class="fa fa-eye text-danger me-2"></i>
+                                   </a>';  
+                    }
+
+                    if(checkAllowedModule('users','user.get')->isNotEmpty())  {
+                            $editBtn = '<i class="fa fa-edit edit-user-icon text-primary me-2" 
+                                          style="font-size:18px; cursor: pointer;" 
+                                          data-user-id="' . encode_id($row->id) . '">
+                                       </i>';
+                    }      
+                      
+                
+                    if(checkAllowedModule('users','user.destroy')->isNotEmpty())  {
+                        $delete =  '<i class="fa-solid fa-trash delete-icon text-danger"  
+                                      style="font-size:18px; cursor: pointer;" 
+                                      data-user-id="' . encode_id($row->id) . '">
+                                    </i>';  
+                    }
+                          
                     return $viewBtn . ' ' . $editBtn . ' ' . $delete;
                 })
                 ->rawColumns(['status', 'action'])
@@ -153,6 +175,20 @@ public function getData(Request $request)
                     ]);
                 }
 
+                if ($userToUpdate->medical == 1) {
+                    $request->validate([
+                        'issued_by'          => 'required',
+                       'medical_class'      =>  'required',
+                       'medical_issue_date' => 'required',
+                       'medical_expiry_date'=> 'required',
+                       'medical_detail'     => 'required'
+                    ]);
+                       
+                }
+
+
+
+
                 
                 $userToUpdate->where('id', $request->id)
                 ->update([
@@ -161,6 +197,11 @@ public function getData(Request $request)
                     'passport' => $request->passport  ?? null,
                     'passport_file' => $passportFilePath  ?? null,
                     'currency' => $request->currency ?? null,
+                    'medical_issuedby'      => $request->issued_by ?? null,
+                    'medical_class'         => $request->medical_class ?? null,
+                    'medical_issuedate'     => $request->medical_issue_date ?? null,
+                    'medical_expirydate'    => $request->medical_expiry_date ?? null,
+                    'medical_restriction'   => $request->medical_detail ?? null,
                 ]);
                 
                 return response()->json(['success' => true,'message' => "User profile updated successfully"]);
@@ -169,7 +210,7 @@ public function getData(Request $request)
 
     public function save_user(Request $request)
     {
-        // dd($request->all());
+        
         $validated = $request->validate([
             'firstname' => 'required',
             'lastname' => 'required',
@@ -212,12 +253,22 @@ public function getData(Request $request)
         if ($request->has('currency_checkbox') && $request->currency_checkbox) {
             $currency_required = 1;
         }
+        $medical_checkbox              = null;
+        $medical_verification_required = null;
+        $medical_issued_by             = null;
+        $medical_class                 = null;
+        $medical_issue_date            = null;
+        $medical_expiry_date           = null;
+        $medical_detail                = null;
 
-        if ($request->has('custom_field_checkbox') && $request->custom_field_checkbox) {
-            $request->validate([
-                'custom_field_name' => 'required|string',
-                'custom_field_value' => 'required|string',
-            ]);
+        if ($request->has('medical_checkbox')) {
+           $medical_checkbox              = $request->medical_checkbox;
+           $medical_verification_required = $request->medical_verification_required;
+           $medical_issued_by             = $request->issued_by;
+           $medical_class                 = $request->medical_class;
+           $medical_issue_date            = $request->medical_issue_date;
+           $medical_expiry_date           = $request->medical_expiry_date;
+           $medical_detail                = $request->medical_detail;
         }
     
 
@@ -238,28 +289,37 @@ public function getData(Request $request)
         // dd($is_admin);
 
         $store_user = array(
-            "fname" => $request->firstname, 
-            "lname" => $request->lastname,
-            "email" => $request->email,
-            'image' => $filePath ?? null,
-            "password" => Hash::make($request->password),
-            "role" => $request->role_name,
-            'licence_required' => $licence_required,
-            "licence" => $request->licence ?? null,
-            "licence_file" => $licence_file ?? null,
-            "passport_required" => $passport_required,
-            "passport" => $request->passport ?? null,
-            "passport_file" => $passport_file ?? null,
-            "rating_required" => $rating_required,
-            "rating" => $request->rating ?? null,
-            "currency_required" => $currency_required,
-            "currency" => $request->currency ?? null,
-            "custom_field_name" => $request->custom_field_name ?? null,
-            "custom_field_value" => $request->custom_field_value ?? null,
-            'status' => $request->status,
-            "ou_id" => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
-            "extra_roles" => !empty($request->extra_roles) ? json_encode($request->extra_roles) : json_encode([]),
-            "is_admin" => $is_admin
+            "fname"               => $request->firstname, 
+            "lname"               => $request->lastname,
+            "email"               => $request->email,
+            'image'               => $filePath ?? null,
+            "password"            => Hash::make($request->password),
+            "role"                => $request->role_name,
+            'licence_required'    => $licence_required,
+            "licence"             => $request->licence ?? null,
+            "licence_file"        => $licence_file ?? null,
+            "passport_required"   => $passport_required,
+            "passport"            => $request->passport ?? null,
+            "passport_file"       => $passport_file ?? null,
+            "rating_required"     => $rating_required,
+            "rating"              => $request->rating ?? null,
+            "currency_required"   => $currency_required,
+            "currency"            => $request->currency ?? null,
+            "custom_field_name"   => $request->custom_field_name ?? null,
+            "custom_field_value"  => $request->custom_field_value ?? null,
+            'status'              => $request->status,
+            "ou_id"               => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id,
+            "extra_roles"         => !empty($request->extra_roles) ? json_encode($request->extra_roles) : json_encode([]),
+            "custom_field_file"  => $request->custom_field_date ?? null,
+            "custom_field_text"  => $request->custom_field_text ?? null,
+            'medical'               => $medical_checkbox,
+            'medical_adminRequired' => $medical_verification_required,
+            'medical_issuedby'      => $medical_issued_by,
+            'medical_class'         => $medical_class,
+            'medical_issuedate'     => $medical_issue_date,
+            'medical_expirydate'    => $medical_expiry_date,
+            'medical_restriction'   => $medical_detail,
+            "is_admin"              => $is_admin
         );
 
         // dd($store_user);
@@ -366,12 +426,17 @@ public function getData(Request $request)
             }
 
             // Handle Custom Field Validation
-            if ($request->has('edit_custom_field_checkbox') && $request->edit_custom_field_checkbox) {
-                $request->validate([
-                    'edit_custom_field_name' => 'required|string',
-                    'edit_custom_field_value' => 'required|string',
-                ]);
+            $editcustom_field_date = null;
+            $editcustom_field_text = null;
+            
+            if ($request->has('editcustom_file_checkbox')) {
+                $editcustom_field_date = $request->editcustom_field_date ?? null;
             }
+            
+            if ($request->has('editcustom_text_checkbox')) {
+                $editcustom_field_text = $request->editcustom_field_text ?? null;
+            }
+            
 
             if ($request->has('edit_custom_field_checkbox') && $request->edit_custom_field_checkbox) {
                 $userToUpdate->password_flag = 1;
@@ -388,6 +453,26 @@ public function getData(Request $request)
 
             // Determine is_admin value
             $is_admin = (!empty($request->ou_id) && $request->edit_role_name==1)? 1 : null;
+
+           // Medical 
+         // dd($request->all());
+            $medical_checkbox              = null;
+            $medical_verification_required = null;
+            $medical_issued_by             = null;
+            $medical_class                 = null;
+            $medical_issue_date            = null;
+            $medical_expiry_date           = null;
+            $medical_detail                = null;
+    
+            if ($request->has('editmedical_checkbox')) {
+               $medical_checkbox              = $request->editmedical_checkbox;
+               $medical_verification_required = $request->editmedical_verification_required;
+               $medical_issued_by             = $request->editissued_by;
+               $medical_class                 = $request->editmedical_class;
+               $medical_issue_date            = $request->editmedical_issue_date;
+               $medical_expiry_date           = $request->editmedical_expiry_date;
+               $medical_detail                = $request->editmedical_detail;
+            }
 
             // Update User Information
             $userToUpdate->where('id', $request->edit_form_id)
@@ -409,10 +494,17 @@ public function getData(Request $request)
                     'rating' => $request->edit_rating ?? null,
                     'currency_required' => $currency_required,
                     'currency' => $request->edit_currency ?? null,
-                    'custom_field_name' => $request->edit_custom_field_name ?? null,
-                    'custom_field_value' => $request->edit_custom_field_value ?? null,
+                    'custom_field_file' => $editcustom_field_date,
+                    'custom_field_text' => $editcustom_field_text,
                     'password_flag' => $request->edit_update_password,
                     'extra_roles' => $extra_roles,
+                    'medical'               => $medical_checkbox,
+                    'medical_adminRequired' => $medical_verification_required,
+                    'medical_issuedby'      => $medical_issued_by,
+                    'medical_class'         => $medical_class,
+                    'medical_issuedate'     => $medical_issue_date,
+                    'medical_expirydate'    => $medical_expiry_date,
+                    'medical_restriction'   => $medical_detail,
                     'is_admin' => $is_admin
                 ]);
 

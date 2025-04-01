@@ -68,7 +68,7 @@ Route::group(['middleware' => ['auth']], function () {
 
 });
 
-Route::middleware(['auth', 'role.permission'])->group(function () {
+Route::middleware(['auth', 'role.permission'])->group(function () { 
     //Dashboard Route
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
@@ -176,7 +176,7 @@ Route::get('/training/get_licence_number_and_courses/{user_id}/{ou_id}', [Traini
    
     Route::post('/resource/save', [ResourceController::class, 'save'])->name('save.index');
     Route::get('/resource/edit', [ResourceController::class, 'edit'])->name('edit.index');
-    Route::post('/resourse/update', [ResourceController::class, 'update'])->name('update.index');
+    Route::post('/resourse/update', [ResourceController::class, 'update'])->name('update.index'); 
     Route::post('/resource/delete', [ResourceController::class, 'delete'])->name('delete.index');
     Route::post('/resource/getcourseResource', [ResourceController::class, 'getcourseResource'])->name('getcourseResource.index');
     // Booking Request
