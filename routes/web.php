@@ -135,7 +135,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/document/show/{doc_id}', [DocumentController::class, 'showDocument'])->name('document.show');
     Route::post('/document/acknowledge', [DocumentController::class, 'acknowledgeDocument'])->name('document.acknowledge');
     Route::get('/document/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('document.getOrgfolder');
-    Route::get('document/user_list/{group_id}', [DocumentController::class, 'getDocUserList'])->name('document.user_list');
+    Route::get('document/user_list', [DocumentController::class, 'getDocUserList'])->name('document.user_list');
     
     //Folders Route
     Route::get('/folders', [FolderController::class, 'index'])->name('folder.index');

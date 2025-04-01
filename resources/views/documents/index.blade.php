@@ -41,6 +41,35 @@
         </table>
     </div>  
 </div>
+
+<!-- Group Users List Modal -->
+<div class="modal fade" id="groupUsersModal" tabindex="-1" role="dialog" aria-labelledby="groupUsersModalLabel"
+    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="groupUsersModalLabel">Group Users</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            <table class="table" id="groupUsersTable">
+                <thead>
+                    <tr>
+                        <th scope="col">Image</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Aknowledged</th>
+                    </tr>
+                </thead>
+                <tbody id="tblBody">                    
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End of Group Users List Modal-->
+
 <!-- Create Document--> 
 <div class="modal fade" id="createDocumentModal" tabindex="-1" role="dialog" aria-labelledby="documentModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog" role="document">
@@ -255,7 +284,7 @@ $(document).ready(function() {
         serverSide: true,
         ajax: "{{ route('documents.data') }}",
         columns: [
-            { data: 'doc_title', name: 'doc_title' },
+            { data: 'doc_title', name: 'doc_title', class: 'docTitle' },
             { data: 'version_no', name: 'version_no' },
             { data: 'issue_date', name: 'issue_date' },
             { data: 'expiry_date', name: 'expiry_date' },
@@ -271,6 +300,60 @@ $(document).ready(function() {
             @endif
         ]
     });
+
+    $('#documentTable').on('click', '.get_group_users', function() {
+        var doc_id = $(this).data('doc-id');
+
+        $.ajax({               
+            url: "{{ url('document/user_list') }}",
+            type: 'GET', 
+            data: { doc_id: doc_id },
+            success: function(response) {
+                console.log(response);
+
+                // Clear previous data
+                $('#groupUsersTable tbody').html('');
+
+                if (!response.groupUsers || response.groupUsers.length === 0) {
+                    $('#groupUsersTable tbody').html('<tr><td colspan="4" class="text-center">No users found for this Group.</td></tr>');
+                } else {
+                    // Append new data
+                    response.groupUsers.forEach(user => {
+                        var imageUrl = user.image 
+                            ? "{{ asset('storage') }}/" + user.image 
+                            : "{{ asset('assets/img/no_image.png') }}"; // Default image if none provided
+                        
+                        var acknowledgeStatus = user.acknowledged 
+                            ? '<span style="color: green;">✔</span>' 
+                            : '<span style="color: red;">❌</span>';
+
+                        var row = `
+                            <tr>
+                                <td><img src="${imageUrl}" alt="Profile Image" width="40" height="40" class="rounded-circle"></td>
+                                <td>${user.fname} ${user.lname}</td>
+                                <td>${user.email}</td>
+                                <td>${acknowledgeStatus}</td>
+                            </tr>`;
+                        $('#groupUsersTable tbody').append(row);
+                    });
+                }
+
+                // Show modal
+                $('#groupUsersModal').modal('show');
+            },
+            error: function(xhr, status, error) {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    $('#groupUsersTable tbody').html('<tr><td colspan="4" class="text-center">' + (response.error || 'An unknown error occurred.') + '</td></tr>');
+                } catch (e) {
+                    $('#groupUsersTable tbody').html('<tr><td colspan="4" class="text-center">Failed to fetch users. Please try again.</td></tr>');
+                }
+                $('#groupUsersModal').modal('show');
+            }
+        });
+    });
+
+
 
     $(document).on("click","#createDocument", function(){
         $(".error_e").html('');
@@ -486,7 +569,6 @@ $(document).on("change", "#edit_select_org_unit", function(){
                     $groupSelect.html(options); 
                     $groupSelect.trigger("change");
                 } 
-console.log(response.org_folder, 'oooooo')  
             if (response.org_folder && Array.isArray(response.org_folder)) { 
                 var options = "<option value=''>No Parent (Root Folder)</option>";
 

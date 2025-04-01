@@ -119,11 +119,13 @@ class CourseController extends Controller
         // dd($request->all());
         $request->validate([  
             'resources' => 'required',          
-            'course_name' => 'required|unique:courses',
+            'course_name' => 'required|unique:courses,course_name,NULL,id,deleted_at,NULL',
             'description' => 'required',
-            'image' => 'required',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|boolean',
             'group_ids' => 'required',
+            'duration_type' => 'nullable|in:hours,events', // Ensures only 'hours' or 'events' can be selected
+            'duration_value' => 'nullable|integer|min:1', // Ensures it's a positive number if provided
             'ou_id' => [
                 function ($attribute, $value, $fail) {
                     if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
@@ -131,29 +133,31 @@ class CourseController extends Controller
                     }
                 }
             ]
-            ],
-            [
+        ], [
             'group_ids.required' => 'Groups are required.'
         ]);
-
+    
         if ($request->hasFile('image')) {
             $filePath = $request->file('image')->store('courses', 'public');
         }
-
+    
         $course = Courses::create([
-            'ou_id' =>  (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
+            'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, 
             'course_name' => $request->course_name,
             'description' => $request->description,
             'image' => $filePath ?? null,
-            'status' => $request->status
+            'status' => $request->status,
+            'duration_type' => $request->duration_type ?? null, // Assigns null if not provided
+            'duration_value' => $request->duration_value ?? null // Assigns null if not provided
         ]);
-
+    
         $course->groups()->attach($request->group_ids); 
         $course->resources()->attach($request->resources);
-
+    
         Session::flash('message', 'Course created successfully.');
         return response()->json(['success' => 'Course created successfully.']);
     }
+    
 
 
 
@@ -186,19 +190,20 @@ class CourseController extends Controller
         return view('your-view-path.edit-course', compact('course', 'allGroups'));
     }
 
-    //Update course
+    // Update course
     public function updateCourse(Request $request)
     {
-
         $request->validate([
-            'resources' => 'required',          
-            'course_name' => 'required',
+            'resources' => 'required',
+            'course_name' => 'required|unique:courses,course_name,' . $request->course_id . ',id,deleted_at,NULL',
             'description' => 'required',
             'status' => 'required',
             'group_ids' => 'required',
             'enable_prerequisites' => 'nullable|boolean',
             'prerequisite_details' => 'nullable|array',
             'prerequisite_type' => 'nullable|array',
+            'duration_type' => 'nullable|in:hours,events', // Validate duration type
+            'duration_value' => 'nullable|numeric|min:1', // Ensure numeric and min value
             'ou_id' => [
                 function ($attribute, $value, $fail) {
                     if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
@@ -208,28 +213,31 @@ class CourseController extends Controller
             ]
         ]);
 
-        $courses = Courses::findOrFail($request->course_id);
-        
+        $course = Courses::findOrFail($request->course_id);
+
+        // Handle Image Update
         if ($request->hasFile('image')) {
-            if ($courses->image) {
-                Storage::disk('public')->delete($courses->image);
+            if ($course->image) {
+                Storage::disk('public')->delete($course->image);
             }
-    
             $filePath = $request->file('image')->store('courses', 'public');
         } else {
-            $filePath = $courses->image;
+            $filePath = $course->image;
         }
 
-        $course = Courses::findOrFail($request->course_id);
+        // Update course details
         $course->update([
-           'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->editou_id : (auth()->user()->ou_id ?? null),
+            'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->editou_id : (auth()->user()->ou_id ?? null),
             'course_name' => $request->course_name,
             'description' => $request->description,
             'image' => $filePath,
             'status' => $request->status,
             'enable_prerequisites' => (int) $request->input('enable_prerequisites', 0),
+            'duration_type' => $request->duration_type, // New field
+            'duration_value' => $request->duration_value, // New field
         ]);
 
+        // Update groups and resources
         if ($request->has('group_ids')) {
             $course->groups()->sync($request->group_ids);
         }
@@ -237,8 +245,8 @@ class CourseController extends Controller
             $course->resources()->sync($request->resources);
         }
 
-         // Handle Prerequisites
-         if ((int) $request->input('enable_prerequisites', 0)) {
+        // Handle Prerequisites
+        if ((int) $request->input('enable_prerequisites', 0)) {
             $course->prerequisites()->delete(); // Remove old prerequisites
 
             if ($request->has('prerequisite_details')) {
@@ -252,16 +260,17 @@ class CourseController extends Controller
                     }
                 }
             }
-        }else{
+        } else {
             $course->prerequisites()->delete();
             CoursePrerequisiteDetail::where('course_id', $course->id)
-            ->where('created_by', auth()->id())
-            ->delete();
+                ->where('created_by', auth()->id())
+                ->delete();
         }
 
-        Session::flash('message','Course updated successfully.');
-        return response()->json(['success'=> 'Course updated successfully.']);
+        Session::flash('message', 'Course updated successfully.');
+        return response()->json(['success' => 'Course updated successfully.']);
     }
+
 
     public function deleteCourse(Request $request)
     {        
