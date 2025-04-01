@@ -117,6 +117,7 @@ document.addEventListener("DOMContentLoaded", function() {
         event.preventDefault();
 
         let valid = true;
+        let isAnyChecked = false;
 
         document.querySelectorAll(".resource-checkbox").forEach((checkbox, index) => {
             let row = checkbox.closest("tr");
@@ -130,6 +131,7 @@ document.addEventListener("DOMContentLoaded", function() {
             endDateError.innerText = "";
 
             if (checkbox.checked) {
+                isAnyChecked = true;
                 if (!startDateInput.value) {
                     startDateError.innerText = "Start date is required.";
                     valid = false;
@@ -145,10 +147,13 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             }
         });
+        if (!isAnyChecked) {
+            alert("Please select at least one resource before submitting.");
+            return;
+        }
 
         if (valid) {
             var formData = new FormData($('#booking_table')[0]);
-
             $.ajax({
                 url: "{{ url('booking/store') }}",
                 type: "POST",

@@ -225,8 +225,8 @@ class FolderController extends Controller
             // Prepare response data
             $data = [];
             foreach ($folders as $index => $val) {
-                $encodedId = encode_id($val->id);
-                $actions = view('folders.partials.actions', ['folder' => $val])->render();
+                $encodedId = encode_id($val->id); 
+                $actions = view('folders.partials.actions', ['folder' => $val])->render();  
 
                 $data[] = [
                     'DT_RowIndex' => $index + 1,
@@ -387,7 +387,7 @@ class FolderController extends Controller
             $subfolders = Folder::where('parent_id', $folderId)->get(); // Fetch all subfolders
         } else {
             //Regular users see only folders in their assigned org unit
-            $folders = Folder::where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children')->get();    
+            $folders = Folder::where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children')->get();     
             $subfolders = Folder::where('ou_id', Auth::user()->ou_id)
                                 ->where('parent_id', $folderId)
                                 ->get(); // Fetch only their org unit's subfolders
@@ -414,8 +414,8 @@ class FolderController extends Controller
         }
     
         // Get total records count
-        $totalRecords = $query->count();
-        $filteredRecords = $totalRecords;
+        $totalRecords = $query->count(); 
+        $filteredRecords = $totalRecords; 
     
         // Apply search filter (including status search)
         if ($request->has('search') && !empty($request->input('search')['value'])) {

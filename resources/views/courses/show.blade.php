@@ -322,6 +322,17 @@
                         <label for="comment" class="form-label">Comment<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="comment" rows="3"></textarea>
                         <div id="comment_error" class="text-danger error_e"></div>
+                    </div>
+                    <!-- Grading Type Selection -->
+                    <div class="form-group">
+                        <label class="form-label">Grading Type <span class="text-danger">*</span></label>
+                        <div>
+                            <input type="radio" name="grade_type" value="pass_fail" id="grade_pass_fail">
+                            <label for="grade_pass_fail">Pass/Fail</label>
+
+                            <input type="radio" name="grade_type" value="score" id="grade_score">
+                            <label for="grade_score">Score (1-5)</label>
+                        </div>
                     </div>                    
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
@@ -330,34 +341,7 @@
                             <option value="0">Inactive</option>
                         </select>
                         <div id="status_error" class="text-danger error_e"></div>            
-                    </div>
-                    <div class="form-group">
-                        <label for="email" class="form-label">Task Based Grading
-                            {{-- <span class="text-danger">*</span> --}}
-                        </label>
-                        <select class="form-select" name="task_grading" aria-label="Default select example">
-                            <option value="" >Select Grading</option>
-                            <option value="N/A" >N/A</option>
-                            <option value="Passed">Passed</option>
-                            <option value="Further Training Required">Further Training Required</option>
-                            <option value="Defer">Defer</option>
-                        </select>
-                        <div id="status_error" class="text-danger error_e"></div>            
-                    </div>
-                    <div class="form-group">
-                        <label for="email" class="form-label">Competency Based Grading
-                            {{-- <span class="text-danger">*</span> --}}
-                        </label>
-                        <select class="form-select" name="comp_grading" aria-label="Default select example">
-                            <option value="" >Select Grading</option>
-                            <option value="1" >1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                        </select>
-                        <div id="status_error" class="text-danger error_e"></div>            
-                    </div>
+                    </div>               
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="submitLesson" class="btn btn-primary sbt_btn">Save </button>
@@ -401,7 +385,19 @@
                         <label for="comment" class="form-label">Comment<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="edit_comment" id="edit_comment" rows="3"></textarea>
                         <div id="edit_comment_error_up" class="text-danger error_e"></div>
-                    </div>                    
+                    </div> 
+                    <!-- Grading Type Selection -->
+                    <div class="form-group">
+                        <label class="form-label">Grading Type <span class="text-danger">*</span></label>
+                        <div>
+                            <input type="radio" name="edit_grade_type" value="pass_fail" id="edit_grade_pass_fail">
+                            <label for="edit_grade_pass_fail">Pass/Fail</label>
+
+                            <input type="radio" name="edit_grade_type" value="score" id="edit_grade_score">
+                            <label for="edit_grade_score">Score (1-5)</label>
+                        </div>
+                        <div id="edit_grade_type_error" class="text-danger error_e"></div>
+                    </div>                   
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="edit_status" id="edit_status" aria-label="Default select example">
@@ -528,6 +524,13 @@ $(document).ready(function() {
                 $('input[name="lesson_id"]').val(response.lesson.id);
                 $('#edit_description').val(response.lesson.description);
                 $('#edit_status').val(response.lesson.status);
+
+                // Set the correct grading type radio button
+                if (response.lesson.grade_type === "pass_fail") {
+                    $('#edit_grade_pass_fail').prop('checked', true);
+                } else if (response.lesson.grade_type === "score") {
+                    $('#edit_grade_score').prop('checked', true);
+                }
 
                 if (response.lesson.enable_prerequisites) {
                     $('#enable_prerequisites').prop('checked', true);
