@@ -203,7 +203,7 @@ public function getData(Request $request)
                     'medical_expirydate'    => $request->medical_expiry_date ?? null,
                     'medical_restriction'   => $request->medical_detail ?? null,
                 ]);
- //   Session::flash('message', 'User saved successfully');
+
      return response()->json(['success' => true,'message' => "User profile updated successfully"]);
         }
     }  
