@@ -90,5 +90,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(CompetencyGrading::class, 'user_id');
     }
+
+    public function activityLogs()
+    {
+        return $this->hasMany(UserActivityLog::class, 'user_id');
+    }
     
 }

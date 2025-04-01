@@ -269,19 +269,21 @@
     $(document).ready(function () {
         function toggleFields() {
             const isNonExpiringChecked = $('#non_expiring_licence').prop('checked');
-            const isExpiryDateFilled = $('#licence_expiry_date').val().trim() !== '';
+            const expiryDateField = $('#licence_expiry_date');
+            // Check if the expiry date field exists and is not empty
+            const isExpiryDateFilled = expiryDateField.length && expiryDateField.val().trim() !== '';
+            
             if (isExpiryDateFilled) {
                 $('#non_expiring_licence').prop('checked', false).parent().hide();
             } else {
                 $('#non_expiring_licence').parent().show();
             }
-
             if (isNonExpiringChecked) {
-                $('#licence_expiry_date').val('').hide().prop('required', false);
+                expiryDateField.val('').hide().prop('required', false);
             } else {
-                $('#licence_expiry_date').show().prop('required', true);
+                expiryDateField.show().prop('required', true);
             }
-        }
+        } 
 
         // Initialize the fields on page load
         toggleFields();
@@ -303,7 +305,6 @@
                 contentType: false,
                 success: function(response) {
                     $(".loader").fadeOut('slow');
-
                     $('#editUserDataModal').modal('hide');
                     $('#update_success_msg').html(`
                     <div class="alert alert-success fade show" role="alert">

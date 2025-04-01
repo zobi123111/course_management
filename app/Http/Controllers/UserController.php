@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\OrganizationUnits;
 use App\Models\Role;
+use App\Models\UserActivityLog;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -96,76 +97,87 @@ public function getData(Request $request)
         return view('users.profile', compact('user'));
     }
 
-
     public function profileUpdate(Request $request)
     {
         // dd($request->all());
         $userToUpdate = User::find($request->id);
 
-        // dd($userToUpdate);
-            if($userToUpdate){
-
-                if ($userToUpdate->currency_required == 1) {
-                    $request->validate([
-                        'currency' => 'required|string',
-                    ]);
-                }
-
-                // Handle Licence File Upload
-                if ($userToUpdate->licence_required == 1) {
-                    if ($request->hasFile('licence_file')) {
-                        // Delete old licence file if it exists
-                        if ($userToUpdate->licence_file) {
-                            Storage::disk('public')->delete($userToUpdate->licence_file);
-                        }
-                        // Store new licence file
-                        $licenceFilePath = $request->file('licence_file')->store('licence_files', 'public');
-                    } else {
-                        // If no new file is uploaded, keep the old one
-                        $licenceFilePath = $request->old_licence_file ?? $userToUpdate->licence_file;
-                    }
-                } else {
-                    // If licence is not required, keep the old file
-                    $licenceFilePath = $userToUpdate->licence_file;
-                }
-
-                // Handle Passport File Upload
-                if ($userToUpdate->passport_required == 1) {
-                    if ($request->hasFile('passport_file')) {
-                        // Delete old passport file if it exists
-                        if ($userToUpdate->passport_file) {
-                            Storage::disk('public')->delete($userToUpdate->passport_file);
-                        }
-                        // Store new passport file
-                        $passportFilePath = $request->file('passport_file')->store('passport_files', 'public');
-                    } else {
-                        // If no new file is uploaded, keep the old one
-                        $passportFilePath = $request->old_passport_file ?? $userToUpdate->passport_file;
-                    }
-                } else {
-                    // If passport is not required, keep the old file
-                    $passportFilePath = $userToUpdate->passport_file;
-                }
-
-                if ($userToUpdate->currency_required == 1) {
-                    $request->validate([
-                        'currency' => 'required|string',
-                    ]);
-                }
-
-                
-                $userToUpdate->where('id', $request->id)
-                ->update([
-                    'licence' => $request->licence ?? null,
-                    'licence_file' => $licenceFilePath  ?? null,
-                    'passport' => $request->passport  ?? null,
-                    'passport_file' => $passportFilePath  ?? null,
-                    'currency' => $request->currency ?? null,
+        if ($userToUpdate) {
+            if ($userToUpdate->currency_required == 1) {
+                $request->validate([
+                    'currency' => 'required|string',
                 ]);
-                
-                return response()->json(['success' => true,'message' => "User profile updated successfully"]);
+            }
+
+            // Handle Licence File Upload
+            if ($userToUpdate->licence_required == 1) {
+                if ($request->hasFile('licence_file')) {
+                    if ($userToUpdate->licence_file) {
+                        Storage::disk('public')->delete($userToUpdate->licence_file);
+                    }
+                    $licenceFilePath = $request->file('licence_file')->store('licence_files', 'public');
+                } else {
+                    $licenceFilePath = $request->old_licence_file ?? $userToUpdate->licence_file;
+                }
+            } else {
+                $licenceFilePath = $userToUpdate->licence_file;
+            }
+
+            // Handle Passport File Upload
+            if ($userToUpdate->passport_required == 1) {
+                if ($request->hasFile('passport_file')) {
+                    if ($userToUpdate->passport_file) {
+                        Storage::disk('public')->delete($userToUpdate->passport_file);
+                    }
+                    $passportFilePath = $request->file('passport_file')->store('passport_files', 'public');
+                } else {
+                    $passportFilePath = $request->old_passport_file ?? $userToUpdate->passport_file;
+                }
+            } else {
+                $passportFilePath = $userToUpdate->passport_file;
+            }
+
+            if ($userToUpdate->currency_required == 1) {
+                $request->validate([
+                    'currency' => 'required|string',
+                ]);
+            }
+
+            // Track changes
+            $oldData = $userToUpdate->only(['fname', 'lname', 'email', 'licence', 'licence_file', 'passport', 'passport_file', 'currency']);
+            $newData = [
+                'fname' =>  $request->firstName ?? null,
+                'lname' =>  $request->lastName ?? null,
+                'email' =>  $request->email ?? null,
+                'licence' => $request->licence ?? null,
+                'licence_file' => $licenceFilePath ?? null,
+                'passport' => $request->passport ?? null,
+                'passport_file' => $passportFilePath ?? null,
+                'currency' => $request->currency ?? null,
+            ];
+
+            $changes = [];
+            foreach ($newData as $key => $value) {
+                if ($oldData[$key] != $value) {
+                    $changes[] = ucfirst($key) . " changed from '{$oldData[$key]}' to '{$value}'";
+                }
+            }
+
+            $userToUpdate->update($newData);
+
+            if (!empty($changes)) {
+                UserActivityLog::create([
+                    'user_id' => $userToUpdate->id,
+                    'log_type' => 'Profile Update',
+                    'description' => implode(', ', $changes),
+                ]);
+            }
+
+            return response()->json(['success' => true, 'message' => "User profile updated successfully"]);
         }
-    }  
+
+        return response()->json(['success' => false, 'message' => "User not found"], 404);
+    }
 
     public function save_user(Request $request)
     {
@@ -432,14 +444,24 @@ public function getData(Request $request)
 
     public function destroy(Request $request)
     { 
-       
+        $currentUser = auth()->user();
         $user = User::find(decode_id($request->id));
 
         if ($user) {
+            UserActivityLog::create([
+                'user_id' => $currentUser->id,
+                'log_type' => 'User Deletion',
+                'description' => "User '{$user->fname} {$user->lname}' (ID: {$user->id}) was deleted by {$currentUser->fname} {$currentUser->lname}.",
+            ]);
+
             $user->delete();
+
             return redirect()->route('user.index')->with('message', 'User deleted successfully');
         }
+
+        return redirect()->route('user.index')->with('error', 'User not found');
     }
+
 
     public function showUser(Request $request, $user_id)
     { 
