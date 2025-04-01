@@ -32,34 +32,35 @@ class LessonController extends Controller
 
     public function createLesson(Request $request)
     {
-        // dd($request);
-        $request->validate([            
-            'lesson_title' => 'required',
-            'description' => 'required',
-            'status' => 'required|boolean'
+        // Validate request data
+        $request->validate([
+            'lesson_title' => 'required|unique:course_lessons,lesson_title,NULL,id,deleted_at,NULL',
+            'description' => 'required|string',
+            'status' => 'required|boolean',
+            'grade_type' => 'required|in:pass_fail,score'
         ]);
-
+    
         if ($request->has('comment_required') && $request->comment_required) {
             $request->validate([
                 'comment' => 'required|string',
-            ],
-            [
+            ], [
                 'comment.required' => 'Comment field is required',
             ]);
         }
-
+    
         CourseLesson::create([
             'course_id' => $request->course_id,
             'lesson_title' => $request->lesson_title,
             'description' => $request->description,
-            'comment' => $request->comment,
-            'status' => $request->status
+            'comment' => $request->comment ?? null,
+            'status' => $request->status,
+            'grade_type' => $request->grade_type
         ]);
-
-
+    
         Session::flash('message', 'Lesson created successfully.');
         return response()->json(['success' => 'Lesson created successfully.']);
     }
+    
 
 
     public function getLesson(Request $request)
@@ -84,40 +85,40 @@ class LessonController extends Controller
     }
 
 
-    //Update course
     public function updateLesson(Request $request)
     {
+        // Validate request data
         $request->validate([
-            'edit_lesson_title' => 'required',
-            'edit_description' => 'required',
-            'edit_status' => 'required'
+            'edit_lesson_title' => 'required|unique:course_lessons,lesson_title,' . $request->lesson_id . ',id,deleted_at,NULL',
+            'edit_description' => 'required|string',
+            'edit_status' => 'required|boolean',
+            'edit_grade_type' => 'required|in:pass_fail,score'
         ]);
-
+    
         if ($request->has('edit_comment_required') && $request->edit_comment_required) {
             $request->validate([
                 'edit_comment' => 'required|string',
-            ],
-            [
+            ], [
                 'edit_comment.required' => 'Comment field is required',
             ]);
         }
-
+    
         $comment = $request->has('edit_comment_required') && !$request->edit_comment_required ? null : $request->edit_comment;
         
-        // dd($request);
         $lesson = CourseLesson::findOrFail($request->lesson_id);
         $lesson->update([
             'lesson_title' => $request->edit_lesson_title,
             'description' => $request->edit_description,
             'comment' => $comment,
             'status' => $request->edit_status,
+            'grade_type' => $request->edit_grade_type, // Update grading type
             'enable_prerequisites' => (int) $request->input('enable_prerequisites', 0),
         ]);
-
+    
         // Handle Prerequisites
         if ((int) $request->input('enable_prerequisites', 0)) {
             $lesson->prerequisites()->delete(); 
-
+    
             if ($request->has('prerequisite_details')) {
                 foreach ($request->prerequisite_details as $index => $detail) {
                     if (!empty($detail)) {
@@ -137,10 +138,11 @@ class LessonController extends Controller
                 ->where('course_id', $lesson->course_id)
                 ->delete();
         }
-
-        Session::flash('message','Lesson updated successfully.');
-        return response()->json(['success'=> 'Lesson updated successfully.']);
+    
+        Session::flash('message', 'Lesson updated successfully.');
+        return response()->json(['success' => 'Lesson updated successfully.']);
     }
+    
 
     public function deleteLesson(Request $request)
     {        

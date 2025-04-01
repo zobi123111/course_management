@@ -16,6 +16,7 @@ class DashboardController extends Controller
 {
     public function index() 
     {
+        $ou_id = auth()->user()->ou_id;
         $user_count = 0;
         $course_count = 0;
         $group_count = 0;
@@ -26,19 +27,17 @@ class DashboardController extends Controller
             $user_count = User::count(); 
             $course_count = Courses::count();
             $group_count = Group::count();
-            $folder_count = Folder::count();
+            $folder_count = Folder::whereNull('parent_id')->with('children')->get()->count();
             $documents = Document::all();
             $requestCount = 0;
         }elseif(Auth()->user()->is_admin==1){ 
             // dd('ou');            
-            $user_count = User::where('ou_id' , auth()->user()->ou_id)->count();
-            $course_count = Courses::where('ou_id' , auth()->user()->ou_id)->count();
-            $group_count = Group::where('ou_id' , auth()->user()->ou_id)->count();
-            $folder_count = 0;
-            $requestCount = 0;
-            $documents = Document::where('ou_id', Auth::user()->ou_id)->get();
-            $ou_id    = Auth::user()->ou_id;
-            $requestCount = BookedResource::with('resource:id,name', 'user:id,fname,lname')->where('ou_id', $ou_id)->get()->count();
+            $user_count = User::where('ou_id' , $ou_id)->count();
+            $course_count = Courses::where('ou_id' , $ou_id)->count();
+            $group_count = Group::where('ou_id' , $ou_id)->count();
+            $folder_count = Folder::whereNull('parent_id')->where('ou_id', $ou_id)->with('children')->get()->count();
+            $documents = Document::where('ou_id', $ou_id)->get();
+            $requestCount = $requestCount = BookedResource::where('ou_id', $ou_id)->count();
         }else{
             // dd('user');            
             $userId = Auth::user()->id;
@@ -53,12 +52,19 @@ class DashboardController extends Controller
                     ->from('courses_group')
                     ->whereIn('group_id', $groupIds);
             })->get();
-            $documents = Document::where('ou_id', Auth::user()->ou_id)->get();
 
+            $documents = Document::where('ou_id', $ou_id)
+            ->whereHas('group', function ($query) use ($userId) {
+                $query->whereJsonContains('user_ids', (string) $userId);
+            })
+            ->get();
             $course_count = $courses->count();
             $group_count = $filteredGroups->count();
-            $folder_count = 0;
-            $requestCount = 0;
+            // $folder_count = 0;
+            $requestCount =$requestCount = BookedResource::where('user_id', $userId)
+            ->where('ou_id', $ou_id)
+            ->count();
+        
         }
 
         $totalDocuments = $documents->count();

@@ -165,6 +165,7 @@ class ResourceController extends Controller
     $resource_data = array(
         // 'ou_id'         => $request->edit_ou_id ?? null, 
         'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->edit_ou_id : (auth()->user()->ou_id ?? null),
+
         "name"  =>  $request->edit_name,
         "registration"  =>  $request->edit_registration,
         "type"  =>  $request->edit_type,

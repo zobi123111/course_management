@@ -15,6 +15,7 @@ use App\Http\Controllers\SubLessonController;
 use App\Http\Controllers\TrainingEventsController;
 use App\Http\Controllers\PrerequisiteController;
 use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\SettingController;
 
 
 
@@ -46,7 +47,9 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('change-password', [LoginController::class, 'showChangePasswordForm'])->name('change-password');
     Route::post('change-password', [LoginController::class, 'changePassword'])->name('update-password');
     Route::get('/users/profile', [UserController::class, 'profile'])->name('user.profile');
-    Route::post('/users/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update'); 
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [SettingController::class, 'store'])->name('settings.store');
+    Route::post('/users/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update');
     Route::get('/users/data', [UserController::class, 'getData'])->name('users.data');
 
     //Server-Side Datatable Routes
@@ -65,6 +68,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/lessons/{course}/{lesson}/prerequisites/store', [LessonController::class, 'prerequisitesStore'])
     ->name('lesson.prerequisites.store');
  
+    Route::get('/orgunit/get_permissions', [OrganizationController::class, 'getPermissions'])->name('orgunit.getPermissions');  
+    Route::post('/orgunit/permission_store', [OrganizationController::class, 'storePermissions'])->name('orgunit.storePermissions');  
 
 });
 
@@ -135,6 +140,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/document/show/{doc_id}', [DocumentController::class, 'showDocument'])->name('document.show');
     Route::post('/document/acknowledge', [DocumentController::class, 'acknowledgeDocument'])->name('document.acknowledge');
     Route::get('/document/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('document.getOrgfolder');
+    Route::get('document/user_list', [DocumentController::class, 'getDocUserList'])->name('document.user_list');
     
     //Folders Route
     Route::get('/folders', [FolderController::class, 'index'])->name('folder.index');
