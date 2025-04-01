@@ -175,15 +175,23 @@ class FolderController extends Controller
     }
 
       public function getFolders(Request $request)
-        {
+        { 
             $query = Folder::query();
+           // dd(Auth::user()->ou_id);
+            $documentIds = Document::where('ou_id', Auth::user()->ou_id)->pluck('folder_id');
+           // dd($documentIds);
             // Apply user-based folder filtering
-            if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
+            if (Auth::user()->role == 1 && empty(Auth::user()->ou_id) && Auth::user()->is_owner) { 
                 // Admin without OU restriction: Fetch all folders
                 $query->whereNull('parent_id')->with('children');
-            } else {
-                // Regular users: Fetch only their org unit folders
-                $query->where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children');
+            } 
+            else if(Auth::user()->is_admin == 1){ 
+              $query->where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children');
+            }
+            else {
+                //$query->where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children');
+                $query->where('ou_id', Auth::user()->ou_id)->whereIn('id', $documentIds);
+
             }
 
             // Get total record count before filtering
@@ -191,6 +199,7 @@ class FolderController extends Controller
 
             // Clone the query for filtering
             $filteredQuery = clone $query;
+          //  dd($filteredQuery);
 
             // Apply search filter
             if ($request->has('search') && !empty($request->search['value'])) {
@@ -221,7 +230,7 @@ class FolderController extends Controller
 
             // Pagination
             $folders = $filteredQuery->offset($request->start)->limit($request->length)->get();
-
+            
             // Prepare response data
             $data = [];
             foreach ($folders as $index => $val) {
@@ -380,12 +389,12 @@ class FolderController extends Controller
         $organizationUnits = OrganizationUnits::all();
         $folderId = decode_id($request->folder_id);
         $editingFolder = Folder::find($folderId);
-    
+       
         if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
             //Admins can see all folders
             $folders = Folder::whereNull('parent_id')->with('children')->get();
             $subfolders = Folder::where('parent_id', $folderId)->get(); // Fetch all subfolders
-        } else {
+        } else { 
             //Regular users see only folders in their assigned org unit
             $folders = Folder::where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children')->get();     
             $subfolders = Folder::where('ou_id', Auth::user()->ou_id)

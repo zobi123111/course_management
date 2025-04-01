@@ -46,7 +46,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('change-password', [LoginController::class, 'showChangePasswordForm'])->name('change-password');
     Route::post('change-password', [LoginController::class, 'changePassword'])->name('update-password');
     Route::get('/users/profile', [UserController::class, 'profile'])->name('user.profile');
-    Route::post('/users/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update');
+    Route::post('/users/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update'); 
     Route::get('/users/data', [UserController::class, 'getData'])->name('users.data');
 
     //Server-Side Datatable Routes
