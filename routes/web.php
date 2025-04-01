@@ -80,7 +80,7 @@ Route::group(['middleware' => ['auth']], function () {
 
 });
 
-Route::middleware(['auth', 'role.permission'])->group(function () {
+Route::middleware(['auth', 'role.permission'])->group(function () { 
     //Dashboard Route
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
@@ -147,7 +147,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/document/show/{doc_id}', [DocumentController::class, 'showDocument'])->name('document.show');
     Route::post('/document/acknowledge', [DocumentController::class, 'acknowledgeDocument'])->name('document.acknowledge');
     Route::get('/document/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('document.getOrgfolder');
-    Route::get('document/user_list/{group_id}', [DocumentController::class, 'getDocUserList'])->name('document.user_list');
+    Route::get('document/user_list', [DocumentController::class, 'getDocUserList'])->name('document.user_list');
     
     //Folders Route
     Route::get('/folders', [FolderController::class, 'index'])->name('folder.index');
@@ -188,7 +188,7 @@ Route::get('/training/get_licence_number_and_courses/{user_id}/{ou_id}', [Traini
    
     Route::post('/resource/save', [ResourceController::class, 'save'])->name('save.index');
     Route::get('/resource/edit', [ResourceController::class, 'edit'])->name('edit.index');
-    Route::post('/resourse/update', [ResourceController::class, 'update'])->name('update.index');
+    Route::post('/resourse/update', [ResourceController::class, 'update'])->name('update.index'); 
     Route::post('/resource/delete', [ResourceController::class, 'delete'])->name('delete.index');
     Route::post('/resource/getcourseResource', [ResourceController::class, 'getcourseResource'])->name('getcourseResource.index');
     // Booking Request

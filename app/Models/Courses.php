@@ -11,7 +11,7 @@ class Courses extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $fillable = ['ou_id','course_name','description','image','status', 'enable_prerequisites'];
+    protected $fillable = ['ou_id','course_name','description','duration_type','duration_value','image','status', 'enable_prerequisites'];
 
     public function organizationUnit()
     {

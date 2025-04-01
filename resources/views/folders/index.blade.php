@@ -32,13 +32,13 @@
                 <thead class="table-custom-head">
                     <tr>
                     <th>#</th>
-                    <th scope="col">Folder Name</th>
+                    <th scope="col">Folder Name</th> 
                     <th scope="col">Description</th>
                     <th scope="col">Status</th>
                     <th scope="col">Action</th>
                     </tr>
                 </thead>                
-            </table>
+            </table> 
         </div>
     </div>
 </div>

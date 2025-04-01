@@ -174,6 +174,7 @@ function checkAllowedModule($pageRoute, $routeName = null)
     }
     return Page::where('route_name', $pageRoute)->with(['modules' => function ($query) use ($routeName) {
         if ($routeName) {
+           // dump($routeName);
             $query->where('route_name', $routeName);
         }
     }])
@@ -184,6 +185,7 @@ function checkAllowedModule($pageRoute, $routeName = null)
         });
 
         if ($routeName) {
+           // dump($routeName);
             $query->where('route_name', $routeName);
         }
     })->get();

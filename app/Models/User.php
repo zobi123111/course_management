@@ -50,6 +50,15 @@ class User extends Authenticatable
         'password_flag',
         'ou_id',
         'extra_roles',
+        'custom_field_file',
+        'custom_field_text',
+        'medical',
+        'medical_adminRequired',
+        'medical_issuedby',
+        'medical_class',
+        'medical_issuedate',
+        'medical_expirydate',
+        'medical_restriction',
         'is_admin'  
     ];
 

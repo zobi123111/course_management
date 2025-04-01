@@ -334,14 +334,15 @@ $(document).ready(function() {
     $(document).on("change", "#select_org_unit, #edit_ou_id", function() { 
         var ou_id = $(this).val();
         var $selectUser = $(this).attr("id") === "select_org_unit" ? $("#usersDropdown") : $("#edit_users");
-            $selectUser.html("");
-         // Store the currently selected users
+
+        // Store the currently selected users before clearing
         var selectedUsers = $selectUser.val() || [];
+
         $.ajax({
             url: "/group/get_ou_user/",
             type: "GET",
             data: { 'ou_id': ou_id },
-            dataType: "json",  // Ensures response is treated as JSON
+            dataType: "json",
             success: function(response) {
                 console.log(response);
 
@@ -352,12 +353,16 @@ $(document).ready(function() {
                         response.orguser.forEach(function(value) { 
                             options += "<option value='" + value.id + "'>" + value.fname + " " + value.lname + "</option>";
                         });
+
                         $selectUser.html(options); // Update dropdown with new users
-                        // Restore previously selected users
-                        $selectUser.val(selectedUsers).trigger('change');
+
+                        // Restore previously selected users after dropdown is populated
+                        setTimeout(() => {
+                            $selectUser.val(selectedUsers).trigger('change');
+                        }, 100);
                     } else {
                         $selectUser.html(""); // Clear dropdown if no users are found
-                        console.warn("No users found, keeping existing list.");
+                        console.warn("No users found, clearing the list.");
                     }
                 } else {
                     console.error("Invalid response format:", response);
@@ -365,18 +370,21 @@ $(document).ready(function() {
             },
             error: function(xhr, status, error) {
                 console.error(xhr.responseText);
-            } 
+            }
         });
     });
 
-
-
+    // When modals are opened
     $(document).on("shown.bs.modal", "#createGroupModal, #editGroupModal", function(event) {
         if (event.target.id === "editGroupModal") {
+            let selectedUsers = $("#edit_users").val() || [];
+            $("#edit_users").data("selected-users", selectedUsers);
+
             $("#edit_ou_id").trigger("change"); // Trigger change event only for the edit modal
         }
         initializeSelect2(); // Ensure Select2 initializes for both modals
     });
+
 
     setTimeout(function() {
         $('#successMessage').fadeOut('slow');

@@ -24,19 +24,26 @@
     <div id="update_success_msg"></div>
     <div class="card pt-4">
         <div class="card-body">
+        @if(checkAllowedModule('orgunit','orgunit.edit')->isNotEmpty())
+              <p>Access granted to Org Unit index.</p>
+        @endif
+      
+
     <table class="table table-hover" id="orgUnitTable">
         <thead>
             <tr>
                 <th scope="col">Org Unit Name</th>
                 <th scope="col">Description</th>
                 <th scope="col">Status</th>
-                <!-- <th scope="col">First Name</th>
-                <th scope="col">Last Name</th>
-                <th scope="col">Email</th> -->
                 <th scope="col">Users Count</th>
                 <th scope="col">Permission</th>
-                <th scope="col">Edit</th>
+                @if(checkAllowedModule('orgunit','orgunit.edit')->isNotEmpty())
+                 <th scope="col">Edit</th>
+                @endif
+                @if(checkAllowedModule('orgunit','orgunit.delete')->isNotEmpty())
                 <th scope="col">Delete</th>
+                @endif
+              
             </tr>
         </thead>
         {{-- <tbody> 
@@ -45,23 +52,24 @@
                 <td class="orgUnitName">{{ $val->org_unit_name}}</td>
                 <td>{{ $val->description}}</td>
                 <td>{{ ($val->status==1)? 'Active': 'Inactive' }}</td>
-                <!-- <td>{{ $val->fname}}</td>
-                <td>{{ $val->lname}}</td>
-                <td>{{ $val->email}}</td> -->
                 <td> <a href="#" class="get_org_users" data-ou-id="{{ encode_id($val->id) }}"> {{ $val->users_count }} </a></td>
                 <td> 
                     <a href="#" class="get_org_permission btn btn-primary" data-ou-id="{{ encode_id($val->id) }}">Permission</a>
                 </td>
+
                 <td><i class="fa fa-edit edit-orgunit-icon" 
                         data-orgunit-id="{{ encode_id($val->id) }}"
                         data-user-id="{{ encode_id(optional($val->roleOneUsers)->id) }}">
                     </i>
                 </td>
+             
+              
                 <td><i class="fa-solid fa-trash delete-icon" 
                         data-orgunit-id="{{ encode_id($val->id) }}"
                         data-user-id="{{ encode_id(optional($val->roleOneUsers)->id) }}">
                     </i>
                 </td>
+               
             </tr>
             @endforeach
         </tbody> --}}
@@ -353,8 +361,12 @@ $(document).ready(function() {
             //     }
             // },
             { data: 'permission', name: 'permission', orderable: false, searchable: false },
+            @if(checkAllowedModule('orgunit','orgunit.edit')->isNotEmpty())
             { data: 'edit', name: 'edit', orderable: false, searchable: false },
+            @endif
+            @if(checkAllowedModule('orgunit','orgunit.delete')->isNotEmpty())
             { data: 'delete', name: 'delete', orderable: false, searchable: false },
+            @endif
         ]
     });
 
