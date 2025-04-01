@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Page;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Setting;
 use App\Models\OrganizationUnits;
 
 
@@ -76,15 +77,69 @@ function getAllowedPages()
     // Get the active role from session (fallback to the default role)
     $current_role = session('current_role', $user->role);
 
+
+    
+
     // If user is the owner, return all pages
     if ($user->is_owner) {
         return Page::with('modules')->orderBy('position', 'asc')->get();
-    }
+    }  
 
     // Always allow the Dashboard page
     $dashboardPage = Page::with('modules')->whereHas('modules', function ($query) {
         $query->where('route_name', 'dashboard');
     })->first();
+
+
+    if ($user->is_admin == 1) {
+        $organizationUnit = DB::table('organization_units')->where('id', $user->ou_id)->first();
+
+        if ($organizationUnit && $organizationUnit->permission) {
+            $allowedPageIds = json_decode($organizationUnit->permission, true);
+            
+            if (!is_array($allowedPageIds) || empty($allowedPageIds)) {
+                return collect([$dashboardPage]); 
+            }
+
+            return Page::with('modules')
+                ->whereIn('id', $allowedPageIds)
+                ->orderBy('position', 'asc')
+                ->get();
+        }
+
+        return collect([$dashboardPage]);
+    }
+
+    if (empty($user->is_admin)) {
+        $organizationUnit = DB::table('organization_units')->where('id', $user->ou_id)->first();
+
+        if ($organizationUnit && $organizationUnit->permission) {
+            $allowedPageIds = json_decode($organizationUnit->permission, true);
+
+            if (!is_array($allowedPageIds) || empty($allowedPageIds)) {
+                return collect($dashboardPage ? [$dashboardPage] : []);
+            }
+
+            $allowedPages = Page::with('modules')
+                ->whereIn('id', $allowedPageIds)
+                ->whereHas('modules', function ($query) use ($current_role) {
+                    $query->whereHas('rolePermissions', function ($subQuery) use ($current_role) {
+                        $subQuery->where('role_id', $current_role);
+                    });
+                })
+                ->orderBy('position', 'asc')
+                ->get();
+
+            if ($dashboardPage && !$allowedPages->contains('id', $dashboardPage->id)) {
+                $allowedPages->prepend($dashboardPage);
+            }
+
+            return $allowedPages;
+        }
+
+        return collect($dashboardPage ? [$dashboardPage] : []);
+    }
+
 
     // Get allowed pages based on the current role
     $allowedPages = Page::with('modules')
@@ -181,4 +236,12 @@ function hasUserRole($user, $roleName)
         return isset($role->role_name) && stripos($role->role_name, $roleName) !== false;
     });
 }
+
+    function settingData()
+    {
+        
+        $setting = Setting::first();
+
+        return $setting;
+    }
 ?>

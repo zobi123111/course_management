@@ -118,12 +118,12 @@ class CourseController extends Controller
     {
         // dd($request->all());
         $request->validate([  
-            'resources' => 'required',          
             'course_name' => 'required|unique:courses,course_name,NULL,id,deleted_at,NULL',
             'description' => 'required',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|boolean',
-            'group_ids' => 'required',
+            // 'resources' => 'required',          
+            // 'group_ids' => 'required',
             'duration_type' => 'nullable|in:hours,events', // Ensures only 'hours' or 'events' can be selected
             'duration_value' => 'nullable|integer|min:1', // Ensures it's a positive number if provided
             'ou_id' => [
@@ -133,8 +133,10 @@ class CourseController extends Controller
                     }
                 }
             ]
-        ], [
-            'group_ids.required' => 'Groups are required.'
+            ],
+            [
+            // 'group_ids.required' => 'Groups are required.'
+
         ]);
     
         if ($request->hasFile('image')) {
@@ -194,11 +196,11 @@ class CourseController extends Controller
     public function updateCourse(Request $request)
     {
         $request->validate([
-            'resources' => 'required',
             'course_name' => 'required|unique:courses,course_name,' . $request->course_id . ',id,deleted_at,NULL',
             'description' => 'required',
             'status' => 'required',
-            'group_ids' => 'required',
+            // 'resources' => 'required',          
+            // 'group_ids' => 'required',
             'enable_prerequisites' => 'nullable|boolean',
             'prerequisite_details' => 'nullable|array',
             'prerequisite_type' => 'nullable|array',
