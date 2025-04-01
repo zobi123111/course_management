@@ -2,7 +2,8 @@
 @section('sub-title', 'Roles')
 @extends('layout.app')
 @section('content')
-<div class="main_cont_outer">
+<div class="main_cont_outer">   
+    
     <div class="create_btn">
         <a href="{{ route('roles.index') }}" class="btn btn-primary create-button btn_primary_color" id="backBtn"><i
                 class="bi bi-arrow-left-circle-fill"></i> back</a>

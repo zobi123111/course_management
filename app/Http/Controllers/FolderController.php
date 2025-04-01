@@ -16,7 +16,7 @@ class FolderController extends Controller
     public function index()
     {  //dd(Auth::user()->ou_id);
 ;        $organizationUnits = OrganizationUnits::all();
-        if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {;
+        if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
             // Admin without OU restriction: Fetch all folders with their children
             $folders = Folder::whereNull('parent_id')->with('children')->get();
             $documents = Document::whereNull('folder_id')->get();
