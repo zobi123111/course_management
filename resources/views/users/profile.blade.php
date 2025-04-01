@@ -265,6 +265,9 @@ h2 {
 
                         <label for="extra_roles" class="form-label">Medical Issued By<span
                                 class="text-danger"></span></label>
+                                @if ($user->medical_verified)
+                                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
+                                    @endif
                         <select class="form-select " name="issued_by" id="issued_by">
                             <option value="">Select Issued By</option>
                             <option value="UKCAA" <?php echo ($user->medical_issuedby == "UKCAA")?'selected':'' ?>>UK CAA</option>
@@ -334,20 +337,25 @@ h2 {
 
 $(document).ready(function() {
     function toggleFields() {
-        const isNonExpiringChecked = $('#non_expiring_licence').prop('checked');
-        const isExpiryDateFilled = $('#licence_expiry_date').val().trim() !== '';
-        if (isExpiryDateFilled) {
-            $('#non_expiring_licence').prop('checked', false).parent().hide();
-        } else {
-            $('#non_expiring_licence').parent().show();
-        }
+    const isNonExpiringChecked = $('#non_expiring_licence').prop('checked');
+    const expiryDateField = $('#licence_expiry_date');
 
-        if (isNonExpiringChecked) {
-            $('#licence_expiry_date').val('').hide().prop('required', false);
-        } else {
-            $('#licence_expiry_date').show().prop('required', true);
-        }
+    // Check if the expiry date field exists and is not empty
+    const isExpiryDateFilled = expiryDateField.length && expiryDateField.val().trim() !== '';
+    
+    if (isExpiryDateFilled) {
+        $('#non_expiring_licence').prop('checked', false).parent().hide();
+    } else {
+        $('#non_expiring_licence').parent().show();
     }
+
+    if (isNonExpiringChecked) {
+        expiryDateField.val('').hide().prop('required', false);
+    } else {
+        expiryDateField.show().prop('required', true);
+    }
+}
+
 
     // Initialize the fields on page load
     toggleFields();
@@ -368,6 +376,7 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function(response) {
+              console.log(response.message);
                 $(".loader").fadeOut('slow');
 
                 $('#editUserDataModal').modal('hide');
@@ -376,7 +385,7 @@ $(document).ready(function() {
                         <i class="bi bi-check-circle me-1"></i>
                         ${response.message}
                     </div>
-                    `).stop(true, true).fadeIn();
+                    `);
 
                 setTimeout(function() {
                     $('#update_success_msg').fadeOut('slow');
@@ -385,7 +394,7 @@ $(document).ready(function() {
 
                 setTimeout(function() {
                     location.reload();
-                }, 2000);
+                }, 4000);
                 // location.reload();
             },
             error: function(xhr, status, error) {
