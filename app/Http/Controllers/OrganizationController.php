@@ -86,17 +86,28 @@ class OrganizationController extends Controller
         ]);
     }
 
-
     public function storePermissions(Request $request)
     {
-
         $ou_id = decode_id($request->ou_id);
+    
         $permissions = $request->permissions;
-
+    
+        if (is_string($permissions)) {
+            $permissions = json_decode($permissions, true);
+        }
+    
+        if (!is_array($permissions)) {
+            $permissions = [];
+        }
+    
+        if (!in_array(1, $permissions)) {
+            $permissions[] = 1;
+        }
+    
         DB::table('organization_units')
             ->where('id', $ou_id)
-            ->update(['permission' => $permissions]);
-
+            ->update(['permission' => json_encode($permissions)]);
+    
         Session::flash('message', 'Permissions saved successfully');
         return response()->json(['success' => 'Permissions saved successfully']);
     }
@@ -108,6 +119,11 @@ class OrganizationController extends Controller
 
         return response()->json(['permissions' => $organizationUnit->permission]);
     }
+
+
+
+    
+
 
     public function saveOrgUnit(Request $request)
     {

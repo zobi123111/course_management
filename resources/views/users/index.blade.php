@@ -43,8 +43,11 @@
 
     @if(checkAllowedModule('users','user.store')->isNotEmpty())
     <div class="create_btn">
-        <a href="#" class="btn btn-primary create-button" id="createUser" data-toggle="modal"
-            data-target="#userModal">Create Users</a>
+        <a href="#" class="btn btn-primary create-button" style="float: left;" id="createUser" data-toggle="modal"
+            data-target="#userModal">Create Users
+        </a>
+    
+        <a href="{{ route('users.document.data') }}" class="btn btn-primary" style="float: right;">Document Reqiured Table</a>
     </div>
     @endif
     <div id="update_success_msg"></div>
