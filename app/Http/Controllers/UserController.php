@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\OrganizationUnits;
 use App\Models\Role;
+use App\Models\UserActivityLog;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -118,12 +119,10 @@ public function getData(Request $request)
         return view('users.profile', compact('user'));
     }
 
-
     public function profileUpdate(Request $request)
     {
         // dd($request->all());
         $userToUpdate = User::find($request->id);
-
         // dd($userToUpdate);
             if($userToUpdate){
 
@@ -185,28 +184,74 @@ public function getData(Request $request)
                     ]);
                        
                 }
+            }
 
+            // Handle Licence File Upload
+            if ($userToUpdate->licence_required == 1) {
+                if ($request->hasFile('licence_file')) {
+                    if ($userToUpdate->licence_file) {
+                        Storage::disk('public')->delete($userToUpdate->licence_file);
+                    }
+                    $licenceFilePath = $request->file('licence_file')->store('licence_files', 'public');
+                } else {
+                    $licenceFilePath = $request->old_licence_file ?? $userToUpdate->licence_file;
+                }
+            } else {
+                $licenceFilePath = $userToUpdate->licence_file;
+            }
 
+            // Handle Passport File Upload
+            if ($userToUpdate->passport_required == 1) {
+                if ($request->hasFile('passport_file')) {
+                    if ($userToUpdate->passport_file) {
+                        Storage::disk('public')->delete($userToUpdate->passport_file);
+                    }
+                    $passportFilePath = $request->file('passport_file')->store('passport_files', 'public');
+                } else {
+                    $passportFilePath = $request->old_passport_file ?? $userToUpdate->passport_file;
+                }
+            } else {
+                $passportFilePath = $userToUpdate->passport_file;
+            }
 
-
-                
-                $userToUpdate->where('id', $request->id)
-                ->update([
-                    'licence' => $request->licence ?? null,
-                    'licence_file' => $licenceFilePath  ?? null,
-                    'passport' => $request->passport  ?? null,
-                    'passport_file' => $passportFilePath  ?? null,
-                    'currency' => $request->currency ?? null,
-                    'medical_issuedby'      => $request->issued_by ?? null,
-                    'medical_class'         => $request->medical_class ?? null,
-                    'medical_issuedate'     => $request->medical_issue_date ?? null,
-                    'medical_expirydate'    => $request->medical_expiry_date ?? null,
-                    'medical_restriction'   => $request->medical_detail ?? null,
+            if ($userToUpdate->currency_required == 1) {
+                $request->validate([
+                    'currency' => 'required|string',
                 ]);
-                
-                return response()->json(['success' => true,'message' => "User profile updated successfully"]);
+            }
+
+            // Track changes
+            $oldData = $userToUpdate->only(['fname', 'lname', 'email', 'licence', 'licence_file', 'passport', 'passport_file', 'currency']);
+            $newData = [
+                'fname' =>  $request->firstName ?? null,
+                'lname' =>  $request->lastName ?? null,
+                'email' =>  $request->email ?? null,
+                'licence' => $request->licence ?? null,
+                'licence_file' => $licenceFilePath ?? null,
+                'passport' => $request->passport ?? null,
+                'passport_file' => $passportFilePath ?? null,
+                'currency' => $request->currency ?? null,
+            ];
+
+            $changes = [];
+            foreach ($newData as $key => $value) {
+                if ($oldData[$key] != $value) {
+                    $changes[] = ucfirst($key) . " changed from '{$oldData[$key]}' to '{$value}'";
+                }
+            }
+
+            $userToUpdate->update($newData);
+
+            if (!empty($changes)) {
+                UserActivityLog::create([
+                    'user_id' => $userToUpdate->id,
+                    'log_type' => 'Profile Update',
+                    'description' => implode(', ', $changes),
+                ]);
+ //   Session::flash('message', 'User saved successfully');
+     return response()->json(['success' => true,'message' => "User profile updated successfully"]);
+
         }
-    }  
 
     public function save_user(Request $request)
     {
@@ -524,14 +569,24 @@ public function getData(Request $request)
 
     public function destroy(Request $request)
     { 
-       
+        $currentUser = auth()->user();
         $user = User::find(decode_id($request->id));
 
         if ($user) {
+            UserActivityLog::create([
+                'user_id' => $currentUser->id,
+                'log_type' => 'User Deletion',
+                'description' => "User '{$user->fname} {$user->lname}' (ID: {$user->id}) was deleted by {$currentUser->fname} {$currentUser->lname}.",
+            ]);
+
             $user->delete();
+
             return redirect()->route('user.index')->with('message', 'User deleted successfully');
         }
+
+        return redirect()->route('user.index')->with('error', 'User not found');
     }
+
 
     public function showUser(Request $request, $user_id)
     { 
@@ -549,9 +604,10 @@ public function getData(Request $request)
 
     public function docsVerify(Request $request)
     {
+       // dump($request->all());
         // Decode the encoded userId
         $decodedUserId = decode_id($request->userId);
-    
+       // dump($request->documentType);
         // Validate the incoming request
         $request->validate([
             'userId' => [
@@ -563,10 +619,10 @@ public function getData(Request $request)
                     }
                 },
             ],
-            'documentType' => 'required|in:passport,licence',
+            'documentType' => 'required|in:passport,licence,medical',
             'verified' => 'required|boolean',
         ]);
-    
+   
         // Find the user using the decoded userId
         $user = User::find($decodedUserId);
         if (!$user) {
@@ -574,7 +630,9 @@ public function getData(Request $request)
         }
     
         // Determine which column to update
+
         $column = $request->documentType . '_verified'; // Either 'passport_verified' or 'licence_verified'
+      
     
         // Update the user record
         $user->update([$column => $request->verified]);

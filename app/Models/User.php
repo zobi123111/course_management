@@ -59,6 +59,7 @@ class User extends Authenticatable
         'medical_issuedate',
         'medical_expirydate',
         'medical_restriction',
+        'medical_verified',
         'is_admin'  
     ];
 
@@ -98,6 +99,11 @@ class User extends Authenticatable
     public function competencyGrades()
     {
         return $this->hasMany(CompetencyGrading::class, 'user_id');
+    }
+
+    public function activityLogs()
+    {
+        return $this->hasMany(UserActivityLog::class, 'user_id');
     }
     
 }

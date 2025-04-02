@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\DashboardController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\PrerequisiteController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\CourseTemplateController;
+use App\Http\Controllers\UserActivityLogController;
 
 
 
@@ -46,6 +48,11 @@ Route::post('/reset/password', [LoginController::class, 'submitResetPasswordForm
 // Route::post('change-password', [LoginController::class, 'changePassword'])->name('update-password');
 
 Route::group(['middleware' => ['auth']], function () {
+
+    Route::get('/activity-logs', [UserActivityLogController::class, 'showAll'])->name('logs.index');
+    Route::get('/activity-logs/data', [UserActivityLogController::class, 'getLogs'])->name('logs.data');
+
+
     Route::get('change-password', [LoginController::class, 'showChangePasswordForm'])->name('change-password');
     Route::post('change-password', [LoginController::class, 'changePassword'])->name('update-password');
     Route::get('/users/profile', [UserController::class, 'profile'])->name('user.profile');
