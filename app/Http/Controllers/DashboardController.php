@@ -70,6 +70,13 @@ class DashboardController extends Controller
         $totalDocuments = $documents->count();
         $readDocuments = $documents->where('acknowledged', 1)->count();
         $unreadDocuments = $totalDocuments-$readDocuments;
-        return view('dashboard.index', compact('user_count','course_count', 'group_count', 'folder_count', 'totalDocuments','readDocuments','unreadDocuments', 'requestCount'));
+        // dump(Auth()->user()->ou_id);
+       // $users = User::where('ou_id', Auth()->user()->ou_id)->where('isadmin!=', 1)->get();
+       
+        $users = User::where('ou_id', Auth()->user()->ou_id)->get(); 
+        
+        return view('dashboard.index', compact('user_count','course_count', 'group_count', 'folder_count', 'totalDocuments','readDocuments','unreadDocuments', 'requestCount', 'users'));
     }
+
+   
 }

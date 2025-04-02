@@ -56,7 +56,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('change-password', [LoginController::class, 'showChangePasswordForm'])->name('change-password');
     Route::post('change-password', [LoginController::class, 'changePassword'])->name('update-password');
     Route::get('/users/profile', [UserController::class, 'profile'])->name('user.profile');
-    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index'); 
     Route::post('/settings', [SettingController::class, 'store'])->name('settings.store');
     Route::post('/users/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update');
     Route::get('/users/data', [UserController::class, 'getData'])->name('users.data');
@@ -207,7 +207,7 @@ Route::get('/training/get_licence_number_and_courses/{user_id}/{ou_id}', [Traini
     Route::post('/resource/approve/request', [ResourceController::class, 'approve_request'])->name('approve_request.index');
     Route::post('/resource/reject/request', [ResourceController::class, 'reject_request'])->name('reject_request.index');
 
-
+    
 Route::get('/clear-cache', function() {
     Artisan::call('optimize:clear');
     return 'Application cache has been cleared';

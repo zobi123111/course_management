@@ -17,6 +17,108 @@ $subTitle = "Welcome to Admin Dashboard";
 @extends('layout.app')
 @section('content')
 
+<?php 
+if(Auth()->user()->is_admin == "1"){
+
+
+$messages = [];
+foreach ($users as $user) {
+
+    if ($user->licence_file_uploaded == "1" && $user->licence_verified == '0') { 
+        $messages[] = "Licence verification required for " . $user->fname . " " . $user->lname;
+
+    }
+    if ($user->passport_file_uploaded == "1" && $user->passport_verified == '0') {
+        $messages[] = "Passport verification required for " . $user->fname . " " . $user->lname;
+
+    }
+}
+
+if (!empty($messages)) { ?>
+    <div id="successMessage" class="alert alert-success fade show" role="alert">
+       
+        <?php echo implode('<br>', $messages); ?>
+    </div>
+<?php }} ?>
+
+
+
+@if(auth()->user()->is_admin == 1)
+@if(session()->has('message'))  
+<div id="successMessage" class="alert alert-success fade show" role="alert">
+  <i class="bi bi-check-circle me-1"></i>
+  {{ session()->get('message') }}
+</div>
+@endif
+@endif
+
+@if(auth()->user()->is_admin == 1)
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Licence Status</th>
+            <th>Medical Status</th> 
+            <th>Passport Status</th> 
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($users as $user)
+        <tr>
+            <td>{{ $user->fname }} {{ $user->lname }}</td>
+            <td>
+                <strong style="color: 
+                    {{ $user->licence_status == 'Red' ? 'red' : 
+                       ($user->licence_status == 'Amber' ? 'orange' : 'green') }}">
+                
+                    @if($user->licence_status == 'Red')
+                         <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
+                    @elseif($user->licence_status == 'Orange')
+                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
+                    @elseif($user->licence_status == 'Amber')
+                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
+                    @else
+                        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
+                    @endif
+                </strong>
+            </td>
+            <td>
+                <strong style="color: 
+                    {{ $user->medical_status == 'Red' ? 'red' : 
+                       ($user->medical_status == 'Amber' ? 'orange' : 'green') }}">
+                  <?php //  dump($user->Medical_Status ); ?>
+                    @if($user->Medical_Status == 'Red')
+                         <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
+                    @elseif($user->Medical_Status == 'Orange')
+                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
+                    @elseif($user->Medical_Status == 'Amber')
+                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
+                    @else
+                        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
+                    @endif
+                </strong>
+            </td>
+            <td>
+                <strong style="color: 
+                    {{ $user->passport_status == 'Red' ? 'red' : 
+                       ($user->passport_status == 'Amber' ? 'orange' : 'green') }}">
+                        @if($user->passport_status == 'Red')
+                                    <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
+                                @elseif($user->passport_status == 'Orange')
+                                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
+                                @elseif($user->passport_status == 'Amber')
+                                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
+                                @else
+                                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
+                                @endif
+                </strong>
+            </td>
+        </tr>
+        @endforeach
+    </tbody>
+</table>
+@endif
+
 
 <section class="section dashboard">
     @if(!empty(auth()->user()->is_owner))
@@ -517,6 +619,10 @@ $subTitle = "Welcome to Admin Dashboard";
 @endsection
 
 @section('js_scripts')
-
+<script>
+    setTimeout(function() {
+            $('#successMessage').fadeOut('fast');
+        }, 3000);
+</script>
 
 @endsection
