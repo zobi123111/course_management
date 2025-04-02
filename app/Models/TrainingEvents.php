@@ -17,6 +17,7 @@ class TrainingEvents extends Model
         'student_id',
         'instructor_id',
         'resource_id',
+        'lesson_ids',
         'event_date',
         'start_time',
         'end_time',
