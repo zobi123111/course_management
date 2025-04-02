@@ -17,7 +17,9 @@ use App\Http\Controllers\TrainingEventsController;
 use App\Http\Controllers\PrerequisiteController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\CourseTemplateController;
 use App\Http\Controllers\UserActivityLogController;
+
 
 
 
@@ -181,6 +183,12 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
 
     // Resource
     Route::get('/resource', [ResourceController::class, 'resource_list'])->name('resource.index');
+
+
+    // Course Template
+    Route::get('/course-template', [CourseTemplateController::class, 'index'])->name('course-template.index');
+    Route::get('/course-template/create', [CourseTemplateController::class, 'createCourseTemplate'])->name('course-template.create');
+    Route::post('/course-template/store', [CourseTemplateController::class, 'saveCourseTemplate'])->name('course-template.store');
 });
 Route::get('/training/get_licence_number_and_courses/{user_id}/{ou_id}', [TrainingEventsController::class, 'getStudentLicenseNumberAndCourses'])->name('training.get_licence_number_and_courses');
 
