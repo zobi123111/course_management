@@ -15,7 +15,7 @@ class FolderController extends Controller
 {
     public function index()
     {  //dd(Auth::user()->ou_id);
-;        $organizationUnits = OrganizationUnits::all();
+       $organizationUnits = OrganizationUnits::all();
         if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
             // Admin without OU restriction: Fetch all folders with their children
             $folders = Folder::whereNull('parent_id')->with('children')->get();
@@ -179,7 +179,7 @@ class FolderController extends Controller
             $query = Folder::query();
            // dd(Auth::user()->ou_id);
             $documentIds = Document::where('ou_id', Auth::user()->ou_id)->pluck('folder_id');
-           // dd($documentIds);
+            //dd($documentIds);
             // Apply user-based folder filtering
             if (Auth::user()->role == 1 && empty(Auth::user()->ou_id) && Auth::user()->is_owner) { 
                 // Admin without OU restriction: Fetch all folders
@@ -384,8 +384,37 @@ class FolderController extends Controller
     }
 
 
-    public function showFolder(Request $request)
+    // public function showFolder(Request $request)
+    // {
+    
+    //     $organizationUnits = OrganizationUnits::all();
+    //     $folderId = decode_id($request->folder_id);
+    //     $editingFolder = Folder::find($folderId);
+       
+    //     if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
+    //         //Admins can see all folders
+    //         $folders = Folder::whereNull('parent_id')->with('children')->get();
+    //         $subfolders = Folder::where('parent_id', $folderId)->get(); // Fetch all subfolders
+    //     } else { 
+    //         //Regular users see only folders in their assigned org unit
+    //         $folders = Folder::where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children')->get();     
+    //         $subfolders = Folder::where('ou_id', Auth::user()->ou_id)
+    //                             ->where('parent_id', $folderId)
+    //                             ->get(); 
+    //     }
+    //     //Fetch documents of the selected folder
+    //     $documents = Document::where('folder_id', $folderId)->get();
+        
+
+    //     //Generate breadcrumbs
+    //     $breadcrumbs = $this->getBreadcrumbs($editingFolder);
+    
+    //     return view('folders.show', compact('subfolders', 'folders', 'documents', 'editingFolder', 'organizationUnits', 'breadcrumbs'));
+    // }
+
+     public function showFolder(Request $request)
     {
+    
         $organizationUnits = OrganizationUnits::all();
         $folderId = decode_id($request->folder_id);
         $editingFolder = Folder::find($folderId);
@@ -395,14 +424,23 @@ class FolderController extends Controller
             $folders = Folder::whereNull('parent_id')->with('children')->get();
             $subfolders = Folder::where('parent_id', $folderId)->get(); // Fetch all subfolders
         } else { 
+            $documentIds = Document::where('ou_id', Auth::user()->ou_id)->pluck('folder_id')->toArray();
             //Regular users see only folders in their assigned org unit
-            $folders = Folder::where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children')->get();     
+            $folders = Folder::where('ou_id', Auth::user()->ou_id)
+                        ->whereNull('parent_id')
+                        ->with('children')
+                        //->whereIn('id', $documentIds)
+                        ->get();
+
             $subfolders = Folder::where('ou_id', Auth::user()->ou_id)
                                 ->where('parent_id', $folderId)
-                                ->get(); // Fetch only their org unit's subfolders
+                                ->get(); 
+           
         }
+
         //Fetch documents of the selected folder
         $documents = Document::where('folder_id', $folderId)->get();
+        
 
         //Generate breadcrumbs
         $breadcrumbs = $this->getBreadcrumbs($editingFolder);
@@ -413,13 +451,15 @@ class FolderController extends Controller
 
     public function getSubfolders(Request $request)
     {
+       
         $folderId = decode_id($request->folder_id); // Decode the folder ID
-    
+        $documentIds = Document::where('ou_id', Auth::user()->ou_id)->pluck('folder_id')->toArray();
         if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
             $query = Folder::where('parent_id', $folderId); // Fetch all subfolders
         } else {
             $query = Folder::where('ou_id', Auth::user()->ou_id)
-                        ->where('parent_id', $folderId); // Fetch only org unit's subfolders
+                        ->where('parent_id', $folderId)
+                        ->whereIn('id', $documentIds);
         }
     
         // Get total records count

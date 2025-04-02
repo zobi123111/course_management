@@ -229,7 +229,6 @@ public function getData(Request $request)
 
         //   Session::flash('message', 'User saved successfully');
         return response()->json(['success' => true,'message' => "User profile updated successfully"]);
-
     }
 
     public function save_user(Request $request)

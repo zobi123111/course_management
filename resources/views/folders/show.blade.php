@@ -223,7 +223,7 @@ $(document).ready(function() {
         processing: true,
         serverSide: true,
         ajax: {
-            url: "{{ route('folders.subfolders.list') }}",
+            url: "{{ route('folders.subfolders.list') }}", 
             data: { folder_id: folderId } // Send folder_id as parameter
         },
         columns: [
