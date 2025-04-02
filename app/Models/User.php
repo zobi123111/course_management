@@ -1,13 +1,13 @@
 <?php
 
 namespace App\Models;
-
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Carbon\Carbon;
 
 class User extends Authenticatable
 {
@@ -81,6 +81,51 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function getExpiryStatus($date)
+    {
+        if (!$date) return 'N/A';
+
+        $expiryDate = Carbon::parse($date);
+        $now = now();
+
+        if ($expiryDate->lt($now)) {
+            return '<span style="color: red;"><i class="bi bi-check-circle-fill"></i> Expired</span>';
+           
+        }
+
+        if ($expiryDate->diffInDays($now) <= 30) {
+            return '<span style="color: red;"><i class="bi bi-check-circle-fill"></i> Expiring Soon!</span>';
+        }
+
+        if ($expiryDate->diffInDays($now) <= 90) {
+            return '<span style="color: orange;"><i class="bi bi-check-circle-fill"></i> Expiring in 3 Months</span>';
+        }
+
+        return '<span style="color: green;"><i class="bi bi-check-circle-fill"></i> Valid</span>';
+    }
+
+
+    // Expiry Date Fucntion Start //
+
+    public function getLicenceStatusAttribute()
+    {
+        return $this->getExpiryStatus($this->licence_expiry_date);
+    }
+
+
+    public function getPassportStatusAttribute()
+    {
+        return $this->getExpiryStatus($this->passport_expiry_date);
+    }
+
+    public function getMedicalStatusAttribute()
+    {
+        return $this->getExpiryStatus($this->medical_expirydate);
+    }
+
+    // Expiry Date Fucntion End //
+
 
     public function organization(){
         return $this->belongsTo(OrganizationUnits::class, 'ou_id', 'id');

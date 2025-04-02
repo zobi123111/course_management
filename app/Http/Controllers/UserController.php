@@ -30,11 +30,6 @@ public function getData(Request $request)
         $users = User::where('ou_id', $ou_id)->get();
     }
 
-    // if (empty($ou_id)) { 
-    //     $users = User::all();
-    // } else {  
-    //     $users = User::where('ou_id', $ou_id)->get();
-    // }
     if ($request->ajax()) {
         $query = User::query()
                 ->leftJoin('roles', 'users.role', '=', 'roles.id')
@@ -52,9 +47,7 @@ public function getData(Request $request)
                 if (!$is_owner && !empty($ou_id)) {
                     $query->where('users.ou_id', $ou_id);
                 }
-                // if (!empty($ou_id)) {
-                //     $query->where('users.ou_id', $ou_id);
-                // }
+               
         return DataTables::of($query)
         ->filterColumn('position', function($query, $keyword) {
             $query->where('roles.role_name', 'LIKE', "%{$keyword}%");
@@ -121,74 +114,47 @@ public function getData(Request $request)
 
     public function profileUpdate(Request $request)
     {
-        // dd($request->all());
-        $userToUpdate = User::find($request->id);
-        // dd($userToUpdate);
-            if($userToUpdate){
+        $userToUpdate = User::find($request->id);                
 
-                if ($userToUpdate->currency_required == 1) {
-                    $request->validate([
-                        'currency' => 'required|string',
-                    ]);
+            if ($userToUpdate) {
+                $rules = [];
+            
+                if ($userToUpdate->licence_required === 1 && empty($userToUpdate->licence) ) {
+                    $rules['licence'] = 'required';
+                    $rules['licence_expiry_date'] = 'required';
                 }
-
-                // Handle Licence File Upload
-                if ($userToUpdate->licence_required == 1) {
-                    if ($request->hasFile('licence_file')) {
-                        // Delete old licence file if it exists
-                        if ($userToUpdate->licence_file) {
-                            Storage::disk('public')->delete($userToUpdate->licence_file);
-                        }
-                        // Store new licence file
-                        $licenceFilePath = $request->file('licence_file')->store('licence_files', 'public');
-                    } else {
-                        // If no new file is uploaded, keep the old one
-                        $licenceFilePath = $request->old_licence_file ?? $userToUpdate->licence_file;
-                    }
-                } else {
-                    // If licence is not required, keep the old file
-                    $licenceFilePath = $userToUpdate->licence_file;
+            
+                if ($userToUpdate->passport_required == 1 && empty($userToUpdate->passport) ) {
+                    $rules['passport'] = 'required';
+                    $rules['passport_expiry_date'] = 'required';
                 }
-
-                // Handle Passport File Upload
-                if ($userToUpdate->passport_required == 1) {
-                    if ($request->hasFile('passport_file')) {
-                        // Delete old passport file if it exists
-                        if ($userToUpdate->passport_file) {
-                            Storage::disk('public')->delete($userToUpdate->passport_file);
-                        }
-                        // Store new passport file
-                        $passportFilePath = $request->file('passport_file')->store('passport_files', 'public');
-                    } else {
-                        // If no new file is uploaded, keep the old one
-                        $passportFilePath = $request->old_passport_file ?? $userToUpdate->passport_file;
-                    }
-                } else {
-                    // If passport is not required, keep the old file
-                    $passportFilePath = $userToUpdate->passport_file;
-                }
-
-                if ($userToUpdate->currency_required == 1) {
-                    $request->validate([
-                        'currency' => 'required|string',
-                    ]);
-                }
-
+            
                 if ($userToUpdate->medical == 1) {
-                    $request->validate([
-                        'issued_by'          => 'required',
-                       'medical_class'      =>  'required',
-                       'medical_issue_date' => 'required',
-                       'medical_expiry_date'=> 'required',
-                       'medical_detail'     => 'required'
-                    ]);
-                       
+                    $rules['issued_by'] = 'required';
+                    $rules['medical_class'] = 'required';
+                    $rules['medical_issue_date'] = 'required';
+                    $rules['medical_expiry_date'] = 'required';
+                    $rules['medical_detail'] = 'required';
+                }
+            
+                if ($userToUpdate->currency_required == 1) {
+                    $rules['currency'] = 'required|string';
+                }
+            
+                if (!empty($rules)) {
+                    $request->validate($rules);
                 }
             }
+            
 
             // Handle Licence File Upload
             if ($userToUpdate->licence_required == 1) {
                 if ($request->hasFile('licence_file')) {
+                    $request->validate([
+                        'licence' =>  'required',
+                        'licence_expiry_date' => 'required',
+                    ]);
+
                     if ($userToUpdate->licence_file) {
                         Storage::disk('public')->delete($userToUpdate->licence_file);
                     }
@@ -220,42 +186,54 @@ public function getData(Request $request)
                 ]);
             }
 
-            // Track changes
-            $oldData = $userToUpdate->only(['fname', 'lname', 'email', 'licence', 'licence_file', 'passport', 'passport_file', 'currency']);
             $newData = [
-                'fname' =>  $request->firstName ?? null,
-                'lname' =>  $request->lastName ?? null,
-                'email' =>  $request->email ?? null,
-                'licence' => $request->licence ?? null,
-                'licence_file' => $licenceFilePath ?? null,
-                'passport' => $request->passport ?? null,
-                'passport_file' => $passportFilePath ?? null,
+                'fname' => $request->firstName,
+                'lname' => $request->lastName,
+                'email' => $request->email,
+                'licence' => $request->licence ?? $userToUpdate->licence,
+                'licence_expiry_date' => $request->licence_expiry_date ?? $userToUpdate->licence_expiry_date,
+                'licence_file' => $licenceFilePath,
+                'passport' => $request->passport ?? $userToUpdate->passport,
+                'passport_expiry_date' => $request->passport_expiry_date ?? $userToUpdate->passport_expiry_date,
+                'passport_file' => $passportFilePath,
                 'currency' => $request->currency ?? null,
+                'medical_issuedby' => $request->issued_by ?? null,
+                'medical_class' => $request->medical_class ?? null,
+                'medical_issuedate' => $request->medical_issue_date ?? null,
+                'medical_expirydate' => $request->medical_expiry_date ?? null,
+                'medical_restriction' => $request->medical_detail ?? null,
             ];
-
+        
+            $oldData = $userToUpdate->only(array_keys($newData));
             $changes = [];
+            
             foreach ($newData as $key => $value) {
-                if ($oldData[$key] != $value) {
-                    $changes[] = ucfirst($key) . " changed from '{$oldData[$key]}' to '{$value}'";
+                $oldValue = $oldData[$key] ?? 'N/A'; 
+                $newValue = $value ?? 'N/A';
+            
+                if ($oldValue != $newValue) {
+                    $formattedKey = ucfirst(str_replace('_', ' ', $key)); // Format field names
+                    $changes[] = "$formattedKey changed from '$oldValue' to '$newValue'";
                 }
             }
-
+        
             $userToUpdate->update($newData);
 
             if (!empty($changes)) {
                 UserActivityLog::create([
-                    'user_id' => $userToUpdate->id,
+                    'user_id' => auth()->user()->id,
                     'log_type' => 'Profile Update',
-                    'description' => implode(', ', $changes),
+                    'description' => implode("\n", $changes), // New line for better readability
                 ]);
- //   Session::flash('message', 'User saved successfully');
-     return response()->json(['success' => true,'message' => "User profile updated successfully"]);
+            }
 
-        }
+        //   Session::flash('message', 'User saved successfully');
+        return response()->json(['success' => true,'message' => "User profile updated successfully"]);
+
+    }
 
     public function save_user(Request $request)
     {
-        
         $validated = $request->validate([
             'firstname' => 'required',
             'lastname' => 'required',
@@ -375,8 +353,13 @@ public function getData(Request $request)
             // Generate password to send in the email
             $password = $request->password;
     
+            UserActivityLog::create([
+                'user_id' => auth()->id(),
+                'log_type' => 'User Created',
+                'description' => "User '{$store->fname} {$store->lname}' (ID: {$store->id}) was created by " . auth()->user()->fname . " " . auth()->user()->lname,
+            ]);
+            
             // Send emailx
-
             Mail::to($store->email)->send(new UserCreated($store, $password));
 
             Session::flash('message', 'User saved successfully');
@@ -384,12 +367,11 @@ public function getData(Request $request)
         }
     }
     
-
     public function update(Request $request)
     {
-        // dd($request->all());
         $userToUpdate = User::find($request->edit_form_id);
-        if($userToUpdate){
+
+        if ($userToUpdate) {
             $validatedData = $request->validate([
                 'edit_firstname' => 'required',
                 'edit_lastname' => 'required',
@@ -410,7 +392,7 @@ public function getData(Request $request)
                 'edit_lastname.required' => 'The Last Name is required',
                 'edit_email.required' => 'The Email is required',
                 'edit_email.email' => 'Please enter a valid Email',
-                'password' => 'The password and confirm password does not match.',
+                'password' => 'The password and confirm password do not match.',
             ]);
 
             // Handle Image Upload
@@ -418,7 +400,6 @@ public function getData(Request $request)
                 if ($userToUpdate->image) {
                     Storage::disk('public')->delete($userToUpdate->image);
                 }
-
                 $filePath = $request->file('image')->store('users', 'public');
             } else {
                 $filePath = $userToUpdate->image;
@@ -427,15 +408,9 @@ public function getData(Request $request)
             // Handle Licence
             if ($request->has('edit_licence_checkbox') && $request->edit_licence_checkbox == 'on') {
                 $licence_required = 1;
-
-                if ($request->hasFile('edit_licence_file')) {
-                    if ($userToUpdate->licence_file) {
-                        Storage::disk('public')->delete($userToUpdate->licence_file);
-                    }
-                    $licenceFilePath = $request->file('edit_licence_file')->store('licence_files', 'public');
-                } else {
-                    $licenceFilePath = $userToUpdate->licence_file;
-                }
+                $licenceFilePath = $request->hasFile('edit_licence_file')
+                    ? $request->file('edit_licence_file')->store('licence_files', 'public')
+                    : $userToUpdate->licence_file;
             } else {
                 $licence_required = null;
                 $licenceFilePath = $userToUpdate->licence_file;
@@ -444,114 +419,99 @@ public function getData(Request $request)
             // Handle Passport
             if ($request->has('edit_passport_checkbox') && $request->edit_passport_checkbox == 'on') {
                 $passport_required = 1;
+                $passportFilePath = $request->hasFile('edit_passport_file')
+                    ? $request->file('edit_passport_file')->store('passport_files', 'public')
+                    : $userToUpdate->passport_file;
+            } else {
+                $passport_required = null;
+                $passportFilePath = $userToUpdate->passport_file;
+            }
 
-                if ($request->hasFile('edit_passport_file')) {
-                    if ($userToUpdate->passport_file) {
-                        Storage::disk('public')->delete($userToUpdate->passport_file);
-                    }
-                    $passportFilePath = $request->file('edit_passport_file')->store('passport_files', 'public');
-                } else {
-                    $passportFilePath = $userToUpdate->passport_file;
-                }
-            } else {
-                $passport_required = null;  // Set to null if checkbox is unchecked
-                $passportFilePath = $userToUpdate->passport_file;  // Retain the existing file if no new file is uploaded
-            }
-            
             // Handle Currency Requirement
-            if ($request->has('edit_currency_checkbox') && $request->edit_currency_checkbox) {
-                $currency_required = 1;
-            } else {
-                $currency_required = null;
-            }
+            $currency_required = $request->has('edit_currency_checkbox') ? 1 : null;
 
             // Handle Rating Requirement
-            if ($request->has('edit_rating_checkbox') && $request->edit_rating_checkbox) {
-                $userToUpdate->rating_required = 1;
-            }
+            $rating_required = $request->has('edit_rating_checkbox') ? 1 : $userToUpdate->rating_required;
 
-            // Handle Custom Field Validation
-            $editcustom_field_date = null;
-            $editcustom_field_text = null;
-            
-            if ($request->has('editcustom_file_checkbox')) {
-                $editcustom_field_date = $request->editcustom_field_date ?? null;
-            }
-            
-            if ($request->has('editcustom_text_checkbox')) {
-                $editcustom_field_text = $request->editcustom_field_text ?? null;
-            }
-            
+            // Handle Custom Fields
+            $editcustom_field_date = $request->has('editcustom_file_checkbox') ? $request->editcustom_field_date : null;
+            $editcustom_field_text = $request->has('editcustom_text_checkbox') ? $request->editcustom_field_text : null;
 
-            if ($request->has('edit_custom_field_checkbox') && $request->edit_custom_field_checkbox) {
-                $userToUpdate->password_flag = 1;
-            }
+            // Handle Password Flag
+            $password_flag = $request->has('edit_custom_field_checkbox') ? 1 : $userToUpdate->password_flag;
 
-            if ($request->has('password') && $request->password) {
-                $password =   Hash::make($request->password);
-            }else{
-                $password =  $userToUpdate->password;
-            }
+            // Handle Password
+            $password = $request->has('password') && $request->password ? Hash::make($request->password) : $userToUpdate->password;
 
-             // Handle Extra Roles
+            // Handle Extra Roles
             $extra_roles = $request->has('extra_roles') ? json_encode($request->extra_roles) : $userToUpdate->extra_roles;
 
             // Determine is_admin value
-            $is_admin = (!empty($request->ou_id) && $request->edit_role_name==1)? 1 : null;
+            $is_admin = (!empty($request->ou_id) && $request->edit_role_name == 1) ? 1 : null;
 
-           // Medical 
-         // dd($request->all());
-            $medical_checkbox              = null;
-            $medical_verification_required = null;
-            $medical_issued_by             = null;
-            $medical_class                 = null;
-            $medical_issue_date            = null;
-            $medical_expiry_date           = null;
-            $medical_detail                = null;
-    
-            if ($request->has('editmedical_checkbox')) {
-               $medical_checkbox              = $request->editmedical_checkbox;
-               $medical_verification_required = $request->editmedical_verification_required;
-               $medical_issued_by             = $request->editissued_by;
-               $medical_class                 = $request->editmedical_class;
-               $medical_issue_date            = $request->editmedical_issue_date;
-               $medical_expiry_date           = $request->editmedical_expiry_date;
-               $medical_detail                = $request->editmedical_detail;
+            // Handle Medical Information
+            $medical_checkbox              = $request->has('editmedical_checkbox') ? $request->editmedical_checkbox : null;
+            $medical_verification_required = $request->has('editmedical_checkbox') ? $request->editmedical_verification_required : null;
+            $medical_issued_by             = $request->has('editmedical_checkbox') ? $request->editissued_by : null;
+            $medical_class                 = $request->has('editmedical_checkbox') ? $request->editmedical_class : null;
+            $medical_issue_date            = $request->has('editmedical_checkbox') ? $request->editmedical_issue_date : null;
+            $medical_expiry_date           = $request->has('editmedical_checkbox') ? $request->editmedical_expiry_date : null;
+            $medical_detail                = $request->has('editmedical_checkbox') ? $request->editmedical_detail : null;
+
+            // Prepare Data for Update
+            $newData = [
+                'fname' => $request->edit_firstname,
+                'lname' => $request->edit_lastname,
+                'email' => $request->edit_email,
+                'password' => $password,
+                'image' => $filePath,
+                'role' => $request->edit_role_name,
+                'status' => $request->status,
+                'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id,
+                'licence' => $request->edit_licence ?? null,
+                'licence_required' => $licence_required,
+                'licence_file' => $licenceFilePath,
+                'passport_required' => $passport_required,
+                'passport' => $request->edit_passport ?? null,
+                'passport_file' => $passportFilePath,
+                'rating' => $request->edit_rating ?? null,
+                'rating_required' => $rating_required,
+                'currency_required' => $currency_required,
+                'currency' => $request->edit_currency ?? null,
+                'custom_field_file' => $editcustom_field_date,
+                'custom_field_text' => $editcustom_field_text,
+                'password_flag' => $password_flag,
+                'extra_roles' => $extra_roles,
+                'medical' => $medical_checkbox,
+                'medical_adminRequired' => $medical_verification_required,
+                'medical_issuedby' => $medical_issued_by,
+                'medical_class' => $medical_class,
+                'medical_issuedate' => $medical_issue_date,
+                'medical_expirydate' => $medical_expiry_date,
+                'medical_restriction' => $medical_detail,
+                'is_admin' => $is_admin
+            ];
+
+            // Track Changes
+            $oldData = $userToUpdate->only(array_keys($newData));
+            $changes = [];
+            foreach ($newData as $key => $value) {
+                if ($oldData[$key] != $value) {
+                    $changes[] = ucfirst($key) . " changed from '{$oldData[$key]}' to '{$value}'";
+                }
             }
 
-            // Update User Information
-            $userToUpdate->where('id', $request->edit_form_id)
-                ->update([
-                    'Fname' => $validatedData['edit_firstname'],
-                    'Lname' => $validatedData['edit_lastname'],
-                    'email' => $validatedData['edit_email'],
-                    "password" => $password,
-                    'image' => $filePath,
-                    'role' => $validatedData['edit_role_name'],
-                    'status' => $validatedData['status'],
-                    'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, // Assign ou_id only if Super Admin provided it
-                    'licence' => $request->edit_licence ?? null,
-                    'licence_required' => $licence_required,
-                    'licence_file' => $licenceFilePath ?? null,
-                    'passport_required' => $passport_required,
-                    'passport' => $request->edit_passport ?? null,
-                    'passport_file' => $passportFilePath ?? null,
-                    'rating' => $request->edit_rating ?? null,
-                    'currency_required' => $currency_required,
-                    'currency' => $request->edit_currency ?? null,
-                    'custom_field_file' => $editcustom_field_date,
-                    'custom_field_text' => $editcustom_field_text,
-                    'password_flag' => $request->edit_update_password,
-                    'extra_roles' => $extra_roles,
-                    'medical'               => $medical_checkbox,
-                    'medical_adminRequired' => $medical_verification_required,
-                    'medical_issuedby'      => $medical_issued_by,
-                    'medical_class'         => $medical_class,
-                    'medical_issuedate'     => $medical_issue_date,
-                    'medical_expirydate'    => $medical_expiry_date,
-                    'medical_restriction'   => $medical_detail,
-                    'is_admin' => $is_admin
+            // Update User
+            $userToUpdate->update($newData);
+
+            // Log Changes
+            if (!empty($changes)) {
+                UserActivityLog::create([
+                    'user_id' => auth()->id(),
+                    'log_type' => 'User Updated',
+                    'description' => "User '{$userToUpdate->fname} {$userToUpdate->lname}' (ID: {$userToUpdate->id}) was updated by " . auth()->user()->fname . " " . auth()->user()->lname . ". Changes: " . implode(', ', $changes),
                 ]);
+            }
 
             return response()->json(['success' => true, 'message' => "User data updated successfully"]);
         }
