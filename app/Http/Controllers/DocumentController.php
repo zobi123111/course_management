@@ -378,6 +378,7 @@ class DocumentController extends Controller
 
     public function getDocUserList(Request $request)
     {
+       
         $doc_id = decode_id($request->doc_id);
         $document = Document::where('id', $doc_id)->with('group')->first();
     
@@ -402,6 +403,7 @@ class DocumentController extends Controller
                 $user->acknowledged = in_array($user->id, $acknowledgedUsers);
                 return $user;
             });
+
     
         return response()->json(['groupUsers' => $groupUsers]);
     }
@@ -425,35 +427,58 @@ class DocumentController extends Controller
     
     // }
 
+    // public function acknowledgeDocument(Request $request)
+    // {
+    //     $userId = auth()->user()->id;
+    //     $request->validate([
+    //         'document_id' => 'required|exists:documents,id',
+    //         'acknowledged' => 'required|integer|in:' . $userId,
+    //     ]);
+        
+    //     $document = Document::findOrFail($request->document_id);
+        
+    //     // dd($document);
+    //     if ($document) {
+    //         // Decode the existing acknowledged users (if any)
+    //         $acknowledgedUsers = json_decode($document->acknowledge_by ?? '[]', true);
+
+    //         // Check if the logged-in user already acknowledged the document
+    //         if (!in_array($userId, $acknowledgedUsers)) {
+    //             $acknowledgedUsers[] = $userId; // Add logged-in user's ID
+    //         }
+
+    //         // Update the document with the new acknowledge_by array
+    //         $document->update(['acknowledge_by' => json_encode($acknowledgedUsers)]);
+
+    //         return response()->json(['success' => 'Document acknowledged successfully.']);
+    //     }
+
+    //     return response()->json(['error' => 'Something went wrong, please try again later.'], 500);
+    // }
     public function acknowledgeDocument(Request $request)
     {
         $userId = auth()->user()->id;
+    
         $request->validate([
             'document_id' => 'required|exists:documents,id',
-            'acknowledged' => 'required|integer|in:' . $userId, // Ensures only the logged-in user ID is submitted
         ]);
-        
+    
         $document = Document::findOrFail($request->document_id);
-        
-        // dd($document);
+    
         if ($document) {
-            // Decode the existing acknowledged users (if any)
             $acknowledgedUsers = json_decode($document->acknowledge_by ?? '[]', true);
-
-            // Check if the logged-in user already acknowledged the document
+    
             if (!in_array($userId, $acknowledgedUsers)) {
-                $acknowledgedUsers[] = $userId; // Add logged-in user's ID
+                $acknowledgedUsers[] = $userId;
+                $document->update(['acknowledge_by' => json_encode($acknowledgedUsers)]);
             }
-
-            // Update the document with the new acknowledge_by array
-            $document->update(['acknowledge_by' => json_encode($acknowledgedUsers)]);
-
+    
             return response()->json(['success' => 'Document acknowledged successfully.']);
         }
-
+    
         return response()->json(['error' => 'Something went wrong, please try again later.'], 500);
     }
-
+    
 
     public function getOrgfolder(Request $request)
     {
