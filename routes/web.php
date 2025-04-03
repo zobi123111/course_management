@@ -56,8 +56,10 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('change-password', [LoginController::class, 'showChangePasswordForm'])->name('change-password');
     Route::post('change-password', [LoginController::class, 'changePassword'])->name('update-password');
     Route::get('/users/profile', [UserController::class, 'profile'])->name('user.profile');
+  
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index'); 
     Route::post('/settings', [SettingController::class, 'store'])->name('settings.store');
+  
     Route::post('/users/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update');
     Route::get('/users/data', [UserController::class, 'getData'])->name('users.data');
 
@@ -85,6 +87,9 @@ Route::group(['middleware' => ['auth']], function () {
 Route::middleware(['auth', 'role.permission'])->group(function () { 
     //Dashboard Route
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [SettingController::class, 'store'])->name('settings.store');
+    Route::get('/users/document-data', [UserController::class, 'userData'])->name('users.document.data');
     
     //Users Route
     Route::get('/users', [UserController::class, 'getData'])->name('user.index');
@@ -179,6 +184,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     // Route::get('/grading', [TrainingEventsController::class, 'getStudentGrading'])->name('grading.list');
     Route::get('/training/grading-list/{event_id}', [TrainingEventsController::class, 'getStudentGrading'])->name('training.grading-list');
     Route::get('/training/get_ou_students_instructors_resources/{ou_id}', [TrainingEventsController::class, 'getOrgStudentsInstructorsResources'])->name('training.get_ou_students_instructors_resources');
+    Route::get('/training/get_course_lessons', [TrainingEventsController::class, 'getCourseLessons'])->name('training.course-lessons');
 
 
     // Resource

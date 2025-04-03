@@ -24,9 +24,9 @@
     <div id="update_success_msg"></div>
     <div class="card pt-4">
         <div class="card-body">
-        @if(checkAllowedModule('orgunit','orgunit.edit')->isNotEmpty())
+        <!-- @if(checkAllowedModule('orgunit','orgunit.edit')->isNotEmpty())
               <p>Access granted to Org Unit index.</p>
-        @endif
+        @endif -->
       
 
     <table class="table table-hover" id="orgUnitTable">
@@ -120,14 +120,16 @@
             </div>
             <div class="modal-body">
                 <form id="permissionForm">
-                    @foreach($pages as $page)
+                @foreach($pages as $page)
+                    @if($page->name !== 'Dashboard')
                         <div class="form-check">
                             <input class="form-check-input permission-checkbox" type="checkbox" value="{{ $page->id }}" id="page_{{ $page->id }}">
                             <label class="form-check-label" for="page_{{ $page->id }}">
                                 {{ $page->name }}
                             </label>
                         </div>
-                    @endforeach
+                    @endif
+                @endforeach
                 </form>
             </div>
             <div class="modal-footer">
