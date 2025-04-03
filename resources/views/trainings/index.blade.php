@@ -117,6 +117,14 @@
                     </select>
                     <div id="course_id_error" class="text-danger error_e"></div>
                 </div>
+                <!-- Select Lesson -->
+                <div class="form-group">
+                    <label class="form-label">Select Lesson<span class="text-danger">*</span></label>
+                    <select class="form-select" name="lesson_ids[]" id="select_lesson" multiple>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                    <div id="lesson_ids_error" class="text-danger error_e"></div>
+                </div>
                 <!-- Event Date-->
                 <div class="form-group">
                     <label class="form-label">Event Date<span class="text-danger">*</span></label>
@@ -256,6 +264,14 @@
                         @endforeach
                     </select>
                     <div id="course_id_error_up" class="text-danger error_e"></div>
+                </div>
+                 <!-- Select Lesson -->
+                 <div class="form-group">
+                    <label class="form-label">Select Lesson<span class="text-danger">*</span></label>
+                    <select class="form-select" name="lesson_ids[]" id="edit_select_lesson" multiple>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                    <div id="lesson_ids_error_up" class="text-danger error_e"></div>
                 </div>
                 <!-- Event Date-->
                 <div class="form-group">
@@ -464,16 +480,16 @@ $(document).ready(function() {
                 }
 
                 // Clear and populate Resources dropdown
-                // resourceDropdown.empty();
-                // if (response.resources && response.resources.length > 0) {
-                //     resourceDropdown.append('<option value="">Select Resource</option>'); // Default option
-                //     $.each(response.resources, function(index, resource) {
-                //         resourceDropdown.append('<option value="' + resource.id + '">' + resource.class + '</option>');
-                //     });
-                // } else {
-                //     alert('No resources found for the selected organization unit.');
-                //     resourceDropdown.append('<option value="">Select Resource</option>'); // Keep default option
-                // }
+                resourceDropdown.empty();
+                if (response.resources && response.resources.length > 0) {
+                    resourceDropdown.append('<option value="">Select Resource</option>'); // Default option
+                    $.each(response.resources, function(index, resource) {
+                        resourceDropdown.append('<option value="' + resource.id + '">' + resource.class + '</option>');
+                    });
+                } else {
+                    alert('No resources found for the selected organization unit.');
+                    resourceDropdown.append('<option value="">Select Resource</option>'); // Keep default option
+                }
             },
             error: function(xhr) {
                 console.error(xhr.responseText);
@@ -542,6 +558,81 @@ $(document).ready(function() {
     });
 
 
+    // $(document).on('change', '#select_course, #edit_select_course', function() {
+    //     var courseId = $(this).val();
+
+    //     // Determine which form is being used
+    //     var isEditForm = $(this).attr('id') === 'edit_select_course';
+
+    //     // Select the correct dropdown based on the form
+    //     var lessonDropdown = isEditForm ? $('#edit_select_lesson') : $('#select_lesson');
+
+    //     $.ajax({
+    //         url: '{{ url("/training/get_course_lessons") }}', // Route to fetch lessons
+    //         type: 'GET',
+    //         data: { course_id: courseId },
+    //         success: function(response) {
+
+    //             // Clear and populate Lessons dropdown
+    //             lessonDropdown.empty();
+
+    //             if (response.success && response.lessons.length > 0) {
+    //                 lessonDropdown.append('<option value="">Select Lesson</option>'); // Default option
+    //                 $.each(response.lessons, function(index, lesson) {
+    //                     lessonDropdown.append('<option value="' + lesson.id + '">' + lesson.lesson_title + '</option>');
+    //                 });
+    //             } else {
+    //                 alert('No lessons found for the selected course.');
+    //                 lessonDropdown.append('<option value="">Select Lesson</option>'); // Keep default option
+    //             }
+    //         },
+    //         error: function(xhr) {
+    //             console.error(xhr.responseText);
+    //             alert('Error fetching lessons. Please try again.');
+    //         }
+    //     });
+    // });
+
+    $(document).on('change', '#select_course, #edit_select_course', function() {
+        var courseId = $(this).val();
+
+        // Determine if it's the edit form
+        var isEditForm = $(this).attr('id') === 'edit_select_course';
+
+        // Select the correct dropdown based on the form
+        var lessonDropdown = isEditForm ? $('#edit_select_lesson') : $('#select_lesson');
+
+        $.ajax({
+            url: '{{ url("/training/get_course_lessons") }}', // Route to fetch lessons
+            type: 'GET',
+            data: { course_id: courseId },
+            success: function(response) {
+                lessonDropdown.empty();
+
+                if (response.success && response.lessons.length > 0) {
+                    lessonDropdown.append('<option value="">Select Lesson</option>'); // Default option
+                    $.each(response.lessons, function(index, lesson) {
+                        lessonDropdown.append('<option value="' + lesson.id + '">' + lesson.lesson_title + '</option>');
+                    });
+
+                    // Restore previously selected lessons in edit mode
+                    if (isEditForm) {
+                        setTimeout(function() {
+                            var selectedLessons = lessonDropdown.data('selected-lessons') || []; // Get stored lessons
+                            lessonDropdown.val(selectedLessons).trigger('change'); // Select the saved lessons
+                        }, 500); // Delay to ensure dropdown is populated
+                    }
+                } else {
+                    alert('No lessons found for the selected course.');
+                    lessonDropdown.append('<option value="">Select Lesson</option>'); // Keep default option
+                }
+            },
+            error: function(xhr) {
+                console.error(xhr.responseText);
+                alert('Error fetching lessons. Please try again.');
+            }
+        });
+    });
 
 
     $("#createTrainingEvent").on('click', function() {
@@ -609,6 +700,15 @@ $(document).ready(function() {
                     if (response.trainingEvent.ou_id) {
                         $('#edit_ou_id').val(response.trainingEvent.ou_id);
                     }
+                    // Handle lesson_ids (assuming it's an array or JSON string)
+                    if (response.trainingEvent.lesson_ids) {
+                        let lessonIds = Array.isArray(response.trainingEvent.lesson_ids) ? 
+                                        response.trainingEvent.lesson_ids : 
+                                        JSON.parse(response.trainingEvent.lesson_ids || '[]');
+
+                        $('#edit_select_lesson').val(lessonIds).trigger('change'); // Correct ID used
+                    }
+
 
                     $('#editTrainingEventModal').modal('show');
                 } else {
@@ -720,11 +820,20 @@ $(document).ready(function() {
         }
     });
 
+    // When modals are opened
+    $(document).on("shown.bs.modal", "#createTrainingEventModal, #editTrainingEventModal", function(event) {
+        if (event.target.id === "editTrainingEventModal") {
+            // let selectedUsers = $("#edit_users").val() || [];
+            // $("#edit_users").data("selected-users", selectedUsers);
 
-    // Ensure Select2 works when modal is shown
-    $('#createGroupModal, #editGroupModal').on('shown.bs.modal', function() {
-        initializeSelect2();
+            $("#edit_select_course").trigger("change"); // Trigger change event only for the edit modal
+        }
+        // initializeSelect2(); // Ensure Select2 initializes for both modals
     });
+
+    
+
+
 
     setTimeout(function() {
         $('#successMessage').fadeOut('slow');
