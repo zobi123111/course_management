@@ -514,27 +514,72 @@ class TrainingEventsController extends Controller
     //     }
     // }
 
-    public function showTrainingEvent(Request $request, $event_id)
-    {
+    // public function showTrainingEvent(Request $request, $event_id)
+    // {
       
-        $trainingEvent = TrainingEvents::with(['course:id,course_name', 'group:id,name,user_ids', 'instructor:id,fname,lname', 'student:id,fname,lname', 'resource:id,name'])
-        ->find(decode_id($event_id));
-        //  dd($trainingEvent);
-        // Fetch the single student
-        $student = $trainingEvent->student;
-        // Ensure course exists before accessing course_id
-        $courseLessons = $trainingEvent->course 
-        ? CourseLesson::with('sublessons')
-        ->where('course_id', $trainingEvent->course->id)
-        ->get() : collect();
+    //     $trainingEvent = TrainingEvents::with(['course:id,course_name', 'group:id,name,user_ids', 'instructor:id,fname,lname', 'student:id,fname,lname', 'resource:id,name'])
+    //     ->find(decode_id($event_id));
+    //     //  dd($trainingEvent);
+    //     // Fetch the single student
+    //     $student = $trainingEvent->student;
+    //     // Ensure course exists before accessing course_id
+    //     $courseLessons = $trainingEvent->course 
+    //     ? CourseLesson::with('sublessons')
+    //     ->where('course_id', $trainingEvent->course->id)
+    //     ->get() : collect();
     
-        // Fetch the overall assessment for the single student
-        $overallAssessments = OverallAssessment::where('event_id', $trainingEvent->id)
+    //     // Fetch the overall assessment for the single student
+    //     $overallAssessments = OverallAssessment::where('event_id', $trainingEvent->id)
+    //     ->where('user_id', $student->id ?? null)
+    //     ->first(); // Fetch only one record
+
+    //     return view('trainings.show', compact('trainingEvent', 'student', 'courseLessons', 'overallAssessments'));
+    // }
+
+    public function showTrainingEvent(Request $request, $event_id)
+{
+    $trainingEvent = TrainingEvents::with([
+        'course:id,course_name',
+        'group:id,name,user_ids',
+        'instructor:id,fname,lname',
+        'student:id,fname,lname',
+        'resource:id,name'
+    ])->find(decode_id($event_id));
+
+    if (!$trainingEvent) {
+        return abort(404, 'Training Event not found');
+    }
+
+    // Fetch the single student
+    $student = $trainingEvent->student;
+
+    // Ensure course exists before accessing course_id
+    $courseLessons = $trainingEvent->course 
+        ? CourseLesson::with('sublessons')
+            ->where('course_id', $trainingEvent->course->id)
+            ->get()
+        : collect();
+
+    // Fetch the overall assessment for the single student
+    $overallAssessments = OverallAssessment::where('event_id', $trainingEvent->id)
         ->where('user_id', $student->id ?? null)
         ->first(); // Fetch only one record
 
-        return view('trainings.show', compact('trainingEvent', 'student', 'courseLessons', 'overallAssessments'));
-    }
+    // Decode lesson_ids JSON and fetch associated lessons
+    $lessonIds = json_decode($trainingEvent->lesson_ids, true) ?? [];
+    $selectedLessons = !empty($lessonIds) 
+        ? CourseLesson::with('sublessons')->whereIn('id', $lessonIds)->get() 
+        : collect();
+
+    return view('trainings.show', compact(
+        'trainingEvent', 
+        'student', 
+        'courseLessons', 
+        'overallAssessments', 
+        'selectedLessons'
+    ));
+}
+
 
     // public function showTrainingEvent(Request $request, $event_id)
     // {
