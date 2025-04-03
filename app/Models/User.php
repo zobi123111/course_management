@@ -28,7 +28,7 @@ class User extends Authenticatable
         'image',
         'licence_required',
         'licence', 
-        'licence_file',
+        'licence_file', 
         'licence_admin_verification_required',
         'licence_verified',
         'licence_expiry_date',
@@ -60,6 +60,8 @@ class User extends Authenticatable
         'medical_expirydate',
         'medical_restriction',
         'medical_verified',
+        'licence_file_uploaded',
+        'passport_file_uploaded',
         'is_admin'  
     ];
 
@@ -82,6 +84,48 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    // public function getExpiryStatus($date)
+    // {
+    //   //  dd($date);
+    //     if (!$date) return 'N/A';
+
+    //     $expiryDate = Carbon::parse($date);
+    //     $now = now();
+
+    //     if ($expiryDate->lt($now)) {
+    //         return '<span style="color: red;"><i class="bi bi-check-circle-fill"></i> Expired</span>'; 
+    //     }
+
+    //     if ($expiryDate->diffInDays($now) <= 30) {
+    //         return '<span style="color: red;"><i class="bi bi-check-circle-fill"></i> Expiring Soon!</span>';
+    //     }
+
+    //     if ($expiryDate->diffInDays($now) <= 90) {
+    //         return '<span style="color: orange;"><i class="bi bi-check-circle-fill"></i> Expiring in 3 Months</span>';
+    //     }
+
+    //     return '<span style="color: green;"><i class="bi bi-check-circle-fill"></i> Valid</span>';
+    // }
+
+
+    // // Expiry Date Fucntion Start //
+
+    // public function getLicenceStatusAttribute()
+    // {
+    //     return $this->getExpiryStatus($this->licence_expiry_date);
+    // }
+
+
+    // public function getPassportStatusAttribute()
+    // {
+    //     return $this->getExpiryStatus($this->passport_expiry_date);
+    // }
+
+    // public function getMedicalStatusAttribute()
+    // {
+    //     return $this->getExpiryStatus($this->medical_expirydate);
+    // }
+
     public function getExpiryStatus($date)
     {
         if (!$date) return 'N/A';
@@ -90,29 +134,27 @@ class User extends Authenticatable
         $now = now();
 
         if ($expiryDate->lt($now)) {
-            return '<span style="color: red;"><i class="bi bi-check-circle-fill"></i> Expired</span>';
-           
+            return 'Red'; 
         }
 
         if ($expiryDate->diffInDays($now) <= 30) {
-            return '<span style="color: red;"><i class="bi bi-check-circle-fill"></i> Expiring Soon!</span>';
+            return 'Orange';
         }
 
         if ($expiryDate->diffInDays($now) <= 90) {
-            return '<span style="color: orange;"><i class="bi bi-check-circle-fill"></i> Expiring in 3 Months</span>';
+            return 'Amber';  // Expiring in 3 Months
         }
 
-        return '<span style="color: green;"><i class="bi bi-check-circle-fill"></i> Valid</span>';
+        return 'Blue';  // Valid
     }
 
-
-    // Expiry Date Fucntion Start //
-
+    /**
+     * Accessors for Expiry Status
+     */
     public function getLicenceStatusAttribute()
     {
         return $this->getExpiryStatus($this->licence_expiry_date);
     }
-
 
     public function getPassportStatusAttribute()
     {
@@ -122,6 +164,24 @@ class User extends Authenticatable
     public function getMedicalStatusAttribute()
     {
         return $this->getExpiryStatus($this->medical_expirydate);
+    }
+
+    /**
+     * Check if Documents Are Expiring
+     */
+    public function isLicenceExpiring()
+    {
+        return in_array($this->licence_status, ['Red', 'Orange', 'Amber']);
+    }
+
+    public function isMedicalExpiring()
+    {
+        return in_array($this->medical_status, ['Red', 'Orange', 'Amber']);
+    }
+
+    public function isPassportExpiring()
+    {
+        return in_array($this->passport_status, ['Red', 'Orange', 'Amber']);
     }
 
     // Expiry Date Fucntion End //

@@ -150,5 +150,4 @@ class DashboardController extends Controller
         'totalDocuments', 'readDocuments', 'unreadDocuments', 'requestCount'
     ));
 }
-
 }

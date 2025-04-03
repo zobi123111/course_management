@@ -76,7 +76,7 @@ public function getData(Request $request)
                         $viewBtn = '<a href="' . $viewUrl . '" class="view-icon" title="View User" 
                                       style="font-size:18px; cursor: pointer;">
                                       <i class="fa fa-eye text-danger me-2"></i>
-                                   </a>';  
+                                   </a>';   
                     }
 
                     if(checkAllowedModule('users','user.get')->isNotEmpty())  {
@@ -157,10 +157,10 @@ public function getData(Request $request)
 
     public function profile()
     {
-        $id =  auth()->user()->id;
+        $id =  auth()->user()->id; 
         $user = User::where('id',$id)->first();
 
-        return view('users.profile', compact('user'));
+        return view('users.profile', compact('user'));  
     }
 
     public function profileUpdate(Request $request)
@@ -173,11 +173,14 @@ public function getData(Request $request)
                 if ($userToUpdate->licence_required === 1 && empty($userToUpdate->licence) ) {
                     $rules['licence'] = 'required';
                     $rules['licence_expiry_date'] = 'required';
+                   
+                    
                 }
             
                 if ($userToUpdate->passport_required == 1 && empty($userToUpdate->passport) ) {
                     $rules['passport'] = 'required';
                     $rules['passport_expiry_date'] = 'required';
+                    $rules['passport_file'] = 'required';
                 }
             
                 if ($userToUpdate->medical == 1) {
@@ -196,6 +199,9 @@ public function getData(Request $request)
                     $request->validate($rules);
                 }
             }
+          
+            $licenceFileUploaded = $userToUpdate->licence_file_uploaded;
+            $passportFileUploaded = $userToUpdate->passport_file_uploaded;
             
 
             // Handle Licence File Upload
@@ -210,6 +216,8 @@ public function getData(Request $request)
                         Storage::disk('public')->delete($userToUpdate->licence_file);
                     }
                     $licenceFilePath = $request->file('licence_file')->store('licence_files', 'public');
+                    $licenceFileUploaded = true;
+                    $userToUpdate->update(['licence_verified' => 0]);
                 } else {
                     $licenceFilePath = $request->old_licence_file ?? $userToUpdate->licence_file;
                 }
@@ -224,6 +232,8 @@ public function getData(Request $request)
                         Storage::disk('public')->delete($userToUpdate->passport_file);
                     }
                     $passportFilePath = $request->file('passport_file')->store('passport_files', 'public');
+                    $passportFileUploaded = true;
+                    $userToUpdate->update(['passport_verified' => 0]);
                 } else {
                     $passportFilePath = $request->old_passport_file ?? $userToUpdate->passport_file;
                 }
@@ -253,6 +263,8 @@ public function getData(Request $request)
                 'medical_issuedate' => $request->medical_issue_date ?? null,
                 'medical_expirydate' => $request->medical_expiry_date ?? null,
                 'medical_restriction' => $request->medical_detail ?? null,
+                'licence_file_uploaded' => $licenceFileUploaded,  
+                'passport_file_uploaded' => $passportFileUploaded,
             ];
         
             $oldData = $userToUpdate->only(array_keys($newData));

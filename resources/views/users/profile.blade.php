@@ -182,14 +182,25 @@ h2 {
                                     <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
                                     @endif
                                 </label>
-                                <input type="text" name="licence" id="licence" value="{{ $user->licence ? $user->licence : ''}}" placeholder="Enter Licence Number" class="form-control" {{ $user->licence ? 'disabled' : '' }}>
+                                <!-- <input type="text" name="licence" id="licence" value="{{ $user->licence ? $user->licence : ''}}" placeholder="Enter Licence Number" class="form-control" {{ $user->licence ? 'disabled' : '' }}> -->
+                                 <input type="text" name="licence" id="licence" value="{{ $user->licence ? $user->licence : '' }}" placeholder="Enter Licence Number" class="form-control" {{ $user->licence && $user->licence_status != 'Red' ? 'disabled' : '' }}>
+
                                 <div id="licence_error_up" class="text-danger error_e"> </div>
                                 <label for="licence_expiry_date" class="form-label mt-3">
                                     <strong>
                                         Expiry Date <span class="text-danger">*</span>
-                                    </strong> {!! $user->licence_status !!}
+                                    </strong>
+                                    @if($user->licence_status == 'Red')
+                                        <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
+                                    @elseif($user->licence_status == 'Orange')
+                                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
+                                    @elseif($user->licence_status == 'Amber')
+                                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
+                                    @else
+                                        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
+                                    @endif
                                 </label>
-                                <input type="date" name="licence_expiry_date" id="licence_expiry_date" value="{{ $user->licence_expiry_date ?? '' }}" class="form-control mt-3" {{ $user->licence_expiry_date ? 'disabled' : '' }}>
+                                <input type="date" name="licence_expiry_date" id="licence_expiry_date" value="{{ $user->licence_expiry_date ?? '' }}" class="form-control mt-3"   {{ $user->licence_expiry_date && $user->licence_status != 'Red' ? 'disabled' : '' }}>
 
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" id="non_expiring_licence" name="non_expiring_licence" value="1" {{ $user->licence_non_expiring ? 'checked disabled' : '' }}>
@@ -199,7 +210,8 @@ h2 {
                                 </div>
 
                                 <div id="licence_expiry_date_error_up" class="text-danger error_e"></div>
-                                <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png" {{ $user->licence_file ? 'disabled' : '' }}>
+                                <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png" 
+                                {{ $user->licence_file && $user->licence_status != 'Red' ? 'disabled' : '' }}>
                                 <div id="licence_file_error_up" class="text-danger error_e"></div>
                                 <input type="hidden" name="old_licence_file" value="{{ $user->licence_file }}">
 
@@ -228,20 +240,33 @@ h2 {
                                 </label>
                                 <input type="text" name="passport" id="passport" class="form-control"
                                     value="{{ $user->passport ? $user->passport : ''}}"
-                                    placeholder="Enter Passport Number" {{ $user->passport ? 'disabled' : '' }}>
+                                    placeholder="Enter Passport Number" 
+                                    {{ $user->passport && $user->passport_status != 'Red' ? 'disabled' : '' }}>
                                 <div id="passport_error_up" class="text-danger error_e"></div>
 
                                 <label for="licence_" class="form-label mt-3">
-                                    <strong>Expiry Date <span class="text-danger">*</span> </strong>
-                                    {!! $user->passport_status !!}
-                                </label>
+                                <strong>Expiry Date <span class="text-danger">*</span> </strong>
+                                @if($user->passport_status == 'Red')
+                                    <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
+                                @elseif($user->passport_status == 'Orange')
+                                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
+                                @elseif($user->passport_status == 'Amber')
+                                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
+                                @else
+                                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
+                                @endif
+                            </label>
+
                                 <input type="date" name="passport_expiry_date" id="passport_expiry_date"
                                     value="{{ $user->passport_expiry_date ? $user->passport_expiry_date : ''}}"
-                                    class="form-control mt-3" {{ $user->passport_expiry_date ? 'disabled' : '' }}>
+                                    class="form-control mt-3" 
+                                    {{ $user->passport_expiry_date && $user->passport_status != 'Red' ? 'disabled' : '' }}>
                                 <div id="passport_expiry_date_error_up" class="text-danger error_e"></div>
 
                                 <input type="file" name="passport_file" id="passport_file" class="form-control mt-3"
-                                    accept=".pdf,.jpg,.jpeg,.png" {{ $user->passport_file ? 'disabled' : '' }}>
+                                    accept=".pdf,.jpg,.jpeg,.png" 
+                                    {{ $user->passport_file && $user->passport_status != 'Red' ? 'disabled' : '' }}
+                                    >
                                 <div id="passport_file_error_up" class="text-danger error_e"></div>
 
                                 <input type="hidden" name="old_passport_file" value="{{ $user->passport_file }}">
@@ -290,7 +315,16 @@ h2 {
                             <div id="medical_issue_date_error_up" class="text-danger error_e"></div>
 
                         <label for="extra_roles" class="form-label mt-3"><strong> Medical Expiry Date </strong><span
-                                class="text-danger"></span> {!! $user->passport_status !!}
+                                class="text-danger"></span> 
+                                @if($user->medical_status == 'Red')
+                                    <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
+                                @elseif($user->medical_status == 'Orange')
+                                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
+                                @elseif($user->medical_status == 'Amber')
+                                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
+                                @else
+                                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
+                                @endif
                                 </label>
                         <input type="date" name="medical_expiry_date" id="medical_expiry_date"
                             class="form-control" placeholder="Medical Expiry Date" value="<?php echo isset($user->medical_expirydate) ? $user->medical_expirydate : ''; ?>">
@@ -324,17 +358,6 @@ h2 {
 @section('js_scripts')
 
 <script>
-// $('#ratingStars .star').on('click', function() {
-//         var rating = $(this).data('value');
-//         $('#rating_value').val(rating);
-
-//         $('#ratingStars .star').removeClass('active');
-
-//         for (var i = 1; i <= rating; i++) {
-//             $('#ratingStars .star[data-value="' + i + '"]').addClass('active');
-//         }
-//     });
-
 $(document).ready(function() {
     function toggleFields() {
     const isNonExpiringChecked = $('#non_expiring_licence').prop('checked');
@@ -410,6 +433,7 @@ $(document).ready(function() {
             }
         });
     });
+
 });
 </script>
 @endsection
