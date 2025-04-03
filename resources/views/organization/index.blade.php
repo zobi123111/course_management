@@ -120,14 +120,16 @@
             </div>
             <div class="modal-body">
                 <form id="permissionForm">
-                    @foreach($pages as $page)
+                @foreach($pages as $page)
+                    @if($page->name !== 'Dashboard')
                         <div class="form-check">
                             <input class="form-check-input permission-checkbox" type="checkbox" value="{{ $page->id }}" id="page_{{ $page->id }}">
                             <label class="form-check-label" for="page_{{ $page->id }}">
                                 {{ $page->name }}
                             </label>
                         </div>
-                    @endforeach
+                    @endif
+                @endforeach
                 </form>
             </div>
             <div class="modal-footer">

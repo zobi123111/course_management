@@ -103,6 +103,57 @@ public function getData(Request $request)
          return view('users.index', compact('roles', 'organizationUnits'));
     }
 
+    public function userData(Request $request)
+    {
+        if ($request->ajax()) {
+            $query = User::query()->select([
+                'users.id',
+                'users.fname',
+                'users.lname',
+                'users.licence_required',
+                'users.passport_required',
+                'users.rating_required',
+                'users.medical'
+            ]);
+
+            $query->orderBy('users.id', 'asc'); 
+
+            return DataTables::of($query)
+                ->addColumn('fullname', function ($user) {
+                    return $user->fname . ' ' . $user->lname;
+                })
+                ->filterColumn('fullname', function ($query, $keyword) {
+                    $query->whereRaw("CONCAT(users.fname, ' ', users.lname) LIKE ?", ["%{$keyword}%"]);
+                })
+                ->orderColumn('fullname', function ($query, $order) {
+                    $query->orderByRaw("CONCAT(users.fname, ' ', users.lname) {$order}");
+                })
+                ->addColumn('licence_required', function ($user) {
+                    return $user->licence_required == 1 
+                        ? '<i class="bi bi-check text-success fs-4"></i>' 
+                        : '<i class="bi bi-x text-danger fs-4"></i>';
+                })
+                ->addColumn('passport_required', function ($user) {
+                    return $user->passport_required == 1 
+                        ? '<i class="bi bi-check text-success fs-4"></i>' 
+                        : '<i class="bi bi-x text-danger fs-4"></i>';
+                })
+                ->addColumn('rating_required', function ($user) {
+                    return $user->rating_required == 1 
+                        ? '<i class="bi bi-check text-success fs-4"></i>' 
+                        : '<i class="bi bi-x text-danger fs-4"></i>';
+                })
+                ->addColumn('medical', function ($user) {
+                    return $user->medical == 1 
+                        ? '<i class="bi bi-check text-success fs-4"></i>' 
+                        : '<i class="bi bi-x text-danger fs-4"></i>';
+                })
+                ->rawColumns(['licence_required', 'passport_required', 'rating_required', 'medical'])
+                ->make(true);
+        }
+
+        return view('users.document-table');
+    }
 
     public function profile()
     {
