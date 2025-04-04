@@ -54,7 +54,7 @@
                         <p>Number: {{ $user->passport }}</p>
                         <a href="{{ Storage::url($user->passport_file) }}" class="btn btn-outline-primary btn-sm"
                             target="_blank">View File</a>
-
+                    @if($user->passport_admin_verification_required==1)
                         <!-- Toggle Switch -->
                         <div class="form-check form-switch mt-2">
                             <input class="form-check-input verify-toggle" type="checkbox" id="passport_verify"
@@ -62,7 +62,7 @@
                                 {{ $user->passport_verified ? 'checked disabled' : '' }}>
                             <label class="form-check-label" for="passport_verify">Verified</label>
                         </div>
-
+                     @endif
                         @else
                         <p class="text-muted">No passport details available.</p>
                         @endif
@@ -75,15 +75,15 @@
                         <p>Number: {{ $user->licence }}</p>
                         <a href="{{ Storage::url($user->licence_file) }}" class="btn btn-outline-danger btn-sm"
                             target="_blank">View File</a>
-
+                     @if($user->licence_admin_verification_required==1)
                         <!-- Toggle Switch -->
                         <div class="form-check form-switch mt-2">
-                            <input class="form-check-input medical-verify-toggle" type="checkbox" id="licence_verify"
+                            <input class="form-check-input verify-toggle" type="checkbox" id="licence_verify"
                                 data-user-id="{{ encode_id($user->id) }}" data-type="licence"
                                 {{ $user->licence_verified ? 'checked disabled' : '' }}>
                             <label class="form-check-label" for="licence_verify">Verified</label>
                         </div>
-
+                     @endif
                         @else
                         <p class="text-muted">No license details available.</p>
                         @endif
@@ -101,6 +101,7 @@
                         <p>Medical Issue Date: {{ $user->medical_issuedate }}</p>
                         <p>Medical Expiry Date: {{ $user->medical_expirydate }}</p>
 
+                         @if($user->medical_adminRequired==1)
                         <!-- Toggle Switch -->
                         <div class="form-check form-switch mt-2">
                             <input class="form-check-input verify-toggle" type="checkbox" id="licence_verify"
@@ -108,6 +109,7 @@
                                 {{ $user->medical_verified ? 'checked disabled' : '' }}>
                             <label class="form-check-label" for="licence_verify">Verified</label>
                         </div>
+                        @endif
 
                         @else
                         <p class="text-muted">No Medical details available.</p>
@@ -155,7 +157,6 @@
 
 <script>
 $(document).ready(function() {
-
     $(".verify-toggle").on('change', function() {
         var userId = $(this).data("user-id");
         var docType = $(this).data("type"); // Example: passport or licence

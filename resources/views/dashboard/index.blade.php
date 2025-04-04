@@ -24,12 +24,16 @@ if(Auth()->user()->is_admin == "1"){
 $messages = [];
 foreach ($users as $user) {
 
-    if ($user->licence_file_uploaded == "1" && $user->licence_verified == '0') { 
+    if ($user->licence_file_uploaded == "1" && $user->licence_admin_verification_required == '1' && $user->licence_verified=="0") { 
         $messages[] = "Licence verification required for " . $user->fname . " " . $user->lname;
 
     }
-    if ($user->passport_file_uploaded == "1" && $user->passport_verified == '0') {
+    if ($user->passport_file_uploaded == "1" && $user->passport_admin_verification_required == '1' && $user->passport_verified=="0") {
         $messages[] = "Passport verification required for " . $user->fname . " " . $user->lname;
+
+    }
+    if ($user->medical_file_uploaded == "1"  && $user->medical_adminRequired == '1' && $user->medical_verified=="0") {
+        $messages[] = "Medical verification required for " . $user->fname . " " . $user->lname;
 
     }
 }
@@ -53,7 +57,7 @@ if (!empty($messages)) { ?>
 @endif
 
 @if(auth()->user()->is_admin == 1)
-<table class="table table-bordered">
+<table class="table table-bordered table-striped" id="document_table">
     <thead>
         <tr>
             <th>Name</th>
@@ -67,6 +71,7 @@ if (!empty($messages)) { ?>
         <tr>
             <td>{{ $user->fname }} {{ $user->lname }}</td>
             <td>
+            @if($user->licence_file_uploaded)
                 <strong style="color: 
                     {{ $user->licence_status == 'Red' ? 'red' : 
                        ($user->licence_status == 'Amber' ? 'orange' : 'green') }}">
@@ -78,11 +83,13 @@ if (!empty($messages)) { ?>
                     @elseif($user->licence_status == 'Amber')
                         <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
                     @else
-                        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
+                        <span class="text-success"> Valid </span>
                     @endif
                 </strong>
+             @endif
             </td>
             <td>
+            @if($user->medical_issuedby)
                 <strong style="color: 
                     {{ $user->medical_status == 'Red' ? 'red' : 
                        ($user->medical_status == 'Amber' ? 'orange' : 'green') }}">
@@ -94,24 +101,28 @@ if (!empty($messages)) { ?>
                     @elseif($user->Medical_Status == 'Amber')
                         <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
                     @else
-                        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
+                        <span class="text-success"> Valid </span>
                     @endif
                 </strong>
+            @endif
             </td>
             <td>
-                <strong style="color: 
-                    {{ $user->passport_status == 'Red' ? 'red' : 
-                       ($user->passport_status == 'Amber' ? 'orange' : 'green') }}">
-                        @if($user->passport_status == 'Red')
-                                    <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
-                                @elseif($user->passport_status == 'Orange')
-                                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
-                                @elseif($user->passport_status == 'Amber')
-                                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
-                                @else
-                                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
-                                @endif
-                </strong>
+                @if($user->passport_file)
+                    <strong style="color: 
+                        {{ $user->passport_status == 'Red' ? 'red' : 
+                        ($user->passport_status == 'Amber' ? 'orange' : 'green') }}">
+                            @if($user->passport_status == 'Red')
+                                        <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
+                                    @elseif($user->passport_status == 'Orange')
+                                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
+                                    @elseif($user->passport_status == 'Amber')
+                                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
+                                    @else
+                                        <span class="text-success"> Valid </span>
+                                    @endif
+                    </strong>
+                @endif
+
             </td>
         </tr>
         @endforeach
@@ -620,6 +631,16 @@ if (!empty($messages)) { ?>
 
 @section('js_scripts')
 <script>
+ $(document).ready(function() {
+    $('#document_table').DataTable({ 
+        searching: true,
+        pageLength: 5,
+        language: {
+        emptyTable: "No records found"
+      }
+    });
+});
+
     setTimeout(function() {
             $('#successMessage').fadeOut('fast');
         }, 3000);
