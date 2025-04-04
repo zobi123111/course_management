@@ -144,7 +144,7 @@ class DashboardController extends Controller
 
     $unreadDocuments = $totalDocuments - $readDocuments;  
     $users = User::where('ou_id', Auth::user()->ou_id)->where('is_admin', '=', null)->get();
-                                                   
+
     return view('dashboard.index', compact(
         'user_count', 'course_count', 'group_count', 'folder_count', 
         'totalDocuments', 'readDocuments', 'unreadDocuments', 'requestCount', 'users'
