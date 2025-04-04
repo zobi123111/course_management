@@ -143,11 +143,14 @@ class DashboardController extends Controller
     }
 
     // Unread documents count
-    $unreadDocuments = $totalDocuments - $readDocuments;
+    $unreadDocuments = $totalDocuments - $readDocuments;  
+    $users = User::where('ou_id', Auth::user()->ou_id)->where('is_admin', '=', null)->get();
+
+                                                    
 
     return view('dashboard.index', compact(
         'user_count', 'course_count', 'group_count', 'folder_count', 
-        'totalDocuments', 'readDocuments', 'unreadDocuments', 'requestCount'
+        'totalDocuments', 'readDocuments', 'unreadDocuments', 'requestCount', 'users'
     ));
 }
 }

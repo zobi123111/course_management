@@ -117,7 +117,7 @@ public function getData(Request $request)
             ]);
 
             $query->orderBy('users.id', 'asc'); 
-
+ 
             return DataTables::of($query)
                 ->addColumn('fullname', function ($user) {
                     return $user->fname . ' ' . $user->lname;
@@ -165,14 +165,21 @@ public function getData(Request $request)
 
     public function profileUpdate(Request $request)
     {
-        $userToUpdate = User::find($request->id);                
+
+        $userToUpdate = User::find($request->id);  
+      
+         
 
             if ($userToUpdate) {
                 $rules = [];
-            
-                if ($userToUpdate->licence_required === 1 && empty($userToUpdate->licence) ) {
+           
+                if ($userToUpdate->licence_required === 1 && empty($userToUpdate->licence) ) {    
                     $rules['licence'] = 'required';
-                    $rules['licence_expiry_date'] = 'required';
+                    $rules['licence_expiry_date'] = 'required'; 
+                     // Require a new file only if there's no existing file
+                     if (!$userToUpdate->licence_file) {
+                        $rules['licence_file'] = 'required|file|mimes:pdf,jpg,jpeg,png';
+                    } 
                    
                     
                 }
@@ -189,7 +196,26 @@ public function getData(Request $request)
                     $rules['medical_issue_date'] = 'required';
                     $rules['medical_expiry_date'] = 'required';
                     $rules['medical_detail'] = 'required';
+                    if (!$userToUpdate->medical_file) { 
+                        $rules['medical_file'] = 'required|file|mimes:pdf,jpg,jpeg,png';
+                    }
                 }
+                $licenceFileUploaded = $userToUpdate->licence_file_uploaded;
+                $passportFileUploaded = $userToUpdate->passport_file_uploaded;
+                $medicalFileUploaded = $userToUpdate->medical_file_uploaded;
+
+                if ($request->hasFile('medical_file')) {
+                    if ($userToUpdate->medical_file) {
+                        Storage::disk('public')->delete($userToUpdate->medical_file);
+                    }
+                    $medicalFilePath = $request->file('medical_file')->store('medical_file', 'public');
+                   
+                    $medicalFileUploaded = true;
+                    $userToUpdate->update(['medical_verified' => 0]);
+                } else {
+                    $medicalFilePath = $userToUpdate->medical_file;
+                }
+
             
                 if ($userToUpdate->currency_required == 1) {
                     $rules['currency'] = 'required|string';
@@ -200,8 +226,7 @@ public function getData(Request $request)
                 }
             }
           
-            $licenceFileUploaded = $userToUpdate->licence_file_uploaded;
-            $passportFileUploaded = $userToUpdate->passport_file_uploaded;
+       
             
 
             // Handle Licence File Upload
@@ -247,6 +272,7 @@ public function getData(Request $request)
                 ]);
             }
 
+
             $newData = [
                 'fname' => $request->firstName,
                 'lname' => $request->lastName,
@@ -263,9 +289,13 @@ public function getData(Request $request)
                 'medical_issuedate' => $request->medical_issue_date ?? null,
                 'medical_expirydate' => $request->medical_expiry_date ?? null,
                 'medical_restriction' => $request->medical_detail ?? null,
+                'medical_file' =>$medicalFilePath,
                 'licence_file_uploaded' => $licenceFileUploaded,  
                 'passport_file_uploaded' => $passportFileUploaded,
+                'medical_file_uploaded' => $medicalFileUploaded
             ];
+
+            //dd($newData);
         
             $oldData = $userToUpdate->only(array_keys($newData));
             $changes = [];
@@ -369,6 +399,11 @@ public function getData(Request $request)
             $passport_file = $request->file('passport_file')->store('user_documents', 'public');
         }
 
+        if ($request->has('medical_checkbox') && $request->medical_checkbox == 1) {
+            $medicalFilePath = $request->file('medical_file')->store('medical_file', 'public');
+         } 
+        
+
         // Determine is_admin value
         $is_admin = (!empty($request->ou_id) && $request->role_name==1)? 1 : null;
         // dd($is_admin);
@@ -404,6 +439,7 @@ public function getData(Request $request)
             'medical_issuedate'     => $medical_issue_date,
             'medical_expirydate'    => $medical_expiry_date,
             'medical_restriction'   => $medical_detail,
+            'medical_file'          => $medicalFilePath ?? null,
             "is_admin"              => $is_admin
         );
 
@@ -431,6 +467,7 @@ public function getData(Request $request)
     
     public function update(Request $request)
     {
+        
         $userToUpdate = User::find($request->edit_form_id);
 
         if ($userToUpdate) {
@@ -489,6 +526,18 @@ public function getData(Request $request)
                 $passportFilePath = $userToUpdate->passport_file;
             }
 
+              // Handle Medical
+              if ($request->has('editmedical_checkbox') && $request->editmedical_checkbox == 1) {
+               // $passport_required = 1;
+                $medicalFilePath = $request->hasFile('editmedical_file')
+                    ? $request->file('editmedical_file')->store('medical_file', 'public')
+                    : $userToUpdate->passport_file;
+            } 
+            else {
+              //  $passport_required = null;
+                $medicalFilePath = $userToUpdate->medical_file;
+            }
+
             // Handle Currency Requirement
             $currency_required = $request->has('edit_currency_checkbox') ? 1 : null;
 
@@ -532,6 +581,8 @@ public function getData(Request $request)
                 'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id,
                 'licence' => $request->edit_licence ?? null,
                 'licence_required' => $licence_required,
+                'licence_admin_verification_required' => $request->edit_licence_verification_required ?? 0,
+                'passport_admin_verification_required' => $request->edit_passport_verification_required ?? 0,
                 'licence_file' => $licenceFilePath,
                 'passport_required' => $passport_required,
                 'passport' => $request->edit_passport ?? null,
@@ -539,7 +590,7 @@ public function getData(Request $request)
                 'rating' => $request->edit_rating ?? null,
                 'rating_required' => $rating_required,
                 'currency_required' => $currency_required,
-                'currency' => $request->edit_currency ?? null,
+                'currency' => $request->edit_currency ?? null, 
                 'custom_field_file' => $editcustom_field_date,
                 'custom_field_text' => $editcustom_field_text,
                 'password_flag' => $password_flag,
@@ -551,6 +602,7 @@ public function getData(Request $request)
                 'medical_issuedate' => $medical_issue_date,
                 'medical_expirydate' => $medical_expiry_date,
                 'medical_restriction' => $medical_detail,
+                'medical_file'  => $medicalFilePath,
                 'is_admin' => $is_admin
             ];
 
