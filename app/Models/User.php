@@ -62,6 +62,8 @@ class User extends Authenticatable
         'medical_verified',
         'licence_file_uploaded',
         'passport_file_uploaded',
+        'medical_file',
+        'medical_file_uploaded',
         'is_admin'  
     ];
 

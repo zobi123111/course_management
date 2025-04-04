@@ -270,8 +270,6 @@ h2 {
                                 <div id="passport_file_error_up" class="text-danger error_e"></div>
 
                                 <input type="hidden" name="old_passport_file" value="{{ $user->passport_file }}">
-
-
                                 @if ($user->passport_file)
                                 <div class="mt-3">
                                     <a href="{{ asset('storage/' . $user->passport_file) }}" target="_blank"
@@ -292,17 +290,20 @@ h2 {
                                 @if ($user->medical_verified)
                                     <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
                                     @endif
-                        <select class="form-select " name="issued_by" id="issued_by">
-                            <option value="">Select Issued By</option>
-                            <option value="UKCAA" <?php echo ($user->medical_issuedby == "UKCAA")?'selected':'' ?>>UK CAA</option>
-                            <option value="EASA" <?php echo ($user->medical_issuedby == "EASA")?'selected':'' ?>>EASA</option>
-                            <option value="FAA" <?php echo ($user->medical_issuedby == "FAA")?'selected':'' ?>>FAA</option>
-                        </select>
+                                    <select class="form-select" name="issued_by" id="issued_by"
+                                        {{ ($user->medical_expirydate && $user->medical_status != 'Red') ? 'disabled' : '' }}>
+                                        <option value="">Select Issued By</option>
+                                        <option value="UKCAA" {{ $user->medical_issuedby == "UKCAA" ? 'selected' : '' }}>UK CAA</option>
+                                        <option value="EASA" {{ $user->medical_issuedby == "EASA" ? 'selected' : '' }}>EASA</option>
+                                        <option value="FAA" {{ $user->medical_issuedby == "FAA" ? 'selected' : '' }}>FAA</option>
+                                    </select>
                         <div id="issued_by_error_up" class="text-danger error_e"></div>
 
                         <label for="extra_roles" class="form-label mt-3"><strong> Medical Class </strong><span
                                 class="text-danger"></span></label>
-                        <select class="form-select " name="medical_class" id="medical_class">
+                        <select class="form-select " name="medical_class" id="medical_class"
+                        {{ ($user->medical_class && $user->medical_status != 'Red') ? 'disabled' : '' }}>
+                            
                             <option value="">Select the Class</option>
                             <option value="class1" <?php echo ($user->medical_class == "class1")?'selected':'' ?>>Class 1</option>
                             <option value="class2" <?php echo ($user->medical_class == "class2")?'selected':'' ?>>Class 2</option>
@@ -311,7 +312,7 @@ h2 {
                         <label for="extra_roles" class="form-label mt-3"><strong>Medical Issue Date </strong> <span
                                 class="text-danger"></span></label>
                         <input type="date" name="medical_issue_date" id="medical_issue_date"
-                            class="form-control" placeholder="Medical Issue Date" value="<?php echo isset($user->medical_issuedate) ? $user->medical_issuedate : ''; ?>">
+                            class="form-control" placeholder="Medical Issue Date" value="<?php echo isset($user->medical_issuedate) ? $user->medical_issuedate : ''; ?>" {{ $user->medical_issuedate && $user->medical_status != 'Red' ? 'disabled' : '' }}>
                             <div id="medical_issue_date_error_up" class="text-danger error_e"></div>
 
                         <label for="extra_roles" class="form-label mt-3"><strong> Medical Expiry Date </strong><span
@@ -327,15 +328,29 @@ h2 {
                                 @endif
                                 </label>
                         <input type="date" name="medical_expiry_date" id="medical_expiry_date"
-                            class="form-control" placeholder="Medical Expiry Date" value="<?php echo isset($user->medical_expirydate) ? $user->medical_expirydate : ''; ?>">
+                            class="form-control" placeholder="Medical Expiry Date" value="<?php echo isset($user->medical_expirydate) ? $user->medical_expirydate : ''; ?>" {{ $user->medical_expirydate && $user->medical_status != 'Red' ? 'disabled' : '' }}>
                             <div id="medical_expiry_date_error_up" class="text-danger error_e"></div>
 
 
                         <label for="extra_roles" class="form-label mt-3"><strong> Medical Detail </strong> <span
                                 class="text-danger"></span></label>
                         <input type="text" name="medical_detail" id="medical_detail" class="form-control"
-                            placeholder="Enter the Detail" value="<?php echo isset($user->medical_restriction) ? $user->medical_restriction : ''; ?>">
-                         <div id="medical_detail_error_up" class="text-danger error_e"></div>
+                            placeholder="Enter the Detail" value="<?php echo isset($user->medical_restriction) ?  $user->medical_restriction : ''; ?>" {{ $user->medical_restriction && $user->medical_status != 'Red' ? 'disabled' : '' }}>
+
+                            <input type="file" name="medical_file" id="medical_file" class="form-control mt-3"
+                                    accept=".pdf,.jpg,.jpeg,.png" >
+                             @if ($user->medical_file)
+                                <div class="mt-3">
+                                    <a href="{{ asset('storage/' . $user->medical_file) }}" target="_blank"
+                                        class="btn btn-outline-primary btn-sm d-flex align-items-center"
+                                        style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
+                                        <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View
+                                        Medical
+                                    </a>
+                                </div>
+                            @endif
+
+                         <div id="medical_file_error_up" class="text-danger error_e"></div>
 
 
                 </div>
@@ -413,7 +428,7 @@ $(document).ready(function() {
                 setTimeout(function() {
                     $('#update_success_msg').fadeOut('slow');
 
-                }, 5000);
+                }, 5000); 
 
                 setTimeout(function() {
                     location.reload();

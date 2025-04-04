@@ -1297,3 +1297,6 @@ img#courseresource_img {
   height: 44px;
   width: 66px;
 }
+#document_table th, #document_table td {
+  border: 1px solid #dee2e6 !important;
+}
