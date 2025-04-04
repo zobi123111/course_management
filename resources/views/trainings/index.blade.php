@@ -22,50 +22,50 @@
 <div class="card pt-4">
         <div class="card-body">
     <table class="table table-hover" id="trainingEventTable">
-    <thead>
-        <tr>
-            <th scope="col">Event</th>
-            <th scope="col">Student</th>
-            <th scope="col">Instructor</th>
-            <th scope="col">Resource</th>
-            <th scope="col">Event Date</th>
-            <th scope="col">Start Time</th>
-            <th scope="col">End Time</th>
-            @if(checkAllowedModule('training','training.show')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.grading-list')->isNotEmpty())
-            <th scope="col">Action</th>
-            @endif
-        </tr>
-    </thead>
-    <tbody>
-        @foreach($trainingEvents as $event)
-        <tr>
-            <td class="eventName">{{ $event->course?->course_name }}</td>
-            <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
-            <td>{{ $event->instructor?->fname }} {{ $event->instructor?->lname }}</td>
-            <td>{{ $event->resource?->name }}</td>
-            <td>{{ date('d-m-y', strtotime($event->event_date)) }}</td>
-            <td>{{ date('h:i A', strtotime($event->start_time)) }}</td>
-            <td>{{ date('h:i A', strtotime($event->end_time)) }}</td>
-            <td>
-            @if(checkAllowedModule('training','training.show')->isNotEmpty())
-                <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;"><i class="fa fa-eye text-danger me-2"></i></a>
-            @endif
-            @if(checkAllowedModule('training','training.edit')->isNotEmpty())
-                <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                data-event-id="{{ encode_id($event->id) }}"></i>
-            @endif
-            @if(checkAllowedModule('training','training.delete')->isNotEmpty())
-                <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                data-event-id="{{ encode_id($event->id) }}" ></i>
-            @endif
-            @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
-            <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;"><i class="fa fa-list text-danger me-2"></i></a>
-            @endif
-            </td>
-        </tr>
-        @endforeach
-    </tbody>
-</table>
+        <thead>
+            <tr>
+                <th scope="col">Event</th>
+                <th scope="col">Student</th>
+                <th scope="col">Instructor</th>
+                <th scope="col">Resource</th>
+                <th scope="col">Event Date</th>
+                <th scope="col">Start Time</th>
+                <th scope="col">End Time</th>
+                @if(checkAllowedModule('training','training.show')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.grading-list')->isNotEmpty())
+                <th scope="col">Action</th>
+                @endif
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($trainingEvents as $event)
+            <tr>
+                <td class="eventName">{{ $event->course?->course_name }}</td>
+                <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
+                <td>{{ $event->instructor?->fname }} {{ $event->instructor?->lname }}</td>
+                <td>{{ $event->resource?->name }}</td>
+                <td>{{ date('d-m-y', strtotime($event->event_date)) }}</td>
+                <td>{{ date('h:i A', strtotime($event->start_time)) }}</td>
+                <td>{{ date('h:i A', strtotime($event->end_time)) }}</td>
+                <td>
+                @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                    <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;"><i class="fa fa-eye text-danger me-2"></i></a>
+                @endif
+                @if(checkAllowedModule('training','training.edit')->isNotEmpty())
+                    <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                    data-event-id="{{ encode_id($event->id) }}"></i>
+                @endif
+                @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                    <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                    data-event-id="{{ encode_id($event->id) }}" ></i>
+                @endif
+                @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
+                <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;"><i class="fa fa-list text-danger me-2"></i></a>
+                @endif
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
 </div>
 </div>
 
@@ -357,7 +357,6 @@
 </div>
 <!--End of Edit Training Event-->
 
-
 <!-- Delete Group Modal -->
 <form action="{{ url('training/delete') }}" id="deleteTrainingEventForm" method="POST">
     @csrf
@@ -388,7 +387,6 @@
 <script>
 $(document).ready(function() {
     $('#groupTable').DataTable();
-
 
    // Attach event listeners for both create and edit fields
     $('#start_time, #end_time, #edit_start_time, #edit_end_time').on('change', function () {
@@ -429,7 +427,6 @@ $(document).ready(function() {
 
     $(document).on('change', '#select_org_unit, #edit_ou_id', function() {
         var ou_id = $(this).val();
-// alert(ou_id);
         // Determine which modal is being used
         var isEditModal = $(this).attr('id') === 'edit_ou_id';
 
@@ -543,45 +540,9 @@ $(document).ready(function() {
         }
     });
 
-
-    // $(document).on('change', '#select_course, #edit_select_course', function() {
-    //     var courseId = $(this).val();
-
-    //     // Determine which form is being used
-    //     var isEditForm = $(this).attr('id') === 'edit_select_course';
-
-    //     // Select the correct dropdown based on the form
-    //     var lessonDropdown = isEditForm ? $('#edit_select_lesson') : $('#select_lesson');
-
-    //     $.ajax({
-    //         url: '{{ url("/training/get_course_lessons") }}', // Route to fetch lessons
-    //         type: 'GET',
-    //         data: { course_id: courseId },
-    //         success: function(response) {
-
-    //             // Clear and populate Lessons dropdown
-    //             lessonDropdown.empty();
-
-    //             if (response.success && response.lessons.length > 0) {
-    //                 lessonDropdown.append('<option value="">Select Lesson</option>'); // Default option
-    //                 $.each(response.lessons, function(index, lesson) {
-    //                     lessonDropdown.append('<option value="' + lesson.id + '">' + lesson.lesson_title + '</option>');
-    //                 });
-    //             } else {
-    //                 alert('No lessons found for the selected course.');
-    //                 lessonDropdown.append('<option value="">Select Lesson</option>'); // Keep default option
-    //             }
-    //         },
-    //         error: function(xhr) {
-    //             console.error(xhr.responseText);
-    //             alert('Error fetching lessons. Please try again.');
-    //         }
-    //     });
-    // });
-
     $(document).on('change', '#select_course, #edit_select_course', function() {
         var courseId = $(this).val();
-// alert(courseId);
+        // alert(courseId);
         // Determine if it's the edit form
         var isEditForm = $(this).attr('id') === 'edit_select_course';
 
@@ -649,64 +610,66 @@ $(document).ready(function() {
 
     })
 
-    $(document).on('click', '.edit-event-icon', function() {
+    $(document).on('click', '.edit-event-icon', function () {
         $('.error_e').html('');
         var eventId = $(this).data('event-id');
 
         $.ajax({
             url: "{{ url('/training/edit') }}",
             type: 'GET',
-            data: {
-                eventId: eventId
-            },
-            success: function(response) {
+            data: { eventId: eventId },
+            success: async function (response) {
                 if (response.success) {
-                    $('#edit_select_user').val(response.trainingEvent.student_id);
-                    $('#edit_select_course').val(response.trainingEvent.course_id);
-                    $('#edit_select_group').val(response.trainingEvent.group_id);
-                    $('#edit_event_date').val(response.trainingEvent.event_date);
-                    $('#edit_select_instructor').val(response.trainingEvent.instructor_id);
-                    $('#edit_select_resource').val(response.trainingEvent.resource_id);
-                    $('#edit_departure_airfield').val(response.trainingEvent.departure_airfield);
-                    $('#edit_destination_airfield').val(response.trainingEvent.destination_airfield);
-                    $('#edit_total_time').val(response.trainingEvent.total_time);
-                    $('#edit_licence_number').val(response.trainingEvent.licence_number);
+                    const event = response.trainingEvent;
 
-                    // Convert datetime format for input[type="datetime-local"]
-                    $('#edit_start_time').val(response.trainingEvent.start_time.replace(" ", "T"));
-                    $('#edit_end_time').val(response.trainingEvent.end_time.replace(" ", "T"));
+                    // Store values temporarily
+                    const selectedOU = event.ou_id;
+                    const selectedStudent = event.student_id;
+                    const selectedInstructor = event.instructor_id;
+                    const selectedResource = event.resource_id;
+                    const selectedCourse = event.course_id;
 
-                    $('#edit_event_id').val(response.trainingEvent.id);
+                    // Set initial static values
+                    $('#edit_event_id').val(event.id);
+                    $('#edit_event_date').val(event.event_date);
+                    $('#edit_departure_airfield').val(event.departure_airfield);
+                    $('#edit_destination_airfield').val(event.destination_airfield);
+                    $('#edit_total_time').val(event.total_time);
+                    $('#edit_licence_number').val(event.licence_number);
+                    $('#edit_start_time').val(event.start_time);
+                    $('#edit_end_time').val(event.end_time);
 
-                    if (response.trainingEvent.ou_id) {
-                        $('#edit_ou_id').val(response.trainingEvent.ou_id);
-                    }
-                    
-                    // Store selected lesson IDs
-                    let lessonIds = Array.isArray(response.trainingEvent.lesson_ids)
-                    ? response.trainingEvent.lesson_ids
-                    : JSON.parse(response.trainingEvent.lesson_ids || "[]");
+                    // Set OU and wait for dropdowns to populate
+                    $('#edit_ou_id').val(selectedOU).trigger('change');
 
-                    $("#edit_select_lesson").data("selected-lessons", lessonIds);
+                    // Wait a bit for student/instructor/resource dropdowns to populate
+                    await new Promise(resolve => setTimeout(resolve, 500));
 
-                    // Store selected values before triggering the change event
-                    $("#edit_select_user").data("selected-value", response.trainingEvent.student_id);
-                    $("#edit_select_instructor").data("selected-value", response.trainingEvent.instructor_id);
-                    $("#edit_select_resource").data("selected-value", response.trainingEvent.resource_id);
-                    $("#edit_select_course").data("selected-value", response.trainingEvent.course_id);
+                    // Set selected values
+                    $('#edit_select_user').data("selected-value", selectedStudent).val(selectedStudent).trigger('change');
+                    $('#edit_select_instructor').data("selected-value", selectedInstructor).val(selectedInstructor);
+                    $('#edit_select_resource').data("selected-value", selectedResource).val(selectedResource);
 
+                    // Wait for student change to load courses
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    $('#edit_select_course').data("selected-value", selectedCourse).val(selectedCourse).trigger('change');
+
+                    // Lessons (handled after course is loaded)
+                    let lessonIds = Array.isArray(event.lesson_ids) ? event.lesson_ids : JSON.parse(event.lesson_ids || "[]");
+                    $('#edit_select_lesson').data('selected-lessons', lessonIds);
 
                     $('#editTrainingEventModal').modal('show');
                 } else {
                     console.error("Error: Invalid response format");
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 console.error(xhr.responseText);
                 alert('Something went wrong! Please try again.');
             }
         });
     });
+
 
     $('#updateTrainingEvent').on('click', function(e) {
         e.preventDefault();
@@ -738,75 +701,16 @@ $(document).ready(function() {
         $('#eventId').val(eventId);      
     });
 
-    // $(document).on("change", ".select_org_unit", function () {
-    //     var ou_id = $(this).val();
-    //     var $select_group, $select_instructor;
+    $('#editTrainingEventModal').on('shown.bs.modal', async function () {
+        $('#edit_ou_id').trigger('change');
 
-    //     // Determine if the event was triggered from the main form or the edit modal
-    //     if ($(this).attr("id") === "edit_ou_id") {
-    //         $select_group = $("#edit_select_group"); // Edit modal group dropdown
-    //         $select_instructor = $("#edit_select_instructor"); // Edit modal instructor dropdown
-    //     } else {
-    //         $select_group = $("#select_group"); // Main form group dropdown
-    //         $select_instructor = $("#select_instructor"); // Main form instructor dropdown
-    //     }
+        await new Promise(resolve => setTimeout(resolve, 300));
+        $('#edit_select_user').trigger('change');
 
-    //     $.ajax({
-    //         url: "/training/get_ou_groups_and_instructors/",
-    //         type: "GET",
-    //         data: { 'ou_id': ou_id },
-    //         dataType: "json",
-    //         success: function (response) {
-    //             console.log(response);
+        await new Promise(resolve => setTimeout(resolve, 300));
+        $('#edit_select_course').trigger('change');
+    });
 
-    //             // Populate Organization Unit Groups
-    //             if (response.orgUnitGroups && Array.isArray(response.orgUnitGroups)) {
-    //                 var groupOptions = "<option value=''>Select Group</option>";
-    //                 response.orgUnitGroups.forEach(function (value) {
-    //                     groupOptions += "<option value='" + value.id + "'>" + value.name + "</option>";
-    //                 });
-    //                 $select_group.html(groupOptions);
-    //             } else {
-    //                 console.error("Invalid response format for groups:", response);
-    //             }
-
-    //             // Populate Instructors
-    //             if (response.ouInstructors && Array.isArray(response.ouInstructors)) {
-    //                 var instructorOptions = "<option value=''>Select Instructor</option>";
-    //                 response.ouInstructors.forEach(function (value) {
-    //                     instructorOptions += "<option value='" + value.id + "'>" + value.fname + " " + value.lname + "</option>";
-    //                 });
-    //                 $select_instructor.html(instructorOptions);
-    //             } else {
-    //                 console.error("Invalid response format for instructors:", response);
-    //             }
-    //         },
-    //         error: function (xhr, status, error) {
-    //             console.error(xhr.responseText);
-    //         }
-    //     });
-    // });
-
-    $(document).on("shown.bs.modal", "#editTrainingEventModal", function(event) {
-    var ouId = $("#edit_ou_id").val();
-    var userId = $("#edit_select_user").val();
-    var courseId = $("#edit_select_course").val();
-//  alert(ouId);
-// alert(userId);
-// alert(courseId);
-    if (ouId) {
-        $("#edit_ou_id").trigger("change"); // Load students, instructors, resources
-    }
-
-    if (userId) {
-        $("#edit_select_user").trigger("change"); // Load license number and courses
-    }
-
-    // Ensure lessons are loaded based on the selected course
-    if (courseId) {
-        $("#edit_select_course").trigger("change"); // Load lessons
-    }
-});
 
 
     setTimeout(function() {

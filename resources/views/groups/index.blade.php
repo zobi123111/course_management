@@ -118,6 +118,7 @@
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="submitGroup" class="btn btn-primary sbt_btn">Save</button>
                     </div>
+                    <div class="loader" style="display: none;"></div>
                 </form>
             </div>
         </div>
@@ -178,6 +179,7 @@
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="updateGroup" class="btn btn-primary sbt_btn">Update</button>
                     </div>
+                    <div class="loader" style="display: none;"></div>
                 </form>
             </div>
         </div>
@@ -259,16 +261,15 @@ $(document).ready(function() {
 
     // $('.edit-group-icon').click(function(e) {
     //     e.preventDefault();
-    $('#groupTable').on('click', '.edit-group-icon', function() {
+    $('#groupTable').on('click', '.edit-group-icon', function () {
         $('.error_e').html('');
         var groupId = $(this).data('group-id');
+        $(".loader").fadeIn();
         $.ajax({
             url: "{{ url('/group/edit') }}",
             type: 'GET',
-            data: {
-                id: groupId
-            },
-            success: function(response) {
+            data: { id: groupId },
+            success: function (response) {
                 $('#edit_name').val(response.group.name);
                 $('#edit_group_id').val(response.group.id);
                 $('#edit_ou_id').val(response.group.ou_id);
@@ -276,14 +277,13 @@ $(document).ready(function() {
 
                 let selectedUsers = response.group.user_ids ? response.group.user_ids.map(String) : [];
 
-                console.log(selectedUsers);
-                $('#edit_users').val(selectedUsers).trigger('change');
+                // Store selected users temporarily
+                $('#edit_users').data("selected-users", selectedUsers);
+                $('#edit_users').val([]).trigger('change'); // Reset for clean re-selection
 
                 $('#editGroupModal').modal('show');
-
-                initializeSelect2();
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 console.error(xhr.responseText);
             }
         });
@@ -311,16 +311,6 @@ $(document).ready(function() {
         })
     })
 
-    // Handle Delete Group Click
-    // $('.delete-icon').click(function() {
-    //     var groupId = $(this).data('group-id');
-    //     var groupName = $(this).data('group-name');
-
-    //     $('#delete_group_id').val(groupId);
-    //     $('#delete_group_name').text(groupName);
-    //     $('#deleteGroup').modal('show');
-    // });
-
     // Delete Group
     $(document).on('click', '.delete-group-icon', function() {  
         $('#deleteGroup').modal('show');
@@ -331,59 +321,63 @@ $(document).ready(function() {
       
     });
 
-    $(document).on("change", "#select_org_unit, #edit_ou_id", function() { 
+    $(document).on("change", "#select_org_unit, #edit_ou_id", function () {
         var ou_id = $(this).val();
-        var $selectUser = $(this).attr("id") === "select_org_unit" ? $("#usersDropdown") : $("#edit_users");
+        var isEdit = $(this).attr("id") === "edit_ou_id";
+        var $selectUser = isEdit ? $("#edit_users") : $("#usersDropdown");
 
-        // Store the currently selected users before clearing
-        var selectedUsers = $selectUser.val() || [];
-
+        // Get the saved selected users only if in edit mode
+        var selectedUsers = isEdit
+            ? $selectUser.data("selected-users") || []
+            : $selectUser.val() || [];
+            if (!$(".loader").is(":visible")) {
+                $(".loader").fadeIn();
+            }
         $.ajax({
             url: "/group/get_ou_user/",
             type: "GET",
-            data: { 'ou_id': ou_id },
+            data: { ou_id: ou_id },
             dataType: "json",
-            success: function(response) {
-                console.log(response);
+            success: function (response) {
+                if (Array.isArray(response.orguser)) {
+                    let options = "";
+                    response.orguser.forEach(function (user) {
+                        options += `<option value="${user.id}">${user.fname} ${user.lname}</option>`;
+                    });
 
-                if (response.orguser && Array.isArray(response.orguser)) { 
-                    var options = "";
+                    $selectUser.html(options);
 
-                    if (response.orguser.length > 0) {
-                        response.orguser.forEach(function(value) { 
-                            options += "<option value='" + value.id + "'>" + value.fname + " " + value.lname + "</option>";
-                        });
-
-                        $selectUser.html(options); // Update dropdown with new users
-
-                        // Restore previously selected users after dropdown is populated
-                        setTimeout(() => {
-                            $selectUser.val(selectedUsers).trigger('change');
-                        }, 100);
-                    } else {
-                        $selectUser.html(""); // Clear dropdown if no users are found
-                        console.warn("No users found, clearing the list.");
-                    }
+                    // Restore selection after populating options
+                    setTimeout(() => {
+                        $selectUser.val(selectedUsers).trigger('change');
+                    }, 50);
                 } else {
-                    console.error("Invalid response format:", response);
+                    $selectUser.html("");
+                    console.warn("No users found.");
                 }
+                $(".loader").fadeOut("slow");
             },
-            error: function(xhr, status, error) {
+            error: function (xhr) {
                 console.error(xhr.responseText);
+                $(".loader").fadeOut("slow");
             }
         });
     });
 
-    // When modals are opened
-    $(document).on("shown.bs.modal", "#createGroupModal, #editGroupModal", function(event) {
-        if (event.target.id === "editGroupModal") {
-            let selectedUsers = $("#edit_users").val() || [];
-            $("#edit_users").data("selected-users", selectedUsers);
 
-            $("#edit_ou_id").trigger("change"); // Trigger change event only for the edit modal
+
+    // When modals are opened
+    $(document).on("shown.bs.modal", "#createGroupModal, #editGroupModal", function (event) {
+        initializeSelect2();
+
+        if (event.target.id === "editGroupModal") {
+            // Only for edit modal: trigger OU change to load users
+            setTimeout(() => {
+                $("#edit_ou_id").trigger("change");
+            }, 10);
         }
-        initializeSelect2(); // Ensure Select2 initializes for both modals
     });
+
 
 
     setTimeout(function() {
