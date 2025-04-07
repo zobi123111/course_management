@@ -116,16 +116,14 @@ class CourseController extends Controller
 
     public function createCourse(Request $request)
     {
-        // dd($request->all());
         $request->validate([  
             'course_name' => 'required|unique:courses,course_name,NULL,id,deleted_at,NULL',
             'description' => 'required',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|boolean',
-            // 'resources' => 'required',          
-            // 'group_ids' => 'required',
-            'duration_type' => 'nullable|in:hours,events', // Ensures only 'hours' or 'events' can be selected
-            'duration_value' => 'nullable|integer|min:1', // Ensures it's a positive number if provided
+            'duration_type' => 'nullable|in:hours,events',
+            'duration_value' => 'nullable|integer|min:1',
+            'course_type' => 'required|in:one_event,multi_lesson', // validate course_type
             'ou_id' => [
                 function ($attribute, $value, $fail) {
                     if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
@@ -133,32 +131,30 @@ class CourseController extends Controller
                     }
                 }
             ]
-            ],
-            [
-            // 'group_ids.required' => 'Groups are required.'
-
         ]);
-    
+
         if ($request->hasFile('image')) {
             $filePath = $request->file('image')->store('courses', 'public');
         }
-    
+
         $course = Courses::create([
             'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, 
             'course_name' => $request->course_name,
             'description' => $request->description,
             'image' => $filePath ?? null,
             'status' => $request->status,
-            'duration_type' => $request->duration_type ?? null, // Assigns null if not provided
-            'duration_value' => $request->duration_value ?? null // Assigns null if not provided
+            'duration_type' => $request->duration_type ?? null,
+            'duration_value' => $request->duration_value ?? null,
+            'course_type' => $request->course_type, // save course_type
         ]);
-    
-        $course->groups()->attach($request->group_ids); 
+
+        $course->groups()->attach($request->group_ids);
         $course->resources()->attach($request->resources);
-    
+
         Session::flash('message', 'Course created successfully.');
         return response()->json(['success' => 'Course created successfully.']);
     }
+
     
 
 
@@ -197,6 +193,7 @@ class CourseController extends Controller
     {
         $request->validate([
             'course_name' => 'required|unique:courses,course_name,' . $request->course_id . ',id,deleted_at,NULL',
+            'course_type' => 'required|in:one_event,multi_lesson', 
             'description' => 'required',
             'status' => 'required',
             // 'resources' => 'required',          
@@ -229,8 +226,9 @@ class CourseController extends Controller
 
         // Update course details
         $course->update([
-            'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->editou_id : (auth()->user()->ou_id ?? null),
+            'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : (auth()->user()->ou_id ?? null),
             'course_name' => $request->course_name,
+            'course_type' => $request->course_type,
             'description' => $request->description,
             'image' => $filePath,
             'status' => $request->status,

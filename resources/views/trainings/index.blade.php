@@ -73,7 +73,7 @@
 <!-- Create Training Event-->
 <div class="modal fade" id="createTrainingEventModal" tabindex="-1" role="dialog" aria-labelledby="groupModalLabel"
     aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="groupModalLabel">Create Training Event</h5>
@@ -84,7 +84,7 @@
                 @csrf
 
                 @if(auth()->user()->is_owner == 1)
-                <div class="form-group">
+                <div class="col-md-6">
                     <label class="form-label">Select Org Unit<span class="text-danger">*</span></label>
                     <select class="form-select" name="ou_id" id="select_org_unit">
                         <option value="">Select Org Unit</option>
@@ -96,7 +96,7 @@
                 </div>
                 @endif
                 <!-- Select User -->
-                <div class="form-group">
+                <div class="col-md-6">
                     <label class="form-label">Select Student<span class="text-danger">*</span></label>
                     <select class="form-select" name="student_id" id="select_user">
                         <option value="">Select Student</option>
@@ -107,7 +107,7 @@
                     <div id="student_id_error" class="text-danger error_e"></div>
                 </div>
                 <!-- Select Course -->
-                <div class="form-group">
+                <div class="col-md-6">
                     <label class="form-label">Select Course<span class="text-danger">*</span></label>
                     <select class="form-select" name="course_id" id="select_course">
                         <option value="">Select Course</option>
@@ -118,42 +118,42 @@
                     <div id="course_id_error" class="text-danger error_e"></div>
                 </div>
                 <!-- Select Lesson -->
-                <div class="form-group">
+                <div class="col-md-6">
                     <label class="form-label">Select Lesson<span class="text-danger">*</span></label>
-                    <select class="form-select" name="lesson_ids[]" id="select_lesson" multiple>
+                    <select class="form-select select_lesson" name="lesson_ids[]" id="select_lesson" >
                         <!-- Options will be populated dynamically -->
                     </select>
                     <div id="lesson_ids_error" class="text-danger error_e"></div>
                 </div>
                 <!-- Event Date-->
-                <div class="form-group">
+                <div class="col-md-4">
                     <label class="form-label">Event Date<span class="text-danger">*</span></label>
                     <input type="date" name="event_date" class="form-control" id="event_date">
                     <div id="event_date_error" class="text-danger error_e"></div>
                 </div>
                 <!-- Start Date & Time -->
-                <div class="form-group">
+                <div class="col-md-4">
                     <label class="form-label">Start Time<span class="text-danger">*</span></label>
                     <input type="time" name="start_time" class="form-control" id="start_time">
                     <div id="start_time_error" class="text-danger error_e"></div>
                 </div>
 
                 <!-- End Date & Time -->
-                <div class="form-group">
+                <div class="col-md-4">
                     <label class="form-label">End Time<span class="text-danger">*</span></label>
                     <input type="time" name="end_time" class="form-control" id="end_time">
                     <div id="end_time_error" class="text-danger error_e"></div>
                 </div>
 
                 <!-- Departure Airfield -->
-                <div class="form-group">
+                <div class="col-md-6">
                     <label class="form-label">Departure Airfield (4-letter code)<span class="text-danger">*</span></label>
                     <input type="text" name="departure_airfield" class="form-control" maxlength="4">
                     <div id="departure_airfield_error" class="text-danger error_e"></div>
                 </div>
 
                 <!-- Destination Airfield -->
-                <div class="form-group">
+                <div class="col-md-6">
                     <label class="form-label">Destination Airfield (4-letter code)<span class="text-danger">*</span></label>
                     <input type="text" name="destination_airfield" class="form-control" maxlength="4">
                     <div id="destination_airfield_error" class="text-danger error_e"></div>
@@ -171,7 +171,7 @@
                 </div> -->
 
                 <!-- Select Instructor -->
-                <div class="form-group">
+                <div class="col-md-6">
                     <label class="form-label">Select Instructor<span class="text-danger">*</span></label>
                     <select class="form-select" name="instructor_id" id="select_instructor">
                         <option value="">Select Instructor</option>
@@ -183,7 +183,7 @@
                 </div>
 
                 <!-- Select Resource -->
-                <div class="form-group">
+                <div class="col-md-6">
                     <label class="form-label">Select Resource<span class="text-danger">*</span></label>
                     <select class="form-select" name="resource_id" id="select_resource">
                         <option value="">Select Resource</option>
@@ -195,14 +195,14 @@
                 </div>
 
                 <!-- Total Time (Calculated) -->
-                <div class="form-group">
+                <div class="col-md-6">
                     <label class="form-label">Total Time (hh:mm)<span class="text-danger">*</span></label>
                     <input type="text" name="total_time" class="form-control" id="total_time" readonly>
                     <div id="total_time_error" class="text-danger error_e"></div>
                 </div>
 
                 <!-- License Number (Extracted from user profile) -->
-                <div class="form-group">
+                <div class="col-md-6">
                     <label class="form-label">License Number</label>
                     <input type="text" name="licence_number" class="form-control" id="licence_number" value="{{ auth()->user()->licence_number }}" readonly>
                     <div id="licence_number_error" class="text-danger error_e"></div>
@@ -223,7 +223,7 @@
 <!-- Edit Training Event-->
 <div class="modal fade" id="editTrainingEventModal" tabindex="-1" role="dialog" aria-labelledby="groupModalLabel"
     aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="groupModalLabel">Edit Training Event</h5>
@@ -234,7 +234,7 @@
                 @csrf
                 <input type="hidden" name="event_id" id="edit_event_id">
                 @if(auth()->user()->is_owner == 1)
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label class="form-label">Select Org Unit<span class="text-danger">*</span></label>
                         <select class="form-select select_org_unit" name="ou_id" id="edit_ou_id">
                             <option value="">Select Org Unit</option>
@@ -245,7 +245,7 @@
                         <div id="ou_id_error_up" class="text-danger error_e"></div>
                     </div>
                 @endif
-                <div class="form-group">
+                <div class="col-md-6">
                     <label class="form-label">Select Student<span class="text-danger">*</span></label>
                     <select class="form-select" name="student_id" id="edit_select_user">
                         <option value="">Select Student</option>
@@ -255,7 +255,7 @@
                     </select>
                     <div id="group_id_error" class="text-danger error_e"></div>
                 </div>
-                <div class="form-group">
+                <div class="col-md-6">
                     <label class="form-label">Select Course<span class="text-danger">*</span></label>
                     <select class="form-select" name="course_id" id="edit_select_course">
                         <option value="">Select Course</option>
@@ -266,26 +266,26 @@
                     <div id="course_id_error_up" class="text-danger error_e"></div>
                 </div>
                  <!-- Select Lesson -->
-                 <div class="form-group">
+                 <div class="col-md-6">
                     <label class="form-label">Select Lesson<span class="text-danger">*</span></label>
-                    <select class="form-select" name="lesson_ids[]" id="edit_select_lesson" multiple>
+                    <select class="form-select select_lesson" name="lesson_ids[]" id="edit_select_lesson" >
                         <!-- Options will be populated dynamically -->
                     </select>
                     <div id="lesson_ids_error_up" class="text-danger error_e"></div>
                 </div>
                 <!-- Event Date-->
-                <div class="form-group">
+                <div class="col-md-4">
                     <label class="form-label">Event Date<span class="text-danger">*</span></label>
                     <input type="date" name="event_date" class="form-control" id="edit_event_date">
                     <div id="event_date_error" class="text-danger error_e"></div>
                 </div>
-                <div class="form-group">
+                <div class="col-md-4">
                     <label class="form-label">Start Time<span class="text-danger">*</span></label>
                     <input type="time" name="start_time" class="form-control" id="edit_start_time">
                     <div id="start_time_error_up" class="text-danger error_e"></div>
                 </div>
 
-                <div class="form-group">
+                <div class="col-md-4">
                     <label class="form-label">End Time<span class="text-danger">*</span></label>
                     <input type="time" name="end_time" class="form-control" id="edit_end_time">
                     <div id="end_time_error_up" class="text-danger error_e"></div>
@@ -301,18 +301,18 @@
                     <div id="group_id_error_up" class="text-danger error_e"></div>
                 </div> -->
 
-                <div class="form-group">
+                <div class="col-md-6">
                     <label class="form-label">Departure Airfield</label>
                     <input type="text" name="departure_airfield" class="form-control" id="edit_departure_airfield">
                     <div id="departure_airfield_error_up" class="text-danger error_e"></div>
                 </div>
 
-                <div class="form-group">
+                <div class="col-md-6">
                     <label class="form-label">Destination Airfield</label>
                     <input type="text" name="destination_airfield" class="form-control" id="edit_destination_airfield">
                     <div id="destination_airfield_error_up" class="text-danger error_e"></div>
                 </div>
-                <div class="form-group">
+                <div class="col-md-6">
                     <label class="form-label">Select Instructor<span class="text-danger">*</span></label>
                     <select class="form-select" name="instructor_id" id="edit_select_instructor">
                         <option value="">Select Instructor</option>
@@ -324,7 +324,7 @@
                 </div>
 
                 <!-- New Fields -->
-                <div class="form-group">
+                <div class="col-md-6">
                     <label class="form-label">Select Resource</label>
                     <select class="form-select" name="resource_id" id="edit_select_resource">
                         <option value="">Select Resource</option>
@@ -335,12 +335,12 @@
                     <div id="resource_id_error_up" class="text-danger error_e"></div>
                 </div>
                 <!-- Total Time (Calculated) -->
-                <div class="form-group">
+                <div class="col-md-6">
                     <label class="form-label">Total Time (hh:mm)<span class="text-danger">*</span></label>
                     <input type="text" name="total_time" class="form-control" id="edit_total_time" readonly>
                     <div id="total_time_error_up" class="text-danger error_e"></div>
-                </div>
-                <div class="form-group">
+                </div>+
+                <div class="col-md-6">
                     <label class="form-label">Licence Number</label>
                     <input type="text" name="licence_number" class="form-control" id="edit_licence_number" readonly>
                     <div id="licence_number_error_up" class="text-danger error_e" ></div>
@@ -385,13 +385,34 @@
 @section('js_scripts')
 
 <script>
+
+function initializeSelect2() {
+    $('.select_lesson').select2({
+        allowClear: true,
+        placeholder: 'Select Lessons',
+        multiple: true,
+        dropdownParent: $('.modal:visible'),
+    });
+
+}
+
 $(document).ready(function() {
     $('#groupTable').DataTable();
-
+    initializeSelect2();
    // Attach event listeners for both create and edit fields
     $('#start_time, #end_time, #edit_start_time, #edit_end_time').on('change', function () {
         calculateTotalTime($(this).closest('form')); // Pass the form context
     });
+
+    $("#createTrainingEvent").on('click', function() {
+        $(".error_e").html('');
+        $("#trainingEventForm")[0].reset();
+        $("#createTrainingEventModal").modal('show');
+        $('#createTrainingEventModal').on('shown.bs.modal', function() {
+            initializeSelect2();
+        });
+
+    })
 
     function calculateTotalTime(form) {
         let startInput = form.find('input[name="start_time"], input[name="edit_start_time"]');
@@ -581,12 +602,7 @@ $(document).ready(function() {
         });
     });
 
-    $("#createTrainingEvent").on('click', function() {
-        $(".error_e").html('');
-        $("#trainingEventForm")[0].reset();
-        $("#createTrainingEventModal").modal('show');
 
-    })
 
     $("#submitTrainingEvent").on("click", function(e) {
         e.preventDefault();
