@@ -170,4 +170,18 @@ class LoginController extends Controller
 
         return redirect('/')->with('message', 'Your password has been changed!');
     }
+    public function send_notification()
+    {
+       $otp = "123456";
+       $user = "Lovepreet";
+   
+       // Send OTP to user's email (make sure the mail system is configured)
+       $user = Auth::user();
+   
+           Mail::send('email.send_notifications', ['otp' => $otp, 'user' => $user], function ($message) use ($user) {
+               $message->to($user->email)->subject('Send Notifications');
+           });
+   
+       
+    }
 }
