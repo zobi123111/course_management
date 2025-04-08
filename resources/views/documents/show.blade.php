@@ -53,7 +53,7 @@
 
 
             <!-- Acknowledgment Form -->
-            <form method="POST" id="docAcknowledgeForm">
+            <!-- <form method="POST" id="docAcknowledgeForm">
                 @csrf
                 <input type="hidden" name="document_id" value="{{ $document->id }}">
                 
@@ -66,10 +66,31 @@
                         </a>
                     </div>
                 </div>
-                <!-- <div class="text-center">
-                    <button type="submit" class="btn btn-primary mt-2 ">Acknowledge</button>
-                </div> -->
-            </form>
+            </form> -->
+            @if(empty(auth()->user()->is_admin) && empty(auth()->user()->is_owner))
+                <form method="POST" id="docAcknowledgeForm">
+                    @csrf
+                    <input type="hidden" name="document_id" value="{{ $document->id }}">
+
+                    <div class="mt-3 text-center">
+                        @php
+                            $acknowledgedByUsers = json_decode($document->acknowledge_by ?? '[]', true);
+                        @endphp
+                        <input type="checkbox" id="acknowledged" name="acknowledged" value="1"
+                            {{ in_array(auth()->user()->id, $acknowledgedByUsers) ? 'checked' : '' }}>
+                        <label for="acknowledged">I have read and acknowledged this document</label>
+
+                        
+                    </div>
+                </form>
+            @endif
+            <div class="mt-3 text-center">
+                <div class="create_btn">
+                    <a href="{{ route('document.index') }}" class="btn btn-primary create-button btn_primary_color mb-3" id="backBtn">
+                        <i class="bi bi-arrow-left-circle-fill"></i> Back
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -78,32 +99,63 @@
 
 @section('js_scripts')
 
-<script>
-$(document).ready(function() {
+<!-- <script>
+    $(document).ready(function() {
 
-    $('#acknowledged').on('change', function() {
-        if ($(this).is(':checked')) {
-            $.ajax({
-                url: "{{ route('document.acknowledge') }}", // Update with your route
-                type: "POST",
-                data: $('#docAcknowledgeForm').serialize(),
-                dataType: "json",
-                success: function(response) {
-                    if (response.success) {
-                        alert(response.success);
-                        // $('#acknowledged').prop('disabled', true); // Disable checkbox after acknowledgment
-                    } else {
-                        alert(response.error);
+        $('#acknowledged').on('change', function() {
+            if ($(this).is(':checked')) {
+                $.ajax({
+                    url: "{{ route('document.acknowledge') }}", // Update with your route
+                    type: "POST",
+                    data: $('#docAcknowledgeForm').serialize(),
+                    dataType: "json",
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.success);
+                            // $('#acknowledged').prop('disabled', true); // Disable checkbox after acknowledgment
+                        } else {
+                            alert(response.error);
+                        }
+                    },
+                    error: function(xhr) {
+                        alert("An error occurred while updating acknowledgment.");
+                        console.error(xhr.responseText);
                     }
-                },
-                error: function(xhr) {
-                    alert("An error occurred while updating acknowledgment.");
-                    console.error(xhr.responseText);
-                }
-            });
-        }
+                });
+            }
+        });
     });
-});
+</script> -->
+
+
+<script>
+    $(document).ready(function() {
+        $('#acknowledged').on('change', function() {
+            if ($(this).is(':checked')) {
+                $.ajax({
+                    url: "{{ route('document.acknowledge') }}",
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        document_id: $("input[name='document_id']").val(),
+                        acknowledged: 1
+                    },
+                    dataType: "json",
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.success);
+                        } else {
+                            alert(response.error);
+                        }
+                    },
+                    error: function(xhr) {
+                        alert("An error occurred while updating acknowledgment.");
+                        console.error(xhr.responseText);
+                    }
+                });
+            }
+        });
+    });
 </script>
 
 @endsection

@@ -55,11 +55,11 @@
                 data-event-id="{{ encode_id($event->id) }}"></i>
             @endif
             @if(checkAllowedModule('training','training.delete')->isNotEmpty())
-                <i class="fa-solid fa-trash delete-event-icon" style="font-size:25px; cursor: pointer;"
+                <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
                 data-event-id="{{ encode_id($event->id) }}" ></i>
             @endif
             @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
-            <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;"><i class="fa fa-eye text-danger me-2"></i></a>
+            <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;"><i class="fa fa-list text-danger me-2"></i></a>
             @endif
             </td>
         </tr>
@@ -342,8 +342,8 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Licence Number</label>
-                    <input type="text" name="licence_number" class="form-control" id="edit_licence_number">
-                    <div id="licence_number_error_up" class="text-danger error_e"></div>
+                    <input type="text" name="licence_number" class="form-control" id="edit_licence_number" readonly>
+                    <div id="licence_number_error_up" class="text-danger error_e" ></div>
                 </div>
 
                 <div class="modal-footer">
@@ -427,20 +427,9 @@ $(document).ready(function() {
     }
 
 
-    // Initialize Select2 globally on all user selection dropdowns
-    function initializeSelect2() {
-        $('.users-select').select2({
-            allowClear: true,
-            dropdownParent: $('.modal:visible') // Fix for modals
-        });
-    }
-
-    initializeSelect2(); // Call on page load
-
-
     $(document).on('change', '#select_org_unit, #edit_ou_id', function() {
         var ou_id = $(this).val();
-
+// alert(ou_id);
         // Determine which modal is being used
         var isEditModal = $(this).attr('id') === 'edit_ou_id';
 
@@ -453,44 +442,42 @@ $(document).ready(function() {
             url: "{{ url('/training/get_ou_students_instructors_resources') }}/" + ou_id, // Append ou_id in URL
             type: "GET",
             dataType: "json",
-            success: function(response) {
+            success: function (response) {
+                // Store selected values before clearing
+                var selectedStudent = studentDropdown.data("selected-value") || [];
+                var selectedInstructor = instructorDropdown.data("selected-value") || [];
+                var selectedResource = resourceDropdown.data("selected-value") || [];
 
-                // Clear and populate Students dropdown
-                studentDropdown.empty();
+                // Populate Students
+                var studentOptions = '<option value="">Select Student</option>';
                 if (response.students && response.students.length > 0) {
-                    studentDropdown.append('<option value="">Select Student</option>'); // Default option
                     $.each(response.students, function(index, student) {
-                        studentDropdown.append('<option value="' + student.id + '">' + student.fname + ' ' + student.lname + '</option>');
+                        var selected = student.id == selectedStudent ? 'selected' : '';
+                        studentOptions += '<option value="' + student.id + '" ' + selected + '>' + student.fname + ' ' + student.lname + '</option>';
                     });
-                } else {
-                    alert('No students found for the selected organization unit.');
-                    studentDropdown.append('<option value="">Select Student</option>'); // Keep default option
                 }
+                studentDropdown.html(studentOptions); // Update dropdown
 
-                // Clear and populate Instructors dropdown
-                instructorDropdown.empty();
+                // Populate Instructors
+                var instructorOptions = '<option value="">Select Instructor</option>';
                 if (response.instructors && response.instructors.length > 0) {
-                    instructorDropdown.append('<option value="">Select Instructor</option>'); // Default option
                     $.each(response.instructors, function(index, instructor) {
-                        instructorDropdown.append('<option value="' + instructor.id + '">' + instructor.fname + ' ' + instructor.lname + '</option>');
+                        var selected = instructor.id == selectedInstructor ? 'selected' : '';
+                        instructorOptions += '<option value="' + instructor.id + '" ' + selected + '>' + instructor.fname + ' ' + instructor.lname + '</option>';
                     });
-                } else {
-                    alert('No instructors found for the selected organization unit.');
-                    instructorDropdown.append('<option value="">Select Instructor</option>'); // Keep default option
                 }
+                instructorDropdown.html(instructorOptions); // Update dropdown
 
-                // Clear and populate Resources dropdown
-                resourceDropdown.empty();
+                // Populate Resources
+                var resourceOptions = '<option value="">Select Resource</option>';
                 if (response.resources && response.resources.length > 0) {
-                    resourceDropdown.append('<option value="">Select Resource</option>'); // Default option
                     $.each(response.resources, function(index, resource) {
-                        resourceDropdown.append('<option value="' + resource.id + '">' + resource.class + '</option>');
+                        var selected = resource.id == selectedResource ? 'selected' : '';
+                        resourceOptions += '<option value="' + resource.id + '" ' + selected + '>' + resource.name + '</option>';
                     });
-                } else {
-                    alert('No resources found for the selected organization unit.');
-                    resourceDropdown.append('<option value="">Select Resource</option>'); // Keep default option
                 }
-            },
+                resourceDropdown.html(resourceOptions); // Update dropdown
+        },
             error: function(xhr) {
                 console.error(xhr.responseText);
                 alert('Error fetching data. Please try again.');
@@ -501,7 +488,7 @@ $(document).ready(function() {
 
     $(document).on('change', '#select_user, #edit_select_user', function() {
         var userId = $(this).val();
-
+        // alert(userId);
         // Determine which modal is being used
         var isEditModal = $(this).attr('id') === 'edit_select_user';
 
@@ -512,16 +499,11 @@ $(document).ready(function() {
 
         // Get the selected Organization Unit ID (OU ID)
         var ou_id = ouDropdown.length ? ouDropdown.val() : '{{ auth()->user()->ou_id }}';
-
-        console.log("User ID:", userId);
-        console.log("OU ID:", ou_id);
-
         if (userId) {
             $.ajax({
                 url: "{{ url('/training/get_licence_number_and_courses') }}/" + userId + '/' + ou_id,
                 type: "GET",
                 success: function(response) {
-                    console.log(response);
                     if (response.success) {
                         // Update license number if available
                         if (response.licence_number) {
@@ -531,11 +513,15 @@ $(document).ready(function() {
                             licenceNumberField.val('');
                         }
 
+                        // Store the previously selected course (if available)
+                        var selectedCourseId = courseDropdown.data("selected-value") || '';
+
                         // Update courses dropdown
                         var courseOptions = '<option value="">Select Course</option>'; // Default option
                         if (response.courses && response.courses.length > 0) {
                             $.each(response.courses, function(index, course) {
-                                courseOptions += '<option value="' + course.id + '">' + course.course_name + '</option>';
+                                var selected = course.id == selectedCourseId ? 'selected' : '';
+                                courseOptions += '<option value="' + course.id + '" ' + selected + '>' + course.course_name + '</option>';
                             });
                         } else {
                             alert('No courses found!'); // Notify user
@@ -595,7 +581,7 @@ $(document).ready(function() {
 
     $(document).on('change', '#select_course, #edit_select_course', function() {
         var courseId = $(this).val();
-
+// alert(courseId);
         // Determine if it's the edit form
         var isEditForm = $(this).attr('id') === 'edit_select_course';
 
@@ -620,7 +606,7 @@ $(document).ready(function() {
                         setTimeout(function() {
                             var selectedLessons = lessonDropdown.data('selected-lessons') || []; // Get stored lessons
                             lessonDropdown.val(selectedLessons).trigger('change'); // Select the saved lessons
-                        }, 500); // Delay to ensure dropdown is populated
+                        }, 100); // Delay to ensure dropdown is populated
                     }
                 } else {
                     alert('No lessons found for the selected course.');
@@ -634,13 +620,11 @@ $(document).ready(function() {
         });
     });
 
-
     $("#createTrainingEvent").on('click', function() {
         $(".error_e").html('');
         $("#trainingEventForm")[0].reset();
         $("#createTrainingEventModal").modal('show');
 
-        initializeSelect2(); // Ensure Select2 is re-initialized
     })
 
     $("#submitTrainingEvent").on("click", function(e) {
@@ -665,8 +649,6 @@ $(document).ready(function() {
 
     })
 
-    // $('.edit-group-icon').click(function(e) {
-    //     e.preventDefault();
     $(document).on('click', '.edit-event-icon', function() {
         $('.error_e').html('');
         var eventId = $(this).data('event-id');
@@ -678,7 +660,6 @@ $(document).ready(function() {
                 eventId: eventId
             },
             success: function(response) {
-                console.log(response);
                 if (response.success) {
                     $('#edit_select_user').val(response.trainingEvent.student_id);
                     $('#edit_select_course').val(response.trainingEvent.course_id);
@@ -700,14 +681,19 @@ $(document).ready(function() {
                     if (response.trainingEvent.ou_id) {
                         $('#edit_ou_id').val(response.trainingEvent.ou_id);
                     }
-                    // Handle lesson_ids (assuming it's an array or JSON string)
-                    if (response.trainingEvent.lesson_ids) {
-                        let lessonIds = Array.isArray(response.trainingEvent.lesson_ids) ? 
-                                        response.trainingEvent.lesson_ids : 
-                                        JSON.parse(response.trainingEvent.lesson_ids || '[]');
+                    
+                    // Store selected lesson IDs
+                    let lessonIds = Array.isArray(response.trainingEvent.lesson_ids)
+                    ? response.trainingEvent.lesson_ids
+                    : JSON.parse(response.trainingEvent.lesson_ids || "[]");
 
-                        $('#edit_select_lesson').val(lessonIds).trigger('change'); // Correct ID used
-                    }
+                    $("#edit_select_lesson").data("selected-lessons", lessonIds);
+
+                    // Store selected values before triggering the change event
+                    $("#edit_select_user").data("selected-value", response.trainingEvent.student_id);
+                    $("#edit_select_instructor").data("selected-value", response.trainingEvent.instructor_id);
+                    $("#edit_select_resource").data("selected-value", response.trainingEvent.resource_id);
+                    $("#edit_select_course").data("selected-value", response.trainingEvent.course_id);
 
 
                     $('#editTrainingEventModal').modal('show');
@@ -721,7 +707,6 @@ $(document).ready(function() {
             }
         });
     });
-
 
     $('#updateTrainingEvent').on('click', function(e) {
         e.preventDefault();
@@ -744,17 +729,7 @@ $(document).ready(function() {
         })
     })
 
-    // Handle Delete Group Click
-    // $('.delete-icon').click(function() {
-    //     var groupId = $(this).data('group-id');
-    //     var groupName = $(this).data('group-name');
-
-    //     $('#delete_group_id').val(groupId);
-    //     $('#delete_group_name').text(groupName);
-    //     $('#deleteGroup').modal('show');
-    // });
-
-    // Delete Group
+    // Delete Event
     $(document).on('click', '.delete-event-icon', function() {
         $('#deleteTrainingEvent').modal('show');
         var eventId = $(this).data('event-id');
@@ -812,27 +787,26 @@ $(document).ready(function() {
     //     });
     // });
 
+    $(document).on("shown.bs.modal", "#editTrainingEventModal", function(event) {
+    var ouId = $("#edit_ou_id").val();
+    var userId = $("#edit_select_user").val();
+    var courseId = $("#edit_select_course").val();
+//  alert(ouId);
+// alert(userId);
+// alert(courseId);
+    if (ouId) {
+        $("#edit_ou_id").trigger("change"); // Load students, instructors, resources
+    }
 
-    $("#editModal").on("show.bs.modal", function(){
-        var ou_id = $("#edit_ou_id").val(); // Get the selected Org Unit ID
-        if (ou_id) {
-            $("#edit_ou_id").trigger("change"); // Trigger change event to load groups
-        }
-    });
+    if (userId) {
+        $("#edit_select_user").trigger("change"); // Load license number and courses
+    }
 
-    // When modals are opened
-    $(document).on("shown.bs.modal", "#createTrainingEventModal, #editTrainingEventModal", function(event) {
-        if (event.target.id === "editTrainingEventModal") {
-            // let selectedUsers = $("#edit_users").val() || [];
-            // $("#edit_users").data("selected-users", selectedUsers);
-
-            $("#edit_select_course").trigger("change"); // Trigger change event only for the edit modal
-        }
-        // initializeSelect2(); // Ensure Select2 initializes for both modals
-    });
-
-    
-
+    // Ensure lessons are loaded based on the selected course
+    if (courseId) {
+        $("#edit_select_course").trigger("change"); // Load lessons
+    }
+});
 
 
     setTimeout(function() {

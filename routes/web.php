@@ -81,7 +81,7 @@ Route::group(['middleware' => ['auth']], function () {
     ->name('lesson.prerequisites.store');
  
     Route::get('/orgunit/get_permissions', [OrganizationController::class, 'getPermissions'])->name('orgunit.getPermissions');  
-    Route::post('/orgunit/permission_store', [OrganizationController::class, 'storePermissions'])->name('orgunit.storePermissions');  
+    Route::post('/orgunit/permission_store', [OrganizationController::class, 'storePermissions'])->name('orgunit.storePermissions');
 
 });
 

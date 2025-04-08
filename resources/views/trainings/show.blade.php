@@ -449,9 +449,9 @@
                     @csrf
                     <input type="hidden" name="event_id" id="event_id" value="{{ $trainingEvent->id }}">
                     <div class="card-body">
-                        @if($courseLessons->isNotEmpty())
+                        @if($selectedLessons->isNotEmpty())
                         <div class="accordion accordion-flush" id="faq-group-2">
-                            @foreach($courseLessons as $lesson)
+                            @foreach($selectedLessons as $lesson)
                             <div class="accordion-item">
                                 <input type="hidden" name="tg_lesson_id[]" value="{{ $lesson->id }}">
                                 <h2 class="accordion-header">
@@ -541,7 +541,7 @@
                             </div>
                             <div id="comptency" class="accordion-collapse collapse" data-bs-parent="#faq-group-2">
                                 <div class="accordion-body">
-                                @foreach($courseLessons->filter(fn($lesson) => $lesson->sublessons->isNotEmpty()) as $lesson)
+                                @foreach($selectedLessons->filter(fn($lesson) => $lesson->sublessons->isNotEmpty()) as $lesson)
                                     <div class="custom-box">
                                         <div class="header">
                                             <span class="rmk">RMK</span>
