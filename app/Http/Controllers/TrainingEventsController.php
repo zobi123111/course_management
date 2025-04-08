@@ -95,7 +95,7 @@ class TrainingEventsController extends Controller
 
             $trainingEvents = TrainingEvents::where('ou_id', $currentUser->ou_id)->with($trainingEventsRelations)->get();
         }
-// dd($trainingEvents);
+
         return view('trainings.index', compact('groups', 'courses', 'instructors', 'organizationUnits', 'trainingEvents', 'resources', 'students'));
     }
 
@@ -173,7 +173,7 @@ class TrainingEventsController extends Controller
     //         'course_id' => 'required|exists:courses,id',
     //         'instructor_id' => 'required|exists:users,id',
     //         'resource_id' => 'required|exists:resources,id',
-    //         'event_date' => 'required|date_format:Y-m-d',
+    //         'event_date' => 'required|date_format:Y-m-d', 
     //         'start_time' => 'required|date_format:H:i', // Validating only time (HH:MM)
     //         'end_time' => [
     //                         'required',
@@ -551,7 +551,9 @@ class TrainingEventsController extends Controller
     }
 
     // Fetch the single student
+    //dd($trainingEvent);
     $student = $trainingEvent->student;
+    //dd($student);
 
     // Ensure course exists before accessing course_id
     $courseLessons = $trainingEvent->course 
@@ -571,13 +573,7 @@ class TrainingEventsController extends Controller
         ? CourseLesson::with('sublessons')->whereIn('id', $lessonIds)->get() 
         : collect();
 
-    return view('trainings.show', compact(
-        'trainingEvent', 
-        'student', 
-        'courseLessons', 
-        'overallAssessments', 
-        'selectedLessons'
-    ));
+    return view('trainings.show', compact('trainingEvent', 'student', 'courseLessons', 'overallAssessments', 'selectedLessons'));
 }
 
 
