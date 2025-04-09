@@ -230,6 +230,8 @@ class DocumentController extends Controller
         // Format data for DataTables
         $data = [];
         foreach ($documents as $row) {
+            $groupUserIds = [];
+        
             // Ensure the document has a valid group before accessing its user IDs
             if (!empty($row->group) && !empty($row->group->user_ids)) {
                 // Convert user_ids string to array safely
@@ -237,13 +239,25 @@ class DocumentController extends Controller
                     ? $row->group->user_ids 
                     : explode(',', trim($row->group->user_ids));
             }
-    
+        
             // Get acknowledged user IDs from the document
             $acknowledgedUsers = json_decode($row->acknowledge_by ?? '[]', true);
-    
+        
             // Check if all group users have acknowledged the document
             $isFullyAcknowledged = !empty($groupUserIds) && !array_diff($groupUserIds, $acknowledgedUsers);
-    
+        
+            // Determine what to display in the acknowledged column
+            if (auth()->user()->is_admin == 1 || auth()->user()->is_owner == 1) {
+                $acknowledgedDisplay = $isFullyAcknowledged
+                    ? '<span style="color: green;">✔</span>'
+                    : '<span style="color: red;">❌</span>';
+            } else {
+                $userAcknowledged = in_array(auth()->user()->id, $acknowledgedUsers);
+                $acknowledgedDisplay = $userAcknowledged
+                    ? '<span style="color: green;">✔</span>'
+                    : '<span style="color: red;">❌</span>';
+            }
+        
             $data[] = [
                 'doc_title' => $row->doc_title,
                 'version_no' => $row->version_no,
@@ -261,9 +275,7 @@ class DocumentController extends Controller
                     ? '<a href="' . route('document.show', encode_id($row->id)) . '">View Document</a>'
                     : 'No File uploaded',
                 'status' => ($row->status == 1) ? 'Active' : 'Inactive',
-                'acknowledged' => $isFullyAcknowledged
-                    ? '<span style="color: green;">✔</span>'
-                    : '<span style="color: red;">❌</span>',
+                'acknowledged' => $acknowledgedDisplay,
                 'edit' => checkAllowedModule('documents', 'document.edit')->isNotEmpty()
                     ? '<i class="fa fa-edit edit-document-icon" style="font-size:25px; cursor: pointer;" data-document-id="' . encode_id($row->id) . '"></i>'
                     : '',
@@ -272,6 +284,7 @@ class DocumentController extends Controller
                     : '',
             ];
         }
+        
     
         return response()->json([
             'draw' => intval($request->input('draw')),
@@ -281,93 +294,6 @@ class DocumentController extends Controller
         ]);
     }
     
-
-
-    // public function getDocuments(Request $request)
-    // {
-    //     $columns = ['doc_title', 'version_no', 'issue_date', 'expiry_date', 'document_file', 'status'];
-    //     $limit = $request->input('length');
-    //     $start = $request->input('start');
-    //     $orderColumnIndex = $request->input('order')[0]['column'];
-    //     $orderDirection = $request->input('order')[0]['dir'];
-    //     $searchValue = strtolower($request->input('search')['value']); // Convert search input to lowercase
-    
-    //     $user = Auth()->user();
-    //     $userId = $user->id;
-    //     $ou_id = $user->ou_id;
-    
-    //     // Determine which documents to fetch based on user role and permissions
-    //     if (checkAllowedModule('courses', 'document.index')->isNotEmpty() && $user->is_owner == 1) {
-    //         $query = Document::query();
-    //     } elseif (checkAllowedModule('documents', 'document.index')->isNotEmpty() && $user->is_admin == 0) {
-    //         $groups = Group::where('ou_id', $ou_id)->get();
-    //         $filteredGroups = $groups->filter(function ($group) use ($userId) {
-    //             $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);
-    //             return in_array($userId, $userIds);
-    //         });
-    
-    //         $groupIds = $filteredGroups->pluck('id')->toArray();
-    //         $query = Document::whereIn('group_id', $groupIds)->where('status', 1);
-    //     } else {
-    //         $query = Document::where('ou_id', $ou_id);
-    //     }
-    
-    //     // Select columns
-    //     $query->select('id', 'doc_title', 'version_no', 'issue_date', 'expiry_date', 'document_file', 'status');
-    
-    //     // Apply search filter
-    //     if (!empty($searchValue)) {
-    //         $query->where(function ($q) use ($searchValue) {
-    //             if (str_contains('active', $searchValue)) {
-    //                 $q->orWhere('status', 1);
-    //             }
-    //             if (str_contains('inactive', $searchValue)) {
-    //                 $q->orWhere('status', 0);
-    //             }
-    //             $q->orWhere('doc_title', 'like', "%{$searchValue}%")
-    //               ->orWhere('version_no', 'like', "%{$searchValue}%")
-    //               ->orWhere('issue_date', 'like', "%{$searchValue}%")
-    //               ->orWhere('expiry_date', 'like', "%{$searchValue}%");
-    //         });
-    //     }
-    
-    //     // Get total records count before filtering
-    //     $totalRecords = Document::count();
-    //     $recordsFiltered = $query->count();
-    
-    //     // Apply sorting
-    //     $query->orderBy($columns[$orderColumnIndex], $orderDirection);
-    
-    //     // Apply pagination
-    //     $documents = $query->offset($start)->limit($limit)->get();
-    
-    //     // Format data for DataTables
-    //     $data = [];
-    //     foreach ($documents as $row) {
-    //         $data[] = [
-    //             'doc_title' => $row->doc_title,
-    //             'version_no' => $row->version_no,
-    //             'issue_date' => $row->issue_date,
-    //             'expiry_date' => $row->expiry_date,
-    //             'document' => $row->document_file
-    //                 ? '<a href="' . route('document.show', encode_id($row->id)) . '">View Document</a>'
-    //                 : 'No File uploaded',
-    //             'status' => ($row->status == 1) ? 'Active' : 'Inactive',
-    //             'edit' => checkAllowedModule('documents', 'document.edit')->isNotEmpty()
-    //                 ? '<i class="fa fa-edit edit-document-icon" style="font-size:25px; cursor: pointer;" data-document-id="' . encode_id($row->id) . '"></i>'
-    //                 : '',
-    //             'delete' => checkAllowedModule('documents', 'document.delete')->isNotEmpty()
-    //                 ? '<i class="fa-solid fa-trash delete-document-icon" style="font-size:25px; cursor: pointer;" data-document-id="' . encode_id($row->id) . '"></i>'
-    //                 : '',
-    //         ];
-    //     }
-    //     return response()->json([
-    //         'draw' => intval($request->input('draw')),
-    //         'recordsTotal' => $totalRecords,
-    //         'recordsFiltered' => $recordsFiltered,
-    //         'data' => $data,
-    //     ]);
-    // }
     
 
     public function showDocument(Request $request,$doc_id)

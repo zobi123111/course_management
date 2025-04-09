@@ -176,6 +176,15 @@
                         <div id="course_name_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
+                        <label for="course_type" class="form-label">Course Type<span class="text-danger">*</span></label>
+                        <select class="form-select" name="course_type" id="course_type" required>
+                            <option value="">Select Course Type</option>
+                            <option value="one_event">One Event</option>
+                            <option value="multi_lesson">Multiple Lesson</option>
+                        </select>
+                        <div id="course_type_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="description"  rows="3"></textarea>
                         <div id="description_error" class="text-danger error_e"></div>
@@ -186,7 +195,6 @@
                         <div id="image_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-
                         <label for="duration" class="form-label">Course Duration<span class="text-danger">*</span></label>
                         <select class="form-select" name="duration_type" id="duration_type">
                             <option value="">Select Duration Type</option>
@@ -248,7 +256,7 @@
                     @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                     <div class="form-group">
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                        <select class="form-select" name="editou_id" aria-label="Default select example" id="edit_select_org_unit">
+                        <select class="form-select" name="ou_id" aria-label="Default select example" id="edit_select_org_unit">
                             <option value="">Select Org Unit</option>
                             @foreach($organizationUnits as $val)
                             <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
@@ -262,6 +270,15 @@
                         <input type="text" name="course_name" class="form-control">
                         <input type="hidden" name="course_id" class="form-control">
                         <div id="course_name_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="course_type" class="form-label">Course Type<span class="text-danger">*</span></label>
+                        <select class="form-select" name="course_type" id="edit_course_type" required>
+                            <option value="">Select Course Type</option>
+                            <option value="one_event">One Event</option>
+                            <option value="multi_lesson">Multiple Lesson</option>
+                        </select>
+                        <div id="course_type_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
@@ -283,19 +300,6 @@
                         <input type="number" name="duration_value" class="form-control mt-2" id="edit_duration_value" placeholder="Enter number of hours/events">
                         <div id="duration_error_up" class="text-danger error_e"></div>
                     </div>
-
-                    <!-- @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                    <div class="form-group">
-                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                        <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
-                            <option value="">Select Org Unit</option>
-                            @foreach($organizationUnits as $val)
-                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                            @endforeach
-                        </select>
-                        <div id="ou_id_error" class="text-danger error_e"></div>            
-                    </div>
-                    @endif -->
                     <div class="form-group">
                         <label for="groups" class="form-label">Assigned Resource<span class="text-danger"></span></label>
                         <select class="form-select resources-select" name="resources[]" multiple="multiple" id="resources-select" >
@@ -446,181 +450,101 @@ $(document).ready(function() {
         });
     });
 
-    // $('.edit-course-icon').click(function(e) {
-    //     e.preventDefault();
-    //     $('.error_e').html('');
-    //     var courseId = $(this).data('course-id');
-    //     $.ajax({
-    //         url: "{{ url('/course/edit') }}",
-    //         type: 'GET',
-    //         data: { id: courseId },
-    //         success: function(response) {
-    //           //  console.log(response.resources);
-    //             // Populate the modal fields with course data
-    //             $('input[name="course_name"]').val(response.course.course_name);
-    //             $('input[name="course_id"]').val(response.course.id);
-    //             $('#edit_description').val(response.course.description);
-    //             $('#edit_ou_id').val(response.course.ou_id);
-    //             $('#edit_status').val(response.course.status);
-    //             $('#edit_select_org_unit').val(response.course.ou_id);
-    //                 if (response.resources) {
-    //                     var $resourcesSelect = $('#resources-select');
-    //                     $resourcesSelect.empty(); // Clear previous options
-
-    //                     // Append new options
-    //                     response.resources.forEach(function(resource) {
-    //                         var isSelected = response.courseResources.some(cr => cr.resources_id === resource.id);
-    //                         $resourcesSelect.append(
-    //                             `<option value="${resource.id}" ${isSelected ? 'selected' : ''}>${resource.name}</option>`
-    //                         );
-    //                     });
-
-    //                     $resourcesSelect.trigger('change'); // Ensure changes reflect in the select box
-    //                 }
-    //              // Collect all resource IDs
-    //                 let selectedResources = response.courseResources.map(val => val.resources_id);
-                           
-    //             // Set multiple selected values
-    //             $("#resources-select").val(selectedResources).trigger("change");
-
-    //             if (response.course.enable_prerequisites) {
-    //                 $('#enable_prerequisites').prop('checked', true);
-    //                 $('#prerequisites_container').show();
-    //             } else {
-    //                 $('#enable_prerequisites').prop('checked', false);
-    //                 $('#prerequisites_container').hide();
-    //             }
-
-    //       // Clear old prerequisites
-    //       $('#prerequisite_items').empty();
-    //       let prerequisites = response.course.prerequisites;
-    //       let courses_resources = response.course.courses_resources;
- 
-    //         if (prerequisites.length > 0) {
-    //             prerequisites.forEach((prerequisite, index) => {
-    //                 let prerequisiteHtml = generatePrerequisiteHtml(prerequisite, index);
-    //                 $('#prerequisite_items').append(prerequisiteHtml);
-    //             });
-    //         } else {
-    //             // Show a single empty prerequisite form if there are none
-    //             let prerequisiteHtml = generatePrerequisiteHtml({ prerequisite_detail: '', prerequisite_type: 'text' }, 0);
-    //             $('#prerequisite_items').append(prerequisiteHtml);
-    //         }
-    //             var selectedGroups = response.course.groups.map(function(group) {
-    //                 return group.id;
-    //             });
-    //             $('.groups-select').val(selectedGroups).trigger('change');
-    //             var courseResources = response.courseResources.map(function(group) {
-    //               return group.resources_id;
-    //           });
-              
-    //           $('.resources-select').val(courseResources).trigger('change');
-
-    //             // If using Select2 or other UI plugins, trigger an update
-    //             $('.resources-select').trigger('change');
-    //             $('#editCourseModal').modal('show');
-
-    //             $('#editCourseModal').on('shown.bs.modal', function () {
-    //                 initializeSelect3();
-    //             });
-    //         },
-    //         error: function(xhr, status, error) {
-    //             console.error(xhr.responseText);
-    //         }
-    //     });
-    // });
 
     $('.edit-course-icon').click(function(e) {
-    e.preventDefault();
-    $('.error_e').html('');
-    var courseId = $(this).data('course-id');
+        e.preventDefault();
+        $('.error_e').html('');
+        var courseId = $(this).data('course-id');
 
-    $.ajax({
-        url: "{{ url('/course/edit') }}",
-        type: 'GET',
-        data: { id: courseId },
-        success: function(response) {
-            // Populate course data
-            $('input[name="course_name"]').val(response.course.course_name);
-            $('input[name="course_id"]').val(response.course.id);
-            $('#edit_description').val(response.course.description);
-            $('#edit_ou_id').val(response.course.ou_id);
-            $('#edit_status').val(response.course.status);
-            $('#edit_select_org_unit').val(response.course.ou_id);
+        $.ajax({
+            url: "{{ url('/course/edit') }}",
+            type: 'GET',
+            data: { id: courseId },
+            success: function(response) {
+                // Populate course data
+                $('input[name="course_name"]').val(response.course.course_name);
+                $('input[name="course_id"]').val(response.course.id);
+                $('#edit_course_type').val(response.course.course_type);
+                $('#edit_description').val(response.course.description);
+                // $('#edit_ou_id').val(response.course.ou_id);
+                $('#edit_duration_type').val(response.course.duration_type);
+                $('#edit_duration_value').val(response.course.duration_value);
+                $('#edit_status').val(response.course.status);
+                $('#edit_select_org_unit').val(response.course.ou_id);
 
-            // Populate Resources
-            if (response.resources) {
-                var $resourcesSelect = $('.resources-select');
-                $resourcesSelect.empty();
-                response.resources.forEach(function(resource) {
-                    var isSelected = response.courseResources.some(cr => cr.resources_id === resource.id);
-                    $resourcesSelect.append(
-                        `<option value="${resource.id}" ${isSelected ? 'selected' : ''}>${resource.name}</option>`
-                    );
-                });
-                $resourcesSelect.val(response.courseResources.map(cr => cr.resources_id)).trigger('change');
-            }
-
-            // Fetch and Populate Groups Based on OU
-            $.ajax({
-                url: "{{ url('/group/get_ou_group') }}",
-                type: 'GET',
-                data: { ou_id: response.course.ou_id },
-                dataType: 'json',
-                success: function(groupResponse) {
-                    var $groupSelect = $('.groups-select');
-                    $groupSelect.empty();
-                    
-                    if (groupResponse.org_group && Array.isArray(groupResponse.org_group)) {
-                        $groupSelect.append(`<option value=''>Select Group</option>`);
-                        groupResponse.org_group.forEach(function(group) {
-                            $groupSelect.append(
-                                `<option value="${group.id}">${group.name}</option>`
-                            );
-                        });
-
-                        // Set selected groups
-                        var selectedGroups = response.course.groups.map(g => g.id);
-                        $groupSelect.val(selectedGroups).trigger('change');
-                    }
-                },
-                error: function(xhr) {
-                    console.error("Error loading groups:", xhr.responseText);
+                // Populate Resources
+                if (response.resources) {
+                    var $resourcesSelect = $('.resources-select');
+                    $resourcesSelect.empty();
+                    response.resources.forEach(function(resource) {
+                        var isSelected = response.courseResources.some(cr => cr.resources_id === resource.id);
+                        $resourcesSelect.append(
+                            `<option value="${resource.id}" ${isSelected ? 'selected' : ''}>${resource.name}</option>`
+                        );
+                    });
+                    $resourcesSelect.val(response.courseResources.map(cr => cr.resources_id)).trigger('change');
                 }
-            });
 
-            // Handle Prerequisites
-            if (response.course.enable_prerequisites) {
-                $('#enable_prerequisites').prop('checked', true);
-                $('#prerequisites_container').show();
-            } else {
-                $('#enable_prerequisites').prop('checked', false);
-                $('#prerequisites_container').hide();
-            }
+                // Fetch and Populate Groups Based on OU
+                $.ajax({
+                    url: "{{ url('/group/get_ou_group') }}",
+                    type: 'GET',
+                    data: { ou_id: response.course.ou_id },
+                    dataType: 'json',
+                    success: function(groupResponse) {
+                        var $groupSelect = $('.groups-select');
+                        $groupSelect.empty();
+                        
+                        if (groupResponse.org_group && Array.isArray(groupResponse.org_group)) {
+                            $groupSelect.append(`<option value=''>Select Group</option>`);
+                            groupResponse.org_group.forEach(function(group) {
+                                $groupSelect.append(
+                                    `<option value="${group.id}">${group.name}</option>`
+                                );
+                            });
 
-            $('#prerequisite_items').empty();
-            let prerequisites = response.course.prerequisites;
-            if (prerequisites.length > 0) {
-                prerequisites.forEach((prerequisite, index) => {
-                    let prerequisiteHtml = generatePrerequisiteHtml(prerequisite, index);
-                    $('#prerequisite_items').append(prerequisiteHtml);
+                            // Set selected groups
+                            var selectedGroups = response.course.groups.map(g => g.id);
+                            $groupSelect.val(selectedGroups).trigger('change');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error("Error loading groups:", xhr.responseText);
+                    }
                 });
-            } else {
-                let prerequisiteHtml = generatePrerequisiteHtml({ prerequisite_detail: '', prerequisite_type: 'text' }, 0);
-                $('#prerequisite_items').append(prerequisiteHtml);
+
+                // Handle Prerequisites
+                if (response.course.enable_prerequisites) {
+                    $('#enable_prerequisites').prop('checked', true);
+                    $('#prerequisites_container').show();
+                } else {
+                    $('#enable_prerequisites').prop('checked', false);
+                    $('#prerequisites_container').hide();
+                }
+
+                $('#prerequisite_items').empty();
+                let prerequisites = response.course.prerequisites;
+                if (prerequisites.length > 0) {
+                    prerequisites.forEach((prerequisite, index) => {
+                        let prerequisiteHtml = generatePrerequisiteHtml(prerequisite, index);
+                        $('#prerequisite_items').append(prerequisiteHtml);
+                    });
+                } else {
+                    let prerequisiteHtml = generatePrerequisiteHtml({ prerequisite_detail: '', prerequisite_type: 'text' }, 0);
+                    $('#prerequisite_items').append(prerequisiteHtml);
+                }
+
+                $('#editCourseModal').modal('show');
+
+                $('#editCourseModal').on('shown.bs.modal', function () {
+                    initializeSelect3();
+                });
+            },
+            error: function(xhr) {
+                console.error(xhr.responseText);
             }
-
-            $('#editCourseModal').modal('show');
-
-            $('#editCourseModal').on('shown.bs.modal', function () {
-                initializeSelect3();
-            });
-        },
-        error: function(xhr) {
-            console.error(xhr.responseText);
-        }
+        });
     });
-});
 
 
     // Initialize select2
@@ -661,7 +585,7 @@ $(document).ready(function() {
         var formData = new FormData($('#editCourse')[0]);
         formData.append('enable_prerequisites', $('#enable_prerequisites').is(':checked') ? 1 : 0);
         $.ajax({
-            url: "{{ url('course/update') }}",
+            url: "{{ url('/course/update') }}",
             type: "POST",
             data: formData,
             processData: false,

@@ -237,11 +237,42 @@ function hasUserRole($user, $roleName)
     });
 }
 
-    function settingData()
-    {
-        
-        $setting = Setting::first();
+function settingData()
+{
+    
+    $setting = Setting::first();
 
-        return $setting;
+    return $setting;
+}
+
+if (!function_exists('countAcknowledgedDocuments')) {
+    function countAcknowledgedDocuments($documents, $user)
+    {
+        $readDocuments = 0;
+        $userId = $user->id;
+
+        foreach ($documents as $doc) {
+            $acknowledgedUsers = json_decode($doc->acknowledge_by ?? '[]', true);
+
+            $groupUserIds = !empty($doc->group->user_ids)
+                ? (is_array($doc->group->user_ids) ? $doc->group->user_ids : explode(',', trim($doc->group->user_ids)))
+                : [];
+
+            if ($user->is_owner || $user->is_admin) {
+                if (!empty($groupUserIds) && !array_diff($groupUserIds, $acknowledgedUsers)) {
+                    $readDocuments++;
+                }
+            } else {
+                if (in_array($userId, $acknowledgedUsers)) {
+                    $readDocuments++;
+                }
+            }
+        }
+
+        return $readDocuments;
     }
+}
+
+
+
 ?>

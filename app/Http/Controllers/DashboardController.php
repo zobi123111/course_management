@@ -73,81 +73,66 @@ class DashboardController extends Controller
     //     return view('dashboard.index', compact('user_count','course_count', 'group_count', 'folder_count', 'totalDocuments','readDocuments','unreadDocuments', 'requestCount'));
     // }
 
-    public function index() 
-{
-    $ou_id = auth()->user()->ou_id;
-    $user_count = 0;
-    $course_count = 0;
-    $group_count = 0;
-    $folder_count = 0;
-    $requestCount = 0;
-
-    if (auth()->user()->is_owner == 1) {
-        $user_count = User::count(); 
-        $course_count = Courses::count();
-        $group_count = Group::count();
-        $folder_count = Folder::whereNull('parent_id')->with('children')->count();
-        $documents = Document::with('group')->get();
-    } elseif (auth()->user()->is_admin == 1) { 
-        $user_count = User::where('ou_id', $ou_id)->count();
-        $course_count = Courses::where('ou_id', $ou_id)->count();
-        $group_count = Group::where('ou_id', $ou_id)->count();
-        $folder_count = Folder::whereNull('parent_id')->where('ou_id', $ou_id)->with('children')->count();
-        $documents = Document::where('ou_id', $ou_id)->with('group')->get();
-        $requestCount = BookedResource::where('ou_id', $ou_id)->count();
-    } else {
-        $userId = auth()->user()->id;
-
-        $groups = Group::all();
-        $filteredGroups = $groups->filter(function ($group) use ($userId) {
-            $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);
-            return in_array($userId, $userIds);
-        });
-
-        $groupIds = $filteredGroups->pluck('id')->toArray();
-
-        $courses = Courses::whereIn('id', function ($query) use ($groupIds) {
-            $query->select('courses_id')->from('courses_group')->whereIn('group_id', $groupIds);
-        })->get();
-
-        $documents = Document::where('ou_id', $ou_id)
-            ->whereHas('group', function ($query) use ($userId) {
-                $query->whereJsonContains('user_ids', (string) $userId);
-            })
-            ->with('group')
-            ->get();
-
-        $course_count = $courses->count();
-        $group_count = $filteredGroups->count();
-        $requestCount = BookedResource::where('user_id', $userId)->where('ou_id', $ou_id)->count();
-    }
-
-    // Count total documents
-    $totalDocuments = $documents->count();
-    $readDocuments = 0;
-
-    // Check if documents have been acknowledged
-    foreach ($documents as $doc) {
-        $groupUserIds = [];
-        if (!empty($doc->group) && !empty($doc->group->user_ids)) {
-            $groupUserIds = is_array($doc->group->user_ids) 
-                ? $doc->group->user_ids 
-                : explode(',', trim($doc->group->user_ids));
+    public function index()
+    {
+        $user = auth()->user();
+        $ou_id = $user->ou_id;
+        $userId = $user->id;
+    
+        $user_count = 0;
+        $course_count = 0;
+        $group_count = 0;
+        $folder_count = 0;
+        $requestCount = 0;
+    
+        if ($user->is_owner) {
+            $user_count = User::count(); 
+            $course_count = Courses::count();
+            $group_count = Group::count();
+            $folder_count = Folder::whereNull('parent_id')->with('children')->count();
+            $documents = Document::with('group')->get();
+        } elseif ($user->is_admin) {
+            $user_count = User::where('ou_id', $ou_id)->count();
+            $course_count = Courses::where('ou_id', $ou_id)->count();
+            $group_count = Group::where('ou_id', $ou_id)->count();
+            $folder_count = Folder::whereNull('parent_id')->where('ou_id', $ou_id)->with('children')->count();
+            $documents = Document::where('ou_id', $ou_id)->with('group')->get();
+            $requestCount = BookedResource::where('ou_id', $ou_id)->count();
+        } else {
+            $groups = Group::all();
+            $filteredGroups = $groups->filter(function ($group) use ($userId) {
+                $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);
+                return in_array($userId, $userIds);
+            });
+    
+            $groupIds = $filteredGroups->pluck('id')->toArray();
+    
+            $courses = Courses::whereIn('id', function ($query) use ($groupIds) {
+                $query->select('courses_id')->from('courses_group')->whereIn('group_id', $groupIds);
+            })->get();
+    
+            $documents = Document::where('ou_id', $ou_id)
+                ->whereHas('group', function ($query) use ($userId) {
+                    $query->whereJsonContains('user_ids', (string) $userId);
+                })
+                ->with('group')
+                ->get();
+    
+            $course_count = $courses->count();
+            $group_count = $filteredGroups->count();
+            $requestCount = BookedResource::where('user_id', $userId)->where('ou_id', $ou_id)->count();
         }
-
-        $acknowledgedUsers = json_decode($doc->acknowledge_by ?? '[]', true);
-
-        if (!empty($groupUserIds) && !array_diff($groupUserIds, $acknowledgedUsers)) {
-            $readDocuments++; // Increase count if all group users acknowledged
-        }
+    
+        $totalDocuments = $documents->count();
+        $readDocuments = countAcknowledgedDocuments($documents, $user);
+        $unreadDocuments = $totalDocuments - $readDocuments;
+    
+        $users = User::where('ou_id', $ou_id)->whereNull('is_admin')->get();
+    
+        return view('dashboard.index', compact(
+            'user_count', 'course_count', 'group_count', 'folder_count',
+            'totalDocuments', 'readDocuments', 'unreadDocuments', 'requestCount', 'users'
+        ));
     }
-
-    $unreadDocuments = $totalDocuments - $readDocuments;  
-    $users = User::where('ou_id', Auth::user()->ou_id)->where('is_admin', '=', null)->get();
-
-    return view('dashboard.index', compact(
-        'user_count', 'course_count', 'group_count', 'folder_count', 
-        'totalDocuments', 'readDocuments', 'unreadDocuments', 'requestCount', 'users'
-    ));
-}
+    
 }
