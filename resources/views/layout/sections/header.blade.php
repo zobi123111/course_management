@@ -3,14 +3,15 @@
       <div class="d-flex align-items-center justify-content-between">
       <?php 
         $org_detail = ou_logo(); 
-        if ($org_detail && $org_detail->org_logo) { 
+      
+        if ($org_detail && $org_detail->org_logo) {   
         ?>
             <a href="{{ url('dashboard') }}" class="logo d-flex align-items-center">
                 <img id="org_logo_preview" class="avms_logo" src="{{ asset('storage/organization_logo/' . $org_detail->org_logo) }}" alt="Organization Logo">
                 <span class="d-none d-lg-block">{{ $org_detail->org_unit_name ?? '' }} </span>  
             </a>
         <?php 
-        } else{?>
+        } else{ ?>
           <a href="https://altcruise.co.uk/dashboard" class="logo d-flex align-items-center logo-bottom">
 
             @php
@@ -20,19 +21,11 @@
             @if(isset($setting->site_image))
                 <img src="{{ asset('storage/' . $setting->site_image) }}" alt="" class="avms_logo">
             @else
-                <img src="{{env('PROJECT_LOGO')}}" alt="" class="avms_logo">
+            <img src="{{ asset('assets/img/Avms_Logo.png') }}" alt="" class="avms_logo" >
+
             @endif
-
-              <!-- <span class="d-none d-lg-block">Management</span> -->
           </a>
-      <?php   }
-        ?>
-
-
-          <!-- <a href="https://altcruise.co.uk/dashboard" class="logo d-flex align-items-center logo-bottom">
-              <img src="https://altcruise.co.uk/assets/img/logo.png" alt="">
-              <span class="d-none d-lg-block">Courses Management</span>
-          </a> -->
+      <?php  } ?>
 
 
           <i class="bi bi-list toggle-sidebar-btn"></i>

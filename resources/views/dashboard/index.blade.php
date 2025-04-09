@@ -19,8 +19,6 @@ $subTitle = "Welcome to Admin Dashboard";
 
 <?php 
 if(Auth()->user()->is_admin == "1"){
-
-
 $messages = [];
 foreach ($users as $user) {
 
@@ -86,6 +84,8 @@ if (!empty($messages)) { ?>
                         <span class="text-success"> Valid </span>
                     @endif
                 </strong>
+                @else
+                <span class="text-muted">Document Not Uploaded</span>
              @endif
             </td>
             <td>
@@ -104,6 +104,8 @@ if (!empty($messages)) { ?>
                         <span class="text-success"> Valid </span>
                     @endif
                 </strong>
+                @else
+                <span class="text-muted">Document Not Uploaded</span>
             @endif
             </td>
             <td>
@@ -121,6 +123,8 @@ if (!empty($messages)) { ?>
                                         <span class="text-success"> Valid </span>
                                     @endif
                     </strong>
+                    @else
+                 <span class="text-muted">Document Not Uploaded</span>
                 @endif
 
             </td>

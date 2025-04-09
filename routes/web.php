@@ -42,6 +42,7 @@ Route::get('/forgot-password', [LoginController::class, 'forgotPasswordView'])->
 Route::post('/forgot-password', [LoginController::class, 'forgotPassword'])->name('forgot.password');
 Route::get('/reset/password/{token}', [LoginController::class, 'resetPassword']);
 Route::post('/reset/password', [LoginController::class, 'submitResetPasswordForm'])->name('submit.reset.password');
+Route::get('/send_notification', [LoginController::class, 'send_notification'])->name('send_notification.index');
 
 //change passwword
 // Route::get('change-password', [LoginController::class, 'showChangePasswordForm'])->name('changePassword');
@@ -214,6 +215,8 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/resource/approval', [ResourceController::class, 'resource_approval'])->name('resource.approval');
     Route::post('/resource/approve/request', [ResourceController::class, 'approve_request'])->name('approve_request.index');
     Route::post('/resource/reject/request', [ResourceController::class, 'reject_request'])->name('reject_request.index');
+
+ 
 
     
 Route::get('/clear-cache', function() {
