@@ -1,4 +1,3 @@
-
 @section('sub-title', 'Course')
 @extends('layout.app')
 @section('content')
@@ -49,82 +48,82 @@
 </style> --}}
 
 <style>
-    .course-image {
-        height: 200px;
-        object-fit: cover;
-        width: 100%;
-    }
+.course-image {
+    height: 200px;
+    object-fit: cover;
+    width: 100%;
+}
 
-    .lesson_card {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    }
+.lesson_card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
 
-    .lesson_card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 16px rgba(0, 0, 0, 0.2);
-    }
+.lesson_card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 16px rgba(0, 0, 0, 0.2);
+}
 
-    .card-body {
-        flex-grow: 1;
-        /* min-height: 200px; */
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-    }
+.card-body {
+    flex-grow: 1;
+    /* min-height: 200px; */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
 
-    .card-footer {
-        display: flex;
-        justify-content: space-between;
-        padding: 10px;
-        background-color: #f8f9fa;
-    }
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #f8f9fa;
+}
 
-    .card-text {
-        flex-grow: 1;
-    }
+.card-text {
+    flex-grow: 1;
+}
 
-    .course-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
+.course-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
 
-    .course-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    }
+.course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
 
-    /* Button hover effect */
-    .card-footer .btn {
-        transition: background-color 0.3s ease, transform 0.3s ease;
-    }
+/* Button hover effect */
+.card-footer .btn {
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
 
-    .card-footer .btn:hover {
-        background-color: #e2e6ea;
-        transform: translateY(-2px);
-    }
+.card-footer .btn:hover {
+    background-color: #e2e6ea;
+    transform: translateY(-2px);
+}
 
-    .status-label {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        color: white;
-        padding: 5px 10px;
-        border-radius: 5px;
-        font-size: 0.9em;
-    }
+.status-label {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.9em;
+}
 </style>
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         @foreach($breadcrumbs as $breadcrumb)
-            @if($breadcrumb['url']) 
-                <li class="breadcrumb-item active-link"  ><a href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['title'] }}</a></li>
-            @else
-                <li class="breadcrumb-item active" aria-current="page">{{ $breadcrumb['title'] }}</li>
-            @endif
+        @if($breadcrumb['url'])
+        <li class="breadcrumb-item active-link"><a href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['title'] }}</a></li>
+        @else
+        <li class="breadcrumb-item active" aria-current="page">{{ $breadcrumb['title'] }}</li>
+        @endif
         @endforeach
     </ol>
 </nav>
@@ -132,8 +131,8 @@
 
 @if(session()->has('message'))
 <div id="successMessage" class="alert alert-success fade show" role="alert">
-  <i class="bi bi-check-circle me-1"></i>
-  {{ session()->get('message') }}
+    <i class="bi bi-check-circle me-1"></i>
+    {{ session()->get('message') }}
 </div>
 @endif
 
@@ -142,9 +141,9 @@
     <div class="row g-0">
         <div class="col-md-4">
             @if($course->image)
-                <img src="{{ asset('storage/' . $course->image) }}" class="img-fluid rounded-start" alt="Course Image">
+            <img src="{{ asset('storage/' . $course->image) }}" class="img-fluid rounded-start" alt="Course Image">
             @else
-                <img src="{{  url('assets/img/card.jpg')  }}" class="img-fluid rounded-start" alt="...">
+            <img src="{{  url('assets/img/card.jpg')  }}" class="img-fluid rounded-start" alt="...">
             @endif
         </div>
         <div class="col-md-8">
@@ -153,7 +152,7 @@
                 <p class="card-text">{{ $course->description }}</p>
                 @if(checkAllowedModule('courses', 'lesson.store')->isNotEmpty())
                 <p class="card-text"><button class="btn btn-success" id="createLesson" data-toggle="modal"
-                    data-target="#createLessonModal">Create Lesson</button></p>
+                        data-target="#createLessonModal">Create Lesson</button></p>
                 @endif
             </div>
         </div>
@@ -161,56 +160,65 @@
 </div>
 @if(auth()->user()->role == 3 || auth()->user()->role == 18)
 <!-- End Card with an image on left -->
-<div class="resourceBooking_btn"><a href="{{ url('/booking/bookresource/' . encode_id($course->id)) }}" class="btn btn-primary">Booking Request</a>
+<div class="resourceBooking_btn"><a href="{{ url('/booking/bookresource/' . encode_id($course->id)) }}"
+        class="btn btn-primary">Booking Request</a>
 </div>
 @endif
- <!-- List group with Advanced Contents -->
- <div class="card pt-4">
+<!-- List group with Advanced Contents -->
+<div class="card pt-4">
     <div class="card-body">
         <div class="list-group">
             <div class="container-fluid">
                 <h3>Lessons</h3>
                 <div class="row">
                     @foreach($course->courseLessons as $val)
-                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
-                            <div class="lesson_card course-card">
-                                <div class="course-image-container" style="position: relative;">
-                                    <span class="status-label" style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
-                                        {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
-                                    </span>
-                                </div>
-            
-                                <div class="card-body">
-                                    <h5 class="card-title lessonName">{{ $val->lesson_title}}</h5>
-            
-                                    <p class="card-text">
-                                        {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
-                                    </p>
-                                </div>
-            
-                                <div class="card-footer d-flex justify-content-between">
+                    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                        <div class="lesson_card course-card">
+                            <div class="course-image-container" style="position: relative;">
+                            @if(auth()->user()->role == 3)
+                                <a href="{{ url('lesson-pdf/'. $val->id) }}" style="position: absolute; top: 10px; right: 75px; background-color: green; border: none;border-radius: 5px; padding: 4px 5px; color: white;">Download
+                                </a>
+                            @endif    
+                                <span class="status-label"
+                                    style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
+                                    {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
+                                </span>
+                            </div>
 
-                                    @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
-                                        <a href="javascript:void(0)" class="btn btn-light show-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
-                                            <i class="fa fa-edit"></i> Show
-                                        </a>
-                                    @endif
+                            <div class="card-body">
+                                <h5 class="card-title lessonName">{{ $val->lesson_title}}</h5>
 
-                                    @if(checkAllowedModule('courses', 'lesson.edit')->isNotEmpty())
-                                        <a href="javascript:void(0)" class="btn btn-light edit-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
-                                            <i class="fa fa-edit"></i> Edit
-                                        </a>
-                                    @endif
+                                <p class="card-text">
+                                    {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
+                                </p>
+                            </div>
 
-                                    @if(checkAllowedModule('courses', 'lesson.delete')->isNotEmpty())
-                                        <a href="javascript:void(0)" class="btn btn-light delete-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
-                                            <i class="fa-solid fa-trash"></i> Delete
-                                        </a>
-                                    @endif
+                            <div class="card-footer d-flex justify-content-between">
 
-                                </div>
+                                @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
+                                <a href="javascript:void(0)" class="btn btn-light show-lesson-icon"
+                                    data-lesson-id="{{ encode_id($val->id) }}">
+                                    <i class="fa fa-edit"></i> Show
+                                </a>
+                                @endif
+
+                                @if(checkAllowedModule('courses', 'lesson.edit')->isNotEmpty())
+                                <a href="javascript:void(0)" class="btn btn-light edit-lesson-icon"
+                                    data-lesson-id="{{ encode_id($val->id) }}">
+                                    <i class="fa fa-edit"></i> Edit
+                                </a>
+                                @endif
+
+                                @if(checkAllowedModule('courses', 'lesson.delete')->isNotEmpty())
+                                <a href="javascript:void(0)" class="btn btn-light delete-lesson-icon"
+                                    data-lesson-id="{{ encode_id($val->id) }}">
+                                    <i class="fa-solid fa-trash"></i> Delete
+                                </a>
+                                @endif
+
                             </div>
                         </div>
+                    </div>
                     @endforeach
                 </div>
             </div>
@@ -220,78 +228,73 @@
 </div>
 
 @if ($course->prerequisites->count() > 0)
-    <div class="card pt-4">
-        <div class="card-body">
-            <h3>Prerequisites</h3>
-            <form action="{{ route('course.prerequisites.store', $course->id) }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="list-group">
-                    <div class="container-fluid">
-                        <div class="row">
-                            @foreach ($course->prerequisites as $index => $prerequisite)
-                                @php
-                                    // Get saved prerequisite for the logged-in user
-                                    $savedPrerequisite = $course->prerequisiteDetails()
-                                        ->where('created_by', auth()->id())
-                                        ->where('prerequisite_type', $prerequisite->prerequisite_type)
-                                        ->first();
-                                @endphp
+<div class="card pt-4">
+    <div class="card-body">
+        <h3>Prerequisites</h3>
+        <form action="{{ route('course.prerequisites.store', $course->id) }}" method="POST"
+            enctype="multipart/form-data">
+            @csrf
+            <div class="list-group">
+                <div class="container-fluid">
+                    <div class="row">
+                        @foreach ($course->prerequisites as $index => $prerequisite)
+                        @php
+                        // Get saved prerequisite for the logged-in user
+                        $savedPrerequisite = $course->prerequisiteDetails()
+                        ->where('created_by', auth()->id())
+                        ->where('prerequisite_type', $prerequisite->prerequisite_type)
+                        ->first();
+                        @endphp
 
-                                <div class="col-md-6 mb-3">
-                                    <div class="card shadow-sm">
-                                        <div class="card-body">
-                                            <h5 class="card-title">Prerequisite {{ $index + 1 }}</h5>
+                        <div class="col-md-6 mb-3">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">Prerequisite {{ $index + 1 }}</h5>
 
-                                            <label for="prerequisite_{{ $index }}">
-                                                <strong>{{ $prerequisite->prerequisite_detail }}</strong>
-                                            </label>
+                                    <label for="prerequisite_{{ $index }}">
+                                        <strong>{{ $prerequisite->prerequisite_detail }}</strong>
+                                    </label>
 
-                                            @if ($prerequisite->prerequisite_type == 'number')
-                                                <input type="number" 
-                                                       class="form-control" 
-                                                       name="prerequisite_details[{{ $index }}]" 
-                                                       value="{{ old('prerequisite_details.' . $index, $savedPrerequisite->prerequisite_detail ?? '') }}"
-                                                       placeholder="Enter number">
-                                            @elseif ($prerequisite->prerequisite_type == 'text')
-                                                <input type="text" 
-                                                       class="form-control" 
-                                                       name="prerequisite_details[{{ $index }}]" 
-                                                       value="{{ old('prerequisite_details.' . $index, $savedPrerequisite->prerequisite_detail ?? '') }}"
-                                                       placeholder="Enter text">
-                                            @elseif ($prerequisite->prerequisite_type == 'file')
-                                                <input type="file" 
-                                                       class="form-control" 
-                                                       name="prerequisite_details[{{ $index }}]">
-                                                       @error("prerequisite_details.$index")
-                                                            <span class="text-danger">{{ $message }}</span>
-                                                        @enderror
-                                                @if (!empty($savedPrerequisite->file_path))
-                                                    <p class="mt-2">
-                                                        <strong>Existing File:</strong> 
-                                                        <a href="{{ asset('storage/' . $savedPrerequisite->file_path) }}" 
-                                                           target="_blank" 
-                                                           class="btn btn-sm btn-outline-primary">
-                                                            View File
-                                                        </a>
-                                                    </p>
-                                                @endif
-                                            @endif
-                                        </div>
-                                    </div>
+                                    @if ($prerequisite->prerequisite_type == 'number')
+                                    <input type="number" class="form-control" name="prerequisite_details[{{ $index }}]"
+                                        value="{{ old('prerequisite_details.' . $index, $savedPrerequisite->prerequisite_detail ?? '') }}"
+                                        placeholder="Enter number">
+                                    @elseif ($prerequisite->prerequisite_type == 'text')
+                                    <input type="text" class="form-control" name="prerequisite_details[{{ $index }}]"
+                                        value="{{ old('prerequisite_details.' . $index, $savedPrerequisite->prerequisite_detail ?? '') }}"
+                                        placeholder="Enter text">
+                                    @elseif ($prerequisite->prerequisite_type == 'file')
+                                    <input type="file" class="form-control" name="prerequisite_details[{{ $index }}]">
+                                    @error("prerequisite_details.$index")
+                                    <span class="text-danger">{{ $message }}</span>
+                                    @enderror
+                                    @if (!empty($savedPrerequisite->file_path))
+                                    <p class="mt-2">
+                                        <strong>Existing File:</strong>
+                                        <a href="{{ asset('storage/' . $savedPrerequisite->file_path) }}"
+                                            target="_blank" class="btn btn-sm btn-outline-primary">
+                                            View File
+                                        </a>
+                                    </p>
+                                    @endif
+                                    @endif
                                 </div>
-                            @endforeach
-                        </div> <!-- end row -->
-                    </div> <!-- end container-fluid -->
-                </div> <!-- end list-group -->
+                            </div>
+                        </div>
+                        @endforeach
+                    </div> <!-- end row -->
+                </div> <!-- end container-fluid -->
+            </div> <!-- end list-group -->
 
-                <button type="submit" class="btn btn-primary mt-3">Save Prerequisites</button>
-            </form>
-        </div> <!-- end card-body -->
-    </div> <!-- end card -->
+            <button type="submit" class="btn btn-primary mt-3">Save Prerequisites</button>
+        </form>
+    </div> <!-- end card-body -->
+</div> <!-- end card -->
 @endif
 
 <!-- Create Lesson-->
-<div class="modal fade" id="createLessonModal" tabindex="-1" role="dialog" aria-labelledby="lessonModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal fade" id="createLessonModal" tabindex="-1" role="dialog" aria-labelledby="lessonModalLabel"
+    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -309,7 +312,7 @@
                     </div>
                     <div class="form-group">
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
-                        <textarea class="form-control" name="description"  rows="3"></textarea>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
                         <div id="description_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
@@ -333,15 +336,15 @@
                             <input type="radio" name="grade_type" value="score" id="grade_score">
                             <label for="grade_score">Score (1-5)</label>
                         </div>
-                    </div>                    
+                    </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" aria-label="Default select example">
                             <option value="1" selected>Active</option>
                             <option value="0">Inactive</option>
                         </select>
-                        <div id="status_error" class="text-danger error_e"></div>            
-                    </div>               
+                        <div id="status_error" class="text-danger error_e"></div>
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="submitLesson" class="btn btn-primary sbt_btn">Save </button>
@@ -354,7 +357,8 @@
 <!--End of Lesson-->
 
 <!-- Edit Lesson -->
-<div class="modal fade" id="editLessonModal" tabindex="-1" role="dialog" aria-labelledby="editLessonModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal fade" id="editLessonModal" tabindex="-1" role="dialog" aria-labelledby="editLessonModalLabel"
+    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -372,20 +376,21 @@
                     </div>
                     <div class="form-group">
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
-                        <textarea class="form-control" name="edit_description" id="edit_description" rows="3"></textarea>
+                        <textarea class="form-control" name="edit_description" id="edit_description"
+                            rows="3"></textarea>
                         <div id="description_error_up" class="text-danger error_e"></div>
-                    </div>     
+                    </div>
                     <div class="form-group">
                         <label for="comment_required" class="form-label">
                             Require Comment
                         </label>
                         <input type="checkbox" id="edit_comment_required" name="edit_comment_required">
-                    </div>                             
+                    </div>
                     <div class="form-group">
                         <label for="comment" class="form-label">Comment<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="edit_comment" id="edit_comment" rows="3"></textarea>
                         <div id="edit_comment_error_up" class="text-danger error_e"></div>
-                    </div> 
+                    </div>
                     <!-- Grading Type Selection -->
                     <div class="form-group">
                         <label class="form-label">Grading Type <span class="text-danger">*</span></label>
@@ -397,26 +402,27 @@
                             <label for="edit_grade_score">Score (1-5)</label>
                         </div>
                         <div id="edit_grade_type_error" class="text-danger error_e"></div>
-                    </div>                   
+                    </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
-                        <select class="form-select" name="edit_status" id="edit_status" aria-label="Default select example">
+                        <select class="form-select" name="edit_status" id="edit_status"
+                            aria-label="Default select example">
                             <option value="1" selected>Active</option>
                             <option value="0">Inactive</option>
                         </select>
                         <div id="status_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                    <label class="form-label">
-                        <input type="checkbox" id="enable_prerequisites"> Enable Prerequisites
-                    </label>
-                </div>
-                <div id="prerequisites_container" style="display: none;">
-                    <div id="prerequisite_items">
-                        <div class="prerequisite-item">
-                        </div>
+                        <label class="form-label">
+                            <input type="checkbox" id="enable_prerequisites"> Enable Prerequisites
+                        </label>
                     </div>
-                    <button type="button" id="addPrerequisite" class="btn btn-primary mt-2">Add More</button>
+                    <div id="prerequisites_container" style="display: none;">
+                        <div id="prerequisite_items">
+                            <div class="prerequisite-item">
+                            </div>
+                        </div>
+                        <button type="button" id="addPrerequisite" class="btn btn-primary mt-2">Add More</button>
 
                     </div>
                     <div class="modal-footer">
@@ -433,7 +439,8 @@
 <!--Lesson Delete  Modal -->
 <form action="{{ url('lesson/delete') }}" method="POST">
     @csrf
-    <div class="modal fade" id="deleteLesson" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal fade" id="deleteLesson" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"
+        data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -482,13 +489,13 @@ $(document).ready(function() {
         }
     });
 
-    $("#createLesson").on('click', function(){
+    $("#createLesson").on('click', function() {
         $(".error_e").html('');
         $("#lesson")[0].reset();
         $("#createLessonModal").modal('show');
     })
 
-    $("#submitLesson").on("click", function(e){
+    $("#submitLesson").on("click", function(e) {
         e.preventDefault();
         $.ajax({
             url: '{{ url("/lesson/create") }}',
@@ -498,27 +505,29 @@ $(document).ready(function() {
                 $('#createLessonModal').modal('hide');
                 location.reload();
             },
-            error: function(xhr, status, error){
+            error: function(xhr, status, error) {
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
-                $.each(validationErrors, function(key,value){
-                    var msg = '<p>'+value+'<p>';
-                    $('#'+key+'_error').html(msg); 
-                }) 
+                $.each(validationErrors, function(key, value) {
+                    var msg = '<p>' + value + '<p>';
+                    $('#' + key + '_error').html(msg);
+                })
             }
         });
 
     })
 
-    $('.edit-lesson-icon').click(function(e) { 
+    $('.edit-lesson-icon').click(function(e) {
         e.preventDefault();
 
         $('.error_e').html('');
         var lessonId = $(this).data('lesson-id');
         $.ajax({
-            url: "{{ url('/lesson/edit') }}", 
+            url: "{{ url('/lesson/edit') }}",
             type: 'GET',
-            data: { id: lessonId },
+            data: {
+                id: lessonId
+            },
             success: function(response) {
                 $('input[name="edit_lesson_title"]').val(response.lesson.lesson_title);
                 $('input[name="lesson_id"]').val(response.lesson.id);
@@ -539,7 +548,7 @@ $(document).ready(function() {
                     $('#enable_prerequisites').prop('checked', false);
                     $('#prerequisites_container').hide();
                 }
-                
+
                 if (response.lesson.comment) {
                     $('#edit_comment').val(response.lesson.comment);
                     $('#edit_comment').closest('.form-group').show();
@@ -556,19 +565,23 @@ $(document).ready(function() {
                     $('#edit_comment').prop('required', false);
                 }
 
-                  // Clear old prerequisites
+                // Clear old prerequisites
                 $('#prerequisite_items').empty();
                 let prerequisites = response.lesson.prerequisites;
-                    if (prerequisites.length > 0) {
-                        prerequisites.forEach((prerequisite, index) => {
-                            let prerequisiteHtml = generatePrerequisiteHtml(prerequisite, index);
-                            $('#prerequisite_items').append(prerequisiteHtml);
-                        });
-                    } else {
-                        // Show a single empty prerequisite form if there are none
-                        let prerequisiteHtml = generatePrerequisiteHtml({ prerequisite_detail: '', prerequisite_type: 'text' }, 0);
+                if (prerequisites.length > 0) {
+                    prerequisites.forEach((prerequisite, index) => {
+                        let prerequisiteHtml = generatePrerequisiteHtml(
+                            prerequisite, index);
                         $('#prerequisite_items').append(prerequisiteHtml);
-                    }
+                    });
+                } else {
+                    // Show a single empty prerequisite form if there are none
+                    let prerequisiteHtml = generatePrerequisiteHtml({
+                        prerequisite_detail: '',
+                        prerequisite_type: 'text'
+                    }, 0);
+                    $('#prerequisite_items').append(prerequisiteHtml);
+                }
 
                 $('#editLessonModal').modal('show');
             },
@@ -589,24 +602,25 @@ $(document).ready(function() {
         }
     });
 
-    $('#updateLesson').on('click', function(e){
+    $('#updateLesson').on('click', function(e) {
         e.preventDefault();
-        let data = $("#editLesson").serialize() + "&enable_prerequisites=" + ($('#enable_prerequisites').is(':checked') ? 1 : 0);
+        let data = $("#editLesson").serialize() + "&enable_prerequisites=" + ($('#enable_prerequisites')
+            .is(':checked') ? 1 : 0);
         $.ajax({
             url: "{{ url('lesson/update') }}",
             type: "POST",
             data: data,
-            success: function(response){
+            success: function(response) {
                 $('#editlessonModal').modal('hide');
                 location.reload();
             },
-            error: function(xhr, status, error){
+            error: function(xhr, status, error) {
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
-                $.each(validationErrors, function(key,value){
-                    var msg = '<p>'+value+'<p>';
-                    $('#'+key+'_error_up').html(msg); 
-                }) 
+                $.each(validationErrors, function(key, value) {
+                    var msg = '<p>' + value + '<p>';
+                    $('#' + key + '_error_up').html(msg);
+                })
             }
         })
     })
@@ -618,25 +632,25 @@ $(document).ready(function() {
     //     var courseName = $(this).closest('tr').find('.courseName').text();
     //     $('#append_name').html(courseName);
     //     $('#lessonId').val(lessonId);
-      
+
     // });
     $('.delete-lesson-icon').click(function(e) {
         e.preventDefault();
         $('#deleteLesson').modal('show');
         var lessonId = $(this).data('lesson-id');
-        
+
         // var lessonTitle = $(this).closest('.list-group-item').find('.lessontitle').text().trim();
         var lessonTitle = $(this).closest('.lesson_card').find('.lessonName').text();
 
-        
+
         console.log("Lesson Title: " + lessonTitle);
-        
+
         if (!lessonTitle) {
             lessonTitle = "Unknown Lesson";
         }
 
         $('#append_name').html(lessonTitle);
-        
+
         $('#lessonId').val(lessonId);
     });
 
@@ -644,7 +658,7 @@ $(document).ready(function() {
 
     $('.show-lesson-icon').click(function(e) {
         e.preventDefault();
-        
+
         var lessonId = $(this).data('lesson-id');
         window.location.href = "{{ url('lesson') }}/" + lessonId;
     });
@@ -654,8 +668,8 @@ $(document).ready(function() {
         $('#successMessage').fadeOut('slow');
     }, 2000);
 
-// Toggle prerequisites section
-$("#enable_prerequisites").change(function () {
+    // Toggle prerequisites section
+    $("#enable_prerequisites").change(function() {
         if ($(this).is(":checked")) {
             $("#prerequisites_container").show();
         } else {
@@ -665,7 +679,7 @@ $("#enable_prerequisites").change(function () {
     });
 
     // Add new prerequisite
-    $("#addPrerequisite").click(function () {
+    $("#addPrerequisite").click(function() {
         let index = $(".prerequisite-item").length;
         let prerequisiteHTML = `
             <div class="prerequisite-item border p-2 mt-2">
@@ -698,7 +712,7 @@ $("#enable_prerequisites").change(function () {
     });
 
     // Remove prerequisite
-    $(document).on("click", ".remove-prerequisite", function () {
+    $(document).on("click", ".remove-prerequisite", function() {
         $(this).closest(".prerequisite-item").remove();
     });
 
@@ -736,7 +750,7 @@ function generatePrerequisiteHtml(prerequisite, index) {
 
 // $('#resourceBooking_btn').click(function(e) { 
 //     var courseid = $(this).data('courseid');
- 
+
 //     data = {courseid:courseid, "_token": "{{ csrf_token() }}"};
 //     $.ajax({
 //             url: "{{ url('resource/getcourseResource') }}",
@@ -749,11 +763,10 @@ function generatePrerequisiteHtml(prerequisite, index) {
 //             error: function(xhr, status, error){
 //                 var errorMessage = JSON.parse(xhr.responseText);
 //                 var validationErrors = errorMessage.errors;
-              
+
 //             }
 //         })
 // });
-
 </script>
 
 @endsection
