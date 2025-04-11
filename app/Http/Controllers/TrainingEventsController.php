@@ -510,13 +510,25 @@ class TrainingEventsController extends Controller
 
     public function updateTrainingEvent(Request $request)
     {
-        // Convert time fields
+        // Convert top-level time fields
         $request->merge([
             'start_time' => date('H:i', strtotime($request->start_time)),
             'end_time' => date('H:i', strtotime($request->end_time)),
             'total_time' => date('H:i', strtotime($request->total_time)),
         ]);
-
+    
+        // Convert nested lesson times to H:i format
+        $lessonData = $request->input('lesson_data', []);
+        foreach ($lessonData as $key => $lesson) {
+            if (!empty($lesson['start_time'])) {
+                $lessonData[$key]['start_time'] = date('H:i', strtotime($lesson['start_time']));
+            }
+            if (!empty($lesson['end_time'])) {
+                $lessonData[$key]['end_time'] = date('H:i', strtotime($lesson['end_time']));
+            }
+        }
+        $request->merge(['lesson_data' => $lessonData]);
+    
         // Validate
         $request->validate([
             'event_id' => 'required|exists:training_events,id',
@@ -524,14 +536,28 @@ class TrainingEventsController extends Controller
             'course_id' => 'required|exists:courses,id',
             'instructor_id' => 'required|exists:users,id',
             'resource_id' => 'nullable|exists:resources,id',
-            // 'lesson_ids' => 'required|array',
-            // 'lesson_ids.*' => 'exists:lessons,id',
+    
             'lesson_data' => 'required|array',
             'lesson_data.*.instructor_id' => 'required|exists:users,id',
             'lesson_data.*.resource_id' => 'required|exists:resources,id',
             'lesson_data.*.lesson_date' => 'required|date_format:Y-m-d',
             'lesson_data.*.start_time' => 'required|date_format:H:i',
-            'lesson_data.*.end_time' => 'required|date_format:H:i|after:lesson_data.*.start_time',
+            'lesson_data.*.end_time' => [
+                'required',
+                'date_format:H:i',
+                function ($attribute, $value, $fail) use ($request) {
+                    preg_match('/lesson_data\.(\d+)\.end_time/', $attribute, $matches);
+                    if (isset($matches[1])) {
+                        $index = $matches[1];
+                        $startTime = $request->input("lesson_data.$index.start_time");
+    
+                        if (strtotime($value) <= strtotime($startTime)) {
+                            $fail("Lesson #$index: End time must be after start time.");
+                        }
+                    }
+                },
+            ],
+    
             'event_date' => 'required|date_format:Y-m-d',
             'start_time' => 'required|date_format:H:i',
             'end_time' => [
@@ -566,7 +592,7 @@ class TrainingEventsController extends Controller
                 }
             ],
         ]);
-
+    
         // Update Training Event
         $trainingEvent = TrainingEvents::findOrFail($request->event_id);
         $trainingEvent->update([
@@ -575,7 +601,7 @@ class TrainingEventsController extends Controller
             'student_id' => $request->student_id,
             'instructor_id' => $request->instructor_id,
             'resource_id' => $request->resource_id,
-            'lesson_ids' => json_encode($request->lesson_ids),
+            'lesson_ids' => json_encode(array_keys($lessonData)), // optional, depends on usage
             'event_date' => $request->event_date,
             'start_time' => $request->start_time,
             'end_time' => $request->end_time,
@@ -584,11 +610,9 @@ class TrainingEventsController extends Controller
             'total_time' => $request->total_time,
             'licence_number' => $request->licence_number ?? auth()->user()->licence_number,
         ]);
-
-        // Delete existing lesson data for this event
-        TrainingEventLessons::where('training_event_id', $trainingEvent->id)->delete();
-
-        foreach ($request->lesson_data as $lessonId => $data) {
+    
+        // Update or create each lesson's detail
+        foreach ($lessonData as $lessonId => $data) {
             TrainingEventLessons::updateOrCreate(
                 [
                     'training_event_id' => $trainingEvent->id,
@@ -603,15 +627,16 @@ class TrainingEventsController extends Controller
                 ]
             );
         }
-
+    
         Session::flash('message', 'Training event updated successfully.');
-
+    
         return response()->json([
             'success' => true,
             'message' => 'Training event updated successfully',
             'trainingEvent' => $trainingEvent->load('eventLessons'),
         ]);
     }
+    
     
     public function deleteTrainingEvent(Request $request)
     {
@@ -665,46 +690,59 @@ class TrainingEventsController extends Controller
     public function showTrainingEvent(Request $request, $event_id)
     {
         $trainingEvent = TrainingEvents::with([
-            'course:id,course_name',
+            'course:id,course_name,course_type',
             'group:id,name,user_ids',
             'instructor:id,fname,lname',
             'student:id,fname,lname',
-            'resource:id,name'
+            'resource:id,name',
+            'eventLessons.lesson:id,lesson_title',
+            'eventLessons.instructor:id,fname,lname',
+            'eventLessons.resource:id,name',
         ])->find(decode_id($event_id));
-
+    
         if (!$trainingEvent) {
             return abort(404, 'Training Event not found');
         }
+    
+        $eventLessons = $trainingEvent->eventLessons;
+        $student = $trainingEvent->student;
+        $lessonIds = $eventLessons->pluck('lesson_id')->filter()->unique();
 
-    // Fetch the single student
-    $student = $trainingEvent->student;
+        // Get task gradings (sublesson grades and comments)
+        $taskGrades = TaskGrading::where('user_id', $student->id)
+            ->whereIn('lesson_id', $eventLessons->pluck('lesson_id')->filter()->unique())
+            ->get()
+            ->keyBy(function ($item) {
+                return $item->sub_lesson_id;
+            });
+    
+        // Get competency grades (competency area grades and comments)
+        $competencyGrades = CompetencyGrading::where('user_id', $student->id)
+            ->whereIn('lesson_id', $eventLessons->pluck('lesson_id')->filter()->unique())
+            ->get()
+            ->groupBy('lesson_id');
 
-        // Ensure course exists before accessing course_id
-        $courseLessons = $trainingEvent->course 
-            ? CourseLesson::with('sublessons')
-                ->where('course_id', $trainingEvent->course->id)
-                ->get()
-            : collect();
-
-        // Fetch the overall assessment for the single student
+        // Optional: Also pass overall assessments if you need them
         $overallAssessments = OverallAssessment::where('event_id', $trainingEvent->id)
             ->where('user_id', $student->id ?? null)
-            ->first(); // Fetch only one record
-
-        // Decode lesson_ids JSON and fetch associated lessons
+            ->first();
+    
         $lessonIds = json_decode($trainingEvent->lesson_ids, true) ?? [];
         $selectedLessons = !empty($lessonIds) 
             ? CourseLesson::with('sublessons')->whereIn('id', $lessonIds)->get() 
             : collect();
-
-    return view('trainings.show', compact(
-        'trainingEvent', 
-        'student', 
-        'courseLessons', 
-        'overallAssessments', 
-        'selectedLessons'
-    ));
-}
+    
+        return view('trainings.show', compact(
+            'trainingEvent', 
+            'student', 
+            'overallAssessments', 
+            'selectedLessons',
+            'eventLessons',
+            'taskGrades',
+            'competencyGrades'
+        ));
+    }
+    
 
 
     // public function showTrainingEvent(Request $request, $event_id)
@@ -749,73 +787,163 @@ class TrainingEventsController extends Controller
     //     return view('trainings.show', compact('trainingEvent', 'groupUsers', 'courseLessons', 'overallAssessments', 'overallRemarks'));
     // }
 
+    // public function createGrading(Request $request)
+    // {
+    //     // Validate the request
+    //     $request->validate([
+    //         'event_id' => 'required|integer|exists:training_events,id',
+    //         'task_grade' => 'nullable|array',
+    //         'task_grade.*.*.*' => ['required', 'string', Rule::in(['N/A', 'Further training required', 'Competent', '1', '2', '3', '4', '5'])], 
+    //         'comp_grade' => 'nullable|array',
+    //         'comp_grade.*.*' => 'required|integer|min:1|max:5',
+    //     ]);
+
+    //     DB::beginTransaction(); 
+
+    //     try {
+    //         $event_id = $request->event_id;
+
+    //         // Store or Update Task Grading
+    //         if ($request->has('task_grade')) {
+    //             foreach ($request->task_grade as $lesson_id => $subLessons) {
+    //                 foreach ($subLessons as $sub_lesson_id => $users) {
+    //                     foreach ($users as $user_id => $task_grade) {
+    //                         TaskGrading::updateOrCreate(
+    //                             [
+    //                                 'event_id' => $event_id,
+    //                                 'lesson_id' => $lesson_id,
+    //                                 'sub_lesson_id' => $sub_lesson_id,
+    //                                 'user_id' => $user_id,
+    //                             ],
+    //                             [
+    //                                 'task_grade' => $task_grade,
+    //                                 'created_by' => auth()->user()->id, // Moved to update fields
+    //                             ]
+    //                         );
+    //                     }
+    //                 }
+    //             }
+    //         }
+
+    //         // Store or Update Competency Grading
+    //         if ($request->has('comp_grade')) {
+    //             foreach ($request->comp_grade as $lesson_id => $users) {
+    //                 foreach ($users as $user_id => $competency_grade) {
+    //                     CompetencyGrading::updateOrCreate(
+    //                         [
+    //                             'event_id' => $event_id,
+    //                             'lesson_id' => $lesson_id,
+    //                             'user_id' => $user_id,
+    //                         ],
+    //                         [
+    //                             'competency_grade' => $competency_grade,
+    //                             'created_by'=> auth()->user()->id,
+    //                         ]
+    //                     );
+    //                 }
+    //             }
+    //         }
+
+    //         DB::commit();
+    //         Session::flash('message', 'student grading updated successfully.');
+    //         return response()->json(['success' => true, 'message'=> 'student grading updated successfully.']);
+
+    //     } catch (\Exception $e) {
+    //         DB::rollback();
+    //         return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+    //     }
+    // }
+
     public function createGrading(Request $request)
     {
-        // Validate the request
+        // Validate the incoming data:
         $request->validate([
-            'event_id' => 'required|integer|exists:training_events,id',
-            'task_grade' => 'nullable|array',
-            'task_grade.*.*.*' => ['required', 'string', Rule::in(['N/A', 'Further training required', 'Competent', '1', '2', '3', '4', '5'])],
-            'comp_grade' => 'nullable|array',
-            'comp_grade.*.*' => 'required|integer|min:1|max:5',
+            'event_id'             => 'required|integer|exists:training_events,id',
+            'task_grade'           => 'nullable|array',
+            'task_grade.*.*'       => ['required', 'string', Rule::in(['Incomplete', 'Further training required', 'Competent', '1', '2', '3', '4', '5'])],
+            'task_comments'        => 'nullable|array',
+            'task_comments.*.*'    => 'nullable|string|max:255',  // Optional comment validation
+            'comp_grade'           => 'nullable|array',
+            'comp_grade.*.*'       => 'required|integer|min:1|max:5',  // Grading from 1-5
+            'comp_comments'        => 'nullable|array',
+            'comp_comments.*.*'    => 'nullable|string|max:255',  // Optional comment validation
+            // Ensure the student being graded is provided from the form:
+            'tg_user_id'           => 'required|integer|exists:users,id',
+            'cg_user_id'           => 'required|integer|exists:users,id',
         ]);
-
+    
+        // Begin the database transaction
         DB::beginTransaction();
-
+        
         try {
-            $event_id = $request->event_id;
-
-            // Store or Update Task Grading
+            $event_id = $request->input('event_id');
+            // Get the student ID being graded from the hidden fields:
+            $gradedStudentId = $request->input('tg_user_id');
+            $gradedStudentIdForComp = $request->input('cg_user_id');
+            
+            // Store or update Task Grading (for sublessons):
             if ($request->has('task_grade')) {
-                foreach ($request->task_grade as $lesson_id => $subLessons) {
-                    foreach ($subLessons as $sub_lesson_id => $users) {
-                        foreach ($users as $user_id => $task_grade) {
-                            TaskGrading::updateOrCreate(
-                                [
-                                    'event_id' => $event_id,
-                                    'lesson_id' => $lesson_id,
-                                    'sub_lesson_id' => $sub_lesson_id,
-                                    'user_id' => $user_id,
-                                ],
-                                [
-                                    'task_grade' => $task_grade,
-                                    'created_by' => auth()->user()->id, // Moved to update fields
-                                ]
-                            );
-                        }
-                    }
-                }
-            }
-
-            // Store or Update Competency Grading
-            if ($request->has('comp_grade')) {
-                foreach ($request->comp_grade as $lesson_id => $users) {
-                    foreach ($users as $user_id => $competency_grade) {
-                        CompetencyGrading::updateOrCreate(
+                foreach ($request->input('task_grade') as $lesson_id => $subLessons) {
+                    foreach ($subLessons as $sub_lesson_id => $task_grade) {
+                        TaskGrading::updateOrCreate(
                             [
-                                'event_id' => $event_id,
-                                'lesson_id' => $lesson_id,
-                                'user_id' => $user_id,
+                                'event_id'      => $event_id,
+                                'lesson_id'     => $lesson_id,
+                                'sub_lesson_id' => $sub_lesson_id,
+                                'user_id'       => $gradedStudentId,  // Use student ID being graded
                             ],
                             [
-                                'competency_grade' => $competency_grade,
-                                'created_by'=> auth()->user()->id,
+                                'task_grade'    => $task_grade,
+                                'task_comment'  => $request->input("task_comments.$lesson_id.$sub_lesson_id", null),
+                                'created_by'    => auth()->user()->id,  // evaluator's ID
                             ]
                         );
                     }
                 }
             }
-
+    
+            // Store or update Competency Grading (lesson-level):
+            if ($request->has('comp_grade')) {
+                foreach ($request->input('comp_grade') as $lesson_id => $competencyGrades) {
+                    $compData = [
+                        'event_id'  => $event_id,
+                        'lesson_id' => $lesson_id,
+                        'user_id'   => $gradedStudentIdForComp, // Use student ID from hidden input
+                        'created_by'=> auth()->user()->id,
+                    ];
+        
+                    // Map each competency grade and comment to its respective database columns.
+                    foreach ($competencyGrades as $code => $grade) {
+                        // Build column names based on competency code (e.g. KNO becomes kno_grade, kno_comment)
+                        $gradeColumn   = strtolower($code) . '_grade';
+                        $commentColumn = strtolower($code) . '_comment';
+                        
+                        $compData[$gradeColumn] = $grade;
+                        $compData[$commentColumn] = $request->input("comp_comments.$lesson_id.$code", null);
+                    }
+        
+                    CompetencyGrading::updateOrCreate(
+                        [
+                            'event_id'  => $event_id,
+                            'lesson_id' => $lesson_id,
+                            'user_id'   => $gradedStudentIdForComp,
+                        ],
+                        $compData
+                    );
+                }
+            }
+            
+            // Commit the transaction on success
             DB::commit();
-            Session::flash('message', 'student grading updated successfully.');
-            return response()->json(['success' => true, 'message'=> 'student grading updated successfully.']);
-
+            Session::flash('message', 'Student grading updated successfully.');
+            return response()->json(['success' => true, 'message' => 'Student grading updated successfully.']);
+        
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
-
+    
     public function storeOverallAssessment(Request $request)
     {
         // Validate request

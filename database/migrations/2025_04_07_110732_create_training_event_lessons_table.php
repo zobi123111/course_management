@@ -22,9 +22,9 @@ return new class extends Migration
             $table->time('end_time')->nullable();
 
             // Foreign keys
-            $table->foreign('training_event_id')->references('id')->on('training_events')->onDelete('cascade');
-            $table->foreign('lesson_id')->references('id')->on('course_lessons')->onDelete('cascade');
-            $table->foreign('instructor_id')->references('id')->on('users')->onDelete('cascade');
+            // $table->foreign('training_event_id')->references('id')->on('training_events')->onDelete('cascade');
+            // $table->foreign('lesson_id')->references('id')->on('course_lessons')->onDelete('cascade');
+            // $table->foreign('instructor_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();
         });
