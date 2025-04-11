@@ -23,9 +23,10 @@ class DocumentController extends Controller
         if(checkAllowedModule('courses', 'document.index')->isNotEmpty() && Auth()->user()->is_owner ==  1){
             $groups = Group::all();
             $folders = Folder::whereNull('parent_id')->with('children')->get();
-            $documents = Document::all();
+            $documents = Document::orderBy('id', 'asc')->get();
+
         }
-        elseif(checkAllowedModule('documents', 'document.index')->isNotEmpty() && Auth()->user()->is_admin ==  0){ 
+        elseif(checkAllowedModule('documents', 'document.index')->isNotEmpty() && Auth()->user()->is_admin ==  0){   
             $groups = Group::where('ou_id', $ou_id)->get();
             $filteredGroups = $groups->filter(function ($group) use ($userId) {
                 $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);                
@@ -35,13 +36,15 @@ class DocumentController extends Controller
             $groupIds = $filteredGroups->pluck('id')->toArray();
             $documents = Document::whereIn('group_id', $groupIds)
                         ->where('status', 1)
+                        ->orderBy('id', 'desc')
                         ->get();
             $folders = [];
         }else{
-            
+           
             $groups = Group::where('ou_id', $ou_id)->get();
             $folders = Folder::where('ou_id', auth()->user()->ou_id)->whereNull('parent_id')->with('children')->get();
-            $documents = Document::where('ou_id',$ou_id)->get();
+            $documents = Document::where('ou_id', $ou_id)->orderBy('id', 'desc')->get();
+
         }
         $organizationUnits = OrganizationUnits::all();
         return view('documents.index',compact('documents', 'folders', 'groups', 'organizationUnits'));
@@ -54,11 +57,13 @@ class DocumentController extends Controller
             'doc_title' => 'required',
             'version_no' => 'required',
             'issue_date' => 'required|date',
+            'completed_date' => 'required|date',
             'expiry_date' => 'required|date|after:issue_date',
             'document_file' => 'required|file',
+            'document_type' => 'required',
             'status' => 'required',
             'group' => 'required',
-            'folder' => 'required|nullable|exists:folders,id' // Ensure folder exists if provided
+            'folder' => 'required|nullable|exists:folders,id' 
         ]);
 
         // Get the original filename
@@ -76,8 +81,10 @@ class DocumentController extends Controller
             'doc_title' => $request->doc_title,
             'version_no' => $request->version_no,
             'issue_date' => $request->issue_date,
+            'completed_date' => $request->completed_date,
             'expiry_date' => $request->expiry_date,
             'document_file' => $filePath,
+            'document_type' => $request->document_type,
             'original_filename' => $originalFilename, // Store original filename
             'status' => $request->status,
         ]);
@@ -103,11 +110,13 @@ class DocumentController extends Controller
             'doc_title' => 'required',
             'version_no' => 'required',
             'issue_date' => 'required|date',
+            'completed_date' => 'required|date',
             'expiry_date' => 'required|date|after:issue_date',
             'document_file' => 'nullable|file|max:2048', // File is optional
+            'document_type' => 'required',
             'status' => 'required',
             'group' => 'required',
-            'folder' => 'required|nullable|exists:folders,id' // Ensure folder exists if provided
+            'folder' => 'nullable|exists:folders,id' // Ensure folder exists if provided
         ]);
     
         // Retrieve the document by ID
@@ -134,14 +143,16 @@ class DocumentController extends Controller
         // Update the document in the database
         $document->update([
             'ou_id' =>  (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, 
-            'folder_id' => $request->folder ?? $document->folder_id, // Keep existing folder if none is provided
+            'folder_id' => $request->folder ?? null,
             'group_id' => $request->group,
-            'doc_title' => $request->doc_title,
+            'doc_title' => $request->doc_title,  
             'version_no' => $request->version_no,
             'issue_date' => $request->issue_date,
+            'completed_date' => $request->completed_date,
             'expiry_date' => $request->expiry_date,
             'document_file' => $filePath,
-            'original_filename' => $originalFilename, // Maintain original filename
+            'document_type' => $request->document_type,
+            'original_filename' => $originalFilename, 
             'status' => $request->status,
         ]);
     
@@ -185,7 +196,7 @@ class DocumentController extends Controller
     
         // Determine which documents to fetch based on user role and permissions
         if (checkAllowedModule('courses', 'document.index')->isNotEmpty() && $user->is_owner == 1) {
-            $query = Document::with('group:id,name,user_ids'); // Fetch group details with user IDs
+            $query = Document::with('group:id,name,user_ids')->orderBy('id', 'desc'); 
         } elseif (checkAllowedModule('documents', 'document.index')->isNotEmpty() && $user->is_admin == 0) {
             $groups = Group::where('ou_id', $ou_id)->get();
             $filteredGroups = $groups->filter(function ($group) use ($userId) {
@@ -408,19 +419,27 @@ class DocumentController extends Controller
 
     public function getOrgfolder(Request $request)
     {
-        // dd($request->ou_id);
-        $org_group = Group::where('ou_id', $request->ou_id)->get();
-        $org_folder = Folder::where('ou_id', $request->ou_id)
-                     ->whereNull('parent_id') 
-                     ->with('childrenRecursive') 
-                     ->get();
-        
-        if($org_group){
-                return response()->json(['org_group' => $org_group, 'org_folder' => $org_folder]);
-            }else{
-                return response()->json(['error'=> 'No group Found']);
+        try {
+            if (!$request->has('ou_id')) {
+                return response()->json(['error' => 'ou_id is required'], 400);
             }
+    
+            $org_group = Group::where('ou_id', $request->ou_id)->get();
+            $org_folder = Folder::where('ou_id', $request->ou_id)
+                        ->whereNull('parent_id')
+                        ->with('childrenRecursive')
+                        ->get();
+    
+            return response()->json([
+                'org_group' => $org_group,
+                'org_folder' => $org_folder
+            ]);
+    
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
+    
 
 
 }

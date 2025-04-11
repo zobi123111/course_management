@@ -109,6 +109,11 @@
                         <div id="issue_date_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
+                        <label for="lastname" class="form-label">Completed Date<span class="text-danger">*</span></label>
+                        <input type="date" name="completed_date" class="form-control">
+                        <div id="completed_date_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
                         <label for="lastname" class="form-label">Expiry Date<span class="text-danger">*</span></label>
                         <input type="date" name="expiry_date" class="form-control">
                         <div id="expiry_date_error" class="text-danger error_e"></div>
@@ -117,6 +122,18 @@
                         <label for="email" class="form-label">Upload Document<span class="text-danger">*</span></label>
                         <input type="file" name="document_file" class="form-control">
                         <div id="document_file_error" class="text-danger error_e"></div>            
+                    </div>
+                    <div class="form-group">
+                     <label for="email" class="form-label">Document Type<span class="text-danger">*</span></label>
+                        <select class="form-select" name="document_type" aria-label="Default select example" id="document_type">
+                            <option value="">Select Document Type</option>
+                            <option value="1"> SEP (land) </option>
+                            <option value="2"> MEP (land) </option>
+                            <option value="3"> EA500 </option>
+                            <option value="4"> PC-12 </option>
+                            <option value="5"> GVI </option>
+                        </select>
+                        <div id="document_type_error" class="text-danger error_e"></div>             
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Select Folder<span class="text-danger">*</span></label>
@@ -199,6 +216,11 @@
                         <div id="issue_date_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
+                        <label for="lastname" class="form-label">Completed Date<span class="text-danger">*</span></label>
+                        <input type="date" name="completed_date" class="form-control" id="edit_completed_date">
+                        <div id="completed_date_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
                         <label for="lastname" class="form-label">Expiry Date<span class="text-danger">*</span></label>
                         <input type="date" name="expiry_date" id="edit_expiry_date"  class="form-control">
                         <div id="expiry_date_error_up" class="text-danger error_e"></div>
@@ -207,6 +229,18 @@
                         <label for="email" class="form-label">Upload Document<span class="text-danger">*</span></label>
                         <input type="file" name="document_file" id="edit_document_file" class="form-control">
                         <div id="document_file_error_up" class="text-danger error_e"></div>            
+                    </div>
+                    <div class="form-group">
+                     <label for="email" class="form-label">Document Type<span class="text-danger">*</span></label>
+                        <select class="form-select" name="document_type" aria-label="Default select example" id="edit_document_type">
+                            <option value="">Select Document Type</option>
+                            <option value="1"> SEP (land) </option>
+                            <option value="2"> MEP (land) </option>
+                            <option value="3"> EA500 </option>
+                            <option value="4"> PC-12 </option>
+                            <option value="5"> GVI </option>
+                        </select>
+                        <div id="document_type_error_up" class="text-danger error_e"></div>             
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Select Folder<span class="text-danger">*</span></label>
@@ -364,7 +398,8 @@ $(document).ready(function() {
     $("#submitDocument").on("click", function(e){
         e.preventDefault();
         $(".loader").fadeIn();
-        var formData = new FormData($('#documentsForm')[0]);
+        $(".error_e").html('');
+        var formData = new FormData($('#documentsForm')[0]); 
         
         $.ajax({
             url: '{{ url("/document/create") }}',
@@ -402,7 +437,7 @@ $(document).ready(function() {
             type: 'GET',
             data: {  id: documentId },
             success: function(response) {
-                console.log(response.group);
+                
                 if (response.group && Array.isArray(response.group)) { 
                     var options = "<option value=''>Select Group </option>"; 
                     
@@ -447,6 +482,8 @@ $(document).ready(function() {
                 $('#edit_group').val(response.document.group_id).trigger('change');
                 $('#edit_status').val(response.document.status);
                 $('#edit_select_org_unit').val(response.document.ou_id); 
+                $('#edit_completed_date').val(response.document.completed_date); 
+                $('#edit_document_type').val(response.document.document_type); 
                   
                 $('#editDocumentModal').modal('show');
             },
@@ -507,6 +544,7 @@ $(document).on("change", "#select_org_unit", function(){
         data: { 'ou_id': ou_id },
         dataType: "json",
         success: function(response){
+            console.log(response);
             if (response.org_group && Array.isArray(response.org_group)) { 
                     var options = "<option value=''>Select Group </option>"; 
                     
@@ -543,7 +581,7 @@ $(document).on("change", "#select_org_unit", function(){
             }
         },
         error: function(xhr, status, error){
-            console.error(xhr.responseText);
+           console.error(xhr);
         } 
     });
 });
@@ -572,7 +610,7 @@ $(document).on("change", "#edit_select_org_unit", function(){
             if (response.org_folder && Array.isArray(response.org_folder)) { 
                 var options = "<option value=''>No Parent (Root Folder)</option>";
 
-                // Recursive function to generate folder options with indentation
+              //  Recursive function to generate folder options with indentation
                 function generateFolderOptions(folder, level) {
                     var indent = "&nbsp;&nbsp;&nbsp;&nbsp;".repeat(level); // Indentation
                     var option = `<option value="${folder.id}">${indent}${folder.folder_name}</option>`;
@@ -585,13 +623,12 @@ $(document).on("change", "#edit_select_org_unit", function(){
                     return option;
                 }
 
-                // Process only the top-level folders
+               // Process only the top-level folders
                 response.org_folder.forEach(function(folder) {
                     options += generateFolderOptions(folder, 0);
                 });
 
                 $folderSelect.html(options);
-                // $folderSelect.html('<option value="">Select Folder</option>');
 
                 $folderSelect.trigger("change");
             }

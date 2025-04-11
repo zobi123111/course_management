@@ -1,19 +1,13 @@
-
-@section('title', 'Folders')
-@section('sub-title', 'Folders')
 @extends('layout.app')
+
+@section('title', 'Folder List')
+@section('sub-title', 'Folder List')
 @section('content')
 
 @if(session()->has('message'))
 <div id="alertMessage" class="alert alert-success fade show" role="alert">
   <i class="bi bi-check-circle me-1"></i>
   {{ session()->get('message') }}
-</div>
-@endif
-@if(session()->has('error'))
-<div id="alertMessage" class="alert alert-danger fade show" role="alert">
-  <i class="bi bi-check-circle me-1"></i>
-  {{ session()->get('error') }}
 </div>
 @endif
 
@@ -23,46 +17,71 @@
     data-target="#createFolderModal">Create Folders</button>
 </div>
 @endif
-<br>
-<div class="card pt-4">
-    <div class="card-body">
-        <h3 class="mb-3">Folders List</h3>
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover pt-3" id="folderTable" >
-                <thead class="table-custom-head">
-                    <tr>
-                    <th>#</th>
-                    <th scope="col">Folder Name</th> 
-                    <th scope="col">Description</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Action</th>
-                    </tr>
-                </thead>                
-            </table> 
+
+<div class="row">
+    @foreach ($folders as $folder)
+    <div class="col-md-3 col-sm-4 mb-4">
+        <div class="folder-wrapper" onclick="openFolder('{{ $folder->id }}')"> 
+            <div class="folder-visual">
+                <div class="folder-container">
+                    <div class="folder-tab"></div>
+                    <div class="folder-icon">
+                        <i class="fas fa-folder"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-2 fw-bold folder_name">{{ $folder->folder_name }}</div>
+            <div class="folder-actions">
+                <a href="{{ url('folder/show/'.encode_id($folder->id)) }}" title="View"
+                    onclick="event.stopPropagation();">
+                    <i class="fas fa-eye"></i>
+                </a>
+                
+                <a href="javascript:void(0);" title="Edit" onclick="editFolder('{{ encode_id($folder->id) }}')">
+                    <i class="fas fa-pen-to-square"></i>
+                </a>
+                <a href="javascript:void(0);" title="Delete" onclick="deleteFolder('{{ encode_id($folder->id) }}', '{{ $folder->folder_name }}');   event.stopPropagation();">
+                    <i class="fas fa-trash"></i>
+                </a>
+
+
+            </div>
         </div>
     </div>
-</div>
-<div class="card pt-4">
-    <div class="card-body">
-        <h3 class="mb-3">Documents List</h3>
-        @if($documents->isNotEmpty())
-            <div class="table-responsive">
-                <table id="docsTable" class="table table-bordered table-hover">
-                    <thead class="table-custom-head">
-                        <tr>
-                            <th>#</th>
-                            <th>Document Name</th>
-                            <th>Uploaded On</th>
-                            <th>Actions</th>  
-                        </tr>
-                    </thead>
-                </table> 
+    @endforeach
+
+    <!-- Documents Section -->
+    @if(count($documents))
+    <h5 class="mb-3 mt-5">Documents</h5>
+    <div class="row">
+        @foreach ($documents as $doc)
+        <div class="col-md-3 col-sm-4 mb-4">
+            <div class="folder-wrapper" onclick="window.open('{{ asset('storage/' . $doc->file_path) }}', '_blank')">
+                <div class="folder-visual">
+                    <div class="folder-container" style="background-color: #60a5fa;">
+                        <div class="folder-tab" style="background-color: #fff;"></div>
+                        <div class="folder-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-2 fw-bold document_title">{{ $doc->original_filename }}</div>
+                <div class="folder-actions">
+                    <a href="{{ Storage::url($doc->document_file) }}" title="View" onclick="event.stopPropagation();">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                    <a href="{{ Storage::url($doc->document_file) }}" title="View" onclick="event.stopPropagation();" download>
+                        <i class="fas fa-download"></i>
+                    </a>
+                  
+                </div>
             </div>
-        @else
-            <p class="alert alert-warning">No documents available in the root directory.</p>
-        @endif
+        </div>
+        @endforeach
     </div>
+    @endif
 </div>
+
 <!-- Create Courses-->
 <div class="modal fade" id="createFolderModal" tabindex="-1" role="dialog" aria-labelledby="folderModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog" role="document">
@@ -218,43 +237,24 @@
     </div>
 </form>
 <!-- End Courses Delete Model -->
+
+
 @endsection
 
 @section('js_scripts')
 
 <script>
-$(document).ready(function() {
-    $('#folderTable').DataTable({ 
-        processing: true,
-        serverSide: true,
-        ajax: '{{ route("folders.list") }}',
-        columns: [
-            { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-            { data: 'folder_name', name: 'folder_name', className: 'folderName' },
-            { data: 'description', name: 'description' },
-            { data: 'status', name: 'status' },
-            { data: 'actions', name: 'actions', className: 'folderbtncont', orderable: false, searchable: false }
-        ]
-    });
-    $('#docsTable').DataTable({ 
-        processing: true,
-        serverSide: true,
-        ajax: "{{ route('documents.root.list') }}", // Define route for fetching root folder documents
-        columns: [
-            { data: 'index', name: 'index', orderable: false, searchable: false },
-            { data: 'document_name', name: 'document_name' },
-            { data: 'uploaded_on', name: 'uploaded_on' },
-            { data: 'actions', name: 'actions', className: 'folderbtncont', orderable: false, searchable: false }
-        ]
-    });
+function openFolder(folderId) {
+    
+    }
 
-    $("#createFolder").on('click', function(){
+$("#createFolder").on('click', function(){
         $(".error_e").html('');
         $("#folders")[0].reset();
         $("#createFolderModal").modal('show');
     })
 
-    $("#submitFolder").on("click", function(e){
+    $("#submitFolder").on("click", function(e){ 
         e.preventDefault();
         $.ajax({
             url: '{{ url("/folder/create") }}',
@@ -279,27 +279,18 @@ $(document).ready(function() {
 
     })
 
-    $(document).on("click", ".edit-folder-icon", function(e) {
-        e.preventDefault();
-
-        $('.error_e').html('');
-        var folderId = $(this).data('folder-id');
+function editFolder(folderId){
+       $('.error_e').html('');
         var $folderSelect = $(".all-folders");
         $.ajax({
             url: "{{ url('/folder/edit') }}", 
             type: 'GET',
             data: { id: folderId },
             success: function(response) {
-                
                 let currentFolderId = response.current_folder_id;
                 let selectedParentId = response.selected_parent_id;
-
                 // Set parent folder dropdown
                 $('#edit_parent_folder').val(selectedParentId).trigger('change');
-
-                // Disable current folder in the dropdown to prevent self-selection
-                // $('#edit_parent_folder option').prop('disabled', false); // Re-enable all options
-                // $('#edit_parent_folder option[value="' + currentFolderId + '"]').prop('disabled', true);
 
                 // Set other form values
                 $('#edit_folder_name').val(response.folder.folder_name);
@@ -329,7 +320,7 @@ $(document).ready(function() {
                 });
 
                 $folderSelect.html(options);
-                 $folderSelect.trigger("change");
+                 $folderSelect.trigger("change"); 
             }
 
                 $('#editFolderModal').modal('show');
@@ -338,9 +329,9 @@ $(document).ready(function() {
                 console.error(xhr.responseText);
             }
         });
-    });
+}
 
-    $('#updateFolder').on('click', function(e){
+$('#updateFolder').on('click', function(e){
         e.preventDefault();
 
         $.ajax({
@@ -370,22 +361,14 @@ $(document).ready(function() {
         })
     })
 
-    $(document).on("click", ".delete-folder-icon", function(e) {
-    e.preventDefault();
+    function deleteFolder(folderId, folderName)
+    {
         $('#deleteFolder').modal('show');
-        var folderId = $(this).data('folder-id');
-        var folderName = $(this).closest('tr').find('.folderName').text();
         $('#append_name').html(folderName);
         $('#folderId').val(folderId);
-      
-    });
+    }
 
-    setTimeout(function() {
-        $('#alertMessage').fadeOut('slow');
-    }, 2000);
-
-
-$(document).on("change", "#select_org_unit", function(){ 
+    $(document).on("change", "#select_org_unit", function(){ 
     var ou_id = $(this).val();  
     var $folderSelect = $(".all-folders"); 
 
@@ -426,8 +409,9 @@ $(document).on("change", "#select_org_unit", function(){
     });
 });
 
-$(document).on("change", "#edit_ou_id", function(){ 
-    var ou_id = $(this).val(); 
+$(document).on("change", "#edit_ou_id", function(){  
+    var ou_id = ($(this).val());
+   
     var $folderSelect = $(".all-folders");
 
     $.ajax({
@@ -468,8 +452,9 @@ $(document).on("change", "#edit_ou_id", function(){
         } 
     });
 });
+setTimeout(function() {
+        $('#alertMessage').fadeOut('slow');
+    }, 2000);
 
-});
 </script>
-
 @endsection
