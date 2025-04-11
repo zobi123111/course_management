@@ -19,7 +19,7 @@ class CourseLesson extends Model
 
     public function sublessons()
     {
-        return $this->hasMany(SubLesson::class, 'lesson_id');
+        return $this->hasMany(SubLesson::class, 'lesson_id'); 
     }
 
     public function prerequisites()
