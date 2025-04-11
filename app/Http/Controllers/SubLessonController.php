@@ -8,6 +8,7 @@ use App\Models\CourseLesson;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+use PDF;
 
 class SubLessonController extends Controller
 {
@@ -90,5 +91,19 @@ class SubLessonController extends Controller
             $sublesson->delete();
             return redirect()->route('lesson.show',['id' => encode_id($lesson_id)])->with('message', 'This Task deleted successfully');
         }
+    }
+
+
+
+    public function subLessonPdf(Request $request, $sublessonid)
+    {
+        $sublesson_detail = CourseLesson::with('course')->where('id', $sublessonid)->get();
+       // dd($sublesson_detail[0]['course']['course_name']);
+        $data = [
+            'date' => date('m/d/Y'),
+            'sublesson_detail' => $sublesson_detail
+        ]; 
+        $pdf = PDF::loadView('courses\generateSublessonPdf', $data);
+        return $pdf->download('sublesson.pdf');
     }
 }
