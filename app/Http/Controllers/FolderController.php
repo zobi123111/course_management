@@ -143,14 +143,7 @@ class FolderController extends Controller
         return response()->json(['success' => 'Folder updated successfully.']);
     }
 
-    // public function deleteFolder(Request $request)
-    // {
-    //     $folder = Folder::findOrFail(decode_id($request->folder_id));
-    //     if ($folder) {
-    //         $folder->delete();
-    //         return redirect()->route('folder.index')->with('message', 'This Folder deleted successfully');
-    //     }
-    // }
+
 
     public function deleteFolder(Request $request)
     {
@@ -329,34 +322,6 @@ class FolderController extends Controller
     }
 
 
-    // public function showFolder(Request $request)
-    // {
-    
-    //     $organizationUnits = OrganizationUnits::all();
-    //     $folderId = decode_id($request->folder_id);
-    //     $editingFolder = Folder::find($folderId);
-       
-    //     if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
-    //         //Admins can see all folders
-    //         $folders = Folder::whereNull('parent_id')->with('children')->get();
-    //         $subfolders = Folder::where('parent_id', $folderId)->get(); // Fetch all subfolders
-    //     } else { 
-    //         //Regular users see only folders in their assigned org unit
-    //         $folders = Folder::where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children')->get();     
-    //         $subfolders = Folder::where('ou_id', Auth::user()->ou_id)
-    //                             ->where('parent_id', $folderId)
-    //                             ->get(); 
-    //     }
-    //     //Fetch documents of the selected folder
-    //     $documents = Document::where('folder_id', $folderId)->get();
-        
-
-    //     //Generate breadcrumbs
-    //     $breadcrumbs = $this->getBreadcrumbs($editingFolder);
-    
-    //     return view('folders.show', compact('subfolders', 'folders', 'documents', 'editingFolder', 'organizationUnits', 'breadcrumbs'));
-    // }
-
      public function showFolder(Request $request)
     {
     
@@ -388,7 +353,7 @@ class FolderController extends Controller
         
 
         //Generate breadcrumbs
-        $breadcrumbs = $this->getBreadcrumbs($editingFolder);
+        $breadcrumbs = $this->getBreadcrumbs($editingFolder); 
     
         return view('folders.show', compact('subfolders', 'folders', 'documents', 'editingFolder', 'organizationUnits', 'breadcrumbs'));
     }
@@ -400,7 +365,7 @@ class FolderController extends Controller
         $folderId = decode_id($request->folder_id); // Decode the folder ID
         $documentIds = Document::where('ou_id', Auth::user()->ou_id)->pluck('folder_id')->toArray();
         if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
-            $query = Folder::where('parent_id', $folderId); // Fetch all subfolders
+            $query = Folder::where('parent_id', $folderId); 
         } else {
             $query = Folder::where('ou_id', Auth::user()->ou_id)
                         ->where('parent_id', $folderId)
