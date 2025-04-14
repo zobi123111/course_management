@@ -338,7 +338,7 @@ class TrainingEventsController extends Controller
 
     public function getTrainingEvent(Request $request)
     {
-        $trainingEvent = TrainingEvents::with('eventLessons')->findOrFail(decode_id($request->eventId));
+        $trainingEvent = TrainingEvents::with('eventLessons.lesson')->findOrFail(decode_id($request->eventId));
         if($trainingEvent)
         {
             return response()->json(['success'=> true,'trainingEvent'=> $trainingEvent]);

@@ -702,6 +702,7 @@ $(document).ready(function() {
             type: 'GET',
             data: { eventId: eventId },
             success: async function (response) {
+                console.log(response);
                 if (response.success) {
                     const event = response.trainingEvent;
 
@@ -723,19 +724,19 @@ $(document).ready(function() {
                     $('#edit_end_time').val(event.end_time);
 
                     // Set OU and wait for dropdowns to populate
-                    $('#edit_ou_id').val(selectedOU).trigger('change');
+                    $('#edit_ou_id').val(selectedOU);
 
                     // Wait a bit for student/instructor/resource dropdowns to populate
                     await new Promise(resolve => setTimeout(resolve, 500));
 
                     // Set selected values
-                    $('#edit_select_user').data("selected-value", selectedStudent).val(selectedStudent).trigger('change');
+                    $('#edit_select_user').data("selected-value", selectedStudent).val(selectedStudent);
                     $('#edit_select_instructor').data("selected-value", selectedInstructor).val(selectedInstructor);
                     $('#edit_select_resource').data("selected-value", selectedResource).val(selectedResource);
 
                     // Wait for student change to load courses
                     await new Promise(resolve => setTimeout(resolve, 500));
-                    $('#edit_select_course').data("selected-value", selectedCourse).val(selectedCourse).trigger('change');
+                    $('#edit_select_course').data("selected-value", selectedCourse).val(selectedCourse);
 
                     // Lessons (handled after course is loaded)
                     let lessonIds = Array.isArray(event.lesson_ids) ? event.lesson_ids : JSON.parse(event.lesson_ids || "[]");
@@ -751,7 +752,7 @@ $(document).ready(function() {
 
                         eventLessons.forEach((lesson) => {
                             const lessonId = lesson.lesson_id;
-                            const lessonTitle = lesson.lesson_title || `Lesson ${lessonId}`; // fallback
+                            const lessonTitle = lesson.lesson.lesson_title || `Lesson ${lessonId}`; // fallback
                             const selectedInstructor = lesson.instructor_id || '';
                             const selectedResource = lesson.resource_id || '';
                             const lessonDate = lesson.lesson_date || '';
@@ -816,6 +817,73 @@ $(document).ready(function() {
         });
     });
 
+    $('#edit_select_lesson').on('change', function () {
+        const selectedLessonIds = $(this).val() || []; // Get current selected values (array)
+        const allLessonBoxes = $('#editLessonDetailsContainer .lesson-box');
+
+        // 1. Remove lesson boxes that are no longer selected
+        allLessonBoxes.each(function () {
+            const lessonId = $(this).data('lesson-id').toString();
+            if (!selectedLessonIds.includes(lessonId)) {
+                $(this).remove();
+            }
+        });
+
+        // 2. Add boxes for newly selected lessons
+        selectedLessonIds.forEach(function (lessonId) {
+            // If already present, skip
+            if ($(`#editLessonDetailsContainer .lesson-box[data-lesson-id="${lessonId}"]`).length === 0) {
+                // Optional: You can get lesson title and other defaults via AJAX or preloaded data
+                const lessonTitle = $('#edit_select_lesson option[value="' + lessonId + '"]').text().trim();
+
+                const instructorOptions = @json($instructors).map(i =>
+                    `<option value="${i.id}">${i.fname} ${i.lname}</option>`
+                ).join('');
+
+                const resourceOptions = @json($resources).map(r =>
+                    `<option value="${r.id}">${r.name}</option>`
+                ).join('');
+
+                const lessonBox = `
+                    <div class="col-12 mb-3 border rounded p-3 lesson-box" data-lesson-id="${lessonId}">
+                        <input type="hidden" name="lesson_data[${lessonId}][lesson_id]" value="${lessonId}">
+                        <h6 class="fw-bold mb-3">Lesson: ${lessonTitle}</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Instructor<span class="text-danger">*</span></label>
+                                <select class="form-select" name="lesson_data[${lessonId}][instructor_id]">
+                                    <option value="">Select Instructor</option>
+                                    ${instructorOptions}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Resource<span class="text-danger">*</span></label>
+                                <select class="form-select" name="lesson_data[${lessonId}][resource_id]">
+                                    <option value="">Select Resource</option>
+                                    ${resourceOptions}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Lesson Date<span class="text-danger">*</span></label>
+                                <input type="date" name="lesson_data[${lessonId}][lesson_date]" class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Start Time<span class="text-danger">*</span></label>
+                                <input type="time" name="lesson_data[${lessonId}][start_time]" class="form-control lesson-start-time" data-lesson-id="${lessonId}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">End Time<span class="text-danger">*</span></label>
+                                <input type="time" name="lesson_data[${lessonId}][end_time]" class="form-control lesson-end-time" data-lesson-id="${lessonId}">
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                $('#editLessonDetailsContainer').append(lessonBox);
+            }
+        });
+    });
+
 
     $('#updateTrainingEvent').on('click', function(e) {
         e.preventDefault();
@@ -848,6 +916,7 @@ $(document).ready(function() {
     });
 
     $('#editTrainingEventModal').on('shown.bs.modal', async function () {
+        initializeSelect2();
         $('#edit_ou_id').trigger('change');
 
         await new Promise(resolve => setTimeout(resolve, 300));

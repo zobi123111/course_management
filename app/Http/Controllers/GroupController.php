@@ -142,7 +142,8 @@ class GroupController extends Controller
         }
     }
 
-    public function getOrgUser(Request $request){
+    public function getOrgUser(Request $request)
+    {
         $orguser = User::where('ou_id', $request->ou_id)
                ->whereNull('is_admin')
                ->get();
