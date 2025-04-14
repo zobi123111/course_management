@@ -17,6 +17,7 @@ class TaskGrading extends Model
         'sub_lesson_id',
         'user_id',
         'task_grade',
+        'task_comment',
         'created_by',
     ];
 

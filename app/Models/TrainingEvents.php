@@ -80,4 +80,10 @@ class TrainingEvents extends Model
     {
         return $this->hasMany(OverallAssessment::class, 'event_id', 'id');
     }
+
+    // In App\Models\TrainingEvents
+    public function eventLessons()
+    {
+        return $this->hasMany(TrainingEventLessons::class, 'training_event_id', 'id');
+    }
 }

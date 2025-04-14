@@ -277,14 +277,20 @@ $(document).ready(function() {
 
                 let selectedUsers = response.group.user_ids ? response.group.user_ids.map(String) : [];
 
-                // Store selected users temporarily
-                $('#edit_users').data("selected-users", selectedUsers);
-                $('#edit_users').val([]).trigger('change'); // Reset for clean re-selection
+                if ($('#edit_ou_id').length) {
+                    // Store selected users temporarily                
+                    $('#edit_users').data("selected-users", selectedUsers);
+                    $('#edit_users').val([]).trigger('change'); // Reset for clean re-selection
+                }else{
+                    $('#edit_users').val(selectedUsers).trigger('change');
+                }
 
                 $('#editGroupModal').modal('show');
+                $(".loader").fadeOut("slow");
             },
             error: function (xhr) {
                 console.error(xhr.responseText);
+                $(".loader").fadeOut("slow");
             }
         });
     });
@@ -369,7 +375,6 @@ $(document).ready(function() {
     // When modals are opened
     $(document).on("shown.bs.modal", "#createGroupModal, #editGroupModal", function (event) {
         initializeSelect2();
-
         if (event.target.id === "editGroupModal") {
             // Only for edit modal: trigger OU change to load users
             setTimeout(() => {
