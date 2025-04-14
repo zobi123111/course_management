@@ -20,15 +20,15 @@
 
 <div class="row">
     <!-- Folders Card -->
-    <div class="col-12">
+    <div class="col-lg-12 mt-3">
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="mb-0">Folders</h5>
+                <h5 class="mb-0 fw-bold" style="color:black">Folders</h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     @foreach ($folders as $folder)
-                    <div class="col-md-3 col-sm-4 mb-4">
+                    <div class="col-lg-4 col-md-6 mb-4">
                         <div class="folder-wrapper" onclick="openFolder('{{ $folder->id }}')">
                             <div class="folder-visual">
                                 <div class="folder-container">
@@ -66,31 +66,28 @@
 
         <!-- Documents Section -->
         <div class="row">
-            <!-- Folders Card -->
             <div class="col-12">
-                <div class="card mb-4">
+                <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">Documents</h5>
+                        <h5 class="mb-0 fw-bold" style="color:black">Documents</h5>
                     </div>
                     <div class="card-body">
                         @if(count($documents))
-
-                        <div class="row">
+                        <div class="row mt-2">
                             @foreach ($documents as $doc)
                             <div class="col-md-3 col-sm-4 mb-4">
-                                <div class="folder-wrapper"
-                                    onclick="window.open('{{ asset('storage/' . $doc->file_path) }}', '_blank')">
+                                <div class="folder-wrapper">
                                     <div class="folder-visual">
-                                        <div class="folder-container" style="background-color: #60a5fa;">
-                                            <div class="folder-tab" style="background-color: #fff;"></div>
-                                            <div class="folder-icon">
+                                        <div class="file-container" style="background-color: #60a5fa;">
+                                            <div class="file-corner" style="background-color: #fff;"></div>
+                                            <div class="file-content">
                                                 <i class="fas fa-file-alt"></i>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="text-center mt-2 fw-bold document_title">{{ $doc->original_filename }}
                                     </div>
-                                    <div class="folder-actions">
+                                    <div class="file-actions">
                                         <a href="{{ Storage::url($doc->document_file) }}" title="View"
                                             onclick="event.stopPropagation();">
                                             <i class="fas fa-eye"></i>
@@ -110,6 +107,7 @@
                 </div>
             </div>
         </div>
+        <!-- End Document Section -->
 
         <!-- Create Courses-->
         <div class="modal fade" id="createFolderModal" tabindex="-1" role="dialog" aria-labelledby="folderModalLabel"
