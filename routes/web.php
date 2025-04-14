@@ -142,6 +142,8 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/sub-lesson/{id}', [SubLessonController::class, 'showSubLesson'])->name('sub-lesson.show');
     Route::post('/sub-lesson/update', [SubLessonController::class, 'updateSubLesson'])->name('sub-lesson.update');
     Route::post('/sub-lesson/delete', [SubLessonController::class, 'deleteSubLesson'])->name('sub-lesson.delete');
+    
+
 
     //Groups Route
     Route::get('/groups', [GroupController::class, 'index'])->name('group.index');
@@ -149,7 +151,6 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/group/edit', [GroupController::class, 'getGroup'])->name('group.edit');
     Route::post('/group/update', [GroupController::class, 'updateGroup'])->name('group.update');
     Route::post('/group/delete', [GroupController::class, 'deleteGroup'])->name('group.delete');
-    Route::get('/group/get_ou_user/', [GroupController::class, 'getOrgUser'])->name('group.get_ou_user'); 
     Route::get('/group/get_ou_group/', [GroupController::class, 'getOrgroup'])->name('group.getOrgroup');
     
     //Documents Route
@@ -158,19 +159,18 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/document/edit', [DocumentController::class, 'getDocument'])->name('document.edit');
     Route::post('/document/update', [DocumentController::class, 'updateDocument'])->name('document.update');
     Route::post('/document/delete', [DocumentController::class, 'deleteDocument'])->name('document.delete');
-    Route::get('/document/show/{doc_id}', [DocumentController::class, 'showDocument'])->name('document.show');
+    Route::get('/document/show/{doc_id}', [DocumentController::class, 'showDocument'])->name('document.show'); 
     Route::post('/document/acknowledge', [DocumentController::class, 'acknowledgeDocument'])->name('document.acknowledge');
-    Route::get('/document/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('document.getOrgfolder');
+   
     Route::get('document/user_list', [DocumentController::class, 'getDocUserList'])->name('document.user_list');
     
     //Folders Route
     Route::get('/folders', [FolderController::class, 'index'])->name('folder.index');
     Route::post('/folder/create', [FolderController::class, 'createFolder'])->name('folder.store');
-    Route::get('/folder/edit', [FolderController::class, 'getFolder'])->name('folder.edit');
     Route::post('/folder/update', [FolderController::class, 'updateFolder'])->name('folder.update');
     Route::post('/folder/delete', [FolderController::class, 'deleteFolder'])->name('folder.delete');
     Route::get('/folder/show/{folder_id}', [FolderController::class, 'showFolder'])->name('folder.show');
-    Route::get('/folder/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('folder.getOrgfolder');
+   
   
 
     //roles 
@@ -215,6 +215,15 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/resource/approval', [ResourceController::class, 'resource_approval'])->name('resource.approval');
     Route::post('/resource/approve/request', [ResourceController::class, 'approve_request'])->name('approve_request.index');
     Route::post('/resource/reject/request', [ResourceController::class, 'reject_request'])->name('reject_request.index');
+    Route::get('/lesson-pdf/{subLessonId}', [SubLessonController::class, 'subLessonPdf'])->name('lesson-pdf.downloadPdf');
+    Route::get('/document/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('document.getOrgfolder');
+    Route::get('/group/get_ou_user/', [GroupController::class, 'getOrgUser'])->name('group.get_ou_user'); 
+    Route::get('/folder/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('folder.getOrgfolder');
+    Route::get('/folder/edit', [FolderController::class, 'getFolder'])->name('folder.edit');
+
+
+ 
+  
 
  
 
@@ -249,3 +258,5 @@ Route::get('/link-storage', function () {
     Artisan::call('storage:link');
     return 'Storage linked successfully!';
 });
+
+

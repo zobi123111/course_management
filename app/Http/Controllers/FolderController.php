@@ -14,7 +14,7 @@ use File;
 class FolderController extends Controller
 {
     public function index()
-    {  //dd(Auth::user()->ou_id);
+    {  
        $organizationUnits = OrganizationUnits::all();
         if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
             // Admin without OU restriction: Fetch all folders with their children
@@ -64,7 +64,9 @@ class FolderController extends Controller
 
     public function getFolder(Request $request)
     {
+    
         $folder = Folder::findOrFail(decode_id($request->id));
+   
         $ou_id = $folder->ou_id;
         $org_folders = Folder::where('ou_id', $ou_id)->whereNull('parent_id') ->with('childrenRecursive') ->get();
 
@@ -141,21 +143,15 @@ class FolderController extends Controller
         return response()->json(['success' => 'Folder updated successfully.']);
     }
 
-    // public function deleteFolder(Request $request)
-    // {
-    //     $folder = Folder::findOrFail(decode_id($request->folder_id));
-    //     if ($folder) {
-    //         $folder->delete();
-    //         return redirect()->route('folder.index')->with('message', 'This Folder deleted successfully');
-    //     }
-    // }
+
 
     public function deleteFolder(Request $request)
     {
         $folder = Folder::findOrFail(decode_id($request->folder_id));
-// dd($folder->children()->exists());
+     
+          // dd($folder->children()->exists());
         // Check if the folder has any subfolders
-        if ($folder->children()->exists()) {
+        if ($folder->children()->exists()) { 
             return redirect()->back()->with('error', 'Cannot delete this folder because it contains subfolders.');
         }
 
@@ -256,78 +252,20 @@ class FolderController extends Controller
 
     
 
-    // public function getFolders(Request $request)
-    // {
-    //     $query = Folder::query();
-    
-    //     // Apply user-based folder filtering
-    //     if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
-    //         // Admin without OU restriction: Fetch all folders
-    //         $query->whereNull('parent_id')->with('children');
-    //     } else {
-    //         // Regular users: Fetch only their org unit folders
-    //         $query->where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children');
-    //     }
-    
-    //     // Apply search filter
-    //     if ($request->has('search') && !empty($request->search['value'])) {
-    //         $searchValue = $request->search['value'];
-    
-    //         $query->where(function ($q) use ($searchValue) {
-    //             $q->where('folder_name', 'LIKE', "%{$searchValue}%")
-    //               ->orWhere('description', 'LIKE', "%{$searchValue}%");
-    
-    //             // Search by status (accepting "Active" or "Inactive" as input)
-    //             if (stripos('Active', $searchValue) !== false) {
-    //                 $q->orWhere('status', 1);
-    //             } elseif (stripos('Inactive', $searchValue) !== false) {
-    //                 $q->orWhere('status', 0);
-    //             }
-    //         });
-    //     }
-    
-    //     // Sorting
-    //     $orderColumn = $request->order[0]['column'] ?? 1; // Default to 'folder_name' if not provided
-    //     $orderDirection = $request->order[0]['dir'] ?? 'asc';
-    //     $columns = ['id', 'folder_name', 'description', 'status']; // Columns index reference
-    //     $query->orderBy($columns[$orderColumn], $orderDirection);
-    
-    //     // Pagination
-    //    // $totalRecords = Folder::count();
-    //     $totalRecords = Folder::query()->whereNull('parent_id')->count(); // Count only top-level folders
-    //     $filteredRecords = $query->count(); // Count filtered results
 
-    //    // dd($totalRecords);
-    //     $filteredRecords = $query->count();
-    //     $folders = $query->offset($request->start)->limit($request->length)->get();
-    
-    //     // Prepare response data
-    //     $data = [];
-    //     foreach ($folders as $index => $val) {
-    //         $encodedId = encode_id($val->id);
-    //         $actions = view('folders.partials.actions', ['folder' => $val])->render();
-    
-    //         $data[] = [
-    //             'DT_RowIndex' => $index + 1,
-    //             'folder_name' => $val->folder_name,
-    //             'description' => $val->description,
-    //             'status' => $val->status == 1 ? 'Active' : 'Inactive',
-    //             'actions' => $actions,
-    //         ];
-    //     }
-    
-    //     return response()->json([
-    //         'draw' => intval($request->draw),
-    //         'recordsTotal' => $totalRecords,
-    //         'recordsFiltered' => $filteredRecords,
-    //         'data' => $data,
-    //     ]);
-    // }
 
     public function getRootFolderDocuments(Request $request)
     {
-        $query = Document::whereNull('folder_id')->where('ou_id', Auth::user()->ou_id);
-        
+        if (Auth::user()->is_owner)
+        {
+            $query = Document::whereNull('folder_id');
+        }
+    
+        else{
+            $query = Document::whereNull('folder_id')->where('ou_id', Auth::user()->ou_id);
+        }
+       
+      
         // Get total records count
         $totalRecords = $query->count();
         $filteredRecords = $totalRecords;
@@ -384,34 +322,6 @@ class FolderController extends Controller
     }
 
 
-    // public function showFolder(Request $request)
-    // {
-    
-    //     $organizationUnits = OrganizationUnits::all();
-    //     $folderId = decode_id($request->folder_id);
-    //     $editingFolder = Folder::find($folderId);
-       
-    //     if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
-    //         //Admins can see all folders
-    //         $folders = Folder::whereNull('parent_id')->with('children')->get();
-    //         $subfolders = Folder::where('parent_id', $folderId)->get(); // Fetch all subfolders
-    //     } else { 
-    //         //Regular users see only folders in their assigned org unit
-    //         $folders = Folder::where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children')->get();     
-    //         $subfolders = Folder::where('ou_id', Auth::user()->ou_id)
-    //                             ->where('parent_id', $folderId)
-    //                             ->get(); 
-    //     }
-    //     //Fetch documents of the selected folder
-    //     $documents = Document::where('folder_id', $folderId)->get();
-        
-
-    //     //Generate breadcrumbs
-    //     $breadcrumbs = $this->getBreadcrumbs($editingFolder);
-    
-    //     return view('folders.show', compact('subfolders', 'folders', 'documents', 'editingFolder', 'organizationUnits', 'breadcrumbs'));
-    // }
-
      public function showFolder(Request $request)
     {
     
@@ -443,7 +353,7 @@ class FolderController extends Controller
         
 
         //Generate breadcrumbs
-        $breadcrumbs = $this->getBreadcrumbs($editingFolder);
+        $breadcrumbs = $this->getBreadcrumbs($editingFolder); 
     
         return view('folders.show', compact('subfolders', 'folders', 'documents', 'editingFolder', 'organizationUnits', 'breadcrumbs'));
     }
@@ -455,7 +365,7 @@ class FolderController extends Controller
         $folderId = decode_id($request->folder_id); // Decode the folder ID
         $documentIds = Document::where('ou_id', Auth::user()->ou_id)->pluck('folder_id')->toArray();
         if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
-            $query = Folder::where('parent_id', $folderId); // Fetch all subfolders
+            $query = Folder::where('parent_id', $folderId); 
         } else {
             $query = Folder::where('ou_id', Auth::user()->ou_id)
                         ->where('parent_id', $folderId)
