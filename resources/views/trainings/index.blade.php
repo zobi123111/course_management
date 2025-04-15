@@ -387,9 +387,10 @@
 @section('js_scripts')
 
 <script>
-
-const instructors = @json($instructors);
-const resources = @json($resources);
+var instructorsdata;
+instructorsdata = @json($instructors);
+var resourcesdata;
+resourcesdata = @json($resources);
 
 $('#select_lesson').on('change', function () {
     let selectedLessons = $(this).val() || [];
@@ -422,29 +423,34 @@ $('#select_lesson').on('change', function () {
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Instructor<span class="text-danger">*</span></label>
-                            <select class="form-select" name="lesson_data[${lessonId}][instructor_id]">
+                            <select class="form-select" name="lesson_data[${lessonId}][instructor_id]" id="lesson_data_${lessonId}_instructor_listbox">
                                 <option value="">Select Instructor</option>
-                                ${instructors.map(i => `<option value="${i.id}">${i.fname} ${i.lname}</option>`).join('')}
+                                ${instructorsdata.map(i => `<option value="${i.id}">${i.fname} ${i.lname}</option>`).join('')}
                             </select>
+                            <div id="lesson_data_${lessonId}_instructor_id_error" class="text-danger error_e"></div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Resource<span class="text-danger">*</span></label>
                             <select class="form-select" name="lesson_data[${lessonId}][resource_id]">
                                 <option value="">Select Resource</option>
-                                ${resources.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
+                                ${resourcesdata.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
                             </select>
+                            <div id="lesson_data_${lessonId}_resource_id_error" class="text-danger error_e"></div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Lesson Date<span class="text-danger">*</span></label>
                             <input type="date" name="lesson_data[${lessonId}][lesson_date]" class="form-control">
+                            <div id="lesson_data_${lessonId}_lesson_date_error" class="text-danger error_e"></div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Start Time<span class="text-danger">*</span></label>
                             <input type="time" name="lesson_data[${lessonId}][start_time]" class="form-control lesson-start-time" data-lesson-id="${lessonId}">
+                            <div id="lesson_data_${lessonId}_start_time_error" class="text-danger error_e"></div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">End Time<span class="text-danger">*</span></label>
                             <input type="time" name="lesson_data[${lessonId}][end_time]" class="form-control lesson-end-time" data-lesson-id="${lessonId}">
+                            <div id="lesson_data_${lessonId}_end_time_error" class="text-danger error_e"></div>
                         </div>
                     </div>
                 </div>
@@ -530,7 +536,7 @@ $(document).ready(function() {
             type: "GET",
             dataType: "json",
             success: function (response) {
-                console.log(response.resources);
+                // console.log(response.resources);
                 // Store selected values before clearing
                 var selectedStudent = studentDropdown.data("selected-value") || [];
                 var selectedInstructor = instructorDropdown.data("selected-value") || [];
@@ -549,7 +555,8 @@ $(document).ready(function() {
                 // Populate Instructors
                 var instructorOptions = '<option value="">Select Instructor</option>';
                 if (response.instructors && response.instructors.length > 0) {
-                    $.each(response.instructors, function(index, instructor) {
+                    instructorsdata = response.instructors;
+                    $.each(instructorsdata, function(index, instructor) {
                         var selected = instructor.id == selectedInstructor ? 'selected' : '';
                         instructorOptions += '<option value="' + instructor.id + '" ' + selected + '>' + instructor.fname + ' ' + instructor.lname + '</option>';
                     });
@@ -559,7 +566,8 @@ $(document).ready(function() {
                 // Populate Resources
                 var resourceOptions = '<option value="">Select Resource</option>';
                 if (response.resources && response.resources.length > 0) {
-                    $.each(response.resources, function(index, resource) {
+                    resourcesdata = response.resources;
+                    $.each(resourcesdata, function(index, resource) {
                         var selected = resource.id == selectedResource ? 'selected' : '';
                         resourceOptions += '<option value="' + resource.id + '" ' + selected + '>' + resource.name + '</option>';
                     });
@@ -684,10 +692,17 @@ $(document).ready(function() {
             error: function(xhr, status, error) {
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
+                // $.each(validationErrors, function(key, value) {
+                //     var msg = '<p>' + value + '<p>';
+                //     $('#' + key + '_error').html(msg);
+                // })
+                // Clear old errors
+                $('.text-danger').html('');
                 $.each(validationErrors, function(key, value) {
-                    var msg = '<p>' + value + '<p>';
-                    $('#' + key + '_error').html(msg);
-                })
+                    var formattedKey = key.replace(/\./g, '_') + '_error';
+                    var errorMsg = '<p>' + value[0] + '</p>';
+                    $('#' + formattedKey).html(errorMsg);
+                });
             }
         });
 
@@ -702,7 +717,7 @@ $(document).ready(function() {
             type: 'GET',
             data: { eventId: eventId },
             success: async function (response) {
-                console.log(response);
+                // console.log(response);
                 if (response.success) {
                     const event = response.trainingEvent;
 
@@ -725,7 +740,7 @@ $(document).ready(function() {
 
                     // Set OU and wait for dropdowns to populate
                     $('#edit_ou_id').val(selectedOU);
-
+                    $('#edit_ou_id').trigger('change');
                     // Wait a bit for student/instructor/resource dropdowns to populate
                     await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -747,8 +762,8 @@ $(document).ready(function() {
 
                     if (response.trainingEvent.event_lessons && response.trainingEvent.event_lessons.length > 0) {
                         const eventLessons = response.trainingEvent.event_lessons;
-                        const instructors = @json($instructors); // Assuming you pass this in blade
-                        const resources = @json($resources);     // Assuming you pass this in blade
+                        // const instructors = @json($instructors); // Assuming you pass this in blade
+                        // const resources = @json($resources);     // Assuming you pass this in blade
 
                         eventLessons.forEach((lesson) => {
                             const lessonId = lesson.lesson_id;
@@ -759,11 +774,11 @@ $(document).ready(function() {
                             const startTime = lesson.start_time || '';
                             const endTime = lesson.end_time || '';
 
-                            const instructorOptions = instructors.map(i =>
+                            var instructorOptions = instructorsdata.map(i =>
                                 `<option value="${i.id}" ${i.id == selectedInstructor ? 'selected' : ''}>${i.fname} ${i.lname}</option>`
                             ).join('');
 
-                            const resourceOptions = resources.map(r =>
+                            var resourceOptions= resourcesdata.map(r =>
                                 `<option value="${r.id}" ${r.id == selectedResource ? 'selected' : ''}>${r.name}</option>`
                             ).join('');
 
@@ -778,6 +793,7 @@ $(document).ready(function() {
                                                 <option value="">Select Instructor</option>
                                                 ${instructorOptions}
                                             </select>
+                                            <div id="lesson_data_${lessonId}_instructor_id_error_up" class="text-danger error_e"></div>
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label">Resource<span class="text-danger">*</span></label>
@@ -785,24 +801,28 @@ $(document).ready(function() {
                                                 <option value="">Select Resource</option>
                                                 ${resourceOptions}
                                             </select>
+                                            <div id="lesson_data_${lessonId}_resource_id_error_up" class="text-danger error_e"></div>
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label">Lesson Date<span class="text-danger">*</span></label>
                                             <input type="date" name="lesson_data[${lessonId}][lesson_date]" value="${lessonDate}" class="form-control">
+                                            <div id="lesson_data_${lessonId}_lesson_date_error_up" class="text-danger error_e"></div>
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label">Start Time<span class="text-danger">*</span></label>
                                             <input type="time" name="lesson_data[${lessonId}][start_time]" value="${startTime}" class="form-control lesson-start-time" data-lesson-id="${lessonId}">
+                                            <div id="lesson_data_${lessonId}_start_time_error_up" class="text-danger error_e"></div>
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label">End Time<span class="text-danger">*</span></label>
                                             <input type="time" name="lesson_data[${lessonId}][end_time]" value="${endTime}" class="form-control lesson-end-time" data-lesson-id="${lessonId}">
+                                            <div id="lesson_data_${lessonId}_end_time_error_up" class="text-danger error_e"></div>
                                         </div>
                                     </div>
                                 </div>
                             `;
 
-                            $('#editLessonDetailsContainer').append(lessonBox);
+                            $('#editLessonDetailsContainer').html(lessonBox);
                         });
                     }
                     $('#editTrainingEventModal').modal('show');
@@ -898,10 +918,13 @@ $(document).ready(function() {
             error: function(xhr, status, error) {
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
+                // Clear old errors
+                $('.text-danger').html('');
                 $.each(validationErrors, function(key, value) {
-                    var msg = '<p>' + value + '<p>';
-                    $('#' + key + '_error_up').html(msg);
-                })
+                    var formattedKey = key.replace(/\./g, '_') + '_error_up';
+                    var errorMsg = '<p>' + value[0] + '</p>';
+                    $('#' + formattedKey).html(errorMsg);
+                });
             }
         })
     })
