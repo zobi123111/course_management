@@ -75,11 +75,14 @@ Route::group(['middleware' => ['auth']], function () {
 
     Route::post('/prerequisites/save', [PrerequisiteController::class, 'store'])->name('prerequisites.save');
 
+    //Courses Routes
     Route::post('/courses/{course}/prerequisites/store', [PrerequisiteController::class, 'store'])
     ->name('course.prerequisites.store');
     Route::post('/lessons/{course}/{lesson}/prerequisites/store', [LessonController::class, 'prerequisitesStore'])
     ->name('lesson.prerequisites.store');
+    Route::get('/lesson-pdf/{subLessonId}', [SubLessonController::class, 'subLessonPdf'])->name('lesson-pdf.downloadPdf');
  
+    //ORG Unit Routes
     Route::get('/orgunit/get_permissions', [OrganizationController::class, 'getPermissions'])->name('orgunit.getPermissions');  
     Route::post('/orgunit/permission_store', [OrganizationController::class, 'storePermissions'])->name('orgunit.storePermissions');  
 
@@ -87,6 +90,16 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/training/get_ou_students_instructors_resources/{ou_id}', [TrainingEventsController::class, 'getOrgStudentsInstructorsResources'])->name('training.get_ou_students_instructors_resources');
     Route::get('/training/get_course_lessons', [TrainingEventsController::class, 'getCourseLessons'])->name('training.course-lessons');
     Route::get('/training/get_licence_number_and_courses/{user_id}/{ou_id}', [TrainingEventsController::class, 'getStudentLicenseNumberAndCourses'])->name('training.get_licence_number_and_courses');
+
+    //Folders Routes
+    Route::get('/folder/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('folder.getOrgfolder');
+    Route::get('/folder/edit', [FolderController::class, 'getFolder'])->name('folder.edit');
+
+    //Document Routes
+    Route::get('/document/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('document.getOrgfolder');
+
+    //Group Routes
+    Route::get('/group/get_ou_user/', [GroupController::class, 'getOrgUser'])->name('group.get_ou_user'); 
 
 
 });
@@ -191,18 +204,13 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     // Route::get('/grading', [TrainingEventsController::class, 'getStudentGrading'])->name('grading.list');
     Route::get('/training/grading-list/{event_id}', [TrainingEventsController::class, 'getStudentGrading'])->name('training.grading-list');
 
-    // Resource
-    Route::get('/resource', [ResourceController::class, 'resource_list'])->name('resource.index');
-
-
     // Course Template
     Route::get('/course-template', [CourseTemplateController::class, 'index'])->name('course-template.index');
     Route::get('/course-template/create', [CourseTemplateController::class, 'createCourseTemplate'])->name('course-template.create');
     Route::post('/course-template/store', [CourseTemplateController::class, 'saveCourseTemplate'])->name('course-template.store');
-});
 
-// Resources Routes
-   
+    // Resources Routes
+    Route::get('/resource', [ResourceController::class, 'resource_list'])->name('resource.index');
     Route::post('/resource/save', [ResourceController::class, 'save'])->name('save.index');
     Route::get('/resource/edit', [ResourceController::class, 'edit'])->name('edit.index');
     Route::post('/resourse/update', [ResourceController::class, 'update'])->name('update.index'); 
@@ -215,11 +223,8 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/resource/approval', [ResourceController::class, 'resource_approval'])->name('resource.approval');
     Route::post('/resource/approve/request', [ResourceController::class, 'approve_request'])->name('approve_request.index');
     Route::post('/resource/reject/request', [ResourceController::class, 'reject_request'])->name('reject_request.index');
-    Route::get('/lesson-pdf/{subLessonId}', [SubLessonController::class, 'subLessonPdf'])->name('lesson-pdf.downloadPdf');
-    Route::get('/document/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('document.getOrgfolder');
-    Route::get('/group/get_ou_user/', [GroupController::class, 'getOrgUser'])->name('group.get_ou_user'); 
-    Route::get('/folder/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('folder.getOrgfolder');
-    Route::get('/folder/edit', [FolderController::class, 'getFolder'])->name('folder.edit');
+});
+
 
 
  
