@@ -36,85 +36,93 @@
     <div class="col-12">
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="mb-0">Folders</h5>
+                <h5 class="mb-0 fw-bold" style="color:black">Folders</h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     @if(count($subfolders) > 0)
-                        @foreach ($subfolders as $folder)
-                        <div class="col-md-3 col-sm-4 mb-4">
-                            <div class="folder-wrapper" onclick="openFolder('{{ $folder->id }}')">
-                                <div class="folder-visual">
-                                    <div class="folder-container">
-                                        <div class="folder-tab"></div>
-                                        <div class="folder-icon">
-                                            <i class="fas fa-folder"></i>
-                                        </div>
+                    @foreach ($subfolders as $folder)
+                    <div class="col-md-3 col-sm-4 mb-4">
+                        <div class="folder-wrapper" onclick="openFolder('{{ $folder->id }}')">
+                            <div class="folder-visual">
+                                <div class="folder-container">
+                                    <div class="folder-tab"></div>
+                                    <div class="folder-icon">
+                                        <i class="fas fa-folder"></i>
                                     </div>
                                 </div>
-                                <div class="text-center mt-2 fw-bold folder_name">{{ $folder->folder_name }}</div>
-                                <div class="folder-actions">
-                                    <a href="{{ url('folder/show/'.encode_id($folder->id)) }}" title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="javascript:void(0);" title="Edit" onclick="editFolder('{{ encode_id($folder->id) }}')">
-                                        <i class="fas fa-pen-to-square"></i>
-                                    </a>
-                                    <a href="javascript:void(0);" title="Delete"
-                                        onclick="deleteFolder('{{ encode_id($folder->id) }}', '{{ $folder->folder_name }}'); event.stopPropagation();">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
-                                </div>
+                            </div>
+                            <div class="text-center mt-2 fw-bold folder_name">{{ $folder->folder_name }}</div>
+                            <div class="folder-actions">
+                                <a href="{{ url('folder/show/'.encode_id($folder->id)) }}" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="javascript:void(0);" title="Edit"
+                                    onclick="editFolder('{{ encode_id($folder->id) }}')">
+                                    <i class="fas fa-pen-to-square"></i>
+                                </a>
+                                <a href="javascript:void(0);" title="Delete"
+                                    onclick="deleteFolder('{{ encode_id($folder->id) }}', '{{ $folder->folder_name }}'); event.stopPropagation();">
+                                    <i class="fas fa-trash"></i>
+                                </a>
                             </div>
                         </div>
-                        @endforeach
+                    </div>
+                    @endforeach
                     @else
-                        <div class="col-12 text-center text-muted">No Sub Folder Found</div>
+                    <div class="col-12 text-center text-muted">No Sub Folder Found</div>
                     @endif
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Documents Card -->
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Documents</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    @if(count($documents))
-                        @foreach ($documents as $doc)
-                        <div class="col-md-3 col-sm-4 mb-4">
-                            <div class="folder-wrapper" onclick="window.open('{{ asset('storage/' . $doc->file_path) }}', '_blank')">
-                                <div class="folder-visual">
-                                    <div class="folder-container" style="background-color: #60a5fa;">
-                                        <div class="folder-tab" style="background-color: #fff;"></div>
-                                        <div class="folder-icon">
-                                            <i class="fas fa-file-alt"></i>
+          <!-- Documents Section -->
+          <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0 fw-bold" style="color:black">Documents</h5>
+                    </div>
+                    <div class="card-body">
+                        @if(count($documents))
+                        <div class="row mt-2">
+                            @foreach ($documents as $doc)
+                            <div class="col-md-3 col-sm-4 mb-4">
+                                <div class="folder-wrapper">
+                                    <div class="folder-visual">
+                                        <div class="file-container" style="background-color: #60a5fa;">
+                                            <div class="file-corner" style="background-color: #fff;"></div>
+                                            <div class="file-content">
+                                                <i class="fas fa-file-alt"></i>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="text-center mt-2 fw-bold document_title">{{ $doc->original_filename }}</div>
-                                <div class="folder-actions">
-                                    <a href="{{ Storage::url($doc->document_file) }}" title="View" onclick="event.stopPropagation();">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{{ Storage::url($doc->document_file) }}" title="Download" onclick="event.stopPropagation();" download>
-                                        <i class="fas fa-download"></i>
-                                    </a>
+                                    <div class="text-center mt-2 fw-bold document_title">{{ $doc->original_filename }}
+                                    </div>
+                                    <div class="file-actions">
+                                        <a href="{{ Storage::url($doc->document_file) }}" title="View"
+                                            onclick="event.stopPropagation();">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ Storage::url($doc->document_file) }}" title="View"
+                                            onclick="event.stopPropagation();" download>
+                                            <i class="fas fa-download"></i>
+                                        </a>
+
+                                    </div>
                                 </div>
                             </div>
+                            @endforeach
+                            @else
+                            <div class="col-12 text-center text-muted">No Document Found</div>
                         </div>
-                        @endforeach
-                    @else
-                        <div class="col-12 text-center text-muted">No Document Found</div>
-                    @endif
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+        <!-- End Document Section -->
 </div>
 
 <!-- Edit Courses -->
@@ -129,11 +137,23 @@
             <div class="modal-body">
                 <form id="editFolder" class="row g-3 needs-validation">
                     @csrf
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
+                            <option value="">Select Org Unit</option>
+                            @foreach($organizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="ou_id_error" class="text-danger error_e"></div>
+                    </div>
+                    @endif
                     <!-- Parent Folder Selection -->
                     <div class="form-group">
                         <label for="parent_id" class="form-label">Parent Folder<span
                                 class="text-danger">*</span></label>
-                        <select class="form-select" name="parent_id" id="edit_parent_folder"
+                        <select class="form-select all-folders" name="parent_id" id="edit_parent_folder"
                             aria-label="Select Parent Folder">
                             <option value="">No Parent (Root Folder)</option>
                             @foreach($folders as $folder)
@@ -153,18 +173,6 @@
                         <textarea class="form-control" name="description" id="edit_description" rows="3"></textarea>
                         <div id="description_error_up" class="text-danger error_e"></div>
                     </div>
-                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                    <div class="form-group">
-                        <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                        <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
-                            <option value="">Select Org Unit</option>
-                            @foreach($organizationUnits as $val)
-                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                            @endforeach
-                        </select>
-                        <div id="ou_id_error" class="text-danger error_e"></div>
-                    </div>
-                    @endif
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
@@ -273,6 +281,55 @@ function deleteFolder(folderId, folderName) {
     $('#append_name').html(folderName);
     $('#folderId').val(folderId);
 }
+
+
+$(document).on("change", "#edit_ou_id", function() {
+    var ou_id = ($(this).val());
+
+    var $folderSelect = $(".all-folders");
+
+    $.ajax({
+        url: "/folder/get_ou_folder/",
+        type: "GET",
+        data: {
+            'ou_id': ou_id
+        },
+        dataType: "json",
+        success: function(response) {
+
+
+            if (response.org_folder && Array.isArray(response.org_folder)) {
+                var options = "<option value=''>No Parent (Root Folder)</option>";
+
+                // Recursive function to generate folder options with indentation
+                function generateFolderOptions(folder, level) {
+                    var indent = "&nbsp;&nbsp;&nbsp;&nbsp;".repeat(level); // Indentation
+                    var option =
+                        `<option value="${folder.id}">${indent}${folder.folder_name}</option>`;
+
+                    if (folder.children_recursive && folder.children_recursive.length > 0) {
+                        folder.children_recursive.forEach(child => {
+                            option += generateFolderOptions(child, level + 1);
+                        });
+                    }
+                    return option;
+                }
+
+                // Process only the top-level folders
+                response.org_folder.forEach(function(folder) {
+                    options += generateFolderOptions(folder, 0);
+                });
+
+                $folderSelect.html(options);
+                $folderSelect.trigger("change");
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error(xhr.responseText);
+        }
+    });
+});
+
 setTimeout(function() {
     $('#alertMessage').fadeOut('slow');
 }, 2000);
