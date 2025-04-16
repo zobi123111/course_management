@@ -175,7 +175,7 @@
                                 required?</label>
                             <input type="checkbox" name="medical_verification_required"
                                 id="medical_verification_required" class="ms-2" value="1">
-                            <div class="col-md-6 medical_issued_div" style="display:none">
+                            <div class="medical_issued_div" style="display:none">
                                 <label for="extra_roles" class="form-label">Medical Issued By<span
                                         class="text-danger"></span></label>
                                 <select class="form-select " name="issued_by" id="issued_by">
@@ -186,7 +186,7 @@
                                 </select>
 
                             </div>
-                            <div class="col-md-6 medical_class_div" style="display:none">
+                            <div class="medical_class_div" style="display:none">
                                 <label for="extra_roles" class="form-label">Medical Class<span
                                         class="text-danger"></span></label>
                                 <select class="form-select " name="medical_class" id="medical_class">
@@ -209,8 +209,10 @@
                                 <div id="medical_detail_div">
                                     <label for="extra_roles" class="form-label">Medical Detail <span
                                             class="text-danger"></span></label>
-                                    <input type="text" name="medical_detail" id="medical_detail" class="form-control"
-                                        placeholder="Enter the Detail">
+                                    <!-- <input type="text" name="medical_detail" id="medical_detail" class="form-control"
+                                        placeholder="Enter the Detail"> -->
+                                    <textarea name="medical_detail" id="medical_detail" class="form-control"
+                                    placeholder="Enter the Detail"></textarea>
                                 </div>
                                 <div id="medical_file_div">
                                     <label for="extra_roles" class="form-label">Medical Upload <span
@@ -267,24 +269,27 @@
                         </div>
 
                         <!-- Custom Field -->
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <label for="custom_field_checkbox" class="form-label">Custom Field</label>
                             <input type="checkbox" name="custom_field_checkbox" id="custom_field_checkbox" class="ms-2">
+                            <label for="customField_verification_required" class="form-label ms-4">Admin Verification
+                                required?</label>
+                            <input type="checkbox" name="customField_verification_required"
+                                id="customField_verification_required" class="ms-2" value="1">
                         </div>
 
-                        <div class="col-md-12">
+                        <div>
                             <label for="customfield_filelabel" id="customfield_filelabel" class="form-label"
-                                style="display: none;">File</label>
-                            <input type="checkbox" name="custom_file_checkbox" id="custom_file_checkbox" class="ms-2"
+                                style="display: none;">Date</label>
+                            <input type="checkbox" name="custom_date_checkbox" id="custom_date_checkbox" class="m-2"
                                 style="display: none;">
-
                             <label for="customfield_textlabel" id="customfield_textlabel" class="form-label"
                                 style="display: none;">Text</label>
                             <input type="checkbox" name="custom_text_checkbox" id="custom_text_checkbox" class="ms-2"
                                 style="display: none;">
                             <div class="col-md-6">
-                                <input type="date" name="custom_field_date" id="custom_file" class="form-control mt-3"
-                                    style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                                <input type="date" name="custom_field_date" id="custom_date" class="form-control mt-3"
+                                    style="display: none;">
                                 <input type="text" name="custom_field_text" id="custom_text" class="form-control mt-3"
                                     placeholder="Enter the Text" style="display: none;">
                             </div>
@@ -431,7 +436,7 @@
                                 required?</label>
                             <input type="checkbox" name="editmedical_verification_required"
                                 id="editmedical_verification_required" class="ms-2" value="1">
-                            <div class="col-md-6 editmedical_issued_div" style="display:none">
+                            <div class="editmedical_issued_div" style="display:none">
                                 <label for="extra_roles" class="form-label">Medical Issued By<span
                                         class="text-danger"></span></label>
                                 <select class="form-select " name="editissued_by" id="editissued_by">
@@ -441,7 +446,7 @@
                                     <option value="FAA">FAA</option>
                                 </select>
                             </div>
-                            <div class="col-md-6 editmedical_class_div" style="display:none">
+                            <div class="editmedical_class_div" style="display:none">
                                 <label for="extra_roles" class="form-label">Medical Class<span
                                         class="text-danger"></span></label>
                                 <select class="form-select " name="editmedical_class" id="editmedical_class">
@@ -464,8 +469,9 @@
                                 <div id="editmedical_detail_div">
                                     <label for="extra_roles" class="form-label">Medical Detail <span
                                             class="text-danger"></span></label>
-                                    <input type="text" name="editmedical_detail" id="editmedical_detail"
-                                        class="form-control" placeholder="Enter the Detail">
+                                    <!-- <input type="text" name="editmedical_detail" id="editmedical_detail"
+                                        class="form-control" placeholder="Enter the Detail"> -->
+                                    <textarea name="editmedical_detail" id="editmedical_detail" class="form-control" placeholder="Enter the Detail"></textarea> 
                                 </div>
                                 <div id="editmedical_detail_div">
                                     <label for="extra_roles" class="form-label">Medical Upload <span
@@ -526,21 +532,24 @@
                             <label for="custom_field_checkbox" class="form-label">Custom Field</label>
                             <input type="checkbox" name="custom_field_checkbox" id="editcustom_field_checkbox"
                                 class="ms-2">
+                            <label for="customField_verification_required" class="form-label ms-4">Admin Verification
+                            required?</label>
+                            <input type="checkbox" name="edit_custom_field_verification_required"
+                                id="edit_custom_field_verification_required" class="ms-2" value="1">
                         </div>
 
                         <div class="col-md-6">
-                            <label for="customfield_filelabel" id="editcustomfield_filelabel" class="form-label"
-                                style="display: none;">File</label>
-                            <input type="checkbox" name="editcustom_file_checkbox" id="editcustom_file_checkbox"
-                                style="display: none;" class="ms-2">
-
+                            <label for="customfield_filelabel" id="editcustomfield_datelabel" class="form-label"
+                                style="display: none;">Date</label>
+                            <input type="checkbox" name="editcustom_date_checkbox" id="editcustom_date_checkbox"
+                                style="display: none;" class="ms-2">    
                             <label for="customfield_textlabel" id="editcustomfield_textlabel" class="form-label"
                                 style="display: none;">Text</label>
                             <input type="checkbox" name="editcustom_text_checkbox" id="editcustom_text_checkbox"
                                 class="ms-2" style="display: none;">
                             <div class="col-md-6">
-                                <input type="date" name="editcustom_field_date" id="editcustom_file"
-                                    class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                                <input type="date" name="editcustom_field_date" id="editcustom_date"
+                                    class="form-control mt-3" style="display: none;">
                                 <input type="text" name="editcustom_field_text" id="editcustom_text"
                                     class="form-control mt-3" style="display: none;" placeholder="Enter the Text">
                             </div>
@@ -666,66 +675,66 @@
             if (this.checked) {
               
                 $('#customfield_filelabel').show();
-                $('#custom_file_checkbox').show();
+                $('#custom_date_checkbox').show();
                 $('#customfield_textlabel').show();
                 $('#custom_text_checkbox').show();
             } else {  
                 $('#customfield_filelabel').hide();
-                $('#custom_file_checkbox').hide();
+                $('#custom_date_checkbox').hide();
                 $('#customfield_textlabel').hide();
                 $('#custom_text_checkbox').hide();
                 $('#custom_text').hide(); 
-                $('#custom_file').hide(); 
-                $('#custom_file_checkbox').prop('checked', false);
+                $('#custom_date').hide(); 
+                $('#custom_date_checkbox').prop('checked', false);
                 $('#custom_text_checkbox').prop('checked', false);
                 $('#custom_text').val('');
             }
         });
         $('#editcustom_field_checkbox').change(function() { 
             if (this.checked) {
-                $('#editcustomfield_filelabel').show();
-                $('#editcustom_file_checkbox').show();
+                $('#editcustomfield_datelabel').show();
+                $('#editcustom_date_checkbox').show();
                 $('#editcustomfield_textlabel').show();
                 $('#editcustom_text_checkbox').show();
             } else {
-                $('#editcustomfield_filelabel').hide();
-                $('#editcustom_file_checkbox').hide();
+                $('#editcustomfield_datelabel').hide();
+                $('#editcustom_date_checkbox').hide();
                 $('#editcustomfield_textlabel').hide();
                 $('#editcustom_text_checkbox').hide();
                 $('#editcustom_text').hide(); 
-                $('#editcustom_file').hide(); 
-                $('#editcustom_file_checkbox').prop('checked', false);
+                $('#editcustom_date').hide(); 
+                $('#editcustom_date_checkbox').prop('checked', false);
                 $('#editcustom_text_checkbox').prop('checked', false);
                // $('#editcustom_text').val('');
             }
         });
 
         // Custom field file checkbox
-        $('#custom_file_checkbox').change(function() {
+        $('#custom_date_checkbox').change(function() {
             if (this.checked) {
                 $('#custom_text_checkbox').prop('checked', false); 
                 $('#custom_text').hide(); 
-                $('#custom_file').show(); 
+                $('#custom_date').show(); 
             } else {
-                $('#custom_file').hide(); 
+                $('#custom_date').hide(); 
             }
         });
-        $('#editcustom_file_checkbox').change(function() {
+        $('#editcustom_date_checkbox').change(function() {
             if (this.checked) {
                 $('#editcustom_text_checkbox').prop('checked', false); 
                 $('#editcustom_text').hide(); 
-                $('#editcustom_file').show(); 
+                $('#editcustom_date').show(); 
                // $('#editcustom_file_checkbox').val('');
             } else {
-                $('#editcustom_file').hide(); 
+                $('#editcustom_date').hide(); 
             }
         });
 
         // Custom text checkbox
         $('#custom_text_checkbox').change(function() {
             if (this.checked) {
-                $('#custom_file_checkbox').prop('checked', false); 
-                $('#custom_file').hide(); 
+                $('#custom_date_checkbox').prop('checked', false); 
+                $('#custom_date').hide(); 
                 $('#custom_text').show(); 
             } else {
                 $('#custom_text').hide(); 
@@ -734,8 +743,8 @@
 
         $('#editcustom_text_checkbox').change(function() {
             if (this.checked) { 
-                $('#editcustom_file_checkbox').prop('checked', false); 
-                $('#editcustom_file').hide(); 
+                $('#editcustom_date_checkbox').prop('checked', false); 
+                $('#editcustom_date').hide(); 
                 $('#editcustom_text').show(); 
                // $('#editcustom_file').val(''); 
             } else { 
@@ -1045,22 +1054,22 @@
                             $('#edit_currency_checkbox').prop('checked', false);
                             $('#edit_currency').hide().prop('required', false);
                         }
-                        if(response.user.custom_field_file || response.user.custom_field_text){
-                               $('#editcustomfield_filelabel').show();
-                                $('#editcustom_file_checkbox').show();
+                        if(response.user.custom_field_date || response.user.custom_field_text){
+                               $('#editcustomfield_datelabel').show();
+                                $('#editcustom_date_checkbox').show();
                                 $('#editcustomfield_textlabel').show();
                                 $('#editcustom_text_checkbox').show();
                             $('#editcustom_field_checkbox').prop('checked', true);
-                            if(response.user.custom_field_file){
-                                   $('#editcustom_file_checkbox').prop('checked', true); 
+                            if(response.user.custom_field_date){
+                                   $('#editcustom_date_checkbox').prop('checked', true); 
                                     $('#editcustom_text').hide(); 
-                                    $('#editcustom_file').show(); 
-                                    $('#editcustom_file').val(response.user.custom_field_file);
+                                    $('#editcustom_date').show(); 
+                                    $('#editcustom_date').val(response.user.custom_field_date);
 
                             }else{
                                 $('#editcustom_text_checkbox').prop('checked', true); 
                                     $('#editcustom_text').show(); 
-                                    $('#editcustom_file').hide(); 
+                                    $('#editcustom_date').hide(); 
                                     $('#editcustom_text').val(response.user.custom_field_text);
                             }
                            
@@ -1091,6 +1100,10 @@
                         }
                         if(response.user.passport_admin_verification_required==1){
                             $('#edit_passport_verification_required').prop('checked', true);
+                            
+                        }
+                        if(response.user.custom_field_admin_verification_required==1){
+                            $('#edit_custom_field_verification_required').prop('checked', true);
                             
                         }
 

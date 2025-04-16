@@ -53,16 +53,17 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/activity-logs', [UserActivityLogController::class, 'showAll'])->name('logs.index');
     Route::get('/activity-logs/data', [UserActivityLogController::class, 'getLogs'])->name('logs.data');
 
-
     Route::get('change-password', [LoginController::class, 'showChangePasswordForm'])->name('change-password');
     Route::post('change-password', [LoginController::class, 'changePassword'])->name('update-password');
     Route::get('/users/profile', [UserController::class, 'profile'])->name('user.profile');
   
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index'); 
     Route::post('/settings', [SettingController::class, 'store'])->name('settings.store');
-  
+    
+    //User Routes
     Route::post('/users/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update');
     Route::get('/users/data', [UserController::class, 'getData'])->name('users.data');
+    Route::get('/users/show/{user_id}', [UserController::class, 'showUser'])->name('user.show');
 
     //Server-Side Datatable Routes
     Route::get('/orgunit/data', [OrganizationController::class, 'getData'])->name('orgunit.data');  
@@ -75,7 +76,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     Route::post('/prerequisites/save', [PrerequisiteController::class, 'store'])->name('prerequisites.save');
 
-    //Courses Routes
+    //Coursess Routes
     Route::post('/courses/{course}/prerequisites/store', [PrerequisiteController::class, 'store'])
     ->name('course.prerequisites.store');
     Route::post('/lessons/{course}/{lesson}/prerequisites/store', [LessonController::class, 'prerequisitesStore'])
@@ -84,23 +85,24 @@ Route::group(['middleware' => ['auth']], function () {
  
     //ORG Unit Routes
     Route::get('/orgunit/get_permissions', [OrganizationController::class, 'getPermissions'])->name('orgunit.getPermissions');  
-    Route::post('/orgunit/permission_store', [OrganizationController::class, 'storePermissions'])->name('orgunit.storePermissions');  
+    Route::post('/orgunit/permission_store', [OrganizationController::class, 'storePermissions'])->name('orgunit.storePermissions');
+    Route::get('/orgunit/user_list', [OrganizationController::class, 'showOrgUsers'])->name('orgunit.user_list');  
 
     //Training Event Routes
     Route::get('/training/get_ou_students_instructors_resources/{ou_id}', [TrainingEventsController::class, 'getOrgStudentsInstructorsResources'])->name('training.get_ou_students_instructors_resources');
     Route::get('/training/get_course_lessons', [TrainingEventsController::class, 'getCourseLessons'])->name('training.course-lessons');
     Route::get('/training/get_licence_number_and_courses/{user_id}/{ou_id}', [TrainingEventsController::class, 'getStudentLicenseNumberAndCourses'])->name('training.get_licence_number_and_courses');
 
-    //Folders Routes
+    //Folder Routes
     Route::get('/folder/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('folder.getOrgfolder');
     Route::get('/folder/edit', [FolderController::class, 'getFolder'])->name('folder.edit');
 
     //Document Routes
     Route::get('/document/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('document.getOrgfolder');
+    Route::get('document/user_list', [DocumentController::class, 'getDocUserList'])->name('document.user_list');
 
     //Group Routes
     Route::get('/group/get_ou_user/', [GroupController::class, 'getOrgUser'])->name('group.get_ou_user'); 
-
 
 });
 
@@ -119,7 +121,6 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.get');
     Route::post('/users/update', [UserController::class, 'update'])->name('user.update');
     Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
-    Route::get('/users/show/{user_id}', [UserController::class, 'showUser'])->name('user.show');
     Route::post('/users/verify', [UserController::class, 'docsVerify'])->name('user.verify');
 
 
@@ -132,7 +133,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/orgunit/edit', [OrganizationController::class, 'getOrgUnit'])->name('orgunit.edit');
     Route::post('/orgunit/update', [OrganizationController::class, 'updateOrgUnit'])->name('orgunit.update');
     Route::post('/orgunit/delete', [OrganizationController::class, 'deleteOrgUnit'])->name('orgunit.delete');
-    Route::get('/orgunit/user_list', [OrganizationController::class, 'showOrgUsers'])->name('orgunit.user_list');
+
     
     //Courses 
     Route::get('/courses', [CourseController::class, 'index'])->name('course.index');
@@ -175,7 +176,6 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/document/show/{doc_id}', [DocumentController::class, 'showDocument'])->name('document.show'); 
     Route::post('/document/acknowledge', [DocumentController::class, 'acknowledgeDocument'])->name('document.acknowledge');
    
-    Route::get('document/user_list', [DocumentController::class, 'getDocUserList'])->name('document.user_list');
     
     //Folders Route
     Route::get('/folders', [FolderController::class, 'index'])->name('folder.index');
@@ -216,22 +216,16 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/resourse/update', [ResourceController::class, 'update'])->name('update.index'); 
     Route::post('/resource/delete', [ResourceController::class, 'delete'])->name('delete.index');
     Route::post('/resource/getcourseResource', [ResourceController::class, 'getcourseResource'])->name('getcourseResource.index');
+
     // Booking Request
     Route::get('/booking/bookresource/{course_id}', [ResourceController::class, 'bookresource'])->name('bookresource.index');
     Route::post('/booking/store', [ResourceController::class, 'store'])->name('store.index');
+    
     // Approval
     Route::get('/resource/approval', [ResourceController::class, 'resource_approval'])->name('resource.approval');
     Route::post('/resource/approve/request', [ResourceController::class, 'approve_request'])->name('approve_request.index');
     Route::post('/resource/reject/request', [ResourceController::class, 'reject_request'])->name('reject_request.index');
 });
-
-
-
- 
-  
-
- 
-
     
 Route::get('/clear-cache', function() {
     Artisan::call('optimize:clear');
