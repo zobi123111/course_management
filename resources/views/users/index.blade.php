@@ -171,7 +171,7 @@
                         <div class="col-md-6">
                             <label for="licence_checkbox" class="form-label">Medical</label>
                             <input type="checkbox" name="medical_checkbox" id="medical_checkbox" class="ms-2" value="1">
-                            <label for="licence_verification_required" class="form-label ms-4">Admin Verification
+                            <label for="medical_verification_required" class="form-label ms-4">Admin Verification
                                 required?</label>
                             <input type="checkbox" name="medical_verification_required"
                                 id="medical_verification_required" class="ms-2" value="1">
@@ -231,7 +231,7 @@
                             <label for="passport_verification_required" class="form-label ms-4">Admin Verification
                                 required?</label>
                             <input type="checkbox" name="passport_verification_required"
-                                id="passport_verification_required" class="ms-2">
+                                id="passport_verification_required" class="ms-2" value="1">
                             <input type="text" name="passport" id="passport" class="form-control" style="display: none;"
                                 placeholder="Enter Passport Number">
                             <div id="passport_error" class="text-danger error_e"></div>
@@ -271,7 +271,7 @@
                         <!-- Custom Field -->
                         <div class="col-md-12">
                             <label for="custom_field_checkbox" class="form-label">Custom Field</label>
-                            <input type="checkbox" name="custom_field_checkbox" id="custom_field_checkbox" class="ms-2">
+                            <input type="checkbox" name="custom_field_checkbox" id="custom_field_checkbox" class="ms-2" value="1">
                             <label for="customField_verification_required" class="form-label ms-4">Admin Verification
                                 required?</label>
                             <input type="checkbox" name="customField_verification_required"
@@ -531,7 +531,7 @@
                         <div class="col-md-12">
                             <label for="custom_field_checkbox" class="form-label">Custom Field</label>
                             <input type="checkbox" name="custom_field_checkbox" id="editcustom_field_checkbox"
-                                class="ms-2">
+                                class="ms-2" value="1">
                             <label for="customField_verification_required" class="form-label ms-4">Admin Verification
                             required?</label>
                             <input type="checkbox" name="edit_custom_field_verification_required"
@@ -1100,6 +1100,10 @@
                         }
                         if(response.user.passport_admin_verification_required==1){
                             $('#edit_passport_verification_required').prop('checked', true);
+                            
+                        }
+                        if(response.user.custom_field_required==1){
+                            $('#editcustom_field_checkbox').prop('checked', true);
                             
                         }
                         if(response.user.custom_field_admin_verification_required==1){

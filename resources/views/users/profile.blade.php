@@ -118,14 +118,14 @@ h2 {
                                 <label for="firstName"><strong>First Name</strong></label>
                                 <input type="hidden" id="id" name="id" class="form-control" value="{{ $user->id }}">
                                 <input type="text" id="firstName" name="firstName" class="form-control"
-                                    value="{{ $user->fname }}" readonly>
+                                    value="{{ $user->fname }}" >
                             </div>
 
                             <!-- Last Name -->
                             <div class="form-group col-sm-6">
                                 <label for="lastName"><strong>Last Name</strong></label>
                                 <input type="text" id="lastName" name="lastName" class="form-control"
-                                    value="{{ $user->lname }}" readonly>
+                                    value="{{ $user->lname }}" >
                             </div>
 
 
@@ -137,7 +137,7 @@ h2 {
                             <div class="form-group col-sm-6">
                                 <label for="email"><strong>Email</strong></label>
                                 <input type="email" id="email" name="email" class="form-control"
-                                    value="{{ $user->email }}" readonly>
+                                    value="{{ $user->email }}">
                             </div>
 
                             <!-- Currency -->
@@ -154,7 +154,7 @@ h2 {
 
                         </div>
 
-                        <div class="row">
+                        <div class="row mb-3">
                             <!-- Rating -->
                             {{-- @if ($user->rating_required == 0)
                                 <div class="form-group col-sm-6">
@@ -183,7 +183,7 @@ h2 {
                                     @endif
                                 </label>
                                 <!-- <input type="text" name="licence" id="licence" value="{{ $user->licence ? $user->licence : ''}}" placeholder="Enter Licence Number" class="form-control" {{ $user->licence ? 'disabled' : '' }}> -->
-                                 <input type="text" name="licence" id="licence" value="{{ $user->licence ? $user->licence : '' }}" placeholder="Enter Licence Number" class="form-control" {{ $user->licence && $user->licence_status != 'Red' ? 'disabled' : '' }}>
+                                 <input type="text" name="licence" id="licence" value="{{ $user->licence ? $user->licence : '' }}" placeholder="Enter Licence Number" class="form-control">
 
                                 <div id="licence_error_up" class="text-danger error_e"> </div>
                                 <label for="licence_expiry_date" class="form-label mt-3">
@@ -200,18 +200,17 @@ h2 {
                                         <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
                                     @endif
                                 </label>
-                                <input type="date" name="licence_expiry_date" id="licence_expiry_date" value="{{ $user->licence_expiry_date ?? '' }}" class="form-control mt-3"   {{ $user->licence_expiry_date && $user->licence_status != 'Red' ? 'disabled' : '' }}>
+                                <input type="date" name="licence_expiry_date" id="licence_expiry_date" value="{{ $user->licence_expiry_date ?? '' }}" class="form-control mt-3" >
 
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="non_expiring_licence" name="non_expiring_licence" value="1" {{ $user->licence_non_expiring ? 'checked disabled' : '' }}>
+                                    <input class="form-check-input" type="checkbox" id="non_expiring_licence" name="non_expiring_licence" value="1">
                                     <label class="form-check-label" for="non_expiring_licence">
                                         <strong>Non-Expiring Licence</strong>
                                     </label>
                                 </div>
 
                                 <div id="licence_expiry_date_error_up" class="text-danger error_e"></div>
-                                <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png" 
-                                {{ $user->licence_file && $user->licence_status != 'Red' ? 'disabled' : '' }}>
+                                <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png" > 
                                 <div id="licence_file_error_up" class="text-danger error_e"></div>
                                 <input type="hidden" name="old_licence_file" value="{{ $user->licence_file }}">
 
@@ -240,8 +239,7 @@ h2 {
                                 </label>
                                 <input type="text" name="passport" id="passport" class="form-control"
                                     value="{{ $user->passport ? $user->passport : ''}}"
-                                    placeholder="Enter Passport Number" 
-                                    {{ $user->passport && $user->passport_status != 'Red' ? 'disabled' : '' }}>
+                                    placeholder="Enter Passport Number">
                                 <div id="passport_error_up" class="text-danger error_e"></div>
 
                                 <label for="licence_" class="form-label mt-3">
@@ -259,16 +257,12 @@ h2 {
 
                                 <input type="date" name="passport_expiry_date" id="passport_expiry_date"
                                     value="{{ $user->passport_expiry_date ? $user->passport_expiry_date : ''}}"
-                                    class="form-control mt-3" 
-                                    {{ $user->passport_expiry_date && $user->passport_status != 'Red' ? 'disabled' : '' }}>
+                                    class="form-control mt-3">
                                 <div id="passport_expiry_date_error_up" class="text-danger error_e"></div>
 
                                 <input type="file" name="passport_file" id="passport_file" class="form-control mt-3"
-                                    accept=".pdf,.jpg,.jpeg,.png" 
-                                    {{ $user->passport_file && $user->passport_status != 'Red' ? 'disabled' : '' }}
-                                    >
+                                    accept=".pdf,.jpg,.jpeg,.png" >
                                 <div id="passport_file_error_up" class="text-danger error_e"></div>
-
                                 <input type="hidden" name="old_passport_file" value="{{ $user->passport_file }}">
                                 @if ($user->passport_file)
                                 <div class="mt-3">
@@ -283,15 +277,15 @@ h2 {
                             </div>
                             @endif
                         </div>
+                        <div class="row">
                         @if ($user->medical == 1)
-
+                       <div class="col-6">
                         <label for="extra_roles" class="form-label"><strong> Medical Issued By </strong><span
                                 class="text-danger"></span></label>
                                 @if ($user->medical_verified)
                                     <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
                                     @endif
-                                    <select class="form-select" name="issued_by" id="issued_by"
-                                        {{ ($user->medical_expirydate && $user->medical_status != 'Red') ? 'disabled' : '' }}>
+                                    <select class="form-select" name="issued_by" id="issued_by">
                                         <option value="">Select Issued By</option>
                                         <option value="UKCAA" {{ $user->medical_issuedby == "UKCAA" ? 'selected' : '' }}>UK CAA</option>
                                         <option value="EASA" {{ $user->medical_issuedby == "EASA" ? 'selected' : '' }}>EASA</option>
@@ -301,8 +295,7 @@ h2 {
 
                         <label for="extra_roles" class="form-label mt-3"><strong> Medical Class </strong><span
                                 class="text-danger"></span></label>
-                        <select class="form-select " name="medical_class" id="medical_class"
-                        {{ ($user->medical_class && $user->medical_status != 'Red') ? 'disabled' : '' }}>
+                        <select class="form-select " name="medical_class" id="medical_class">
                             
                             <option value="">Select the Class</option>
                             <option value="class1" <?php echo ($user->medical_class == "class1")?'selected':'' ?>>Class 1</option>
@@ -312,7 +305,7 @@ h2 {
                         <label for="extra_roles" class="form-label mt-3"><strong>Medical Issue Date </strong> <span
                                 class="text-danger"></span></label>
                         <input type="date" name="medical_issue_date" id="medical_issue_date"
-                            class="form-control" placeholder="Medical Issue Date" value="<?php echo isset($user->medical_issuedate) ? $user->medical_issuedate : ''; ?>" {{ $user->medical_issuedate && $user->medical_status != 'Red' ? 'disabled' : '' }}>
+                            class="form-control" placeholder="Medical Issue Date" value="<?php echo isset($user->medical_issuedate) ? $user->medical_issuedate : ''; ?>" >
                             <div id="medical_issue_date_error_up" class="text-danger error_e"></div>
 
                         <label for="extra_roles" class="form-label mt-3"><strong> Medical Expiry Date </strong><span
@@ -328,17 +321,18 @@ h2 {
                                 @endif
                                 </label>
                         <input type="date" name="medical_expiry_date" id="medical_expiry_date"
-                            class="form-control" placeholder="Medical Expiry Date" value="<?php echo isset($user->medical_expirydate) ? $user->medical_expirydate : ''; ?>" {{ $user->medical_expirydate && $user->medical_status != 'Red' ? 'disabled' : '' }}>
+                            class="form-control" placeholder="Medical Expiry Date" value="<?php echo isset($user->medical_expirydate) ? $user->medical_expirydate : ''; ?>" >
                             <div id="medical_expiry_date_error_up" class="text-danger error_e"></div>
 
 
                         <label for="extra_roles" class="form-label mt-3"><strong> Medical Detail </strong> <span
                                 class="text-danger"></span></label>
-                        <input type="text" name="medical_detail" id="medical_detail" class="form-control"
-                            placeholder="Enter the Detail" value="<?php echo isset($user->medical_restriction) ?  $user->medical_restriction : ''; ?>" {{ $user->medical_restriction && $user->medical_status != 'Red' ? 'disabled' : '' }}>
+                            <textarea name="medical_detail" id="medical_detail" class="form-control"
+                            placeholder="Enter the Detail" ><?php echo isset($user->medical_restriction) ?  $user->medical_restriction : ''; ?></textarea>
 
                             <input type="file" name="medical_file" id="medical_file" class="form-control mt-3"
                                     accept=".pdf,.jpg,.jpeg,.png" >
+                            <input type="hidden" name="old_medical_file" value="{{ $user->passport_file }}">
                              @if ($user->medical_file)
                                 <div class="mt-3">
                                     <a href="{{ asset('storage/' . $user->medical_file) }}" target="_blank"
@@ -349,9 +343,26 @@ h2 {
                                     </a>
                                 </div>
                             @endif
-
                          <div id="medical_file_error_up" class="text-danger error_e"></div>
-
+                    </div>
+                    @if ($user->custom_field_required == 1)
+                    <div class="col-6">
+                        <label for="custom_field_checkbox" class="form-label"><strong>Custom Fields </strong></label>
+                        <label for="customfield_filelabel" id="customfield_filelabel" class="form-label">Date</label>
+                        <input type="checkbox" name="custom_date_checkbox" id="custom_date_checkbox" class="m-2" {{ ($user->custom_field_date)? 'checked': '' }}>
+                        <label for="customfield_textlabel" id="customfield_textlabel" class="form-label">Text</label>
+                        <input type="checkbox" name="custom_text_checkbox" id="custom_text_checkbox" class="ms-2" {{ ($user->custom_field_text)? 'checked': '' }}>
+                        <div class="">
+                            <input type="date" name="custom_field_date" id="custom_date" class="form-control mt-3"
+                                style="display: none;"  value="{{ ($user->custom_field_date)? $user->custom_field_date: '' }}">
+                                <div id="custom_field_date_error_up" class="text-danger error_e"></div>
+                            <input type="text" name="custom_field_text" id="custom_text" class="form-control mt-3"
+                                placeholder="Enter the Text" style="display: none;" value="{{ ($user->custom_field_text)? $user->custom_field_text: '' }}">    
+                                <div id="custom_field_text_error_up" class="text-danger error_e"></div>
+                        </div>
+                    </div>
+                    @endif
+                    </div>
 
                 </div>
                 @endif
@@ -374,25 +385,26 @@ h2 {
 
 <script>
 $(document).ready(function() {
+
     function toggleFields() {
-    const isNonExpiringChecked = $('#non_expiring_licence').prop('checked');
-    const expiryDateField = $('#licence_expiry_date');
+        const isNonExpiringChecked = $('#non_expiring_licence').prop('checked');
+        const expiryDateField = $('#licence_expiry_date');
 
-    // Check if the expiry date field exists and is not empty
-    const isExpiryDateFilled = expiryDateField.length && expiryDateField.val().trim() !== '';
-    
-    if (isExpiryDateFilled) {
-        $('#non_expiring_licence').prop('checked', false).parent().hide();
-    } else {
-        $('#non_expiring_licence').parent().show();
-    }
+        // Check if the expiry date field exists and is not empty
+        const isExpiryDateFilled = expiryDateField.length && expiryDateField.val().trim() !== '';
+        
+        if (isExpiryDateFilled) {
+            $('#non_expiring_licence').prop('checked', false).parent().hide();
+        } else {
+            $('#non_expiring_licence').parent().show();
+        }
 
-    if (isNonExpiringChecked) {
-        expiryDateField.val('').hide().prop('required', false);
-    } else {
-        expiryDateField.show().prop('required', true);
+        if (isNonExpiringChecked) {
+            expiryDateField.val('').hide().prop('required', false);
+        } else {
+            expiryDateField.show().prop('required', true);
+        }
     }
-}
 
 
     // Initialize the fields on page load
@@ -449,6 +461,31 @@ $(document).ready(function() {
         });
     });
 
+    toggleCustomFields();
+
+    // When checkboxes are toggled
+    $('#custom_date_checkbox, #custom_text_checkbox').on('change', function () {
+        // Ensure only one checkbox can be checked at a time
+        if ($(this).is('#custom_date_checkbox')) {
+            $('#custom_text_checkbox').prop('checked', false);
+        } else {
+            $('#custom_date_checkbox').prop('checked', false);
+        }
+        toggleCustomFields();
+    });
+
 });
+
+function toggleCustomFields() {
+        if ($('#custom_date_checkbox').is(':checked')) {
+            $('#custom_date').show();
+            $('#custom_text').hide();
+        } else if ($('#custom_text_checkbox').is(':checked')) {
+            $('#custom_text').show();
+            $('#custom_date').hide();
+        } else {
+            $('#custom_text, #custom_date').hide();
+        }
+    }
 </script>
 @endsection

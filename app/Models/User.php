@@ -50,6 +50,7 @@ class User extends Authenticatable
         'password_flag',
         'ou_id',
         'extra_roles',
+        'custom_field_required',
         'custom_field_date',
         'custom_field_text',
         'custom_field_admin_verification_required',
