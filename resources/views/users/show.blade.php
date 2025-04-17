@@ -51,20 +51,20 @@
                     <div class="col-md-6">
                         <h5 class="text-muted"><i class="bi bi-passport text-primary"></i> Passport Details</h5>
                         @if($user->passport)
-                        <p>Number: {{ $user->passport }}</p>
-                        <a href="{{ Storage::url($user->passport_file) }}" class="btn btn-outline-primary btn-sm"
-                            target="_blank">View File</a>
-                    @if($user->passport_admin_verification_required==1)
-                        <!-- Toggle Switch -->
-                        <div class="form-check form-switch mt-2">
-                            <input class="form-check-input verify-toggle" type="checkbox" id="passport_verify"
-                                data-user-id="{{ encode_id($user->id) }}" data-type="passport"
-                                {{ $user->passport_verified ? 'checked disabled' : '' }}>
-                            <label class="form-check-label" for="passport_verify">Verified</label>
-                        </div>
-                     @endif
+                            <p>Number: {{ $user->passport }}</p>
+                            <a href="{{ Storage::url($user->passport_file) }}" class="btn btn-outline-primary btn-sm"
+                                target="_blank">View File</a>
+                            @if($user->passport_admin_verification_required==1)
+                                <!-- Toggle Switch -->
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input verify-toggle" type="checkbox" id="passport_verify"
+                                        data-user-id="{{ encode_id($user->id) }}" data-type="passport"
+                                        {{ $user->passport_verified ? 'checked disabled' : '' }}>
+                                    <label class="form-check-label" for="passport_verify">Verified</label>
+                                </div>
+                            @endif
                         @else
-                        <p class="text-muted">No passport details available.</p>
+                            <p class="text-muted">No passport details available.</p>
                         @endif
                     </div>
 
@@ -91,7 +91,7 @@
                 </div>
 
                 <!-- // Medical  -->
-                     <div class="row">
+                <div class="row">
                     <div class="col-md-6">
                         <h5 class="text-muted"><i class="bi bi-award-fill text-danger"></i> Medical Details</h5>
                         @if($user->medical && !empty($user->medical_issuedby) && !empty($user->medical_class) && !empty($user->medical_issuedate))
@@ -100,7 +100,7 @@
                         <p>Medical Class: {{ $user->medical_class }}</p>
                         <p>Medical Issue Date: {{ $user->medical_issuedate }}</p>
                         <p>Medical Expiry Date: {{ $user->medical_expirydate }}</p>
-
+                        <a href="{{ Storage::url($user->medical_file) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
                          @if($user->medical_adminRequired==1)
                         <!-- Toggle Switch -->
                         <div class="form-check form-switch mt-2">

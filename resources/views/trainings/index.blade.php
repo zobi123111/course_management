@@ -669,7 +669,7 @@ $(document).ready(function() {
                     }
                 } else {
                     alert('No lessons found for the selected course.');
-                    lessonDropdown.append('<option value="">Select Lesson</option>'); // Keep default option
+                    lessonDropdown.append('<option value="">Select Lesson</option>').trigger('change'); // Keep default option
                 }
             },
             error: function(xhr) {

@@ -21,7 +21,7 @@
             @if(isset($setting->site_image))
                 <img src="{{ asset('storage/' . $setting->site_image) }}" alt="" class="avms_logo">
             @else
-            <img src="{{ asset('assets/img/Avms_Logo.png') }}" alt="" class="avms_logo" >
+            <img src="{{env('SITE_LOGO')}}" alt="" class="avms_logo" >
 
             @endif
           </a>

@@ -418,19 +418,22 @@ public function getData(Request $request)
             'licence_required'    => $licence_required,
             "licence"             => $request->licence ?? null,
             "licence_file"        => $licence_file ?? null,
+            "licence_admin_verification_required"        => $request->licence_verification_required ?? 0,
             "passport_required"   => $passport_required,
             "passport"            => $request->passport ?? null,
             "passport_file"       => $passport_file ?? null,
+            "passport_admin_verification_required"       => $request->passport_verification_required ?? 0,
             "rating_required"     => $rating_required,
             "rating"              => $request->rating ?? null,
             "currency_required"   => $currency_required,
             "currency"            => $request->currency ?? null,
             "custom_field_name"   => $request->custom_field_name ?? null,
             "custom_field_value"  => $request->custom_field_value ?? null,
+            "custom_field_admin_verification_required"  => $request->customField_verification_required ?? 0,
             'status'              => $request->status,
             "ou_id"               => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id,
             "extra_roles"         => !empty($request->extra_roles) ? json_encode($request->extra_roles) : json_encode([]),
-            "custom_field_file"  => $request->custom_field_date ?? null,
+            "custom_field_date"  => $request->custom_field_date ?? null,
             "custom_field_text"  => $request->custom_field_text ?? null,
             'medical'               => $medical_checkbox,
             'medical_adminRequired' => $medical_verification_required,
@@ -467,7 +470,6 @@ public function getData(Request $request)
     
     public function update(Request $request)
     {
-        
         $userToUpdate = User::find($request->edit_form_id);
 
         if ($userToUpdate) {
@@ -545,7 +547,7 @@ public function getData(Request $request)
             $rating_required = $request->has('edit_rating_checkbox') ? 1 : $userToUpdate->rating_required;
 
             // Handle Custom Fields
-            $editcustom_field_date = $request->has('editcustom_file_checkbox') ? $request->editcustom_field_date : null;
+            $editcustom_field_date = $request->has('editcustom_date_checkbox') ? $request->editcustom_field_date : null;
             $editcustom_field_text = $request->has('editcustom_text_checkbox') ? $request->editcustom_field_text : null;
 
             // Handle Password Flag
@@ -591,12 +593,13 @@ public function getData(Request $request)
                 'rating_required' => $rating_required,
                 'currency_required' => $currency_required,
                 'currency' => $request->edit_currency ?? null, 
-                'custom_field_file' => $editcustom_field_date,
+                'custom_field_date' => $editcustom_field_date,
                 'custom_field_text' => $editcustom_field_text,
+                'custom_field_admin_verification_required' => $edit_custom_field_verification_required ?? 0,
                 'password_flag' => $password_flag,
                 'extra_roles' => $extra_roles,
                 'medical' => $medical_checkbox,
-                'medical_adminRequired' => $medical_verification_required,
+                'medical_adminRequired' => $medical_verification_required ?? null,
                 'medical_issuedby' => $medical_issued_by,
                 'medical_class' => $medical_class,
                 'medical_issuedate' => $medical_issue_date,
