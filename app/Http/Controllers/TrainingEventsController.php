@@ -695,7 +695,7 @@ class TrainingEventsController extends Controller
             // Store or update Competency Grading (lesson-level):
             if ($request->has('comp_grade')) {
                 foreach ($request->input('comp_grade') as $lesson_id => $competencyGrades) {
-                    $compData = [
+                    $compData = [   
                         'event_id'  => $event_id,
                         'lesson_id' => $lesson_id,
                         'user_id'   => $gradedStudentIdForComp, // Use student ID from hidden input
@@ -725,6 +725,8 @@ class TrainingEventsController extends Controller
             
             // Commit the transaction on success
             DB::commit();
+
+            TrainingEvents::where('id', $event_id)->update(['is_locked' => 1]);
             Session::flash('message', 'Student grading updated successfully.');
             return response()->json(['success' => true, 'message' => 'Student grading updated successfully.']);
         
@@ -789,6 +791,15 @@ class TrainingEventsController extends Controller
             ])
             ->get();
         return view('trainings.grading-list', compact('events'));
+    }
+
+    public function unlockEventGarding(Request $request, $event_id)
+    {
+        $updateTrainingEvent = TrainingEvents::where('id', decode_id($event_id))->update(['is_locked' => 0]);
+        if($updateTrainingEvent){
+            Session::flash('message', 'Grading is unlocked for editing.');
+            return response()->json(['success' => true, 'message' => 'Grading is unlocked for editing.']);
+        }
     }
 
 
