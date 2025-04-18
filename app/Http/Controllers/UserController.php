@@ -165,17 +165,17 @@ public function getData(Request $request)
 
     public function profileUpdate(Request $request)
     {
-
+// dd($request->all());
         $userToUpdate = User::find($request->id);  
       
-         
-
             if ($userToUpdate) {
                 $rules = [];
            
-                if ($userToUpdate->licence_required === 1 && empty($userToUpdate->licence) ) {    
+                if ($userToUpdate->licence_required === 1) {    
                     $rules['licence'] = 'required';
-                    $rules['licence_expiry_date'] = 'required'; 
+                    if(!$userToUpdate->licence_non_expiring && !$request->has('non_expiring_licence')){
+                        $rules['licence_expiry_date'] = 'required'; 
+                    }
                      // Require a new file only if there's no existing file
                      if (!$userToUpdate->licence_file) {
                         $rules['licence_file'] = 'required|file|mimes:pdf,jpg,jpeg,png';
@@ -184,15 +184,22 @@ public function getData(Request $request)
                     
                 }
             
-                if ($userToUpdate->passport_required == 1 && empty($userToUpdate->passport) ) {
+                if ($userToUpdate->passport_required == 1) {
                     $rules['passport'] = 'required';
                     $rules['passport_expiry_date'] = 'required';
-                    $rules['passport_file'] = 'required';
+                     // Require a new file only if there's no existing file
+                     if (!$userToUpdate->passport_file) {
+                        $rules['passport_file'] = 'required|file|mimes:pdf,jpg,jpeg,png';
+                    } 
                 }
             
                 if ($userToUpdate->medical == 1) {
-                    $rules['issued_by'] = 'required';
-                    $rules['medical_class'] = 'required';
+                    if (!$userToUpdate->medical_issuedby) { 
+                        $rules['issued_by'] = 'required';
+                    }
+                    if(!$userToUpdate->medical_class){
+                        $rules['medical_class'] = 'required';
+                    }
                     $rules['medical_issue_date'] = 'required';
                     $rules['medical_expiry_date'] = 'required';
                     $rules['medical_detail'] = 'required';
@@ -213,11 +220,11 @@ public function getData(Request $request)
                     $medicalFileUploaded = true;
                     $userToUpdate->update(['medical_verified' => 0]);
                 } else {
-                    $medicalFilePath = $userToUpdate->medical_file;
+                    $medicalFilePath = $request->old_medical_file ?? $userToUpdate->medical_file;
                 }
 
             
-                if ($userToUpdate->currency_required == 1) {
+                if ($userToUpdate->currency_required == 1 && !$userToUpdate->currency) {
                     $rules['currency'] = 'required|string';
                 }
             
@@ -266,10 +273,21 @@ public function getData(Request $request)
                 $passportFilePath = $userToUpdate->passport_file;
             }
 
-            if ($userToUpdate->currency_required == 1) {
+            if ($userToUpdate->currency_required == 1) {            
                 $request->validate([
                     'currency' => 'required|string',
                 ]);
+            }
+            if ($userToUpdate->custom_field_required == 1) {
+                if ($request->has('custom_date_checkbox')) {
+                    $request->validate([
+                        'custom_field_date' => 'required|date',
+                    ]);
+                } elseif ($request->has('custom_text_checkbox')) {
+                    $request->validate([
+                        'custom_field_text' => 'required|string',
+                    ]);
+                }
             }
 
 
@@ -283,16 +301,18 @@ public function getData(Request $request)
                 'passport' => $request->passport ?? $userToUpdate->passport,
                 'passport_expiry_date' => $request->passport_expiry_date ?? $userToUpdate->passport_expiry_date,
                 'passport_file' => $passportFilePath,
-                'currency' => $request->currency ?? null,
-                'medical_issuedby' => $request->issued_by ?? null,
-                'medical_class' => $request->medical_class ?? null,
-                'medical_issuedate' => $request->medical_issue_date ?? null,
-                'medical_expirydate' => $request->medical_expiry_date ?? null,
-                'medical_restriction' => $request->medical_detail ?? null,
+                'currency' => $request->currency ?? $userToUpdate->currency,
+                'medical_issuedby' => $request->issued_by ?? $userToUpdate->medical_issuedby,
+                'medical_class' => $request->medical_class ?? $userToUpdate->medical_class,
+                'medical_issuedate' => $request->medical_issue_date ?? $userToUpdate->medical_issuedate,
+                'medical_expirydate' => $request->medical_expiry_date ?? $userToUpdate->medical_expirydate,
+                'medical_restriction' => $request->medical_detail ?? $userToUpdate->medical_restriction,
                 'medical_file' =>$medicalFilePath,
                 'licence_file_uploaded' => $licenceFileUploaded,  
                 'passport_file_uploaded' => $passportFileUploaded,
-                'medical_file_uploaded' => $medicalFileUploaded
+                'medical_file_uploaded' => $medicalFileUploaded,
+                'custom_field_date' => $request->custom_field_date ?? $userToUpdate->custom_field_date,
+                'custom_field_text' => $request->custom_field_text ?? $userToUpdate->custom_field_text
             ];
 
             //dd($newData);
@@ -399,7 +419,7 @@ public function getData(Request $request)
             $passport_file = $request->file('passport_file')->store('user_documents', 'public');
         }
 
-        if ($request->has('medical_checkbox') && $request->medical_checkbox == 1) {
+        if ($request->hasFile('medical_file')) {
             $medicalFilePath = $request->file('medical_file')->store('medical_file', 'public');
          } 
         
@@ -433,6 +453,7 @@ public function getData(Request $request)
             'status'              => $request->status,
             "ou_id"               => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id,
             "extra_roles"         => !empty($request->extra_roles) ? json_encode($request->extra_roles) : json_encode([]),
+            "custom_field_required"  => $request->custom_field_checkbox ?? 0,
             "custom_field_date"  => $request->custom_field_date ?? null,
             "custom_field_text"  => $request->custom_field_text ?? null,
             'medical'               => $medical_checkbox,
@@ -571,6 +592,8 @@ public function getData(Request $request)
             $medical_expiry_date           = $request->has('editmedical_checkbox') ? $request->editmedical_expiry_date : null;
             $medical_detail                = $request->has('editmedical_checkbox') ? $request->editmedical_detail : null;
 
+            // Handle Custom Fields Requirement
+            $custom_field_required = $request->custom_field_checkbox ?? $userToUpdate->custom_field_required;
             // Prepare Data for Update
             $newData = [
                 'fname' => $request->edit_firstname,
@@ -593,9 +616,10 @@ public function getData(Request $request)
                 'rating_required' => $rating_required,
                 'currency_required' => $currency_required,
                 'currency' => $request->edit_currency ?? null, 
+                'custom_field_required' => $custom_field_required, 
                 'custom_field_date' => $editcustom_field_date,
                 'custom_field_text' => $editcustom_field_text,
-                'custom_field_admin_verification_required' => $edit_custom_field_verification_required ?? 0,
+                'custom_field_admin_verification_required' => $request->edit_custom_field_verification_required ?? 0,
                 'password_flag' => $password_flag,
                 'extra_roles' => $extra_roles,
                 'medical' => $medical_checkbox,

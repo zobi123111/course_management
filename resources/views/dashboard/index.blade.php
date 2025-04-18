@@ -17,31 +17,89 @@ $subTitle = "Welcome to Admin Dashboard";
 @extends('layout.app')
 @section('content')
 
-<?php 
-if(Auth()->user()->is_admin == "1"){
+@php
 $messages = [];
-foreach ($users as $user) {
+$user = Auth::user();
 
-    if ($user->licence_file_uploaded == "1" && $user->licence_admin_verification_required == '1' && $user->licence_verified=="0") { 
-        $messages[] = "Licence verification required for " . $user->fname . " " . $user->lname;
+// Check for Admin
+if ($user->is_admin == "1") {
+    foreach ($users as $u) {
+        // Pending Verification Alerts
+        if ($u->licence_admin_verification_required == '1' && $u->licence_verified == "0") {
+            $messages[] = "📝 <strong>Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+        }
 
-    }
-    if ($user->passport_file_uploaded == "1" && $user->passport_admin_verification_required == '1' && $user->passport_verified=="0") {
-        $messages[] = "Passport verification required for " . $user->fname . " " . $user->lname;
+        if ($u->passport_admin_verification_required == '1' && $u->passport_verified == "0") {
+            $messages[] = "📝 <strong>Passport</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+        }
 
-    }
-    if ($user->medical_file_uploaded == "1"  && $user->medical_adminRequired == '1' && $user->medical_verified=="0") {
-        $messages[] = "Medical verification required for " . $user->fname . " " . $user->lname;
+        if ($u->medical_adminRequired == '1' && $u->medical_verified == "0") {
+            $messages[] = "📝 <strong>Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+        }
 
+        // Expiry Alerts
+        $statuses = [
+            'Licence' => $u->licence_status,
+            'Passport' => $u->passport_status,
+            'Medical' => $u->medical_status,
+        ];
+
+        foreach ($statuses as $doc => $status) {
+            if ($status === 'Red') {
+                $messages[] = "❌ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
+            } elseif ($status === 'Orange') {
+                $messages[] = "⚠️ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 30 days</strong>.";
+            } elseif ($status === 'Amber') {
+                $messages[] = "⚠️ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
+            }
+        }
     }
 }
+if($user->is_admin != "1" && !empty($user->ou_id)) {
+    // Regular User View
+    if ($user->licence_admin_verification_required == '1' && $user->licence_verified == "0") {
+        $messages[] = "📝 Your <strong>Licence</strong> is pending admin verification.";
+    }
 
-if (!empty($messages)) { ?>
-    <div id="successMessage" class="alert alert-success fade show" role="alert">
-       
-        <?php echo implode('<br>', $messages); ?>
+    if ($user->passport_admin_verification_required == '1' && $user->passport_verified == "0") {
+        $messages[] = "📝 Your <strong>Passport</strong> is pending admin verification.";
+    }
+
+    if ($user->medical_adminRequired == '1' && $user->medical_verified == "0") {
+        $messages[] = "📝 Your <strong>Medical Certificate</strong> is pending admin verification.";
+    }
+
+    $statuses = [
+        'Licence' => $user->licence_status,
+        'Passport' => $user->passport_status,
+        'Medical Certificate' => $user->medical_status,
+    ];
+
+    foreach ($statuses as $doc => $status) {
+        if ($status === 'Red') {
+            $messages[] = "❌ Your <strong>{$doc}</strong> has <strong>expired</strong>.";
+        } elseif ($status === 'Orange') {
+            $messages[] = "⚠️ Your <strong>{$doc}</strong> will expire in <strong>less than 30 days</strong>.";
+        } elseif ($status === 'Amber') {
+            $messages[] = "⚠️ Your <strong>{$doc}</strong> will expire in <strong>less than 90 days</strong>.";
+        }
+    }
+}
+@endphp
+
+@if (!empty($messages))
+    <div id="alertBox" class="alert alert-warning alert-dismissible fade show" role="alert">
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <h5><strong>⚠️ Attention Required</strong></h5>
+        <ul class="mb-0">
+            @foreach ($messages as $message)
+                <li>{!! $message !!}</li>
+            @endforeach
+        </ul>
     </div>
-<?php }} ?>
+@endif
+
+
 
 
 
