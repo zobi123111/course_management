@@ -92,6 +92,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/training/get_ou_students_instructors_resources/{ou_id}', [TrainingEventsController::class, 'getOrgStudentsInstructorsResources'])->name('training.get_ou_students_instructors_resources');
     Route::get('/training/get_course_lessons', [TrainingEventsController::class, 'getCourseLessons'])->name('training.course-lessons');
     Route::get('/training/get_licence_number_and_courses/{user_id}/{ou_id}', [TrainingEventsController::class, 'getStudentLicenseNumberAndCourses'])->name('training.get_licence_number_and_courses');
+    Route::post('/grading/acknowledge', [TrainingEventsController::class, 'acknowledgeGarding'])->name('grading.acknowledge');
 
     //Folder Routes
     Route::get('/folder/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('folder.getOrgfolder');

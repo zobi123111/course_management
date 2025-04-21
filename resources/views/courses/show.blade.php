@@ -175,10 +175,12 @@
                     <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
                         <div class="lesson_card course-card">
                             <div class="course-image-container" style="position: relative;">
-                            @if(auth()->user()->role == 3)
-                                <a href="{{ url('lesson-pdf/'. $val->id) }}" style="position: absolute; top: 10px; right: 75px; background-color: green; border: none;border-radius: 5px; padding: 4px 5px; color: white;">Download
+                            @if($studentAcknowledged)
+                                <a href="{{ url('lesson-pdf/'. $val->id) }}" 
+                                style="position: absolute; top: 10px; right: 75px; background-color: green; border: none; border-radius: 5px; padding: 4px 5px; color: white;">
+                                    Export PDF
                                 </a>
-                            @endif    
+                            @endif 
                                 <span class="status-label"
                                     style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
                                     {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
@@ -194,7 +196,6 @@
                             </div>
 
                             <div class="card-footer d-flex justify-content-between">
-
                                 @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
                                 <a href="javascript:void(0)" class="btn btn-light show-lesson-icon"
                                     data-lesson-id="{{ encode_id($val->id) }}">

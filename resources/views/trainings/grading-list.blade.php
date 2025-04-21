@@ -4,108 +4,224 @@
 @section('sub-title', 'Student Grading')
 
 @section('content')
-<section class="section">
-    <div class="container">
-    @if($events->isEmpty())
-    <div class="alert alert-info">
-        No Grading available for this event.
-    </div>
-    @else
-    <div class="row">
-    @foreach($events as $event)
-    <div class="col-md-6">
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">{{ $event->course?->course_name }}</h5>
-                <small>
-                    Instructor: {{ $event->instructor?->fname }} {{ $event->instructor?->lname }}
-                </small>
-            </div>
-            <div class="card-body">
-                <!-- Sub-Lesson Based Grading -->
-                <h6 class="text-uppercase text-muted border-bottom pb-1 mb-3">
-                    Task Based Grading
-                </h6>
-                @if($event->taskGradings->isEmpty())
-                    <p class="text-muted">No task grading available.</p>
-                @else
-                    @php
-                        // Group task gradings by lesson
-                        $groupedTasks = $event->taskGradings->groupBy('lesson_id');
-                    @endphp
-                    <ul class="list-group mb-4">
-                        @foreach($groupedTasks as $lessonId => $tasks)
-                            <li class="list-group-item">
-                                <div>
-                                    <strong>Lesson:</strong> {{ optional($tasks->first()->lesson)->lesson_title ?? 'N/A' }}
-                                </div>
-                                <ul class="list-group mt-2">
-                                    @foreach($tasks as $task)
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            <span>
-                                                <strong>Sub-Lesson:</strong> {{ $task->subLesson?->title ?? 'N/A' }}
-                                            </span>
-                                            <span class="badge bg-success">{{ $task->task_grade }}</span>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            </li>
-                        @endforeach
-                    </ul>
-                @endif
 
-                <!-- Lesson Based Competency Grading -->
-                <h6 class="text-uppercase text-muted border-bottom pb-1 mb-3">
-                    Competency Grading
-                </h6>
-                @if($event->competencyGradings->isEmpty())
-                    <p class="text-muted">No competency grading available.</p>
-                @else
-                    <ul class="list-group">
-                        @foreach($event->competencyGradings as $competency)
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>
-                                    <strong>Lesson:</strong> {{ $competency->lesson?->lesson_title ?? 'N/A' }}
-                                </span>
-                                <span class="badge bg-warning">{{ $competency->competency_grade }}</span>
-                            </li>
-                        @endforeach
-                    </ul>
-                @endif
-
-                <!-- Overall Assessments -->
-                <h6 class="text-uppercase text-muted border-bottom pb-1 mt-4 mb-3">
-                    Overall Assessments
-                </h6>
-                @if($event->overallAssessments->isEmpty())
-                    <p class="text-muted">No overall assessments available.</p>
-                @else
-                    <ul class="list-group mt-2">
-                        @foreach($event->overallAssessments as $assessment)
-                            <li class="list-group-item">
-                                <div>
-                                    <strong>Overall Result:</strong> {{ $assessment->result }}
-                                </div>
-                                <small class="text-muted">
-                                    Remarks: {{ $assessment->remarks ?? 'No remarks' }}
-                                </small>
-                            </li>
-                        @endforeach
-                    </ul>
-                @endif
-            </div>
-            <div class="card-footer text-muted">
-                {{ date('h:i A', strtotime($event->start_time)) }} - {{ date('h:i A', strtotime($event->end_time)) }}
-            </div>
-        </div>
-    </div>
-    @endforeach
+@if(session()->has('message'))
+<div id="successMessage" class="alert alert-success fade show" role="alert">
+    <i class="bi bi-check-circle me-1"></i>
+    {{ session()->get('message') }}
 </div>
 @endif
 
+<section class="section py-4">
+    <div class="container">
+        @if(!$event)
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle-fill me-2"></i> No Grading available for this event.
+            </div>
+        @else
+            <div class="card shadow-lg mb-5 border-0">
+                <div class="card-header bg-primary text-white p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-1">
+                                <i class="bi bi-journal-text me-2"></i>{{ $event->course?->course_name }}
+                            </h4>
+                            <small>
+                                <i class="bi bi-person-video3 me-1"></i>Instructor: {{ $event->instructor?->fname }} {{ $event->instructor?->lname }}
+                            </small>
+                        </div>
+                        <small class="text-white-50">
+                            <i class="bi bi-calendar-event me-1"></i>{{ date('M d, Y', strtotime($event->event_date)) }}
+                        </small>
+                    </div>
+                </div>
 
+                <div class="card-body p-4">
+                    <!-- Task Grading -->
+                    <div class="mb-4">
+                        <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#taskGrading" role="button" aria-expanded="false" aria-controls="taskGrading">
+                            <span><i class="bi bi-card-checklist me-2"></i>Task Based Grading</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </h5>
+                        <div class="collapse" id="taskGrading">
+                            @if($event->taskGradings->isEmpty())
+                                <p class="text-muted">No task grading available.</p>
+                            @else
+                                @php
+                                    $groupedTasks = $event->taskGradings->groupBy('lesson_id');
+                                @endphp
+                                @foreach($groupedTasks as $lessonId => $tasks)
+                                    <div class="mb-3">
+                                        <div class="fw-bold text-secondary mb-2">
+                                            <i class="bi bi-book me-1"></i>Lesson: {{ $tasks->first()->lesson?->lesson_title ?? 'N/A' }}
+                                        </div>
+                                        <ul class="list-group shadow-sm">
+                                            @foreach($tasks as $task)
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span><i class="bi bi-chevron-double-right me-1"></i>{{ $task->subLesson?->title ?? 'N/A' }}</span>
+                                                    <span class="badge bg-success">{{ $task->task_grade }}</span>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endforeach
+                            @endif
+                        </div>
+                    </div>
 
+                    <!-- Competency Grading -->
+                    <div class="mb-4">
+                        <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#competencyGrading" role="button" aria-expanded="false" aria-controls="competencyGrading">
+                            <span><i class="bi bi-bar-chart-steps me-2"></i>Competency Grading</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </h5>
+                        <div class="collapse" id="competencyGrading">
+                            @if($event->competencyGradings->isEmpty())
+                                <p class="text-muted">No competency grading available.</p>
+                            @else
+                                @foreach($event->competencyGradings as $grading)
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold text-secondary mb-2">
+                                            <i class="bi bi-book me-1"></i>Lesson: {{ $grading->lesson?->lesson_title ?? 'N/A' }}
+                                        </h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered align-middle text-center shadow-sm">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Competency</th>
+                                                        <th>Grade</th>
+                                                        <th>Comment</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach(['kno','pro','com','fpa','fpm','ltw','psd','saw','wlm'] as $competency)
+                                                        <tr>
+                                                            <td><strong>{{ strtoupper($competency) }}</strong></td>
+                                                            <td>
+                                                                <span class="badge bg-info text-dark">
+                                                                    {{ $grading[$competency.'_grade'] ?? 'N/A' }}
+                                                                </span>
+                                                            </td>
+                                                            <td class="text-start">{{ $grading[$competency.'_comment'] ?? '-' }}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @endif
+                        </div>
+                    </div>
 
+                    <!-- Overall Assessments -->
+                    <div class="mb-4">
+                        <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#overallAssessments" role="button" aria-expanded="false" aria-controls="overallAssessments">
+                            <span><i class="bi bi-award me-2"></i>Overall Assessments</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </h5>
+                        <div class="collapse" id="overallAssessments">
+                            @if($event->overallAssessments->isEmpty())
+                                <p class="text-muted">No overall assessments available.</p>
+                            @else
+                                <ul class="list-group shadow-sm">
+                                    @foreach($event->overallAssessments as $assessment)
+                                        <li class="list-group-item">
+                                            <strong><i class="bi bi-check-circle-fill me-1"></i>Result:</strong> {{ $assessment->result }}
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="bi bi-chat-left-dots me-1"></i>Remarks: {{ $assessment->remarks ?? 'No remarks' }}
+                                            </small>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer d-flex justify-content-between align-items-center bg-light p-3">
+                    <span>
+                        <i class="bi bi-clock-history me-1"></i>
+                        {{ date('h:i A', strtotime($event->start_time)) }} - {{ date('h:i A', strtotime($event->end_time)) }}
+                    </span>
+                </div>
+
+                @auth
+                    @if(auth()->user()->id === $event->student_id)
+                        <div class="card-footer bg-white border-top">
+                            @if($event->student_acknowledged)
+                                <div class="alert alert-success mb-0">
+                                    <i class="bi bi-hand-thumbs-up-fill me-1"></i> You have acknowledged this training event.
+                                    <br>
+                                    <small><strong>Your Comments:</strong> {{ $event->student_acknowledgement_comments ?? 'N/A' }}</small>
+                                </div>
+                            @else
+                                <form id="acknowledgeForm" class="p-3">
+                                    @csrf
+                                    <div class="mb-2">
+                                        <label for="ack_comments" class="form-label">
+                                            <i class="bi bi-chat-left-text me-1"></i>Comments (optional):
+                                        </label>
+                                        <textarea class="form-control" id="ack_comments" rows="2" name="comments" placeholder="Leave a note..."></textarea>
+                                    </div>
+                                    <button type="button"
+                                            class="btn btn-outline-primary acknowledge-btn"
+                                            data-event-id="{{ encode_id($event->id) }}">
+                                        <i class="bi bi-check2-square me-1"></i> Acknowledge
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    @endif
+                @endauth
+            </div>
+        @endif
     </div>
 </section>
+
+
+
+
+
+@endsection
+
+@section('js_scripts')
+
+<script>
+
+$(document).ready(function() {
+
+    $(document).on('click', '.acknowledge-btn', function(){
+        var eventId = $(this).data('event-id');
+        var ack_comment = $('#ack_comments').val();
+alert(ack_comment);
+return;
+        $.ajax({
+                url: '/grading/acknowledge',
+                type: 'POST',
+                data: {
+                    "_token": "{{ csrf_token() }}",
+                    "eventId": eventId,
+                    "ack_comment": ack_comment
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Unlock failed:', xhr.responseText);
+                }
+            });
+    })
+
+    setTimeout(function() {
+        $('#successMessage').fadeOut('slow');
+    }, 2000);
+})
+
+
+</script>
+
 @endsection

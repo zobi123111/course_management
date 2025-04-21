@@ -726,7 +726,7 @@ class TrainingEventsController extends Controller
             // Commit the transaction on success
             DB::commit();
 
-            TrainingEvents::where('id', $event_id)->update(['is_locked' => 1]);
+            TrainingEvents::where('id', $event_id)->where('is_locked', '!=', 1)->update(['is_locked' => 1]);
             Session::flash('message', 'Student grading updated successfully.');
             return response()->json(['success' => true, 'message' => 'Student grading updated successfully.']);
         
@@ -760,24 +760,26 @@ class TrainingEventsController extends Controller
             ]
         );
 
+        TrainingEvents::where('id', $request->event_id)->where('is_locked', '!=', 1)->update(['is_locked' => 1]);
         Session::flash('message', 'Overall Assessment saved successfully.');
         return response()->json(['success' => true, 'message' => 'Overall Assessment saved successfully.']);
     }
 
-    public function getStudentGrading(Request $request,$event_id)
+    public function getStudentGrading(Request $request, $event_id)
     {
         $userId = auth()->user()->id;
         $ouId = auth()->user()->ou_id;
-
-        $events = TrainingEvents::where('ou_id', $ouId)->where('id', decode_id($event_id))
+    
+        $event = TrainingEvents::where('ou_id', $ouId)
+            ->where('id', decode_id($event_id))
             ->whereHas('taskGradings', function ($query) use ($userId) {
                 $query->where('user_id', $userId);
             })
             ->with([
                 'taskGradings' => function ($query) use ($userId) {
-                $query->where('user_id', $userId)
-                      ->with('lesson:id,lesson_title') // Load only lesson_name
-                      ->with('subLesson:id,title'); // Load only sub_lesson_name
+                    $query->where('user_id', $userId)
+                        ->with('lesson:id,lesson_title') // Load only lesson_name
+                        ->with('subLesson:id,title'); // Load only sub_lesson_name
                 },
                 'competencyGradings' => function ($query) use ($userId) {
                     $query->where('user_id', $userId);
@@ -785,13 +787,15 @@ class TrainingEventsController extends Controller
                 'overallAssessments' => function ($query) use ($userId) {
                     $query->where('user_id', $userId);
                 },
-                'course:id,course_name',  // Load only course name
-                'group:id,name',   // Load only group name
+                'course:id,course_name', // Load only course name
+                'group:id,name', // Load only group name
                 'instructor:id,fname,lname' // Load only instructor name
             ])
-            ->get();
-        return view('trainings.grading-list', compact('events'));
+            ->first(); // Use first() to get a single event
+    
+        return view('trainings.grading-list', compact('event'));
     }
+    
 
     public function unlockEventGarding(Request $request, $event_id)
     {
@@ -801,6 +805,32 @@ class TrainingEventsController extends Controller
             return response()->json(['success' => true, 'message' => 'Grading is unlocked for editing.']);
         }
     }
+
+
+    public function acknowledgeGarding(Request $request)
+    {
+        // Optional: Validate the incoming comment
+        $request->validate([
+            'ack_comment' => 'nullable|string|max:1000',
+        ]);
+    
+        $eventId = decode_id($request->eventId);
+    
+        $updated = TrainingEvents::where('id', $eventId)->update([
+            'student_acknowledged' => 1,
+            'student_acknowledgement_comments' => $request->ack_comment,
+        ]);
+    
+        if ($updated) {
+            Session::flash('message', 'Acknowledgment recorded');
+            return response()->json(['success' => true, 'message' => 'Acknowledgment recorded']);
+        }
+    
+        return response()->json(['success' => false, 'message' => 'Acknowledgment failed'], 500);
+    }
+
+
+
 
 
     
