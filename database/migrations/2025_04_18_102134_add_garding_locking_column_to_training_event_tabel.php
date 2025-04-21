@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('student_acknowledgement_comments')->nullable()->after('student_acknowledged'); // Optional comments
         });
     }
-
+    
     /**
      * Reverse the migrations.
      */
