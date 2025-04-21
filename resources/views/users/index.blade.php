@@ -1177,15 +1177,15 @@
                         ${response.message}
                     </div>
                     `).stop(true, true).fadeIn();
-
+                    $('#user_table').DataTable().ajax.reload(null, false);
                     setTimeout(function() {
                         $('#update_success_msg').fadeOut('slow');
 
                     }, 5000);
 
-                    setTimeout(function() {
-                        location.reload();
-                    }, 100);
+                    // setTimeout(function() {
+                    //     location.reload();
+                    // }, 100);
                     // location.reload();
                 },
                 error: function(xhr, status, error) {

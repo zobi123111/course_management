@@ -47,19 +47,42 @@
                 <td>{{ date('h:i A', strtotime($event->start_time)) }}</td>
                 <td>{{ date('h:i A', strtotime($event->end_time)) }}</td>
                 <td>
-                @if(checkAllowedModule('training','training.show')->isNotEmpty())
-                    <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;"><i class="fa fa-eye text-danger me-2"></i></a>
-                @endif
-                @if(checkAllowedModule('training','training.edit')->isNotEmpty())
-                    <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                    data-event-id="{{ encode_id($event->id) }}"></i>
-                @endif
-                @if(checkAllowedModule('training','training.delete')->isNotEmpty())
-                    <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                    data-event-id="{{ encode_id($event->id) }}" ></i>
-                @endif
-                @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
-                <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;"><i class="fa fa-list text-danger me-2"></i></a>
+                @if(get_user_role(auth()->user()->role) == 'administrator')  
+
+                    @if(checkAllowedModule('training','training.edit')->isNotEmpty())
+                        <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                        data-event-id="{{ encode_id($event->id) }}"></i>
+                    @endif
+
+                    @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                        <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                        data-event-id="{{ encode_id($event->id) }}"></i>
+                    @endif
+
+                    @if($event->is_locked == 1)
+                        <i class="fa fa-lock-open unlock-event-icon text-success" title="Unlock this event grading for editing." 
+                        data-event-id="{{ encode_id($event->id) }}" style="font-size:20px; cursor: pointer;"></i>
+                    @endif
+
+                @elseif(get_user_role(auth()->user()->role) == 'instructor')   
+
+                    @if($event->is_locked != 1)
+                        @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
+                            <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                            <i class="fa fa-eye text-danger me-2"></i>
+                            </a>            
+                        @endif
+                    @else
+                        <i class="fa fa-lock text-secondary" title="This event is locked and cannot be edited or viewed." style="font-size:20px;"></i>
+                    @endif    
+                @else
+
+                    @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                        <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
+                        <i class="fa fa-list text-danger me-2"></i>
+                        </a>
+                    @endif
+
                 @endif
                 </td>
             </tr>
@@ -937,6 +960,28 @@ $(document).ready(function() {
         $('#append_name').html(eventName);
         $('#eventId').val(eventId);      
     });
+
+    //Unlock the training event grading for editing
+    $(document).on('click', '.unlock-event-icon', function () {
+        let eventId = $(this).data('event-id');
+
+        if (confirm('Are you sure you want to unlock this training event?')) {
+            $.ajax({
+                url: '/grading/unlock/' + eventId,
+                type: 'POST',
+                data: {"_token": "{{ csrf_token() }}"},
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Unlock failed:', xhr.responseText);
+                }
+            });
+        }
+    });
+
 
     $('#editTrainingEventModal').on('shown.bs.modal', async function () {
         initializeSelect2();
