@@ -60,14 +60,14 @@
                     @endif
 
                     @if($event->is_locked == 1)
-                        <i class="fa fa-lock-open unlock-event-icon text-success" title="Unlock this event grading for editing." 
+                        <i class="fa fa-lock-open unlock-event-icon text-success" title="Unlock this event to enable grading edits." 
                         data-event-id="{{ encode_id($event->id) }}" style="font-size:20px; cursor: pointer;"></i>
                     @endif
 
                 @elseif(get_user_role(auth()->user()->role) == 'instructor')   
 
                     @if($event->is_locked != 1)
-                        @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
+                        @if(checkAllowedModule('training','training.show')->isNotEmpty())
                             <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
                             <i class="fa fa-eye text-danger me-2"></i>
                             </a>            
@@ -76,8 +76,8 @@
                         <i class="fa fa-lock text-secondary" title="This event is locked and cannot be edited or viewed." style="font-size:20px;"></i>
                     @endif    
                 @else
-
-                    @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                   
+                    @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
                         <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
                         <i class="fa fa-list text-danger me-2"></i>
                         </a>
