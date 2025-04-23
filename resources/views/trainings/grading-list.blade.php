@@ -149,8 +149,8 @@
 
                 @auth
                     @if(auth()->user()->id === $event->student_id)
-                        <div class="card-footer bg-white border-top">
-                            @if($event->student_acknowledged)
+                        <div class="card-footer bg-white border-top" >
+                            @if($event->student_acknowledged)       
                                 <div class="alert alert-success mb-0">
                                     <i class="bi bi-hand-thumbs-up-fill me-1"></i> You have acknowledged this training event.
                                     <br>
@@ -173,6 +173,28 @@
                                 </form>
                             @endif
                         </div>
+                        
+                        {{-- Buttons shown only after acknowledgment --}}
+                        @if($event->student_acknowledged)
+                            <div class="card-footer bg-white border-top">
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-3">
+                                    <a href="" class="btn btn-success shadow-sm">
+                                        <i class="bi bi-patch-check-fill me-1"></i> Generate Course Completion Certificate
+                                    </a>
+
+                                    @if($event->course->enable_feedback && !$event->student_feedback_submitted)
+                                        <a href="{{ route('training.feedback.form', ['event_id' => encode_id($event->id)]) }}"
+                                           class="btn btn-outline-primary shadow-sm">
+                                            <i class="bi bi-chat-square-text me-1"></i> Training Feedback
+                                        </a>
+                                    @elseif($event->course->enable_feedback && $event->student_feedback_submitted)
+                                        <div class="text-success small">
+                                            <i class="bi bi-check2-circle me-1"></i> Feedback submitted. Thank you!
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
                     @endif
                 @endauth
             </div>
@@ -195,8 +217,8 @@ $(document).ready(function() {
     $(document).on('click', '.acknowledge-btn', function(){
         var eventId = $(this).data('event-id');
         var ack_comment = $('#ack_comments').val();
-alert(ack_comment);
-return;
+// alert(ack_comment);
+// return;
         $.ajax({
                 url: '/grading/acknowledge',
                 type: 'POST',

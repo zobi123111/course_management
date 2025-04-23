@@ -80,7 +80,7 @@ class TrainingEvents extends Model
      * Relationship with OverallAssessment
      */
     public function overallAssessments()
-    {
+    {   
         return $this->hasMany(OverallAssessment::class, 'event_id', 'id');
     }
 
@@ -88,5 +88,10 @@ class TrainingEvents extends Model
     public function eventLessons()
     {
         return $this->hasMany(TrainingEventLessons::class, 'training_event_id', 'id');
+    }
+
+    public function trainingFeedbacks()
+    {
+        return $this->hasMany(TrainingFeedback::class, 'training_event_id');
     }
 }

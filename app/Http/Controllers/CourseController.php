@@ -9,6 +9,7 @@ use App\Models\OrganizationUnits;
 use App\Models\CoursePrerequisiteDetail;
 use App\Models\CoursePrerequisite;
 use App\Models\Group;
+use App\Models\TrainingFeedbackQuestion;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -116,6 +117,7 @@ class CourseController extends Controller
 
     public function createCourse(Request $request)
     {
+        // dd($request->all()); die;
         $request->validate([  
             'course_name' => 'required|unique:courses,course_name,NULL,id,deleted_at,NULL',
             'description' => 'required',
@@ -123,20 +125,24 @@ class CourseController extends Controller
             'status' => 'required|boolean',
             'duration_type' => 'nullable|in:hours,events',
             'duration_value' => 'nullable|integer|min:1',
-            'course_type' => 'required|in:one_event,multi_lesson', // validate course_type
+            'course_type' => 'required|in:one_event,multi_lesson',
             'ou_id' => [
                 function ($attribute, $value, $fail) {
                     if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
                         $fail('The Organizational Unit (OU) is required for Super Admin.');
                     }
                 }
-            ]
+            ],
+            'enable_feedback' => 'nullable|boolean',
+            'feedback_questions' => 'nullable|array',
+            'feedback_questions.*.question' => 'required_with:enable_feedback|string',
+            'feedback_questions.*.answer_type' => 'required_with:enable_feedback|in:yes_no,rating'
         ]);
-
+    
         if ($request->hasFile('image')) {
             $filePath = $request->file('image')->store('courses', 'public');
         }
-
+    
         $course = Courses::create([
             'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, 
             'course_name' => $request->course_name,
@@ -145,12 +151,24 @@ class CourseController extends Controller
             'status' => $request->status,
             'duration_type' => $request->duration_type ?? null,
             'duration_value' => $request->duration_value ?? null,
-            'course_type' => $request->course_type, // save course_type
+            'course_type' => $request->course_type,
+            'enable_feedback' => (int) $request->input('enable_feedback', 0) 
         ]);
-
+    
         $course->groups()->attach($request->group_ids);
         $course->resources()->attach($request->resources);
-
+    
+        // Store training feedback questions
+        if ($request->enable_feedback && $request->feedback_questions) {
+            foreach ($request->feedback_questions as $q) {
+                TrainingFeedbackQuestion::create([
+                    'course_id' => $course->id,
+                    'question' => $q['question'],
+                    'answer_type' => $q['answer_type'],
+                ]);
+            }
+        }
+    
         Session::flash('message', 'Course created successfully.');
         return response()->json(['success' => 'Course created successfully.']);
     }
@@ -162,7 +180,8 @@ class CourseController extends Controller
     public function getCourse(Request $request)
     {
        // dd((decode_id($request->id)));
-        $course = Courses::with('groups', 'prerequisites')->findOrFail(decode_id($request->id));
+       $course = Courses::with(['groups', 'prerequisites', 'training_feedback_questions'])
+       ->findOrFail(decode_id($request->id));
      
         $ou_id = $course->ou_id;
         $allGroups = Group::all();
@@ -193,16 +212,19 @@ class CourseController extends Controller
     {
         $request->validate([
             'course_name' => 'required|unique:courses,course_name,' . $request->course_id . ',id,deleted_at,NULL',
-            'course_type' => 'required|in:one_event,multi_lesson', 
+            'course_type' => 'required|in:one_event,multi_lesson',
             'description' => 'required',
             'status' => 'required',
-            // 'resources' => 'required',          
-            // 'group_ids' => 'required',
             'enable_prerequisites' => 'nullable|boolean',
             'prerequisite_details' => 'nullable|array',
             'prerequisite_type' => 'nullable|array',
-            'duration_type' => 'nullable|in:hours,events', // Validate duration type
-            'duration_value' => 'nullable|numeric|min:1', // Ensure numeric and min value
+            'duration_type' => 'nullable|in:hours,events',
+            'duration_value' => 'nullable|numeric|min:1',
+            'enable_feedback' => 'nullable|boolean',
+            'feedback_questions' => 'nullable|array',
+            'feedback_questions.*.question' => 'nullable|string',
+            'feedback_questions.*.answer_type' => 'nullable|string|in:yes_no,rating,text',
+    
             'ou_id' => [
                 function ($attribute, $value, $fail) {
                     if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
@@ -211,9 +233,9 @@ class CourseController extends Controller
                 }
             ]
         ]);
-
+    
         $course = Courses::findOrFail($request->course_id);
-
+    
         // Handle Image Update
         if ($request->hasFile('image')) {
             if ($course->image) {
@@ -223,7 +245,7 @@ class CourseController extends Controller
         } else {
             $filePath = $course->image;
         }
-
+    
         // Update course details
         $course->update([
             'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : (auth()->user()->ou_id ?? null),
@@ -233,10 +255,11 @@ class CourseController extends Controller
             'image' => $filePath,
             'status' => $request->status,
             'enable_prerequisites' => (int) $request->input('enable_prerequisites', 0),
-            'duration_type' => $request->duration_type, // New field
-            'duration_value' => $request->duration_value, // New field
+            'enable_feedback' => (int) $request->input('enable_feedback', 0),
+            'duration_type' => $request->duration_type,
+            'duration_value' => $request->duration_value,
         ]);
-
+    
         // Update groups and resources
         if ($request->has('group_ids')) {
             $course->groups()->sync($request->group_ids);
@@ -244,11 +267,11 @@ class CourseController extends Controller
         if ($request->has('resources')) {
             $course->resources()->sync($request->resources);
         }
-
+    
         // Handle Prerequisites
         if ((int) $request->input('enable_prerequisites', 0)) {
             $course->prerequisites()->delete(); // Remove old prerequisites
-
+    
             if ($request->has('prerequisite_details')) {
                 foreach ($request->prerequisite_details as $index => $detail) {
                     if (!empty($detail)) {
@@ -266,10 +289,33 @@ class CourseController extends Controller
                 ->where('created_by', auth()->id())
                 ->delete();
         }
-
+    
+        // Handle Feedback Questions
+        if ((int) $request->input('enable_feedback', 0)) {
+            // Remove old questions
+            TrainingFeedbackQuestion::where('course_id', $course->id)->delete();
+    
+            if ($request->has('feedback_questions')) {
+                foreach ($request->feedback_questions as $feedback) {
+                    if (!empty($feedback['question'])) {
+                        TrainingFeedbackQuestion::create([
+                            'course_id' => $course->id,
+                            'question' => $feedback['question'],
+                            'answer_type' => $feedback['answer_type'] ?? null,
+                            'created_by' => auth()->id(),
+                        ]);
+                    }
+                }
+            }
+        } else {
+            // Feedback disabled - remove all related questions
+            TrainingFeedbackQuestion::where('course_id', $course->id)->delete();
+        }
+    
         Session::flash('message', 'Course updated successfully.');
         return response()->json(['success' => 'Course updated successfully.']);
     }
+    
 
 
     public function deleteCourse(Request $request)

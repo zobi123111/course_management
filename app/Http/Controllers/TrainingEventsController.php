@@ -787,13 +787,21 @@ class TrainingEventsController extends Controller
                 'overallAssessments' => function ($query) use ($userId) {
                     $query->where('user_id', $userId);
                 },
-                'course:id,course_name', // Load only course name
+                'course:id,course_name,enable_feedback', // Load only course name
                 'group:id,name', // Load only group name
                 'instructor:id,fname,lname' // Load only instructor name
             ])
             ->first(); // Use first() to get a single event
+        
+        if (!$event) {
+            abort(404, 'Training Event not found.');
+        }    
+        
+        $event->student_feedback_submitted = $event->trainingFeedbacks()->where('user_id', auth()->user()->id)->exists();    
+        // dd($event->student_feedback_submitted);
+        // dd($event->course->enable_feedback);
     
-        return view('trainings.grading-list', compact('event'));
+        return view('trainings.grading-list', compact('event'));    
     }
     
 

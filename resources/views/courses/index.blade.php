@@ -149,7 +149,7 @@
 
 <!-- Create Courses-->
 <div class="modal fade" id="createCourseModal" tabindex="-1" role="dialog" aria-labelledby="courseModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="courseModalLabel">Create Course</h5>
@@ -231,6 +231,33 @@
                         </select>
                         <div id="status_error" class="text-danger error_e"></div>            
                     </div>
+                    <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="enable_feedback" name="enable_feedback">
+                        <label class="form-check-label" for="enable_feedback">
+                            Enable Training Feedback
+                        </label>
+                    </div>
+                    </div>
+
+                    <div id="feedbackConfigSection" style="display:none; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <label class="form-label">Feedback Questions <span class="text-muted">(Optional)</span></label>
+                        
+                        <div id="feedback_questions_container">
+                            <!-- Question Template -->
+                            <div class="feedback-question mb-3">
+                                <input type="text" name="feedback_questions[0][question]" class="form-control mb-2" placeholder="Enter question">
+                                <select name="feedback_questions[0][answer_type]" class="form-select">
+                                    <option value="">Select Answer Type</option>
+                                    <option value="yes_no">Yes / No</option>
+                                    <option value="rating">Rating (1-5)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="add_question_btn">Add Another Question</button>
+                    </div>
+
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="submitCourse" class="btn btn-primary sbt_btn">Save </button>
@@ -326,15 +353,37 @@
                             <option value="0">Inactive</option>
                         </select>
                         <div id="status_error_up" class="text-danger error_e"></div>
-                    </div>            
+                    </div>      
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="edit_enable_feedback" name="enable_feedback">
+                            <label class="form-check-label" for="edit_enable_feedback">
+                                Enable Training Feedback
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="edit_feedbackConfigSection" style="display:none; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <label class="form-label">Feedback Questions <span class="text-muted">(Optional)</span></label>
+                        
+                        <div id="edit_feedback_questions_container">
+                            <!-- Question Template -->
+                            <div class="feedback-question mb-3" id="">
+                                
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="edit_add_question_btn">Add Another Question</button>
+                    </div>
+      
                     <div class="form-group">
                         <label class="form-label">
                             <input type="checkbox" id="enable_prerequisites"> Enable Prerequisites
                         </label>
                     </div>
-                    <div id="prerequisites_container" style="display: none;">
+                    <div id="prerequisites_container" style="display: none;" >
                         <div id="prerequisite_items">
-                            <div class="prerequisite-item ">
+                            <div class="prerequisite-item">
                                 <div class="form-group">
                                     <label class="form-label">Prerequisite Detail</label>
                                     <input type="text" class="form-control" name="prerequisite_details[]">
@@ -509,7 +558,7 @@ $(document).ready(function() {
                         }
                     },
                     error: function(xhr) {
-                        console.error("Error loading groups:", xhr.responseText);
+                        // console.error("Error loading groups:", xhr.responseText);
                     }
                 });
 
@@ -534,6 +583,32 @@ $(document).ready(function() {
                     $('#prerequisite_items').append(prerequisiteHtml);
                 }
 
+                //Training Feedback
+                const questions = response.course.training_feedback_questions || [];
+                if (questions.length > 0) {
+                    $('#edit_enable_feedback').prop('checked', true);
+                    $('#edit_feedbackConfigSection').show();
+                    $('#edit_feedback_questions_container').empty();
+
+                    questions.forEach((q, i) => {
+                        $('#edit_feedback_questions_container').append(`
+                            <div class="feedback-question mb-3 position-relative border rounded p-3">
+                                <input type="text" name="feedback_questions[${i}][question]" class="form-control mb-2" placeholder="Enter question" value="${q.question}">
+                                <select name="feedback_questions[${i}][answer_type]" class="form-select">
+                                    <option value="">Select Answer Type</option>
+                                    <option value="yes_no" ${q.answer_type === 'yes_no' ? 'selected' : ''}>Yes / No</option>
+                                    <option value="rating" ${q.answer_type === 'rating' ? 'selected' : ''}>Rating (1-5)</option>
+                                </select>
+                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-question-btn" title="Remove Question" aria-label="Remove Question">&times;</button>
+                            </div>
+                        `);
+                    });
+                } else {
+                    $('#edit_enable_feedback').prop('checked', false);
+                    $('#edit_feedbackConfigSection').hide();
+                    $('#edit_feedback_questions_container').empty();
+                }
+
                 $('#editCourseModal').modal('show');
 
                 $('#editCourseModal').on('shown.bs.modal', function () {
@@ -545,6 +620,36 @@ $(document).ready(function() {
             }
         });
     });
+
+    // Enable/Disable feedback on edit modal
+    $('#edit_enable_feedback').on('change', function () {
+        $('#edit_feedbackConfigSection').toggle(this.checked);
+    });
+
+    //Adding extra questions box on edit modal
+    $('#edit_add_question_btn').click(function() {
+        let index = $('#edit_feedback_questions_container .feedback-question').length;  
+
+        let questionHtml = `
+            <div class="feedback-question mb-3 position-relative border rounded p-3">
+                <input type="text" name="feedback_questions[${index}][question]" class="form-control mb-2" placeholder="Enter question">
+                <select name="feedback_questions[${index}][answer_type]" class="form-select">
+                    <option value="">Select Answer Type</option>
+                    <option value="yes_no">Yes / No</option>
+                    <option value="rating">Rating (1-5)</option>
+                </select>
+                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-question-btn" title="Remove Question" aria-label="Remove Question">&times;</button>
+            </div>
+        `;
+
+        $('#edit_feedback_questions_container').append(questionHtml);
+    });
+
+    // Remove a question block
+    $('#edit_feedback_questions_container').on('click', '.remove-question-btn', function () {
+        $(this).closest('.feedback-question').remove();
+    });
+
 
 
     // Initialize select2
@@ -620,15 +725,15 @@ $(document).ready(function() {
     setTimeout(function() {
         $('#successMessage').fadeOut('slow');
     }, 2000);
-// Toggle prerequisites section
-$("#enable_prerequisites").change(function () {
-        if ($(this).is(":checked")) {
-            $("#prerequisites_container").show();
-        } else {
-            $("#prerequisites_container").hide();
-            // $("#prerequisite_items").empty();
-        }
-    });
+    // Toggle prerequisites section
+    $("#enable_prerequisites").change(function () {
+            if ($(this).is(":checked")) {
+                $("#prerequisites_container").show();
+            } else {
+                $("#prerequisites_container").hide();
+                // $("#prerequisite_items").empty();
+            }
+        });
 
     // Add new prerequisite
     $("#addPrerequisite").click(function () {
@@ -667,6 +772,37 @@ $("#enable_prerequisites").change(function () {
     $(document).on("click", ".remove-prerequisite", function () {
         $(this).closest(".prerequisite-item").remove();
     });
+
+
+    // Enable feedback questions
+    let questionIndex = 1;
+
+    $('#enable_feedback').on('change', function () {
+        $('#feedbackConfigSection').toggle(this.checked);
+    });
+
+    $('#add_question_btn').on('click', function () {
+        $('#feedback_questions_container').append(`
+            <div class="feedback-question mb-3 border p-3 position-relative rounded">
+                <input type="text" name="feedback_questions[${questionIndex}][question]" class="form-control mb-2 question-input" placeholder="Enter question">
+                <select name="feedback_questions[${questionIndex}][answer_type]" class="form-select answer-type">
+                    <option value="">Select Answer Type</option>
+                    <option value="yes_no">Yes / No</option>
+                    <option value="rating">Rating (1-5)</option>
+                </select>
+                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-question-btn">&times;</button>
+            </div>
+        `);
+        questionIndex++;
+    });
+
+    // Remove a question block
+    $('#feedback_questions_container').on('click', '.remove-question-btn', function () {
+        $(this).closest('.feedback-question').remove();
+    });
+
+   
+
 });
 function generatePrerequisiteHtml(prerequisite, index) {
     return `
