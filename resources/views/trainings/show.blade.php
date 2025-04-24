@@ -391,76 +391,118 @@
                 <h4 class="mb-3 text-primary">
                     <i class="fas fa-calendar-alt"></i> Training Event Overview
                 </h4>
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <strong><i class="fas fa-book"></i> Course Name:</strong>
-                        <span class="badge bg-info text-white">{{ $trainingEvent->course->course_name ?? 'N/A' }}</span>
-                    </div>
-                    <div class="col-md-4">
-                        <strong><i class="fas fa-chalkboard-teacher"></i> Instructor:</strong>
-                        {{ optional($trainingEvent->instructor)->fname }} {{ optional($trainingEvent->instructor)->lname }}
-                    </div>
-                    <div class="col-md-4">
-                        <strong><i class="fas fa-toolbox"></i> Resource:</strong>
-                        <span class="badge bg-secondary text-white">{{ optional($trainingEvent->resource)->name ?? 'N/A' }}</span>
-                    </div>
-                </div>
 
-                <hr class="my-3">
+                @if($trainingEvent?->course?->course_type === 'one_event' && $trainingEvent->eventLessons->count())
+                    @php
+                        $eventLesson = $trainingEvent->eventLessons->first();
+                    @endphp
 
-                <div class="row mb-3">
-                    <div class="col-md-3">
-                        <strong><i class="fas fa-calendar-day"></i> Event Date:</strong> 
-                        {{ date('d-m-Y', strtotime($trainingEvent->event_date)) }}
+                    {{-- ONE EVENT: Pulling from eventLessons --}}
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong><i class="fas fa-book"></i> Course Name:</strong>
+                            <span class="badge bg-info text-white">{{ $trainingEvent->course->course_name ?? 'N/A' }}</span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong><i class="fas fa-chalkboard-teacher"></i> Instructor:</strong>
+                            {{ optional($eventLesson->instructor)->fname }} {{ optional($eventLesson->instructor)->lname }}
+                            <small class="text-muted d-block">
+                                <i class="bi bi-card-text"></i> License: {{ $eventLesson->instructor_license_number ?? 'N/A' }}
+                            </small>
+                        </div>
+                        <div class="col-md-4">
+                            <strong><i class="fas fa-toolbox"></i> Resource:</strong>
+                            <span class="badge bg-secondary text-white">{{ optional($eventLesson->resource)->name ?? 'N/A' }}</span>
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <strong><i class="fas fa-clock"></i> Start Time:</strong> 
-                        {{ date('h:i A', strtotime($trainingEvent->start_time)) }}
-                    </div>
-                    <div class="col-md-3">
-                        <strong><i class="fas fa-clock"></i> End Time:</strong> 
-                        {{ date('h:i A', strtotime($trainingEvent->end_time)) }}
-                    </div>
-                    <div class="col-md-3">
-                        <strong><i class="fas fa-hourglass-half"></i> Total Time:</strong> 
-                        {{ $trainingEvent->total_time ?? 'N/A' }}
-                    </div>
-                </div>
 
-                <hr class="my-3">
+                    <hr class="my-3">
 
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <strong><i class="fas fa-plane-departure"></i> Departure Airfield:</strong> 
-                        {{ $trainingEvent->departure_airfield ?? 'N/A' }}
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong><i class="fas fa-calendar-day"></i> Lesson Date:</strong>
+                            {{ date('d-m-Y', strtotime($eventLesson->lesson_date)) }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong><i class="fas fa-clock"></i> Start Time:</strong>
+                            {{ date('h:i A', strtotime($eventLesson->start_time)) }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong><i class="fas fa-clock"></i> End Time:</strong>
+                            {{ date('h:i A', strtotime($eventLesson->end_time)) }}
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <strong><i class="fas fa-plane-arrival"></i> Destination Airfield:</strong> 
-                        {{ $trainingEvent->destination_airfield ?? 'N/A' }}
-                    </div>
-                    <div class="col-md-4">
-                        <strong><i class="fas fa-id-card"></i> Licence Number:</strong> 
-                        {{ $trainingEvent->license_number ?? 'N/A' }}
-                    </div>
-                </div>
 
-                <hr class="my-3">
+                    <hr class="my-3">
 
-                <div class="mt-3">
-                    <strong><i class="fas fa-user"></i> Student:</strong>
-                    <div class="list-group mt-2">
-                        @if ($trainingEvent->student)
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                {{ $trainingEvent->student->fname }} {{ $trainingEvent->student->lname }}
-                                <span class="badge bg-success text-white">Student</span>
-                            </div>
-                        @else
-                            <div class="list-group-item text-muted">
-                                <i class="fas fa-exclamation-circle"></i> No student assigned
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-plane-departure"></i> Departure Airfield:</strong> 
+                            {{ $eventLesson->departure_airfield ?? 'N/A' }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-plane-arrival"></i> Destination Airfield:</strong> 
+                            {{ $eventLesson->destination_airfield ?? 'N/A' }}
+                        </div>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-user"></i> Student:</strong>
+                            {{ $trainingEvent->student->fname ?? '' }} {{ $trainingEvent->student->lname ?? '' }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-id-card"></i> License Number:</strong>
+                            {{ $trainingEvent->std_licence_number ?? 'N/A' }}
+                        </div>
+                    </div>
+                @else
+                    {{-- MULTI-LESSON COURSE TYPE --}}
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <strong><i class="fas fa-book"></i> Course Name:</strong>
+                            <span class="badge bg-info text-white">{{ $trainingEvent->course->course_name ?? 'N/A' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        @if($trainingEvent->eventLessons && $trainingEvent->eventLessons->count())
+                            <div class="col-md-12">
+                                <strong><i class="fas fa-chalkboard-teacher"></i> Instructors & License Numbers:</strong>
+                                <ul class="list-group mt-2">
+                                    @foreach($trainingEvent->eventLessons as $lesson)
+                                        @if(auth()->user()->is_admin || auth()->user()->is_owner || auth()->user()->id === $lesson->instructor_id)
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span>
+                                                    {{ $lesson->instructor?->fname }} {{ $lesson->instructor?->lname }}
+                                                    @if($lesson->lesson?->lesson_title)
+                                                        <small class="text-muted d-block">Lesson: {{ $lesson->lesson->lesson_title }}</small>
+                                                    @endif
+                                                </span>
+                                                <span class="badge bg-secondary">
+                                                    License: {{ $lesson->instructor_license_number ?? 'N/A' }}
+                                                </span>
+                                            </li>
+                                        @endif
+                                    @endforeach
+                                </ul>
                             </div>
                         @endif
                     </div>
-                </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-user"></i> Student:</strong>
+                            {{ $trainingEvent->student->fname ?? '' }} {{ $trainingEvent->student->lname ?? '' }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-id-card"></i> License Number:</strong>
+                            {{ $trainingEvent->std_licence_number ?? 'N/A' }}
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
             <div class="tab-pane fade" id="Lesson" role="tabpanel" aria-labelledby="Lesson-tab">
@@ -484,11 +526,15 @@
                                     </h2>
                                     <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
                                         <div><strong>Instructor:</strong> {{ $eventLesson->instructor->fname ?? '' }} {{ $eventLesson->instructor->lname ?? '' }}</div>
-                                        <div><strong>Resource:</strong> {{ $eventLesson->resource->name ?? '' }}</div>
+                                        <div><strong>License No:</strong> {{ $eventLesson->instructor_license_number ?? 'N/A' }}</div>
+                                        <div><strong>Resource:</strong> {{ $eventLesson->resource->name ?? 'N/A' }}</div>
                                         <div><strong>Lesson Date:</strong> {{ date('d/m/Y', strtotime($eventLesson->lesson_date)) }}</div>
                                         <div><strong>Start Time:</strong> {{ date('h:i A', strtotime($eventLesson->start_time)) }}</div>
                                         <div><strong>End Time:</strong> {{ date('h:i A', strtotime($eventLesson->end_time)) }}</div>
+                                        <div><strong>Departure Airfield:</strong> {{ $eventLesson->departure_airfield ?? 'N/A' }}</div>
+                                        <div><strong>Destination Airfield:</strong> {{ $eventLesson->destination_airfield ?? 'N/A' }}</div>
                                     </div>
+
                                     <div id="lesson-{{ $eventLesson->id }}" class="accordion-collapse collapse" data-bs-parent="#faq-group-2">
                                         <div class="accordion-body">
                                         @if($lesson && $lesson->subLessons->isNotEmpty())

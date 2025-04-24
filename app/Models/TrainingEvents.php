@@ -94,4 +94,9 @@ class TrainingEvents extends Model
     {
         return $this->hasMany(TrainingFeedback::class, 'training_event_id');
     }
+
+    public function firstLesson()
+    {
+        return $this->hasOne(TrainingEventLessons::class, 'training_event_id')->orderBy('id');
+    }
 }

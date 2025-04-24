@@ -38,14 +38,17 @@
         </thead>
         <tbody>
             @foreach($trainingEvents as $event)
+                @php
+                    $lesson = $event->firstLesson;
+                @endphp
             <tr>
                 <td class="eventName">{{ $event->course?->course_name }}</td>
                 <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
-                <td>{{ $event->instructor?->fname }} {{ $event->instructor?->lname }}</td>
-                <td>{{ $event->resource?->name }}</td>
-                <td>{{ date('d-m-y', strtotime($event->event_date)) }}</td>
-                <td>{{ date('h:i A', strtotime($event->start_time)) }}</td>
-                <td>{{ date('h:i A', strtotime($event->end_time)) }}</td>
+                <td>{{ $lesson?->instructor?->fname }} {{ $lesson?->instructor?->lname }}</td>
+                <td>{{ $lesson?->resource?->name }}</td>
+                <td>{{ $lesson?->lesson_date ? date('d-m-y', strtotime($lesson->lesson_date)) : '' }}</td>
+                <td>{{ $lesson?->start_time ? date('h:i A', strtotime($lesson->start_time)) : '' }}</td>
+                <td>{{ $lesson?->end_time ? date('h:i A', strtotime($lesson->end_time)) : '' }}</td>
                 <td>
                 @if(get_user_role(auth()->user()->role) == 'administrator')  
 
@@ -62,6 +65,11 @@
                     @if($event->is_locked == 1)
                         <i class="fa fa-lock-open unlock-event-icon text-success" title="Unlock this event to enable grading edits." 
                         data-event-id="{{ encode_id($event->id) }}" style="font-size:20px; cursor: pointer;"></i>
+                    @endif
+                    @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                            <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                            <i class="fa fa-eye text-danger me-2"></i>
+                            </a>            
                     @endif
 
                 @elseif(get_user_role(auth()->user()->role) == 'instructor')   
@@ -150,38 +158,38 @@
                 </div>
                 <div id="lessonDetailsContainer" class="lesson-box mt-3"></div>
                 <!-- Event Date-->
-                <div class="col-md-4">
+                <!-- <div class="col-md-4">
                     <label class="form-label">Event Date<span class="text-danger">*</span></label>
                     <input type="date" name="event_date" class="form-control" id="event_date">
                     <div id="event_date_error" class="text-danger error_e"></div>
-                </div>
+                </div> -->
                 <!-- Start Date & Time -->
-                <div class="col-md-4">
+                <!-- <div class="col-md-4">
                     <label class="form-label">Start Time<span class="text-danger">*</span></label>
                     <input type="time" name="start_time" class="form-control" id="start_time">
                     <div id="start_time_error" class="text-danger error_e"></div>
-                </div>
+                </div> -->
 
                 <!-- End Date & Time -->
-                <div class="col-md-4">
+                <!-- <div class="col-md-4">
                     <label class="form-label">End Time<span class="text-danger">*</span></label>
                     <input type="time" name="end_time" class="form-control" id="end_time">
                     <div id="end_time_error" class="text-danger error_e"></div>
-                </div>
+                </div> -->
 
                 <!-- Departure Airfield -->
-                <div class="col-md-6">
+                <!-- <div class="col-md-6">
                     <label class="form-label">Departure Airfield (4-letter code)<span class="text-danger">*</span></label>
                     <input type="text" name="departure_airfield" class="form-control" maxlength="4">
                     <div id="departure_airfield_error" class="text-danger error_e"></div>
-                </div>
+                </div> -->
 
                 <!-- Destination Airfield -->
-                <div class="col-md-6">
+                <!-- <div class="col-md-6">
                     <label class="form-label">Destination Airfield (4-letter code)<span class="text-danger">*</span></label>
                     <input type="text" name="destination_airfield" class="form-control" maxlength="4">
                     <div id="destination_airfield_error" class="text-danger error_e"></div>
-                </div>                
+                </div>                 -->
                 <!-- Select Group -->
                 <!-- <div class="form-group">
                     <label class="form-label">Select Group<span class="text-danger">*</span></label>
@@ -195,7 +203,7 @@
                 </div> -->
 
                 <!-- Select Instructor -->
-                <div class="col-md-6">
+                <!-- <div class="col-md-6">
                     <label class="form-label">Select Instructor<span class="text-danger">*</span></label>
                     <select class="form-select" name="instructor_id" id="select_instructor">
                         <option value="">Select Instructor</option>
@@ -204,10 +212,10 @@
                         @endforeach
                     </select>
                     <div id="instructor_id_error" class="text-danger error_e"></div>
-                </div>
+                </div> -->
 
                 <!-- Select Resource -->
-                <div class="col-md-6">
+                <!-- <div class="col-md-6">
                     <label class="form-label">Select Resource<span class="text-danger">*</span></label>
                     <select class="form-select" name="resource_id" id="select_resource">
                         <option value="">Select Resource</option>
@@ -216,20 +224,20 @@
                         @endforeach
                     </select>
                     <div id="resource_id_error" class="text-danger error_e"></div>
-                </div>
+                </div> -->
 
                 <!-- Total Time (Calculated) -->
-                <div class="col-md-6">
+                <!-- <div class="col-md-6">
                     <label class="form-label">Total Time (hh:mm)<span class="text-danger">*</span></label>
                     <input type="text" name="total_time" class="form-control" id="total_time" readonly>
                     <div id="total_time_error" class="text-danger error_e"></div>
-                </div>
+                </div> -->
 
                 <!-- License Number (Extracted from user profile) -->
                 <div class="col-md-6">
-                    <label class="form-label">License Number</label>
-                    <input type="text" name="licence_number" class="form-control" id="licence_number" value="{{ auth()->user()->licence_number }}" readonly>
-                    <div id="licence_number_error" class="text-danger error_e"></div>
+                    <label class="form-label">Student License Number</label>
+                    <input type="text" name="std_licence_number" class="form-control" id="std_licence_number" value="{{ auth()->user()->licence_number }}" readonly>
+                    <div id="std_licence_number_error" class="text-danger error_e"></div>
                 </div>
 
                 <!-- Modal Footer -->
@@ -299,7 +307,7 @@
                 </div>
                 <div id="editLessonDetailsContainer" class="mt-3"></div>
                 <!-- Event Date-->
-                <div class="col-md-4">
+                <!-- <div class="col-md-4">
                     <label class="form-label">Event Date<span class="text-danger">*</span></label>
                     <input type="date" name="event_date" class="form-control" id="edit_event_date">
                     <div id="event_date_error" class="text-danger error_e"></div>
@@ -314,7 +322,7 @@
                     <label class="form-label">End Time<span class="text-danger">*</span></label>
                     <input type="time" name="end_time" class="form-control" id="edit_end_time">
                     <div id="end_time_error_up" class="text-danger error_e"></div>
-                </div>
+                </div> -->
                 <!-- <div class="form-group">
                     <label class="form-label">Select Group<span class="text-danger">*</span></label>
                     <select class="form-select" name="group_id" id="edit_select_group">
@@ -326,7 +334,7 @@
                     <div id="group_id_error_up" class="text-danger error_e"></div>
                 </div> -->
 
-                <div class="col-md-6">
+                <!-- <div class="col-md-6">
                     <label class="form-label">Departure Airfield</label>
                     <input type="text" name="departure_airfield" class="form-control" id="edit_departure_airfield">
                     <div id="departure_airfield_error_up" class="text-danger error_e"></div>
@@ -336,8 +344,8 @@
                     <label class="form-label">Destination Airfield</label>
                     <input type="text" name="destination_airfield" class="form-control" id="edit_destination_airfield">
                     <div id="destination_airfield_error_up" class="text-danger error_e"></div>
-                </div>
-                <div class="col-md-6">
+                </div> -->
+                <!-- <div class="col-md-6">
                     <label class="form-label">Select Instructor<span class="text-danger">*</span></label>
                     <select class="form-select" name="instructor_id" id="edit_select_instructor">
                         <option value="">Select Instructor</option>
@@ -346,10 +354,10 @@
                         @endforeach
                     </select>
                     <div id="instructor_id_error_up" class="text-danger error_e"></div>
-                </div>
+                </div> -->
 
                 <!-- New Fields -->
-                <div class="col-md-6">
+                <!-- <div class="col-md-6">
                     <label class="form-label">Select Resource</label>
                     <select class="form-select" name="resource_id" id="edit_select_resource">
                         <option value="">Select Resource</option>   
@@ -358,17 +366,17 @@
                         @endforeach
                     </select>
                     <div id="resource_id_error_up" class="text-danger error_e"></div>
-                </div>
+                </div> -->
                 <!-- Total Time (Calculated) -->
-                <div class="col-md-6">
+                <!-- <div class="col-md-6">
                     <label class="form-label">Total Time (hh:mm)<span class="text-danger">*</span></label>
                     <input type="text" name="total_time" class="form-control" id="edit_total_time" readonly>
                     <div id="total_time_error_up" class="text-danger error_e"></div>
-                </div>
+                </div> -->
                 <div class="col-md-6">
-                    <label class="form-label">Licence Number</label>
-                    <input type="text" name="licence_number" class="form-control" id="edit_licence_number" readonly>
-                    <div id="licence_number_error_up" class="text-danger error_e" ></div>
+                    <label class="form-label">Student Licence Number</label>
+                    <input type="text" name="std_licence_number" class="form-control" id="edit_std_licence_number" readonly>
+                    <div id="std_licence_number_error_up" class="text-danger error_e" ></div>
                 </div>
 
                 <div class="modal-footer">
@@ -475,6 +483,21 @@ $('#select_lesson').on('change', function () {
                             <input type="time" name="lesson_data[${lessonId}][end_time]" class="form-control lesson-end-time" data-lesson-id="${lessonId}">
                             <div id="lesson_data_${lessonId}_end_time_error" class="text-danger error_e"></div>
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Departure Airfield (4-letter code)<span class="text-danger">*</span></label>
+                            <input type="text" name="lesson_data[${lessonId}][departure_airfield]" class="form-control" maxlength="4">
+                            <div id="lesson_data_${lessonId}_departure_airfield_error" class="text-danger error_e"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Destination Airfield (4-letter code)<span class="text-danger">*</span></label>
+                            <input type="text" name="lesson_data[${lessonId}][destination_airfield]" class="form-control" maxlength="4">
+                            <div id="lesson_data_${lessonId}_destination_airfield_error" class="text-danger error_e"></div>
+                        </div>  
+                        <div class="col-md-6">
+                            <label class="form-label">Instructor License Number</label>
+                            <input type="text" name="lesson_data[${lessonId}][instructor_license_number]" class="form-control" id="instructor_license_number" value="" readonly>
+                            <div id="lesson_data_${lessonId}_instructor_license_number_error" class="text-danger error_e"></div>
+                        </div>
                     </div>
                 </div>
             `;
@@ -483,6 +506,39 @@ $('#select_lesson').on('change', function () {
         }
     });
 });
+
+// Delegate change event to dynamically added instructor selects
+$(document).on('change', 'select[name^="lesson_data"][name$="[instructor_id]"]', function () {
+    let instructorId = $(this).val();
+    let lessonBox = $(this).closest('.lesson-box');
+    let licenseInput = lessonBox.find('input[name^="lesson_data"][name$="[instructor_license_number]"]');
+
+    if (instructorId) {
+        $.ajax({
+            url: "{{ url('/training/get_instructor_license_no') }}/" + instructorId,
+            type: 'GET',
+            success: function (response) {
+                if (response.success) {
+                    licenseInput.val(response.instructor_licence_number || '');
+                    if (!response.instructor_licence_number) {
+                        alert("Instructor license number not found.");
+                    }
+                } else {
+                    licenseInput.val('');
+                    alert("Instructor not found.");
+                }
+            },
+            error: function () {
+                licenseInput.val('');
+                console.error("Failed to fetch license number");
+                alert("An error occurred while fetching the license number.");
+            }
+        });
+    } else {
+        licenseInput.val('');
+    }
+});
+
 
 
 function initializeSelect2() {
@@ -612,7 +668,7 @@ $(document).ready(function() {
 
         // Select the correct fields based on the modal
         var ouDropdown = isEditModal ? $('#edit_ou_id') : $('#select_org_unit');
-        var licenceNumberField = isEditModal ? $('#edit_licence_number') : $('#licence_number');
+        var licenceNumberField = isEditModal ? $('#edit_std_licence_number') : $('#std_licence_number');
         var courseDropdown = isEditModal ? $('#edit_select_course') : $('#select_course');
 
         // Get the selected Organization Unit ID (OU ID)
@@ -624,10 +680,10 @@ $(document).ready(function() {
                 success: function(response) {
                     if (response.success) {
                         // Update license number if available
-                        if (response.licence_number) {
-                            licenceNumberField.val(response.licence_number);
+                        if (response.std_licence_number) {
+                            licenceNumberField.val(response.std_licence_number);
                         } else {
-                            alert('License number not found!');
+                            alert('Student License number not found!');
                             licenceNumberField.val('');
                         }
 
@@ -753,13 +809,7 @@ $(document).ready(function() {
 
                     // Set initial static values
                     $('#edit_event_id').val(event.id);
-                    $('#edit_event_date').val(event.event_date);
-                    $('#edit_departure_airfield').val(event.departure_airfield);
-                    $('#edit_destination_airfield').val(event.destination_airfield);
-                    $('#edit_total_time').val(event.total_time);
-                    $('#edit_licence_number').val(event.licence_number);
-                    $('#edit_start_time').val(event.start_time);
-                    $('#edit_end_time').val(event.end_time);
+                    $('#edit_std_licence_number').val(event.std_licence_number);
 
                     // Set OU and wait for dropdowns to populate
                     $('#edit_ou_id').val(selectedOU);
@@ -796,6 +846,9 @@ $(document).ready(function() {
                             const lessonDate = lesson.lesson_date || '';
                             const startTime = lesson.start_time || '';
                             const endTime = lesson.end_time || '';
+                            const departure_airfield = lesson.departure_airfield || '';
+                            const destination_airfield = lesson.destination_airfield || '';
+                            const instructor_license_number = lesson.instructor_license_number || '';
 
                             var instructorOptions = instructorsdata.map(i =>
                                 `<option value="${i.id}" ${i.id == selectedInstructor ? 'selected' : ''}>${i.fname} ${i.lname}</option>`
@@ -841,11 +894,26 @@ $(document).ready(function() {
                                             <input type="time" name="lesson_data[${lessonId}][end_time]" value="${endTime}" class="form-control lesson-end-time" data-lesson-id="${lessonId}">
                                             <div id="lesson_data_${lessonId}_end_time_error_up" class="text-danger error_e"></div>
                                         </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Departure Airfield (4-letter code)<span class="text-danger">*</span></label>
+                                            <input type="text" name="lesson_data[${lessonId}][departure_airfield]" value="${departure_airfield}" class="form-control" maxlength="4">
+                                            <div id="lesson_data_${lessonId}_departure_airfield_error" class="text-danger error_e"></div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Destination Airfield (4-letter code)<span class="text-danger">*</span></label>
+                                            <input type="text" name="lesson_data[${lessonId}][destination_airfield]" value="${destination_airfield}" class="form-control" maxlength="4">
+                                            <div id="lesson_data_${lessonId}_destination_airfield_error" class="text-danger error_e"></div>
+                                        </div>  
+                                        <div class="col-md-6">
+                                            <label class="form-label">Instructor License Number</label>
+                                            <input type="text" name="lesson_data[${lessonId}][instructor_license_number]" class="form-control" id="instructor_license_number" value="${instructor_license_number}" readonly>
+                                            <div id="lesson_data_${lessonId}_instructor_license_number_error" class="text-danger error_e"></div>
+                                        </div>
                                     </div>
                                 </div>
                             `;
 
-                            $('#editLessonDetailsContainer').html(lessonBox);
+                            $('#editLessonDetailsContainer').append(lessonBox);
                         });
                     }
                     $('#editTrainingEventModal').modal('show');
@@ -898,6 +966,7 @@ $(document).ready(function() {
                                     <option value="">Select Instructor</option>
                                     ${instructorOptions}
                                 </select>
+                                <div id="lesson_data_${lessonId}_instructor_id_error" class="text-danger error_e"></div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Resource<span class="text-danger">*</span></label>
@@ -905,18 +974,37 @@ $(document).ready(function() {
                                     <option value="">Select Resource</option>
                                     ${resourceOptions}
                                 </select>
+                                <div id="lesson_data_${lessonId}_resource_id_error" class="text-danger error_e"></div>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Lesson Date<span class="text-danger">*</span></label>
                                 <input type="date" name="lesson_data[${lessonId}][lesson_date]" class="form-control">
+                                <div id="lesson_data_${lessonId}_lesson_date_error" class="text-danger error_e"></div>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Start Time<span class="text-danger">*</span></label>
                                 <input type="time" name="lesson_data[${lessonId}][start_time]" class="form-control lesson-start-time" data-lesson-id="${lessonId}">
+                                <div id="lesson_data_${lessonId}_start_time_error" class="text-danger error_e"></div>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">End Time<span class="text-danger">*</span></label>
                                 <input type="time" name="lesson_data[${lessonId}][end_time]" class="form-control lesson-end-time" data-lesson-id="${lessonId}">
+                                <div id="lesson_data_${lessonId}_end_time_error" class="text-danger error_e"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Departure Airfield (4-letter code)<span class="text-danger">*</span></label>
+                                <input type="text" name="lesson_data[${lessonId}][departure_airfield]" class="form-control" maxlength="4">
+                                <div id="lesson_data_${lessonId}_departure_airfield_error" class="text-danger error_e"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Destination Airfield (4-letter code)<span class="text-danger">*</span></label>
+                                <input type="text" name="lesson_data[${lessonId}][destination_airfield]" class="form-control" maxlength="4">
+                                <div id="lesson_data_${lessonId}_destination_airfield_error" class="text-danger error_e"></div>
+                            </div>  
+                            <div class="col-md-6">
+                                <label class="form-label">Instructor License Number</label>
+                                <input type="text" name="lesson_data[${lessonId}][instructor_license_number]" class="form-control" id="instructor_license_number" value="" readonly>
+                                <div id="lesson_data_${lessonId}_instructor_license_number_error" class="text-danger error_e"></div>
                             </div>
                         </div>
                     </div>
