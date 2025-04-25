@@ -151,7 +151,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/group/edit', [GroupController::class, 'getGroup'])->name('group.edit');
     Route::post('/group/update', [GroupController::class, 'updateGroup'])->name('group.update');
     Route::post('/group/delete', [GroupController::class, 'deleteGroup'])->name('group.delete');
-    Route::get('/group/get_ou_group/', [GroupController::class, 'getOrgroup'])->name('group.getOrgroup');
+    
     
     //Documents Route
     Route::get('/documents', [DocumentController::class, 'index'])->name('document.index');
@@ -220,12 +220,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/group/get_ou_user/', [GroupController::class, 'getOrgUser'])->name('group.get_ou_user'); 
     Route::get('/folder/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('folder.getOrgfolder');
     Route::get('/folder/edit', [FolderController::class, 'getFolder'])->name('folder.edit');
-
-
- 
-  
-
- 
+    Route::get('/group/get_ou_group/', [GroupController::class, 'getOrgroup'])->name('group.getOrgroup');
 
     
 Route::get('/clear-cache', function() {
