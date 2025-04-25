@@ -117,6 +117,9 @@ class CourseController extends Controller
 
     public function createCourse(Request $request)
     {
+        if (!$request->enable_feedback) {
+            $request->merge(['feedback_questions' => null]);
+        }
         // dd($request->all()); die;
         $request->validate([  
             'course_name' => 'required|unique:courses,course_name,NULL,id,deleted_at,NULL',
@@ -135,8 +138,11 @@ class CourseController extends Controller
             ],
             'enable_feedback' => 'nullable|boolean',
             'feedback_questions' => 'nullable|array',
-            'feedback_questions.*.question' => 'required_with:enable_feedback|string',
-            'feedback_questions.*.answer_type' => 'required_with:enable_feedback|in:yes_no,rating'
+            'feedback_questions.*.question' => 'required_if:enable_feedback,1|string',
+            'feedback_questions.*.answer_type' => 'required_if:enable_feedback,1|in:yes_no,rating',
+        ], [], [
+            'feedback_questions.*.question' => 'Feedback question',
+            'feedback_questions.*.answer_type' => 'Answer type'
         ]);
     
         if ($request->hasFile('image')) {
