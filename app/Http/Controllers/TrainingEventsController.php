@@ -28,7 +28,14 @@ class TrainingEventsController extends Controller
         $organizationUnits = OrganizationUnits::all();
         // $resources = Resource::all();
         // Define relationships for trainingEvents query
-        $trainingEventsRelations = ['course:id,course_name', 'instructor:id,fname,lname', 'student:id,fname,lname', 'resource:id,name'];
+        $trainingEventsRelations = [
+            'course:id,course_name',
+            'instructor:id,fname,lname',
+            'student:id,fname,lname',
+            'resource:id,name',
+            'firstLesson.instructor:id,fname,lname',
+            'firstLesson.resource:id,name',
+        ];
 
         if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) {
             // Super Admin: Get all data
@@ -68,7 +75,12 @@ class TrainingEventsController extends Controller
             $trainingEventsQuery = TrainingEvents::where('ou_id', $currentUser->ou_id)->with($trainingEventsRelations);
 
             if (hasUserRole($currentUser, 'Instructor')) {
-                $trainingEvents = $trainingEventsQuery->where('instructor_id', $currentUser->id)->get();
+                // Get training event IDs where the current instructor is assigned to at least one lesson
+                $eventIds = TrainingEventLessons::where('instructor_id', $currentUser->id)
+                    ->pluck('training_event_id')
+                    ->unique();
+            
+                $trainingEvents = $trainingEventsQuery->whereIn('id', $eventIds)->get();
             } else {
                 $trainingEvents = $trainingEventsQuery->where('student_id', $currentUser->id)->get();
             }
@@ -99,8 +111,6 @@ class TrainingEventsController extends Controller
 
         return view('trainings.index', compact('groups', 'courses', 'instructors', 'organizationUnits', 'trainingEvents', 'resources', 'students'));
     }
-
-
 
     public function getOrgStudentsInstructorsResources(Request $request,$ou_id)
     {
@@ -149,6 +159,21 @@ class TrainingEventsController extends Controller
         }
     }
 
+    public function getInstructorLicenseNumber(Request $request, $instructor_id)
+    {
+        $instructor = User::find($instructor_id);      
+    
+        if ($instructor) {
+            return response()->json([
+                'success' => true,
+                'instructor_licence_number' => $instructor->licence
+            ]);
+        }
+    
+        return response()->json(['success' => false], 404);
+    }
+    
+
     public function getCourseLessons(Request $request)
     {
         $lessons = CourseLesson::where('course_id', $request->course_id)->get();
@@ -162,12 +187,10 @@ class TrainingEventsController extends Controller
 
     public function createTrainingEvent(Request $request)
     {
-        // Convert times
-        $request->merge([
-            'start_time' => date('H:i', strtotime($request->start_time)),
-            'end_time' => date('H:i', strtotime($request->end_time)),
-            'total_time' => date('H:i', strtotime($request->total_time)),
-        ]);
+        // Convert total time
+        // $request->merge([
+        //     'total_time' => date('H:i', strtotime($request->total_time)),
+        // ]);
     
         // Validate base fields
         $request->validate([
@@ -175,34 +198,9 @@ class TrainingEventsController extends Controller
             'course_id' => 'required|exists:courses,id',
             'lesson_ids' => 'required|array',
             'lesson_ids.*' => 'exists:course_lessons,id',
-            'instructor_id' => 'required|exists:users,id',
-            'resource_id' => 'required|exists:resources,id',
-            'event_date' => 'required|date_format:Y-m-d',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => [
-                'required',
-                'date_format:H:i',
-                function ($attribute, $value, $fail) use ($request) {
-                    if (strtotime($value) <= strtotime($request->start_time)) {
-                        $fail('End time must be after start time.');
-                    }
-                },
-            ],
-            'departure_airfield' => 'required|string|size:4',
-            'destination_airfield' => 'required|string|size:4',
-            'total_time' => [
-                'required',
-                'date_format:H:i',
-                function ($attribute, $value, $fail) use ($request) {
-                    $start = strtotime($request->start_time);
-                    $end = strtotime($request->end_time);
-                    $calculated_total = gmdate("H:i", $end - $start);
-                    if ($value !== $calculated_total) {
-                        $fail('Total time does not match the calculated duration.');
-                    }
-                },
-            ],
-            'licence_number' => 'nullable|string',
+            // 'event_date' => 'required|date_format:Y-m-d',
+            // 'total_time' => 'required|date_format:H:i',
+            'std_license_number' => 'nullable|string',
             'ou_id' => [
                 function ($attribute, $value, $fail) {
                     if (auth()->user()->is_owner == 1 && empty($value)) {
@@ -216,31 +214,43 @@ class TrainingEventsController extends Controller
             'lesson_data.*.resource_id' => 'required|exists:resources,id',
             'lesson_data.*.lesson_date' => 'required|date_format:Y-m-d',
             'lesson_data.*.start_time' => 'required|date_format:H:i',
-            'lesson_data.*.end_time' => 'required|date_format:H:i',
+            'lesson_data.*.end_time' => [
+                'required',
+                'date_format:H:i',
+                function ($attribute, $value, $fail) use ($request) {
+                    preg_match('/lesson_data\.(\d+)\.end_time/', $attribute, $matches);
+                    if (isset($matches[1])) {
+                        $index = $matches[1];
+                        $startTime = $request->input("lesson_data.$index.start_time");
+    
+                        if (strtotime($value) <= strtotime($startTime)) {
+                            $fail("End time must be after start time.");
+                        }
+                    }
+                },
+            ],
+            'lesson_data.*.departure_airfield' => 'required|string|size:4',
+            'lesson_data.*.destination_airfield' => 'required|string|size:4',
+            'lesson_data.*.instructor_license_number' => 'nullable|string',
         ], [], [
             'lesson_data.*.instructor_id' => 'instructor',
             'lesson_data.*.resource_id' => 'resource',
             'lesson_data.*.lesson_date' => 'lesson date',
             'lesson_data.*.start_time' => 'start time',
             'lesson_data.*.end_time' => 'end time',
-            'instructor_id' => 'instructor',
-            'resource_id' => 'resource',
+            'lesson_data.*.departure_airfield' => 'departure airfield',
+            'lesson_data.*.destination_airfield' => 'destination airfield',
+            'lesson_data.*.instructor_license_number' => 'instructor license number',
         ]);
     
         // Create main training event
         $trainingEvent = TrainingEvents::create([
             'student_id' => $request->student_id,
             'course_id' => $request->course_id,
-            'lesson_ids' => json_encode($request->lesson_ids),
-            'instructor_id' => $request->instructor_id,
-            'resource_id' => $request->resource_id,
-            'event_date' => $request->event_date,
-            'start_time' => $request->start_time,
-            'end_time' => $request->end_time,
-            'departure_airfield' => strtoupper($request->departure_airfield),
-            'destination_airfield' => strtoupper($request->destination_airfield),
-            'total_time' => $request->total_time,
-            'licence_number' => $request->licence_number ?? auth()->user()->licence_number,
+            'lesson_ids' => json_encode($request->lesson_ids),  
+            // 'event_date' => $request->event_date,
+            // 'total_time' => $request->total_time,
+            'std_license_number' => $request->std_license_number,
             'ou_id' => auth()->user()->is_owner ? $request->ou_id : auth()->user()->ou_id,
         ]);
     
@@ -254,6 +264,9 @@ class TrainingEventsController extends Controller
                 'lesson_date' => $lesson['lesson_date'],
                 'start_time' => $lesson['start_time'],
                 'end_time' => $lesson['end_time'],
+                'departure_airfield' => strtoupper($lesson['departure_airfield']),
+                'destination_airfield' => strtoupper($lesson['destination_airfield']),
+                'instructor_license_number' => $lesson['instructor_license_number'] ?? null,
             ]);
         }
     
@@ -265,6 +278,7 @@ class TrainingEventsController extends Controller
             'trainingEvent' => $trainingEvent
         ], 201);
     }
+    
     
 
     
@@ -282,13 +296,6 @@ class TrainingEventsController extends Controller
 
     public function updateTrainingEvent(Request $request)
     {
-        // Convert top-level time fields
-        $request->merge([
-            'start_time' => date('H:i', strtotime($request->start_time)),
-            'end_time' => date('H:i', strtotime($request->end_time)),
-            'total_time' => date('H:i', strtotime($request->total_time)),
-        ]);
-    
         // Convert nested lesson times to H:i format
         $lessonData = $request->input('lesson_data', []);
         foreach ($lessonData as $key => $lesson) {
@@ -301,15 +308,13 @@ class TrainingEventsController extends Controller
         }
         $request->merge(['lesson_data' => $lessonData]);
     
-        // Validate
+        // Validate request
         $request->validate([
             'event_id' => 'required|exists:training_events,id',
             'student_id' => 'required|exists:users,id',
             'course_id' => 'required|exists:courses,id',
-            'instructor_id' => 'required|exists:users,id',
-            'resource_id' => 'required|exists:resources,id',
-        
             'lesson_data' => 'required|array',
+    
             'lesson_data.*.lesson_id' => 'required|exists:course_lessons,id',
             'lesson_data.*.instructor_id' => 'required|exists:users,id',
             'lesson_data.*.resource_id' => 'required|exists:resources,id',
@@ -323,40 +328,17 @@ class TrainingEventsController extends Controller
                     if (isset($matches[1])) {
                         $index = $matches[1];
                         $startTime = $request->input("lesson_data.$index.start_time");
-        
                         if (strtotime($value) <= strtotime($startTime)) {
-                            $fail("Lesson #" . ($index + 1) . ": End time must be after start time.");
+                            $fail("End time must be after start time.");
                         }
                     }
                 },
             ],
-        
-            'event_date' => 'required|date_format:Y-m-d',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => [
-                'required',
-                'date_format:H:i',
-                function ($attribute, $value, $fail) use ($request) {
-                    if (strtotime($value) <= strtotime($request->start_time)) {
-                        $fail('End time must be after start time.');
-                    }
-                },
-            ],
-            'departure_airfield' => 'required|string|size:4',
-            'destination_airfield' => 'required|string|size:4',
-            'total_time' => [
-                'required',
-                'date_format:H:i',
-                function ($attribute, $value, $fail) use ($request) {
-                    $start = strtotime($request->start_time);
-                    $end = strtotime($request->end_time);
-                    $calculated_total = gmdate("H:i", $end - $start);
-                    if ($value !== $calculated_total) {
-                        $fail('Total time does not match the calculated duration.');
-                    }
-                },
-            ],
-            'licence_number' => 'nullable|string',
+            'lesson_data.*.departure_airfield' => 'required|string|size:4',
+            'lesson_data.*.destination_airfield' => 'required|string|size:4',
+            'lesson_data.*.instructor_license_number' => 'nullable|string',
+    
+            'std_license_number' => 'nullable|string',
             'ou_id' => [
                 function ($attribute, $value, $fail) {
                     if (auth()->user()->is_owner == 1 && empty($value)) {
@@ -370,8 +352,8 @@ class TrainingEventsController extends Controller
             'lesson_data.*.lesson_date' => 'lesson date',
             'lesson_data.*.start_time' => 'start time',
             'lesson_data.*.end_time' => 'end time',
-            'instructor_id' => 'instructor',
-            'resource_id' => 'resource',
+            'lesson_data.*.departure_airfield' => 'departure airfield',
+            'lesson_data.*.destination_airfield' => 'destination airfield',
         ]);
     
         // Update Training Event
@@ -380,16 +362,8 @@ class TrainingEventsController extends Controller
             'ou_id' => auth()->user()->is_owner ? $request->ou_id : auth()->user()->ou_id,
             'course_id' => $request->course_id,
             'student_id' => $request->student_id,
-            'instructor_id' => $request->instructor_id,
-            'resource_id' => $request->resource_id,
             'lesson_ids' => json_encode(array_column($lessonData, 'lesson_id')),
-            'event_date' => $request->event_date,
-            'start_time' => $request->start_time,
-            'end_time' => $request->end_time,
-            'departure_airfield' => strtoupper($request->departure_airfield),
-            'destination_airfield' => strtoupper($request->destination_airfield),
-            'total_time' => $request->total_time,
-            'licence_number' => $request->licence_number ?? auth()->user()->licence_number,
+            'std_license_number' => $request->std_license_number ?? null,
         ]);
     
         // Get all lesson_ids from the request
@@ -413,6 +387,9 @@ class TrainingEventsController extends Controller
                     'lesson_date' => $data['lesson_date'],
                     'start_time' => $data['start_time'],
                     'end_time' => $data['end_time'],
+                    'departure_airfield' => strtoupper($data['departure_airfield']),
+                    'destination_airfield' => strtoupper($data['destination_airfield']),
+                    'instructor_license_number' => $data['instructor_license_number'] ?? null,
                 ]
             );
         }
@@ -425,6 +402,7 @@ class TrainingEventsController extends Controller
             'trainingEvent' => $trainingEvent->load('eventLessons'),
         ]);
     }
+    
     
     
     
@@ -479,6 +457,7 @@ class TrainingEventsController extends Controller
 
     public function showTrainingEvent(Request $request, $event_id)
     {
+        $currentUser = auth()->user();
         $trainingEvent = TrainingEvents::with([
             'course:id,course_name,course_type',
             'group:id,name,user_ids',
@@ -494,7 +473,16 @@ class TrainingEventsController extends Controller
             return abort(404, 'Training Event not found');
         }
     
-        $eventLessons = $trainingEvent->eventLessons;
+        // Filter lessons based on role
+        if (hasUserRole($currentUser, 'Instructor') && empty($currentUser->is_admin)) {
+            // Only show lessons assigned to this instructor
+            $eventLessons = $trainingEvent->eventLessons->filter(function ($lesson) use ($currentUser) {
+                return $lesson->instructor_id == $currentUser->id;
+            })->values();
+        } else {
+            // Admins and others with access can view all lessons
+            $eventLessons = $trainingEvent->eventLessons;
+        }
         $student = $trainingEvent->student;
         $lessonIds = $eventLessons->pluck('lesson_id')->filter()->unique();
 
@@ -787,13 +775,21 @@ class TrainingEventsController extends Controller
                 'overallAssessments' => function ($query) use ($userId) {
                     $query->where('user_id', $userId);
                 },
-                'course:id,course_name', // Load only course name
+                'course:id,course_name,enable_feedback', // Load only course name
                 'group:id,name', // Load only group name
                 'instructor:id,fname,lname' // Load only instructor name
             ])
             ->first(); // Use first() to get a single event
+        
+        if (!$event) {
+            abort(404, 'Training Event not found.');
+        }    
+        
+        $event->student_feedback_submitted = $event->trainingFeedbacks()->where('user_id', auth()->user()->id)->exists();    
+        // dd($event->student_feedback_submitted);
+        // dd($event->course->enable_feedback);
     
-        return view('trainings.grading-list', compact('event'));
+        return view('trainings.grading-list', compact('event'));    
     }
     
 

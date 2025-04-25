@@ -11,7 +11,7 @@ class Courses extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $fillable = ['ou_id','course_type','course_name','description','duration_type','duration_value','image','status', 'enable_prerequisites'];
+    protected $fillable = ['ou_id','course_type','course_name','description','duration_type','duration_value','image','enable_feedback','status', 'enable_prerequisites'];
 
     public function organizationUnit()
     {
@@ -59,6 +59,11 @@ class Courses extends Model
     {
         return $this->hasMany(CoursePrerequisiteDetail::class, 'course_id')
                     ->where('created_by', auth()->id());
+    }
+
+    public function training_feedback_questions()
+    {
+        return $this->hasMany(TrainingFeedbackQuestion::class, 'course_id');
     }
 }
 

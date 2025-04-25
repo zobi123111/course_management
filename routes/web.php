@@ -19,6 +19,7 @@ use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\CourseTemplateController;
 use App\Http\Controllers\UserActivityLogController;
+use App\Http\Controllers\TrainingFeedbackController;
 
 
 
@@ -93,6 +94,11 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/training/get_course_lessons', [TrainingEventsController::class, 'getCourseLessons'])->name('training.course-lessons');
     Route::get('/training/get_licence_number_and_courses/{user_id}/{ou_id}', [TrainingEventsController::class, 'getStudentLicenseNumberAndCourses'])->name('training.get_licence_number_and_courses');
     Route::post('/grading/acknowledge', [TrainingEventsController::class, 'acknowledgeGarding'])->name('grading.acknowledge');
+    Route::get('/training/get_instructor_license_no/{instructor_id}', [TrainingEventsController::class, 'getInstructorLicenseNumber'])->name('training.get_instructor_license_no');
+    
+    //Grading feedback routes
+    Route::get('/grading/feedback_form/{event_id}', [TrainingFeedbackController::class, 'index'])->name('training.feedback.form');
+    Route::post('/grading/feedback_form/submit', [TrainingFeedbackController::class, 'submitFeedbackForm'])->name('training.feedback.submit');
 
     //Folder Routes
     Route::get('/folder/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('folder.getOrgfolder');
