@@ -268,11 +268,13 @@
                             <!-- Question Template -->
                             <div class="feedback-question mb-3">
                                 <input type="text" name="feedback_questions[0][question]" class="form-control mb-2" placeholder="Enter question">
+                                <div id="feedback_questions_0_question_error" class="text-danger error_e"></div>
                                 <select name="feedback_questions[0][answer_type]" class="form-select">
                                     <option value="">Select Answer Type</option>
                                     <option value="yes_no">Yes / No</option>
                                     <option value="rating">Rating (1-5)</option>
                                 </select>
+                                <div id="feedback_questions_0_answer_type_error" class="text-danger error_e"></div>
                             </div>
                         </div>
                         
@@ -521,8 +523,9 @@ $(document).ready(function() {
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
                 $.each(validationErrors, function(key, value) {
-                    var msg = '<p>' + value + '<p>';
-                    $('#' + key + '_error').html(msg);
+                    var formattedKey = key.replace(/\./g, '_') + '_error';
+                    var errorMsg = '<p>' + value[0] + '</p>';
+                    $('#' + formattedKey).html(errorMsg);
                 });
             }
         });
@@ -814,11 +817,13 @@ $(document).ready(function() {
         $('#feedback_questions_container').append(`
             <div class="feedback-question mb-3 border p-3 position-relative rounded">
                 <input type="text" name="feedback_questions[${questionIndex}][question]" class="form-control mb-2 question-input" placeholder="Enter question">
+                <div id="feedback_questions_${questionIndex}_question_error" class="text-danger error_e"></div>
                 <select name="feedback_questions[${questionIndex}][answer_type]" class="form-select answer-type">
                     <option value="">Select Answer Type</option>
                     <option value="yes_no">Yes / No</option>
                     <option value="rating">Rating (1-5)</option>
                 </select>
+                <div id="feedback_questions_${questionIndex}_answer_type_error" class="text-danger error_e"></div>
                 <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-question-btn">&times;</button>
             </div>
         `);

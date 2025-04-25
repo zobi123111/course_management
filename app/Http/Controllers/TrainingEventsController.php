@@ -467,6 +467,7 @@ class TrainingEventsController extends Controller
             'eventLessons.lesson:id,lesson_title',
             'eventLessons.instructor:id,fname,lname',
             'eventLessons.resource:id,name',
+            'trainingFeedbacks.question' // Eager load the question relationship
         ])->find(decode_id($event_id));
     
         if (!$trainingEvent) {
@@ -509,7 +510,9 @@ class TrainingEventsController extends Controller
         $selectedLessons = !empty($lessonIds) 
             ? CourseLesson::with('sublessons')->whereIn('id', $lessonIds)->get() 
             : collect();
-    
+
+        // Retrieve feedback data
+        $trainingFeedbacks = $trainingEvent->trainingFeedbacks;    
         return view('trainings.show', compact(
             'trainingEvent', 
             'student', 
@@ -517,7 +520,8 @@ class TrainingEventsController extends Controller
             'selectedLessons',
             'eventLessons',
             'taskGrades',
-            'competencyGrades'
+            'competencyGrades',
+            'trainingFeedbacks'
         ));
     }
     

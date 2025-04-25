@@ -491,7 +491,7 @@
                             </div>
                         @endif
                     </div>
-
+                  
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <strong><i class="fas fa-user"></i> Student:</strong>
@@ -503,6 +503,49 @@
                         </div>
                     </div>
                 @endif
+                
+                @if($trainingFeedbacks && $trainingFeedbacks->isNotEmpty())
+                    <div class="card shadow-sm mb-4 border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <strong><i class="fas fa-comments"></i> Student Feedback</strong>
+                        </div>
+                        <div class="card-body">
+                            @foreach($trainingFeedbacks as $index => $feedback)
+                                @php
+                                    $question = $feedback->question;
+                                    $answerType = $question->answer_type ?? null;
+                                    $answer = $feedback->answer;
+                                    $ratingLabels = [
+                                        1 => 'Strongly Disagree',
+                                        2 => 'Disagree',
+                                        3 => 'Neutral',
+                                        4 => 'Agree',
+                                        5 => 'Strongly Agree'
+                                    ];
+                                @endphp
+
+                                @if($question)
+                                    <div class="mb-3">
+                                        <p class="mb-1">
+                                            <strong>Q{{ $index + 1 }}:</strong> {{ $question->question ?? 'No Question' }}
+                                        </p>
+                                        <p class="text-muted">
+                                            Answer:
+                                            @if($answerType === 'rating' && is_numeric($answer))
+                                                {{ $answer }} - {{ $ratingLabels[$answer] ?? 'Unknown' }}
+                                            @else
+                                                {{ $answer ?? 'No Answer' }}
+                                            @endif
+                                        </p>
+                                        <hr>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+
             </div>
         </div>
             <div class="tab-pane fade" id="Lesson" role="tabpanel" aria-labelledby="Lesson-tab">

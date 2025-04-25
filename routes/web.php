@@ -109,7 +109,9 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('document/user_list', [DocumentController::class, 'getDocUserList'])->name('document.user_list');
 
     //Group Routes
-    Route::get('/group/get_ou_user/', [GroupController::class, 'getOrgUser'])->name('group.get_ou_user'); 
+    Route::get('/group/get_ou_user/', [GroupController::class, 'getOrgUser'])->name('group.get_ou_user');     
+    Route::get('/group/get_ou_group/', [GroupController::class, 'getOrgroup'])->name('group.getOrgroup');
+
 
 });
 
@@ -239,7 +241,6 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/group/get_ou_user/', [GroupController::class, 'getOrgUser'])->name('group.get_ou_user'); 
     Route::get('/folder/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('folder.getOrgfolder');
     Route::get('/folder/edit', [FolderController::class, 'getFolder'])->name('folder.edit');
-    Route::get('/group/get_ou_group/', [GroupController::class, 'getOrgroup'])->name('group.getOrgroup');
 
 });
 
