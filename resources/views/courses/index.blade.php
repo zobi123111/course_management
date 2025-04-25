@@ -1,90 +1,98 @@
-
 @section('title', 'Courses')
 @section('sub-title', 'Courses')
 @extends('layout.app')
 @section('content')
 
 <style>
-    .course-image {
-        height: 200px;
-        object-fit: cover;
-        width: 100%;
-    }
+.course-image {
+    height: 200px;
+    object-fit: cover;
+    width: 100%;
+}
 
-    .course_card {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    }
+.course_card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
 
-    .course_card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 16px rgba(0, 0, 0, 0.2);
-    }
+.course_card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 16px rgba(0, 0, 0, 0.2);
+}
 
-    .card-body {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-    }
+.card-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
 
-    .card-footer {
-        display: flex;
-        justify-content: space-between;
-        padding: 10px;
-        background-color: #f8f9fa;
-    }
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #f8f9fa;
+}
 
-    .card-text {
-        flex-grow: 1;
-    }
+.card-text {
+    flex-grow: 1;
+}
 
-    .course-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
+.course-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
 
-    .course-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    }
+.course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
 
-    /* Button hover effect */
-    .card-footer .btn {
-        transition: background-color 0.3s ease, transform 0.3s ease;
-    }
+/* Button hover effect */
+.card-footer .btn {
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
 
-    .card-footer .btn:hover {
-        background-color: #e2e6ea;
-        transform: translateY(-2px);
-    }
+.card-footer .btn:hover {
+    background-color: #e2e6ea;
+    transform: translateY(-2px);
+}
 
-    .status-label {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        color: white;
-        padding: 5px 10px;
-        border-radius: 5px;
-        font-size: 0.9em;
-    }
+.status-label {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.9em;
+}
+
+.select2-container--open {
+    z-index: 9999;
+    /* or higher than your modal */
+}
+
+.modal {
+    z-index: 1050;
+}
 </style>
 
 
 
 @if(session()->has('message'))
 <div id="successMessage" class="alert alert-success fade show" role="alert">
-  <i class="bi bi-check-circle me-1"></i>
-  {{ session()->get('message') }}
+    <i class="bi bi-check-circle me-1"></i>
+    {{ session()->get('message') }}
 </div>
 @endif
 
 @if(checkAllowedModule('courses','course.store')->isNotEmpty())
 <div class="create_btn">
     <button class="btn btn-primary create-button" id="createCourse" data-toggle="modal"
-    data-target="#createCourseModal">Create Course</button>
+        data-target="#createCourseModal">Create Course</button>
 </div>
 @endif
 <br>
@@ -94,53 +102,59 @@
         <div class="container-fluid">
             <div class="row">
                 @forelse($courses as $val)
-                    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
-                        <div class="course_card course-card">
-                            <div class="course-image-container" style="position: relative;">
-                                @if($val->image)
-                                    <img src="{{ asset('storage/' . $val->image) }}" class="card-img-top course-image" alt="Course Image">
-                                @else
-                                    <img src="{{ asset('/assets/img/profile-img.jpg') }}" class="card-img-top course-image" alt="Course Image">
-                                @endif
-        
-                                <span class="status-label" style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
-                                    {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
-                                </span>
-                            </div>
-        
-                            <div class="card-body">
-                                <h5 class="card-title courseName">{{ $val->course_name}}</h5>
-        
-                                <p class="card-text">
-                                    {{ \Illuminate\Support\Str::words($val->description, 50, '...') }} 
-                                </p>
-                            </div>
-        
-                            <div class="card-footer d-flex justify-content-between">
-                                @if(checkAllowedModule('courses', 'course.show')->isNotEmpty())
-                                    <a href="{{ route('course.show', ['course_id' => encode_id($val->id)]) }}" class="btn btn-light">
-                                        <i class="fa fa-eye"></i> View Course
-                                    </a>
-                                @endif
-        
-                                @if(checkAllowedModule('courses', 'course.edit')->isNotEmpty())
-                                    <a href="javascript:void(0)" class="btn btn-light edit-course-icon" data-course-id="{{ encode_id($val->id) }}">
-                                        <i class="fa fa-edit"></i> Edit
-                                    </a>
-                                @endif
-        
-                                @if(checkAllowedModule('courses', 'course.delete')->isNotEmpty())
-                                    <a href="javascript:void(0)" class="btn btn-light delete-icon" data-course-id="{{ encode_id($val->id) }}">
-                                        <i class="fa-solid fa-trash"></i> Delete
-                                    </a>
-                                @endif
-                            </div>
+                <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                    <div class="course_card course-card">
+                        <div class="course-image-container" style="position: relative;">
+                            @if($val->image)
+                            <img src="{{ asset('storage/' . $val->image) }}" class="card-img-top course-image"
+                                alt="Course Image">
+                            @else
+                            <img src="{{ asset('/assets/img/profile-img.jpg') }}" class="card-img-top course-image"
+                                alt="Course Image">
+                            @endif
+
+                            <span class="status-label"
+                                style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
+                                {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
+                            </span>
+                        </div>
+
+                        <div class="card-body">
+                            <h5 class="card-title courseName">{{ $val->course_name}}</h5>
+
+                            <p class="card-text">
+                                {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
+                            </p>
+                        </div>
+
+                        <div class="card-footer d-flex justify-content-between">
+                            @if(checkAllowedModule('courses', 'course.show')->isNotEmpty())
+                            <a href="{{ route('course.show', ['course_id' => encode_id($val->id)]) }}"
+                                class="btn btn-light">
+                                <i class="fa fa-eye"></i> View Course
+                            </a>
+                            @endif
+
+                            @if(checkAllowedModule('courses', 'course.edit')->isNotEmpty())
+                            <a href="javascript:void(0)" class="btn btn-light edit-course-icon"
+                                data-course-id="{{ encode_id($val->id) }}">
+                                <i class="fa fa-edit"></i> Edit
+                            </a>
+                            @endif
+
+                            @if(checkAllowedModule('courses', 'course.delete')->isNotEmpty())
+                            <a href="javascript:void(0)" class="btn btn-light delete-icon"
+                                data-course-id="{{ encode_id($val->id) }}">
+                                <i class="fa-solid fa-trash"></i> Delete
+                            </a>
+                            @endif
                         </div>
                     </div>
+                </div>
                 @empty
-                    <div class="col-12">
-                        <h4 class="text-center">No courses available</h4>
-                    </div>
+                <div class="col-12">
+                    <h4 class="text-center">No courses available</h4>
+                </div>
                 @endforelse
             </div>
         </div>
@@ -148,7 +162,8 @@
 </div>
 
 <!-- Create Courses-->
-<div class="modal fade" id="createCourseModal" tabindex="-1" role="dialog" aria-labelledby="courseModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal fade" id="createCourseModal" tabindex="-1" role="dialog" aria-labelledby="courseModalLabel"
+    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -156,18 +171,20 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="" id="courses" method="POST" enctype="multipart/form-data" class="row g-3 needs-validation">
+                <form action="" id="courses" method="POST" enctype="multipart/form-data"
+                    class="row g-3 needs-validation">
                     @csrf
                     @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                     <div class="form-group">
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                        <select class="form-select" name="ou_id" aria-label="Default select example" id="select_org_unit">
+                        <select class="form-select" name="ou_id" aria-label="Default select example"
+                            id="select_org_unit">
                             <option value="">Select Org Unit</option>
                             @foreach($organizationUnits as $val)
                             <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
                             @endforeach
                         </select>
-                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                        <div id="ou_id_error" class="text-danger error_e"></div>
                     </div>
                     @endif
                     <div class="form-group">
@@ -176,7 +193,8 @@
                         <div id="course_name_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="course_type" class="form-label">Course Type<span class="text-danger">*</span></label>
+                        <label for="course_type" class="form-label">Course Type<span
+                                class="text-danger">*</span></label>
                         <select class="form-select" name="course_type" id="course_type" required>
                             <option value="">Select Course Type</option>
                             <option value="one_event">One Event</option>
@@ -186,7 +204,7 @@
                     </div>
                     <div class="form-group">
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
-                        <textarea class="form-control" name="description"  rows="3"></textarea>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
                         <div id="description_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
@@ -195,24 +213,27 @@
                         <div id="image_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="duration" class="form-label">Course Duration<span class="text-danger">*</span></label>
+                        <label for="duration" class="form-label">Course Duration<span
+                                class="text-danger">*</span></label>
                         <select class="form-select" name="duration_type" id="duration_type">
                             <option value="">Select Duration Type</option>
                             <option value="hours">Hours</option>
                             <option value="events">Events</option>
                         </select>
-                        <input type="number" name="duration_value" class="form-control mt-2" placeholder="Enter number of hours/events">
+                        <input type="number" name="duration_value" class="form-control mt-2"
+                            placeholder="Enter number of hours/events">
                         <div id="duration_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="groups" class="form-label">Assigned Resource<span class="text-danger"></span></label>
+                        <label for="groups" class="form-label">Assigned Resource<span
+                                class="text-danger"></span></label>
                         <select class="form-select resources-select" name="resources[]" multiple="multiple">
                             @foreach($resource as $val)
                             <option value="{{ $val->id }}">{{ $val->name }}</option>
                             @endforeach
                         </select>
                         <div id="resources_error" class="text-danger error_e"></div>
-                    </div>  
+                    </div>
                     <div class="form-group">
                         <label for="groups" class="form-label">Select Groups<span class="text-danger">*</span></label>
                         <select class="form-select groups-select" name="group_ids[]" multiple="multiple">
@@ -221,15 +242,15 @@
                             @endforeach
                         </select>
                         <div id="group_ids_error" class="text-danger error_e"></div>
-                    </div>                    
-                    
+                    </div>
+
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" aria-label="Default select example">
                             <option value="1" selected>Active</option>
                             <option value="0">Inactive</option>
                         </select>
-                        <div id="status_error" class="text-danger error_e"></div>            
+                        <div id="status_error" class="text-danger error_e"></div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -243,7 +264,8 @@
 <!--End of Courses-->
 
 <!-- Edit Courses -->
-<div class="modal fade" id="editCourseModal" tabindex="-1" role="dialog" aria-labelledby="editCourseModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal fade" id="editCourseModal" tabindex="-1" role="dialog" aria-labelledby="editCourseModalLabel"
+    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -256,13 +278,14 @@
                     @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                     <div class="form-group">
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                        <select class="form-select" name="ou_id" aria-label="Default select example" id="edit_select_org_unit">
+                        <select class="form-select" name="ou_id" aria-label="Default select example"
+                            id="edit_select_org_unit">
                             <option value="">Select Org Unit</option>
                             @foreach($organizationUnits as $val)
                             <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
                             @endforeach
                         </select>
-                        <div id="ou_id_error" class="text-danger error_e"></div>            
+                        <div id="ou_id_error" class="text-danger error_e"></div>
                     </div>
                     @endif
                     <div class="form-group">
@@ -272,7 +295,8 @@
                         <div id="course_name_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="course_type" class="form-label">Course Type<span class="text-danger">*</span></label>
+                        <label for="course_type" class="form-label">Course Type<span
+                                class="text-danger">*</span></label>
                         <select class="form-select" name="course_type" id="edit_course_type" required>
                             <option value="">Select Course Type</option>
                             <option value="one_event">One Event</option>
@@ -291,34 +315,38 @@
                         <div id="image_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="duration" class="form-label">Course Duration<span class="text-danger">*</span></label>
+                        <label for="duration" class="form-label">Course Duration<span
+                                class="text-danger">*</span></label>
                         <select class="form-select" name="duration_type" id="edit_duration_type">
                             <option value="">Select Duration Type</option>
                             <option value="hours">Hours</option>
                             <option value="events">Events</option>
                         </select>
-                        <input type="number" name="duration_value" class="form-control mt-2" id="edit_duration_value" placeholder="Enter number of hours/events">
+                        <input type="number" name="duration_value" class="form-control mt-2" id="edit_duration_value"
+                            placeholder="Enter number of hours/events">
                         <div id="duration_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="groups" class="form-label">Assigned Resource<span class="text-danger"></span></label>
-                        <select class="form-select resources-select" name="resources[]" multiple="multiple" id="resources-select" >
+                        <label for="groups" class="form-label">Assigned Resource<span
+                                class="text-danger"></span></label>
+                        <select class="form-select resources-select" name="resources[]" multiple="multiple"
+                            id="resources-select">
                             @foreach($resource as $val)
                             <option value="{{ $val->id }}">{{ $val->name }}</option>
                             @endforeach
                         </select>
                         <div id="resources_error_up" class="text-danger error_e"></div>
-                    </div>  
+                    </div>
 
                     <div class="form-group">
                         <label for="groups" class="form-label">Select Groups<span class="text-danger"></span></label>
                         <select class="form-select groups-select" name="group_ids[]" multiple="multiple">
                             @foreach($groups as $group)
-                                <option value="{{ $group->id }}">{{ $group->name }}</option>
+                            <option value="{{ $group->id }}">{{ $group->name }}</option>
                             @endforeach
                         </select>
                         <div id="group_ids_error_up" class="text-danger error_e"></div>
-                    </div>  
+                    </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
@@ -326,7 +354,7 @@
                             <option value="0">Inactive</option>
                         </select>
                         <div id="status_error_up" class="text-danger error_e"></div>
-                    </div>            
+                    </div>
                     <div class="form-group">
                         <label class="form-label">
                             <input type="checkbox" id="enable_prerequisites"> Enable Prerequisites
@@ -351,8 +379,8 @@
                                 <button type="button" class="btn btn-danger remove-prerequisite">X</button>
                             </div>
                         </div>
-                         <button type="button" id="addPrerequisite" class="btn btn-primary mt-2">Add More</button>
-                    </div> 
+                        <button type="button" id="addPrerequisite" class="btn btn-primary mt-2">Add More</button>
+                    </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -368,7 +396,8 @@
 <!--Courses Delete  Modal -->
 <form action="{{ url('course/delete') }}" method="POST">
     @csrf
-    <div class="modal fade" id="deleteCourse" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal fade" id="deleteCourse" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"
+        data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -393,23 +422,22 @@
 @section('js_scripts')
 
 <script>
-
 function initializeSelect2() {
     $('.groups-select').select2({
         allowClear: true,
         placeholder: 'Select the Group',
         multiple: true,
-        dropdownParent: $('.modal:visible'),
+        dropdownParent: $('body') // move outside the modal
     });
-    
+
     $(".resources-select").select2({
         maximumSelectionLength: 3,
         placeholder: 'Select the Resource',
         allowClear: true,
-        dropdownParent: $('.modal:visible'),
+        dropdownParent: $('body') // move outside the modal
     });
-
 }
+
 
 $(document).ready(function() {
     $('#courseTable').DataTable();
@@ -459,7 +487,9 @@ $(document).ready(function() {
         $.ajax({
             url: "{{ url('/course/edit') }}",
             type: 'GET',
-            data: { id: courseId },
+            data: {
+                id: courseId
+            },
             success: function(response) {
                 // Populate course data
                 $('input[name="course_name"]').val(response.course.course_name);
@@ -477,26 +507,32 @@ $(document).ready(function() {
                     var $resourcesSelect = $('.resources-select');
                     $resourcesSelect.empty();
                     response.resources.forEach(function(resource) {
-                        var isSelected = response.courseResources.some(cr => cr.resources_id === resource.id);
+                        var isSelected = response.courseResources.some(cr => cr
+                            .resources_id === resource.id);
                         $resourcesSelect.append(
                             `<option value="${resource.id}" ${isSelected ? 'selected' : ''}>${resource.name}</option>`
                         );
                     });
-                    $resourcesSelect.val(response.courseResources.map(cr => cr.resources_id)).trigger('change');
+                    $resourcesSelect.val(response.courseResources.map(cr => cr
+                        .resources_id)).trigger('change');
                 }
 
                 // Fetch and Populate Groups Based on OU
                 $.ajax({
                     url: "{{ url('/group/get_ou_group') }}",
                     type: 'GET',
-                    data: { ou_id: response.course.ou_id },
+                    data: {
+                        ou_id: response.course.ou_id
+                    },
                     dataType: 'json',
                     success: function(groupResponse) {
                         var $groupSelect = $('.groups-select');
                         $groupSelect.empty();
-                        
-                        if (groupResponse.org_group && Array.isArray(groupResponse.org_group)) {
-                            $groupSelect.append(`<option value=''>Select Group</option>`);
+
+                        if (groupResponse.org_group && Array.isArray(
+                                groupResponse.org_group)) {
+                            $groupSelect.append(
+                                `<option value=''>Select Group</option>`);
                             groupResponse.org_group.forEach(function(group) {
                                 $groupSelect.append(
                                     `<option value="${group.id}">${group.name}</option>`
@@ -504,12 +540,14 @@ $(document).ready(function() {
                             });
 
                             // Set selected groups
-                            var selectedGroups = response.course.groups.map(g => g.id);
+                            var selectedGroups = response.course.groups.map(g =>
+                                g.id);
                             $groupSelect.val(selectedGroups).trigger('change');
                         }
                     },
                     error: function(xhr) {
-                        console.error("Error loading groups:", xhr.responseText);
+                        console.error("Error loading groups:", xhr
+                        .responseText);
                     }
                 });
 
@@ -526,19 +564,41 @@ $(document).ready(function() {
                 let prerequisites = response.course.prerequisites;
                 if (prerequisites.length > 0) {
                     prerequisites.forEach((prerequisite, index) => {
-                        let prerequisiteHtml = generatePrerequisiteHtml(prerequisite, index);
+                        let prerequisiteHtml = generatePrerequisiteHtml(
+                            prerequisite, index);
                         $('#prerequisite_items').append(prerequisiteHtml);
                     });
                 } else {
-                    let prerequisiteHtml = generatePrerequisiteHtml({ prerequisite_detail: '', prerequisite_type: 'text' }, 0);
+                    let prerequisiteHtml = generatePrerequisiteHtml({
+                        prerequisite_detail: '',
+                        prerequisite_type: 'text'
+                    }, 0);
                     $('#prerequisite_items').append(prerequisiteHtml);
                 }
 
+
                 $('#editCourseModal').modal('show');
 
-                $('#editCourseModal').on('shown.bs.modal', function () {
-                    initializeSelect3();
+                $('#editCourseModal').on('shown.bs.modal', function() {
+                    $('#editCourseModal .resources-select').select2({
+                        dropdownParent: $('#editCourseModal'),
+                        width: '100%',
+                        allowClear: true,
+                        placeholder: 'Select the Group',
+                        multiple: true,
+                        dropdownParent: $('body') // move outside the modal
+                    });
+
+                    $('#editCourseModal .groups-select').select2({
+                        dropdownParent: $('#editCourseModal'),
+                        width: '100%',
+                        allowClear: true,
+                        placeholder: 'Select the Group',
+                        multiple: true,
+                        dropdownParent: $('body') // move outside the modal
+                    });
                 });
+
             },
             error: function(xhr) {
                 console.error(xhr.responseText);
@@ -546,38 +606,6 @@ $(document).ready(function() {
         });
     });
 
-
-    // Initialize select2
-    function initializeSelect3() {
-        $('.groups-select').select2({
-            allowClear: true,
-            multiple: true,
-            dropdownParent: $('.modal:visible'),
-            templateResult: function(state) {
-                if (state.selected) {
-                    return $(
-                        // '<span style="display:none;">' + state.text + '</span>'
-                    );
-                }
-                return state.text;
-            }
-        });
-
-        // Multi Select Resource select box
-        $('.resources-select').select2({
-            allowClear: true,
-            multiple: true,
-            dropdownParent: $('.modal:visible'),
-            templateResult: function(state) {
-                if (state.selected) {
-                    return $(
-                        // '<span style="display:none;">' + state.text + '</span>'
-                    );
-                }
-                return state.text;
-            }
-        });
-    }
 
     // Update Course functionality
     $('#updateCourse').on('click', function(e) {
@@ -620,8 +648,8 @@ $(document).ready(function() {
     setTimeout(function() {
         $('#successMessage').fadeOut('slow');
     }, 2000);
-// Toggle prerequisites section
-$("#enable_prerequisites").change(function () {
+    // Toggle prerequisites section
+    $("#enable_prerequisites").change(function() {
         if ($(this).is(":checked")) {
             $("#prerequisites_container").show();
         } else {
@@ -631,7 +659,7 @@ $("#enable_prerequisites").change(function () {
     });
 
     // Add new prerequisite
-    $("#addPrerequisite").click(function () {
+    $("#addPrerequisite").click(function() {
         let index = $(".prerequisite-item").length;
         let prerequisiteHTML = `
             <div class="prerequisite-item border p-2 mt-2">
@@ -664,10 +692,11 @@ $("#enable_prerequisites").change(function () {
     });
 
     // Remove prerequisite
-    $(document).on("click", ".remove-prerequisite", function () {
+    $(document).on("click", ".remove-prerequisite", function() {
         $(this).closest(".prerequisite-item").remove();
     });
 });
+
 function generatePrerequisiteHtml(prerequisite, index) {
     return `
         <div class="prerequisite-item border p-2 mt-2">
@@ -698,93 +727,96 @@ function generatePrerequisiteHtml(prerequisite, index) {
     `;
 }
 
-    $(document).on("change", "#select_org_unit", function(){ 
-        var ou_id = $(this).val(); 
-        var $groupSelect = $(".groups-select"); 
-        var $resourceSelect = $(".resources-select");
-   
-           
-        $.ajax({
-            url: "/group/get_ou_group/",
-            type: "GET",
-            data: { 'ou_id': ou_id },
-            dataType: "json",  // Ensures response is treated as JSON
-            success: function(response){
-              
-                if (response.org_group && Array.isArray(response.org_group)) { 
-                    var options = "<option value=''>Select Group </option>"; 
-                    
-                    response.org_group.forEach(function(value){
-                        options += "<option value='" + value.id + "'>" + value.name  + "</option>";
-                    });
-                    $groupSelect.html(options); 
-                    $groupSelect.trigger("change");
-                } 
-                if (response.org_resource && Array.isArray(response.org_resource)) { 
-                 
-                    var resource = "<option value=''>Select Resource </option>"; 
-                    
-                    response.org_resource.forEach(function(value){
-                        resource += "<option value='" + value.id + "'>" + value.name  + "</option>";
+$(document).on("change", "#select_org_unit", function() {
+    var ou_id = $(this).val();
+    var $groupSelect = $(".groups-select");
+    var $resourceSelect = $(".resources-select");
 
-                        console.log(resource)
-                    });
-                    $resourceSelect.html(resource); 
-                    $resourceSelect.trigger("change");
-                }
-                else {
-                    console.error("Invalid response format:", response);
-                }
-            },
-            error: function(xhr, status, error){
-                console.error(xhr.responseText);
-            } 
-        });
+
+    $.ajax({
+        url: "/group/get_ou_group/",
+        type: "GET",
+        data: {
+            'ou_id': ou_id
+        },
+        dataType: "json", // Ensures response is treated as JSON
+        success: function(response) {
+
+            if (response.org_group && Array.isArray(response.org_group)) {
+                var options = "<option value=''>Select Group </option>";
+
+                response.org_group.forEach(function(value) {
+                    options += "<option value='" + value.id + "'>" + value.name +
+                        "</option>";
+                });
+                $groupSelect.html(options);
+                $groupSelect.trigger("change");
+            }
+            if (response.org_resource && Array.isArray(response.org_resource)) {
+
+                var resource = "<option value=''>Select Resource </option>";
+
+                response.org_resource.forEach(function(value) {
+                    resource += "<option value='" + value.id + "'>" + value.name +
+                        "</option>";
+
+                    console.log(resource)
+                });
+                $resourceSelect.html(resource);
+                $resourceSelect.trigger("change");
+            } else {
+                console.error("Invalid response format:", response);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error(xhr.responseText);
+        }
     });
+});
 
 
-    // Edit ou   
-    
-        $('#edit_select_org_unit').on('change', function() { 
-        var ou_id = $(this).val(); 
-        var $groupSelect = $(".groups-select"); 
-        var $resourceSelect = $(".resources-select");
-        $groupSelect.empty().append("<option value=''>Select Group</option>").trigger("change");
-        $.ajax({
-            url: "/group/get_ou_group/",
-            type: "GET",
-            data: { 'ou_id': ou_id },
-            dataType: "json",  // Ensures response is treated as JSON
-            success: function(response){
-                if (response.org_group && Array.isArray(response.org_group)) { 
-                    var options = "<option value=''>Select Group </option>"; 
-                    response.org_group.forEach(function(value){
-                        options += "<option value='" + value.id + "'>" + value.name  + "</option>";
-                    });
-                    $groupSelect.html(options); 
-                    $groupSelect.trigger("change");
-                } 
+// Edit ou   
 
-                if (response.org_resource && Array.isArray(response.org_resource)) { 
-                    var options = "<option value=''>Select Resource </option>"; 
-                    response.org_resource.forEach(function(value){
-                        options += "<option value='" + value.id + "'>" + value.name  + "</option>";
-                    });
-                    $resourceSelect.html(options); 
-                    $resourceSelect.trigger("change");
-                }
-                else {
-                    console.error("Invalid response format:", response);
-                }
-            },
-            error: function(xhr, status, error){
-                console.error(xhr.responseText);
-            } 
-        });
+$('#edit_select_org_unit').on('change', function() {
+    var ou_id = $(this).val();
+    var $groupSelect = $(".groups-select");
+    var $resourceSelect = $(".resources-select");
+    $groupSelect.empty().append("<option value=''>Select Group</option>").trigger("change");
+    $.ajax({
+        url: "/group/get_ou_group/",
+        type: "GET",
+        data: {
+            'ou_id': ou_id
+        },
+        dataType: "json", // Ensures response is treated as JSON
+        success: function(response) {
+            if (response.org_group && Array.isArray(response.org_group)) {
+                var options = "<option value=''>Select Group </option>";
+                response.org_group.forEach(function(value) {
+                    options += "<option value='" + value.id + "'>" + value.name +
+                        "</option>";
+                });
+                $groupSelect.html(options);
+                $groupSelect.trigger("change");
+            }
+
+            if (response.org_resource && Array.isArray(response.org_resource)) {
+                var options = "<option value=''>Select Resource </option>";
+                response.org_resource.forEach(function(value) {
+                    options += "<option value='" + value.id + "'>" + value.name +
+                        "</option>";
+                });
+                $resourceSelect.html(options);
+                $resourceSelect.trigger("change");
+            } else {
+                console.error("Invalid response format:", response);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error(xhr.responseText);
+        }
     });
-
-
-
+});
 </script>
 
 @endsection

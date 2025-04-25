@@ -166,7 +166,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/group/edit', [GroupController::class, 'getGroup'])->name('group.edit');
     Route::post('/group/update', [GroupController::class, 'updateGroup'])->name('group.update');
     Route::post('/group/delete', [GroupController::class, 'deleteGroup'])->name('group.delete');
-    Route::get('/group/get_ou_group/', [GroupController::class, 'getOrgroup'])->name('group.getOrgroup');
+    
     
     //Documents Route
     Route::get('/documents', [DocumentController::class, 'index'])->name('document.index');
@@ -227,7 +227,16 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/resource/approval', [ResourceController::class, 'resource_approval'])->name('resource.approval');
     Route::post('/resource/approve/request', [ResourceController::class, 'approve_request'])->name('approve_request.index');
     Route::post('/resource/reject/request', [ResourceController::class, 'reject_request'])->name('reject_request.index');
+
+    Route::get('/lesson-pdf/{subLessonId}', [SubLessonController::class, 'subLessonPdf'])->name('lesson-pdf.downloadPdf');
+    Route::get('/document/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('document.getOrgfolder');
+    Route::get('/group/get_ou_user/', [GroupController::class, 'getOrgUser'])->name('group.get_ou_user'); 
+    Route::get('/folder/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('folder.getOrgfolder');
+    Route::get('/folder/edit', [FolderController::class, 'getFolder'])->name('folder.edit');
+    Route::get('/group/get_ou_group/', [GroupController::class, 'getOrgroup'])->name('group.getOrgroup');
+
 });
+
     
 Route::get('/clear-cache', function() {
     Artisan::call('optimize:clear');
