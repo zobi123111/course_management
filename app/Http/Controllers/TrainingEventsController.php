@@ -159,81 +159,6 @@ class TrainingEventsController extends Controller
         }
     }
 
-    // public function createTrainingEvent(Request $request)
-    // {
-    //     // dd($request->all());
-    //      // Convert start_time and end_time to proper format
-    //      $request->merge([
-    //         'start_time' => date('H:i', strtotime($request->start_time)),
-    //         'end_time' => date('H:i', strtotime($request->end_time)),
-    //         'total_time' => date('H:i', strtotime($request->total_time)),
-    //     ]);
-    //     // Validate request data
-    //     $request->validate([
-    //         'student_id' => 'required|exists:users,id',
-    //         'course_id' => 'required|exists:courses,id',
-    //         'instructor_id' => 'required|exists:users,id',
-    //         'resource_id' => 'required|exists:resources,id',
-    //         'event_date' => 'required|date_format:Y-m-d', 
-    //         'start_time' => 'required|date_format:H:i', // Validating only time (HH:MM)
-    //         'end_time' => [
-    //                         'required',
-    //                         'date_format:H:i',
-    //                         function ($attribute, $value, $fail) use ($request) {
-    //                             if (strtotime($value) <= strtotime($request->start_time)) {
-    //                                 $fail('End time must be after start time.');
-    //                             }
-    //                         },
-    //                     ],
-    //         'departure_airfield' => 'required|string|size:4', // Ensuring exactly 4-letter airfield code
-    //         'destination_airfield' => 'required|string|size:4',
-    //         'total_time' => [
-    //                             'required',
-    //                             'date_format:H:i',
-    //                             function ($attribute, $value, $fail) use ($request) {
-    //                                 $start = strtotime($request->start_time);
-    //                                 $end = strtotime($request->end_time);
-    //                                 $calculated_total = gmdate("H:i", $end - $start);
-    //                                 if ($value !== $calculated_total) {
-    //                                     $fail('Total time does not match the calculated duration.');
-    //                                 }
-    //                             },
-    //                         ],
-    //         'licence_number' => 'nullable|string',
-    //         'ou_id' => [
-    //             function ($attribute, $value, $fail) {
-    //                 if (auth()->user()->is_owner == 1 && empty($value)) {
-    //                     $fail('The Organizational Unit (OU) is required for Super Admin.');
-    //                 }
-    //             }
-    //         ],
-    //     ]);
-    
-    //     // Create a new training event
-    //     $trainingEvent = TrainingEvents::create([
-    //         'student_id' => $request->student_id,
-    //         'course_id' => $request->course_id,
-    //         'instructor_id' => $request->instructor_id,
-    //         'resource_id' => $request->resource_id,
-    //         'event_date' => $request->event_date,
-    //         'start_time' => $request->start_time,
-    //         'end_time' => $request->end_time,
-    //         'departure_airfield' => strtoupper($request->departure_airfield), // Convert to uppercase
-    //         'destination_airfield' => strtoupper($request->destination_airfield),
-    //         'total_time' => $request->total_time, // Using the user-provided total time
-    //         'licence_number' => $request->licence_number ?? auth()->user()->licence_number,
-    //         "ou_id" => (auth()->user()->is_owner == 1) ? $request->ou_id : auth()->user()->ou_id,
-    //     ]);
-    
-    //     Session::flash('message', 'Training event created successfully.');
-    
-    //     // Return JSON response
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'Training event created successfully',
-    //         'trainingEvent' => $trainingEvent
-    //     ], 201);
-    // }
 
     public function createTrainingEvent(Request $request)
     {
@@ -292,6 +217,14 @@ class TrainingEventsController extends Controller
             'lesson_data.*.lesson_date' => 'required|date_format:Y-m-d',
             'lesson_data.*.start_time' => 'required|date_format:H:i',
             'lesson_data.*.end_time' => 'required|date_format:H:i',
+        ], [], [
+            'lesson_data.*.instructor_id' => 'instructor',
+            'lesson_data.*.resource_id' => 'resource',
+            'lesson_data.*.lesson_date' => 'lesson date',
+            'lesson_data.*.start_time' => 'start time',
+            'lesson_data.*.end_time' => 'end time',
+            'instructor_id' => 'instructor',
+            'resource_id' => 'resource',
         ]);
     
         // Create main training event
@@ -338,7 +271,7 @@ class TrainingEventsController extends Controller
 
     public function getTrainingEvent(Request $request)
     {
-        $trainingEvent = TrainingEvents::with('eventLessons')->findOrFail(decode_id($request->eventId));
+        $trainingEvent = TrainingEvents::with('eventLessons.lesson')->findOrFail(decode_id($request->eventId));
         if($trainingEvent)
         {
             return response()->json(['success'=> true,'trainingEvent'=> $trainingEvent]);
@@ -346,167 +279,6 @@ class TrainingEventsController extends Controller
             return response()->json(['success'=> false, 'message' => 'Training event Not found']);
         }
     }
-
-    // public function updateTrainingEvent(Request $request)
-    // {
-    //     // Convert start_time, end_time, and total_time to H:i format before validation
-    //     $request->merge([
-    //         'start_time' => date('H:i', strtotime($request->start_time)),
-    //         'end_time' => date('H:i', strtotime($request->end_time)),
-    //         'total_time' => date('H:i', strtotime($request->total_time)),
-    //     ]);
-
-    //     // Validate request
-    //     $request->validate([
-    //         'event_id' => 'required|exists:training_events,id',
-    //         'student_id' => 'required|exists:users,id',
-    //         'course_id' => 'required|exists:courses,id',
-    //         'instructor_id' => 'required|exists:users,id',
-    //         'resource_id' => 'nullable|exists:resources,id',
-    //         'event_date' => 'required|date_format:Y-m-d',
-    //         'start_time' => 'required|date_format:H:i',
-    //         'end_time' => [
-    //             'required',
-    //             'date_format:H:i',
-    //             function ($attribute, $value, $fail) use ($request) {
-    //                 if (strtotime($value) <= strtotime($request->start_time)) {
-    //                     $fail('End time must be after start time.');
-    //                 }
-    //             },
-    //         ],
-    //         'departure_airfield' => 'required|string|size:4',
-    //         'destination_airfield' => 'required|string|size:4',
-    //         'total_time' => [
-    //             'required',
-    //             'date_format:H:i',
-    //             function ($attribute, $value, $fail) use ($request) {
-    //                 $start = strtotime($request->start_time);
-    //                 $end = strtotime($request->end_time);
-    //                 $calculated_total = gmdate("H:i", $end - $start);
-    //                 if ($value !== $calculated_total) {
-    //                     $fail('Total time does not match the calculated duration.');
-    //                 }
-    //             },
-    //         ],
-    //         'licence_number' => 'nullable|string',
-    //         'ou_id' => [
-    //             function ($attribute, $value, $fail) {
-    //                 if (auth()->user()->is_owner == 1 && empty($value)) {
-    //                     $fail('The Organizational Unit (OU) is required for Super Admin.');
-    //                 }
-    //             }
-    //         ],
-    //     ]);
-    
-    //     // Find the training event
-    //     $trainingEvent = TrainingEvents::findOrFail($request->event_id);
-    
-    //     // Update fields
-    //     $trainingEvent->update([
-    //         'ou_id' => (auth()->user()->is_owner == 1) ? $request->ou_id : auth()->user()->ou_id,
-    //         'course_id' => $request->course_id,
-    //         'student_id' => $request->student_id,
-    //         'instructor_id' => $request->instructor_id,
-    //         'resource_id' => $request->resource_id,
-    //         'event_date' => $request->event_date,
-    //         'start_time' => $request->start_time,
-    //         'end_time' => $request->end_time,
-    //         'departure_airfield' => strtoupper($request->departure_airfield),
-    //         'destination_airfield' => strtoupper($request->destination_airfield),
-    //         'total_time' => $request->total_time,
-    //         'licence_number' => $request->licence_number ?? auth()->user()->licence_number,
-    //     ]);
-    
-    //     Session::flash('message', 'Training event updated successfully.');
-    
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'Training event updated successfully',
-    //         'trainingEvent' => $trainingEvent
-    //     ]);
-    // }
-    
-    // public function updateTrainingEvent(Request $request)
-    // {
-    //     // Convert time fields to H:i format
-    //     $request->merge([
-    //         'start_time' => date('H:i', strtotime($request->start_time)),
-    //         'end_time' => date('H:i', strtotime($request->end_time)),
-    //         'total_time' => date('H:i', strtotime($request->total_time)),
-    //     ]);
-    
-    //     // Validate request
-    //     $request->validate([
-    //         'event_id' => 'required|exists:training_events,id',
-    //         'student_id' => 'required|exists:users,id',
-    //         'course_id' => 'required|exists:courses,id',
-    //         'instructor_id' => 'required|exists:users,id',
-    //         'resource_id' => 'nullable|exists:resources,id',
-    //         'lesson_ids' => 'required|array',  // Validate as an array
-    //         'lesson_ids.*' => 'exists:lessons,id', // Each lesson_id must exist in lessons table
-    //         'event_date' => 'required|date_format:Y-m-d',
-    //         'start_time' => 'required|date_format:H:i',
-    //         'end_time' => [
-    //             'required',
-    //             'date_format:H:i',
-    //             function ($attribute, $value, $fail) use ($request) {
-    //                 if (strtotime($value) <= strtotime($request->start_time)) {
-    //                     $fail('End time must be after start time.');
-    //                 }
-    //             },
-    //         ],
-    //         'departure_airfield' => 'required|string|size:4',
-    //         'destination_airfield' => 'required|string|size:4',
-    //         'total_time' => [
-    //             'required',
-    //             'date_format:H:i',
-    //             function ($attribute, $value, $fail) use ($request) {
-    //                 $start = strtotime($request->start_time);
-    //                 $end = strtotime($request->end_time);
-    //                 $calculated_total = gmdate("H:i", $end - $start);
-    //                 if ($value !== $calculated_total) {
-    //                     $fail('Total time does not match the calculated duration.');
-    //                 }
-    //             },
-    //         ],
-    //         'licence_number' => 'nullable|string',
-    //         'ou_id' => [
-    //             function ($attribute, $value, $fail) {
-    //                 if (auth()->user()->is_owner == 1 && empty($value)) {
-    //                     $fail('The Organizational Unit (OU) is required for Super Admin.');
-    //                 }
-    //             }
-    //         ],
-    //     ]);
-    
-    //     // Find the training event
-    //     $trainingEvent = TrainingEvents::findOrFail($request->event_id);
-    
-    //     // Update fields
-    //     $trainingEvent->update([
-    //         'ou_id' => (auth()->user()->is_owner == 1) ? $request->ou_id : auth()->user()->ou_id,
-    //         'course_id' => $request->course_id,
-    //         'student_id' => $request->student_id,
-    //         'instructor_id' => $request->instructor_id,
-    //         'resource_id' => $request->resource_id,
-    //         'lesson_ids' => json_encode($request->lesson_ids), // Store lesson IDs as JSON
-    //         'event_date' => $request->event_date,
-    //         'start_time' => $request->start_time,
-    //         'end_time' => $request->end_time,
-    //         'departure_airfield' => strtoupper($request->departure_airfield),
-    //         'destination_airfield' => strtoupper($request->destination_airfield),
-    //         'total_time' => $request->total_time,
-    //         'licence_number' => $request->licence_number ?? auth()->user()->licence_number,
-    //     ]);
-    
-    //     Session::flash('message', 'Training event updated successfully.');
-    
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'Training event updated successfully',
-    //         'trainingEvent' => $trainingEvent
-    //     ]);
-    // }
 
     public function updateTrainingEvent(Request $request)
     {
@@ -535,9 +307,10 @@ class TrainingEventsController extends Controller
             'student_id' => 'required|exists:users,id',
             'course_id' => 'required|exists:courses,id',
             'instructor_id' => 'required|exists:users,id',
-            'resource_id' => 'nullable|exists:resources,id',
-    
+            'resource_id' => 'required|exists:resources,id',
+        
             'lesson_data' => 'required|array',
+            'lesson_data.*.lesson_id' => 'required|exists:course_lessons,id',
             'lesson_data.*.instructor_id' => 'required|exists:users,id',
             'lesson_data.*.resource_id' => 'required|exists:resources,id',
             'lesson_data.*.lesson_date' => 'required|date_format:Y-m-d',
@@ -550,14 +323,14 @@ class TrainingEventsController extends Controller
                     if (isset($matches[1])) {
                         $index = $matches[1];
                         $startTime = $request->input("lesson_data.$index.start_time");
-    
+        
                         if (strtotime($value) <= strtotime($startTime)) {
-                            $fail("Lesson #$index: End time must be after start time.");
+                            $fail("Lesson #" . ($index + 1) . ": End time must be after start time.");
                         }
                     }
                 },
             ],
-    
+        
             'event_date' => 'required|date_format:Y-m-d',
             'start_time' => 'required|date_format:H:i',
             'end_time' => [
@@ -591,6 +364,14 @@ class TrainingEventsController extends Controller
                     }
                 }
             ],
+        ], [], [
+            'lesson_data.*.instructor_id' => 'instructor',
+            'lesson_data.*.resource_id' => 'resource',
+            'lesson_data.*.lesson_date' => 'lesson date',
+            'lesson_data.*.start_time' => 'start time',
+            'lesson_data.*.end_time' => 'end time',
+            'instructor_id' => 'instructor',
+            'resource_id' => 'resource',
         ]);
     
         // Update Training Event
@@ -601,7 +382,7 @@ class TrainingEventsController extends Controller
             'student_id' => $request->student_id,
             'instructor_id' => $request->instructor_id,
             'resource_id' => $request->resource_id,
-            'lesson_ids' => json_encode(array_keys($lessonData)), // optional, depends on usage
+            'lesson_ids' => json_encode(array_column($lessonData, 'lesson_id')),
             'event_date' => $request->event_date,
             'start_time' => $request->start_time,
             'end_time' => $request->end_time,
@@ -611,12 +392,20 @@ class TrainingEventsController extends Controller
             'licence_number' => $request->licence_number ?? auth()->user()->licence_number,
         ]);
     
+        // Get all lesson_ids from the request
+        $incomingLessonIds = collect($lessonData)->pluck('lesson_id')->toArray();
+    
+        // Delete removed lessons
+        TrainingEventLessons::where('training_event_id', $trainingEvent->id)
+            ->whereNotIn('lesson_id', $incomingLessonIds)
+            ->delete();
+    
         // Update or create each lesson's detail
-        foreach ($lessonData as $lessonId => $data) {
+        foreach ($lessonData as $data) {
             TrainingEventLessons::updateOrCreate(
                 [
                     'training_event_id' => $trainingEvent->id,
-                    'lesson_id' => $lessonId,
+                    'lesson_id' => $data['lesson_id'],
                 ],
                 [
                     'instructor_id' => $data['instructor_id'],
@@ -636,6 +425,7 @@ class TrainingEventsController extends Controller
             'trainingEvent' => $trainingEvent->load('eventLessons'),
         ]);
     }
+    
     
     
     public function deleteTrainingEvent(Request $request)
@@ -905,7 +695,7 @@ class TrainingEventsController extends Controller
             // Store or update Competency Grading (lesson-level):
             if ($request->has('comp_grade')) {
                 foreach ($request->input('comp_grade') as $lesson_id => $competencyGrades) {
-                    $compData = [
+                    $compData = [   
                         'event_id'  => $event_id,
                         'lesson_id' => $lesson_id,
                         'user_id'   => $gradedStudentIdForComp, // Use student ID from hidden input
@@ -935,6 +725,8 @@ class TrainingEventsController extends Controller
             
             // Commit the transaction on success
             DB::commit();
+
+            TrainingEvents::where('id', $event_id)->where('is_locked', '!=', 1)->update(['is_locked' => 1]);
             Session::flash('message', 'Student grading updated successfully.');
             return response()->json(['success' => true, 'message' => 'Student grading updated successfully.']);
         
@@ -968,24 +760,26 @@ class TrainingEventsController extends Controller
             ]
         );
 
+        TrainingEvents::where('id', $request->event_id)->where('is_locked', '!=', 1)->update(['is_locked' => 1]);
         Session::flash('message', 'Overall Assessment saved successfully.');
         return response()->json(['success' => true, 'message' => 'Overall Assessment saved successfully.']);
     }
 
-    public function getStudentGrading(Request $request,$event_id)
+    public function getStudentGrading(Request $request, $event_id)
     {
         $userId = auth()->user()->id;
         $ouId = auth()->user()->ou_id;
-
-        $events = TrainingEvents::where('ou_id', $ouId)->where('id', decode_id($event_id))
+    
+        $event = TrainingEvents::where('ou_id', $ouId)
+            ->where('id', decode_id($event_id))
             ->whereHas('taskGradings', function ($query) use ($userId) {
                 $query->where('user_id', $userId);
             })
             ->with([
                 'taskGradings' => function ($query) use ($userId) {
-                $query->where('user_id', $userId)
-                      ->with('lesson:id,lesson_title') // Load only lesson_name
-                      ->with('subLesson:id,title'); // Load only sub_lesson_name
+                    $query->where('user_id', $userId)
+                        ->with('lesson:id,lesson_title') // Load only lesson_name
+                        ->with('subLesson:id,title'); // Load only sub_lesson_name
                 },
                 'competencyGradings' => function ($query) use ($userId) {
                     $query->where('user_id', $userId);
@@ -993,13 +787,50 @@ class TrainingEventsController extends Controller
                 'overallAssessments' => function ($query) use ($userId) {
                     $query->where('user_id', $userId);
                 },
-                'course:id,course_name',  // Load only course name
-                'group:id,name',   // Load only group name
+                'course:id,course_name', // Load only course name
+                'group:id,name', // Load only group name
                 'instructor:id,fname,lname' // Load only instructor name
             ])
-            ->get();
-        return view('trainings.grading-list', compact('events'));
+            ->first(); // Use first() to get a single event
+    
+        return view('trainings.grading-list', compact('event'));
     }
+    
+
+    public function unlockEventGarding(Request $request, $event_id)
+    {
+        $updateTrainingEvent = TrainingEvents::where('id', decode_id($event_id))->update(['is_locked' => 0]);
+        if($updateTrainingEvent){
+            Session::flash('message', 'Grading is unlocked for editing.');
+            return response()->json(['success' => true, 'message' => 'Grading is unlocked for editing.']);
+        }
+    }
+
+
+    public function acknowledgeGarding(Request $request)
+    {
+        // Optional: Validate the incoming comment
+        $request->validate([
+            'ack_comment' => 'nullable|string|max:1000',
+        ]);
+    
+        $eventId = decode_id($request->eventId);
+    
+        $updated = TrainingEvents::where('id', $eventId)->update([
+            'student_acknowledged' => 1,
+            'student_acknowledgement_comments' => $request->ack_comment,
+        ]);
+    
+        if ($updated) {
+            Session::flash('message', 'Acknowledgment recorded');
+            return response()->json(['success' => true, 'message' => 'Acknowledgment recorded']);
+        }
+    
+        return response()->json(['success' => false, 'message' => 'Acknowledgment failed'], 500);
+    }
+
+
+
 
 
     

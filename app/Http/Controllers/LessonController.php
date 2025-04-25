@@ -6,6 +6,7 @@ use App\Models\SubLesson;
 use Illuminate\Http\Request;
 use App\Models\CourseLesson;
 use App\Models\Courses;
+use App\Models\TrainingEvents;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -20,13 +21,21 @@ class LessonController extends Controller
     
     public function showCourse(Request $request, $course_id)
     {
+        $user = auth()->user();
         $course = Courses::with('courseLessons', 'prerequisites')->findOrFail(decode_id($course_id));
         $breadcrumbs = [
             ['title' => 'Courses', 'url' => route('course.index')],
             ['title' => $course->course_name, 'url' => ''],
         ];
-
-        return view('courses.show', compact('course', 'breadcrumbs'));
+        if(get_user_role($user->role) == 'student'){
+            $studentAcknowledged = TrainingEvents::where('course_id', decode_id($course_id))
+            ->where('student_id', $user->id)
+            ->where('student_acknowledged', 1)
+            ->exists(); // returns true/false
+        }else{
+            $studentAcknowledged = false;
+        }
+        return view('courses.show', compact('course', 'breadcrumbs','studentAcknowledged'));
     }
 
 

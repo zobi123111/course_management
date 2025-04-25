@@ -47,19 +47,42 @@
                 <td>{{ date('h:i A', strtotime($event->start_time)) }}</td>
                 <td>{{ date('h:i A', strtotime($event->end_time)) }}</td>
                 <td>
-                @if(checkAllowedModule('training','training.show')->isNotEmpty())
-                    <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;"><i class="fa fa-eye text-danger me-2"></i></a>
-                @endif
-                @if(checkAllowedModule('training','training.edit')->isNotEmpty())
-                    <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                    data-event-id="{{ encode_id($event->id) }}"></i>
-                @endif
-                @if(checkAllowedModule('training','training.delete')->isNotEmpty())
-                    <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                    data-event-id="{{ encode_id($event->id) }}" ></i>
-                @endif
-                @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
-                <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;"><i class="fa fa-list text-danger me-2"></i></a>
+                @if(get_user_role(auth()->user()->role) == 'administrator')  
+
+                    @if(checkAllowedModule('training','training.edit')->isNotEmpty())
+                        <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                        data-event-id="{{ encode_id($event->id) }}"></i>
+                    @endif
+
+                    @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                        <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                        data-event-id="{{ encode_id($event->id) }}"></i>
+                    @endif
+
+                    @if($event->is_locked == 1)
+                        <i class="fa fa-lock-open unlock-event-icon text-success" title="Unlock this event to enable grading edits." 
+                        data-event-id="{{ encode_id($event->id) }}" style="font-size:20px; cursor: pointer;"></i>
+                    @endif
+
+                @elseif(get_user_role(auth()->user()->role) == 'instructor')   
+
+                    @if($event->is_locked != 1)
+                        @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                            <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                            <i class="fa fa-eye text-danger me-2"></i>
+                            </a>            
+                        @endif
+                    @else
+                        <i class="fa fa-lock text-secondary" title="This event is locked and cannot be edited or viewed." style="font-size:20px;"></i>
+                    @endif    
+                @else
+                   
+                    @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
+                        <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
+                        <i class="fa fa-list text-danger me-2"></i>
+                        </a>
+                    @endif
+
                 @endif
                 </td>
             </tr>
@@ -387,9 +410,10 @@
 @section('js_scripts')
 
 <script>
-
-const instructors = @json($instructors);
-const resources = @json($resources);
+var instructorsdata;
+instructorsdata = @json($instructors);
+var resourcesdata;
+resourcesdata = @json($resources);
 
 $('#select_lesson').on('change', function () {
     let selectedLessons = $(this).val() || [];
@@ -422,29 +446,34 @@ $('#select_lesson').on('change', function () {
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Instructor<span class="text-danger">*</span></label>
-                            <select class="form-select" name="lesson_data[${lessonId}][instructor_id]">
+                            <select class="form-select" name="lesson_data[${lessonId}][instructor_id]" id="lesson_data_${lessonId}_instructor_listbox">
                                 <option value="">Select Instructor</option>
-                                ${instructors.map(i => `<option value="${i.id}">${i.fname} ${i.lname}</option>`).join('')}
+                                ${instructorsdata.map(i => `<option value="${i.id}">${i.fname} ${i.lname}</option>`).join('')}
                             </select>
+                            <div id="lesson_data_${lessonId}_instructor_id_error" class="text-danger error_e"></div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Resource<span class="text-danger">*</span></label>
                             <select class="form-select" name="lesson_data[${lessonId}][resource_id]">
                                 <option value="">Select Resource</option>
-                                ${resources.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
+                                ${resourcesdata.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
                             </select>
+                            <div id="lesson_data_${lessonId}_resource_id_error" class="text-danger error_e"></div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Lesson Date<span class="text-danger">*</span></label>
                             <input type="date" name="lesson_data[${lessonId}][lesson_date]" class="form-control">
+                            <div id="lesson_data_${lessonId}_lesson_date_error" class="text-danger error_e"></div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Start Time<span class="text-danger">*</span></label>
                             <input type="time" name="lesson_data[${lessonId}][start_time]" class="form-control lesson-start-time" data-lesson-id="${lessonId}">
+                            <div id="lesson_data_${lessonId}_start_time_error" class="text-danger error_e"></div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">End Time<span class="text-danger">*</span></label>
                             <input type="time" name="lesson_data[${lessonId}][end_time]" class="form-control lesson-end-time" data-lesson-id="${lessonId}">
+                            <div id="lesson_data_${lessonId}_end_time_error" class="text-danger error_e"></div>
                         </div>
                     </div>
                 </div>
@@ -530,7 +559,7 @@ $(document).ready(function() {
             type: "GET",
             dataType: "json",
             success: function (response) {
-                console.log(response.resources);
+                // console.log(response.resources);
                 // Store selected values before clearing
                 var selectedStudent = studentDropdown.data("selected-value") || [];
                 var selectedInstructor = instructorDropdown.data("selected-value") || [];
@@ -549,7 +578,8 @@ $(document).ready(function() {
                 // Populate Instructors
                 var instructorOptions = '<option value="">Select Instructor</option>';
                 if (response.instructors && response.instructors.length > 0) {
-                    $.each(response.instructors, function(index, instructor) {
+                    instructorsdata = response.instructors;
+                    $.each(instructorsdata, function(index, instructor) {
                         var selected = instructor.id == selectedInstructor ? 'selected' : '';
                         instructorOptions += '<option value="' + instructor.id + '" ' + selected + '>' + instructor.fname + ' ' + instructor.lname + '</option>';
                     });
@@ -559,7 +589,8 @@ $(document).ready(function() {
                 // Populate Resources
                 var resourceOptions = '<option value="">Select Resource</option>';
                 if (response.resources && response.resources.length > 0) {
-                    $.each(response.resources, function(index, resource) {
+                    resourcesdata = response.resources;
+                    $.each(resourcesdata, function(index, resource) {
                         var selected = resource.id == selectedResource ? 'selected' : '';
                         resourceOptions += '<option value="' + resource.id + '" ' + selected + '>' + resource.name + '</option>';
                     });
@@ -661,7 +692,7 @@ $(document).ready(function() {
                     }
                 } else {
                     alert('No lessons found for the selected course.');
-                    lessonDropdown.append('<option value="">Select Lesson</option>'); // Keep default option
+                    lessonDropdown.append('<option value="">Select Lesson</option>').trigger('change'); // Keep default option
                 }
             },
             error: function(xhr) {
@@ -684,10 +715,17 @@ $(document).ready(function() {
             error: function(xhr, status, error) {
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
+                // $.each(validationErrors, function(key, value) {
+                //     var msg = '<p>' + value + '<p>';
+                //     $('#' + key + '_error').html(msg);
+                // })
+                // Clear old errors
+                $('.text-danger').html('');
                 $.each(validationErrors, function(key, value) {
-                    var msg = '<p>' + value + '<p>';
-                    $('#' + key + '_error').html(msg);
-                })
+                    var formattedKey = key.replace(/\./g, '_') + '_error';
+                    var errorMsg = '<p>' + value[0] + '</p>';
+                    $('#' + formattedKey).html(errorMsg);
+                });
             }
         });
 
@@ -702,6 +740,7 @@ $(document).ready(function() {
             type: 'GET',
             data: { eventId: eventId },
             success: async function (response) {
+                // console.log(response);
                 if (response.success) {
                     const event = response.trainingEvent;
 
@@ -723,19 +762,19 @@ $(document).ready(function() {
                     $('#edit_end_time').val(event.end_time);
 
                     // Set OU and wait for dropdowns to populate
-                    $('#edit_ou_id').val(selectedOU).trigger('change');
-
+                    $('#edit_ou_id').val(selectedOU);
+                    $('#edit_ou_id').trigger('change');
                     // Wait a bit for student/instructor/resource dropdowns to populate
                     await new Promise(resolve => setTimeout(resolve, 500));
 
                     // Set selected values
-                    $('#edit_select_user').data("selected-value", selectedStudent).val(selectedStudent).trigger('change');
+                    $('#edit_select_user').data("selected-value", selectedStudent).val(selectedStudent);
                     $('#edit_select_instructor').data("selected-value", selectedInstructor).val(selectedInstructor);
                     $('#edit_select_resource').data("selected-value", selectedResource).val(selectedResource);
 
                     // Wait for student change to load courses
                     await new Promise(resolve => setTimeout(resolve, 500));
-                    $('#edit_select_course').data("selected-value", selectedCourse).val(selectedCourse).trigger('change');
+                    $('#edit_select_course').data("selected-value", selectedCourse).val(selectedCourse);
 
                     // Lessons (handled after course is loaded)
                     let lessonIds = Array.isArray(event.lesson_ids) ? event.lesson_ids : JSON.parse(event.lesson_ids || "[]");
@@ -746,23 +785,23 @@ $(document).ready(function() {
 
                     if (response.trainingEvent.event_lessons && response.trainingEvent.event_lessons.length > 0) {
                         const eventLessons = response.trainingEvent.event_lessons;
-                        const instructors = @json($instructors); // Assuming you pass this in blade
-                        const resources = @json($resources);     // Assuming you pass this in blade
+                        // const instructors = @json($instructors); // Assuming you pass this in blade
+                        // const resources = @json($resources);     // Assuming you pass this in blade
 
                         eventLessons.forEach((lesson) => {
                             const lessonId = lesson.lesson_id;
-                            const lessonTitle = lesson.lesson_title || `Lesson ${lessonId}`; // fallback
+                            const lessonTitle = lesson.lesson.lesson_title || `Lesson ${lessonId}`; // fallback
                             const selectedInstructor = lesson.instructor_id || '';
                             const selectedResource = lesson.resource_id || '';
                             const lessonDate = lesson.lesson_date || '';
                             const startTime = lesson.start_time || '';
                             const endTime = lesson.end_time || '';
 
-                            const instructorOptions = instructors.map(i =>
+                            var instructorOptions = instructorsdata.map(i =>
                                 `<option value="${i.id}" ${i.id == selectedInstructor ? 'selected' : ''}>${i.fname} ${i.lname}</option>`
                             ).join('');
 
-                            const resourceOptions = resources.map(r =>
+                            var resourceOptions= resourcesdata.map(r =>
                                 `<option value="${r.id}" ${r.id == selectedResource ? 'selected' : ''}>${r.name}</option>`
                             ).join('');
 
@@ -777,6 +816,7 @@ $(document).ready(function() {
                                                 <option value="">Select Instructor</option>
                                                 ${instructorOptions}
                                             </select>
+                                            <div id="lesson_data_${lessonId}_instructor_id_error_up" class="text-danger error_e"></div>
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label">Resource<span class="text-danger">*</span></label>
@@ -784,24 +824,28 @@ $(document).ready(function() {
                                                 <option value="">Select Resource</option>
                                                 ${resourceOptions}
                                             </select>
+                                            <div id="lesson_data_${lessonId}_resource_id_error_up" class="text-danger error_e"></div>
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label">Lesson Date<span class="text-danger">*</span></label>
                                             <input type="date" name="lesson_data[${lessonId}][lesson_date]" value="${lessonDate}" class="form-control">
+                                            <div id="lesson_data_${lessonId}_lesson_date_error_up" class="text-danger error_e"></div>
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label">Start Time<span class="text-danger">*</span></label>
                                             <input type="time" name="lesson_data[${lessonId}][start_time]" value="${startTime}" class="form-control lesson-start-time" data-lesson-id="${lessonId}">
+                                            <div id="lesson_data_${lessonId}_start_time_error_up" class="text-danger error_e"></div>
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label">End Time<span class="text-danger">*</span></label>
                                             <input type="time" name="lesson_data[${lessonId}][end_time]" value="${endTime}" class="form-control lesson-end-time" data-lesson-id="${lessonId}">
+                                            <div id="lesson_data_${lessonId}_end_time_error_up" class="text-danger error_e"></div>
                                         </div>
                                     </div>
                                 </div>
                             `;
 
-                            $('#editLessonDetailsContainer').append(lessonBox);
+                            $('#editLessonDetailsContainer').html(lessonBox);
                         });
                     }
                     $('#editTrainingEventModal').modal('show');
@@ -812,6 +856,73 @@ $(document).ready(function() {
             error: function (xhr) {
                 console.error(xhr.responseText);
                 alert('Something went wrong! Please try again.');
+            }
+        });
+    });
+
+    $('#edit_select_lesson').on('change', function () {
+        const selectedLessonIds = $(this).val() || []; // Get current selected values (array)
+        const allLessonBoxes = $('#editLessonDetailsContainer .lesson-box');
+
+        // 1. Remove lesson boxes that are no longer selected
+        allLessonBoxes.each(function () {
+            const lessonId = $(this).data('lesson-id').toString();
+            if (!selectedLessonIds.includes(lessonId)) {
+                $(this).remove();
+            }
+        });
+
+        // 2. Add boxes for newly selected lessons
+        selectedLessonIds.forEach(function (lessonId) {
+            // If already present, skip
+            if ($(`#editLessonDetailsContainer .lesson-box[data-lesson-id="${lessonId}"]`).length === 0) {
+                // Optional: You can get lesson title and other defaults via AJAX or preloaded data
+                const lessonTitle = $('#edit_select_lesson option[value="' + lessonId + '"]').text().trim();
+
+                const instructorOptions = @json($instructors).map(i =>
+                    `<option value="${i.id}">${i.fname} ${i.lname}</option>`
+                ).join('');
+
+                const resourceOptions = @json($resources).map(r =>
+                    `<option value="${r.id}">${r.name}</option>`
+                ).join('');
+
+                const lessonBox = `
+                    <div class="col-12 mb-3 border rounded p-3 lesson-box" data-lesson-id="${lessonId}">
+                        <input type="hidden" name="lesson_data[${lessonId}][lesson_id]" value="${lessonId}">
+                        <h6 class="fw-bold mb-3">Lesson: ${lessonTitle}</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Instructor<span class="text-danger">*</span></label>
+                                <select class="form-select" name="lesson_data[${lessonId}][instructor_id]">
+                                    <option value="">Select Instructor</option>
+                                    ${instructorOptions}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Resource<span class="text-danger">*</span></label>
+                                <select class="form-select" name="lesson_data[${lessonId}][resource_id]">
+                                    <option value="">Select Resource</option>
+                                    ${resourceOptions}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Lesson Date<span class="text-danger">*</span></label>
+                                <input type="date" name="lesson_data[${lessonId}][lesson_date]" class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Start Time<span class="text-danger">*</span></label>
+                                <input type="time" name="lesson_data[${lessonId}][start_time]" class="form-control lesson-start-time" data-lesson-id="${lessonId}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">End Time<span class="text-danger">*</span></label>
+                                <input type="time" name="lesson_data[${lessonId}][end_time]" class="form-control lesson-end-time" data-lesson-id="${lessonId}">
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                $('#editLessonDetailsContainer').append(lessonBox);
             }
         });
     });
@@ -830,10 +941,13 @@ $(document).ready(function() {
             error: function(xhr, status, error) {
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
+                // Clear old errors
+                $('.text-danger').html('');
                 $.each(validationErrors, function(key, value) {
-                    var msg = '<p>' + value + '<p>';
-                    $('#' + key + '_error_up').html(msg);
-                })
+                    var formattedKey = key.replace(/\./g, '_') + '_error_up';
+                    var errorMsg = '<p>' + value[0] + '</p>';
+                    $('#' + formattedKey).html(errorMsg);
+                });
             }
         })
     })
@@ -847,7 +961,30 @@ $(document).ready(function() {
         $('#eventId').val(eventId);      
     });
 
+    //Unlock the training event grading for editing
+    $(document).on('click', '.unlock-event-icon', function () {
+        let eventId = $(this).data('event-id');
+
+        if (confirm('Are you sure you want to unlock this training event?')) {
+            $.ajax({
+                url: '/grading/unlock/' + eventId,
+                type: 'POST',
+                data: {"_token": "{{ csrf_token() }}"},
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Unlock failed:', xhr.responseText);
+                }
+            });
+        }
+    });
+
+
     $('#editTrainingEventModal').on('shown.bs.modal', async function () {
+        initializeSelect2();
         $('#edit_ou_id').trigger('change');
 
         await new Promise(resolve => setTimeout(resolve, 300));

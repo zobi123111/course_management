@@ -362,7 +362,12 @@
     @endif
     <div class="loader" style="display: none;"></div>
     <div class="card-body">
-        <h5 class="card-title">{{ $trainingEvent?->course?->course_name }}</h5>
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">{{ $trainingEvent?->course?->course_name }}</h5>
+            <div class="ms-3 px-3 py-2 bg-warning text-dark rounded" style="font-size: 0.9rem; max-width: 60%;">
+                <strong>NOTE:</strong> Please ensure all grading is completed carefully. Once saved, the training event will be locked.
+            </div>
+        </div>
         <!-- Default Tabs -->
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
