@@ -352,6 +352,7 @@ public function getData(Request $request)
             'email' => 'required|email|max:255|unique:users,email,NULL,id,deleted_at,NULL',
             'file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:25600',
             'password' => 'required|min:6|confirmed',
+            'role_name' => 'required',
             'status' => 'required',
             'ou_id' => [
                 function ($attribute, $value, $fail) {
@@ -497,7 +498,7 @@ public function getData(Request $request)
             $validatedData = $request->validate([
                 'edit_firstname' => 'required',
                 'edit_lastname' => 'required',
-                'edit_email' => 'required|email|max:255|unique:users,email,NULL,id,deleted_at,NULL',
+                'edit_email' => 'required|email|max:255|unique:users,email,' . $request->edit_form_id.',id,deleted_at,NULL',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:25600',
                 'edit_role_name' => 'required',
                 'password' => 'confirmed',

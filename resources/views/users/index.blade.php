@@ -963,7 +963,7 @@
         // $('.edit-user-icon').click(function(e) {
         //     e.preventDefault();
         $(document).on('click', '.edit-user-icon', function() {
-            $('.error_ee').html('');
+            $('.error_e').html('');
             $("#editUserForm")[0].reset();
             var userId = $(this).data('user-id');
             vdata = {
