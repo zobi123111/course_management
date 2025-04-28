@@ -281,7 +281,7 @@ class OrganizationController extends Controller
             $rules = array_merge($rules, [
                 'edit_firstname' => 'required',
                 'edit_lastname' => 'required',
-                'edit_email' => 'required|email|unique:users,email',
+                'edit_email' => 'required|email|unique:users,email,' . $request->user_id.',id,deleted_at,NULL',
                 'password' => 'required|min:6|confirmed',
             ]);
         }
