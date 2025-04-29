@@ -680,8 +680,8 @@ $(document).ready(function() {
                 success: function(response) {
                     if (response.success) {
                         // Update license number if available
-                        if (response.std_licence_number) {
-                            licenceNumberField.val(response.std_licence_number);
+                        if (response.licence_number) {
+                            licenceNumberField.val(response.licence_number);
                         } else {
                             alert('Student License number not found!');
                             licenceNumberField.val('');
