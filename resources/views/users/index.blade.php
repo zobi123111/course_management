@@ -62,8 +62,8 @@
                             <th scope="col">Last Name</th>
                             <th scope="col">Email</th>
                             @if(auth()->user()->is_owner == 1)
-                            <th scope="col">OU</th>
                             <th scope="col">Position</th>
+                            <th scope="col">OU</th>
                             @endif
                             @if(!empty(auth()->user()->ou_id) && auth()->user()->is_owner == 0)
                             <th scope="col">Position</th>

@@ -24,7 +24,7 @@ class TrainingEvents extends Model
         'departure_airfield',
         'destination_airfield',
         'total_time',
-        'licence_number',
+        'std_licence_number',
         'is_locked',
         'student_acknowledged',
         'student_acknowledgement_comments'
@@ -99,4 +99,6 @@ class TrainingEvents extends Model
     {
         return $this->hasOne(TrainingEventLessons::class, 'training_event_id')->orderBy('id');
     }
+
+
 }
