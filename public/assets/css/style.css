@@ -1286,6 +1286,18 @@ h6 {
   padding: 0px 7px;
   line-height: 23px;
 }
+.instructor-documents-item {
+  position: relative;
+}
+.remove-documents-container {
+  position: absolute;
+  right: -6px;
+  top: -18px;
+  font-size: 13px;
+  border-radius: 50%;
+  padding: 0px 7px;
+  line-height: 23px;
+}
 .avms_logo{
   /* width: 20%; */
   height: 48px;

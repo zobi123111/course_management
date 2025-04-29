@@ -262,8 +262,7 @@
                     </div>
 
                     <div id="feedbackConfigSection" style="display:none; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-top: 15px;">
-                        <label class="form-label">Feedback Questions <span class="text-muted">(Optional)</span></label>
-                        
+                        <label class="form-label">Feedback Questions <span class="text-muted">(Optional)</span></label>                        
                         <div id="feedback_questions_container">
                             <!-- Question Template -->
                             <div class="feedback-question mb-3">
@@ -276,15 +275,41 @@
                                 </select>
                                 <div id="feedback_questions_0_answer_type_error" class="text-danger error_e"></div>
                             </div>
-                        </div>
-                        
+                        </div>                        
                         <button type="button" class="btn btn-sm btn-outline-primary" id="add_question_btn">Add Another Question</button>
+                    </div>
+                    <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="enable_instructor_upload" name="enable_instructor_upload">
+                        <label class="form-check-label" for="enable_instructor_upload">
+                             Enable Instructor Upload
+                        </label>
+                    </div>
+                    </div>
+                    <div id="instructor_documents_container" style="display: none;">
+                        <div id="instructor_documents_items">
+                            <div class="instructor-documents-item border p-2 mt-2">
+                                <div class="form-group">
+                                    <label class="form-label">Document Name</label>
+                                    <input type="text" name="instructor_documents[0][name]" class="form-control">
+                                    <div id="instructor_documents_0_name_error" class="text-danger error_e"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Upload Document</label>
+                                    <input type="file" name="instructor_documents[0][file]" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png">
+                                    <div id="instructor_documents_0_file_error" class="text-danger error_e"></div>
+                                </div>
+                                <button type="button" class="btn btn-danger remove-documents-container">X</button>
+                            </div>
+                        </div>
+                        <button type="button" id="addDocumentsContainer" class="btn btn-primary mt-2">Add More</button>
                     </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="submitCourse" class="btn btn-primary sbt_btn">Save </button>
                     </div>
+                    <div class="loader" style="display: none;"></div>
                 </form>
             </div>
         </div>
@@ -398,21 +423,28 @@
                         
                         <div id="edit_feedback_questions_container">
                             <!-- Question Template -->
-                            <div class="feedback-question mb-3" id="">
-                                
+                            <div class="feedback-question mb-3">
+                                <input type="text" name="feedback_questions[0][question]" class="form-control mb-2" placeholder="Enter question">
+                                <div id="feedback_questions_0_question_error_up" class="text-danger error_e"></div>
+                                <select name="feedback_questions[0][answer_type]" class="form-select">
+                                    <option value="">Select Answer Type</option>
+                                    <option value="yes_no">Yes / No</option>
+                                    <option value="rating">Rating (1-5)</option>
+                                </select>
+                                <div id="feedback_questions_0_answer_type_error_up" class="text-danger error_e"></div>
                             </div>
-                        </div>
-                        
+                        </div>                        
                         <button type="button" class="btn btn-sm btn-outline-primary" id="edit_add_question_btn">Add Another Question</button>
-                    </div>
-      
-
+                    </div>    
                     <div class="form-group">
-                        <label class="form-label">
-                            <input type="checkbox" id="enable_prerequisites"> Enable Prerequisites
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="enable_prerequisites">
+                        <label class="form-check-label" for="enable_prerequisites">
+                            Enable Prerequisites
                         </label>
                     </div>
-                    <div id="prerequisites_container" style="display: none;" >
+                    </div>
+                    <div id="prerequisites_container" style="display: none;">
                         <div id="prerequisite_items">
                             <div class="prerequisite-item">
                                 <div class="form-group">
@@ -433,11 +465,38 @@
                         </div>
                         <button type="button" id="addPrerequisite" class="btn btn-primary mt-2">Add More</button>
                     </div>
+                    <div class="form-group">
+                    <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="1" id="edit_enable_instructor_upload" name="enable_instructor_upload">
+                        <label class="form-check-label" for="edit_enable_instructor_upload">
+                             Enable Instructor Upload
+                        </label>
+                    </div>
+                    </div>
+                    <div id="edit_instructor_documents_container" style="display: none;">
+                        <div id="edit_instructor_documents_items">
+                            <div class="instructor-documents-item border p-2 mt-2">
+                                <div class="form-group">
+                                    <label class="form-label">Document Name</label>
+                                    <input type="text" name="instructor_documents[0][name]" class="form-control">
+                                    <div id="instructor_documents_0_name_error_up" class="text-danger error_e"></div>
+                                </div>
 
+                                <div class="form-group">
+                                    <label class="form-label">Upload Document</label>
+                                    <input type="file" name="instructor_documents[0][file]" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png">
+                                    <div id="instructor_documents_0_file_error_up" class="text-danger error_e"></div>
+                                </div>
+                                <button type="button" class="btn btn-danger remove-documents-container">X</button>
+                            </div>
+                        </div>
+                        <button type="button" id="editAddDocumentsContainer" class="btn btn-primary mt-2">Add More</button>
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="updateCourse" class="btn btn-primary sbt_btn">Update</button>
                     </div>
+                    <div class="loader" style="display: none;"></div>
                 </form>
             </div>
         </div>
@@ -498,6 +557,11 @@ $(document).ready(function() {
         $(".error_e").html('');
         $("#courses")[0].reset();
         $(".groups-select").val(null).trigger("change");
+        // Hide feedback and instructor upload sections if visible
+        $("#enable_feedback").prop("checked", false);
+        $("#feedbackConfigSection").hide();
+        $("#enable_instructor_upload").prop("checked", false);
+        $("#instructor_documents_container").hide();
         $("#createCourseModal").modal('show');
         $('#createCourseModal').on('shown.bs.modal', function() {
             initializeSelect2();
@@ -506,6 +570,7 @@ $(document).ready(function() {
 
     $("#submitCourse").on("click", function(e) {
         e.preventDefault();
+        $(".loader").fadeIn();
         $('.error_e').html('');
         var formData = new FormData($('#courses')[0]);
 
@@ -516,10 +581,12 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function(response) {
+                $(".loader").fadeOut("slow");
                 $('#createCourseModal').modal('hide');
                 location.reload();
             },
             error: function(xhr, status, error) {
+                $(".loader").fadeOut("slow");
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
                 $.each(validationErrors, function(key, value) {
@@ -630,6 +697,34 @@ $(document).ready(function() {
                     $('#prerequisite_items').append(prerequisiteHtml);
                 }
 
+                //Handle Document Container
+                if (response.course.enable_instructor_upload) {
+                    $('#edit_enable_instructor_upload').prop('checked', true);
+                    $('#edit_instructor_documents_container').show();
+                } else {
+                    $('#edit_enable_instructor_upload').prop('checked', false);
+                    $('#edit_instructor_documents_container').hide();
+                }
+
+                $('#edit_instructor_documents_items').empty();  // Clear existing containers
+                let instructor_documents = response.course.documents;
+                // console.log(instructor_documents);
+                if (instructor_documents.length > 0) {
+                    instructor_documents.forEach((instructor_documents, index) => {
+                        let instructorDocumentHtml = generateDocumentsContainerHtml(
+                            instructor_documents, index
+                        );
+                        $('#edit_instructor_documents_items').append(instructorDocumentHtml);
+                    });
+                } else {
+                    let instructorDocumentHtml = generateDocumentsContainerHtml({
+                        document_name: '',
+                        file_path: ''
+                    }, 0);
+                    $('#edit_instructor_documents_items').append(instructorDocumentHtml);
+                }
+
+
                 //Training Feedback
                 const questions = response.course.training_feedback_questions || [];
                 if (questions.length > 0) {
@@ -653,7 +748,7 @@ $(document).ready(function() {
                 } else {
                     $('#edit_enable_feedback').prop('checked', false);
                     $('#edit_feedbackConfigSection').hide();
-                    $('#edit_feedback_questions_container').empty();
+                    // $('#edit_feedback_questions_container').empty();
                 }
                 $('#editCourseModal').modal('show');
 
@@ -685,7 +780,7 @@ $(document).ready(function() {
     });
 
     // Enable/Disable feedback on edit modal
-    $('#edit_enable_feedback').on('change', function () {
+    $(document).on('change', '#edit_enable_feedback', function () {
         $('#edit_feedbackConfigSection').toggle(this.checked);
     });
 
@@ -718,6 +813,7 @@ $(document).ready(function() {
     // Update Course functionality
     $('#updateCourse').on('click', function(e) {
         e.preventDefault();
+        $(".loader").fadeIn('fast');        
         var formData = new FormData($('#editCourse')[0]);
         formData.append('enable_prerequisites', $('#enable_prerequisites').is(':checked') ? 1 : 0);
         $.ajax({
@@ -727,15 +823,18 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function(response) {
+                $(".loader").fadeOut("slow");
                 $('#editCourseModal').modal('hide');
                 location.reload();
             },
             error: function(xhr, status, error) {
+                $(".loader").fadeOut("slow");
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
                 $.each(validationErrors, function(key, value) {
-                    var msg = '<p>' + value + '<p>';
-                    $('#' + key + '_error_up').html(msg);
+                    var formattedKey = key.replace(/\./g, '_') + '_error_up';
+                    var errorMsg = '<p>' + value[0] + '</p>';
+                    $('#' + formattedKey).html(errorMsg);
                 });
             }
         });
@@ -764,7 +863,7 @@ $(document).ready(function() {
                 $("#prerequisites_container").hide();
                 // $("#prerequisite_items").empty();
             }
-        });
+    });
 
 
     // Add new prerequisite
@@ -804,6 +903,90 @@ $(document).ready(function() {
     $(document).on("click", ".remove-prerequisite", function() {
         $(this).closest(".prerequisite-item").remove();
     });
+
+    // Toggle Instructor Documents section
+    $("#enable_instructor_upload").change(function () {
+            if ($(this).is(":checked")) {
+                $("#instructor_documents_container").show();
+            } else {
+                $("#instructor_documents_container").hide();
+                // $("#prerequisite_items").empty();
+            }
+    });
+    // Toggle Instructor Documents section On Editing
+    $("#edit_enable_instructor_upload").change(function () {
+            if ($(this).is(":checked")) {
+                $("#edit_instructor_documents_container").show();
+            } else {
+                $("#edit_instructor_documents_container").hide();
+                // $("#prerequisite_items").empty();
+            }
+    });
+
+    // Add New Documents Container
+    $("#addDocumentsContainer").click(function() {
+        let index = $(".instructor-documents-item").length;
+
+        let documentContainerHTML = `
+                            <div class="instructor-documents-item border p-2 mt-2">
+                                <div class="form-group">
+                                    <label class="form-label">Document Name</label>
+                                    <input type="text" name="instructor_documents[${index}][name]" id="documents_name_${index}" class="form-control">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Upload Document</label>
+                                    <input type="file" name="instructor_documents[${index}][file]" id="documents_file_${index}" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png">
+                                </div>
+                                <button type="button" class="btn btn-danger remove-documents-container">X</button>
+                            </div>
+        `;
+        $("#instructor_documents_items").append(documentContainerHTML);
+    });
+
+// Add New Documents Container while editing
+$("#editAddDocumentsContainer").click(function() {
+    // Find the highest existing index first
+    let maxIndex = 0;
+    $(".instructor-documents-item").each(function() {
+        $(this).find('input[name^="instructor_documents"]').each(function() {
+            let match = $(this).attr('name').match(/\[(\d+)\]/);
+            if (match && parseInt(match[1]) > maxIndex) {
+                maxIndex = parseInt(match[1]);
+            }
+        });
+    });
+
+    // Increment to get the new index
+    let newIndex = maxIndex + 1;
+
+    let documentContainerHTML = `
+        <div class="instructor-documents-item border p-2 mt-2">
+            <div class="form-group">
+                <label class="form-label" for="documents_name_${newIndex}">Document Name</label>
+                <input type="text" name="instructor_documents[${newIndex}][name]" id="documents_name_${newIndex}" class="form-control">
+                <div id="instructor_documents_${newIndex}_name_error_up" class="text-danger error_e"></div>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="documents_file_${newIndex}">Upload Document</label>
+                <input type="file" name="instructor_documents[${newIndex}][file]" id="documents_file_${newIndex}" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png">
+                <div id="instructor_documents_${newIndex}_file_error_up" class="text-danger error_e"></div>
+            </div>
+
+            <button type="button" class="btn btn-danger remove-documents-container">X</button>
+        </div>
+    `;
+
+    $("#edit_instructor_documents_items").append(documentContainerHTML);
+});
+
+
+
+    // Remove Instructor Documents section
+    $(document).on("click", ".remove-documents-container", function() {
+        $(this).closest(".instructor-documents-item").remove();
+    });
+
 
 
     // Enable feedback questions
@@ -869,6 +1052,41 @@ function generatePrerequisiteHtml(prerequisite, index) {
     `;
 }
 
+
+function generateDocumentsContainerHtml(instructor_documents, index) {
+    let documentName = instructor_documents.document_name || '';
+    let filePath = instructor_documents.file_path ? `/storage/${instructor_documents.file_path}` : '';
+    let existingFilePath = instructor_documents.file_path || '';
+    let docRowId = instructor_documents.id || '';
+
+    let uploadedFileLinkHtml = '';
+    if (filePath) {
+        uploadedFileLinkHtml = `<div class="mt-2">
+                                <a href="${filePath}" target="_blank">View Uploaded Document</a>
+                            </div>`;
+    }
+
+    return `<div class="instructor-documents-item border p-2 mt-2">
+                <div class="form-group">
+                    <label class="form-label">Document Name</label>
+                    <input type="text" name="instructor_documents[${index}][name]" value="${documentName}" id="documents_name_${index}" class="form-control">
+                    <div id="instructor_documents_${index}_name_error_up" class="text-danger error_e"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Upload Document</label>
+                    <input type="file" name="instructor_documents[${index}][file]" id="documents_file_${index}" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png">
+                     <div id="instructor_documents_${index}_file_error_up" class="text-danger error_e"></div>
+                    ${uploadedFileLinkHtml}
+                    <input type="hidden" name="instructor_documents[${index}][existing_file_path]" value="${existingFilePath}">
+                    <input type="hidden" name="instructor_documents[${index}][row_id]" value="${docRowId}">
+                </div>
+                <button type="button" class="btn btn-danger remove-documents-container mt-2">X</button>
+            </div>`;
+}
+
+
+
+
 $(document).on("change", "#select_org_unit", function() {
     var ou_id = $(this).val();
     var $groupSelect = $(".groups-select");
@@ -902,7 +1120,6 @@ $(document).on("change", "#select_org_unit", function() {
                     resource += "<option value='" + value.id + "'>" + value.name +
                         "</option>";
 
-                    console.log(resource)
                 });
                 $resourceSelect.html(resource);
                 $resourceSelect.trigger("change");
