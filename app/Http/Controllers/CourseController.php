@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\Resource;
 use App\Models\CourseResources;
 use App\Models\CourseDocuments;
+use Illuminate\Support\Facades\DB;
 
 
 class CourseController extends Controller
@@ -387,21 +388,25 @@ class CourseController extends Controller
         return response()->json(['success' => 'Course updated successfully.']);
     }
     
-    
-    
-    
-
-
     public function deleteCourse(Request $request)
-    {        
-        $courses = Courses::findOrFail(decode_id($request->course_id));
-        if ($courses) {
-
-            $courses->courseGroups()->delete();
-
-            $courses->delete();
-            return redirect()->route('course.index')->with('message', 'This Course deleted successfully');
-        }
+    {
+        $course = Courses::findOrFail(decode_id($request->course_id));
+    
+        DB::transaction(function () use ($course) {
+            // Delete related course groups
+            $course->courseGroups()->delete();
+    
+            // Delete related course prerequisites
+            $course->prerequisites()->delete();
+    
+            // Delete related course documents
+            $course->documents()->delete();
+    
+            // Finally, delete the course itself
+            $course->delete();
+        });
+    
+        return redirect()->route('course.index')->with('message', 'This Course deleted successfully');
     }
 
     // public function showCourse(Request $request,$course_id)
