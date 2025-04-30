@@ -460,13 +460,14 @@ class TrainingEventsController extends Controller
         $currentUser = auth()->user();
         $trainingEvent = TrainingEvents::with([
             'course:id,course_name,course_type',
+            'course.documents', // Eager load course documents
             'group:id,name,user_ids',
             'instructor:id,fname,lname',
             'student:id,fname,lname',
             'resource:id,name',
             'eventLessons.lesson:id,lesson_title',
             'eventLessons.instructor:id,fname,lname',
-            'eventLessons.resource:id,name',
+            'eventLessons.resource:id,name',    
             'trainingFeedbacks.question' // Eager load the question relationship
         ])->find(decode_id($event_id));
     

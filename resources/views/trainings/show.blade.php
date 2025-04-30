@@ -545,7 +545,23 @@
                     </div>
                 @endif
 
-
+                @if($trainingEvent->course->documents->isNotEmpty())
+                    <div class="mt-4">
+                        <h5><i class="fas fa-file-alt"></i>Course Documents</h5>
+                        <div class="row">
+                            @foreach($trainingEvent->course->documents as $doc)
+                                <div class="col-md-6 mb-2">
+                                    <div class="d-flex justify-content-between align-items-center border p-2 rounded">
+                                        <span>{{ $doc->document_name }}</span>
+                                        <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> View Document
+                                        </a>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
             <div class="tab-pane fade" id="Lesson" role="tabpanel" aria-labelledby="Lesson-tab">

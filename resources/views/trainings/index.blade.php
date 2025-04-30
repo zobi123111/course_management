@@ -63,7 +63,7 @@
                     @endif
 
                     @if($event->is_locked == 1)
-                        <i class="fa fa-lock-open unlock-event-icon text-success" title="Unlock this event to enable grading edits." 
+                        <i class="fa fa-lock unlock-event-icon text-success" title="Unlock this event to enable grading edits." 
                         data-event-id="{{ encode_id($event->id) }}" style="font-size:20px; cursor: pointer;"></i>
                     @endif
                     @if(checkAllowedModule('training','training.show')->isNotEmpty())
