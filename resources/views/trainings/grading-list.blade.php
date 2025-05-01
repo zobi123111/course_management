@@ -181,7 +181,6 @@
                                     <a href="" class="btn btn-success shadow-sm">
                                         <i class="bi bi-patch-check-fill me-1"></i> Generate Course Completion Certificate
                                     </a>
-
                                     @if($event->course->enable_feedback && !$event->student_feedback_submitted)
                                         <a href="{{ route('training.feedback.form', ['event_id' => encode_id($event->id)]) }}"
                                            class="btn btn-outline-primary shadow-sm">
@@ -197,6 +196,28 @@
                         @endif
                     @endif
                 @endauth
+                @if($event->eventLessons->isNotEmpty())
+    <div class="mb-4">
+        <h5 class="text-primary">
+            <i class="bi bi-file-earmark-pdf me-2"></i>Download Lesson Reports
+        </h5>
+        <ul class="list-group shadow-sm">
+            @foreach($event->eventLessons as $eventLesson)
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>
+                        <i class="bi bi-book me-1"></i>{{ $eventLesson->lesson->lesson_title ?? 'N/A' }}
+                    </span>
+                    <a href="{{ route('lesson.report.download', ['event_id' => $event->id, 'lesson_id' => $eventLesson->lesson_id]) }}"
+                       class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
+                    </a>
+                </li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
+
             </div>
         @endif
     </div>

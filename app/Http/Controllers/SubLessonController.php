@@ -95,15 +95,15 @@ class SubLessonController extends Controller
 
 
 
-    public function subLessonPdf(Request $request, $sublessonid)
-    {
-        $sublesson_detail = CourseLesson::with('course')->where('id', $sublessonid)->get();
-       // dd($sublesson_detail[0]['course']['course_name']);
-        $data = [
-            'date' => date('m/d/Y'),
-            'sublesson_detail' => $sublesson_detail
-        ]; 
-        $pdf = PDF::loadView('courses\generateSublessonPdf', $data);
-        return $pdf->download('sublesson.pdf');
-    }
+    // public function subLessonPdf(Request $request, $sublessonid)
+    // {
+    //     $sublesson_detail = CourseLesson::with('course')->where('id', $sublessonid)->get();
+    //    // dd($sublesson_detail[0]['course']['course_name']);
+    //     $data = [
+    //         'date' => date('m/d/Y'),
+    //         'sublesson_detail' => $sublesson_detail
+    //     ]; 
+    //     $pdf = PDF::loadView('courses\generateSublessonPdf', $data);
+    //     return $pdf->download('sublesson.pdf');
+    // }
 }

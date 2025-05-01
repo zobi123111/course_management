@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use App\Models\LessonPrerequisite;
 use App\Models\LessonPrerequisiteDetail;
+use PDF;
 
 class LessonController extends Controller 
 {
@@ -252,4 +253,17 @@ class LessonController extends Controller
     
         return back()->with('success', 'Prerequisites saved successfully.');
     }
+
+    public function lessonPdf(Request $request, $lessonId)
+    {
+        $lesson_detail = CourseLesson::with('course')->where('id', $lessonId)->get();
+       // dd($sublesson_detail[0]['course']['course_name']);
+        $data = [
+            'date' => date('m/d/Y'),
+            'lesson_detail' => $lesson_detail
+        ]; 
+        $pdf = PDF::loadView('courses\generateLessonPdf', $data);
+        return $pdf->download('lesson.pdf');
+    }
+
 }

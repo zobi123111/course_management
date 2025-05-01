@@ -82,7 +82,7 @@ Route::group(['middleware' => ['auth']], function () {
     ->name('course.prerequisites.store');
     Route::post('/lessons/{course}/{lesson}/prerequisites/store', [LessonController::class, 'prerequisitesStore'])
     ->name('lesson.prerequisites.store');
-    Route::get('/lesson-pdf/{subLessonId}', [SubLessonController::class, 'subLessonPdf'])->name('lesson-pdf.downloadPdf');
+    Route::get('/lesson-pdf/{lessonId}', [LessonController::class, 'lessonPdf'])->name('lesson-pdf.downloadPdf');    
  
     //ORG Unit Routes
     Route::get('/orgunit/get_permissions', [OrganizationController::class, 'getPermissions'])->name('orgunit.getPermissions');  
@@ -95,6 +95,14 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/training/get_licence_number_and_courses/{user_id}/{ou_id}', [TrainingEventsController::class, 'getStudentLicenseNumberAndCourses'])->name('training.get_licence_number_and_courses');
     Route::post('/grading/acknowledge', [TrainingEventsController::class, 'acknowledgeGarding'])->name('grading.acknowledge');
     Route::get('/training/get_instructor_license_no/{instructor_id}', [TrainingEventsController::class, 'getInstructorLicenseNumber'])->name('training.get_instructor_license_no');
+    // Route::get('/lesson-report/download/{event_id}/{lesson_id}', [TrainingEventsController::class, 'download'])
+    // ->name('lesson.report.download');
+    // Route::get('/lesson-report/{event_id}/{lesson_id}', [TrainingEventsController::class, 'downloadLessonReport'])
+    //  ->name('lesson.report.download');
+    Route::get('/lesson-report/download/{event_id}/{lesson_id}', [TrainingEventsController::class, 'downloadLessonReport'])
+    ->name('lesson.report.download');
+
+
     
     //Grading feedback routes
     Route::get('/grading/feedback_form/{event_id}', [TrainingFeedbackController::class, 'index'])->name('training.feedback.form');
@@ -236,7 +244,6 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/resource/approve/request', [ResourceController::class, 'approve_request'])->name('approve_request.index');
     Route::post('/resource/reject/request', [ResourceController::class, 'reject_request'])->name('reject_request.index');
 
-    Route::get('/lesson-pdf/{subLessonId}', [SubLessonController::class, 'subLessonPdf'])->name('lesson-pdf.downloadPdf');
     Route::get('/document/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('document.getOrgfolder');
     Route::get('/group/get_ou_user/', [GroupController::class, 'getOrgUser'])->name('group.get_ou_user'); 
     Route::get('/folder/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('folder.getOrgfolder');
@@ -267,7 +274,6 @@ Route::get('/user_seeder', function() {
 Route::get('/role_Seeder', function() {
     // Specify the seeder class you want to run
     Artisan::call('db:seed', ['--class' => 'RoleSeeder', '--force' => true]); // '--force' for production
-
     return 'RoleSeeder has been executed successfully.';
 });
 
