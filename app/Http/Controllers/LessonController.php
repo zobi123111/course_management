@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use App\Models\LessonPrerequisite;
 use App\Models\LessonPrerequisiteDetail;
+use PDF;
 
 class LessonController extends Controller 
 {
@@ -43,7 +44,7 @@ class LessonController extends Controller
     {
         // Validate request data
         $request->validate([
-            'lesson_title' => 'required|unique:course_lessons,lesson_title,NULL,id,deleted_at,NULL',
+            'lesson_title' => 'required',
             'description' => 'required|string',
             'status' => 'required|boolean',
             'grade_type' => 'required|in:pass_fail,score'
@@ -98,7 +99,7 @@ class LessonController extends Controller
     {
         // Validate request data
         $request->validate([
-            'edit_lesson_title' => 'required|unique:course_lessons,lesson_title,' . $request->lesson_id . ',id,deleted_at,NULL',
+            'edit_lesson_title' => 'required',
             'edit_description' => 'required|string',
             'edit_status' => 'required|boolean',
             'edit_grade_type' => 'required|in:pass_fail,score'
@@ -252,4 +253,17 @@ class LessonController extends Controller
     
         return back()->with('success', 'Prerequisites saved successfully.');
     }
+
+    public function lessonPdf(Request $request, $lessonId)
+    {
+        $lesson_detail = CourseLesson::with('course')->where('id', $lessonId)->get();
+       // dd($sublesson_detail[0]['course']['course_name']);
+        $data = [
+            'date' => date('m/d/Y'),
+            'lesson_detail' => $lesson_detail
+        ]; 
+        $pdf = PDF::loadView('courses\generateLessonPdf', $data);
+        return $pdf->download('lesson.pdf');
+    }
+
 }

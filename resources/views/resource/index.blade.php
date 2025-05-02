@@ -109,7 +109,7 @@
                     </div>
                     <div class="form-group">
                         <label for="registration" class="form-label">Registration</label>
-                        <input type="number" name="registration" class="form-control">
+                        <input type="text" name="registration" class="form-control">
                         <div id="registration_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">

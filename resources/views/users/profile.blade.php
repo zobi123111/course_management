@@ -197,14 +197,16 @@ h2 {
                                     @elseif($user->licence_status == 'Amber')
                                         <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
                                     @else
-                                        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
+                                        @if($user->licence_status!='N/A')
+                                            <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
+                                        @endif
                                     @endif
                                 </label>
                                 <input type="date" name="licence_expiry_date" id="licence_expiry_date" value="{{ $user->licence_expiry_date ?? '' }}" class="form-control mt-3" >
 
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="non_expiring_licence" name="non_expiring_licence" value="1">
-                                    <label class="form-check-label" for="non_expiring_licence">
+                                    <input class="form-check-input" type="checkbox" id="non_expiring_licence" name="non_expiring_licence" value="1" {{ $user->licence_non_expiring ? 'checked': '' }}>
+                                    <label class="form-check-label" for="non_expiring_licence" >
                                         <strong>Non-Expiring Licence</strong>
                                     </label>
                                 </div>

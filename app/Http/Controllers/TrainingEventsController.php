@@ -17,6 +17,8 @@ use App\Models\OverallAssessment;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use PDF;
+use Illuminate\Support\Str;
 
 
 
@@ -829,11 +831,49 @@ class TrainingEventsController extends Controller
     
         return response()->json(['success' => false, 'message' => 'Acknowledgment failed'], 500);
     }
-
-
-
-
-
     
+    public function downloadLessonReport($event_id, $lesson_id)
+    {
+        $userId = auth()->id();
+    
+        $event = TrainingEvents::with([
+            'course:id,course_name',
+            'instructor:id,fname,lname',
+            'student:id,fname,lname',
+            'eventLessons' => function ($query) use ($lesson_id) {
+                $query->where('lesson_id', $lesson_id);
+            },
+            'taskGradings' => function ($query) use ($userId, $lesson_id) {
+                $query->where('user_id', $userId)
+                      ->where('lesson_id', $lesson_id)
+                      ->with('subLesson:id,title');
+            },
+            'competencyGradings' => function ($query) use ($userId, $lesson_id) {
+                $query->where('user_id', $userId)
+                      ->where('lesson_id', $lesson_id);
+            },
+            'overallAssessments' => function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            },
+        ])->findOrFail($event_id);
+    
+        $eventLesson = $event->eventLessons->first();
+    
+        if (!$eventLesson) {
+            abort(404, 'Lesson not found for this training event.');
+        }
+    
+        $lesson = $eventLesson->lesson;
+    
+        $pdf = PDF::loadView('trainings.lesson-report', [
+            'event' => $event,
+            'lesson' => $lesson,
+            'eventLesson' => $eventLesson,
+        ]);
+    
+        $filename = 'Lesson_Report_' . Str::slug($lesson->lesson_title) . '.pdf';
+    
+        return $pdf->download($filename);
+    }    
     
 }

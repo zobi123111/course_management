@@ -50,6 +50,10 @@
             Table</a>
     </div>
     @endif
+    <div class="add_rating">
+        <a href="{{ route('users.rating') }}" class="btn btn-primary"  id="addRating" >Rating</a>
+    </div>
+
     <div id="update_success_msg"></div>
     <div class="card pt-4">
         <div class="card-body">
@@ -497,7 +501,6 @@
                             <input type="file" name="edit_passport_file" id="edit_passport_file"
                                 class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
                             <div id="edit_passport_file_error_up" class="text-danger error_e"></div>
-
                         </div>
 
                         <!-- Rating/s (Stars) -->
@@ -614,8 +617,6 @@
         </div>
     </div>
 </form>
-
-
 <!-- End of Delete Model -->
 @endsection
 
@@ -1182,11 +1183,6 @@
                         $('#update_success_msg').fadeOut('slow');
 
                     }, 5000);
-
-                    // setTimeout(function() {
-                    //     location.reload();
-                    // }, 100);
-                    // location.reload();
                 },
                 error: function(xhr, status, error) {
                     $(".loader").fadeOut("slow");
