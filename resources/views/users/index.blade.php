@@ -39,21 +39,20 @@
         {{ session()->get('message') }}
     </div>
     @endif
-
     @if(checkAllowedModule('users','user.store')->isNotEmpty())
-    <div class="create_btn">
-        <a href="#" class="btn btn-primary create-button" style="float: left;" id="createUser" data-toggle="modal"
-            data-target="#userModal">Create Users
-        </a>
+    <div class="create_btn d-flex justify-content-between align-items-center">
+        <div>
+            <a href="#" class="btn btn-primary me-2 create-button" id="createUser" data-toggle="modal"
+                data-target="#userModal">Create Users</a>
 
-        <a href="{{ route('users.document.data') }}" class="btn btn-primary" style="float: right;">Document Reqiured
-            Table</a>
+            @if(auth()->user()->is_owner == 1)
+                <a href="{{ route('users.rating') }}" class="btn btn-primary" id="addRating">View Rating</a>
+            @endif
+        </div>
+
+        <a href="{{ route('users.document.data') }}" class="btn btn-primary">Document Required Table</a>
     </div>
     @endif
-    <div class="add_rating">
-        <a href="{{ route('users.rating') }}" class="btn btn-primary"  id="addRating" >Rating</a>
-    </div>
-
     <div id="update_success_msg"></div>
     <div class="card pt-4">
         <div class="card-body">
@@ -636,11 +635,14 @@
                 orderable: false, 
                 searchable: false, 
                 render: function(data) {
-                    if(data) {
-                        let baseUrl = "{{ url('storage') }}";
+                    let baseUrl = "{{ url('storage') }}";
+                    let defaultImage = "{{ asset('assets/img/default_profile.png') }}";
+
+                    if (data) {
                         return `<img src="${baseUrl}/${data}" width="50" height="50" class="img-thumbnail"/>`;
+                    } else {
+                        return `<img src="${defaultImage}" width="50" height="50" class="img-thumbnail"/>`;
                     }
-                    return '<span class="text-muted">No Image</span>';
                 }
             },
             { data: 'fname', name: 'fname' },
