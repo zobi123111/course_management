@@ -126,7 +126,7 @@ class CourseController extends Controller
         }
     
         $request->validate([
-            'course_name' => 'required|unique:courses,course_name,NULL,id,deleted_at,NULL',
+            'course_name' => 'required',
             'description' => 'required',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|boolean',
@@ -216,7 +216,7 @@ class CourseController extends Controller
 
     public function getCourse(Request $request)
     {
-    //    dd((decode_id($request->id)));
+       //dd((decode_id($request->id)));
        $course = Courses::with(['groups', 'prerequisites', 'training_feedback_questions','documents'])
        ->findOrFail(decode_id($request->id));
      
@@ -251,7 +251,7 @@ class CourseController extends Controller
         // dd($request->all());
         // Validate input data
         $request->validate([
-            'course_name' => 'required|unique:courses,course_name,' . $request->course_id . ',id,deleted_at,NULL',
+            'course_name' => 'required',
             'course_type' => 'required|in:one_event,multi_lesson',
             'description' => 'required',
             'status' => 'required',
@@ -336,7 +336,7 @@ class CourseController extends Controller
                 ->delete();
         }
     
-        // Handle Feedback Questions
+        //Handle Feedback Questions
         TrainingFeedbackQuestion::where('course_id', $course->id)->delete();
         if ((int) $request->input('enable_feedback', 0) && $request->has('feedback_questions')) {
             foreach ($request->feedback_questions as $feedback) {

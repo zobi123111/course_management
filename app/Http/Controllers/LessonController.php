@@ -44,7 +44,7 @@ class LessonController extends Controller
     {
         // Validate request data
         $request->validate([
-            'lesson_title' => 'required|unique:course_lessons,lesson_title,NULL,id,deleted_at,NULL',
+            'lesson_title' => 'required',
             'description' => 'required|string',
             'status' => 'required|boolean',
             'grade_type' => 'required|in:pass_fail,score'
@@ -99,7 +99,7 @@ class LessonController extends Controller
     {
         // Validate request data
         $request->validate([
-            'edit_lesson_title' => 'required|unique:course_lessons,lesson_title,' . $request->lesson_id . ',id,deleted_at,NULL',
+            'edit_lesson_title' => 'required',
             'edit_description' => 'required|string',
             'edit_status' => 'required|boolean',
             'edit_grade_type' => 'required|in:pass_fail,score'

@@ -65,6 +65,12 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/users/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update');
     Route::get('/users/data', [UserController::class, 'getData'])->name('users.data');
     Route::get('/users/show/{user_id}', [UserController::class, 'showUser'])->name('user.show');
+    //Users rating routes
+    Route::get('/users/rating', [UserController::class, 'showRating'])->name('users.rating');
+    Route::post('/rating/save', [UserController::class, 'saveRating'])->name('rating.store');
+    Route::get('/rating/edit', [UserController::class, 'getRating'])->name('rating.edit');
+    Route::post('/rating/update', [UserController::class, 'updateRating'])->name('rating.update');
+    Route::post('/rating/delete', [UserController::class, 'deleteRating'])->name('rating.delete');
 
     //Server-Side Datatable Routes
     Route::get('/orgunit/data', [OrganizationController::class, 'getData'])->name('orgunit.data');  

@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\OrganizationUnits;
 use App\Models\Role;
 use App\Models\UserActivityLog;
+use App\Models\Rating;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -17,36 +18,36 @@ use Yajra\DataTables\Facades\DataTables;
 class UserController extends Controller
 {
 
-public function getData(Request $request)
-{
-    $ou_id = auth()->user()->ou_id; 
-    $is_owner = auth()->user()->is_owner; 
-  
-    $organizationUnits = OrganizationUnits::all();
-    $roles = Role::all(); 
-    if ($is_owner) { 
-        $users = User::all();
-    } else {  
-        $users = User::where('ou_id', $ou_id)->get();
-    }
+    public function getData(Request $request)
+    {
+        $ou_id = auth()->user()->ou_id; 
+        $is_owner = auth()->user()->is_owner; 
+    
+        $organizationUnits = OrganizationUnits::all();
+        $roles = Role::all(); 
+        if ($is_owner) { 
+            $users = User::all();
+        } else {  
+            $users = User::where('ou_id', $ou_id)->get();
+        }
 
-    if ($request->ajax()) {
-        $query = User::query()
-                ->leftJoin('roles', 'users.role', '=', 'roles.id')
-                ->leftJoin('organization_units', 'users.ou_id', '=', 'organization_units.id')
-                ->select([
-                    'users.id',
-                    'users.image',
-                    'users.fname',
-                    'users.lname',
-                    'users.email',
-                    'roles.role_name as position',
-                    'organization_units.org_unit_name as organization',
-                    'users.status'
-                ]);
-                if (!$is_owner && !empty($ou_id)) {
-                    $query->where('users.ou_id', $ou_id);
-                }
+        if ($request->ajax()) {
+            $query = User::query()
+                    ->leftJoin('roles', 'users.role', '=', 'roles.id')
+                    ->leftJoin('organization_units', 'users.ou_id', '=', 'organization_units.id')
+                    ->select([
+                        'users.id',
+                        'users.image',
+                        'users.fname',
+                        'users.lname',
+                        'users.email',
+                        'roles.role_name as position',
+                        'organization_units.org_unit_name as organization',
+                        'users.status'
+                    ]);
+                    if (!$is_owner && !empty($ou_id)) {
+                        $query->where('users.ou_id', $ou_id);
+                    }
                
         return DataTables::of($query)
         ->filterColumn('position', function($query, $keyword) {
@@ -165,15 +166,15 @@ public function getData(Request $request)
 
     public function profileUpdate(Request $request)
     {
-// dd($request->all());
+        // dd($request->all());
         $userToUpdate = User::find($request->id);  
-      
+        // dd($request->has('non_expiring_licence'));
             if ($userToUpdate) {
                 $rules = [];
            
                 if ($userToUpdate->licence_required === 1) {    
                     $rules['licence'] = 'required';
-                    if(!$userToUpdate->licence_non_expiring && !$request->has('non_expiring_licence')){
+                    if(!$request->has('licence_expiry_date') || !$request->has('non_expiring_licence')){
                         $rules['licence_expiry_date'] = 'required'; 
                     }
                      // Require a new file only if there's no existing file
@@ -239,11 +240,6 @@ public function getData(Request $request)
             // Handle Licence File Upload
             if ($userToUpdate->licence_required == 1) {
                 if ($request->hasFile('licence_file')) {
-                    $request->validate([
-                        'licence' =>  'required',
-                        'licence_expiry_date' => 'required',
-                    ]);
-
                     if ($userToUpdate->licence_file) {
                         Storage::disk('public')->delete($userToUpdate->licence_file);
                     }
@@ -296,8 +292,9 @@ public function getData(Request $request)
                 'lname' => $request->lastName,
                 'email' => $request->email,
                 'licence' => $request->licence ?? $userToUpdate->licence,
-                'licence_expiry_date' => $request->licence_expiry_date ?? $userToUpdate->licence_expiry_date,
+                'licence_expiry_date' => $request->licence_expiry_date ?? null,
                 'licence_file' => $licenceFilePath,
+                'licence_non_expiring' => $request->has('non_expiring_licence') ? 1 : 0,
                 'passport' => $request->passport ?? $userToUpdate->passport,
                 'passport_expiry_date' => $request->passport_expiry_date ?? $userToUpdate->passport_expiry_date,
                 'passport_file' => $passportFilePath,
@@ -410,6 +407,8 @@ public function getData(Request $request)
 
         if ($request->hasFile('image')) {
             $filePath = $request->file('image')->store('users', 'public');
+        } else {
+            $filePath = 'users/default_profile.png'; // Make sure this file exists in `storage/app/public/users/`
         }
 
         if ($request->hasFile('licence_file')) {
@@ -520,12 +519,12 @@ public function getData(Request $request)
 
             // Handle Image Upload
             if ($request->hasFile('image')) {
-                if ($userToUpdate->image) {
+                if ($userToUpdate->image && $userToUpdate->image !== 'users/default_profile.png') {
                     Storage::disk('public')->delete($userToUpdate->image);
                 }
                 $filePath = $request->file('image')->store('users', 'public');
             } else {
-                $filePath = $userToUpdate->image;
+                $filePath = $userToUpdate->image ?? 'users/default_profile.png';
             }
 
             // Handle Licence
@@ -741,6 +740,7 @@ public function getData(Request $request)
     
         return response()->json(['success' => 'Verification status updated successfully.']);
     }
+
     public function switchRole(Request $request)
     {
         // Validate input role ID
@@ -772,4 +772,78 @@ public function getData(Request $request)
             'message' => 'Role switched successfully!',
         ], 200);
     }
+
+    //Rating Methods
+    public function showRating()
+    {
+        $ratings = Rating::all();
+        return view('users.ratings.show', compact('ratings'));
+    } 
+
+    public function saveRating(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|unique:ratings,name,NULL,id,deleted_at,NULL',
+            'status' => 'required|boolean',
+        ]);
+    
+        Rating::create($request->only('name', 'status'));
+    
+        Session::flash('message', 'Rating saved successfully');
+        return response()->json(['success' => true, 'msg'=> 'Rating saved successfully.']);
+    }
+
+    public function getRating(Request $request)
+    {
+       $rating = Rating::find(decode_id($request->rating_id));
+       if($rating){
+            return response()->json(['success'=> true,'rating'=> $rating]);
+       }else{
+            return response()->json(['success'=> false,'msg'=> 'Rating not gound']);            
+       }
+    }
+
+    public function updateRating(Request $request)
+    {
+        $request->validate([
+            'rating_id' => 'required|integer',
+            'name' => 'required|string|unique:ratings,name,' . $request->rating_id . ',id,deleted_at,NULL',
+            'status' => 'required|in:0,1',
+        ]);
+    
+        $rating = Rating::find($request->rating_id);
+    
+        if ($rating) {
+            $rating->update([
+                'name' => $request->name,
+                'status' => $request->status,
+            ]);
+    
+            Session::flash('message', 'Rating updated successfully.');
+    
+            return response()->json([
+                'success' => true,
+                'msg' => 'Rating updated successfully.'
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'msg' => 'Rating not found.'
+            ]);
+        }
+    }
+
+    public function deleteRating(Request $request)
+    {
+        $rating = Rating::findOrFail(decode_id($request->rating_id));        
+        if ($rating) {
+            $rating->delete();
+            return redirect()->route('users.rating')->with('message', 'Rating deleted successfully.');
+        }
+        return redirect()->route('users.rating')->with('error', 'Rating not found.');
+    }
+    
+    
+
+
 }
