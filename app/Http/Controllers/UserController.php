@@ -407,8 +407,6 @@ class UserController extends Controller
 
         if ($request->hasFile('image')) {
             $filePath = $request->file('image')->store('users', 'public');
-        } else {
-            $filePath = 'users/default_profile.png'; // Make sure this file exists in `storage/app/public/users/`
         }
 
         if ($request->hasFile('licence_file')) {
@@ -519,12 +517,12 @@ class UserController extends Controller
 
             // Handle Image Upload
             if ($request->hasFile('image')) {
-                if ($userToUpdate->image && $userToUpdate->image !== 'users/default_profile.png') {
+                if ($userToUpdate->image) {
                     Storage::disk('public')->delete($userToUpdate->image);
                 }
                 $filePath = $request->file('image')->store('users', 'public');
             } else {
-                $filePath = $userToUpdate->image ?? 'users/default_profile.png';
+                $filePath = $userToUpdate->image;
             }
 
             // Handle Licence

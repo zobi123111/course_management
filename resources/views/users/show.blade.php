@@ -18,7 +18,7 @@
             <div class="row align-items-center mb-4">
                 <!-- Profile Picture -->
                 <div class="col-md-3 text-center mb-3 mb-md-0">
-                    <img src="{{ $user->image ? asset('storage/' . $user->image) : asset('/assets/img/No_Image_Available.jpg') }}"
+                    <img src="{{ $user->image ? asset('storage/' . $user->image) : asset('/assets/img/default_profile.png') }}"
                         class="rounded-circle img-thumbnail shadow" width="150" alt="Profile Picture">
                 </div>
 

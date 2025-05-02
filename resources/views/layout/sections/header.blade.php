@@ -51,7 +51,7 @@
                         @if(Auth::user()->image)
                             <img src="{{ asset('storage/' .  Auth()->user()->image) }}" alt="Profile" class="rounded-circle">
                         @else
-                            <img src="{{ asset('/assets/img/profile-img.jpg') }}" alt="Profile" class="rounded-circle">
+                            <img src="{{ asset('/assets/img/default_profile.png') }}" alt="Profile" class="rounded-circle">
                         @endif
                         <span class="d-none d-md-block dropdown-toggle ps-2"> 
                             @if(Auth::check())
