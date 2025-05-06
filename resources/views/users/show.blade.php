@@ -52,7 +52,7 @@
                         @if($user->passport_admin_verification_required==1)
                             <div class="form-check form-switch">
                                 <input class="form-check-input verify-toggle" type="checkbox" id="passport_verify" data-user-id="{{ encode_id($user->id) }}" data-type="passport" {{ $user->passport_verified ? 'checked disabled' : '' }}>
-                                <label class="form-check-label" for="passport_verify">Verified</label>
+                                <label class="form-check-label" for="passport_verify">{{ $user->passport_verified ? 'Verified' : 'Mark as Verified' }}</label>
                             </div>
                         @endif
                     @else
@@ -68,7 +68,7 @@
                         @if($user->licence_admin_verification_required==1)
                             <div class="form-check form-switch">
                                 <input class="form-check-input verify-toggle" type="checkbox" id="licence_verify" data-user-id="{{ encode_id($user->id) }}" data-type="licence" {{ $user->licence_verified ? 'checked disabled' : '' }}>
-                                <label class="form-check-label" for="licence_verify">Verified</label>
+                                <label class="form-check-label" for="licence_verify">{{ $user->licence_verified ? 'Verified' : 'Mark as Verified' }}</label>
                             </div>
                         @endif
                     @else
@@ -90,7 +90,7 @@
                         @if($user->medical_adminRequired==1)
                             <div class="form-check form-switch">
                                 <input class="form-check-input verify-toggle" type="checkbox" id="licence_verify" data-user-id="{{ encode_id($user->id) }}" data-type="medical" {{ $user->medical_verified ? 'checked disabled' : '' }}>
-                                <label class="form-check-label" for="licence_verify">Verified</label>
+                                <label class="form-check-label" for="licence_verify">{{ $user->medical_verified ? 'Verified' : 'Mark as Verified' }}</label>
                             </div>
                         @endif
                     @else
@@ -103,24 +103,67 @@
 
             <!-- Ratings & Organization -->
             <div class="row g-4">
-                <div class="col-md-6">
-                    <h5 class="text-muted mb-2"><i class="bi bi-star-fill text-warning me-2"></i>User Ratings</h5>
-                    @if($user->rating)
-                        <div class="rating-stars">
-                            @for($i = 1; $i <= 5; $i++)
-                                <span class="star {{ $i <= $user->rating ? 'text-warning' : 'text-muted' }}">&#9733;</span>
-                            @endfor
-                        </div>
-                    @else
-                        <p class="text-muted">No ratings available.</p>
-                    @endif
+                <div class="col-md-12 mt-4">
+                    <h4 class="text-dark mb-4">
+                        <i class="bi bi-award-fill text-warning me-2"></i> User Rating Files
+                    </h4>
+
+                    <div class="d-flex flex-wrap">
+                        @if($user->usrRatings->count())
+                            @foreach($user->usrRatings as $rating)
+                                <div class="card shadow-sm border-0 me-3 mb-3" style="width: 18rem;">
+                                    <div class="card-body">
+                                        <h5 class="card-title mb-3 text-primary">
+                                            {{ $rating->rating->name ?? 'Unknown Rating' }}
+                                        </h5>
+                                        <ul class="list-unstyled mb-3">
+                                            <li><strong>Issue Date:</strong> {{ $rating->issue_date ?? 'N/A' }}</li>
+                                            <li><strong>Expiry Date:</strong> {{ $rating->expiry_date ?? 'N/A' }}</li>
+                                        </ul>
+
+                                        @if($rating->file_path)
+                                            <a href="{{ Storage::url($rating->file_path) }}" target="_blank"
+                                            class="btn btn-outline-primary btn-sm me-2">
+                                                <i class="bi bi-file-earmark-arrow-down"></i> View File
+                                            </a>
+
+                                                <div class="form-check form-switch mt-3">
+                                                    <input class="form-check-input verify-toggle" type="checkbox"
+                                                        id="rating_verify_{{ $rating->id }}"
+                                                        data-user-id="{{ encode_id($user->id) }}"
+                                                        data-type="user_rating"
+                                                        data-rating-id="{{ encode_id($rating->id) }}"
+                                                        {{ $rating->admin_verified ? 'checked disabled' : '' }}>
+                                                    <label class="form-check-label" for="rating_verify_{{ $rating->id }}">
+                                                        {{ $rating->admin_verified ? 'Verified' : 'Mark as Verified' }}
+                                                    </label>
+                                                </div>
+                                        @else
+                                            <p class="text-muted">No rating file available.</p>
+                                        @endif
+
+                                    </div>
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i> No user rating records available.
+                            </div>
+                        @endif
+                    </div>
                 </div>
 
                 <div class="col-md-6">
-                    <h5 class="text-muted mb-2"><i class="bi bi-building text-secondary me-2"></i>Organization Unit</h5>
-                    <p>{{ $user->organization->org_unit_name ?? 'N/A' }}</p>
+                    <h5 class="text-muted mb-2">
+                        <i class="bi bi-building text-secondary me-2"></i> Organization Unit
+                    </h5>
+                    <div class="p-3 border rounded bg-light">
+                        {{ $user->organization->org_unit_name ?? 'N/A' }}
+                    </div>
                 </div>
             </div>
+
+
 
             <!-- Custom Fields -->
             @if($user->custom_field_name && $user->custom_field_value)
@@ -141,18 +184,16 @@
 $(document).ready(function() {
     $(".verify-toggle").on('change', function() {
         var userId = $(this).data("user-id");
+        var ratingId = $(this).data("rating-id");
         var docType = $(this).data("type"); // Example: passport or licence
         var isChecked = $(this).prop("checked") ? 1 : 0;
-        console.log(userId);
-        console.log(docType);
-        console.log(isChecked);
-
         $.ajax({
             url: '{{ url("/users/verify") }}',
             type: 'POST',
             data: {
                 _token: '{{ csrf_token() }}',
                 userId: userId,
+                ratingId: ratingId,
                 documentType: docType,
                 verified: isChecked
             },
@@ -161,6 +202,7 @@ $(document).ready(function() {
                 if (response.success) {
                     // Show success message
                     alert(response.success);
+                    location.reload();
                 } else {
                     // Show general error if success is not returned
                     alert("Something went wrong!");

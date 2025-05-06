@@ -7,6 +7,7 @@ use App\Models\OrganizationUnits;
 use App\Models\Role;
 use App\Models\UserActivityLog;
 use App\Models\Rating;
+use App\Models\UserRating;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -25,6 +26,8 @@ class UserController extends Controller
     
         $organizationUnits = OrganizationUnits::all();
         $roles = Role::all(); 
+        $rating = Rating::where('status', 1)->get(); 
+
         if ($is_owner) { 
             $users = User::all();
         } else {  
@@ -101,7 +104,7 @@ class UserController extends Controller
                 ->make(true);
         }
     
-         return view('users.index', compact('roles', 'organizationUnits'));
+         return view('users.index', compact('roles', 'organizationUnits','rating'));
     }
 
     public function userData(Request $request)
@@ -158,11 +161,20 @@ class UserController extends Controller
 
     public function profile()
     {
-        $id =  auth()->user()->id; 
-        $user = User::where('id',$id)->first();
-
-        return view('users.profile', compact('user'));  
+        $id = auth()->id();
+    
+        // Fetch the user along with their related ratings
+        $user = User::with('usrRatings.rating')->findOrFail($id);
+        // dd($user);
+        // Extract the related ratings from the user ratings
+        $ratings = $user->usrRatings->map(function ($userRating) {
+            return $userRating->rating;
+        });
+    
+        return view('users.profile', compact('user', 'ratings'));
     }
+    
+    
 
     public function profileUpdate(Request $request)
     {
@@ -173,39 +185,47 @@ class UserController extends Controller
                 $rules = [];
            
                 if ($userToUpdate->licence_required === 1) {    
-                    $rules['licence'] = 'required';
-                    if(!$request->has('licence_expiry_date') || !$request->has('non_expiring_licence')){
-                        $rules['licence_expiry_date'] = 'required'; 
+                    if ($request->filled('licence')) {
+                        $rules['licence'] = 'required';
+                        if(!$request->has('licence_expiry_date') || !$request->has('non_expiring_licence')){
+                            $rules['licence_expiry_date'] = 'required'; 
+                        }
+                        // Require a new file only if there's no existing file
+                        if (!$userToUpdate->licence_file) {
+                            $rules['licence_file'] = 'required|file|mimes:pdf,jpg,jpeg,png';
+                        } 
                     }
-                     // Require a new file only if there's no existing file
-                     if (!$userToUpdate->licence_file) {
-                        $rules['licence_file'] = 'required|file|mimes:pdf,jpg,jpeg,png';
-                    } 
                    
                     
                 }
             
                 if ($userToUpdate->passport_required == 1) {
-                    $rules['passport'] = 'required';
-                    $rules['passport_expiry_date'] = 'required';
-                     // Require a new file only if there's no existing file
-                     if (!$userToUpdate->passport_file) {
-                        $rules['passport_file'] = 'required|file|mimes:pdf,jpg,jpeg,png';
-                    } 
+                    if ($request->filled('passport')) {
+                        $rules['passport'] = 'required';
+                        $rules['passport_expiry_date'] = 'required';
+                
+                        if (!$userToUpdate->passport_file) {
+                            $rules['passport_file'] = 'required|file|mimes:pdf,jpg,jpeg,png';
+                        }
+                    }
                 }
-            
+                
                 if ($userToUpdate->medical == 1) {
-                    if (!$userToUpdate->medical_issuedby) { 
-                        $rules['issued_by'] = 'required';
-                    }
-                    if(!$userToUpdate->medical_class){
-                        $rules['medical_class'] = 'required';
-                    }
-                    $rules['medical_issue_date'] = 'required';
-                    $rules['medical_expiry_date'] = 'required';
-                    $rules['medical_detail'] = 'required';
-                    if (!$userToUpdate->medical_file) { 
-                        $rules['medical_file'] = 'required|file|mimes:pdf,jpg,jpeg,png';
+                    if ($request->filled('issued_by')) {
+                        if (!$userToUpdate->medical_issuedby) {
+                            $rules['issued_by'] = 'required';
+                        }
+                        if (!$userToUpdate->medical_class) {
+                            $rules['medical_class'] = 'required';
+                        }
+                
+                        $rules['medical_issue_date'] = 'required';
+                        $rules['medical_expiry_date'] = 'required';
+                        $rules['medical_detail'] = 'required';
+                
+                        if (!$userToUpdate->medical_file) {
+                            $rules['medical_file'] = 'required|file|mimes:pdf,jpg,jpeg,png';
+                        }
                     }
                 }
                 $licenceFileUploaded = $userToUpdate->licence_file_uploaded;
@@ -228,6 +248,28 @@ class UserController extends Controller
                 if ($userToUpdate->currency_required == 1 && !$userToUpdate->currency) {
                     $rules['currency'] = 'required|string';
                 }
+
+                if ($userToUpdate->rating_required == 1 && $request->filled('issue_date')) {
+                    foreach ($request->input('issue_date') as $ratingId => $issueDate) {
+                        if (!empty($issueDate)) {
+                            $rules["issue_date.$ratingId"] = 'required|date';
+                            $rules["expiry_date.$ratingId"] = 'required|date|after_or_equal:issue_date.' . $ratingId;
+                
+                            // Check if existing UserRating has file_path
+                            $existingRating = UserRating::where('user_id', $userToUpdate->id)
+                                                        ->where('rating_id', $ratingId)
+                                                        ->first();
+                
+                            if (empty($existingRating?->file_path)) {
+                                $rules["rating_file.$ratingId"] = 'required|file|mimes:pdf,jpg,jpeg,png|max:2048';
+                            } else {
+                                $rules["rating_file.$ratingId"] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048';
+                            }
+                        }
+                    }
+                }
+                
+                
             
                 if (!empty($rules)) {
                     $request->validate($rules);
@@ -285,7 +327,7 @@ class UserController extends Controller
                     ]);
                 }
             }
-
+            
 
             $newData = [
                 'fname' => $request->firstName,
@@ -325,10 +367,8 @@ class UserController extends Controller
                     $formattedKey = ucfirst(str_replace('_', ' ', $key)); // Format field names
                     $changes[] = "$formattedKey changed from '$oldValue' to '$newValue'";
                 }
-            }
-        
+            }        
             $userToUpdate->update($newData);
-
             if (!empty($changes)) {
                 UserActivityLog::create([
                     'user_id' => auth()->user()->id,
@@ -337,12 +377,44 @@ class UserController extends Controller
                 ]);
             }
 
-        //   Session::flash('message', 'User saved successfully');
-        return response()->json(['success' => true,'message' => "User profile updated successfully"]);
+            if ($userToUpdate->rating_required == 1 && $request->has('issue_date')) {
+                foreach ($request->issue_date as $ratingId => $issueDate) {
+                    $expiryDate = $request->expiry_date[$ratingId] ?? null;
+                    $file = $request->file("rating_file.$ratingId");
+            
+                    $filePath = null;
+                    if ($file) {
+                        $originalName = $file->getClientOriginalName();
+                        $filePath = $file->storeAs("rating_files", $originalName, "public");
+                    }
+            
+                    // Find existing rating or create a new one
+                    $userRating = UserRating::firstOrNew([
+                        'user_id' => $userToUpdate->id,
+                        'rating_id' => $ratingId,
+                    ]);
+            
+                    $userRating->issue_date = $issueDate;
+                    $userRating->expiry_date = $expiryDate;
+                    if ($filePath) {
+                        // Delete old file if exists
+                        if ($userRating->file) {
+                            Storage::disk('public')->delete($userRating->file);
+                        }
+                        $userRating->file_path = $filePath;
+                        $userRating->admin_verified = 0;
+                    }
+                    $userRating->save();
+                }
+            }
+            
+            //   Session::flash('message', 'User saved successfully');
+            return response()->json(['success' => true,'message' => "User profile updated successfully"]);
     }
 
     public function save_user(Request $request)
     {
+        // dd($request->all());
         $validated = $request->validate([
             'firstname' => 'required',
             'lastname' => 'required',
@@ -360,7 +432,15 @@ class UserController extends Controller
             ],
             'extra_roles' => 'array',
             'extra_roles.*' => 'exists:roles,id', // Ensure all user IDs exist
+            'rating' => $request->has('rating_checkbox') ? 'required|array|min:1' : 'nullable',
         ]);
+
+        // Check if the rating checkbox is checked, and validate rating field if so
+        if ($request->has('rating_checkbox') && $request->rating_checkbox) {
+            if (empty($request->rating)) {
+                return redirect()->back()->withInput()->withErrors(['rating' => 'Please select at least one rating.']);
+            }
+        }
 
         $licence_required = null;
         $passport_required = null;
@@ -442,7 +522,7 @@ class UserController extends Controller
             "passport_file"       => $passport_file ?? null,
             "passport_admin_verification_required"       => $request->passport_verification_required ?? 0,
             "rating_required"     => $rating_required,
-            "rating"              => $request->rating ?? null,
+            "rating" => $request->has('rating') ? json_encode($request->rating) : null,
             "currency_required"   => $currency_required,
             "currency"            => $request->currency ?? null,
             "custom_field_name"   => $request->custom_field_name ?? null,
@@ -469,6 +549,19 @@ class UserController extends Controller
     
         $store = User::create($store_user);
         if ($store) {
+
+            // Save ratings in 'user_ratings' table
+            if ($request->has('rating') && is_array($request->rating)) {
+                foreach ($request->rating as $ratingId) {
+                    UserRating::create([
+                        'user_id' => $store->id,
+                        'rating_id' => $ratingId,
+                        'issue_date' => null,     // you can set default/null or extend your form to collect this
+                        'expiry_date' => null,
+                        'file_path' => null,
+                    ]);
+                }
+            }
     
             // Generate password to send in the email
             $password = $request->password;
@@ -506,13 +599,15 @@ class UserController extends Controller
                             $fail('The Organizational Unit (OU) is required for Super Admin.');
                         }
                     }
-                ]
+                ],
+                'edit_rating' => $request->has('edit_rating_checkbox') ? 'required|array|min:1' : 'nullable',
             ], [
                 'edit_firstname.required' => 'The First Name is required',
                 'edit_lastname.required' => 'The Last Name is required',
                 'edit_email.required' => 'The Email is required',
                 'edit_email.email' => 'Please enter a valid Email',
                 'password' => 'The password and confirm password do not match.',
+                'edit_rating' => 'Rating is required',
             ]);
 
             // Handle Image Upload
@@ -610,8 +705,8 @@ class UserController extends Controller
                 'passport_required' => $passport_required,
                 'passport' => $request->edit_passport ?? null,
                 'passport_file' => $passportFilePath,
-                'rating' => $request->edit_rating ?? null,
                 'rating_required' => $rating_required,
+                "rating" => $request->has('edit_rating') ? json_encode($request->edit_rating) : null,
                 'currency_required' => $currency_required,
                 'currency' => $request->edit_currency ?? null, 
                 'custom_field_required' => $custom_field_required, 
@@ -643,6 +738,20 @@ class UserController extends Controller
             // Update User
             $userToUpdate->update($newData);
 
+            // === Handle User Ratings (NEW) ===
+            if ($request->has('edit_rating_checkbox')) {
+                // Remove previous ratings
+                UserRating::where('user_id', $userToUpdate->id)->delete();
+
+                // Save new ratings
+                foreach ($request->edit_rating as $ratingId) {
+                    UserRating::create([
+                        'user_id' => $userToUpdate->id,
+                        'rating_id' => $ratingId
+                    ]);
+                }
+            }
+
             // Log Changes
             if (!empty($changes)) {
                 UserActivityLog::create([
@@ -659,12 +768,15 @@ class UserController extends Controller
 
     public function getUserById(Request $request) 
     {
-        $user = User::find(decode_id($request->id));
+        $user = User::with('usrRatings')->find(decode_id($request->id));
+        
         if (!$user) {
             return response()->json(['error' => 'User not found']);
         }
+    
         return response()->json(['user' => $user]);
     }
+    
 
     public function destroy(Request $request)
     { 
@@ -689,12 +801,12 @@ class UserController extends Controller
 
     public function showUser(Request $request, $user_id)
     { 
-        $user = User::with('roles', 'organization')->find(decode_id($user_id));
+        $user = User::with(['roles', 'organization', 'usrRatings.rating'])->find(decode_id($user_id));
     
         if (!$user) {
             return redirect()->back()->with('error', 'User not found.');
         }
-    
+    // dd($user);
         // Fetch extra role names directly in one line
         $extraRoles = Role::whereIn('id', json_decode($user->extra_roles ?? '[]'))->pluck('role_name')->toArray();
     // dd($user);
@@ -703,41 +815,51 @@ class UserController extends Controller
 
     public function docsVerify(Request $request)
     {
-       // dump($request->all());
-        // Decode the encoded userId
+
+        // dd($request->all());
         $decodedUserId = decode_id($request->userId);
-       // dump($request->documentType);
-        // Validate the incoming request
+        $decodedRatingId = $request->ratingId ? decode_id($request->ratingId) : null;
+    
         $request->validate([
-            'userId' => [
-                'required',
-                function ($attribute, $value, $fail) use ($decodedUserId) {
-                    // Check if the decoded userId exists in the users table
-                    if (!User::where('id', $decodedUserId)->exists()) {
-                        $fail('The selected user id is invalid.');
-                    }
-                },
-            ],
-            'documentType' => 'required|in:passport,licence,medical',
+            'userId' => 'required',
+            'documentType' => 'required|in:passport,licence,medical,user_rating',
             'verified' => 'required|boolean',
         ]);
-   
-        // Find the user using the decoded userId
+    
+        if ($request->documentType === 'user_rating') {
+            // Ensure rating ID is provided
+            if (!$decodedRatingId) {
+                return response()->json(['error' => 'Rating ID is required.'], 422);
+            }
+    
+            $rating = UserRating::find($decodedRatingId);
+            if (!$rating) {
+                return response()->json(['error' => 'User Rating not found.'], 404);
+            }
+    
+            // Optional: Validate the rating belongs to the correct user
+            if ($rating->user_id !== $decodedUserId) {
+                return response()->json(['error' => 'Rating does not belong to the specified user.'], 403);
+            }
+    
+            $rating->admin_verified = $request->verified;
+            $rating->save();
+    
+            return response()->json(['success' => 'User rating verification updated successfully.']);
+        }
+    
+        // For documents
         $user = User::find($decodedUserId);
         if (!$user) {
             return response()->json(['error' => 'User not found.'], 404);
         }
     
-        // Determine which column to update
-
-        $column = $request->documentType . '_verified'; // Either 'passport_verified' or 'licence_verified'
-      
-    
-        // Update the user record
+        $column = $request->documentType . '_verified';
         $user->update([$column => $request->verified]);
     
-        return response()->json(['success' => 'Verification status updated successfully.']);
+        return response()->json(['success' => 'Document verification updated successfully.']);
     }
+    
 
     public function switchRole(Request $request)
     {
