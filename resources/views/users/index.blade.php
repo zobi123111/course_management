@@ -30,6 +30,7 @@
     color: gold;
     /* color for filled stars */
 }
+
 </style>
 
 <div class="main_cont_outer">
@@ -44,7 +45,6 @@
         <div>
             <a href="#" class="btn btn-primary me-2 create-button" id="createUser" data-toggle="modal"
                 data-target="#userModal">Create Users</a>
-
             @if(auth()->user()->is_owner == 1)
                 <a href="{{ route('users.rating') }}" class="btn btn-primary" id="addRating">View Rating</a>
             @endif
@@ -86,8 +86,8 @@
 
 <!-- Create User -->
 <div class="modal fade" id="userModal" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false"
-    aria-labelledby="userModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
+    aria-labelledby="userModalLabel" aria-hidden="true" >
+    <div class="modal-dialog modal-xl" role="document" >
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="userModalLabel">Create User</h5>
@@ -146,7 +146,7 @@
                         <div class="col-md-6">
                             <label for="extra_roles" class="form-label">Select Multiple Roles<span
                                     class="text-danger"></span></label>
-                            <select class="form-select " name="extra_roles[]" id="extra_roles" multiple="multiple">
+                            <select class="form-select extra_roles" name="extra_roles[]" id="extra_roles" multiple="multiple">
                                 <option value="">Select roles</option>
                                 @foreach($roles as $val)
                                 <option value="{{ $val->id }}">{{ $val->role_name }}</option>
@@ -241,7 +241,6 @@
                             <input type="file" name="passport_file" id="passport_file" class="form-control mt-3"
                                 style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
                             <div id="passport_file_error" class="text-danger error_e"></div>
-
                         </div>
 
                         <!-- Rating/s (Stars) -->
@@ -249,14 +248,12 @@
                             <label for="rating_checkbox" class="form-label">Rating/s</label>
                             <input type="checkbox" name="rating_checkbox" id="rating_checkbox" class="ms-2">
                             <div id="ratings" style="display: none;">
-                                <div id="ratingStars" class="rating-stars">
-                                    <span class="star" data-value="1">&#9733;</span>
-                                    <span class="star" data-value="2">&#9733;</span>
-                                    <span class="star" data-value="3">&#9733;</span>
-                                    <span class="star" data-value="4">&#9733;</span>
-                                    <span class="star" data-value="5">&#9733;</span>
-                                </div>
-                                <input type="hidden" name="rating" id="rating_value" value="">
+                                <select class="form-select rating-select" name="rating[]" aria-label="Default select example" multiple>
+                                    <option value="">Select Rating</option>
+                                    @foreach($rating as $val)
+                                    <option value="{{ $val->id }}">{{ $val->name }}</option>
+                                    @endforeach
+                                </select>
                                 <div id="rating_error" class="text-danger error_e"></div>
                             </div>
                         </div>
@@ -397,7 +394,7 @@
                         <div class="col-md-6">
                             <label for="extra_roles" class="form-label">Select Multiple Roles<span
                                     class="text-danger"></span></label>
-                            <select class="form-select " name="extra_roles[]" id="edit_extra_roles" multiple="multiple">
+                            <select class="form-select extra_roles" name="extra_roles[]" id="edit_extra_roles" multiple="multiple">
                                 <option value="">Select roles</option>
                                 @foreach($roles as $val)
                                 <option value="{{ $val->id }}">{{ $val->role_name }}</option>
@@ -507,14 +504,12 @@
                             <label for="edit_rating_checkbox" class="form-label">Rating/s</label>
                             <input type="checkbox" name="edit_rating_checkbox" id="edit_rating_checkbox" class="ms-2">
                             <div id="edit_ratings" style="display: none;">
-                                <div id="edit_ratingStars" class="rating-stars">
-                                    <span class="star" data-value="1">&#9733;</span>
-                                    <span class="star" data-value="2">&#9733;</span>
-                                    <span class="star" data-value="3">&#9733;</span>
-                                    <span class="star" data-value="4">&#9733;</span>
-                                    <span class="star" data-value="5">&#9733;</span>
-                                </div>
-                                <input type="hidden" name="edit_rating" id="edit_rating_value" value="">
+                                <select class="form-select rating-select" name="edit_rating[]" id="edit_rating_value" aria-label="Default select example" multiple>
+                                    <option value="">Select Rating</option>
+                                    @foreach($rating as $val)
+                                    <option value="{{ $val->id }}">{{ $val->name }}</option>
+                                    @endforeach
+                                </select>
                                 <div id="edit_rating_error_up" class="text-danger error_e"></div>
                             </div>
                         </div>
@@ -624,38 +619,56 @@
 <script>
     
     $(document).ready(function() {
-    $('#user_table').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: "{{ route('users.data') }}",
-        columns: [
-            { 
-                data: 'image', 
-                name: 'image', 
-                orderable: false, 
-                searchable: false, 
-                render: function(data) {
-                    let baseUrl = "{{ url('storage') }}";
-                    let defaultImage = "{{ asset('assets/img/default_profile.png') }}";
 
-                    if (data) {
-                        return `<img src="${baseUrl}/${data}" width="50" height="50" class="img-thumbnail"/>`;
-                    } else {
-                        return `<img src="${defaultImage}" width="50" height="50" class="img-thumbnail"/>`;
+        function initializeSelect2() {
+            $('.rating-select').select2({
+                allowClear: true,
+                placeholder: 'Select the Rating',
+                multiple: true,
+                dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible') // More specific
+            });
+            $('.extra_roles').select2({
+                allowClear: true,
+                placeholder: 'Select the roles',
+                multiple: true,
+                dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible') // More specific
+            });
+        }    
+
+        initializeSelect2();
+
+        $('#user_table').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: "{{ route('users.data') }}",
+            columns: [
+                { 
+                    data: 'image', 
+                    name: 'image', 
+                    orderable: false, 
+                    searchable: false, 
+                    render: function(data) {
+                        let baseUrl = "{{ url('storage') }}";
+                        let defaultImage = "{{ asset('assets/img/default_profile.png') }}";
+
+                        if (data) {
+                            return `<img src="${baseUrl}/${data}" width="50" height="50" class="img-thumbnail"/>`;
+                        } else {
+                            return `<img src="${defaultImage}" width="50" height="50" class="img-thumbnail"/>`;
+                        }
                     }
-                }
-            },
-            { data: 'fname', name: 'fname' },
-            { data: 'lname', name: 'lname' },
-            { data: 'email', name: 'email' },
-            { data: 'position', name: 'position' },
-            @if(auth()->user()->is_owner == 1)
-                        { data: 'organization', name: 'organization' },
-            @endif
-            { data: 'status', name: 'status' },
-            { data: 'action', name: 'action', orderable: false, searchable: false }
-        ]   
-    });
+                },
+                { data: 'fname', name: 'fname' },
+                { data: 'lname', name: 'lname' },
+                { data: 'email', name: 'email' },
+                { data: 'position', name: 'position' },
+                @if(auth()->user()->is_owner == 1)
+                            { data: 'organization', name: 'organization' },
+                @endif
+                { data: 'status', name: 'status' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ]   
+        });
 
 
 
@@ -772,13 +785,15 @@
 
         $('#rating_checkbox').change(function() {
             if (this.checked) {
-                $('#ratings').show().prop('required', true);
+                $('#ratings').show();
+                $('#ratings select').prop('required', true);
             } else {
-                $('#ratings').hide().prop('required', false);
-                $('#ratings').val('');
-                $('#ratings_error').hide().prop('required', false);
+                $('#ratings').hide();
+                $('#ratings select').prop('required', false).val('');
+                $('#rating_error').text(''); // Optional: clear validation error if any
             }
         });
+
 
         $('#currency_checkbox').change(function() {
             if (this.checked) {
@@ -832,23 +847,13 @@
             }
         });
 
-        $('#ratingStars .star').on('click', function() {
-            var rating = $(this).data('value');
-            $('#rating_value').val(rating);
-
-            $('#ratingStars .star').removeClass('active');
-
-            for (var i = 1; i <= rating; i++) {
-                $('#ratingStars .star[data-value="' + i + '"]').addClass('active');
-            }
-        });
-
         $('#createUser').on('click', function() {
             $('.error_e').html('');
             $('.alert-danger').css('display', 'none');
             $('#userModal').modal('show');       
-            
-            initializeSelect2(); // Ensure Select2 is re-initialized
+            // $('#userModal').on('shown.bs.modal', function() {
+            //     initializeSelect2();
+            // });
         });
 
              $('#saveuser').click(function(e) {
@@ -915,27 +920,14 @@
 
         $('#edit_rating_checkbox').change(function() {
             if (this.checked) {
-                $('#edit_ratings').show().prop('required', true);
+                $('#edit_ratings').show();
+                $('#edit_ratings select').prop('required', true);
             } else {
-                $('#edit_ratings').hide().prop('required', false);
-                $('#edit_rating_value').val('');
-                $('#edit_ratings_error_up').hide().prop('required', false);
+                $('#edit_ratings').hide();
+                $('#edit_ratings select').prop('required', false).val('');
+                $('#edit_rating_error_up').text('');
             }
         });
-
-        $('#edit_ratingStars .star').click(function() {
-            var ratingValue = $(this).data('value');
-            $('#edit_rating_value').val(ratingValue);
-
-            $('#edit_ratingStars .star').each(function() {
-                if ($(this).data('value') <= ratingValue) {
-                    $(this).addClass('rated');
-                } else {
-                    $(this).removeClass('rated');
-                }
-            });
-        });
-
         $('#edit_currency_checkbox').change(function() {
             if (this.checked) {
                 $('#edit_currency').show().prop('required', true);
@@ -1029,25 +1021,20 @@
                            
                         }
 
-                        if (response.user.rating) {
+                        if (response.user.rating_required && response.user.usr_ratings.length > 0) {
                             $('#edit_rating_checkbox').prop('checked', true);
                             $('#edit_ratings').show();
-                            $('#edit_rating_value').val(response.user.rating);
 
-                            $('#edit_ratingStars .star').each(function() {
-                                var starValue = $(this).data('value');
-                                if (starValue <= response.user.rating) {
-                                    $(this).addClass('rated');
-                                } else {
-                                    $(this).removeClass('rated');
-                                }
-                            });
+                            // Extract rating IDs and set them as selected
+                            let selectedRatingIds = response.user.usr_ratings.map(r => r.rating_id);
+                            $('#edit_rating_value').val(selectedRatingIds).trigger('change');
+
                         } else {
                             $('#edit_rating_checkbox').prop('checked', false);
                             $('#edit_ratings').hide();
-                            $('#edit_ratings').val('')
-                            $('#edit_rating_value').val('');
+                            $('#edit_rating_value').val([]).trigger('change');
                         }
+
 
                         // Set currency checkbox and field
                         if (response.user.currency_required) {
@@ -1127,7 +1114,7 @@
                         }
 
                     $('#editUserDataModal').modal('show');
-                    initializeSelect2();
+                    // initializeSelect2();
                 },
                 error: function(xhr, status, error) {
                     console.error(xhr.responseText);
@@ -1144,18 +1131,6 @@
             }
         });
 
-        $('#edit_ratingStars .star').click(function() {
-            var ratingValue = $(this).data('value');
-            $('#edit_rating_value').val(ratingValue);
-
-            $('#edit_ratingStars .star').each(function() {
-                if ($(this).data('value') <= ratingValue) {
-                    $(this).addClass('rated');
-                } else {
-                    $(this).removeClass('rated');
-                }
-            });
-        });
 
         // Update user  form 
         // Use event delegation for update form button
@@ -1214,6 +1189,15 @@
         // Ensure Select2 works when modal is shown
         $('#userModal, #editUserDataModal').on('shown.bs.modal', function() {
             initializeSelect2();
+
+             // Reposition Select2 on scroll
+            // $(this).find('.modal-body').on('scroll', function () {
+            //     $('.rating-select').each(function () {
+            //         if ($(this).data('select2')) {
+            //             $(this).data('select2').dropdown._positionDropdown();
+            //         }
+            //     });
+            // });
         });
 
         setTimeout(function() {

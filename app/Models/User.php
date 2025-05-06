@@ -214,5 +214,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserActivityLog::class, 'user_id');
     }
+
+    public function usrRatings()
+    {
+        return $this->hasMany(UserRating::class);
+    }
     
 }

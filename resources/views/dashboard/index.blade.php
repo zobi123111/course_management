@@ -25,15 +25,15 @@ $user = Auth::user();
 if ($user->is_admin == "1") {
     foreach ($users as $u) {
         // Pending Verification Alerts
-        if ($u->licence_admin_verification_required == '1' && $u->licence_verified == "0") {
+        if ($u->licence_admin_verification_required == '1' && $u->licence_verified == "0" && !empty($u->licence_file)) {
             $messages[] = "📝 <strong>Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
         }
 
-        if ($u->passport_admin_verification_required == '1' && $u->passport_verified == "0") {
+        if ($u->passport_admin_verification_required == '1' && $u->passport_verified == "0" && !empty($u->passport_file)) {
             $messages[] = "📝 <strong>Passport</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
         }
 
-        if ($u->medical_adminRequired == '1' && $u->medical_verified == "0") {
+        if ($u->medical_adminRequired == '1' && $u->medical_verified == "0" && !empty($u->medical_file)) {
             $messages[] = "📝 <strong>Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
         }
 
@@ -53,19 +53,41 @@ if ($user->is_admin == "1") {
                 $messages[] = "⚠️ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
             }
         }
+
+        //User Rating Alerts For Admin
+        foreach ($u->usrRatings as $userRating) {
+            $ratingName = $userRating->rating?->name ?? 'Unknown Rating';
+
+            // Verification required
+            if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
+                $messages[] = "📝 <strong>{$ratingName}</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+            }
+
+            // Expiry status
+            $status = $userRating->expiry_status;
+            if ($status === 'Red') {
+                $messages[] = "❌ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
+            } elseif ($status === 'Orange') {
+                $messages[] = "⚠️ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 30 days</strong>.";
+            } elseif ($status === 'Amber') {
+                $messages[] = "⚠️ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
+            }
+        }
+
+
     }
 }
 if($user->is_admin != "1" && !empty($user->ou_id)) {
     // Regular User View
-    if ($user->licence_admin_verification_required == '1' && $user->licence_verified == "0") {
+    if ($user->licence_admin_verification_required == '1' && $user->licence_verified == "0" && !empty($user->licence_file)) {
         $messages[] = "📝 Your <strong>Licence</strong> is pending admin verification.";
     }
 
-    if ($user->passport_admin_verification_required == '1' && $user->passport_verified == "0") {
+    if ($user->passport_admin_verification_required == '1' && $user->passport_verified == "0" && !empty($user->passport_file)) {
         $messages[] = "📝 Your <strong>Passport</strong> is pending admin verification.";
     }
 
-    if ($user->medical_adminRequired == '1' && $user->medical_verified == "0") {
+    if ($user->medical_adminRequired == '1' && $user->medical_verified == "0" && !empty($user->medical_file)) {
         $messages[] = "📝 Your <strong>Medical Certificate</strong> is pending admin verification.";
     }
 
@@ -76,7 +98,7 @@ if($user->is_admin != "1" && !empty($user->ou_id)) {
     ];
 
     foreach ($statuses as $doc => $status) {
-        if ($status === 'Red') {
+        if ($status === 'Red') {    
             $messages[] = "❌ Your <strong>{$doc}</strong> has <strong>expired</strong>.";
         } elseif ($status === 'Orange') {
             $messages[] = "⚠️ Your <strong>{$doc}</strong> will expire in <strong>less than 30 days</strong>.";
@@ -84,6 +106,25 @@ if($user->is_admin != "1" && !empty($user->ou_id)) {
             $messages[] = "⚠️ Your <strong>{$doc}</strong> will expire in <strong>less than 90 days</strong>.";
         }
     }
+
+    //User Rating Alerts For Normal Users
+    foreach ($user->usrRatings as $userRating) {
+        $ratingName = $userRating->rating?->name ?? 'Unknown Rating';
+
+        if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
+            $messages[] = "📝 Your <strong>{$ratingName}</strong> is pending admin verification.";
+        }
+
+        $status = $userRating->expiry_status;
+        if ($status === 'Red') {
+            $messages[] = "❌ Your <strong>{$ratingName}</strong> has <strong>expired</strong>.";
+        } elseif ($status === 'Orange') {
+            $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong>less than 30 days</strong>.";
+        } elseif ($status === 'Amber') {
+            $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong>less than 90 days</strong>.";
+        }
+    }
+
 }
 @endphp
 

@@ -196,10 +196,10 @@ h2 {
                                         <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
                                     @elseif($user->licence_status == 'Amber')
                                         <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
+                                    @elseif($user->licence_status === 'Blue')
+                                        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
                                     @else
-                                        @if($user->licence_status!='N/A')
-                                            <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
-                                        @endif
+                                        <span class="text-secondary"><i class="bi bi-question-circle-fill"></i> N/A</span>
                                     @endif
                                 </label>
                                 <input type="date" name="licence_expiry_date" id="licence_expiry_date" value="{{ $user->licence_expiry_date ?? '' }}" class="form-control mt-3" >
@@ -252,8 +252,10 @@ h2 {
                                     <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
                                 @elseif($user->passport_status == 'Amber')
                                     <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
-                                @else
+                                @elseif($user->passport_status === 'Blue')
                                     <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
+                                @else
+                                    <span class="text-secondary"><i class="bi bi-question-circle-fill"></i> N/A</span>
                                 @endif
                             </label>
 
@@ -281,72 +283,159 @@ h2 {
                         </div>
                         <div class="row">
                         @if ($user->medical == 1)
-                       <div class="col-6">
-                        <label for="extra_roles" class="form-label"><strong> Medical Issued By </strong><span
-                                class="text-danger"></span></label>
-                                @if ($user->medical_verified)
-                                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
+                            <div class="col-6">
+                                <label for="extra_roles" class="form-label"><strong> Medical Issued By </strong><span
+                                        class="text-danger"></span></label>
+                                        @if ($user->medical_verified)
+                                            <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
+                                            @endif
+                                            <select class="form-select" name="issued_by" id="issued_by">
+                                                <option value="">Select Issued By</option>
+                                                <option value="UKCAA" {{ $user->medical_issuedby == "UKCAA" ? 'selected' : '' }}>UK CAA</option>
+                                                <option value="EASA" {{ $user->medical_issuedby == "EASA" ? 'selected' : '' }}>EASA</option>
+                                                <option value="FAA" {{ $user->medical_issuedby == "FAA" ? 'selected' : '' }}>FAA</option>
+                                            </select>
+                                <div id="issued_by_error_up" class="text-danger error_e"></div>
+                                <label for="extra_roles" class="form-label mt-3"><strong> Medical Class </strong><span
+                                        class="text-danger"></span></label>
+                                <select class="form-select " name="medical_class" id="medical_class">
+                                    
+                                    <option value="">Select the Class</option>
+                                    <option value="class1" <?php echo ($user->medical_class == "class1")?'selected':'' ?>>Class 1</option>
+                                    <option value="class2" <?php echo ($user->medical_class == "class2")?'selected':'' ?>>Class 2</option>
+                                </select>
+                                <div id="medical_class_error_up" class="text-danger error_e"></div>
+                                <label for="extra_roles" class="form-label mt-3"><strong>Medical Issue Date </strong> <span
+                                        class="text-danger"></span></label>
+                                <input type="date" name="medical_issue_date" id="medical_issue_date"
+                                    class="form-control" placeholder="Medical Issue Date" value="<?php echo isset($user->medical_issuedate) ? $user->medical_issuedate : ''; ?>" >
+                                    <div id="medical_issue_date_error_up" class="text-danger error_e"></div>
+
+                                <label for="extra_roles" class="form-label mt-3"><strong> Medical Expiry Date </strong><span
+                                        class="text-danger"></span> 
+                                        @if($user->medical_status == 'Red')
+                                            <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
+                                        @elseif($user->medical_status == 'Orange')
+                                            <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
+                                        @elseif($user->medical_status == 'Amber')
+                                            <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
+                                        @elseif($user->medical_status === 'Blue')
+                                            <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
+                                        @else
+                                            <span class="text-secondary"><i class="bi bi-question-circle-fill"></i> N/A</span>
+                                        @endif
+                                        </label>
+                                <input type="date" name="medical_expiry_date" id="medical_expiry_date"
+                                    class="form-control" placeholder="Medical Expiry Date" value="<?php echo isset($user->medical_expirydate) ? $user->medical_expirydate : ''; ?>" >
+                                    <div id="medical_expiry_date_error_up" class="text-danger error_e"></div>
+
+
+                                <label for="extra_roles" class="form-label mt-3"><strong> Medical Detail </strong> <span
+                                        class="text-danger"></span></label>
+                                    <textarea name="medical_detail" id="medical_detail" class="form-control"
+                                    placeholder="Enter the Detail" ><?php echo isset($user->medical_restriction) ?  $user->medical_restriction : ''; ?></textarea>
+
+                                    <input type="file" name="medical_file" id="medical_file" class="form-control mt-3"
+                                            accept=".pdf,.jpg,.jpeg,.png" >
+                                    <input type="hidden" name="old_medical_file" value="{{ $user->passport_file }}">
+                                    @if ($user->medical_file)
+                                        <div class="mt-3">
+                                            <a href="{{ asset('storage/' . $user->medical_file) }}" target="_blank"
+                                                class="btn btn-outline-primary btn-sm d-flex align-items-center"
+                                                style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
+                                                <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View
+                                                Medical
+                                            </a>
+                                        </div>
                                     @endif
-                                    <select class="form-select" name="issued_by" id="issued_by">
-                                        <option value="">Select Issued By</option>
-                                        <option value="UKCAA" {{ $user->medical_issuedby == "UKCAA" ? 'selected' : '' }}>UK CAA</option>
-                                        <option value="EASA" {{ $user->medical_issuedby == "EASA" ? 'selected' : '' }}>EASA</option>
-                                        <option value="FAA" {{ $user->medical_issuedby == "FAA" ? 'selected' : '' }}>FAA</option>
-                                    </select>
-                        <div id="issued_by_error_up" class="text-danger error_e"></div>
+                                <div id="medical_file_error_up" class="text-danger error_e"></div>
+                            </div>
+                        @endif
+ 
+                        @php
+                            // Map rating_id => UserRating model
+                            $userRatingsMap = $user->usrRatings->keyBy('rating_id');
+                        @endphp
+                        <div class="row mt-3">
+                            <h4>Rating Data</h4>
+                        @if($user->rating_required == 1 && $ratings->isNotEmpty())
+                            @foreach($ratings as $rating)
+                                @php
+                                    $userRating = $userRatingsMap[$rating->id] ?? null;
+                                @endphp
+                                <div class="col-6 border p-3 mb-3 rounded">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">{{ $rating->name }}</h5>
+                                        @if($userRating?->admin_verified)
+                                            <span class="text-success ms-3">
+                                                <i class="bi bi-check-circle-fill"></i> Verified
+                                            </span>
+                                        @endif
+                                    </div>
+                                    {{-- Issue Date --}}
+                                    <label class="form-label mt-2" for="issue_date_{{ $rating->id }}">
+                                        <strong>{{ $rating->name }} Issue Date</strong>
+                                    </label>
+                                    <input type="date"
+                                        name="issue_date[{{ $rating->id }}]"
+                                        id="issue_date_{{ $rating->id }}"
+                                        class="form-control"
+                                        value="{{ old("issue_date.$rating->id", optional($userRating)->issue_date) }}">
+                                    <div class="text-danger error_e" id="issue_date_{{ $rating->id }}_error_up"></div>
 
-                        <label for="extra_roles" class="form-label mt-3"><strong> Medical Class </strong><span
-                                class="text-danger"></span></label>
-                        <select class="form-select " name="medical_class" id="medical_class">
-                            
-                            <option value="">Select the Class</option>
-                            <option value="class1" <?php echo ($user->medical_class == "class1")?'selected':'' ?>>Class 1</option>
-                            <option value="class2" <?php echo ($user->medical_class == "class2")?'selected':'' ?>>Class 2</option>
-                        </select>
-                        <div id="medical_class_error_up" class="text-danger error_e"></div>
-                        <label for="extra_roles" class="form-label mt-3"><strong>Medical Issue Date </strong> <span
-                                class="text-danger"></span></label>
-                        <input type="date" name="medical_issue_date" id="medical_issue_date"
-                            class="form-control" placeholder="Medical Issue Date" value="<?php echo isset($user->medical_issuedate) ? $user->medical_issuedate : ''; ?>" >
-                            <div id="medical_issue_date_error_up" class="text-danger error_e"></div>
+                                    {{-- Expiry Date --}}
+                                    <label class="form-label mt-2" for="expiry_date_{{ $rating->id }}">
+                                        <strong>{{ $rating->name }} Expiry Date</strong>
+                                        {{-- Expiry Status --}}
+                                        @if($userRating)
+                                            @php $status = $userRating->expiry_status; @endphp
+                                            <!-- <div class="mt-1"> -->
+                                                @if($status === 'Red')
+                                                    <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired</span>
+                                                @elseif($status === 'Orange')
+                                                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
+                                                @elseif($status === 'Amber')
+                                                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
+                                                @elseif($status === 'Blue')
+                                                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
+                                                @else
+                                                    <span class="text-secondary"><i class="bi bi-question-circle-fill"></i> N/A</span>
+                                                @endif
+                                            <!-- </div> -->
+                                        @endif
+                                    </label>
+                                    <input type="date"
+                                        name="expiry_date[{{ $rating->id }}]"
+                                        id="expiry_date_{{ $rating->id }}"
+                                        class="form-control"
+                                        value="{{ old("expiry_date.$rating->id", optional($userRating)->expiry_date) }}">
+                                    <div class="text-danger error_e" id="expiry_date_{{ $rating->id }}_error_up"></div>                                    
 
-                        <label for="extra_roles" class="form-label mt-3"><strong> Medical Expiry Date </strong><span
-                                class="text-danger"></span> 
-                                @if($user->medical_status == 'Red')
-                                    <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
-                                @elseif($user->medical_status == 'Orange')
-                                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
-                                @elseif($user->medical_status == 'Amber')
-                                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
-                                @else
-                                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
-                                @endif
-                                </label>
-                        <input type="date" name="medical_expiry_date" id="medical_expiry_date"
-                            class="form-control" placeholder="Medical Expiry Date" value="<?php echo isset($user->medical_expirydate) ? $user->medical_expirydate : ''; ?>" >
-                            <div id="medical_expiry_date_error_up" class="text-danger error_e"></div>
+                                    {{-- File Upload --}}
+                                    <label class="form-label mt-2" for="rating_file_{{ $rating->id }}">
+                                        <strong>{{ $rating->name }} File Upload</strong>
+                                    </label>
+                                    <input type="file"
+                                        name="rating_file[{{ $rating->id }}]"
+                                        id="rating_file_{{ $rating->id }}"
+                                        class="form-control"
+                                        accept=".pdf,.jpg,.jpeg,.png">
+                                    <div class="text-danger error_e" id="rating_file_{{ $rating->id }}_error_up"></div>
 
-
-                        <label for="extra_roles" class="form-label mt-3"><strong> Medical Detail </strong> <span
-                                class="text-danger"></span></label>
-                            <textarea name="medical_detail" id="medical_detail" class="form-control"
-                            placeholder="Enter the Detail" ><?php echo isset($user->medical_restriction) ?  $user->medical_restriction : ''; ?></textarea>
-
-                            <input type="file" name="medical_file" id="medical_file" class="form-control mt-3"
-                                    accept=".pdf,.jpg,.jpeg,.png" >
-                            <input type="hidden" name="old_medical_file" value="{{ $user->passport_file }}">
-                             @if ($user->medical_file)
-                                <div class="mt-3">
-                                    <a href="{{ asset('storage/' . $user->medical_file) }}" target="_blank"
-                                        class="btn btn-outline-primary btn-sm d-flex align-items-center"
-                                        style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
-                                        <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View
-                                        Medical
-                                    </a>
+                                    {{-- Show existing file (if any) --}}
+                                    @if(!empty($userRating?->file_path))
+                                        <a href="{{ asset('storage/' . $userRating->file_path) }}" target="_blank"
+                                        class="btn btn-outline-primary btn-sm d-flex align-items-center mt-3"
+                                                style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
+                                            <i class="bi bi-file-earmark-text me-1"></i> View File
+                                        </a>
+                                    @endif
                                 </div>
-                            @endif
-                         <div id="medical_file_error_up" class="text-danger error_e"></div>
-                    </div>
+                            @endforeach
+                        @endif
+                        </div>
+
+
                     @if ($user->custom_field_required == 1)
                     <div class="col-6">
                         <label for="custom_field_checkbox" class="form-label"><strong>Custom Fields </strong></label>
@@ -367,7 +456,6 @@ h2 {
                     </div>
 
                 </div>
-                @endif
 
                 <div class="text-center" style="display: flex; justify-content: center;">
                     <button type="submit" id="updateForm" style="width: auto !important; "
@@ -456,8 +544,9 @@ $(document).ready(function() {
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
                 $.each(validationErrors, function(key, value) {
-                    var html = '<p>' + value + '</p>';
-                    $('#' + key + '_error_up').html(html);
+                    var formattedKey = key.replace(/\./g, '_') + '_error_up';
+                    var errorMsg = '<p>' + value[0] + '</p>';
+                    $('#' + formattedKey).html(errorMsg);
                 });
             }
         });
