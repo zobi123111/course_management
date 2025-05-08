@@ -15,6 +15,7 @@ use App\Models\Resource;
 use App\Models\CompetencyGrading;
 use App\Models\OverallAssessment;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use PDF;
@@ -417,46 +418,6 @@ class TrainingEventsController extends Controller
         }        
     }
 
-    // public function getOrgGroupsAndInstructors(Request $request)
-    // {
-    //     $orgUnitGroups = Group::where('ou_id', $request->ou_id)
-    //            ->get();
-    //     $ouInstructors = User::where('ou_id', $request->ou_id)
-    //     ->whereHas('roles', function ($query) {
-    //         $query->where('role_name', 'like', '%Instructor%');
-    //     })
-    //     ->with('roles')
-    //     ->get();
-           
-    //     if($orgUnitGroups){
-    //         return response()->json(['orgUnitGroups' => $orgUnitGroups, 'ouInstructors'=> $ouInstructors]);
-    //     }else{
-    //         return response()->json(['error'=> 'Org Unit Groups not found.']);
-    //     }
-    // }
-
-    // public function showTrainingEvent(Request $request, $event_id)
-    // {
-      
-    //     $trainingEvent = TrainingEvents::with(['course:id,course_name', 'group:id,name,user_ids', 'instructor:id,fname,lname', 'student:id,fname,lname', 'resource:id,name'])
-    //     ->find(decode_id($event_id));
-    //     //  dd($trainingEvent);
-    //     // Fetch the single student
-    //     $student = $trainingEvent->student;
-    //     // Ensure course exists before accessing course_id
-    //     $courseLessons = $trainingEvent->course 
-    //     ? CourseLesson::with('sublessons')
-    //     ->where('course_id', $trainingEvent->course->id)
-    //     ->get() : collect();
-    
-    //     // Fetch the overall assessment for the single student
-    //     $overallAssessments = OverallAssessment::where('event_id', $trainingEvent->id)
-    //     ->where('user_id', $student->id ?? null)
-    //     ->first(); // Fetch only one record
-
-    //     return view('trainings.show', compact('trainingEvent', 'student', 'courseLessons', 'overallAssessments'));
-    // }
-
     public function showTrainingEvent(Request $request, $event_id)
     {
         $currentUser = auth()->user();
@@ -470,7 +431,8 @@ class TrainingEventsController extends Controller
             'eventLessons.lesson:id,lesson_title',
             'eventLessons.instructor:id,fname,lname',
             'eventLessons.resource:id,name',    
-            'trainingFeedbacks.question' // Eager load the question relationship
+            'trainingFeedbacks.question', // Eager load the question relationship
+            'documents' // Eager load the training event documents
         ])->find(decode_id($event_id));
     
         if (!$trainingEvent) {
@@ -514,6 +476,8 @@ class TrainingEventsController extends Controller
             ? CourseLesson::with('sublessons')->whereIn('id', $lessonIds)->get() 
             : collect();
 
+        $isGradingCompleted = $taskGrades->isNotEmpty() && $competencyGrades->isNotEmpty();    
+
         // Retrieve feedback data
         $trainingFeedbacks = $trainingEvent->trainingFeedbacks;    
         return view('trainings.show', compact(
@@ -524,120 +488,10 @@ class TrainingEventsController extends Controller
             'eventLessons',
             'taskGrades',
             'competencyGrades',
-            'trainingFeedbacks'
+            'trainingFeedbacks',
+            'isGradingCompleted'
         ));
     }
-    
-
-
-    // public function showTrainingEvent(Request $request, $event_id)
-    // {
-      
-    //     $trainingEvent = TrainingEvents::with(['course:id,course_name', 'group:id,name,user_ids', 'instructor:id,fname,lname', 'student:id,fname,lname', 'resource:id,name'])
-    //     ->find(decode_id($event_id));
-    //   //  dd($trainingEvent);
-    //     if ($trainingEvent && !empty($trainingEvent->group->user_ids)) {
-    //         // Ensure user_ids is an array (convert from JSON if needed)
-    //         $userIds = is_string($trainingEvent->group->user_ids) 
-    //         ? json_decode($trainingEvent->group->user_ids, true) 
-    //         : $trainingEvent->group->user_ids;
-    //         // Fetch users only if decoding is successful
-    //         $groupUsers = is_array($userIds) 
-    //         ? User::whereIn('id', $userIds)
-    //             ->with([
-    //                 'taskGrades' => function ($query) use ($event_id) {
-    //                     $query->where('event_id', decode_id($event_id));
-    //                 },
-    //                 'competencyGrades' => function ($query) use ($event_id) {
-    //                     $query->where('event_id', decode_id($event_id));
-    //                 }
-    //             ])
-    //             ->get() 
-    //         : collect();
-    //     } else {
-    //         $groupUsers = collect(); // Return empty collection if no users found
-    //     }
-    //     // Ensure course exists before accessing course_id
-    //     $courseLessons = $trainingEvent->course ? CourseLesson::with('sublessons')->where('course_id', $trainingEvent->course->id)->whereHas('sublessons')->get() : collect(); // Only fetch lessons that have sublessons
-
-    //     // Fetch overall assessments for users in this event
-    //     $overallAssessments = OverallAssessment::where('event_id', $trainingEvent->id)
-    //     ->whereIn('user_id', $groupUsers->pluck('id'))
-    //     ->pluck('result', 'user_id'); // Get result indexed by user_id
-
-    //     $overallRemarks = OverallAssessment::where('event_id', $trainingEvent->id)
-    //     ->whereIn('user_id', $groupUsers->pluck('id'))
-    //     ->pluck('remarks', 'user_id'); // Get remark indexed by user_id
-    //     // dd($courseLessons);;
-    //     return view('trainings.show', compact('trainingEvent', 'groupUsers', 'courseLessons', 'overallAssessments', 'overallRemarks'));
-    // }
-
-    // public function createGrading(Request $request)
-    // {
-    //     // Validate the request
-    //     $request->validate([
-    //         'event_id' => 'required|integer|exists:training_events,id',
-    //         'task_grade' => 'nullable|array',
-    //         'task_grade.*.*.*' => ['required', 'string', Rule::in(['N/A', 'Further training required', 'Competent', '1', '2', '3', '4', '5'])], 
-    //         'comp_grade' => 'nullable|array',
-    //         'comp_grade.*.*' => 'required|integer|min:1|max:5',
-    //     ]);
-
-    //     DB::beginTransaction(); 
-
-    //     try {
-    //         $event_id = $request->event_id;
-
-    //         // Store or Update Task Grading
-    //         if ($request->has('task_grade')) {
-    //             foreach ($request->task_grade as $lesson_id => $subLessons) {
-    //                 foreach ($subLessons as $sub_lesson_id => $users) {
-    //                     foreach ($users as $user_id => $task_grade) {
-    //                         TaskGrading::updateOrCreate(
-    //                             [
-    //                                 'event_id' => $event_id,
-    //                                 'lesson_id' => $lesson_id,
-    //                                 'sub_lesson_id' => $sub_lesson_id,
-    //                                 'user_id' => $user_id,
-    //                             ],
-    //                             [
-    //                                 'task_grade' => $task_grade,
-    //                                 'created_by' => auth()->user()->id, // Moved to update fields
-    //                             ]
-    //                         );
-    //                     }
-    //                 }
-    //             }
-    //         }
-
-    //         // Store or Update Competency Grading
-    //         if ($request->has('comp_grade')) {
-    //             foreach ($request->comp_grade as $lesson_id => $users) {
-    //                 foreach ($users as $user_id => $competency_grade) {
-    //                     CompetencyGrading::updateOrCreate(
-    //                         [
-    //                             'event_id' => $event_id,
-    //                             'lesson_id' => $lesson_id,
-    //                             'user_id' => $user_id,
-    //                         ],
-    //                         [
-    //                             'competency_grade' => $competency_grade,
-    //                             'created_by'=> auth()->user()->id,
-    //                         ]
-    //                     );
-    //                 }
-    //             }
-    //         }
-
-    //         DB::commit();
-    //         Session::flash('message', 'student grading updated successfully.');
-    //         return response()->json(['success' => true, 'message'=> 'student grading updated successfully.']);
-
-    //     } catch (\Exception $e) {
-    //         DB::rollback();
-    //         return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
-    //     }
-    // }
 
     public function createGrading(Request $request)
     {
@@ -784,7 +638,9 @@ class TrainingEventsController extends Controller
                 },
                 'course:id,course_name,enable_feedback', // Load only course name
                 'group:id,name', // Load only group name
-                'instructor:id,fname,lname' // Load only instructor name
+                'instructor:id,fname,lname', // Load only instructor name
+                'documents:id,training_event_id,course_document_id,file_path', // make sure these fields exist
+                'documents.courseDocument:id,document_name' // 🆕 Add this to load document name from course_documents
             ])
             ->first(); // Use first() to get a single event
         
@@ -875,5 +731,57 @@ class TrainingEventsController extends Controller
     
         return $pdf->download($filename);
     }    
+
+    public function uploadDocuments(Request $request, TrainingEvents $trainingEvent)
+    {
+        //dd($request->all());
+        $request->validate([
+            'training_event_documents' => 'required|array|min:1',
+            'training_event_documents.*' => 'required|file|mimes:pdf,doc,docx,jpg,png|max:10240', // Add more formats if needed
+        ], [], [
+            'training_event_documents.*' => 'Training Event Document'
+        ]);
+        
+        // Loop through the uploaded files
+        foreach ($request->file('training_event_documents', []) as $courseDocId => $file) {
+            // If file exists in the form input
+            // dd($file);
+            if ($file) {
+                // Get the original file name
+                $originalName = $file->getClientOriginalName();
+
+                // dd($originalName);
+                // Generate a unique filename with the original file name
+                $filename = time() . '_' . $originalName;
+
+                // Store the file in the 'public' disk (change to your desired location)
+                $path = $file->storeAs('training_event_documents', $filename, 'public');
+
+                // Check if the document has already been uploaded for this course_document_id
+                $existing = $trainingEvent->documents()
+                    ->where('course_document_id', $courseDocId)
+                    ->first();
+
+                if ($existing) {
+                    // Optionally, delete the old file before updating (to avoid leftover files)
+                    Storage::disk('public')->delete($existing->file_path);
+
+                    // Update the existing document entry
+                    $existing->update([
+                        'file_path' => $path,
+                    ]);
+                } else {
+                    // Create a new document record in the database
+                    $trainingEvent->documents()->create([
+                        'course_document_id' => $courseDocId,
+                        'file_path' => $path,
+                    ]);
+                }
+            }
+        }
+
+        // Redirect back with a success message
+        return redirect()->back()->with('success', 'Documents uploaded successfully.');
+    }
     
 }

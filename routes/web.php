@@ -107,6 +107,8 @@ Route::group(['middleware' => ['auth']], function () {
     //  ->name('lesson.report.download');
     Route::get('/lesson-report/download/{event_id}/{lesson_id}', [TrainingEventsController::class, 'downloadLessonReport'])
     ->name('lesson.report.download');
+    Route::post('/training/{trainingEvent}/upload-documents', [TrainingEventsController::class, 'uploadDocuments'])
+    ->name('training.upload-documents');
 
 
     

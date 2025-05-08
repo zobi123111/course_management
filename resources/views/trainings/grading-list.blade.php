@@ -139,6 +139,55 @@
                         </div>
                     </div>
                 </div>
+                <div class="card-body">
+                    <hr>
+                    <!-- Training Event Documents -->
+                    <div class="mb-4">
+                        <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#eventDocuments" role="button" aria-expanded="false" aria-controls="eventDocuments">
+                            <span><i class="bi bi-paperclip me-2"></i>Training Event Documents</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </h5>
+                        <div class="collapse" id="eventDocuments">
+                            @if($event->documents->isEmpty())
+                                <p class="text-muted">No documents uploaded for this event.</p>
+                            @else
+                                <ul class="list-group shadow-sm">
+                                    @foreach($event->documents as $document)
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <i class="bi bi-file-earmark-text me-2"></i>{{ $document->courseDocument->document_name ?? 'Unnamed Document' }}
+                                            </span>
+                                            <a href="{{ asset('storage/' . $document->file_path) }}" download class="btn btn-sm btn-outline-secondary">
+                                                <i class="bi bi-download me-1"></i>Download
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                        </div>
+                    </div>
+                    <hr>
+                    @if($event->eventLessons->isNotEmpty())
+                        <div class="mb-4">
+                            <h5 class="text-primary">
+                                <i class="bi bi-file-earmark-pdf me-2"></i>Download Lesson Reports
+                            </h5>
+                            <ul class="list-group shadow-sm">
+                                @foreach($event->eventLessons as $eventLesson)
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <i class="bi bi-book me-1"></i>{{ $eventLesson->lesson->lesson_title ?? 'N/A' }}
+                                        </span>
+                                        <a href="{{ route('lesson.report.download', ['event_id' => $event->id, 'lesson_id' => $eventLesson->lesson_id]) }}"
+                                        class="btn btn-outline-secondary btn-sm">
+                                            <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                </div>
 
                 <div class="card-footer d-flex justify-content-between align-items-center bg-light p-3">
                     <span>
@@ -173,6 +222,9 @@
                                 </form>
                             @endif
                         </div>
+
+
+
                         
                         {{-- Buttons shown only after acknowledgment --}}
                         @if($event->student_acknowledged)
@@ -196,37 +248,10 @@
                         @endif
                     @endif
                 @endauth
-                @if($event->eventLessons->isNotEmpty())
-    <div class="mb-4">
-        <h5 class="text-primary">
-            <i class="bi bi-file-earmark-pdf me-2"></i>Download Lesson Reports
-        </h5>
-        <ul class="list-group shadow-sm">
-            @foreach($event->eventLessons as $eventLesson)
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span>
-                        <i class="bi bi-book me-1"></i>{{ $eventLesson->lesson->lesson_title ?? 'N/A' }}
-                    </span>
-                    <a href="{{ route('lesson.report.download', ['event_id' => $event->id, 'lesson_id' => $eventLesson->lesson_id]) }}"
-                       class="btn btn-outline-secondary btn-sm">
-                        <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
-                    </a>
-                </li>
-            @endforeach
-        </ul>
-    </div>
-@endif
-
-
             </div>
         @endif
     </div>
 </section>
-
-
-
-
-
 @endsection
 
 @section('js_scripts')
