@@ -357,8 +357,8 @@ h2 {
                             $userRatingsMap = $user->usrRatings->keyBy('rating_id');
                         @endphp
                         <div class="row mt-3">
+                            @if($user->rating_required == 1 && $ratings->isNotEmpty())
                             <h4>Rating Data</h4>
-                        @if($user->rating_required == 1 && $ratings->isNotEmpty())
                             @foreach($ratings as $rating)
                                 @php
                                     $userRating = $userRatingsMap[$rating->id] ?? null;

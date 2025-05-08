@@ -354,10 +354,10 @@
 </style>
 
 <div class="card">
-    @if(session()->has('message'))
+    @if(session()->has('success'))
         <div id="successMessage" class="alert alert-success fade show" role="alert">
             <i class="bi bi-check-circle me-1"></i>
-            {{ session()->get('message') }}
+            {{ session()->get('success') }}
         </div>
     @endif
     <div class="loader" style="display: none;"></div>
@@ -545,21 +545,49 @@
                     </div>
                 @endif
 
-                @if($trainingEvent->course->documents->isNotEmpty())
+                @if($isGradingCompleted && $trainingEvent->course->documents->isNotEmpty())
                     <div class="mt-4">
-                        <h5><i class="fas fa-file-alt"></i>Course Documents</h5>
-                        <div class="row">
-                            @foreach($trainingEvent->course->documents as $doc)
-                                <div class="col-md-6 mb-2">
-                                    <div class="d-flex justify-content-between align-items-center border p-2 rounded">
-                                        <span>{{ $doc->document_name }}</span>
-                                        <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i> View Document
-                                        </a>
+                        <h5><i class="fas fa-file-upload"></i> Instructor Document Uploads</h5>
+                        <form action="{{ route('training.upload-documents', $trainingEvent->id) }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            <div class="row">
+                                @foreach($trainingEvent->course->documents as $doc)
+                                    @php
+                                        $uploadedDoc = optional($trainingEvent->documents)->where('course_document_id', $doc->id)->first();
+                                    @endphp
+                                    <div class="col-md-6 mb-3">
+                                        <div class="border p-3 rounded">
+                                            <label class="form-label fw-bold">
+                                                {{ $doc->document_name }}
+                                            </label>
+
+                                            {{-- Show existing uploaded document --}}
+                                            @if($uploadedDoc)
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span class="text-success">Already Uploaded</span>
+                                                    <a href="{{ asset('storage/' . $uploadedDoc->file_path) }}" target="_blank" class="btn btn-sm btn-outline-success">
+                                                        <i class="fas fa-download"></i> View
+                                                    </a>
+                                                </div>
+                                            @endif
+
+                                            {{-- File input --}}
+                                            <input  type="file"   name="training_event_documents[{{ $doc->id }}]"  class="form-control" >
+                                            @error('training_event_documents.' . $doc->id)
+                                                <small class="text-danger">{{ $message }}</small>
+                                            @enderror
+                                        </div>
                                     </div>
-                                </div>
-                            @endforeach
-                        </div>
+                                @endforeach
+                            </div>
+
+                            {{-- Submit button --}}
+                            <div class="mt-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-upload"></i> Submit Documents
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 @endif
             </div>

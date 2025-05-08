@@ -294,11 +294,6 @@
                                     <input type="text" name="instructor_documents[0][name]" class="form-control">
                                     <div id="instructor_documents_0_name_error" class="text-danger error_e"></div>
                                 </div>
-                                <div class="form-group">
-                                    <label class="form-label">Upload Document</label>
-                                    <input type="file" name="instructor_documents[0][file]" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png">
-                                    <div id="instructor_documents_0_file_error" class="text-danger error_e"></div>
-                                </div>
                                 <button type="button" class="btn btn-danger remove-documents-container">X</button>
                             </div>
                         </div>
@@ -366,7 +361,7 @@
                     <div class="form-group">
                         <label for="lastname" class="form-label">Image<span class="text-danger">*</span></label>
                         <input type="file" name="image" class="form-control" accept="image/*">
-                        <div id="image_error" class="text-danger error_e"></div>
+                        <div id="image_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="duration" class="form-label">Course Duration<span
@@ -480,12 +475,6 @@
                                     <label class="form-label">Document Name</label>
                                     <input type="text" name="instructor_documents[0][name]" class="form-control">
                                     <div id="instructor_documents_0_name_error_up" class="text-danger error_e"></div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="form-label">Upload Document</label>
-                                    <input type="file" name="instructor_documents[0][file]" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png">
-                                    <div id="instructor_documents_0_file_error_up" class="text-danger error_e"></div>
                                 </div>
                                 <button type="button" class="btn btn-danger remove-documents-container">X</button>
                             </div>
@@ -933,11 +922,6 @@ $(document).ready(function() {
                                     <label class="form-label">Document Name</label>
                                     <input type="text" name="instructor_documents[${index}][name]" id="documents_name_${index}" class="form-control">
                                 </div>
-
-                                <div class="form-group">
-                                    <label class="form-label">Upload Document</label>
-                                    <input type="file" name="instructor_documents[${index}][file]" id="documents_file_${index}" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png">
-                                </div>
                                 <button type="button" class="btn btn-danger remove-documents-container">X</button>
                             </div>
         `;
@@ -966,11 +950,6 @@ $("#editAddDocumentsContainer").click(function() {
                 <label class="form-label" for="documents_name_${newIndex}">Document Name</label>
                 <input type="text" name="instructor_documents[${newIndex}][name]" id="documents_name_${newIndex}" class="form-control">
                 <div id="instructor_documents_${newIndex}_name_error_up" class="text-danger error_e"></div>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="documents_file_${newIndex}">Upload Document</label>
-                <input type="file" name="instructor_documents[${newIndex}][file]" id="documents_file_${newIndex}" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png">
-                <div id="instructor_documents_${newIndex}_file_error_up" class="text-danger error_e"></div>
             </div>
 
             <button type="button" class="btn btn-danger remove-documents-container">X</button>
@@ -1071,14 +1050,6 @@ function generateDocumentsContainerHtml(instructor_documents, index) {
                     <label class="form-label">Document Name</label>
                     <input type="text" name="instructor_documents[${index}][name]" value="${documentName}" id="documents_name_${index}" class="form-control">
                     <div id="instructor_documents_${index}_name_error_up" class="text-danger error_e"></div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Upload Document</label>
-                    <input type="file" name="instructor_documents[${index}][file]" id="documents_file_${index}" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png">
-                     <div id="instructor_documents_${index}_file_error_up" class="text-danger error_e"></div>
-                    ${uploadedFileLinkHtml}
-                    <input type="hidden" name="instructor_documents[${index}][existing_file_path]" value="${existingFilePath}">
-                    <input type="hidden" name="instructor_documents[${index}][row_id]" value="${docRowId}">
                 </div>
                 <button type="button" class="btn btn-danger remove-documents-container mt-2">X</button>
             </div>`;

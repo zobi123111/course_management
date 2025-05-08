@@ -128,7 +128,7 @@ class CourseController extends Controller
         $request->validate([
             'course_name' => 'required',
             'description' => 'required',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240',
             'status' => 'required|boolean',
             'duration_type' => 'nullable|in:hours,events',
             'duration_value' => 'nullable|integer|min:1',
@@ -148,13 +148,11 @@ class CourseController extends Controller
             // Validation for Instructor Upload Documents
             'enable_instructor_upload' => 'nullable|boolean',
             'instructor_documents' => 'nullable|array',
-            'instructor_documents.*.name' => 'string|max:255',
-            'instructor_documents.*.file' => 'file|mimes:pdf,doc,docx,jpeg,png,jpg|max:15360', // 20MB max
+            'instructor_documents.*.name' => 'nullable|string|max:255'
         ], [], [
             'feedback_questions.*.question' => 'Feedback question',
             'feedback_questions.*.answer_type' => 'Answer type',
-            'instructor_documents.*.name' => 'Document Name',
-            'instructor_documents.*.file' => 'Document File',
+            'instructor_documents.*.name' => 'Document Name'
         ]);
     
         if ($request->hasFile('image')) {
@@ -191,10 +189,8 @@ class CourseController extends Controller
         // Store Instructor Uploaded Documents
         if ($request->has('enable_instructor_upload')) {
             foreach ($request->instructor_documents as $index => $doc) {
-                if (isset($doc['file'])) {
-                    $uploadedFile = $doc['file'];
-                    $originalName = $uploadedFile->getClientOriginalName(); // Get the original file name
-                    $documentPath = $uploadedFile->storeAs('course_documents', $originalName, 'public');
+                if (isset($doc['name'])) {
+                    $documentPath = null;
     
                     CourseDocuments::create([
                         'course_id' => $course->id,
@@ -233,8 +229,6 @@ class CourseController extends Controller
         ]);
     }
 
-
-
     public function editCourse(Request $request)
     {
         $course = Courses::with('groups')->findOrFail($request->id);
@@ -252,6 +246,7 @@ class CourseController extends Controller
         // Validate input data
         $request->validate([
             'course_name' => 'required',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240',
             'course_type' => 'required|in:one_event,multi_lesson',
             'description' => 'required',
             'status' => 'required',
@@ -267,7 +262,6 @@ class CourseController extends Controller
             'enable_instructor_upload' => 'nullable|boolean',
             'instructor_documents' => 'nullable|array',
             'instructor_documents.*.name' => 'nullable|string|max:255',
-            'instructor_documents.*.file' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
             'ou_id' => [
                 function ($attribute, $value, $fail) {
                     if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
@@ -279,7 +273,6 @@ class CourseController extends Controller
             'feedback_questions.*.question' => 'Feedback question',
             'feedback_questions.*.answer_type' => 'Answer type',
             'instructor_documents.*.name' => 'Document Name',
-            'instructor_documents.*.file' => 'Document File',
         ]);
     
         // Find the course to be updated
@@ -355,21 +348,7 @@ class CourseController extends Controller
         if ($request->filled('instructor_documents')) {
             foreach ($request->instructor_documents as $doc) {
                 $filePath = null;
-
-                // Check if a new file is uploaded
-                if (isset($doc['file']) && $doc['file'] instanceof \Illuminate\Http\UploadedFile) {
-                    // If an existing file path is provided, delete the old file
-                    if (!empty($doc['existing_file_path']) && Storage::disk('public')->exists($doc['existing_file_path'])) {
-                        Storage::disk('public')->delete($doc['existing_file_path']);
-                    }
-
-                    // Store the new file with its original name
-                    $filePath = $doc['file']->storeAs('course_documents', $doc['file']->getClientOriginalName(), 'public');
-                } else {
-                    // If no new file is uploaded, retain the existing file path
-                    $filePath = $doc['existing_file_path'] ?? null;
-                }
-
+              
                 // Create or update the document record
                 CourseDocuments::updateOrCreate(
                     ['id' => $doc['row_id'] ?? null], // Use 'id' if available for updating
