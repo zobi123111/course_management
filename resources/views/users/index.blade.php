@@ -1264,18 +1264,29 @@
                     $('#edit_role option[value="' + userRoleId + '"]').attr('selected',
                         'selected');
 
+                        const document = response.user.documents?.[0] ?? {};
 
                         if (response.user.licence_required) {
-                            console.log(response.user.documents[0])
-                            $('#edit_licence_checkbox').prop('checked', true);
-                            $('#edit_licence').val(response.user.documents[0].licence).show().prop('required', true);
-                            $('#edit_licence_file').show().prop('required', true);
-                        } 
+                            console.log(response.user.documents);
 
-                        if (response.user.documents[0].licence_2) {
-                            $('#edit_licence_2').val(response.user.documents[0].licence_2).show().prop('required', true);
+                            $('#edit_licence_checkbox').prop('checked', true);
+                            $('#edit_licence').show().prop('required', true);
+                            $('#edit_licence_file').show().prop('required', true);
+
+                            if (document) {
+                                $('#edit_licence').val(document.licence);
+                            } else {
+                                $('#edit_licence').val('');
+                            }
+                        }                       
+
+                        if (document.licence_2) {
+                            $('#edit_licence_2').val(document.licence_2).show().prop('required', true);
                             $('#edit_licence_file_2').show().prop('required', true);
-                        } 
+                        } else {
+                            $('#edit_licence_2').val('').show().prop('required', true);
+                            $('#edit_licence_file_2').show().prop('required', true);
+                        }
 
                         if (response.user.password_flag == 1) {
                             $('#edit_update_password_checkbox').prop('checked', true);
@@ -1339,34 +1350,36 @@
                             }
                            
                         }
-                        if(response.user.medical==1){
+                       
+                        if (response.user.medical == 1) {
                             $('#editmedical_checkbox').prop('checked', true);
                             $('.editmedical_issued_div').show();
                             $('.editmedical_class_div').show();
-                            $('#editmedical_issue_date').val();
-                            $('#editmedical_expiry_date').val(response.user.documents[0].medical_expirydate);
-                            $('#editmedical_issue_date').val(response.user.documents[0].medical_issuedate);
-                            $('#editmedical_detail').val(response.user.documents[0].medical_restriction);
+                            $('#editmedical_issue_date').val(document.medical_issuedate ?? '');
+                            $('#editmedical_expiry_date').val(document.medical_expirydate ?? '');
+                            $('#editmedical_detail').val(document.medical_restriction ?? '');
 
-                            // Normalize values before setting
-                            let issuedBy = response.user.documents[0].medical_issuedby ? response.user.documents[0].medical_issuedby.trim() : "";
-                            let medicalClass = response.user.documents[0].medical_class ? response.user.documents[0].medical_class.trim() : "";
-
+                            let issuedBy = document.medical_issuedby?.trim() ?? '';
+                            let medicalClass = document.medical_class?.trim() ?? '';
                             $('#editissued_by').val(issuedBy);
                             $('#editmedical_class').val(medicalClass);
                         }
-                        if(response.user.documents[0].medical_2){
-                            $('#editmedical_issue_date_2').val();
-                            $('#editmedical_expiry_date_2').val(response.user.documents[0].medical_expirydate_2);
-                            $('#editmedical_issue_date_2').val(response.user.documents[0].medical_issuedate_2);
-                            $('#editmedical_detail_2').val(response.user.documents[0].medical_restriction_2);
 
-                            // Normalize values before setting
-                            let issuedBy2 = response.user.documents[0].medical_issuedby_2 ? response.user.documents[0].medical_issuedby_2.trim() : "";
-                            let medicalClass2 = response.user.documents[0].medical_class_2 ? response.user.documents[0].medical_class_2.trim() : "";
+                        if (document.medical_2) {
+                            $('#editmedical_issue_date_2').val(document.medical_issuedate_2 ?? '');
+                            $('#editmedical_expiry_date_2').val(document.medical_expirydate_2 ?? '');
+                            $('#editmedical_detail_2').val(document.medical_restriction_2 ?? '');
 
+                            let issuedBy2 = document.medical_issuedby_2?.trim() ?? '';
+                            let medicalClass2 = document.medical_class_2?.trim() ?? '';
                             $('#editissued_by_2').val(issuedBy2);
                             $('#editmedical_class_2').val(medicalClass2);
+                        } else {
+                            $('#editmedical_issue_date_2').val('');
+                            $('#editmedical_expiry_date_2').val('');
+                            $('#editmedical_detail_2').val('');
+                            $('#editissued_by_2').val('');
+                            $('#editmedical_class_2').val('');
                         }
                         if(response.user.medical_adminRequired==1){
                             $('#editmedical_verification_required').prop('checked', true);
