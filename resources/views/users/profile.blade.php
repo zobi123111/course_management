@@ -95,6 +95,10 @@ h2 {
 .btn:hover {
     background-color: #218838;
 }
+
+.add_btn{
+    width:25% !important;
+}
 </style>
 
 <div class="main_cont_outer">
@@ -185,82 +189,168 @@ h2 {
                                 </div>
                             @endif --}}
 
+                            @php
+                                $document = $user->documents->first();
+                            @endphp
+
                             <!-- Licence -->
                             @if ($user->licence_required == 1)
-                            <div class="col-sm-6">
-                                <label for="licence_checkbox" class="form-label">
-                                    <strong>Licence <span class="text-danger">*</span></strong>
-                                    @if ($user->licence_verified)
-                                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
-                                    @endif
-                                </label>
-                                <!-- <input type="text" name="licence" id="licence" value="{{ $user->licence ? $user->licence : ''}}" placeholder="Enter Licence Number" class="form-control" {{ $user->licence ? 'disabled' : '' }}> -->
-                                 <input type="text" name="licence" id="licence" value="{{ $user->licence ? $user->licence : '' }}" placeholder="Enter Licence Number" class="form-control">
+                                <div class="col-md-12">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="licence_checkbox" class="form-label">
+                                                <strong>Licence <span class="text-danger">*</span>
+                                                @if($document?->licence_invalidate == 1)
+                                                    <span class="text-danger">(Re-upload a new document and date.)</span>
+                                                @endif
+                                                </strong>
+                                                @if ($document && $document?->licence_verified)
+                                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
+                                                @endif
+                                            </label>
+                                            <input type="text" name="licence" id="licence" value="{{ $document?->licence ?? '' }}" placeholder="Enter Licence Number" class="form-control">
 
-                                <div id="licence_error_up" class="text-danger error_e"> </div>
-                                <label for="licence_expiry_date" class="form-label mt-3">
-                                    <strong>
-                                        Expiry Date <span class="text-danger">*</span>
-                                    </strong>
-                                     @if($user->licence_status == 'Red')
-                                        <span class="text-danger">
-                                            <i class="bi bi-x-circle-fill"></i> Expired
-                                        </span>
-                                    @elseif($user->licence_status == 'Yellow')
-                                        <span class="text-warning">
-                                            <i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon
-                                        </span>
-                                    @elseif($user->licence_status == 'Green')
-                                        <span class="text-success">
-                                            <i class="bi bi-check-circle-fill"></i> Valid
-                                        </span>
-                                    @else
-                                        <span class="text-secondary">
-                                            <i class="bi bi-question-circle-fill"></i> N/A
-                                        </span>
-                                    @endif
-                            </label>
-                                <input type="date" name="licence_expiry_date" id="licence_expiry_date" value="{{ $user->licence_expiry_date ?? '' }}" class="form-control mt-3" >
+                                            <div id="licence_error_up" class="text-danger error_e"> </div>
+                                            <label for="licence_expiry_date" class="form-label mt-3">
+                                                  <strong>
+                                                      Expiry Date <span class="text-danger">*</span>
+                                                  </strong>
+                                                   @if($user->licence_status == 'Red')
+                                                      <span class="text-danger">
+                                                          <i class="bi bi-x-circle-fill"></i> Expired
+                                                      </span>
+                                                  @elseif($user->licence_status == 'Yellow')
+                                                      <span class="text-warning">
+                                                          <i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon
+                                                      </span>
+                                                  @elseif($user->licence_status == 'Green')
+                                                      <span class="text-success">
+                                                          <i class="bi bi-check-circle-fill"></i> Valid
+                                                      </span>
+                                                  @else
+                                                      <span class="text-secondary">
+                                                          <i class="bi bi-question-circle-fill"></i> N/A
+                                                      </span>
+                                                  @endif
+                                          </label>
+                                            <input type="date" name="licence_expiry_date" id="licence_expiry_date" value="{{ $document?->licence_expiry_date ?? '' }}" class="form-control mt-3" >
 
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="non_expiring_licence" name="non_expiring_licence" value="1" {{ $user->licence_non_expiring ? 'checked': '' }}>
-                                    <label class="form-check-label" for="non_expiring_licence" >
-                                        <strong>Non-Expiring Licence</strong>
-                                    </label>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="non_expiring_licence" name="non_expiring_licence" value="1" {{ $document?->licence_non_expiring ? 'checked': '' }}>
+                                                <label class="form-check-label" for="non_expiring_licence" >
+                                                    <strong>Non-Expiring Licence</strong>
+                                                </label>
+                                            </div>
+
+                                            <div id="licence_expiry_date_error_up" class="text-danger error_e"></div>
+                                            <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png" > 
+                                            <div id="licence_file_error_up" class="text-danger error_e"></div>
+                                            <input type="hidden" name="old_licence_file" value="{{ $document?->licence_file ?? '' }}">
+
+                                            @if ($document?->licence_file)
+                                            <div class="mt-3">
+                                                <a href="{{ asset('storage/' . $document?->licence_file) }}" target="_blank"
+                                                    class="btn btn-outline-primary btn-sm d-flex align-items-center"
+                                                    style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
+                                                    <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View
+                                                    Licence
+                                                </a>
+                                            </div>
+                                            @endif
+                                            
+                                            @if(empty($document && $document?->licence_2))
+                                                <button type="button" id="add_second_licence_btn" class="btn btn-secondary add_btn mt-3 mb-3">
+                                                    Add Second Licence
+                                                </button>
+                                            @endif
+                                            
+                                        </div>
+
+                                        <!-- Second Licence -->
+                                        
+                                        <div class="col-sm-6" id="second_licence_section" style="display: {{ !empty($document?->licence_2) ? 'block' : 'none' }};">
+                                            <!-- <div class="col-sm-6 mt-3"> -->
+                                                <label for="licence_checkbox" class="form-label">
+                                                    <strong>Second Licence <span class="text-danger">*</span>
+                                                        @if($document?->licence_2_invalidate == 1)
+                                                            <span class="text-danger">(Re-upload a new document and date.)</span>
+                                                        @endif
+                                                    </strong>
+
+                                                    @if ($document?->licence_verified_2 == 1)
+                                                        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
+                                                    @endif
+                                                </label>
+                                                <input type="text" name="licence_2" id="licence_2" value="{{ $document?->licence_2 ?? '' }}" placeholder="Enter Second Licence Number" class="form-control">
+
+                                                <div id="licence_error_up" class="text-danger error_e"> </div>
+
+                                                <label for="licence_expiry_date" class="form-label mt-3">
+                                                    <strong>Expiry Date <span class="text-danger">*</span></strong>
+                                                    @if($user->licence_status == 'Red')
+                                                        <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
+                                                    @elseif($user->licence_status == 'Orange')
+                                                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
+                                                    @elseif($user->licence_status == 'Amber')
+                                                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
+                                                    @elseif($user->licence_status === 'Blue')
+                                                        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
+                                                    @else
+                                                        <span class="text-secondary"><i class="bi bi-question-circle-fill"></i> N/A</span>
+                                                    @endif
+                                                </label>
+                                                <input type="date" name="licence_expiry_date_2" id="licence_expiry_date_2" value="{{ $document?->licence_expiry_date_2 ?? '' }}" class="form-control mt-3">
+
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="non_expiring_licence_2" name="non_expiring_licence_2" value="1" {{ $document?->licence_non_expiring_2 ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="non_expiring_licence_2">
+                                                        <strong>Non-Expiring Licence</strong>
+                                                    </label>
+                                                </div>
+
+                                                <div id="licence_expiry_date_2_error_up" class="text-danger error_e"> </div>
+                                                <input type="file" name="licence_file_2" id="licence_file_2" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
+                                                <div id="licence_file_2_error_up" class="text-danger error_e"></div>
+                                                <input type="hidden" name="old_licence_file_2" value="{{ $document?->licence_file_2 }}">
+
+                                                @if ($document?->licence_file_2)
+                                                    <div class="mt-3">
+                                                        <a href="{{ asset('storage/' . $document->licence_file_2) }}" target="_blank"
+                                                            class="btn btn-outline-primary btn-sm d-flex align-items-center"
+                                                            style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
+                                                            <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View Second Licence
+                                                        </a>
+                                                    </div>
+                                                @endif
+                                            <!-- </div> -->
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div id="licence_expiry_date_error_up" class="text-danger error_e"></div>
-                                <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png" > 
-                                <div id="licence_file_error_up" class="text-danger error_e"></div>
-                                <input type="hidden" name="old_licence_file" value="{{ $user->licence_file }}">
-
-                                @if ($user->licence_file)
-                                <div class="mt-3">
-                                    <a href="{{ asset('storage/' . $user->licence_file) }}" target="_blank"
-                                        class="btn btn-outline-primary btn-sm d-flex align-items-center"
-                                        style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
-                                        <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View
-                                        Licence
-                                    </a>
-                                </div>
-                                @endif
-                            </div>
                             @endif
+
+
 
 
                             <!-- Passport -->
                             @if ($user->passport_required == 1)
-                            <div class="form-group col-sm-6">
+                            <div class="form-group col-sm-6 mt-3">
                                 <label for="passport_checkbox" class="form-label">
-                                    <strong>Passport <span class="text-danger">*</span> </strong>
-                                    @if($user->passport_verified)
-                                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
-                                    @endif
-                                </label>
-                                <input type="text" name="passport" id="passport" class="form-control"
-                                    value="{{ $user->passport ? $user->passport : ''}}"
-                                    placeholder="Enter Passport Number">
-                                <div id="passport_error_up" class="text-danger error_e"></div>
+                                    <strong>Passport <span class="text-danger">*</span> 
+                                        @if($document?->passport_invalidate == 1)
+                                            <span class="text-danger">(Re-upload a new document and date.)</span>
+                                        @endif
+                                    </strong>
+                                        @if($document?->passport_verified)
+                                        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
+                                        @endif
+                                    </label>
+                                    <input type="text" name="passport" id="passport" class="form-control"
+                                        value="{{ $document?->passport ? $document?->passport : ''}}"
+                                        placeholder="Enter Passport Number">
+                                    <div id="passport_error_up" class="text-danger error_e"></div>
+
+                                  
                                 <label for="licence_" class="form-label mt-3">
                                 <strong>Expiry Date <span class="text-danger">*</span> </strong>
                                 @if($user->passport_status == 'Red')
@@ -282,59 +372,69 @@ h2 {
                                 @endif
                             </label>
 
+
                                 <input type="date" name="passport_expiry_date" id="passport_expiry_date"
-                                    value="{{ $user->passport_expiry_date ? $user->passport_expiry_date : ''}}"
+                                    value="{{ $document?->passport_expiry_date ? $document?->passport_expiry_date : ''}}"
                                     class="form-control mt-3">
                                 <div id="passport_expiry_date_error_up" class="text-danger error_e"></div>
 
                                 <input type="file" name="passport_file" id="passport_file" class="form-control mt-3"
                                     accept=".pdf,.jpg,.jpeg,.png" >
                                 <div id="passport_file_error_up" class="text-danger error_e"></div>
-                                <input type="hidden" name="old_passport_file" value="{{ $user->passport_file }}">
-                                @if ($user->passport_file)
-                                <div class="mt-3">
-                                    <a href="{{ asset('storage/' . $user->passport_file) }}" target="_blank"
-                                        class="btn btn-outline-primary btn-sm d-flex align-items-center"
-                                        style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
-                                        <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View
-                                        Passport
-                                    </a>
-                                </div>
+                                <input type="hidden" name="old_passport_file" value="{{ $document?->passport_file }}">
+                                @if ($document?->passport_file && $document?->passport_invalidate == 0)
+                                    <div class="mt-3">
+                                        <a href="{{ asset('storage/' . $document?->passport_file) }}" target="_blank"
+                                            class="btn btn-outline-primary btn-sm d-flex align-items-center"
+                                            style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
+                                            <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View
+                                            Passport
+                                        </a>
+                                    </div>
                                 @endif
                             </div>
                             @endif
                         </div>
                         <div class="row">
                         @if ($user->medical == 1)
-                            <div class="col-6">
-                                <label for="extra_roles" class="form-label"><strong> Medical Issued By </strong><span
-                                        class="text-danger"></span></label>
-                                        @if ($user->medical_verified)
-                                            <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
-                                            @endif
-                                            <select class="form-select" name="issued_by" id="issued_by">
-                                                <option value="">Select Issued By</option>
-                                                <option value="UKCAA" {{ $user->medical_issuedby == "UKCAA" ? 'selected' : '' }}>UK CAA</option>
-                                                <option value="EASA" {{ $user->medical_issuedby == "EASA" ? 'selected' : '' }}>EASA</option>
-                                                <option value="FAA" {{ $user->medical_issuedby == "FAA" ? 'selected' : '' }}>FAA</option>
-                                            </select>
-                                <div id="issued_by_error_up" class="text-danger error_e"></div>
-                                <label for="extra_roles" class="form-label mt-3"><strong> Medical Class </strong><span
-                                        class="text-danger"></span></label>
-                                <select class="form-select " name="medical_class" id="medical_class">
-                                    
-                                    <option value="">Select the Class</option>
-                                    <option value="class1" <?php echo ($user->medical_class == "class1")?'selected':'' ?>>Class 1</option>
-                                    <option value="class2" <?php echo ($user->medical_class == "class2")?'selected':'' ?>>Class 2</option>
-                                </select>
-                                <div id="medical_class_error_up" class="text-danger error_e"></div>
-                                <label for="extra_roles" class="form-label mt-3"><strong>Medical Issue Date </strong> <span
-                                        class="text-danger"></span></label>
-                                <input type="date" name="medical_issue_date" id="medical_issue_date"
-                                    class="form-control" placeholder="Medical Issue Date" value="<?php echo isset($user->medical_issuedate) ? $user->medical_issuedate : ''; ?>" >
-                                    <div id="medical_issue_date_error_up" class="text-danger error_e"></div>
+                            <div class="col-md-12">
+                                <div class="row">
 
-                                <label for="extra_roles" class="form-label mt-3"><strong> Medical Expiry Date </strong><span
+                                    <div class="col-md-6">
+                                        <label for="extra_roles" class="form-label"><strong> Medical Issued By </strong>
+                                            <span class="text-danger"></span>
+                                            @if($document?->medical_invalidate == 1)
+                                                <span class="text-danger">(Re-upload a new document and date.)</span>
+                                            @endif
+
+                                        </label>
+
+                                                @if ($document?->medical_verified)
+                                                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
+                                                    @endif
+                                                    <select class="form-select" name="issued_by" id="issued_by">
+                                                        <option value="">Select Issued By</option>
+                                                        <option value="UKCAA" {{ $document?->medical_issuedby == "UKCAA" ? 'selected' : '' }}>UK CAA</option>
+                                                        <option value="EASA" {{ $document?->medical_issuedby == "EASA" ? 'selected' : '' }}>EASA</option>
+                                                        <option value="FAA" {{ $document?->medical_issuedby == "FAA" ? 'selected' : '' }}>FAA</option>
+                                                    </select>
+                                        <div id="issued_by_error_up" class="text-danger error_e"></div>
+                                        <label for="extra_roles" class="form-label mt-3"><strong> Medical Class </strong><span
+                                                class="text-danger"></span></label>
+                                        <select class="form-select " name="medical_class" id="medical_class">
+                                            
+                                            <option value="">Select the Class</option>
+                                            <option value="class1" <?php echo ($document?->medical_class == "class1")?'selected':'' ?>>Class 1</option>
+                                            <option value="class2" <?php echo ($document?->medical_class == "class2")?'selected':'' ?>>Class 2</option>
+                                        </select>
+                                        <div id="medical_class_error_up" class="text-danger error_e"></div>
+                                        <label for="extra_roles" class="form-label mt-3"><strong>Medical Issue Date </strong> <span
+                                                class="text-danger"></span></label>
+                                        <input type="date" name="medical_issue_date" id="medical_issue_date"
+                                            class="form-control" placeholder="Medical Issue Date" value="<?php echo isset($document?->medical_issuedate) ? $document?->medical_issuedate : ''; ?>" >
+                                            <div id="medical_issue_date_error_up" class="text-danger error_e"></div>
+
+                                        <label for="extra_roles" class="form-label mt-3"><strong> Medical Expiry Date </strong><span
                                         class="text-danger"></span> 
                                          @if($user->medical_status == 'Red')
                                             <span class="text-danger">
@@ -354,31 +454,113 @@ h2 {
                                             </span>
                                         @endif
                                         </label>
-                                <input type="date" name="medical_expiry_date" id="medical_expiry_date"
-                                    class="form-control" placeholder="Medical Expiry Date" value="<?php echo isset($user->medical_expirydate) ? $user->medical_expirydate : ''; ?>" >
-                                    <div id="medical_expiry_date_error_up" class="text-danger error_e"></div>
+                                        <input type="date" name="medical_expiry_date" id="medical_expiry_date"
+                                            class="form-control" placeholder="Medical Expiry Date" value="<?php echo isset($document?->medical_expirydate) ? $document?->medical_expirydate : ''; ?>" >
+                                            <div id="medical_expiry_date_error_up" class="text-danger error_e"></div>
 
 
-                                <label for="extra_roles" class="form-label mt-3"><strong> Medical Detail </strong> <span
-                                        class="text-danger"></span></label>
-                                    <textarea name="medical_detail" id="medical_detail" class="form-control"
-                                    placeholder="Enter the Detail" ><?php echo isset($user->medical_restriction) ?  $user->medical_restriction : ''; ?></textarea>
-                                    <div id="medical_detail_error_up" class="text-danger error_e"></div>
-                                    <input type="file" name="medical_file" id="medical_file" class="form-control mt-3"
-                                            accept=".pdf,.jpg,.jpeg,.png" >
-                                    <input type="hidden" name="old_medical_file" value="{{ $user->passport_file }}">
-                                    @if ($user->medical_file)
-                                        <div class="mt-3">
-                                            <a href="{{ asset('storage/' . $user->medical_file) }}" target="_blank"
-                                                class="btn btn-outline-primary btn-sm d-flex align-items-center"
-                                                style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
-                                                <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View
-                                                Medical
-                                            </a>
-                                        </div>
-                                    @endif
-                                <div id="medical_file_error_up" class="text-danger error_e"></div>
+                                        <label for="extra_roles" class="form-label mt-3"><strong> Medical Detail </strong> <span
+                                                class="text-danger"></span></label>
+                                            <textarea name="medical_detail" id="medical_detail" class="form-control"
+                                            placeholder="Enter the Detail" ><?php echo isset($document?->medical_restriction) ?  $document?->medical_restriction : ''; ?></textarea>
+
+                                            <input type="file" name="medical_file" id="medical_file" class="form-control mt-3"
+                                                    accept=".pdf,.jpg,.jpeg,.png" >
+                                            <input type="hidden" name="old_medical_file" value="{{ $document?->passport_file }}">
+                                            @if ($document?->medical_file)
+                                                <div class="mt-3">
+                                                    <a href="{{ asset('storage/' . $document?->medical_file) }}" target="_blank"
+                                                        class="btn btn-outline-primary btn-sm d-flex align-items-center"
+                                                        style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
+                                                        <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View
+                                                        Medical
+                                                    </a>
+                                                </div>
+                                            @endif
+                                        <div id="medical_file_error_up" class="text-danger error_e"></div>
+
+                                        @if(empty($document && $document?->medical_issuedby_2))
+                                            <button type="button" id="add_second_medical_btn" class="btn btn-secondary add_btn mt-3 mb-3">
+                                                Add Second Medical
+                                            </button>
+                                        @endif
+                                    </div>
+
+                                    <div class="col-md-6" id="edit_second_medical_section" style="display: {{ !empty($document?->medical_issuedby_2) ? 'block' : 'none' }};">
+                                        <!-- <div> -->
+                                            <label for="extra_roles" class="form-label"><strong> Medical Issued By </strong>
+                                            <span class="text-danger"></span></label>
+                                            @if($document?->medical_2_invalidate == 1)
+                                                <span class="text-danger">(Re-upload a new document and date.)</span>
+                                            @endif
+                                                    @if ($document?->medical_verified_2)
+                                                        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
+                                                        @endif
+                                                        <select class="form-select" name="issued_by_2" id="issued_by_2">
+                                                            <option value="">Select Issued By</option>
+                                                            <option value="UKCAA" {{ $document?->medical_issuedby_2 == "UKCAA" ? 'selected' : '' }}>UK CAA</option>
+                                                            <option value="EASA" {{ $document?->medical_issuedby_2 == "EASA" ? 'selected' : '' }}>EASA</option>
+                                                            <option value="FAA" {{ $document?->medical_issuedby_2 == "FAA" ? 'selected' : '' }}>FAA</option>
+                                                        </select>
+                                            <div id="issued_by_error_up" class="text-danger error_e"></div>
+                                            <label for="extra_roles" class="form-label mt-3"><strong> Medical Class </strong><span
+                                                    class="text-danger"></span></label>
+                                            <select class="form-select " name="medical_class_2" id="medical_class_2">
+                                                
+                                                <option value="">Select the Class</option>
+                                                <option value="class1" <?php echo ($document?->medical_class_2 == "class1")?'selected':'' ?>>Class 1</option>
+                                                <option value="class2" <?php echo ($document?->medical_class_2 == "class2")?'selected':'' ?>>Class 2</option>
+                                            </select>
+                                            <div id="medical_class_error_up" class="text-danger error_e"></div>
+                                            <label for="extra_roles" class="form-label mt-3"><strong>Medical Issue Date </strong> <span
+                                                    class="text-danger"></span></label>
+                                            <input type="date" name="medical_issue_date_2" id="medical_issue_date_2"
+                                                class="form-control" placeholder="Medical Issue Date" value="<?php echo isset($document?->medical_issuedate_2) ? $document?->medical_issuedate_2 : ''; ?>" >
+                                                <div id="medical_issue_date_2_error_up" class="text-danger error_e"></div>
+
+                                            <label for="extra_roles" class="form-label mt-3"><strong> Medical Expiry Date </strong><span
+                                                    class="text-danger"></span> 
+                                                    @if($user->medical_status == 'Red')
+                                                        <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
+                                                    @elseif($user->medical_status == 'Orange')
+                                                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
+                                                    @elseif($user->medical_status == 'Amber')
+                                                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
+                                                    @elseif($user->medical_status === 'Blue')
+                                                        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
+                                                    @else
+                                                        <span class="text-secondary"><i class="bi bi-question-circle-fill"></i> N/A</span>
+                                                    @endif
+                                                    </label>
+                                            <input type="date" name="medical_expiry_date_2" id="medical_expiry_date_2"
+                                                class="form-control" placeholder="Medical Expiry Date" value="<?php echo isset($document?->medical_expirydate_2) ? $document?->medical_expirydate_2 : ''; ?>" >
+                                                <div id="medical_expiry_date_2_error_up" class="text-danger error_e"></div>
+
+
+                                            <label for="extra_roles" class="form-label mt-3"><strong> Medical Detail </strong> <span
+                                                    class="text-danger"></span></label>
+                                                <textarea name="medical_detail_2" id="medical_detail_2" class="form-control"
+                                                placeholder="Enter the Detail" ><?php echo isset($document?->medical_restriction_2) ?  $document?->medical_restriction_2 : ''; ?></textarea>
+
+                                                <input type="file" name="medical_file_2" id="medical_file_2" class="form-control mt-3"
+                                                        accept=".pdf,.jpg,.jpeg,.png" >
+                                                <input type="hidden" name="old_medical_file_2" value="{{ $document?->medical_file_2 }}">
+                                                @if ($document?->medical_file_2)
+                                                    <div class="mt-3">
+                                                        <a href="{{ asset('storage/' . $document?->medical_file_2) }}" target="_blank"
+                                                            class="btn btn-outline-primary btn-sm d-flex align-items-center"
+                                                            style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
+                                                            <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View
+                                                            Medical
+                                                        </a>
+                                                    </div>
+                                                @endif
+                                            <div id="medical_file_2_error_up" class="text-danger error_e"></div>
+                                        <!-- </div> -->
+                                    </div>
+                                </div>
                             </div>
+                               
                         @endif
  
                         @php
@@ -507,14 +689,42 @@ h2 {
 @section('js_scripts')
 
 <script>
+
+$('#add_second_licence_btn').on('click', function () {
+    $('#second_licence_section').toggle();
+});
+
+$('#add_second_medical_btn').on('click', function () {
+        const section = $('#edit_second_medical_section');
+        const isVisible = section.is(':visible');
+
+        section.toggle();
+
+        if (isVisible) {
+            $('#issued_by_2, #medical_class_2, #medical_issue_date_2, #medical_expiry_date_2, #medical_detail_2, #medical_file_2').val('');
+        }
+    });
+
 $(document).ready(function() {
+
+    // document.getElementById('add_second_licence_btn').addEventListener('click', function () {
+    //     var section = document.getElementById('second_licence_section');
+    //     section.style.display = section.style.display === 'none' ? 'block' : 'none';
+    // });
+
+    // $('#add_second_licence_btn').on('click', function () {
+    //     $('#second_licence_section').toggle();
+    // });
 
     function toggleFields() {
         const isNonExpiringChecked = $('#non_expiring_licence').prop('checked');
+        const isNonExpiringChecked_2 = $('#non_expiring_licence_2').prop('checked');
         const expiryDateField = $('#licence_expiry_date');
+        const expiryDateField_2 = $('#licence_expiry_date_2');
 
         // Check if the expiry date field exists and is not empty
         const isExpiryDateFilled = expiryDateField.length && expiryDateField.val().trim() !== '';
+        const isExpiryDateFilled_2 = expiryDateField_2.length && expiryDateField_2.val().trim() !== '';
         
         if (isExpiryDateFilled) {
             $('#non_expiring_licence').prop('checked', false).parent().hide();
@@ -522,10 +732,22 @@ $(document).ready(function() {
             $('#non_expiring_licence').parent().show();
         }
 
+        if (isExpiryDateFilled_2) {
+            $('#non_expiring_licence_2').prop('checked', false).parent().hide();
+        } else {
+            $('#non_expiring_licence_2').parent().show();
+        }
+
         if (isNonExpiringChecked) {
             expiryDateField.val('').hide().prop('required', false);
         } else {
             expiryDateField.show().prop('required', true);
+        }
+
+        if (isNonExpiringChecked_2) {
+            expiryDateField_2.val('').hide().prop('required', false);
+        } else {
+            expiryDateField_2.show().prop('required', true);
         }
     }
 
@@ -536,6 +758,7 @@ $(document).ready(function() {
     // Event listeners
     $('#non_expiring_licence').change(toggleFields);
     $('#licence_expiry_date').on('input', toggleFields);
+    $('#licence_expiry_date_2').on('input', toggleFields);
 
     $(document).on('click', '#updateForm', function(e) {
         e.preventDefault();
