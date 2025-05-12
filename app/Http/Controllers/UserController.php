@@ -175,8 +175,6 @@ class UserController extends Controller
         return view('users.profile', compact('user', 'ratings'));
     }
     
-    
-
     public function profileUpdate(Request $request)
     {
         // dd($request->all());
@@ -196,9 +194,19 @@ class UserController extends Controller
                         if (!$userToUpdate->licence_file) {
                             $rules['licence_file'] = 'required|file|mimes:pdf,jpg,jpeg,png';
                         } 
+                    }                                       
+                }
+
+                if ($request->hasFile('profile_image')) {
+                    // Delete old image if it exists
+                    if ($userToUpdate->image && Storage::disk('public')->exists($userToUpdate->image)) {
+                        Storage::disk('public')->delete($userToUpdate->image);
                     }
-                   
-                    
+
+                    // Store new image
+                    $filePath = $request->file('profile_image')->store('users', 'public');
+                } else {
+                    $filePath = $userToUpdate->image; // Retain existing image
                 }
             
                 if ($userToUpdate->passport_required == 1) {
@@ -223,7 +231,7 @@ class UserController extends Controller
                 
                         $rules['medical_issue_date'] = 'required';
                         $rules['medical_expiry_date'] = 'required';
-                        $rules['medical_detail'] = 'required';
+                        // $rules['medical_detail'] = 'required';
                 
                         if (!$userToUpdate->medical_file) {
                             $rules['medical_file'] = 'required|file|mimes:pdf,jpg,jpeg,png';
@@ -395,6 +403,7 @@ class UserController extends Controller
                 'fname' => $request->firstName,
                 'lname' => $request->lastName,
                 'email' => $request->email,
+                'image' => $filePath ?? null,
                 'licence' => $request->licence ?? $userToUpdate->licence,
                 'licence_expiry_date' => $request->licence_expiry_date ?? null,
                 'licence_file' => $licenceFilePath,
@@ -850,6 +859,7 @@ class UserController extends Controller
             } 
             else {
                 $medicalFilePath_2 = $UserDocument ? $UserDocument->medical_file_2 : null;
+
             }
 
             // Handle Currency Requirement
@@ -872,7 +882,12 @@ class UserController extends Controller
             $extra_roles = $request->has('extra_roles') ? json_encode($request->extra_roles) : $userToUpdate->extra_roles;
 
             // Determine is_admin value
-            $is_admin = (!empty($request->ou_id) && $request->edit_role_name == 1) ? 1 : null;
+            if((!empty($request->ou_id) && $request->edit_role_name == 1) || auth()->user()->is_admin==1)
+            {
+                $is_admin = 1;
+            }else{
+                $is_admin = null;
+            }
 
             // Handle Medical Information
             $medical_checkbox              = $request->has('editmedical_checkbox') ? $request->editmedical_checkbox : null;

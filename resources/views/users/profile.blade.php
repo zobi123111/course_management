@@ -114,7 +114,7 @@ h2 {
             <div class="container-fluid">
                 <div class="row">
                     <h2 class="mb-5">User Profile</h2>
-                    <form id="userProfileForm">
+                    <form id="userProfileForm" enctype="multipart/form-data">
                         @csrf
                         <div class="row">
                             <!-- First Name -->
@@ -143,21 +143,33 @@ h2 {
                                 <input type="email" id="email" name="email" class="form-control"
                                     value="{{ $user->email }}">
                             </div>
-
-                            <!-- Currency -->
-                            @if ($user->currency_required == 1)
+                        
+                            <!-- Profile Image Upload -->
                             <div class="form-group col-sm-6">
-                                <label for="currency" class="form-label"><strong>Currency <span
-                                            class="text-danger">*</span> </strong></label>
-                                <input type="text" name="currency" id="currency"
-                                    value="{{ $user->currency ? $user->currency : ''}}" class="form-control"
-                                    placeholder="Enter Currency">
-                                <div id="currency_error_up" class="text-danger error_e"></div>
+                                <label for="profile_image"><strong>Profile Image</strong></label>
+                                <input type="file" id="profile_image" name="profile_image" class="form-control">
+                                @if($user->image)
+                                    <a href="{{ asset('storage/' . $user->image) }}" target="_blank" class="btn btn-sm btn-outline-primary mt-2" style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
+                                        View Image
+                                    </a>
+                                @endif
                             </div>
-                            @endif
 
                         </div>
 
+                        <!-- Currency -->
+                        <div class="row mb-3">
+                            @if ($user->currency_required == 1)
+                                <div class="form-group col-sm-6">
+                                    <label for="currency" class="form-label"><strong>Currency <span
+                                                class="text-danger">*</span> </strong></label>
+                                    <input type="text" name="currency" id="currency"
+                                        value="{{ $user->currency ? $user->currency : ''}}" class="form-control"
+                                        placeholder="Enter Currency">
+                                    <div id="currency_error_up" class="text-danger error_e"></div>
+                                </div>
+                            @endif
+                        </div>
                         <div class="row mb-3">
                             <!-- Rating -->
                             {{-- @if ($user->rating_required == 0)
@@ -200,21 +212,27 @@ h2 {
 
                                             <div id="licence_error_up" class="text-danger error_e"> </div>
                                             <label for="licence_expiry_date" class="form-label mt-3">
-                                                <strong>
-                                                    Expiry Date <span class="text-danger">*</span>
-                                                </strong>
-                                                @if($user->licence_status == 'Red')
-                                                    <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
-                                                @elseif($user->licence_status == 'Orange')
-                                                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
-                                                @elseif($user->licence_status == 'Amber')
-                                                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
-                                                @elseif($user->licence_status === 'Blue')
-                                                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
-                                                @else
-                                                    <span class="text-secondary"><i class="bi bi-question-circle-fill"></i> N/A</span>
-                                                @endif
-                                            </label>
+                                                  <strong>
+                                                      Expiry Date <span class="text-danger">*</span>
+                                                  </strong>
+                                                   @if($user->licence_status == 'Red')
+                                                      <span class="text-danger">
+                                                          <i class="bi bi-x-circle-fill"></i> Expired
+                                                      </span>
+                                                  @elseif($user->licence_status == 'Yellow')
+                                                      <span class="text-warning">
+                                                          <i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon
+                                                      </span>
+                                                  @elseif($user->licence_status == 'Green')
+                                                      <span class="text-success">
+                                                          <i class="bi bi-check-circle-fill"></i> Valid
+                                                      </span>
+                                                  @else
+                                                      <span class="text-secondary">
+                                                          <i class="bi bi-question-circle-fill"></i> N/A
+                                                      </span>
+                                                  @endif
+                                          </label>
                                             <input type="date" name="licence_expiry_date" id="licence_expiry_date" value="{{ $document?->licence_expiry_date ?? '' }}" class="form-control mt-3" >
 
                                             <div class="form-check form-switch">
@@ -332,20 +350,28 @@ h2 {
                                         placeholder="Enter Passport Number">
                                     <div id="passport_error_up" class="text-danger error_e"></div>
 
-                                    <label for="licence_" class="form-label mt-3">
-                                    <strong>Expiry Date <span class="text-danger">*</span> </strong>
-                                    @if($user->passport_status == 'Red')
-                                        <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
-                                    @elseif($user->passport_status == 'Orange')
-                                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
-                                    @elseif($user->passport_status == 'Amber')
-                                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
-                                    @elseif($user->passport_status === 'Blue')
-                                        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
-                                    @else
-                                        <span class="text-secondary"><i class="bi bi-question-circle-fill"></i> N/A</span>
-                                    @endif
-                                </label>
+                                  
+                                <label for="licence_" class="form-label mt-3">
+                                <strong>Expiry Date <span class="text-danger">*</span> </strong>
+                                @if($user->passport_status == 'Red')
+                                    <span class="text-danger">
+                                        <i class="bi bi-x-circle-fill"></i> Expired
+                                    </span>
+                                @elseif($user->passport_status == 'Yellow')
+                                    <span class="text-warning">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon
+                                    </span>
+                                @elseif($user->passport_status == 'Green')
+                                    <span class="text-success">
+                                        <i class="bi bi-check-circle-fill"></i> Valid
+                                    </span>
+                                @else
+                                    <span class="text-secondary">
+                                        <i class="bi bi-question-circle-fill"></i> N/A
+                                    </span>
+                                @endif
+                            </label>
+
 
                                 <input type="date" name="passport_expiry_date" id="passport_expiry_date"
                                     value="{{ $document?->passport_expiry_date ? $document?->passport_expiry_date : ''}}"
@@ -380,6 +406,7 @@ h2 {
                                             @if($document?->medical_invalidate == 1)
                                                 <span class="text-danger">(Re-upload a new document and date.)</span>
                                             @endif
+
                                         </label>
 
                                                 @if ($document?->medical_verified)
@@ -408,19 +435,25 @@ h2 {
                                             <div id="medical_issue_date_error_up" class="text-danger error_e"></div>
 
                                         <label for="extra_roles" class="form-label mt-3"><strong> Medical Expiry Date </strong><span
-                                                class="text-danger"></span> 
-                                                @if($user->medical_status == 'Red')
-                                                    <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
-                                                @elseif($user->medical_status == 'Orange')
-                                                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
-                                                @elseif($user->medical_status == 'Amber')
-                                                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
-                                                @elseif($user->medical_status === 'Blue')
-                                                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
-                                                @else
-                                                    <span class="text-secondary"><i class="bi bi-question-circle-fill"></i> N/A</span>
-                                                @endif
-                                                </label>
+                                        class="text-danger"></span> 
+                                         @if($user->medical_status == 'Red')
+                                            <span class="text-danger">
+                                                <i class="bi bi-x-circle-fill"></i> Expired
+                                            </span>
+                                        @elseif($user->medical_status == 'Yellow')
+                                            <span class="text-warning">
+                                                <i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon
+                                            </span>
+                                        @elseif($user->medical_status == 'Green')
+                                            <span class="text-success">
+                                                <i class="bi bi-check-circle-fill"></i> Valid
+                                            </span>
+                                        @else
+                                            <span class="text-secondary">
+                                                <i class="bi bi-question-circle-fill"></i> N/A
+                                            </span>
+                                        @endif
+                                        </label>
                                         <input type="date" name="medical_expiry_date" id="medical_expiry_date"
                                             class="form-control" placeholder="Medical Expiry Date" value="<?php echo isset($document?->medical_expirydate) ? $document?->medical_expirydate : ''; ?>" >
                                             <div id="medical_expiry_date_error_up" class="text-danger error_e"></div>
@@ -567,19 +600,23 @@ h2 {
                                         {{-- Expiry Status --}}
                                         @if($userRating)
                                             @php $status = $userRating->expiry_status; @endphp
-                                            <!-- <div class="mt-1"> -->
-                                                @if($status === 'Red')
-                                                    <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired</span>
-                                                @elseif($status === 'Orange')
-                                                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
-                                                @elseif($status === 'Amber')
-                                                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
-                                                @elseif($status === 'Blue')
-                                                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
-                                                @else
-                                                    <span class="text-secondary"><i class="bi bi-question-circle-fill"></i> N/A</span>
-                                                @endif
-                                            <!-- </div> -->
+                                            @if($status === 'Red')
+                                                <span class="text-danger">
+                                                    <i class="bi bi-x-circle-fill"></i> Expired
+                                                </span>
+                                            @elseif($status === 'Yellow')
+                                                <span class="text-warning">
+                                                    <i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon
+                                                </span>
+                                            @elseif($status === 'Green')
+                                                <span class="text-success">
+                                                    <i class="bi bi-check-circle-fill"></i> Valid
+                                                </span>
+                                            @else
+                                                <span class="text-secondary">
+                                                    <i class="bi bi-question-circle-fill"></i> N/A
+                                                </span>
+                                            @endif
                                         @endif
                                     </label>
                                     <input type="date"

@@ -17,18 +17,31 @@ class ResourceController extends Controller
     public function resource_list(Request $request)
     {
         $organizationUnits = OrganizationUnits::all();
-        $ou_id =  auth()->user()->ou_id;
+        $ou_id = auth()->user()->ou_id;
+
         if ($request->ajax()) {
-            if(Auth()->user()->is_owner ==  1){
+            if (auth()->user()->is_owner == 1) {
                 $query = Resource::query();
-            }
-            else{
+            } else {
                 $query = Resource::where('ou_id', $ou_id);
             }
-            
 
-            // Get total records count before applying filters
+            // Store unfiltered count before search
             $totalRecords = $query->count();
+
+            // Apply search filter
+            $searchValue = $request->input('search.value');
+            if (!empty($searchValue)) {
+                $query->where(function ($q) use ($searchValue) {
+                    $q->where('registration', 'like', '%' . $searchValue . '%')
+                        ->orWhere('type', 'like', '%' . $searchValue . '%')
+                        ->orWhere('class', 'like', '%' . $searchValue . '%')
+                        ->orWhere('note', 'like', '%' . $searchValue . '%');
+                });
+            }
+
+            // Count after filtering
+            $filteredRecords = $query->count();
 
             // Ordering
             $orderColumn = $request->input('order.0.column');
@@ -41,25 +54,20 @@ class ResourceController extends Controller
             }
 
             // Pagination
-            $filteredRecords = $query->count(); // Update after filtering
             $resources = $query->offset($request->input('start'))
                 ->limit($request->input('length'))
                 ->get();
-               
-            // Data transformation
+
+            // Format data
             $data = $resources->map(function ($unit) {
-               
                 return [
                     'name' => $unit->name,
                     'registration' => $unit->registration,
                     'type' => $unit->type,
                     'class' => $unit->class,
                     'note' => $unit->note,
-                  'edit' => '<i class="fa fa-edit edit-resource-icon" data-resource-id="' . encode_id($unit->id) .'"></i>',
-
-                  'delete' => '<i class="fa-solid fa-trash delete-icon" data-resource-id="' . encode_id($unit->id). '"></i>',
-
-                  
+                    'edit' => '<i class="fa fa-edit edit-resource-icon" data-resource-id="' . encode_id($unit->id) . '"></i>',
+                    'delete' => '<i class="fa-solid fa-trash delete-icon" data-resource-id="' . encode_id($unit->id) . '"></i>',
                 ];
             });
 
@@ -67,12 +75,13 @@ class ResourceController extends Controller
                 'draw' => (int) $request->input('draw'),
                 'recordsTotal' => $totalRecords,
                 'recordsFiltered' => $filteredRecords,
-                'data' => $data
+                'data' => $data,
             ]);
         } else {
             return view('resource.index', compact('organizationUnits'));
         }
     }
+
 
     public function edit(Request $request)
     {
