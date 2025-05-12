@@ -141,15 +141,15 @@ class User extends Authenticatable
             return 'Red'; 
         }
 
-        if ($expiryDate->diffInDays($now) <= 30) {
-            return 'Orange';
+        if ($expiryDate->diffInDays($now) < 90) {
+            return 'Yellow';
         }
 
-        if ($expiryDate->diffInDays($now) <= 90) {
-            return 'Amber';  // Expiring in 3 Months
+        if ($expiryDate->diffInDays($now) > 90) {
+            return 'Green';  // valid more than 3 months
         }
 
-        return 'Blue';  // Valid
+        // return 'Blue';  // Valid
     }
 
     /**
@@ -175,18 +175,19 @@ class User extends Authenticatable
      */
     public function isLicenceExpiring()
     {
-        return in_array($this->licence_status, ['Red', 'Orange', 'Amber']);
+        return in_array($this->licence_status, ['Red', 'Yellow']);
     }
-
+    
     public function isMedicalExpiring()
     {
-        return in_array($this->medical_status, ['Red', 'Orange', 'Amber']);
+        return in_array($this->medical_status, ['Red', 'Yellow']);
     }
-
+    
     public function isPassportExpiring()
     {
-        return in_array($this->passport_status, ['Red', 'Orange', 'Amber']);
+        return in_array($this->passport_status, ['Red', 'Yellow']);
     }
+    
 
     // Expiry Date Fucntion End //
 

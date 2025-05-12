@@ -18,6 +18,7 @@ $subTitle = "Welcome to Admin Dashboard";
 @section('content')
 
 @php
+
 $messages = [];
 $user = Auth::user();
 
@@ -47,38 +48,31 @@ if ($user->is_admin == "1") {
         foreach ($statuses as $doc => $status) {
             if ($status === 'Red') {
                 $messages[] = "❌ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
-            } elseif ($status === 'Orange') {
-                $messages[] = "⚠️ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 30 days</strong>.";
-            } elseif ($status === 'Amber') {
+            } elseif ($status === 'Yellow') {
                 $messages[] = "⚠️ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
             }
         }
 
-        //User Rating Alerts For Admin
+        // User Rating Alerts for Admin
         foreach ($u->usrRatings as $userRating) {
             $ratingName = $userRating->rating?->name ?? 'Unknown Rating';
 
-            // Verification required
             if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
                 $messages[] = "📝 <strong>{$ratingName}</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
             }
 
-            // Expiry status
             $status = $userRating->expiry_status;
             if ($status === 'Red') {
                 $messages[] = "❌ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
-            } elseif ($status === 'Orange') {
-                $messages[] = "⚠️ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 30 days</strong>.";
-            } elseif ($status === 'Amber') {
+            } elseif ($status === 'Yellow') {
                 $messages[] = "⚠️ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
             }
         }
-
-
     }
 }
-if($user->is_admin != "1" && !empty($user->ou_id)) {
-    // Regular User View
+
+// For Regular Users
+if ($user->is_admin != "1" && !empty($user->ou_id)) {
     if ($user->licence_admin_verification_required == '1' && $user->licence_verified == "0" && !empty($user->licence_file)) {
         $messages[] = "📝 Your <strong>Licence</strong> is pending admin verification.";
     }
@@ -98,16 +92,14 @@ if($user->is_admin != "1" && !empty($user->ou_id)) {
     ];
 
     foreach ($statuses as $doc => $status) {
-        if ($status === 'Red') {    
+        if ($status === 'Red') {
             $messages[] = "❌ Your <strong>{$doc}</strong> has <strong>expired</strong>.";
-        } elseif ($status === 'Orange') {
-            $messages[] = "⚠️ Your <strong>{$doc}</strong> will expire in <strong>less than 30 days</strong>.";
-        } elseif ($status === 'Amber') {
+        } elseif ($status === 'Yellow') {
             $messages[] = "⚠️ Your <strong>{$doc}</strong> will expire in <strong>less than 90 days</strong>.";
         }
     }
 
-    //User Rating Alerts For Normal Users
+    // User Rating Alerts for Regular User
     foreach ($user->usrRatings as $userRating) {
         $ratingName = $userRating->rating?->name ?? 'Unknown Rating';
 
@@ -118,15 +110,13 @@ if($user->is_admin != "1" && !empty($user->ou_id)) {
         $status = $userRating->expiry_status;
         if ($status === 'Red') {
             $messages[] = "❌ Your <strong>{$ratingName}</strong> has <strong>expired</strong>.";
-        } elseif ($status === 'Orange') {
-            $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong>less than 30 days</strong>.";
-        } elseif ($status === 'Amber') {
+        } elseif ($status === 'Yellow') {
             $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong>less than 90 days</strong>.";
         }
     }
-
 }
 @endphp
+
 
 @if (!empty($messages))
     <div id="alertBox" class="alert alert-warning alert-dismissible fade show" role="alert">
@@ -161,71 +151,66 @@ if($user->is_admin != "1" && !empty($user->ou_id)) {
             <th>Licence Status</th>
             <th>Medical Status</th> 
             <th>Passport Status</th> 
+            <th>Action</th> 
         </tr>
     </thead>
     <tbody>
         @foreach($users as $user)
         <tr>
             <td>{{ $user->fname }} {{ $user->lname }}</td>
+
+            {{-- Licence --}}
             <td>
-            @if($user->licence_file_uploaded)
-                <strong style="color: 
-                    {{ $user->licence_status == 'Red' ? 'red' : 
-                       ($user->licence_status == 'Amber' ? 'orange' : 'green') }}">
-                
-                    @if($user->licence_status == 'Red')
-                         <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
-                    @elseif($user->licence_status == 'Orange')
-                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
-                    @elseif($user->licence_status == 'Amber')
-                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
-                    @else
-                        <span class="text-success"> Valid </span>
-                    @endif
-                </strong>
+                @if($user->licence_file_uploaded)
+                    @php
+                        $status = $user->licence_status;
+                        $color = $status == 'Red' ? 'danger' : ($status == 'Yellow' ? 'warning' : 'success');
+                        $date = $user->licence_expiry_date ? date('d/m/Y', strtotime($user->licence_expiry_date)) : 'N/A';
+                    @endphp
+                    <span class="badge bg-{{ $color }}">
+                        {{ $date }}
+                    </span>
                 @else
-                <span class="text-muted">Document Not Uploaded</span>
-             @endif
+                    <span class="text-muted">Document Not Uploaded</span>
+                @endif
             </td>
+
+            {{-- Medical --}}
             <td>
-            @if($user->medical_issuedby)
-                <strong style="color: 
-                    {{ $user->medical_status == 'Red' ? 'red' : 
-                       ($user->medical_status == 'Amber' ? 'orange' : 'green') }}">
-                  <?php //  dump($user->Medical_Status ); ?>
-                    @if($user->Medical_Status == 'Red')
-                         <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
-                    @elseif($user->Medical_Status == 'Orange')
-                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
-                    @elseif($user->Medical_Status == 'Amber')
-                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
-                    @else
-                        <span class="text-success"> Valid </span>
-                    @endif
-                </strong>
+                @if($user->medical_file)
+                    @php
+                        $status = $user->medical_status;
+                        $color = $status == 'Red' ? 'danger' : ($status == 'Yellow' ? 'warning' : 'success');
+                        $date = $user->medical_expirydate ? date('d/m/Y', strtotime($user->medical_expirydate)) : 'N/A';
+                    @endphp
+                    <span class="badge bg-{{ $color }}">
+                        {{ $date }}
+                    </span>
                 @else
-                <span class="text-muted">Document Not Uploaded</span>
-            @endif
+                    <span class="text-muted">Document Not Uploaded</span>
+                @endif
             </td>
+
+            {{-- Passport --}}
             <td>
                 @if($user->passport_file)
-                    <strong style="color: 
-                        {{ $user->passport_status == 'Red' ? 'red' : 
-                        ($user->passport_status == 'Amber' ? 'orange' : 'green') }}">
-                            @if($user->passport_status == 'Red')
-                                        <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
-                                    @elseif($user->passport_status == 'Orange')
-                                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
-                                    @elseif($user->passport_status == 'Amber')
-                                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
-                                    @else
-                                        <span class="text-success"> Valid </span>
-                                    @endif
-                    </strong>
-                    @else
-                 <span class="text-muted">Document Not Uploaded</span>
+                    @php
+                        $status = $user->passport_status;
+                        $color = $status == 'Red' ? 'danger' : ($status == 'Yellow' ? 'warning' : 'success');
+                        $date = $user->passport_expiry_date ? date('d/m/Y', strtotime($user->passport_expiry_date)) : 'N/A';
+                    @endphp
+                    <span class="badge bg-{{ $color }}">
+                        {{ $date }}
+                    </span>
+                @else
+                    <span class="text-muted">Document Not Uploaded</span>
                 @endif
+            </td>
 
+            <td>
+                <a href="{{ route('user.show', ['user_id' => encode_id($user->id) ]) }}" class="view-icon" title="View User" style="font-size:18px; cursor: pointer;">
+                    <i class="fa fa-eye text-danger me-2"></i>
+                </a>
             </td>
         </tr>
         @endforeach

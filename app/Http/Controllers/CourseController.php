@@ -241,12 +241,10 @@ class CourseController extends Controller
     // Update course
     public function updateCourse(Request $request)
     {
-
-        // dd($request->all());
         // Validate input data
         $request->validate([
             'course_name' => 'required',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
             'course_type' => 'required|in:one_event,multi_lesson',
             'description' => 'required',
             'status' => 'required',
@@ -344,22 +342,20 @@ class CourseController extends Controller
             }
         }
     
-        // Handle Instructor Documents
+        // Remove existing instructor documents first
+        $course->documents()->delete();
+
         if ($request->filled('instructor_documents')) {
             foreach ($request->instructor_documents as $doc) {
-                $filePath = null;
-              
-                // Create or update the document record
-                CourseDocuments::updateOrCreate(
-                    ['id' => $doc['row_id'] ?? null], // Use 'id' if available for updating
-                    [
-                        'course_id' => $course->id,
-                        'document_name' => $doc['name'] ?? '',
-                        'file_path' => $filePath,
-                    ]
-                );
+                if (!empty($doc['name'])) {
+                    $course->documents()->create([
+                        'document_name' => $doc['name'],
+                        'file_path' => null, // or provide actual path if uploading
+                    ]);
+                }
             }
         }
+
 
     
         // Flash success message and return a JSON response
