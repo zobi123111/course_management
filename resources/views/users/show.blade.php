@@ -42,18 +42,25 @@
 
             <hr class="my-4">
 
+            @php
+                $document = $user->documents->first();
+            @endphp
+
             <!-- Additional Details: Passport & License -->
             <div class="row g-4">
                 <div class="col-md-6">
                     <h5 class="text-muted mb-3"><i class="bi bi-passport text-primary me-2"></i>Passport Details</h5>
-                    @if($user->passport)
-                        <p>Number: {{ $user->passport }}</p>
-                        <a href="{{ Storage::url($user->passport_file) }}" class="btn btn-outline-primary btn-sm mb-2" target="_blank">View File</a>
+                    @if($document?->passport)
+                        <p>Number: {{ $document?->passport }}</p>
+                        <a href="{{ Storage::url($document?->passport_file) }}" class="btn btn-outline-primary btn-sm mb-2" target="_blank">View File</a>
                         @if($user->passport_admin_verification_required==1)
                             <div class="form-check form-switch">
-                                <input class="form-check-input verify-toggle" type="checkbox" id="passport_verify" data-user-id="{{ encode_id($user->id) }}" data-type="passport" {{ $user->passport_verified ? 'checked disabled' : '' }}>
-                                <label class="form-check-label" for="passport_verify">{{ $user->passport_verified ? 'Verified' : 'Mark as Verified' }}</label>
+                                <input class="form-check-input verify-toggle" type="checkbox" id="passport_verify" data-user-id="{{ encode_id($user->id) }}" data-type="passport" {{ $document?->passport_verified ? 'checked disabled' : '' }}>
+                                <label class="form-check-label" for="passport_verify">{{ $document?->passport_verified ? 'Verified' : 'Mark as Verified' }}</label>
                             </div>
+                        @endif
+                        @if($document?->passport_verified)
+                            <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="passport">Invalidate</button>
                         @endif
                     @else
                         <p class="text-muted">No passport details available.</p>
@@ -62,36 +69,95 @@
 
                 <div class="col-md-6">
                     <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>License Details</h5>
-                    @if($user->licence)
-                        <p>Number: {{ $user->licence }}</p>
-                        <a href="{{ Storage::url($user->licence_file) }}" class="btn btn-outline-danger btn-sm mb-2" target="_blank">View File</a>
+                    @if($document && $document->licence)
+                        <p>Number: {{ $document->licence }}</p>
+                        <a href="{{ Storage::url($document->licence_file) }}" class="btn btn-outline-danger btn-sm mb-2" target="_blank">View File</a>
                         @if($user->licence_admin_verification_required==1)
                             <div class="form-check form-switch">
-                                <input class="form-check-input verify-toggle" type="checkbox" id="licence_verify" data-user-id="{{ encode_id($user->id) }}" data-type="licence" {{ $user->licence_verified ? 'checked disabled' : '' }}>
-                                <label class="form-check-label" for="licence_verify">{{ $user->licence_verified ? 'Verified' : 'Mark as Verified' }}</label>
+                                <input class="form-check-input verify-toggle" type="checkbox" id="licence_verify" data-user-id="{{ encode_id($user->id) }}" data-type="licence" {{ $document?->licence_verified ? 'checked disabled' : '' }}>
+                                <label class="form-check-label" for="licence_verify">{{ $document?->licence_verified ? 'Verified' : 'Mark as Verified' }}</label>
                             </div>
+                        @endif
+                        @if($document && $document->licence_verified == 1)
+                            <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="licence">Invalidate</button>
                         @endif
                     @else
                         <p class="text-muted">No license details available.</p>
                     @endif
                 </div>
+
+                <!-- License 2 -->
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>Second License Details</h5>
+                        @if($document && $document->licence_2)
+                            <p>Number: {{ $document->licence_2 }}</p>
+                            @if($document->licence_file_2)
+                                <a href="{{ Storage::url($document->licence_file_2) }}" class="btn btn-outline-danger btn-sm mb-2" target="_blank">View File</a>
+                            @endif
+                            @if($user->licence_admin_verification_required==1)
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input verify-toggle" type="checkbox" id="licence_verify" data-user-id="{{ encode_id($user->id) }}" data-type="licence_2" {{ $document?->licence_verified_2 ? 'checked disabled' : '' }}>
+                                   <label class="form-check-label" for="licence2_verify">
+                                        {{ $document?->licence_verified_2 ? 'Verified' : 'Mark as Verified' }}
+                                    </label>
+
+                                </div>
+                            @endif
+                            @if($document && $document->licence_verified_2 == 1)
+                                <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="licence_2">Invalidate</button>
+                            @endif
+                        @else
+                            <p class="text-muted">No Second License details available.</p>
+                        @endif
+                    </div>
+                </div>
+
             </div>
 
             <!-- Medical Details -->
-            <div class="row mt-4">
+            <div class="row g-4 mt-3">
                 <div class="col-md-6">
                     <h5 class="text-muted mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>Medical Details</h5>
-                    @if($user->medical && !empty($user->medical_issuedby) && !empty($user->medical_class) && !empty($user->medical_issuedate))
-                        <p>Issued By: {{ $user->medical_issuedby }}</p>
-                        <p>Class: {{ $user->medical_class }}</p>
-                        <p>Issue Date: {{ $user->medical_issuedate }}</p>
-                        <p>Expiry Date: {{ $user->medical_expirydate }}</p>
-                        <a href="{{ Storage::url($user->medical_file) }}" class="btn btn-outline-danger btn-sm mb-2" target="_blank">View File</a>
+                    @if($document && $document->medical && !empty($document->medical_issuedby) && !empty($document->medical_class) && !empty($document->medical_issuedate))
+                        <p>Issued By: {{ $document->medical_issuedby }}</p>
+                        <p>Class: {{ $document->medical_class }}</p>
+                        <p>Issue Date: {{ $document->medical_issuedate }}</p>
+                        <p>Expiry Date: {{ $document->medical_expirydate }}</p>
+                        <a href="{{ Storage::url($document->medical_file) }}" class="btn btn-outline-danger btn-sm mb-2" target="_blank">View File</a>
                         @if($user->medical_adminRequired==1)
                             <div class="form-check form-switch">
-                                <input class="form-check-input verify-toggle" type="checkbox" id="licence_verify" data-user-id="{{ encode_id($user->id) }}" data-type="medical" {{ $user->medical_verified ? 'checked disabled' : '' }}>
-                                <label class="form-check-label" for="licence_verify">{{ $user->medical_verified ? 'Verified' : 'Mark as Verified' }}</label>
+                                <input class="form-check-input verify-toggle" type="checkbox" id="licence_verify" data-user-id="{{ encode_id($user->id) }}" data-type="medical" {{ $document?->medical_verified ? 'checked disabled' : '' }}>
+                                <label class="form-check-label" for="licence_verify">{{ $document?->medical_verified ? 'Verified' : 'Mark as Verified' }}</label>
                             </div>
+                        @endif
+
+                        @if($document && $document->medical_verified == 1)
+                            <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="medical">Invalidate</button>
+                        @endif
+                    @else
+                        <p class="text-muted">No medical details available.</p>
+                    @endif
+                </div>
+
+                <!-- Medical 2 Details -->
+                <div class="col-md-6">
+                    <h5 class="text-muted mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>Second Medical Details</h5>
+                    @if($document && $document->medical_2 && !empty($document->medical_issuedby_2) && !empty($document->medical_class_2) && !empty($document->medical_issuedate_2))
+                        <p>Issued By: {{ $document->medical_issuedby_2 }}</p>
+                        <p>Class: {{ $document->medical_class_2 }}</p>
+                        <p>Issue Date: {{ $document->medical_issuedate_2 }}</p>
+                        <p>Expiry Date: {{ $document->medical_expirydate_2 }}</p>
+                        <a href="{{ Storage::url($document->medical_file_2) }}" class="btn btn-outline-danger btn-sm mb-2" target="_blank">View File</a>
+                        @if($user->medical_adminRequired==1)
+                            <div class="form-check form-switch">
+                                <input class="form-check-input verify-toggle" type="checkbox" id="licence_verify" data-user-id="{{ encode_id($user->id) }}" data-type="medical_2" {{ $document?->medical_verified_2 ? 'checked disabled' : '' }}>
+                                <label class="form-check-label" for="licence_verify">{{ $document?->medical_verified_2 ? 'Verified' : 'Mark as Verified' }}</label>
+                            </div>
+                        @endif
+                        @if($document && $document->medical_verified_2 == 1)
+                            <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="medical_2">Invalidate</button>
                         @endif
                     @else
                         <p class="text-muted">No medical details available.</p>
@@ -226,6 +292,38 @@ $(document).ready(function() {
     });
 
 })
+
+
+$(document).ready(function () {
+    $('.invalidate-btn').on('click', function () {
+        if (!confirm('Are you sure you want to invalidate this document?')) return;
+
+        const userId = $(this).data('user-id');
+        const type = $(this).data('type');
+
+        $.ajax({
+            url: `{{ route('user.invalidateDocument') }}`,
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                user_id: userId,
+                document_type: type
+            },
+            success: function (response) {
+                if (response.success) {
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert('Failed to invalidate.');
+                }
+            },
+            error: function () {
+                alert('An error occurred while processing the request.');
+            }
+        });
+    });
+});
+
 </script>
 
 @endsection

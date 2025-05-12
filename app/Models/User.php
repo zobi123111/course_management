@@ -219,5 +219,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserRating::class);
     }
+
+    public function documents()
+    {
+        return $this->hasMany(UserDocument::class, 'user_id');
+    }
     
 }

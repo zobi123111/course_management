@@ -145,8 +145,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/users/update', [UserController::class, 'update'])->name('user.update');
     Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
     Route::post('/users/verify', [UserController::class, 'docsVerify'])->name('user.verify');
-
-
+    Route::post('/users/invalidate-document', [UserController::class, 'invalidateDocument'])->name('user.invalidateDocument');
 
 
     
