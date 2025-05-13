@@ -27,6 +27,9 @@
     <table class="table table-hover" id="resourceTable">
         <thead>
             <tr>
+                @if(auth()->user()->is_owner==1)
+                <th scope="col">OU</th>
+                @endif
                 <th scope="col">Name</th>
                 <th scope="col">Registration</th> 
                 <th scope="col">Class</th>
@@ -116,11 +119,16 @@
                         <label for="Class" class="form-label">Class</label>
                         <input type="text" name="class" class="form-control">
                         <div id="class_error" class="text-danger error_e"></div>
-                    </div>
+                    </div>                    
                     <div class="form-group">
                         <label for="Type" class="form-label">Type</label>
                         <input type="text" name="type" class="form-control">
                         <div id="type_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="Type" class="form-label">Classroom</label>
+                        <input type="text" name="classroom" id="classroom" class="form-control">
+                        <div id="classroom_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="Class" class="form-label">Others</label>
@@ -134,22 +142,22 @@
                     </div>
                     <div class="form-group">
                         <label for="Hours from RTS" class="form-label">Hours from RTS</label>
-                        <input type="number" name="Hours_from_RTS" class="form-control">
+                        <input type="number" name="Hours_from_RTS" id="Hours_from_RTS" class="form-control">
                         <div id="Hours_from_RTS_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="Date from RTS" class="form-label">Date from RTS</label>
-                        <input type="date" name="Date_from_RTS" class="form-control">
+                        <input type="date" name="Date_from_RTS" id="Date_from_RTS" class="form-control">
                         <div id="Date_from_RTS_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                             <label for="image" class="form-label">Image</label>
-                            <input type="file" name="resource_logo" class="form-control" accept="image/*">
+                            <input type="file" name="resource_logo" class="form-control" accept="image/*" >
                             <div id="resource_logo_error" class="text-danger error_e"></div>           
                     </div>
                     <div class="form-group">
                         <label for="Date for maintenance" class="form-label">Date for maintenance</label>
-                        <input type="date" name="Date_for_maintenance" class="form-control">
+                        <input type="date" name="Date_for_maintenance" id="Date_for_maintenance" class="form-control">
                         <div id="Date_for_maintenance_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
@@ -214,6 +222,11 @@
                         <label for="Type" class="form-label">Type</label>
                         <input type="text" name="edit_type" class="form-control">
                         <div id="edit_type_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="Type" class="form-label">Classroom</label>
+                        <input type="text" name="edit_classroom" id="edit_classroom" class="form-control">
+                        <div id="edit_classroom_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="Class" class="form-label">Other</label>
@@ -305,6 +318,10 @@
             type: "GET",
         },
         columns: [
+            @if(auth()->user()->is_owner)
+            { data: 'OU', name: 'OU' }, // dynamically add OU column for owners
+            @endif
+            
             { data: 'name', name: 'name' ,class:'resource_name'},
             { data: 'registration', name: 'registration', class: 'orgUnitName' },
             { data: 'class', name: 'class' },
@@ -326,35 +343,45 @@
     })
 
     $(document).ready(function () {
-    function toggleAndClearFields(selectedField, formType) {
-        let fields = ["class", "type", "other"];
-        fields.forEach(field => {
-            let fieldName = formType + field;
-            if (field !== selectedField) {
-                $("input[name='" + fieldName + "']").val("").prop("disabled", true).css("background-color", "#e9ecef"); // Clear & disable
-            } else {
-                $("input[name='" + fieldName + "']").prop("disabled", false).css("background-color", ""); // Enable selected
-            }
-        });
-    }
 
-    function initFieldRestrictions(formType) {
-        $("input[name='" + formType + "class'], input[name='" + formType + "type'], input[name='" + formType + "other']").on("input", function () {
-            let selectedName = $(this).attr("name").replace(formType, "");
-            if ($(this).val().trim() !== "") {
-                toggleAndClearFields(selectedName, formType);
-            } else {
-                $("input[name='" + formType + "class'], input[name='" + formType + "type'], input[name='" + formType + "other']")
-                    .prop("disabled", false)
-                    .css("background-color", "");
-            }
-        });
-    }
+        $('#classroom').on('input', function() {
+            let isClassroomFilled = $(this).val().trim() !== '';
 
-    // Initialize for edit modal only
-    initFieldRestrictions("");
-    initFieldRestrictions("edit_");
-});
+            $('input[name="Hours_from_RTS"]').prop('disabled', isClassroomFilled);
+            $('input[name="Date_from_RTS"]').prop('disabled', isClassroomFilled);
+            $('input[name="Date_for_maintenance"]').prop('disabled', isClassroomFilled);
+            $('input[name="Hours_Remaining"]').prop('disabled', isClassroomFilled);
+        });
+
+        function toggleAndClearFields(selectedField, formType) {
+            let fields = ["class", "type", "other"];
+            fields.forEach(field => {
+                let fieldName = formType + field;
+                if (field !== selectedField) {
+                    $("input[name='" + fieldName + "']").val("").prop("disabled", true).css("background-color", "#e9ecef"); // Clear & disable
+                } else {
+                    $("input[name='" + fieldName + "']").prop("disabled", false).css("background-color", ""); // Enable selected
+                }
+            });
+        }
+
+        function initFieldRestrictions(formType) {
+            $("input[name='" + formType + "class'], input[name='" + formType + "type'], input[name='" + formType + "other']").on("input", function () {
+                let selectedName = $(this).attr("name").replace(formType, "");
+                if ($(this).val().trim() !== "") {
+                    toggleAndClearFields(selectedName, formType);
+                } else {
+                    $("input[name='" + formType + "class'], input[name='" + formType + "type'], input[name='" + formType + "other']")
+                        .prop("disabled", false)
+                        .css("background-color", "");
+                }
+            });
+        }
+
+        // Initialize for edit modal only
+        initFieldRestrictions("");
+        initFieldRestrictions("edit_");
+    });
 
     $("#save_resource").on("click", function(e) {
         e.preventDefault();
@@ -387,6 +414,11 @@
             }
         });
     })
+
+    $("#edit_classroom").on("input", function () {
+        handleClassroomFieldDependency("edit_");
+    });
+
     $(document).on('click', '.edit-resource-icon', function() { 
         $('.error_e').html('');
         $("#editResource")[0].reset();
@@ -405,6 +437,7 @@
                     $('input[name="edit_name"]').val(response.resourcedata.name || '');
                     $('input[name="edit_registration"]').val(response.resourcedata.registration || '');
                     $('input[name="edit_type"]').val(response.resourcedata.type || '');
+                    $('input[name="edit_classroom"]').val(response.resourcedata.classroom || ''); 
                     $('input[name="edit_class"]').val(response.resourcedata.class || '');
                     $('input[name="edit_other"]').val(response.resourcedata.other || '');
                      $('input[name="edit_note"]').val(response.resourcedata.note || '');
@@ -444,6 +477,7 @@
                         }
                     });
                     autoDisableFields("edit_");
+                    handleClassroomFieldDependency("edit_");
                 }
            
                 $('#editOrgUnitModal').modal('show');
@@ -453,36 +487,59 @@
             }
         });
     });
+
     // Function to disable and grey out other fields if one is filled
-function autoDisableFields(formType) {
-    let fields = ["class", "type", "other"];
-    let selectedField = null;
+    function autoDisableFields(formType) {
+        let fields = ["class", "type", "other"];
+        let selectedField = null;
 
-    // Check which field has data
-    fields.forEach(field => {
-        let fieldName = formType + field;
-        if ($("input[name='" + fieldName + "']").val().trim() !== "") {
-            selectedField = field;
-        }
-    });
-
-    // If one field has data, disable others
-    if (selectedField) {
+        // Check which field has data
         fields.forEach(field => {
             let fieldName = formType + field;
-            if (field !== selectedField) {
-                $("input[name='" + fieldName + "']").val("").prop("disabled", true).css("background-color", "#e9ecef");
+            if ($("input[name='" + fieldName + "']").val().trim() !== "") {
+                selectedField = field;
+            }
+        });
+
+        // If one field has data, disable others
+        if (selectedField) {
+            fields.forEach(field => {
+                let fieldName = formType + field;
+                if (field !== selectedField) {
+                    $("input[name='" + fieldName + "']").val("").prop("disabled", true).css("background-color", "#e9ecef");
+                } else {
+                    $("input[name='" + fieldName + "']").prop("disabled", false).css("background-color", "");
+                }
+            });
+        }
+    }
+
+    function handleClassroomFieldDependency(formType) {
+        const classroomValue = $("input[name='" + formType + "classroom']").val().trim();
+
+        const rtsFields = [
+            "Hours_from_RTS",
+            "Date_from_RTS",
+            "Date_for_maintenance",
+            "Hours_Remaining"
+        ];
+
+        rtsFields.forEach(field => {
+            const fullFieldName = "input[name='" + formType + field + "']";
+            if (classroomValue !== "") {
+                $(fullFieldName).val("").prop("disabled", true).css("background-color", "#e9ecef");
             } else {
-                $("input[name='" + fieldName + "']").prop("disabled", false).css("background-color", "");
+                $(fullFieldName).prop("disabled", false).css("background-color", "");
             }
         });
     }
-}
-        $('#update_resourse').on('click', function(e) { 
+
+
+    $('#update_resourse').on('click', function(e) { 
         e.preventDefault();
         $(".loader").fadeIn();
         var formData = new FormData($('#editResource')[0]);
-      
+    
         $.ajax({
             url: "{{ url('resourse/update') }}",
             type: "POST",
@@ -504,10 +561,6 @@ function autoDisableFields(formType) {
             }
         })
     })
-
-
-
-
 
     $(document).on('click', '.delete-icon', function(e) {
         e.preventDefault();
