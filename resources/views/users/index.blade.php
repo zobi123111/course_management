@@ -501,7 +501,7 @@
                             <input type="file" name="edit_licence_file" id="edit_licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
                             <div id="edit_licence_file_error_up" class="text-danger error_e"></div>
 
-                            <button type="button" id="edit_second_licence_btn" class="btn btn-secondary mt-3">
+                            <button type="button" id="edit_second_licence_btn" class="btn btn-secondary mt-3" style="display: none;">
                                 Second Licence
                             </button>
 
@@ -799,23 +799,6 @@
             ]   
         });
 
-
-
-
-        // $('#licence_checkbox').change(function() { 
-        //     if (this.checked) {
-        //         $('#licence').show().prop('required', true);
-        //         $('#licence_file').show().prop('required', true);
-        //     } else {
-        //         $('#licence').hide().prop('required', false);
-        //         $('#licence_file').hide().prop('required', false);
-        //         $('#licence').val('');
-        //         $('#licence_file').val('');
-        //         $('#licence_error').hide().prop('required', false);
-        //         $('#licence_file_error').hide().prop('required', false);
-        //     }
-        // });
-
         $('#licence_checkbox').change(function () {
             if (this.checked) {
                 $('#licence').show().prop('required', true);
@@ -983,20 +966,6 @@
             }
         });
 
-        // Medical
-        // $('#medical_checkbox').change(function() { 
-        //     if (this.checked) {
-        //         $('.medical_issued_div').show();
-        //         $('.medical_class_div').show();
-               
-        //     } else {  
-        //         $('.medical_issued_div').hide();
-        //         $('.medical_class_div').hide();
-              
-            
-        //     }
-        // });
-
         $('#medical_checkbox').change(function () {
             if (this.checked) {
                 $('.medical_issued_div').show();
@@ -1023,22 +992,6 @@
                 $('#issued_by_2, #medical_class_2, #medical_issue_date_2, #medical_expiry_date_2, #medical_detail_2, #medical_file_2').val('');
             }
         });
-
-
-
-        // Edit Medical
-        // $('#editmedical_checkbox').change(function() { 
-        //     if (this.checked) {
-        //         $('.editmedical_issued_div').show();
-        //         $('.editmedical_class_div').show();
-               
-        //     } else {  
-        //         $('.editmedical_issued_div').hide();
-        //         $('.editmedical_class_div').hide();
-              
-            
-        //     }
-        // });
 
         // Edit Medical Toggle
         $('#editmedical_checkbox').change(function () {
@@ -1067,22 +1020,12 @@
             }
         });
 
-        // Add Second Medical Button
-        // $('#edit_second_medical_btn').click(function () {
-        //     $('#edit_second_medical_section').toggle();
-
-        //     if (!isVisible) {
-        //         $('#issued_by_2, #medical_class_2, #medical_issue_date_2, #medical_expiry_date_2, #medical_detail_2, #medical_file_2').val('');
-        //     }
-        // });
-
         $('#edit_second_medical_btn').click(function () {
             const section = $('#edit_second_medical_section');
             const isVisible = section.is(':visible');
 
             section.toggle();
 
-            // Clear values *after* hiding (i.e., when it becomes not visible)
             if (isVisible) {
                 $('#editissued_by_2, #editmedical_class_2, #editmedical_issue_date_2, #editmedical_expiry_date_2, #editmedical_detail_2, #editmedical_file_2').val('');
             }
@@ -1094,9 +1037,6 @@
             $('.error_e').html('');
             $('.alert-danger').css('display', 'none');
             $('#userModal').modal('show');       
-            // $('#userModal').on('shown.bs.modal', function() {
-            //     initializeSelect2();
-            // });
         });
 
              $('#saveuser').click(function(e) {
@@ -1133,20 +1073,6 @@
 
         // edit 
 
-        // $('#edit_licence_checkbox').change(function() {
-        //     if (this.checked) {
-        //         $('#edit_licence').show().prop('required', true);
-        //         $('#edit_licence_file').show().prop('required', true);
-        //     } else {
-        //         $('#edit_licence').hide().prop('required', false);
-        //         $('#edit_licence_file').hide().prop('required', false);
-        //         $('#edit_licence').val('');
-        //         $('#edit_licence_file').val('');
-        //         $('#edit_licence_error_up').hide().prop('required', false);
-        //         $('#edit_licence_file_error_up').hide().prop('required', false);
-        //     }
-        // });
-        // Edit Licence Toggle
         $('#edit_licence_checkbox').change(function () {
             if (this.checked) {
                 $('#edit_licence').show().prop('required', true);
@@ -1266,19 +1192,36 @@
 
                         const document = response.user.documents?.[0] ?? {};
 
-                        if (response.user.licence_required) {
-                            console.log(response.user.documents);
+                        // if (response.user.licence_required) {
+                        //     console.log(response.user.documents);
 
-                            $('#edit_licence_checkbox').prop('checked', true);
-                            $('#edit_licence').show().prop('required', true);
-                            $('#edit_licence_file').show().prop('required', true);
+                        //     $('#edit_licence_checkbox').prop('checked', true);
+                        //     $('#edit_licence').show().prop('required', true);
+                        //     $('#edit_licence_file').show().prop('required', true);
+                        //     $('#edit_second_licence_btn').show()
+
+                        //     if (document) {
+                        //         $('#edit_licence').val(document.licence);
+                        //     } else {
+                        //         $('#edit_licence').val('');
+                        //     }
+                        // } 
+                        // else{
+                        //     $('#edit_licence_checkbox').prop('checked', false);
+                        //     $('#edit_second_licence_btn').hide()
+                        // }            
+                        if (response.user.licence_required) {
+                            $('#edit_licence_checkbox').prop('checked', true).trigger('change'); // ✅ trigger the .change() to apply all show logic
 
                             if (document) {
                                 $('#edit_licence').val(document.licence);
                             } else {
                                 $('#edit_licence').val('');
                             }
-                        }                       
+                        } else {
+                            $('#edit_licence_checkbox').prop('checked', false).trigger('change'); // ✅ this hides everything
+                        }
+          
 
                         if (document.licence_2) {
                             $('#edit_licence_2').val(document.licence_2).show().prop('required', true);
@@ -1351,18 +1294,43 @@
                            
                         }
                        
+                        // if (response.user.medical == 1) {
+                        //     $('#editmedical_checkbox').prop('checked', true);
+                        //     $('.editmedical_issued_div').show();
+                        //     $('.editmedical_class_div').show();
+                        //     $('#editmedical_issue_date').val(document.medical_issuedate ?? '');
+                        //     $('#editmedical_expiry_date').val(document.medical_expirydate ?? '');
+                        //     $('#editmedical_detail').val(document.medical_restriction ?? '');
+
+                        //     let issuedBy = document.medical_issuedby?.trim() ?? '';
+                        //     let medicalClass = document.medical_class?.trim() ?? '';
+                        //     $('#editissued_by').val(issuedBy);
+                        //     $('#editmedical_class').val(medicalClass);
+                        // }
                         if (response.user.medical == 1) {
-                            $('#editmedical_checkbox').prop('checked', true);
-                            $('.editmedical_issued_div').show();
-                            $('.editmedical_class_div').show();
+                            $('#editmedical_checkbox').prop('checked', true).trigger('change');
+
                             $('#editmedical_issue_date').val(document.medical_issuedate ?? '');
                             $('#editmedical_expiry_date').val(document.medical_expirydate ?? '');
                             $('#editmedical_detail').val(document.medical_restriction ?? '');
 
-                            let issuedBy = document.medical_issuedby?.trim() ?? '';
-                            let medicalClass = document.medical_class?.trim() ?? '';
-                            $('#editissued_by').val(issuedBy);
-                            $('#editmedical_class').val(medicalClass);
+                            $('#editissued_by').val(document.medical_issuedby?.trim() ?? '');
+                            $('#editmedical_class').val(document.medical_class?.trim() ?? '');
+                        } else {
+                            $('#editmedical_checkbox').prop('checked', false).trigger('change');
+                        }
+
+
+                         if (response.user.licence_required) {
+                            $('#edit_licence_checkbox').prop('checked', true).trigger('change'); // ✅ trigger the .change() to apply all show logic
+
+                            if (document) {
+                                $('#edit_licence').val(document.licence);
+                            } else {
+                                $('#edit_licence').val('');
+                            }
+                        } else {
+                            $('#edit_licence_checkbox').prop('checked', false).trigger('change'); // ✅ this hides everything
                         }
 
                         if (document.medical_2) {

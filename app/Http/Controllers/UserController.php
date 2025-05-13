@@ -239,14 +239,15 @@ class UserController extends Controller
                     }
                 }
 
-                if ($request->filled('issued_by_2')) {
+               if ($request->filled('issued_by_2')) {
                     $rules['medical_issue_date_2'] = 'required';
                     $rules['medical_expiry_date_2'] = 'required';
 
-                    if (!$document->medical_file_2) {
+                    if (!$document || !$document->medical_file_2) {
                         $rules['medical_file_2'] = 'required|file|mimes:pdf,jpg,jpeg,png';
                     }
                 }
+
 
                 $customAttributes = [
                     'medical_issue_date_2' => 'medical issue date',
@@ -257,16 +258,19 @@ class UserController extends Controller
                 $this->validate($request, $rules, [], $customAttributes);
 
                 if ($request->filled('licence_2')) {
-                    $rules['licence_expiry_date_2'] = 'required';
-                    $rules['licence_file_2'] = 'required';
 
-                    if (!$document->licence_file_2) {
-                        $rules['licence_file_2'] = 'required|file|mimes:pdf,jpg,jpeg,png';
+                    if(!$request->has('licence_expiry_date_2') || !$request->has('non_expiring_licence_2')){
+                        $rules['licence_expiry_date_2'] = 'required';
                     }
-                    else {
-                            $rules['licence_file_2'] = 'nullable|file|mimes:pdf,jpg,jpeg,png';
+                    // $rules['licence_file_2'] = 'required';
+
+                    if ($document && !$document->licence_file_2) {
+                        $rules['licence_file_2'] = 'required|file|mimes:pdf,jpg,jpeg,png';
+                    } else {
+                        $rules['licence_file_2'] = 'nullable|file|mimes:pdf,jpg,jpeg,png';
                     }
                 }
+
 
                 $customAttributes = [
                     'licence_expiry_date_2' => 'licence expiry date',
@@ -279,7 +283,6 @@ class UserController extends Controller
                 $licenceFileUploaded = $userToUpdate->licence_file_uploaded;
                 $passportFileUploaded = $userToUpdate->passport_file_uploaded;
                 $medicalFileUploaded = $userToUpdate->medical_file_uploaded;
-                $medicalFileUploaded_2 = null;
 
                if ($request->hasFile('medical_file')) {
                     if ($document && $document->medical_file) {
@@ -295,13 +298,18 @@ class UserController extends Controller
                 }
 
                 if ($request->hasFile('medical_file_2')) {
+
                     if ($document && $document->medical_file_2) {
                         Storage::disk('public')->delete($document->medical_file_2);
                     }
                     $medicalFilePath_2 = $request->file('medical_file_2')->store('medical_file', 'public');
                    
                     $medicalFileUploaded_2 = true;
-                    $document->update(['medical_verified_2' => 0]);
+                    // $document->update(['medical_verified_2' => 0]);
+                    $document = UserDocument::updateOrCreate(
+                        ['user_id' => $userToUpdate->id], // Matching condition
+                        ['medical_verified_2' => 0] // Fields to update or set on creation
+                    );
                 } else {
                     $medicalFilePath_2 = $request->old_medical_file_2;
                 }
@@ -438,7 +446,8 @@ class UserController extends Controller
                     $formattedKey = ucfirst(str_replace('_', ' ', $key)); // Format field names
                     $changes[] = "$formattedKey changed from '$oldValue' to '$newValue'";
                 }
-            }        
+            } 
+
             $userToUpdate->update($newData);
             if (!empty($changes)) {
                 UserActivityLog::create([
@@ -485,10 +494,12 @@ class UserController extends Controller
                 'licence' => $request->licence ?? null,
                 'licence_file' => $licenceFilePath ?? null,
                 'licence_expiry_date' => $request->licence_expiry_date ?? null,
+                'licence_non_expiring' => $request->has('non_expiring_licence') ? 1 : 0,
 
                 'licence_2' => $request->licence_2 ?? null,
                 'licence_file_2' => $licenceFilePath_2 ?? null,
                 'licence_expiry_date_2' => $request->licence_expiry_date_2 ?? null,
+                'licence_non_expiring_2' => $request->has('non_expiring_licence_2') ? 1 : 0,
 
                 'passport' => $request->passport ?? null,
                 'passport_expiry_date' => $request->passport_expiry_date ?? null,
@@ -501,6 +512,7 @@ class UserController extends Controller
                 'medical_expirydate' => $request->medical_expiry_date ?? null,
                 'medical_restriction' => $request->medical_detail ?? null,
                 'medical_file' => $medicalFilePath ?? null,
+                'medical_file_uploaded' => $medicalFileUploaded ?? $document->medical_file_uploaded,
 
                 'medical_2' => $userToUpdate->medical,
                 'medical_issuedby_2' => $request->issued_by_2 ?? null,
@@ -509,6 +521,7 @@ class UserController extends Controller
                 'medical_expirydate_2' => $request->medical_expiry_date_2 ?? null,
                 'medical_restriction_2' => $request->medical_detail_2 ?? null,
                 'medical_file_2' => $medicalFilePath_2 ?? null,
+                'medical_file_uploaded_2' => $medicalFileUploaded_2 ?? $document->medical_file_uploaded_2,
             ]
         );
 
@@ -1213,8 +1226,6 @@ class UserController extends Controller
             'message' => 'Document invalidated successfully.'
         ]);
     }
-
-
 
     public function switchRole(Request $request)
     {
