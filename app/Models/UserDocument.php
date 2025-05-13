@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
+
 
 class UserDocument extends Model
 {
@@ -59,6 +61,85 @@ class UserDocument extends Model
 
     ];
 
+    public function getExpiryStatus($date)
+    {
+        if (!$date) return 'N/A';
+
+        $expiryDate = Carbon::parse($date);
+        $now = now();
+
+        if ($expiryDate->lt($now)) {
+            return 'Red'; 
+        }
+
+        if ($expiryDate->diffInDays($now) < 90) {
+            return 'Yellow';
+        }
+
+        if ($expiryDate->diffInDays($now) > 90) {
+            return 'Green';  // valid more than 3 months
+        }
+
+        // return 'Blue';  // Valid
+    }
+
+    /**
+     * Accessors for Expiry Status
+    */
+    
+    public function getLicenceStatusAttribute()
+    {
+        return $this->getExpiryStatus($this->licence_expiry_date);
+    }
+
+    public function getLicence2StatusAttribute()
+    {
+        return $this->getExpiryStatus($this->licence_expiry_date_2);
+    }
+
+    public function getPassportStatusAttribute()
+    {
+        return $this->getExpiryStatus($this->passport_expiry_date);
+    }
+
+    public function getMedicalStatusAttribute()
+    {
+        return $this->getExpiryStatus($this->medical_expirydate);
+    }
+
+    public function getMedical2StatusAttribute()
+    {
+        return $this->getExpiryStatus($this->medical_expirydate_2);
+    }
+
+    /**
+     * Check if Documents Are Expiring
+    */
+
+    public function isLicenceExpiring()
+    {
+        return in_array($this->licence_status, ['Red', 'Yellow']);
+    }
+
+    public function isLicence2Expiring()
+    {
+        return in_array($this->licence_2_status, ['Red', 'Yellow']);
+    }
+    
+    public function isMedicalExpiring()
+    {
+        return in_array($this->medical_status, ['Red', 'Yellow']);
+    }
+
+    public function isMedical2Expiring()
+    {
+        return in_array($this->medical_2_status, ['Red', 'Yellow']);
+    }
+    
+    public function isPassportExpiring()
+    {
+        return in_array($this->passport_status, ['Red', 'Yellow']);
+    }
 
     public function user()
     {
