@@ -21,9 +21,9 @@ class ResourceController extends Controller
 
         if ($request->ajax()) {
             if (auth()->user()->is_owner == 1) {
-                $query = Resource::query();
+                $query = Resource::with('orgUnit');
             } else {
-                $query = Resource::where('ou_id', $ou_id);
+                $query = Resource::with('orgUnit')->where('ou_id', $ou_id);
             }
 
             // Store unfiltered count before search
@@ -60,7 +60,7 @@ class ResourceController extends Controller
 
             // Format data
             $data = $resources->map(function ($unit) {
-                return [
+                $row = [
                     'name' => $unit->name,
                     'registration' => $unit->registration,
                     'type' => $unit->type,
@@ -69,6 +69,12 @@ class ResourceController extends Controller
                     'edit' => '<i class="fa fa-edit edit-resource-icon" data-resource-id="' . encode_id($unit->id) . '"></i>',
                     'delete' => '<i class="fa-solid fa-trash delete-icon" data-resource-id="' . encode_id($unit->id) . '"></i>',
                 ];
+
+                if (auth()->user()->is_owner == 1) {
+                    $row['OU'] = $unit->orgUnit->org_unit_name;
+                }
+
+                return $row;
             });
 
             return response()->json([
@@ -132,6 +138,7 @@ class ResourceController extends Controller
             'name'         => $request->name, 
             "registration"  =>  $request->registration,
             "type"  =>  $request->type,
+            "classroom"  =>  $request->classroom,
             "class"  =>  $request->class,
             "other"  =>  $request->other,
             "note"  =>  $request->note,
@@ -178,6 +185,7 @@ class ResourceController extends Controller
         "name"  =>  $request->edit_name,
         "registration"  =>  $request->edit_registration,
         "type"  =>  $request->edit_type,
+        "classroom"  =>  $request->edit_classroom,
         "class"  =>  $request->edit_class,
         "other"  =>  $request->edit_other,
         "note"  =>  $request->edit_note,

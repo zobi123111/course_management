@@ -368,7 +368,7 @@ class OrganizationController extends Controller
     public function showOrgUsers(Request $request)
     {
         // dd($request->ou_id);
-        $orgUnitUsers = User::where('ou_id', decode_id($request->ou_id))->get();
+        $orgUnitUsers = User::with('roles')->where('ou_id', decode_id($request->ou_id))->get();
          // Check if users exist
         if ($orgUnitUsers->isEmpty()) {
             return response()->json(['error' => 'No users found for this Organizational Unit.'], 404);

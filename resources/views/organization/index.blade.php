@@ -95,6 +95,7 @@
                         <th scope="col">Image</th>
                         <th scope="col">Name</th>
                         <th scope="col">Email</th>
+                        <th scope="col">Role</th>
                     </tr>
                 </thead>
                 <tbody id="tblBody">                    
@@ -566,6 +567,7 @@ $(document).ready(function() {
                             <td><img src="${imageUrl}" alt="Profile Image" width="40" height="40" class="rounded-circle"></td>
                             <td>${user.fname} ${user.lname}</td>
                             <td>${user.email}</td>
+                            <td>${user.roles ? user.roles.role_name : 'No Role Assigned'}</td>
                         </tr>`;
                     $('#orgUnitUsersTable tbody').append(row);
                 });
