@@ -130,7 +130,7 @@ class User extends Authenticatable
     //     return $this->getExpiryStatus($this->medical_expirydate);
     // }
 
-    public function getExpiryStatus($date)
+    public function getExpiryStatus($date)  
     {
         if (!$date) return 'N/A';
 
@@ -223,7 +223,7 @@ class User extends Authenticatable
 
     public function documents()
     {
-        return $this->hasMany(UserDocument::class, 'user_id');
+        return $this->hasOne(UserDocument::class, 'user_id');
     }
     
 }

@@ -1184,13 +1184,13 @@
                     
                     // Primary role
                     // const doc = response.user.documents[0];
-                    const doc = response.user.documents && response.user.documents.length > 0 ? response.user.documents[0] : null;
+                    // const doc = response.user.documents && response.user.documents.length > 0 ? response.user.documents : null;
                     var userRoleId = response.user.role;
                     $('#role_id option').removeAttr('selected');
                     $('#edit_role option[value="' + userRoleId + '"]').attr('selected',
                         'selected');
 
-                        const document = response.user.documents?.[0] ?? {};
+                        const document = response.user.documents ?? {};
 
                         // if (response.user.licence_required) {
                         //     console.log(response.user.documents);
@@ -1241,7 +1241,7 @@
 
                         if (response.user.passport_required) {
                             $('#edit_passport_checkbox').prop('checked', true);
-                            $('#edit_passport').val(response.user.passport).show().prop('required', true);
+                            $('#edit_passport').val(document.passport).show().prop('required', true);
                             $('#edit_passport_file').show().prop('required', true);
                         } else {
                             $('#edit_passport_checkbox').prop('checked', false);
@@ -1353,13 +1353,13 @@
                             $('#editmedical_verification_required').prop('checked', true);
                             
                         }
-                        if (doc && doc.medical_issuedby_2) {
+                        if (document && document.medical_issuedby_2) {
                             $('#edit_second_medical_section').show();
                         } else {
                             $('#edit_second_medical_section').hide();
                         }
 
-                        if (doc && doc.licence_2) {
+                        if (document && document.licence_2) {
                             $('#edit_second_licence_section').show();
                         } else {
                             $('#edit_second_licence_section').hide();

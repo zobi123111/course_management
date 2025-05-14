@@ -190,7 +190,7 @@ h2 {
                             @endif --}}
 
                             @php
-                                $document = $user->documents->first();
+                                $document = $user->documents;
                             @endphp
 
                             <!-- Licence -->
@@ -472,7 +472,7 @@ h2 {
 
                                             <input type="file" name="medical_file" id="medical_file" class="form-control mt-3"
                                                     accept=".pdf,.jpg,.jpeg,.png" >
-                                            <input type="hidden" name="old_medical_file" value="{{ $document?->passport_file }}">
+                                            <input type="hidden" name="old_medical_file" value="{{ $document?->medical_file }}">
                                             @if ($document?->medical_file)
                                                 <div class="mt-3">
                                                     <a href="{{ asset('storage/' . $document?->medical_file) }}" target="_blank"
