@@ -1241,7 +1241,7 @@
 
                         if (response.user.passport_required) {
                             $('#edit_passport_checkbox').prop('checked', true);
-                            $('#edit_passport').val(response.user.passport).show().prop('required', true);
+                            $('#edit_passport').val(document.passport).show().prop('required', true);
                             $('#edit_passport_file').show().prop('required', true);
                         } else {
                             $('#edit_passport_checkbox').prop('checked', false);

@@ -60,26 +60,27 @@ class UserDocument extends Model
 
     ];
 
-    public function getExpiryStatus($date)
+
+    public function getExpiryStatus($date, $nonExpiring = false)
     {
+        if ($nonExpiring) {
+            return 'Green'; // Non-expiring is always valid
+        }
+
         if (!$date) return 'N/A';
 
         $expiryDate = Carbon::parse($date);
         $now = now();
 
         if ($expiryDate->lt($now)) {
-            return 'Red'; 
+            return 'Red';
         }
 
         if ($expiryDate->diffInDays($now) < 90) {
             return 'Yellow';
         }
 
-        if ($expiryDate->diffInDays($now) > 90) {
-            return 'Green';  // valid more than 3 months
-        }
-
-        // return 'Blue';  // Valid
+        return 'Green';
     }
 
     /**
@@ -88,12 +89,12 @@ class UserDocument extends Model
     
     public function getLicenceStatusAttribute()
     {
-        return $this->getExpiryStatus($this->licence_expiry_date);
+        return $this->getExpiryStatus($this->licence_expiry_date, $this->licence_non_expiring);
     }
 
     public function getLicence2StatusAttribute()
     {
-        return $this->getExpiryStatus($this->licence_expiry_date_2);
+        return $this->getExpiryStatus($this->licence_expiry_date_2, $this->licence_non_expiring_2);
     }
 
     public function getPassportStatusAttribute()
@@ -117,12 +118,12 @@ class UserDocument extends Model
 
     public function isLicenceExpiring()
     {
-        return in_array($this->licence_status, ['Red', 'Yellow']);
+        return !$this->licence_non_expiring && in_array($this->licence_status, ['Red', 'Yellow']);
     }
 
     public function isLicence2Expiring()
     {
-        return in_array($this->licence_2_status, ['Red', 'Yellow']);
+        return !$this->licence_non_expiring_2 && in_array($this->licence_2_status, ['Red', 'Yellow']);
     }
     
     public function isMedicalExpiring()

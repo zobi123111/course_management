@@ -189,6 +189,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
             'Red' => "This {$type} has expired.",
             'Yellow' => "This {$type} will expire soon.",
             'Green' => "This {$type} is valid.",
+            'Non-Expiring' => "This {$type} does not expire.",
             default => "Status unknown.",
         };
     }
@@ -198,15 +199,21 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
     <tr>
         <td>{{ $user->fname }} {{ $user->lname }}</td>
 
-        @php $doc = $user->documents; @endphp
+        @php $doc = $user->documents;  @endphp
 
         {{-- Licence 1 --}}
         <td>
             @if($doc && $doc->licence_file_uploaded)
                 @php
-                    $status = $doc->licence_status;
-                    $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
-                    $date = $doc->licence_expiry_date ? date('d/m/Y', strtotime($doc->licence_expiry_date)) : 'N/A';
+                    if ($doc->licence_non_expiring) {
+                        $status = 'Non-Expiring';
+                        $color = 'success';
+                        $date = 'Non-Expiring';
+                    } else {
+                        $status = $doc->licence_status;
+                        $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                        $date = $doc->licence_expiry_date ? date('d/m/Y', strtotime($doc->licence_expiry_date)) : 'N/A';
+                    }
                     $tooltip = getTooltip($status, 'licence 1');
                 @endphp
                 <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
@@ -219,9 +226,15 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
         <td>
             @if($doc && $doc->licence_file_uploaded_2)
                 @php
-                    $status = $doc->licence_2_status;
-                    $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
-                    $date = $doc->licence_expiry_date_2 ? date('d/m/Y', strtotime($doc->licence_expiry_date_2)) : 'N/A';
+                    if ($doc->licence_non_expiring_2) {
+                        $status = 'Non-Expiring';
+                        $color = 'success';
+                        $date = 'Non-Expiring';
+                    } else {
+                        $status = $doc->licence_2_status;
+                        $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                        $date = $doc->licence_expiry_date_2 ? date('d/m/Y', strtotime($doc->licence_expiry_date_2)) : 'N/A';
+                    }
                     $tooltip = getTooltip($status, 'licence 2');
                 @endphp
                 <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>

@@ -280,10 +280,11 @@ class UserController extends Controller
                 $this->validate($request, $rules, [], $customAttributes);
 
 
-                $licenceFileUploaded = $userToUpdate->licence_file_uploaded;
-                $passportFileUploaded = $userToUpdate->passport_file_uploaded;
-                $medicalFileUploaded = $userToUpdate->medical_file_uploaded;
-
+                $medicalFileUploaded = $document?->medical_file_uploaded ?? false;
+                $medicalFileUploaded_2 = $document?->medical_file_uploaded_2 ?? false;
+                $licenceFileUploaded = $document?->licence_file_uploaded ?? false;
+                $licenceFileUploaded_2 = $document?->licence_file_uploaded_2 ?? false;
+                $passportFileUploaded = $document?->passport_file_uploaded ?? false;
                if ($request->hasFile('medical_file')) {
                     if ($document && $document->medical_file) {
                         Storage::disk('public')->delete($document->medical_file);
@@ -376,17 +377,17 @@ class UserController extends Controller
             // Handle Passport File Upload
             if ($userToUpdate->passport_required == 1) {
                 if ($request->hasFile('passport_file')) {
-                    if ($userToUpdate->passport_file) {
-                        Storage::disk('public')->delete($userToUpdate->passport_file);
+                    if ($document && $document->passport_file) {
+                        Storage::disk('public')->delete($document->passport_file);
                     }
                     $passportFilePath = $request->file('passport_file')->store('passport_files', 'public');
                     $passportFileUploaded = true;
                     $userToUpdate->update(['passport_verified' => 0]);
                 } else {
-                    $passportFilePath = $request->old_passport_file ?? $userToUpdate->passport_file;
+                    $passportFilePath = $request->old_passport_file ?? $document->passport_file;
                 }
             } else {
-                $passportFilePath = $userToUpdate->passport_file;
+                $passportFilePath = $document->passport_file;
             }
 
             if ($userToUpdate->currency_required == 1) {            
@@ -456,7 +457,7 @@ class UserController extends Controller
                     'description' => implode("\n", $changes), // New line for better readability
                 ]);
             }
-
+// dd($licenceFileUploaded_2);
             $userToUpdate->documents()->updateOrCreate(
             ['user_id' => $userToUpdate->id], // Unique identifying condition
 
@@ -465,18 +466,18 @@ class UserController extends Controller
                 'licence_file' => $licenceFilePath ?? null,
                 'licence_expiry_date' => $request->licence_expiry_date ?? null,
                 'licence_non_expiring' => $request->has('non_expiring_licence') ? 1 : 0,
-                'licence_file_uploaded' => $licenceFileUploaded ?? $document->licence_file_uploaded,
+                'licence_file_uploaded' => $licenceFileUploaded ?? $document?->licence_file_uploaded,
 
                 'licence_2' => $request->licence_2 ?? null,
                 'licence_file_2' => $licenceFilePath_2 ?? null,
                 'licence_expiry_date_2' => $request->licence_expiry_date_2 ?? null,
                 'licence_non_expiring_2' => $request->has('non_expiring_licence_2') ? 1 : 0,
-                'licence_file_uploaded_2' => $licenceFileUploaded_2 ?? $document->licence_file_uploaded_2,    
+                'licence_file_uploaded_2' => $licenceFileUploaded_2 ?? $document?->licence_file_uploaded_2,    
 
                 'passport' => $request->passport ?? null,
                 'passport_expiry_date' => $request->passport_expiry_date ?? null,
                 'passport_file' => $passportFilePath ?? null,
-                'passport_file_uploaded' => $passportFileUploaded ?? $document->passport_file_uploaded,    
+                'passport_file_uploaded' => $passportFileUploaded ?? $document?->passport_file_uploaded,    
 
                 'medical' => $userToUpdate->medical,
                 'medical_issuedby' => $request->issued_by ?? null,
@@ -485,7 +486,7 @@ class UserController extends Controller
                 'medical_expirydate' => $request->medical_expiry_date ?? null,
                 'medical_restriction' => $request->medical_detail ?? null,
                 'medical_file' => $medicalFilePath ?? null,
-                'medical_file_uploaded' => $medicalFileUploaded ?? $document->medical_file_uploaded,
+                'medical_file_uploaded' => $medicalFileUploaded ?? $document?->medical_file_uploaded,
 
                 'medical_2' => $userToUpdate->medical,
                 'medical_issuedby_2' => $request->issued_by_2 ?? null,
@@ -494,7 +495,7 @@ class UserController extends Controller
                 'medical_expirydate_2' => $request->medical_expiry_date_2 ?? null,
                 'medical_restriction_2' => $request->medical_detail_2 ?? null,
                 'medical_file_2' => $medicalFilePath_2 ?? null,
-                'medical_file_uploaded_2' => $medicalFileUploaded_2 ?? $document->medical_file_uploaded_2,
+                'medical_file_uploaded_2' => $medicalFileUploaded_2 ?? $document?->medical_file_uploaded_2,
             ]
         );
 
@@ -617,27 +618,38 @@ class UserController extends Controller
         }
     
 
+        $medicalFileUploaded = false;
+        $medicalFileUploaded_2 = false;
+        $licenceFileUploaded = false;
+        $licenceFileUploaded_2 = false;
+        $passportFileUploaded = false;
+
         if ($request->hasFile('image')) {
             $filePath = $request->file('image')->store('users', 'public');
         }
 
         if ($request->hasFile('licence_file')) {
             $licence_file = $request->file('licence_file')->store('user_documents', 'public');
+            $licenceFileUploaded = true;
         }
         if ($request->hasFile('licence_file_2')) {
             $licence_file_2 = $request->file('licence_file_2')->store('user_documents', 'public');
+            $licenceFileUploaded_2 = true;
         }
 
         if ($request->hasFile('passport_file')) {
             $passport_file = $request->file('passport_file')->store('user_documents', 'public');
+            $passportFileUploaded= true;
         }
 
         if ($request->hasFile('medical_file')) {
             $medicalFilePath = $request->file('medical_file')->store('medical_file', 'public');
+            $medicalFileUploaded = true;
         } 
 
         if ($request->hasFile('medical_file_2')) {
             $medicalFilePath_2 = $request->file('medical_file_2')->store('medical_file', 'public');
+            $medicalFileUploaded_2 = true;
         } 
         
 
@@ -694,12 +706,15 @@ class UserController extends Controller
                 'licence' =>  $request->licence ?? null,
                 'licence_file' => $licence_file ?? null,
                 'licence_admin_verification_required' => $request->licence_verification_required ?? 0,
+                'licence_file_uploaded' => $licenceFileUploaded,
                 'licence_2' => $request->licence_2 ?? null,
                 'licence_file_2' => $licence_file_2 ?? null,
                 'licence_admin_verification_required_2' => $request->licence_verification_required_2 ?? 0,
+                'licence_file_uploaded' => $licenceFileUploaded_2,
                 'passport' => $request->passport ?? null,
                 'passport_file' => $passport_file ?? null,
                 'passport_admin_verification_required' => $request->passport_verification_required ?? 0,
+                'passport_file_uploaded' => $passportFileUploaded,
                 'medical' => $medical_checkbox,
                 'medical_issuedby' => $medical_issued_by,
                 'medical_class' => $medical_class,
@@ -707,6 +722,7 @@ class UserController extends Controller
                 'medical_expirydate' =>  $medical_expiry_date,
                 'medical_restriction' => $medical_detail,
                 'medical_file' => $medicalFilePath ?? null,
+                'medical_file_uploaded' => $medicalFileUploaded,
                 'medical_2' => $medical_checkbox,
                 'medical_issuedby_2' => $request->issued_by_2,
                 'medical_class_2' => $request->medical_class_2,
@@ -714,6 +730,7 @@ class UserController extends Controller
                 'medical_expirydate_2' => $request->medical_expiry_date_2 ,
                 'medical_restriction_2' => $request->medical_detail_2,
                 'medical_file_2' => $medicalFilePath_2 ?? null,
+                'medical_file_uploaded_2' => $medicalFileUploaded_2
             ]);
 
             // Save ratings in 'user_ratings' table
@@ -798,35 +815,46 @@ class UserController extends Controller
             //     $licenceFilePath = $UserDocument->licence_file;
             // }
 
+                $medicalFileUploaded = $UserDocument?->medical_file_uploaded ?? false;
+                $medicalFileUploaded_2 = $UserDocument?->medical_file_uploaded_2 ?? false;
+                $licenceFileUploaded = $UserDocument?->licence_file_uploaded ?? false;
+                $licenceFileUploaded_2 = $UserDocument?->licence_file_uploaded_2 ?? false;
+                $passportFileUploaded = $UserDocument?->passport_file_uploaded ?? false;
+
             if ($request->has('edit_licence_checkbox') && $request->edit_licence_checkbox ) {
                     $licence_required = $request->edit_licence_checkbox;
                 if ($request->hasFile('edit_licence_file')) {
+                    $licenceFileUploaded = true;
                     $licenceFilePath = $request->file('edit_licence_file')->store('licence_files', 'public');
                 } else {
-                    $licenceFilePath = $UserDocument ? $UserDocument->licence_file : null;
+                    $licenceFilePath = $UserDocument ? $UserDocument?->licence_file : null;
                 }
             } else {
                 $licence_required = null;
-                $licenceFilePath = $UserDocument ? $UserDocument->licence_file : null;
+                $licenceFilePath = $UserDocument ? $UserDocument?->licence_file : null;
             }
 
 
             if ($request->hasFile('edit_licence_file_2')) {
+                $licenceFileUploaded_2 = true;
                 $licenceFilePath_2 = $request->file('edit_licence_file_2')->store('licence_files', 'public');
             } 
             else {
-                $licenceFilePath_2 = $UserDocument ? $UserDocument->licence_file_2 : null;
+                $licenceFilePath_2 = $UserDocument ? $UserDocument?->licence_file_2 : null;
             }
 
             // Handle Passport
             if ($request->has('edit_passport_checkbox') && $request->edit_passport_checkbox == 'on') {
                 $passport_required = 1;
-                $passportFilePath = $request->hasFile('edit_passport_file')
-                    ? $request->file('edit_passport_file')->store('passport_files', 'public')
-                    : $UserDocument->passport_file;
+                if ($request->hasFile('edit_passport_file')) {
+                    $passportFileUploaded = true;
+                    $passportFilePath = $request->file('edit_passport_file')->store('passport_files', 'public');
+                } else {
+                    $passportFilePath = $UserDocument ? $UserDocument?->passport_file : null;
+                }    
             } else {
                 $passport_required = null;
-                $passportFilePath =  $UserDocument ? $UserDocument->passport_file : null;
+                $passportFilePath =  $UserDocument ? $UserDocument?->passport_file : null;
             }
 
               // Handle Medical
@@ -834,18 +862,19 @@ class UserController extends Controller
             if ($request->has('editmedical_checkbox') && $request->editmedical_checkbox == 1) {
                 if($request->hasFile('editmedical_file')){
                     $medicalFilePath = $request->file('editmedical_file')->store('medical_file', 'public');
+                    $medicalFileUploaded = true;
                 }
             } 
             else {
-                $medicalFilePath = $UserDocument ? $UserDocument->medical_file : null;
+                $medicalFilePath = $UserDocument ? $UserDocument?->medical_file : null;
             }
 
             if ($request->hasFile('editmedical_file_2')) {
                 $medicalFilePath_2 = $request->file('editmedical_file_2')->store('medical_file', 'public');
+                $medicalFileUploaded_2 = true;
             } 
             else {
-                $medicalFilePath_2 = $UserDocument ? $UserDocument->medical_file_2 : null;
-
+                $medicalFilePath_2 = $UserDocument ? $UserDocument?->medical_file_2 : null;
             }
 
             // Handle Currency Requirement
@@ -968,12 +997,15 @@ class UserController extends Controller
                     'licence' =>  $request->edit_licence ?? null,
                     'licence_file' => $licenceFilePath ?? null,
                     'licence_admin_verification_required' => $request->edit_licence_verification_required ?? 0,
+                    'licence_file_uploaded' => $licenceFileUploaded ?? $UserDocument?->licence_file_uploaded,
                     'licence_2' => $request->edit_licence_2 ?? null,
                     'licence_file_2' => $licenceFilePath_2 ?? null,
                     'licence_admin_verification_required_2' => $request->edit_licence_verification_required_2 ?? 0,
+                    'licence_file_uploaded_2' => $licenceFileUploaded_2 ?? $UserDocument?->licence_file_uploaded_2,
                     'passport' => $request->edit_passport ?? null,
                     'passport_file' => $passportFilePath ?? null,
                     'passport_admin_verification_required' => $request->edit_passport_verification_required ?? 0,
+                    'passport_file_uploaded' => $passportFileUploaded ?? $UserDocument?->passport_file_uploaded,
                     'medical' => $medical_checkbox,
                     'medical_issuedby' => $medical_issued_by,
                     'medical_class' => $medical_class,
@@ -981,6 +1013,7 @@ class UserController extends Controller
                     'medical_expirydate' =>  $medical_expiry_date,
                     'medical_restriction' => $medical_detail,
                     'medical_file' => $medicalFilePath ?? null,
+                    'medical_file_uploaded' => $medicalFileUploaded ?? $UserDocument?->medical_file_uploaded,
                     'medical_2' => $medical_checkbox,
                     'medical_issuedby_2' => $request->editissued_by_2,
                     'medical_class_2' => $request->editmedical_class_2,
@@ -988,6 +1021,7 @@ class UserController extends Controller
                     'medical_expirydate_2' => $request->editmedical_expiry_date_2,
                     'medical_restriction_2' => $request->editmedical_detail_2,
                     'medical_file_2' => $medicalFilePath_2 ?? null,
+                    'medical_file_uploaded_2' => $medicalFileUploaded_2 ?? $UserDocument?->medical_file_uploaded_2,
                 ]
             );
             
