@@ -43,7 +43,7 @@
             <hr class="my-4">
 
             @php
-                $document = $user->documents->first();
+                $document = $user->documents;
             @endphp
 
             <!-- Additional Details: Passport & License -->

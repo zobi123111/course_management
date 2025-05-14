@@ -367,7 +367,7 @@ class UserController extends Controller
                     Storage::disk('public')->delete($document->licence_file_2);
                 }
                 $licenceFilePath_2 = $request->file('licence_file_2')->store('licence_files', 'public');
-                $licenceFileUploaded = true;
+                $licenceFileUploaded_2 = true;
                 $document->update(['licence_verified_2' => 0]);
             } else {
                 $licenceFilePath_2 = $request->old_licence_file_2;
@@ -457,36 +457,6 @@ class UserController extends Controller
                 ]);
             }
 
-            // $document = UserDocument::firstOrNew(['user_id' => $userToUpdate->id]);
-
-            // $document->licence = $request->licence ?? null;
-            // $document->licence_file = $licenceFilePath ?? null;
-            // $document->licence_expiry_date = $request->licence_expiry_date ?? $document->licence_expiry_date;
-
-            // $document->licence_2 = $request->licence_2 ?? null;
-            // $document->licence_file_2 = $licenceFilePath_2 ?? null;
-            // $document->licence_expiry_date_2 = $request->licence_expiry_date_2 ?? $document->licence_expiry_date_2;
-
-            // $document->passport = $request->passport ?? null;
-            // $document->passport_expiry_date = $request->passport_expiry_date ?? $document->passport_expiry_date;
-            // $document->passport_file = $passportFilePath ?? null;
-
-            // $document->medical = $userToUpdate->medical;
-            // $document->medical_issuedby = $request->issued_by ?? $document->medical_issuedby;
-            // $document->medical_class = $request->medical_class ?? $document->medical_class;
-            // $document->medical_issuedate = $request->medical_issue_date ?? $document->medical_issuedate;
-            // $document->medical_expirydate = $request->medical_expiry_date ?? $document->medical_expirydate;
-            // $document->medical_restriction = $request->medical_detail ?? $document->medical_restriction;
-            // $document->medical_file = $medicalFilePath ?? $document->medical_file;
-
-            // $document->medical_2 = $userToUpdate->medical;
-            // $document->medical_issuedby_2 = $request->issued_by_2 ?? $document->medical_issuedby_2;
-            // $document->medical_class_2 = $request->medical_class_2 ?? $document->medical_class_2;
-            // $document->medical_issuedate_2 = $request->medical_issue_date_2 ?? $document->medical_issuedate_2;
-            // $document->medical_expirydate_2 = $request->medical_expiry_date_2 ?? $document->medical_expirydate_2;
-            // $document->medical_restriction_2 = $request->medical_detail_2 ?? $document->medical_restriction_2;
-            // $document->medical_file_2 = $medicalFilePath_2 ?? $document->medical_file_2;
-
             $userToUpdate->documents()->updateOrCreate(
             ['user_id' => $userToUpdate->id], // Unique identifying condition
 
@@ -495,15 +465,18 @@ class UserController extends Controller
                 'licence_file' => $licenceFilePath ?? null,
                 'licence_expiry_date' => $request->licence_expiry_date ?? null,
                 'licence_non_expiring' => $request->has('non_expiring_licence') ? 1 : 0,
+                'licence_file_uploaded' => $licenceFileUploaded ?? $document->licence_file_uploaded,
 
                 'licence_2' => $request->licence_2 ?? null,
                 'licence_file_2' => $licenceFilePath_2 ?? null,
                 'licence_expiry_date_2' => $request->licence_expiry_date_2 ?? null,
                 'licence_non_expiring_2' => $request->has('non_expiring_licence_2') ? 1 : 0,
+                'licence_file_uploaded_2' => $licenceFileUploaded_2 ?? $document->licence_file_uploaded_2,    
 
                 'passport' => $request->passport ?? null,
                 'passport_expiry_date' => $request->passport_expiry_date ?? null,
                 'passport_file' => $passportFilePath ?? null,
+                'passport_file_uploaded' => $passportFileUploaded ?? $document->passport_file_uploaded,    
 
                 'medical' => $userToUpdate->medical,
                 'medical_issuedby' => $request->issued_by ?? null,
@@ -895,7 +868,7 @@ class UserController extends Controller
             $extra_roles = $request->has('extra_roles') ? json_encode($request->extra_roles) : $userToUpdate->extra_roles;
 
             // Determine is_admin value
-            if((!empty($request->ou_id) && $request->edit_role_name == 1) || auth()->user()->is_admin==1)
+            if((!empty($request->ou_id) && $request->edit_role_name == 1) || $userToUpdate->is_admin==1)
             {
                 $is_admin = 1;
             }else{

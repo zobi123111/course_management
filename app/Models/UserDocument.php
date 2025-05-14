@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
-
 class UserDocument extends Model
 {
     use HasFactory;
@@ -145,5 +144,7 @@ class UserDocument extends Model
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
+
+
     
 }

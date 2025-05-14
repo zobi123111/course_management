@@ -190,7 +190,7 @@ h2 {
                             @endif --}}
 
                             @php
-                                $document = $user->documents->first();
+                                $document = $user->documents;
                             @endphp
 
                             <!-- Licence -->
