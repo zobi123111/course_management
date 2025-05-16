@@ -252,7 +252,6 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/resource/reject/request', [ResourceController::class, 'reject_request'])->name('reject_request.index');
 
     Route::get('/document/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('document.getOrgfolder');
-    Route::get('/group/get_ou_user/', [GroupController::class, 'getOrgUser'])->name('group.get_ou_user'); 
     Route::get('/folder/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('folder.getOrgfolder');
     Route::get('/folder/edit', [FolderController::class, 'getFolder'])->name('folder.edit');
 

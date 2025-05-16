@@ -22,18 +22,14 @@ class UserController extends Controller
 
     public function getData(Request $request)
     {
-        $ou_id = auth()->user()->ou_id; 
-        $is_owner = auth()->user()->is_owner; 
+        $authUser = auth()->user();
+        $ou_id = $authUser->ou_id;
+        $is_owner = $authUser->is_owner;
+        $is_admin = $authUser->is_admin;
     
         $organizationUnits = OrganizationUnits::all();
         $roles = Role::all(); 
         $rating = Rating::where('status', 1)->get(); 
-
-        if ($is_owner) { 
-            $users = User::all();
-        } else {  
-            $users = User::where('ou_id', $ou_id)->get();
-        }
 
         if ($request->ajax()) {
             $query = User::query()
@@ -49,8 +45,16 @@ class UserController extends Controller
                         'organization_units.org_unit_name as organization',
                         'users.status'
                     ]);
-                    if (!$is_owner && !empty($ou_id)) {
-                        $query->where('users.ou_id', $ou_id);
+
+                    // Filter based on permissions
+                    if (!$is_owner) {
+                        if ($is_admin) {
+                            // Admin: only users from same OU
+                            $query->where('users.ou_id', $ou_id);   
+                        } else {
+                            // Normal user: only their own record
+                            $query->where('users.id', $authUser->id);
+                        }
                     }
                
         return DataTables::of($query)
@@ -71,13 +75,13 @@ class UserController extends Controller
                     return $user->status == 1 ? '<span class="badge bg-success">Active</span>' 
                                               : '<span class="badge bg-danger">Inactive</span>';
                 })
-                ->addColumn('action', function ($row) {
+                ->addColumn('action', function ($row) use ($is_owner, $is_admin) {
                     $viewUrl = url('users/show/' . encode_id($row->id)); 
                     $viewBtn = '';
                     $editBtn = '';
                     $delete = '';
 
-                    if(checkAllowedModule('users','user.index')->isNotEmpty())  {
+                    if(checkAllowedModule('users','user.index')->isNotEmpty() && ($is_owner || $is_admin))  {
                         $viewBtn = '<a href="' . $viewUrl . '" class="view-icon" title="View User" 
                                       style="font-size:18px; cursor: pointer;">
                                       <i class="fa fa-eye text-danger me-2"></i>
@@ -92,7 +96,7 @@ class UserController extends Controller
                     }      
                       
                 
-                    if(checkAllowedModule('users','user.destroy')->isNotEmpty())  {
+                    if(checkAllowedModule('users','user.destroy')->isNotEmpty() && ($is_owner || $is_admin))  {
                         $delete =  '<i class="fa-solid fa-trash delete-icon text-danger"  
                                       style="font-size:18px; cursor: pointer;" 
                                       data-user-id="' . encode_id($row->id) . '">
@@ -332,9 +336,9 @@ class UserController extends Controller
                                                         ->first();
                 
                             if (empty($existingRating?->file_path)) {
-                                $rules["rating_file.$ratingId"] = 'required|file|mimes:pdf,jpg,jpeg,png|max:2048';
+                                $rules["rating_file.$ratingId"] = 'required|file|mimes:pdf,jpg,jpeg,png|max:15360';
                             } else {
-                                $rules["rating_file.$ratingId"] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048';
+                                $rules["rating_file.$ratingId"] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:15360';
                             }
                         }
                     }
@@ -668,6 +672,8 @@ class UserController extends Controller
             "licence"             => $request->licence ?? null,
             "licence_file"        => $licence_file ?? null,
             "licence_admin_verification_required"        => $request->licence_verification_required ?? 0,
+            "licence_2_required"        => $request->licence_2_checkbox ?? 0,
+            "licence_2_admin_verification_required"        => $request->licence_2_verification_required ?? 0,
             "passport_required"   => $passport_required,
             "passport"            => $request->passport ?? null,
             "passport_file"       => $passport_file ?? null,
@@ -693,6 +699,8 @@ class UserController extends Controller
             'medical_expirydate'    => $medical_expiry_date,
             'medical_restriction'   => $medical_detail,
             'medical_file'          => $medicalFilePath ?? null,
+            "medical_2_required"        => $request->medical_2_checkbox ?? 0,
+            "medical_2_adminRequired"        => $request->medical_2_verification_required ?? 0,
             "is_admin"              => $is_admin
         );
 
@@ -834,14 +842,19 @@ class UserController extends Controller
                 $licenceFilePath = $UserDocument ? $UserDocument?->licence_file : null;
             }
 
-
-            if ($request->hasFile('edit_licence_file_2')) {
-                $licenceFileUploaded_2 = true;
-                $licenceFilePath_2 = $request->file('edit_licence_file_2')->store('licence_files', 'public');
-            } 
-            else {
-                $licenceFilePath_2 = $UserDocument ? $UserDocument?->licence_file_2 : null;
+            if($request->has('edit_licence_2_checkbox') && $request->edit_licence_2_checkbox ) {
+                $licence_2_required = $request->edit_licence_2_checkbox;
+                if ($request->hasFile('edit_licence_file_2')) {
+                    $licenceFileUploaded_2 = true;
+                    $licenceFilePath_2 = $request->file('edit_licence_file_2')->store('licence_files', 'public');
+                } 
+                else {
+                    $licenceFilePath_2 = $UserDocument ? $UserDocument?->licence_file_2 : null;
+                }
+            } else {
+                $licence_2_required = 0;
             }
+
 
             // Handle Passport
             if ($request->has('edit_passport_checkbox') && $request->edit_passport_checkbox == 'on') {
@@ -912,6 +925,8 @@ class UserController extends Controller
             $medical_issue_date            = $request->has('editmedical_checkbox') ? $request->editmedical_issue_date : null;
             $medical_expiry_date           = $request->has('editmedical_checkbox') ? $request->editmedical_expiry_date : null;
             $medical_detail                = $request->has('editmedical_checkbox') ? $request->editmedical_detail : null;
+            $medical_2_checkbox              = $request->has('edit_medical_2_checkbox') ? $request->edit_medical_2_checkbox : 0;
+            $medical_2_adminRequired              = $request->has('edit_medical_2_verification_required') ?$request->edit_medical_2_verification_required : 0;
 
             // Handle Custom Fields Requirement
             $custom_field_required = $request->custom_field_checkbox ?? $userToUpdate->custom_field_required;
@@ -930,6 +945,8 @@ class UserController extends Controller
                 'licence_admin_verification_required' => $request->edit_licence_verification_required ?? 0,
                 'passport_admin_verification_required' => $request->edit_passport_verification_required ?? 0,
                 'licence_file' => $licenceFilePath,
+                'licence_2_required' => $licence_2_required,
+                'licence_2_admin_verification_required	' => $request->edit_licence_2_verification_required ?? 0,
                 'passport_required' => $passport_required,
                 'passport' => $request->edit_passport ?? null,
                 'passport_file' => $passportFilePath,
@@ -951,6 +968,8 @@ class UserController extends Controller
                 'medical_expirydate' => $medical_expiry_date,
                 'medical_restriction' => $medical_detail,
                 'medical_file'  => $medicalFilePath,
+                'medical_2_required' => $medical_2_checkbox,
+                'medical_2_adminRequired' => $medical_2_adminRequired ?? 0,
                 'is_admin' => $is_admin
             ];
 
