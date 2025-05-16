@@ -258,17 +258,17 @@ h2 {
                                             </div>
                                             @endif
                                             
-                                            @if(empty($document && $document?->licence_2))
+                                            <!-- @if(empty($document && $document?->licence_2))
                                                 <button type="button" id="add_second_licence_btn" class="btn btn-secondary add_btn mt-3 mb-3">
                                                     Add Second Licence
                                                 </button>
-                                            @endif
+                                            @endif -->
                                             
                                         </div>
 
                                         <!-- Second Licence -->
                                         
-                                        <div class="col-sm-6" id="second_licence_section" style="display: {{ !empty($document?->licence_2) ? 'block' : 'none' }};">
+                                        <div class="col-sm-6" id="second_licence_section" style="display: {{ !empty($user->licence_2_required) ? 'block' : 'none' }};">
                                             <!-- <div class="col-sm-6 mt-3"> -->
                                                 <label for="licence_checkbox" class="form-label">
                                                     <strong>Second Licence <span class="text-danger">*</span>
@@ -485,16 +485,16 @@ h2 {
                                             @endif
                                         <div id="medical_file_error_up" class="text-danger error_e"></div>
 
-                                        @if(empty($document && $document?->medical_issuedby_2))
+                                        <!-- @if(empty($document && $document?->medical_issuedby_2))
                                             <button type="button" id="add_second_medical_btn" class="btn btn-secondary add_btn mt-3 mb-3">
                                                 Add Second Medical
                                             </button>
-                                        @endif
+                                        @endif -->
                                     </div>
 
-                                    <div class="col-md-6" id="edit_second_medical_section" style="display: {{ !empty($document?->medical_issuedby_2) ? 'block' : 'none' }};">
+                                    <div class="col-md-6" id="edit_second_medical_section" style="display: {{ !empty($user?->medical_2_required) ? 'block' : 'none' }};">
                                         <!-- <div> -->
-                                            <label for="extra_roles" class="form-label"><strong> Medical Issued By </strong>
+                                            <label for="extra_roles" class="form-label"><strong>Second Medical Issued By </strong>
                                             <span class="text-danger"></span></label>
                                             @if($document?->medical_2_invalidate == 1)
                                                 <span class="text-danger">(Re-upload a new document and date.)</span>
@@ -702,20 +702,20 @@ h2 {
 
 <script>
 
-$('#add_second_licence_btn').on('click', function () {
-    $('#second_licence_section').toggle();
-});
+// $('#add_second_licence_btn').on('click', function () {
+//     $('#second_licence_section').toggle();
+// });
 
-$('#add_second_medical_btn').on('click', function () {
-        const section = $('#edit_second_medical_section');
-        const isVisible = section.is(':visible');
+// $('#add_second_medical_btn').on('click', function () {
+//         const section = $('#edit_second_medical_section');
+//         const isVisible = section.is(':visible');
 
-        section.toggle();
+//         section.toggle();
 
-        if (isVisible) {
-            $('#issued_by_2, #medical_class_2, #medical_issue_date_2, #medical_expiry_date_2, #medical_detail_2, #medical_file_2').val('');
-        }
-    });
+//         if (isVisible) {
+//             $('#issued_by_2, #medical_class_2, #medical_issue_date_2, #medical_expiry_date_2, #medical_detail_2, #medical_file_2').val('');
+//         }
+//     });
 
 $(document).ready(function() {
 

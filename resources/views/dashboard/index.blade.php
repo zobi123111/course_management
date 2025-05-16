@@ -804,7 +804,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
  $(document).ready(function() {
     $('#document_table').DataTable({ 
         searching: true,
-        pageLength: 5,
+        pageLength: 10,
         language: {
         emptyTable: "No records found"
       }

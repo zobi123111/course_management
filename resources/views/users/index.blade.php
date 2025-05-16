@@ -86,8 +86,8 @@
 
 <!-- Create User -->
 <div class="modal fade" id="userModal" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false"
-    aria-labelledby="userModalLabel" aria-hidden="true" >
-    <div class="modal-dialog modal-xl" role="document" >
+    aria-labelledby="userModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="userModalLabel">Create User</h5>
@@ -138,7 +138,9 @@
                             <select name="role_name" class="form-select" id="role">
                                 <option value="">Select role</option>
                                 @foreach($roles as $val)
-                                <option value="{{ $val->id }}">{{ $val->role_name }}</option>
+                                    @if($val->role_name !== 'Administrator' || auth()->user()->is_owner == 1)
+                                        <option value="{{ $val->id }}">{{ $val->role_name }}</option>
+                                    @endif
                                 @endforeach
                             </select>
                             <div id="role_name_error" class="text-danger error_e"></div>
@@ -182,9 +184,12 @@
                             <input type="file" name="licence_file" id="licence_file" class="form-control mt-3"
                                 style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
 
-                            <button type="button" id="add_second_licence_btn" class="btn btn-secondary mt-3" style="display: none;">
-                                Second Licence
-                            </button>
+                            <div class="mt-3" id="license_2" style="display: none;">
+                                <label for="licence2_checkbox" class="form-label">Enable Licence 2</label>
+                                <input type="checkbox" name="licence_2_checkbox" id="licence_2_checkbox" value="1" class="ms-2">
+                                <label for="licence_2_verification_required" class="form-label ms-4">Admin Verification required?</label>
+                                <input type="checkbox" name="licence_2_verification_required" id="licence_2_verification_required" class="ms-2" value="1">
+                            </div>
 
                             <!-- Second Licence Fields (initially hidden) -->
                             <div id="second_licence_section" style="display: none;" class="mt-3">
@@ -253,13 +258,18 @@
                                         class="form-control" placeholder="Enter the Detail">
                                 </div>
 
-                            <button type="button" id="add_second_medical_btn" class="btn btn-secondary mt-3" style="display: none;">
-                                Second Medical
-                            </button>
+                                <button type="button" id="add_second_medical_btn" class="btn btn-secondary mt-3" style="display: none;">
+                                    Second Medical
+                                </button>
+                                <div class="mt-3" id="medical_2" style="display: none;">
+                                    <label for="medical_2_checkbox" class="form-label">Enable Medical 2</label>
+                                    <input type="checkbox" name="medical_2_checkbox" id="medical_2_checkbox" class="ms-2" value="1">
+                                    <label for="medical_2_verification_required" class="form-label ms-4">Admin Verification
+                                        required?</label>
+                                    <input type="checkbox" name="medical_2_verification_required"
+                                        id="medical_2_verification_required" class="ms-2" value="1">
+                                </div>
                             </div>
-
-                            
-
                             <div id="second_medical_section" class="mt-3" style="display: none;">
                                 <div class="medical_issued_div_2">
                                     <label for="issued_by_2" class="form-label">Medical Issued By</label>
@@ -353,7 +363,6 @@
                             <input type="checkbox" name="customField_verification_required"
                                 id="customField_verification_required" class="ms-2" value="1">
                         </div>
-
                         <div>
                             <label for="customfield_filelabel" id="customfield_filelabel" class="form-label"
                                 style="display: none;">Date</label>
@@ -461,9 +470,10 @@
                             <select name="edit_role_name" class="form-select" id="edit_role">
                                 <option value="">Select role</option>
                                 @foreach($roles as $val)
-                                <option value="{{ $val->id }}">{{ $val->role_name }}</option>
+                                    @if($val->role_name !== 'Administrator' || auth()->user()->is_owner == 1)
+                                        <option value="{{ $val->id }}">{{ $val->role_name }}</option>
+                                    @endif
                                 @endforeach
-
                             </select>
                             <div id="edit_role_name_error_up" class="text-danger error_e"></div>
                         </div>
@@ -501,9 +511,17 @@
                             <input type="file" name="edit_licence_file" id="edit_licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
                             <div id="edit_licence_file_error_up" class="text-danger error_e"></div>
 
-                            <button type="button" id="edit_second_licence_btn" class="btn btn-secondary mt-3" style="display: none;">
+                            <!-- <button type="button" id="edit_second_licence_btn" class="btn btn-secondary mt-3" style="display: none;">
                                 Second Licence
-                            </button>
+                            </button> -->
+
+                            <div class="mt-3" id="edit_license2" style="display: none;">
+                                <label for="edit_licence_checkbox" class="form-label">Enable Licence 2</label>
+                                <input type="checkbox" name="edit_licence_2_checkbox" value="1" id="edit_licence_2_checkbox" class="ms-2">
+
+                                <label for="edit_licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
+                                <input type="checkbox" name="edit_licence_2_verification_required" id="edit_licence_2_verification_required" class="ms-2" value="1">
+                            </div>
 
                             <!-- Second Licence Fields (initially hidden) -->
                             <div id="edit_second_licence_section" style="display: none;" class="mt-3">
@@ -567,9 +585,17 @@
                                     <input type="file" name="editmedical_file" id="editmedical_file"
                                         class="form-control" placeholder="Enter the Detail">
                                 </div>
-                                <button type="button" id="edit_second_medical_btn" class="btn btn-secondary mt-3">
+                                <!-- <button type="button" id="edit_second_medical_btn" class="btn btn-secondary mt-3">
                                     Second Medical
-                                </button>
+                                </button> -->
+                                <div class="mt-3" id="edit_medical_2">
+                                    <label for="licence_checkbox" class="form-label">Enable Medical 2</label>
+                                    <input type="checkbox" name="edit_medical_2_checkbox" id="edit_medical_2_checkbox" class="ms-2" value="1">
+                                    <label for="licence_verification_required" class="form-label ms-4">Admin Verification
+                                        required?</label>
+                                    <input type="checkbox" name="edit_medical_2_verification_required"
+                                        id="edit_medical_2_verification_required" class="ms-2" value="1">
+                                </div>
                             </div>
 
                             
@@ -803,7 +829,7 @@
             if (this.checked) {
                 $('#licence').show().prop('required', true);
                 $('#licence_file').show().prop('required', true);
-                $('#add_second_licence_btn').show();
+                $('#license_2').show();
             } else {
                 $('#licence').hide().prop('required', false).val('');
                 $('#licence_file').hide().prop('required', false).val('');
@@ -814,25 +840,19 @@
                 $('#licence_2, #licence_file_2').val('').prop('required', false);
             }
         });
-
-        $('#add_second_licence_btn').on('click', function () {
-            $('#second_licence_section').toggle();
-
-            const isVisible = $('#second_licence_section').is(':visible');
-            $('#licence_2, #licence_file_2').prop('required', isVisible);
-
-            if (!isVisible) {
-                $('#licence_2, #licence_file_2').each(function() {
-                    if ($(this).val() === '') {
-                        $('#licence_2').val('');
-                        $('#licence_file_2').val('');
-                    }
-                });
+        $('#licence_2_checkbox').change(function () {
+            if (this.checked) {
+                $('#second_licence_section').show();
+                $('#licence_2').prop('required', true);
+                $('#licence_file_2').show().prop('required', true);
+            } else {
+                $('#licence_2').prop('required', false).val('');
+                $('#licence_file_2').prop('required', false).val('');
             }
         });
 
 
-    // Custom field 
+        // Custom field 
         $('#custom_field_checkbox').change(function() { 
             if (this.checked) {
               
@@ -970,11 +990,11 @@
             if (this.checked) {
                 $('.medical_issued_div').show();
                 $('.medical_class_div').show();
-                $('#add_second_medical_btn').show();
+                $('#medical_2').show();
             } else {
                 $('.medical_issued_div').hide();
                 $('.medical_class_div').hide();
-                $('#add_second_medical_btn').hide();
+                $('#medical_2').hide();
                 $('#second_medical_section').hide();
 
                 // Reset second medical fields
@@ -982,23 +1002,39 @@
             }
         });
 
-        $('#add_second_medical_btn').on('click', function () {
-            $('#second_medical_section').toggle();
+        $('#medical_2_checkbox').change(function () {
+            if (this.checked) {
+                $('#second_medical_section').show();
+                // $('.medical_issued_div').show();
+                // $('.medical_class_div').show();
+            } else {
+                // $('.medical_issued_div').hide();
+                // $('.medical_class_div').hide();
+                // $('#medical_2').hide();
+                $('#second_medical_section').hide();
 
-            const isVisible = $('#second_medical_section').is(':visible');
-            $('#issued_by_2, #medical_class_2, #medical_issue_date_2, #medical_expiry_date_2, #medical_detail_2, #medical_file_2').prop('required', isVisible);
-
-            if (!isVisible) {
+                // Reset second medical fields
                 $('#issued_by_2, #medical_class_2, #medical_issue_date_2, #medical_expiry_date_2, #medical_detail_2, #medical_file_2').val('');
             }
         });
+
+        // $('#add_second_medical_btn').on('click', function () {
+        //     $('#second_medical_section').toggle();
+
+        //     const isVisible = $('#second_medical_section').is(':visible');
+        //     $('#issued_by_2, #medical_class_2, #medical_issue_date_2, #medical_expiry_date_2, #medical_detail_2, #medical_file_2').prop('required', isVisible);
+
+        //     if (!isVisible) {
+        //         $('#issued_by_2, #medical_class_2, #medical_issue_date_2, #medical_expiry_date_2, #medical_detail_2, #medical_file_2').val('');
+        //     }
+        // });
 
         // Edit Medical Toggle
         $('#editmedical_checkbox').change(function () {
             if (this.checked) {
                 $('.editmedical_issued_div').show();
                 $('.editmedical_class_div').show();
-                $('#edit_second_medical_btn').show();
+                $('#edit_medical_2').show();
 
                 // Make fields required
                 $('#editissued_by').prop('required', true);
@@ -1010,7 +1046,7 @@
             } else {
                 $('.editmedical_issued_div').hide();
                 $('.editmedical_class_div').hide();
-                $('#edit_second_medical_btn').hide();
+                $('#edit_medical_2').hide();
                 $('#edit_second_medical_section').hide();
 
                 $('#editissued_by, #editmedical_class, #editmedical_issue_date, #editmedical_expiry_date, #editmedical_detail, #editmedical_file').val('').prop('required', false);
@@ -1020,16 +1056,27 @@
             }
         });
 
-        $('#edit_second_medical_btn').click(function () {
-            const section = $('#edit_second_medical_section');
-            const isVisible = section.is(':visible');
+        $('#edit_medical_2_checkbox').change(function () {
+            if (this.checked) {
+                $('#edit_second_medical_section').show();
+            } else {
+                $('#edit_second_medical_section').hide();
 
-            section.toggle();
-
-            if (isVisible) {
-                $('#editissued_by_2, #editmedical_class_2, #editmedical_issue_date_2, #editmedical_expiry_date_2, #editmedical_detail_2, #editmedical_file_2').val('');
+                // Reset second medical fields
+                $('#issued_by_2, #medical_class_2, #medical_issue_date_2, #medical_expiry_date_2, #medical_detail_2, #medical_file_2').val('');
             }
         });
+
+        // $('#edit_medical_2_checkbox').click(function () {
+        //     const section = $('#edit_second_medical_section');
+        //     const isVisible = section.is(':visible');
+
+        //     section.toggle();
+
+        //     if (isVisible) {
+        //         $('#editissued_by_2, #editmedical_class_2, #editmedical_issue_date_2, #editmedical_expiry_date_2, #editmedical_detail_2, #editmedical_file_2').val('');
+        //     }
+        // });
 
 
 
@@ -1069,36 +1116,36 @@
                         }
                     });
                 });
-
-
-        // edit 
+        //edit 
 
         $('#edit_licence_checkbox').change(function () {
             if (this.checked) {
                 $('#edit_licence').show().prop('required', true);
                 $('#edit_licence_file').show().prop('required', true);
-                $('#edit_second_licence_btn').show();
+                $('#edit_license2').show();
             } else {
                 $('#edit_licence').hide().prop('required', false).val('');
                 $('#edit_licence_file').hide().prop('required', false).val('');
                 $('#edit_licence_2').val('');
                 $('#edit_licence_file_2').val('');
+                $('#edit_license2').hide();
+            }
+        });
+
+        $('#edit_licence_2_checkbox').change(function () {
+            if (this.checked) {
+                $('#edit_second_licence_section').show();
+                $('#edit_licence_2').prop('required', true);
+                $('#edit_licence_2_file').prop('required', true);
+            } else {
+                $('#edit_licence_2').prop('required', false).val('');
+                $('#edit_licence_2_file').prop('required', false).val('');
+                $('#edit_licence_2').val('');
+                $('#edit_licence_file_2').val('');
                 $('#edit_second_licence_section').hide();
-                $('#edit_second_licence_btn').hide();
             }
         });
 
-        // Add Second Licence Button
-        $('#edit_second_licence_btn').click(function () {
-            const section = $('#edit_second_licence_section');
-            const isVisible = section.is(':visible');
-
-            section.toggle();
-
-            if (isVisible) {
-                $('#edit_licence_2, #edit_licence_file_2').val('');
-            }
-        });
 
         $('#edit_passport_checkbox').change(function() {
             if (this.checked) {
@@ -1223,13 +1270,19 @@
                         }
           
 
-                        if (document.licence_2) {
-                            $('#edit_licence_2').val(document.licence_2).show().prop('required', true);
-                            $('#edit_licence_file_2').show().prop('required', true);
+                        if (response.user.licence_2_required) {
+                            $('#edit_licence_2_checkbox').prop('checked', true).trigger('change');
+                            $('#edit_second_licence_section').show();
+                            if (document.licence_2) {
+                                $('#edit_licence_2').val(document.licence_2).prop('required', true);
+                                // $('#edit_licence_file_2').show().prop('required', true);
+                            } else {
+                                $('#edit_licence_2').val('').prop('required', true);
+                                // $('#edit_licence_file_2').show().prop('required', true);
+                            }
                         } else {
-                            $('#edit_licence_2').val('').show().prop('required', true);
-                            $('#edit_licence_file_2').show().prop('required', true);
-                        }
+                            $('#edit_licence_2_checkbox').prop('checked', false).trigger('change'); // ✅ this hides everything
+                        }    
 
                         if (response.user.password_flag == 1) {
                             $('#edit_update_password_checkbox').prop('checked', true);
@@ -1333,40 +1386,47 @@
                             $('#edit_licence_checkbox').prop('checked', false).trigger('change'); // ✅ this hides everything
                         }
 
-                        if (document.medical_2) {
-                            $('#editmedical_issue_date_2').val(document.medical_issuedate_2 ?? '');
-                            $('#editmedical_expiry_date_2').val(document.medical_expirydate_2 ?? '');
-                            $('#editmedical_detail_2').val(document.medical_restriction_2 ?? '');
+                        if (response.user.medical_2_required == 1) {
+                                $('#edit_medical_2_checkbox').prop('checked', true).trigger('change');
+                                $('#editmedical_issue_date_2').val(document.medical_issuedate_2 ?? '');
+                                $('#editmedical_expiry_date_2').val(document.medical_expirydate_2 ?? '');
+                                $('#editmedical_detail_2').val(document.medical_restriction_2 ?? '');
 
-                            let issuedBy2 = document.medical_issuedby_2?.trim() ?? '';
-                            let medicalClass2 = document.medical_class_2?.trim() ?? '';
-                            $('#editissued_by_2').val(issuedBy2);
-                            $('#editmedical_class_2').val(medicalClass2);
-                        } else {
-                            $('#editmedical_issue_date_2').val('');
-                            $('#editmedical_expiry_date_2').val('');
-                            $('#editmedical_detail_2').val('');
-                            $('#editissued_by_2').val('');
-                            $('#editmedical_class_2').val('');
-                        }
+                                let issuedBy2 = document.medical_issuedby_2?.trim() ?? '';
+                                let medicalClass2 = document.medical_class_2?.trim() ?? '';
+                                $('#editissued_by_2').val(issuedBy2);
+                                $('#editmedical_class_2').val(medicalClass2);                                
+                            }else{
+                                $('#edit_medical_2_checkbox').prop('checked', true).trigger('change');
+                                $('#editmedical_issue_date_2').val('');
+                                $('#editmedical_expiry_date_2').val('');
+                                $('#editmedical_detail_2').val('');
+                                $('#editissued_by_2').val('');
+                                $('#editmedical_class_2').val('');
+                            }
                         if(response.user.medical_adminRequired==1){
-                            $('#editmedical_verification_required').prop('checked', true);
+                            $('#editmedical_verification_required').prop('checked', true);                            
+                        }
+                        if(response.user.medical_2_adminRequired==1){
+                            $('#edit_medical_2_verification_required').prop('checked', true);
                             
                         }
-                        if (document && document.medical_issuedby_2) {
+                        if (response.user.medical_2_required) {
                             $('#edit_second_medical_section').show();
                         } else {
                             $('#edit_second_medical_section').hide();
                         }
 
-                        if (document && document.licence_2) {
+                        if (response.user.licence_2_required) {
                             $('#edit_second_licence_section').show();
                         } else {
                             $('#edit_second_licence_section').hide();
                         }
                         if(response.user.licence_admin_verification_required==1){
-                            $('#edit_licence_verification_required').prop('checked', true);
-                            
+                            $('#edit_licence_verification_required').prop('checked', true);                            
+                        }
+                        if(response.user.licence_2_admin_verification_required==1){
+                            $('#edit_licence_2_verification_required').prop('checked', true);                            
                         }
                         if(response.user.passport_admin_verification_required==1){
                             $('#edit_passport_verification_required').prop('checked', true);

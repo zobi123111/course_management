@@ -33,6 +33,8 @@ class User extends Authenticatable
         'licence_verified',
         'licence_expiry_date',
         'licence_non_expiring',
+        'licence_2_required',
+        'licence_2_admin_verification_required',
         'passport_required',
         'passport',
         'passport_file',
@@ -66,6 +68,8 @@ class User extends Authenticatable
         'passport_file_uploaded',
         'medical_file',
         'medical_file_uploaded',
+        'medical_2_required',
+        'medical_2_adminRequired',
         'is_admin'  
     ];
 
