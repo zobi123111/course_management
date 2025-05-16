@@ -927,7 +927,6 @@ class UserController extends Controller
             $medical_detail                = $request->has('editmedical_checkbox') ? $request->editmedical_detail : null;
             $medical_2_checkbox              = $request->has('edit_medical_2_checkbox') ? $request->edit_medical_2_checkbox : 0;
             $medical_2_adminRequired              = $request->has('edit_medical_2_verification_required') ?$request->edit_medical_2_verification_required : 0;
-
             // Handle Custom Fields Requirement
             $custom_field_required = $request->custom_field_checkbox ?? $userToUpdate->custom_field_required;
             // Prepare Data for Update
@@ -946,7 +945,7 @@ class UserController extends Controller
                 'passport_admin_verification_required' => $request->edit_passport_verification_required ?? 0,
                 'licence_file' => $licenceFilePath,
                 'licence_2_required' => $licence_2_required,
-                'licence_2_admin_verification_required	' => $request->edit_licence_2_verification_required ?? 0,
+                'licence_2_admin_verification_required' => $request->edit_licence_2_verification_required ?? 0,
                 'passport_required' => $passport_required,
                 'passport' => $request->edit_passport ?? null,
                 'passport_file' => $passportFilePath,

@@ -139,7 +139,7 @@
                                 <a href="{{ Storage::url($document->licence_file_2) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
                             @endif
 
-                            @if($user->licence_admin_verification_required == 1)
+                            @if($user->licence_2_admin_verification_required == 1)
                                 <div class="form-check form-switch mb-0">
                                     <input class="form-check-input verify-toggle" type="checkbox" id="licence2_verify"
                                         data-user-id="{{ encode_id($user->id) }}" data-type="licence_2"
@@ -199,7 +199,7 @@
 
                             <a href="{{ Storage::url($document->medical_file_2) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
 
-                            @if($user->medical_adminRequired == 1)
+                            @if($user->medical_2_adminRequired == 1)
                                 <div class="form-check form-switch mb-0">
                                     <input class="form-check-input verify-toggle" type="checkbox" id="medical2_verify"
                                         data-user-id="{{ encode_id($user->id) }}" data-type="medical_2"
