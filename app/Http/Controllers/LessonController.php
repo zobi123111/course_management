@@ -24,6 +24,7 @@ class LessonController extends Controller
     {
         $user = auth()->user();
         $course = Courses::with('courseLessons', 'prerequisites')->findOrFail(decode_id($course_id));
+
         $breadcrumbs = [
             ['title' => 'Courses', 'url' => route('course.index')],
             ['title' => $course->course_name, 'url' => ''],

@@ -242,9 +242,9 @@
                         @php
                         // Get saved prerequisite for the logged-in user
                         $savedPrerequisite = $course->prerequisiteDetails()
-                        ->where('created_by', auth()->id())
-                        ->where('prerequisite_type', $prerequisite->prerequisite_type)
-                        ->first();
+                            ->where('created_by', auth()->id())
+                            ->where('prereq_id', $prerequisite->id)
+                            ->first();
                         @endphp
 
                         <div class="col-md-6 mb-3">
