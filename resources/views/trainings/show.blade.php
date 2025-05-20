@@ -597,7 +597,6 @@
                     @csrf
                     <input type="hidden" name="event_id" id="event_id" value="{{ $trainingEvent->id }}">
                     <div class="card-body">
-                        <!-- @if($selectedLessons->isNotEmpty()) -->
                         <div class="accordion accordion-flush" id="faq-group-2">
                             @foreach($eventLessons as $eventLesson)
                             @php
@@ -694,6 +693,7 @@
                                         @endif
                                         </div>
                                         <div class="accordion-item">
+                                    @if($lesson->enable_cbta==1)        
                                     <h2 class="accordion-header">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <button type="button" class="accordion-button" data-bs-toggle="collapse"
@@ -702,6 +702,7 @@
                                             </button>
                                         </div>
                                     </h2>
+                                    @endif
                                 </div>
                                 <div id="comptency-{{ $eventLesson->id }}" class="accordion-collapse collapse" >
                                     <!-- Student name aligned to the right, above the competency grading -->
@@ -771,14 +772,8 @@
                                 </div>
                                     </div>
                                 </div>
-
                              @endforeach                                
                         </div>
-                        <!-- @else
-                        <div class="accordion accordion-flush" id="faq-group-2">
-                            <p class="text-muted">No lessons available for this course.</p>
-                        </div>
-                        @endif -->
                     </div>
                     <div class="btn-container">
                         <button type="submit" class="btn btn-save" id="submitGrading">Save</button>

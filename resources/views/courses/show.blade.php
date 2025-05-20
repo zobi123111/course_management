@@ -339,6 +339,14 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="enable_cbta" name="enable_cbta">
+                            <label class="form-check-label" for="enable_cbta">
+                                Enbale CBTA
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" aria-label="Default select example">
                             <option value="1" selected>Active</option>
@@ -403,6 +411,14 @@
                             <label for="edit_grade_score">Score (1-5)</label>
                         </div>
                         <div id="edit_grade_type_error" class="text-danger error_e"></div>
+                    </div>
+                     <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="edit_enable_cbta" name="edit_enable_cbta">
+                            <label class="form-check-label" for="edit_enable_cbta">
+                                Enbale CBTA
+                            </label>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
@@ -582,6 +598,12 @@ $(document).ready(function() {
                         prerequisite_type: 'text'
                     }, 0);
                     $('#prerequisite_items').append(prerequisiteHtml);
+                }
+
+                if (response.lesson.enable_cbta == 1) {
+                    $('#edit_enable_cbta').prop('checked', true);
+                } else {
+                    $('#edit_enable_cbta').prop('checked', false);
                 }
 
                 $('#editLessonModal').modal('show');

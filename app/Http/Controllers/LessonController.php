@@ -47,7 +47,8 @@ class LessonController extends Controller
             'lesson_title' => 'required',
             'description' => 'required|string',
             'status' => 'required|boolean',
-            'grade_type' => 'required|in:pass_fail,score'
+            'grade_type' => 'required|in:pass_fail,score',
+            'enable_cbta' => 'sometimes|boolean'
         ]);
     
         if ($request->has('comment_required') && $request->comment_required) {
@@ -64,7 +65,8 @@ class LessonController extends Controller
             'description' => $request->description,
             'comment' => $request->comment ?? null,
             'status' => $request->status,
-            'grade_type' => $request->grade_type
+            'grade_type' => $request->grade_type,
+            'enable_cbta' => $request->enable_cbta ?? 0
         ]);
     
         Session::flash('message', 'Lesson created successfully.');
@@ -102,7 +104,8 @@ class LessonController extends Controller
             'edit_lesson_title' => 'required',
             'edit_description' => 'required|string',
             'edit_status' => 'required|boolean',
-            'edit_grade_type' => 'required|in:pass_fail,score'
+            'edit_grade_type' => 'required|in:pass_fail,score',
+            'edit_enable_cbta'    => 'sometimes|boolean',
         ]);
     
         if ($request->has('edit_comment_required') && $request->edit_comment_required) {
@@ -122,6 +125,7 @@ class LessonController extends Controller
             'comment' => $comment,
             'status' => $request->edit_status,
             'grade_type' => $request->edit_grade_type, // Update grading type
+            'enable_cbta' => $request->edit_enable_cbta ?? 0, // Update enable_cbta
             'enable_prerequisites' => (int) $request->input('enable_prerequisites', 0),
         ]);
     

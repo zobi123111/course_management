@@ -52,7 +52,7 @@
                 <td>
                 @if(get_user_role(auth()->user()->role) == 'administrator')  
 
-                    @if(checkAllowedModule('training','training.edit')->isNotEmpty())
+                    @if(checkAllowedModule('training','training.edit')->isNotEmpty()  && !$event->is_graded)
                         <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
                         data-event-id="{{ encode_id($event->id) }}"></i>
                     @endif
@@ -758,15 +758,19 @@ $(document).ready(function() {
         });
     });
 
-    $("#submitTrainingEvent").on("click", function(e) {
+    $("#submitTrainingEvent").on("click", function(e) { 
         e.preventDefault();
         $.ajax({
             url: '{{ url("/training/create") }}',
             type: 'POST',
             data: $("#trainingEventForm").serialize(),
             success: function(response) {
-                $('#createTrainingEventModal').modal('hide');
-                location.reload();
+                if(response.success){
+                    $('#createTrainingEventModal').modal('hide');
+                    location.reload();
+                }else{
+                    alert(response.message);
+                }
             },
             error: function(xhr, status, error) {
                 var errorMessage = JSON.parse(xhr.responseText);
@@ -1023,8 +1027,12 @@ $(document).ready(function() {
             type: "POST",
             data: $("#editTrainingEventForm").serialize(),
             success: function(response) {
-                $('#editTrainingEventForm').modal('hide');
-                location.reload();
+                if(response.success){
+                    $('#editTrainingEventForm').modal('hide');
+                    location.reload();
+                }else{
+                    alert(response.message);
+                }
             },
             error: function(xhr, status, error) {
                 var errorMessage = JSON.parse(xhr.responseText);
