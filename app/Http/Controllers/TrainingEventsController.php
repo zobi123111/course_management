@@ -51,7 +51,11 @@ class TrainingEventsController extends Controller
             $students = User::whereHas('roles', function ($query) {
                 $query->where('role_name', 'like', '%Student%');
             })->with('roles')->get();
-            $trainingEvents = TrainingEvents::with($trainingEventsRelations)->get();
+            $trainingEvents = TrainingEvents::with($trainingEventsRelations)
+            ->withCount([
+                'taskGradings',
+                'competencyGradings'
+            ])->get();
         } elseif (checkAllowedModule('training', 'training.index')->isNotEmpty() && empty($currentUser->is_admin)) {
             // Regular User: Get data within their organizational unit
             $resources = Resource::where('ou_id', $currentUser->ou_id)->get();
@@ -75,7 +79,9 @@ class TrainingEventsController extends Controller
                 })->with('roles')->get();
 
             // Determine if user is an Instructor or Student and filter events accordingly
-            $trainingEventsQuery = TrainingEvents::where('ou_id', $currentUser->ou_id)->with($trainingEventsRelations);
+            $trainingEventsQuery = TrainingEvents::where('ou_id', $currentUser->ou_id)
+                ->with($trainingEventsRelations)
+                ->withCount(['taskGradings', 'competencyGradings']);
 
             if (hasUserRole($currentUser, 'Instructor')) {
                 // Get training event IDs where the current instructor is assigned to at least one lesson
@@ -101,7 +107,7 @@ class TrainingEventsController extends Controller
                     $query->where('role_name', 'like', '%Instructor%');
                 })->with('roles')->get();
 
-            $students = User::where('ou_id', $currentUser->ou_id)
+            $students = User::where('ou_id', $currentUser->ou_id)   
                 ->where(function ($query) {
                     $query->whereNull('is_admin')->orWhere('is_admin', false);
                 })
@@ -109,7 +115,10 @@ class TrainingEventsController extends Controller
                     $query->where('role_name', 'like', '%Student%');
                 })->with('roles')->get();
 
-            $trainingEvents = TrainingEvents::where('ou_id', $currentUser->ou_id)->with($trainingEventsRelations)->get();
+            $trainingEvents = TrainingEvents::where('ou_id', $currentUser->ou_id)
+                ->with($trainingEventsRelations)
+                ->withCount(['taskGradings', 'competencyGradings'])
+                ->get();
         }
 
         return view('trainings.index', compact('groups', 'courses', 'instructors', 'organizationUnits', 'trainingEvents', 'resources', 'students'));
@@ -245,6 +254,37 @@ class TrainingEventsController extends Controller
             'lesson_data.*.destination_airfield' => 'destination airfield',
             'lesson_data.*.instructor_license_number' => 'instructor license number',
         ]);
+
+        // Check for duplicate training event
+        $existingEvent = TrainingEvents::where('student_id', $request->student_id)
+            ->where('course_id', $request->course_id)
+            ->where('ou_id', auth()->user()->is_owner ? $request->ou_id : auth()->user()->ou_id)
+            ->whereJsonContains('lesson_ids', $request->lesson_ids)
+            ->get();
+
+        foreach ($existingEvent as $event) {
+            $existingLessons = TrainingEventLessons::where('training_event_id', $event->id)->get();
+
+            $duplicateFound = true;
+            foreach ($request->lesson_data as $newLesson) {
+                $match = $existingLessons->firstWhere(function ($existingLesson) use ($newLesson) {
+                    return $existingLesson->lesson_id == $newLesson['lesson_id']
+                        && $existingLesson->lesson_date == $newLesson['lesson_date'];
+                });
+
+                if (!$match) {
+                    $duplicateFound = false;
+                    break;
+                }
+            }
+
+            if ($duplicateFound) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Duplicate training event found for this student, course, and lesson dates.'
+                ]);
+            }
+        }
     
         // Create main training event
         $trainingEvent = TrainingEvents::create([
@@ -358,6 +398,35 @@ class TrainingEventsController extends Controller
             'lesson_data.*.departure_airfield' => 'departure airfield',
             'lesson_data.*.destination_airfield' => 'destination airfield',
         ]);
+
+        // Check for duplicate training events (same student, course, and lesson dates)
+        $duplicateFound = false;
+        $eventId = $request->event_id;
+        $studentId = $request->student_id;
+        $courseId = $request->course_id;
+
+        $incomingLessonDates = collect($lessonData)->pluck('lesson_date')->toArray();
+
+        $existingEvents = TrainingEvents::where('student_id', $studentId)
+            ->where('course_id', $courseId)
+            ->where('id', '!=', $eventId)
+            ->get();
+
+        foreach ($existingEvents as $event) {
+            $eventLessonDates = $event->eventLessons->pluck('lesson_date')->toArray();
+            $commonDates = array_intersect($incomingLessonDates, $eventLessonDates);
+            if (!empty($commonDates)) {
+                $duplicateFound = true;
+                break;
+            }
+        }
+        if ($duplicateFound) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Duplicate training event found for this student, course, and lesson dates.'
+            ]);
+        }
+
     
         // Update Training Event
         $trainingEvent = TrainingEvents::findOrFail($request->event_id);
@@ -428,13 +497,13 @@ class TrainingEventsController extends Controller
             'instructor:id,fname,lname',
             'student:id,fname,lname',
             'resource:id,name',
-            'eventLessons.lesson:id,lesson_title',
+            'eventLessons.lesson:id,lesson_title,enable_cbta',
             'eventLessons.instructor:id,fname,lname',
             'eventLessons.resource:id,name',    
             'trainingFeedbacks.question', // Eager load the question relationship
             'documents' // Eager load the training event documents
         ])->find(decode_id($event_id));
-    
+    // dd($trainingEvent);
         if (!$trainingEvent) {
             return abort(404, 'Training Event not found');
         }
@@ -449,20 +518,20 @@ class TrainingEventsController extends Controller
             // Admins and others with access can view all lessons
             $eventLessons = $trainingEvent->eventLessons;
         }
+        // dd($eventLessons);
         $student = $trainingEvent->student;
         $lessonIds = $eventLessons->pluck('lesson_id')->filter()->unique();
-
-        // Get task gradings (sublesson grades and comments)
+        //Get task gradings (sublesson grades and comments)
         $taskGrades = TaskGrading::where('user_id', $student->id)
-            ->whereIn('lesson_id', $eventLessons->pluck('lesson_id')->filter()->unique())
+            ->where('event_id', $trainingEvent->id)
+            ->whereIn('lesson_id', $lessonIds)
             ->get()
-            ->keyBy(function ($item) {
-                return $item->sub_lesson_id;
-            });
+            ->keyBy('sub_lesson_id');
     
         // Get competency grades (competency area grades and comments)
         $competencyGrades = CompetencyGrading::where('user_id', $student->id)
-            ->whereIn('lesson_id', $eventLessons->pluck('lesson_id')->filter()->unique())
+            ->where('event_id', $trainingEvent->id)
+            ->whereIn('lesson_id', $lessonIds)
             ->get()
             ->groupBy('lesson_id');
 
@@ -470,11 +539,6 @@ class TrainingEventsController extends Controller
         $overallAssessments = OverallAssessment::where('event_id', $trainingEvent->id)
             ->where('user_id', $student->id ?? null)
             ->first();
-    
-        $lessonIds = json_decode($trainingEvent->lesson_ids, true) ?? [];
-        $selectedLessons = !empty($lessonIds) 
-            ? CourseLesson::with('sublessons')->whereIn('id', $lessonIds)->get() 
-            : collect();
 
         $isGradingCompleted = $taskGrades->isNotEmpty() && $competencyGrades->isNotEmpty();    
 
@@ -484,7 +548,6 @@ class TrainingEventsController extends Controller
             'trainingEvent', 
             'student', 
             'overallAssessments', 
-            'selectedLessons',
             'eventLessons',
             'taskGrades',
             'competencyGrades',

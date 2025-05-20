@@ -105,6 +105,11 @@ class TrainingEvents extends Model
         return $this->hasMany(TrainingEventDocument::class, 'training_event_id');
     }
 
+    public function getIsGradedAttribute()
+    {
+    return $this->task_gradings_count > 0 && $this->competency_gradings_count > 0;
+    }
+
 
 
 }
