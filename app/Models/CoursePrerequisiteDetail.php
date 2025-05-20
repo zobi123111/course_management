@@ -11,6 +11,7 @@ class CoursePrerequisiteDetail extends Model
     protected $table = 'course_prerequisite_details';
 
     protected $fillable = [
+        'prereq_id',
         'course_id',
         'prerequisite_type',
         'prerequisite_detail',
