@@ -503,7 +503,6 @@ class TrainingEventsController extends Controller
             'trainingFeedbacks.question', // Eager load the question relationship
             'documents' // Eager load the training event documents
         ])->find(decode_id($event_id));
-    // dd($trainingEvent);
         if (!$trainingEvent) {
             return abort(404, 'Training Event not found');
         }
@@ -703,13 +702,15 @@ class TrainingEventsController extends Controller
                 'group:id,name', // Load only group name
                 'instructor:id,fname,lname', // Load only instructor name
                 'documents:id,training_event_id,course_document_id,file_path', // make sure these fields exist
-                'documents.courseDocument:id,document_name' // 🆕 Add this to load document name from course_documents
+                'documents.courseDocument:id,document_name', // 🆕 Add this to load document name from course_documents
             ])
             ->first(); // Use first() to get a single event
         
         if (!$event) {
             abort(404, 'Training Event not found.');
         }    
+
+        // dd($event);
         
         $event->student_feedback_submitted = $event->trainingFeedbacks()->where('user_id', auth()->user()->id)->exists();    
         // dd($event->student_feedback_submitted);
@@ -774,6 +775,7 @@ class TrainingEventsController extends Controller
             'overallAssessments' => function ($query) use ($userId) {
                 $query->where('user_id', $userId);
             },
+            'eventLessons.instructor:id,fname,lname',
         ])->findOrFail($event_id);
     
         $eventLesson = $event->eventLessons->first();

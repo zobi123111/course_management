@@ -20,19 +20,13 @@
             </div>
         @else
             <div class="card shadow-lg mb-5 border-0">
-                <div class="card-header bg-primary text-white p-4">
+                <div class="card-header bg-primary text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h4 class="mb-1">
                                 <i class="bi bi-journal-text me-2"></i>{{ $event->course?->course_name }}
                             </h4>
-                            <small>
-                                <i class="bi bi-person-video3 me-1"></i>Instructor: {{ $event->instructor?->fname }} {{ $event->instructor?->lname }}
-                            </small>
                         </div>
-                        <small class="text-white-50">
-                            <i class="bi bi-calendar-event me-1"></i>{{ date('M d, Y', strtotime($event->event_date)) }}
-                        </small>
                     </div>
                 </div>
 
@@ -49,11 +43,22 @@
                             @else
                                 @php
                                     $groupedTasks = $event->taskGradings->groupBy('lesson_id');
+                                    $lessonMeta = $event->eventLessons->keyBy('lesson_id');
                                 @endphp
                                 @foreach($groupedTasks as $lessonId => $tasks)
+                                 @php
+                                    $meta = $lessonMeta[$lessonId] ?? null;
+                                @endphp
                                     <div class="mb-3">
                                         <div class="fw-bold text-secondary mb-2">
                                             <i class="bi bi-book me-1"></i>Lesson: {{ $tasks->first()->lesson?->lesson_title ?? 'N/A' }}
+                                            @if($meta)
+                                                <br><small class="text-muted">
+                                                    <i class="bi bi-person-video3 me-1"></i>Instructor: {{ $meta->instructor?->fname }} {{ $meta->instructor?->lname }} |
+                                                    <i class="bi bi-calendar-date me-1"></i>Date: {{ date('M d, Y', strtotime($meta->lesson_date)) }} |
+                                                    <i class="bi bi-clock me-1"></i>Time: {{ date('h:i A', strtotime($meta->start_time)) }} - {{ date('h:i A', strtotime($meta->end_time)) }}
+                                                </small>
+                                            @endif
                                         </div>
                                         <ul class="list-group shadow-sm">
                                             @foreach($tasks as $task)
@@ -79,10 +84,23 @@
                             @if($event->competencyGradings->isEmpty())
                                 <p class="text-muted">No competency grading available.</p>
                             @else
+                            @php
+                                $lessonMeta = $event->eventLessons->keyBy('lesson_id');
+                            @endphp
                                 @foreach($event->competencyGradings as $grading)
+                                    @php
+                                        $meta = $lessonMeta[$grading->lesson_id] ?? null;
+                                    @endphp
                                     <div class="mb-4">
                                         <h6 class="fw-bold text-secondary mb-2">
                                             <i class="bi bi-book me-1"></i>Lesson: {{ $grading->lesson?->lesson_title ?? 'N/A' }}
+                                            @if($meta)
+                                                <br><small class="text-muted">
+                                                    <i class="bi bi-person-video3 me-1"></i>Instructor: {{ $meta->instructor?->fname }} {{ $meta->instructor?->lname }} |
+                                                    <i class="bi bi-calendar-date me-1"></i>Date: {{ date('M d, Y', strtotime($meta->lesson_date)) }} |
+                                                    <i class="bi bi-clock me-1"></i>Time: {{ date('h:i A', strtotime($meta->start_time)) }} - {{ date('h:i A', strtotime($meta->end_time)) }}
+                                                </small>
+                                            @endif
                                         </h6>
                                         <div class="table-responsive">
                                             <table class="table table-bordered align-middle text-center shadow-sm">
@@ -189,12 +207,12 @@
                     @endif
                 </div>
 
-                <div class="card-footer d-flex justify-content-between align-items-center bg-light p-3">
+                <!-- <div class="card-footer d-flex justify-content-between align-items-center bg-light p-3">
                     <span>
                         <i class="bi bi-clock-history me-1"></i>
                         {{ date('h:i A', strtotime($event->start_time)) }} - {{ date('h:i A', strtotime($event->end_time)) }}
                     </span>
-                </div>
+                </div> -->
 
                 @auth
                     @if(auth()->user()->id === $event->student_id)

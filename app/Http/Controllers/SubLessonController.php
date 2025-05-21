@@ -52,6 +52,7 @@ class SubLessonController extends Controller
 
     public function updateSubLesson(Request $request)
     {
+        // dd($request->has('edit_mandatory'));
 
         // Validate input data
         $request->validate([
@@ -59,7 +60,7 @@ class SubLessonController extends Controller
             'edit_sub_description' => 'required',
             'edit_sub_status' => 'required|boolean',
             'edit_grade_type' => 'required|in:pass_fail,score', // Validate grade type
-            'edit_mandatory' => 'nullable|boolean', // Validate mandatory field
+            // 'edit_mandatory' => 'nullable|boolean', // Validate mandatory field
         ]);
     
         // Find the existing sub-lesson

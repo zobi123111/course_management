@@ -13,69 +13,72 @@
 </head>
 <body>
     <h1>Lesson Report</h1>
-    <div class="section">
-        <strong>Date:</strong> {{ \Carbon\Carbon::parse($event->event_date)->format('d/m/Y') }}<br>
-        <strong>Student Name:</strong> {{ auth()->user()->name }}<br>
-        <strong>Instructor Name:</strong> {{ $event->instructor?->fname }} {{ $event->instructor?->lname }}<br>
-        <strong>Start Time:</strong> {{ $event->start_time }}<br>
-        <strong>End Time:</strong> {{ $event->end_time }}<br>
-        <strong>Total Lesson Time:</strong> {{ \Carbon\Carbon::parse($event->end_time)->diffInMinutes(\Carbon\Carbon::parse($event->start_time)) }} minutes<br>
-        <strong>Departure Airfield:</strong> {{ $event->departure_airfield ?? 'N/A' }}<br>
-        <strong>Destination Airfield:</strong> {{ $event->destination_airfield ?? 'N/A' }}
-    </div>
+        <div class="section">
+            <strong>Date:</strong> {{ date('M d, Y', strtotime($eventLesson?->lesson_date)) }}<br>
+            <strong>Student Name:</strong> {{ $event?->student?->fname }} {{ $event?->student?->lname }}<br>
+            <strong>Instructor Name:</strong> {{ $eventLesson?->instructor?->fname }} {{ $eventLesson?->instructor?->lname }}<br>
+            <strong>Start Time:</strong> {{ date('h:i A', strtotime($eventLesson?->start_time)) }}<br>
+            <strong>End Time:</strong> {{ date('h:i A', strtotime($eventLesson?->end_time)) }}<br>
+            <strong>Total Lesson Time:</strong> {{ \Carbon\Carbon::parse($eventLesson?->end_time)->diffInMinutes(\Carbon\Carbon::parse($eventLesson?->start_time)) }} minutes<br>
+            <strong>Departure Airfield:</strong> {{ $eventLesson?->departure_airfield ?? 'N/A' }}<br>
+            <strong>Destination Airfield:</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}
+        </div>
 
-    <div class="section">
-        <h2>Tasks Completed</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Task</th>
-                    <th>Result</th>
-                    <th>Comments</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($event->taskGradings as $task)
+        <div class="section">
+            <h2>Tasks Completed</h2>
+            <table>
+                <thead>
                     <tr>
-                        <td>{{ $task->subLesson->title ?? 'N/A' }}</td>
-                        <td>{{ $task->task_grade }}</td>
-                        <td>{{ $task->comments ?? '-' }}</td>
+                        <th>Task</th>
+                        <th>Result</th>
+                        <th>Comments</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-
-    <div class="section">
-        <h2>Competencies</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Competency</th>
-                    <th>Grade</th>
-                    <th>Comment</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($event->competencyGradings as $competency)
-                    @foreach(['kno','pro','com','fpa','fpm','ltw','psd','saw','wlm'] as $comp)
+                </thead>
+                <tbody>
+                    @foreach($event->taskGradings as $task)
                         <tr>
-                            <td>{{ strtoupper($comp) }}</td>
-                            <td>{{ $competency[$comp.'_grade'] ?? 'N/A' }}</td>
-                            <td>{{ $competency[$comp.'_comment'] ?? '-' }}</td>
+                            <td>{{ $task->subLesson->title ?? 'N/A' }}</td>
+                            <td>{{ $task->task_grade }}</td>
+                            <td>{{ $task->comments ?? '-' }}</td>
                         </tr>
                     @endforeach
-                @endforeach
-            </tbody>
-        </table>
-    </div>
+                </tbody>
+            </table>
+        </div>
 
-    <div class="section">
-        <h2>Lesson Summary</h2>
-        @foreach($event->overallAssessments as $assessment)
-            <p><strong>Result:</strong> {{ $assessment->result }}</p>
-            <p><strong>Remarks:</strong> {{ $assessment->remarks ?? 'No remarks' }}</p>
-        @endforeach
-    </div>
+        @if($event->competencyGradings->isNotEmpty())
+            <div class="section">
+                <h2>Competencies</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Competency</th>
+                            <th>Grade</th>
+                            <th>Comment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($event->competencyGradings as $competency)
+                            @foreach(['kno','pro','com','fpa','fpm','ltw','psd','saw','wlm'] as $comp)
+                                <tr>
+                                    <td>{{ strtoupper($comp) }}</td>
+                                    <td>{{ $competency[$comp.'_grade'] ?? 'N/A' }}</td>
+                                    <td>{{ $competency[$comp.'_comment'] ?? '-' }}</td>
+                                </tr>
+                            @endforeach
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+
+
+        <div class="section">
+            <h2>Lesson Summary</h2>
+            @foreach($event->overallAssessments as $assessment)
+                <p><strong>Result:</strong> {{ $assessment->result }}</p>
+                <p><strong>Remarks:</strong> {{ $assessment->remarks ?? 'No remarks' }}</p>
+            @endforeach
+        </div>
 </body>
 </html>
