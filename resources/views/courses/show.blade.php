@@ -410,7 +410,7 @@
                             <input type="radio" name="edit_grade_type" value="score" id="edit_grade_score">
                             <label for="edit_grade_score">Score (1-5)</label>
                         </div>
-                        <div id="edit_grade_type_error" class="text-danger error_e"></div>
+                        <div id="edit_grade_type_error_up" class="text-danger error_e"></div>
                     </div>
                      <div class="form-group">
                         <div class="form-check">
