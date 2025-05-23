@@ -239,16 +239,12 @@
                                     </button>
                                 </form>
                             @endif
-                        </div>
-
-
-
-                        
+                        </div>                        
                         {{-- Buttons shown only after acknowledgment --}}
                         @if($event->student_acknowledged)
                             <div class="card-footer bg-white border-top">
                                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-3">
-                                    <a href="" class="btn btn-success shadow-sm">
+                                    <a href="{{ route('training.certificate', ['event' => encode_id($event->id)]) }}" class="btn btn-success shadow-sm">
                                         <i class="bi bi-patch-check-fill me-1"></i> Generate Course Completion Certificate
                                     </a>
                                     @if($event->course->enable_feedback && !$event->student_feedback_submitted)

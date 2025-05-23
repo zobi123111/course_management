@@ -719,7 +719,6 @@ class TrainingEventsController extends Controller
         return view('trainings.grading-list', compact('event'));    
     }
     
-
     public function unlockEventGarding(Request $request, $event_id)
     {
         $updateTrainingEvent = TrainingEvents::where('id', decode_id($event_id))->update(['is_locked' => 0]);
@@ -728,7 +727,6 @@ class TrainingEventsController extends Controller
             return response()->json(['success' => true, 'message' => 'Grading is unlocked for editing.']);
         }
     }
-
 
     public function acknowledgeGarding(Request $request)
     {
@@ -847,6 +845,28 @@ class TrainingEventsController extends Controller
 
         // Redirect back with a success message
         return redirect()->back()->with('success', 'Documents uploaded successfully.');
+    }
+
+    public function generateCertificate($event)
+    {
+        //dd($event);
+        $eventId = decode_id($event); // your custom decode helper
+        $event = TrainingEvents::findOrFail($eventId);
+        $userDtl = User::where('ou_id', $event->ou_id)->where('is_admin', 1)->first();
+        $student = $event->student;
+        $course = $event->course;
+        $firstLesson = $event->firstLesson;
+        
+        //dd($event);
+        $pdf = PDF::loadView('trainings.course-completion-certificate', [
+            'event' => $event,  
+            'student' => $student,
+            'course' => $course,
+            'firstLesson' => $firstLesson,
+        ]);
+        $filename = 'Certificate_' . Str::slug($student->fname . ' ' . $student->lname) . '.pdf';
+
+        return $pdf->download($filename);
     }
     
 }
