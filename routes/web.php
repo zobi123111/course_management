@@ -101,14 +101,12 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/training/get_licence_number_and_courses/{user_id}/{ou_id}', [TrainingEventsController::class, 'getStudentLicenseNumberAndCourses'])->name('training.get_licence_number_and_courses');
     Route::post('/grading/acknowledge', [TrainingEventsController::class, 'acknowledgeGarding'])->name('grading.acknowledge');
     Route::get('/training/get_instructor_license_no/{instructor_id}', [TrainingEventsController::class, 'getInstructorLicenseNumber'])->name('training.get_instructor_license_no');
-    // Route::get('/lesson-report/download/{event_id}/{lesson_id}', [TrainingEventsController::class, 'download'])
-    // ->name('lesson.report.download');
-    // Route::get('/lesson-report/{event_id}/{lesson_id}', [TrainingEventsController::class, 'downloadLessonReport'])
-    //  ->name('lesson.report.download');
     Route::get('/lesson-report/download/{event_id}/{lesson_id}', [TrainingEventsController::class, 'downloadLessonReport'])
     ->name('lesson.report.download');
     Route::post('/training/{trainingEvent}/upload-documents', [TrainingEventsController::class, 'uploadDocuments'])
     ->name('training.upload-documents');
+    Route::get('/training/certificate/{event}', [TrainingEventsController::class, 'generateCertificate'])
+     ->name('training.certificate');
 
 
     

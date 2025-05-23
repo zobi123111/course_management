@@ -21,4 +21,10 @@ class OrganizationUnits extends Model
     {
         return $this->hasOne(User::class, 'ou_id', 'id')->where('role', 1);
     }    
+
+    public function admin()
+    {
+        return $this->hasOne(User::class, 'ou_id', 'id')->where('is_admin', 1);
+    }
+
 }
