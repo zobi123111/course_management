@@ -714,7 +714,7 @@
                                         $competencies = [
                                             'KNO' => 'Application of knowledge',
                                             'PRO' => 'Application of Procedures and compliance with regulations',
-                                            'CMO' => 'Communication',
+                                            'COM' => 'Communication',
                                             'FPA' => 'Aeroplane flight path management - automation',
                                             'FPM' => 'Aeroplane flight path management - Manual Control',
                                             'LTW' => 'Leadership & Teamwork',
@@ -726,7 +726,7 @@
                                     @endphp
                                     @foreach($competencies as $code => $title)
                                     @php
-                                        $code = strtolower($code); // make sure it's lowercase
+                                        $code = strtolower($code); // make sure it's lowercase  
                                         $grading = $lessonCompetencies->first();
 
                                         $selectedCompGrade = $grading?->{$code . '_grade'} ?? null;
@@ -736,7 +736,7 @@
                                             <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $code }}" aria-expanded="false">
                                                 <span class="rmk">RMK</span>
                                                 <span class="question-mark">?</span>
-                                                <span class="title"><span class="highlight">{{ $title }} ({{ $code }})</span></span>
+                                                <span class="title"><span class="highlight">{{ $title }} ({{ strtoupper($code) }})</span></span>
                                                 <input type="hidden" name="cg_lesson_id" value="{{ $lesson->id }}">
                                             </div>
                                             <div class="table-container">

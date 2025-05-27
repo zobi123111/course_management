@@ -388,7 +388,7 @@ class UserController extends Controller
                     $passportFileUploaded = true;
                     $userToUpdate->update(['passport_verified' => 0]);
                 } else {
-                    $passportFilePath = $request->old_passport_file ?? $document->passport_file;
+                    $passportFilePath = $request->old_passport_file ?? NULL;
                 }
             } else {
                 $passportFilePath = $document->passport_file;
@@ -910,7 +910,7 @@ class UserController extends Controller
             $extra_roles = $request->has('extra_roles') ? json_encode($request->extra_roles) : $userToUpdate->extra_roles;
 
             // Determine is_admin value
-            if((!empty($request->ou_id) && $request->edit_role_name == 1) || $userToUpdate->is_admin==1)
+            if((!empty($request->ou_id) && $request->edit_role_name == 1) || ($request->edit_role_name == 1 && $userToUpdate->is_admin==1))
             {
                 $is_admin = 1;
             }else{
@@ -1046,16 +1046,29 @@ class UserController extends Controller
 
             // === Handle User Ratings (NEW) ===
             if ($request->has('edit_rating_checkbox')) {
-                // Remove previous ratings
-                UserRating::where('user_id', $userToUpdate->id)->delete();
+                $selectedRatingIds = $request->input('edit_rating', []);
 
-                // Save new ratings
-                foreach ($request->edit_rating as $ratingId) {
+                // Fetch current ratings from DB
+                $existingRatings = UserRating::where('user_id', $userToUpdate->id)->pluck('rating_id')->toArray();
+
+                // Determine ratings to add
+                $ratingsToAdd = array_diff($selectedRatingIds, $existingRatings);
+
+                // Determine ratings to remove
+                $ratingsToRemove = array_diff($existingRatings, $selectedRatingIds);
+
+                // Add new ratings
+                foreach ($ratingsToAdd as $ratingId) {
                     UserRating::create([
                         'user_id' => $userToUpdate->id,
                         'rating_id' => $ratingId
                     ]);
                 }
+
+                // Remove unselected ratings
+                UserRating::where('user_id', $userToUpdate->id)
+                    ->whereIn('rating_id', $ratingsToRemove)
+                    ->delete();
             }
 
             // Log Changes

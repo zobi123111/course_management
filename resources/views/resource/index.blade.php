@@ -17,39 +17,40 @@
 @endif
 <div class="main_cont_outer" >
     <div class="create_btn " >
+        @if(checkAllowedModule('resource','save.index')->isNotEmpty())
         <button class="btn btn-primary create-button" id="create_resource" data-toggle="modal"
             data-target="#orgUnitModal">Create Resource</button>
+        @endif
     </div>
-    <br>
     <div id="update_success_msg"></div>
     <div class="card pt-4">
         <div class="card-body">
-    <table class="table table-hover" id="resourceTable">
-        <thead>
-            <tr>
-                @if(auth()->user()->is_owner==1)
-                <th scope="col">OU</th>
-                @endif
-                <th scope="col">Name</th>
-                <th scope="col">Registration</th> 
-                <th scope="col">Class</th>
-                <th scope="col">Type</th>
-                <th scope="col">Note</th>
-                @if(checkAllowedModule('resource','edit.index')->isNotEmpty())
-                <th scope="col">Edit</th>
-                @endif
-                @if(checkAllowedModule('resource','delete.index')->isNotEmpty())
-                <th scope="col">Delete</th>
-                @endif
-            </tr>
-        </thead>
-   
-        <tbody>
+            <table class="table table-hover" id="resourceTable">
+                <thead>
+                    <tr>
+                        @if(auth()->user()->is_owner==1)
+                        <th scope="col">OU</th>
+                        @endif
+                        <th scope="col">Name</th>
+                        <th scope="col">Registration</th> 
+                        <th scope="col">Class</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Note</th>
+                        @if(checkAllowedModule('resource','edit.index')->isNotEmpty())
+                        <th scope="col">Edit</th>
+                        @endif
+                        @if(checkAllowedModule('resource','delete.index')->isNotEmpty())
+                        <th scope="col">Delete</th>
+                        @endif
+                    </tr>
+                </thead>
+        
+                <tbody>
 
-        </tbody>
-    </table>
-</div>
-</div>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <!-- OU Users List Modal -->
