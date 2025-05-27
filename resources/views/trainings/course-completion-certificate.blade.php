@@ -76,20 +76,19 @@
         </tr>
         <tr>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Training device/s:</th>
-          <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">{{ $event->resource->name ?? 'N/A' }}</td>
+          <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">{{ $firstLesson->resource?->name ?? 'N/A' }}</td>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Theoretical Knowledge Exam Result:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">98%</td>
         </tr>
         <tr style="background-color: #f8f9fa;">
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Reg of device/s:</th>
-          <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">{{ $event->resource->registration ?? 'N/A' }}</td>
+          <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">{{ $firstLesson->resource?->registration ?? 'N/A' }}</td>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Date of TK Exam:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">15/11/2023</td>
         </tr>
         <tr>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Hours, flight:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">10hrs 00mins</td>
-
           <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Hours, simulator:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">2.00 (OTD)</td>
         </tr>

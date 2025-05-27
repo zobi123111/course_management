@@ -834,17 +834,15 @@
                 $('#licence').hide().prop('required', false).val('');
                 $('#licence_file').hide().prop('required', false).val('');
                 $('#licence_error, #licence_file_error').hide();
-
-                $('#add_second_licence_btn').hide();
                 $('#second_licence_section').hide();
-                $('#licence_2, #licence_file_2').val('').prop('required', false);
+                $('#license_2').hide();
             }
         });
         $('#licence_2_checkbox').change(function () {
             if (this.checked) {
                 $('#second_licence_section').show();
                 $('#licence_2').prop('required', true);
-                $('#licence_file_2').show().prop('required', true);
+                $('#licence_file_2').prop('required', true);
             } else {
                 $('#licence_2').prop('required', false).val('');
                 $('#licence_file_2').prop('required', false).val('');
@@ -1005,12 +1003,7 @@
         $('#medical_2_checkbox').change(function () {
             if (this.checked) {
                 $('#second_medical_section').show();
-                // $('.medical_issued_div').show();
-                // $('.medical_class_div').show();
             } else {
-                // $('.medical_issued_div').hide();
-                // $('.medical_class_div').hide();
-                // $('#medical_2').hide();
                 $('#second_medical_section').hide();
 
                 // Reset second medical fields
@@ -1067,22 +1060,48 @@
             }
         });
 
-        // $('#edit_medical_2_checkbox').click(function () {
-        //     const section = $('#edit_second_medical_section');
-        //     const isVisible = section.is(':visible');
-
-        //     section.toggle();
-
-        //     if (isVisible) {
-        //         $('#editissued_by_2, #editmedical_class_2, #editmedical_issue_date_2, #editmedical_expiry_date_2, #editmedical_detail_2, #editmedical_file_2').val('');
-        //     }
-        // });
-
-
-
         $('#createUser').on('click', function() {
             $('.error_e').html('');
             $('.alert-danger').css('display', 'none');
+            $("#Create_user")[0].reset();
+
+            // Manually hide and reset all conditional sections
+            $('#licence').hide().prop('required', false).val('');
+            $('#licence_file').hide().prop('required', false).val('');
+            $('#licence_error, #licence_file_error').hide();
+            $('#license_2').hide();
+            $('#licence_2_checkbox').prop('checked', false);
+            $('#second_licence_section').hide();
+            $('#licence_2').prop('required', false).val('');
+            $('#licence_file_2').prop('required', false).val('');
+            $('#licence_2_error, #licence_file_2_error').hide();
+            $('#licence_checkbox').prop('checked', false);
+            $('#licence_verification_required').prop('checked', false);
+            $('#licence_2_verification_required').prop('checked', false);
+
+            // Hide and reset medical fields
+            $('#medical_checkbox').prop('checked', false);
+            $('#medical_verification_required').prop('checked', false);
+            $('.medical_issued_div').hide();
+            $('.medical_class_div').hide();
+            $('#medical_2').hide();
+            $('#issued_by').val('');
+            $('#medical_class').val('');
+            $('#medical_issue_date').val('');
+            $('#medical_expiry_date').val('');
+            $('#medical_detail').val('');
+            $('#medical_file').val('');
+            // Hide and reset second medical section
+            $('#medical_2_checkbox').prop('checked', false);
+            $('#medical_2_verification_required').prop('checked', false);
+            $('#second_medical_section').hide();
+            $('#issued_by_2').val('');
+            $('#medical_class_2').val('');
+            $('#medical_issue_date_2').val('');
+            $('#medical_expiry_date_2').val('');
+            $('#medical_detail_2').val('');
+            $('#medical_file_2').val('');
+
             $('#userModal').modal('show');       
         });
 
@@ -1397,7 +1416,7 @@
                                 $('#editissued_by_2').val(issuedBy2);
                                 $('#editmedical_class_2').val(medicalClass2);                                
                             }else{
-                                $('#edit_medical_2_checkbox').prop('checked', true).trigger('change');
+                                $('#edit_medical_2_checkbox').prop('checked', false).trigger('change');
                                 $('#editmedical_issue_date_2').val('');
                                 $('#editmedical_expiry_date_2').val('');
                                 $('#editmedical_detail_2').val('');

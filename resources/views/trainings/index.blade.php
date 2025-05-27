@@ -11,7 +11,7 @@
 </div>
 @endif
 
-@if(checkAllowedModule('groups','group.store')->isNotEmpty())
+@if(checkAllowedModule('training','training.store')->isNotEmpty())
 <div class="create_btn">
     <button class="btn btn-primary create-button" id="createTrainingEvent" data-toggle="modal"
         data-target="#createTrainingEventModal">Create Training Event</button>
