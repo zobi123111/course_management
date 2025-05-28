@@ -491,7 +491,7 @@
                     <div class="form-group">
                         <label class="form-label">File</label>
                         <input type="file" name="resource_documents[${index}][file]" class="form-control">
-                        <div id="resource_documents_[${index}]_file_error_up" class="text-danger error_e"></div>
+                        <div id="resource_documents_${index}_file_error_up" class="text-danger error_e"></div>
                         ${uploadedFileLinkHtml}
                         <input type="hidden" name="resource_documents[${index}][existing_file_path]" value="${existingFilePath}">
                         <input type="hidden" name="resource_documents[${index}][row_id]" value="${docRowId}">
