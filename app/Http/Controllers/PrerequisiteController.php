@@ -34,9 +34,9 @@ class PrerequisiteController extends Controller
                     $file = $request->file("prerequisite_details.$index");
                     $allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
 
-                    if (!in_array($file->getClientOriginalExtension(), $allowedExtensions) || $file->getSize() > 2048000) {
+                    if (!in_array($file->getClientOriginalExtension(), $allowedExtensions) || $file->getSize() > 10485760) {
                         return back()->withErrors([
-                            "prerequisite_details.$index" => 'Invalid file type or size. Only JPG, JPEG, PNG, and PDF files under 2MB are allowed.',
+                            "prerequisite_details.$index" => 'Invalid file type or size. Only JPG, JPEG, PNG, and PDF files under 10MB are allowed.',
                         ])->withInput();
                     }
 

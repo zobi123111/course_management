@@ -166,6 +166,32 @@
                         <input type="number" name="Hours_Remaining" id="Hours_Remaining" class="form-control" min="0" step="1">
                         <div id="Hours_Remaining_error" class="text-danger error_e"></div>
                     </div>
+                    <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="enable_doc_upload" name="enable_doc_upload">
+                        <label class="form-check-label" for="enable_doc_upload">
+                             Enable Document Upload
+                        </label>
+                    </div>
+                    </div>
+                    <div id="resource_documents_container" style="display: none;">
+                        <div id="resource_documents_items">
+                            <div class="resource-documents-item border p-2 mt-2">
+                                <div class="form-group">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" name="resource_documents[0][name]" class="form-control">
+                                    <div id="resource_documents_0_name_error" class="text-danger error_e"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">File</label>
+                                    <input type="file" name="resource_documents[0][file]" class="form-control">
+                                    <div id="resource_documents_0_file_error" class="text-danger error_e"></div>
+                                </div>
+                                <button type="button" class="btn btn-danger remove-documents-container">X</button>
+                            </div>
+                        </div>
+                        <button type="button" id="addDocumentsContainer" class="btn btn-primary mt-2">Add More</button>
+                    </div>
                     <div class="modal-footer"> 
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
                         <a href="#" type="button" id="save_resource" class="btn btn-primary sbt_btn">Save </a>
@@ -268,6 +294,32 @@
                         <input type="number" name="edit_Hours_Remaining" id="Hours_Remaining" class="form-control" min="0" step="1">
                         <div id="edit_Hours_Remaining_error_up" class="text-danger error_e"></div>
                     </div>
+                    <div class="form-group">
+                        <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="edit_enable_doc_upload" name="enable_doc_upload">
+                            <label class="form-check-label" for="edit_enable_doc_upload">
+                                Enable Resource Upload
+                            </label>
+                        </div>
+                    </div>
+                    <div id="edit_resource_documents_container" style="display: none;">
+                        <div id="edit_resource_documents_items">
+                            <div class="edit-resource-documents-item border p-2 mt-2">
+                                <div class="form-group">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" name="resource_documents[0][name]" class="form-control">
+                                    <div id="resource_documents_0_name_error_up" class="text-danger error_e"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">File</label>
+                                    <input type="file" name="resource_documents[0][file]" class="form-control">
+                                    <div id="resource_documents_0_file_error_up" class="text-danger error_e"></div>
+                                </div>
+                                <button type="button" class="btn btn-danger edit-remove-documents-container">X</button>
+                            </div>
+                        </div>
+                        <button type="button" id="editAddDocumentsContainer" class="btn btn-primary mt-2">Add More</button>
+                    </div>
                     <div class="modal-footer"> 
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
                         <a href="#" type="button" id="update_resourse" class="btn btn-primary sbt_btn">Save </a>
@@ -343,6 +395,146 @@
         $("#createResourceModel").modal('show'); 
     })
 
+        // Toggle Instructor Documents section
+    $("#enable_doc_upload").change(function () {
+            if ($(this).is(":checked")) {
+                $("#resource_documents_container").show();
+            } else {
+                $("#resource_documents_container").hide();
+                // $("#prerequisite_items").empty();
+
+                
+            // Clear all inputs inside the container
+            $("#resource_documents_container input").val('');
+            $("#resource_documents_container input[type='file']").val('');
+            $("#resource_documents_container .error_e").html('');
+
+            // Optional: Reset to the default single resource item
+            $('#resource_documents_items').html(`
+                <div class="resource-documents-item border p-2 mt-2">
+                    <div class="form-group">
+                        <label class="form-label">Name</label>
+                        <input type="text" name="resource_documents[0][name]" class="form-control">
+                        <div id="resource_documents_0_name_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">File</label>
+                        <input type="file" name="resource_documents[0][file]" class="form-control">
+                        <div id="resource_documents_0_file_error" class="text-danger error_e"></div>
+                    </div>
+                </div>
+            `);
+
+            }
+    });
+    // Toggle Instructor Documents section On Editing
+    $("#edit_enable_doc_upload").change(function () {
+            if ($(this).is(":checked")) {
+                $("#edit_resource_documents_container").show();
+            } else {
+                $("#edit_resource_documents_container").hide();
+                // $("#prerequisite_items").empty();
+            }
+    });
+
+        // Add New Documents Container
+    $("#addDocumentsContainer").click(function() {
+        let index = $(".resource-documents-item").length;
+
+        let documentContainerHTML = `
+                            <div class="resource-documents-item border p-2 mt-2">
+                                <div class="form-group">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" name="resource_documents[${index}][name]"  class="form-control">
+                                    <div id="resource_documents_${index}_name_error" class="text-danger error_e"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">File</label>
+                                    <input type="file" name="resource_documents[${index}][file]" class="form-control">
+                                    <div id="resource_documents_${index}_file_error" class="text-danger error_e"></div>
+                                </div>
+                                <button type="button" class="btn btn-danger remove-documents-container">X</button>
+                            </div>
+        `;
+        $("#resource_documents_items").append(documentContainerHTML);
+    });
+
+    // Remove Resource Documents section
+    $(document).on("click", ".remove-documents-container", function() {
+        $(this).closest(".resource-documents-item").remove();
+    });
+
+    // Remove Edit Resource Documents section
+    $(document).on("click", ".edit-remove-documents-container", function() {
+        $(this).closest(".edit-resource-documents-item").remove();
+    });
+
+    function generateDocumentsContainerHtml(resource_documents, index) {
+        let documentName = resource_documents.name || '';
+        let filePath = resource_documents.file_path ? `/storage/${resource_documents.file_path}` : '';
+        let existingFilePath = resource_documents.file_path || '';
+        let docRowId = resource_documents.id || '';
+
+        let uploadedFileLinkHtml = '';
+        if (filePath) {
+            uploadedFileLinkHtml = `<div class="mt-2">
+                                    <a href="${filePath}" target="_blank">View Uploaded Document</a>
+                                </div>`;
+        }
+
+        return `<div class="edit-resource-documents-item border p-2 mt-2">
+                    <div class="form-group">
+                        <label class="form-label">Name</label>
+                        <input type="text" name="resource_documents[${index}][name]" value="${documentName}" id="documents_name_${index}" class="form-control">
+                        <div id="resource_documents_${index}_name_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">File</label>
+                        <input type="file" name="resource_documents[${index}][file]" class="form-control">
+                        <div id="resource_documents_[${index}]_file_error_up" class="text-danger error_e"></div>
+                        ${uploadedFileLinkHtml}
+                        <input type="hidden" name="resource_documents[${index}][existing_file_path]" value="${existingFilePath}">
+                        <input type="hidden" name="resource_documents[${index}][row_id]" value="${docRowId}">
+                    </div>
+                    <button type="button" class="btn btn-danger edit-remove-documents-container mt-2">X</button>
+                </div>`;
+    }
+
+
+    // Add New Documents Container while editing
+    $("#editAddDocumentsContainer").click(function() {
+        // Find the highest existing index first
+        let maxIndex = 0;
+        $(".edit-resource-documents-item").each(function() {
+            $(this).find('input[name^="resource_documents"]').each(function() {
+                let match = $(this).attr('name').match(/\[(\d+)\]/);
+                if (match && parseInt(match[1]) > maxIndex) {
+                    maxIndex = parseInt(match[1]);
+                }
+            });
+        });
+
+        // Increment to get the new index
+        let newIndex = maxIndex + 1;
+
+        let documentContainerHTML = `
+            <div class="edit-resource-documents-item border p-2 mt-2">
+                <div class="form-group">
+                    <label class="form-label" for="documents_name_${newIndex}">Name</label>
+                    <input type="text" name="resource_documents[${newIndex}][name]" id="documents_name_${newIndex}" class="form-control">
+                    <div id="resource_documents_${newIndex}_name_error_up" class="text-danger error_e"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="documents_file_${newIndex}">File</label>
+                    <input type="file" name="resource_documents[${newIndex}][file]" id="documents_file_${newIndex}" class="form-control">
+                    <div id="resource_documents_${newIndex}_file_error_up" class="text-danger error_e"></div>
+                </div>
+                <button type="button" class="btn btn-danger edit-remove-documents-container">X</button>
+            </div>
+        `;
+        $("#edit_resource_documents_items").append(documentContainerHTML);
+    });
+
     $(document).ready(function () {
 
         $('#classroom').on('input', function() {
@@ -409,8 +601,9 @@
                 var errorMessage = JSON.parse(xhr.responseText); 
                 var validationErrors = errorMessage.errors;
                 $.each(validationErrors, function(key, value) {
-                    var msg = '<p>' + value + '<p>';
-                    $('#' + key + '_error').html(msg);
+                    var formattedKey = key.replace(/\./g, '_') + '_error';
+                    var errorMsg = '<p>' + value[0] + '</p>';
+                    $('#' + formattedKey).html(errorMsg);
                 })
             }
         });
@@ -479,6 +672,33 @@
                     });
                     autoDisableFields("edit_");
                     handleClassroomFieldDependency("edit_");
+
+                     //Handle Document Container
+                    if (response.resourcedata.enable_doc_upload) {
+                        $('#edit_enable_doc_upload').prop('checked', true);
+                        $('#edit_resource_documents_container').show();
+                    } else {
+                        $('#edit_enable_doc_upload').prop('checked', false);
+                        $('#edit_resource_documents_container').hide();
+                    }
+
+                    $('#edit_resource_documents_items').empty();  // Clear existing containers
+                    let resource_documents = response.resourcedata.documents;
+                    // console.log(instructor_documents);
+                    if (resource_documents.length > 0) {
+                        resource_documents.forEach((resource_documents, index) => {
+                            let resourceDocumentHtml = generateDocumentsContainerHtml(
+                                resource_documents, index
+                            );
+                            $('#edit_resource_documents_items').append(resourceDocumentHtml);
+                        });
+                    } else {
+                        let resourceDocumentHtml = generateDocumentsContainerHtml({
+                            document_name: '',
+                            file_path: ''
+                        }, 0);
+                        $('#edit_resource_documents_items').append(resourceDocumentHtml);
+                    }
                 }
            
                 $('#editOrgUnitModal').modal('show');
@@ -556,8 +776,9 @@
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
                 $.each(validationErrors, function(key, value) {
-                    var msg = '<p>' + value + '<p>';
-                    $('#' + key + '_error_up').html(msg);
+                    var formattedKey = key.replace(/\./g, '_') + '_error_up';
+                    var errorMsg = '<p>' + value[0] + '</p>';
+                    $('#' + formattedKey).html(errorMsg);
                 })
             }
         })
