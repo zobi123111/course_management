@@ -8,8 +8,10 @@ use App\Models\User;
 use App\Models\Courses;
 use App\Models\CourseResources;
 use App\Models\BookedResource;
+use App\Models\ResourceDocument;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 Use DB;
 
 class ResourceController extends Controller
@@ -88,14 +90,12 @@ class ResourceController extends Controller
         }
     }
 
-
     public function edit(Request $request)
     {
-        $resourcedata = $request->filled('resourceId') ? Resource::find(decode_id($request->resourceId)) : null;
-      //  dd($resourcedata);
+        $resourcedata = $resourcedata = $request->filled('resourceId') ? Resource::with('documents')->find(decode_id($request->resourceId)) : null;
+        //dd($resourcedata->documents);
         $user = $request->filled('userId') ? User::find(decode_id($request->userId)) : null;
-       
-        
+               
              // Handle missing or not found errors
              if ($request->filled('resourceId') && !$resourcedata) {
                 return response()->json(['error' => 'Organizational Unit not found'], 404);
@@ -116,13 +116,15 @@ class ResourceController extends Controller
 
     public function save(Request $request)
     {
-    //    dd($request->all());
-        $validated =   request()->validate([
-            'name' => 'required'
-        ],
-        [
-            'name.required' => 'The Name field is required.'
-        ]);
+        //dd($request->all());
+        $validated = $request->validate([
+                'name' => 'required',
+                'resource_documents.*.file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240', // 10240 KB = 10 MB
+            ], [
+                'name.required' => 'The Name field is required.',
+                'resource_documents.*.file.mimes' => 'Only JPG, JPEG, PNG, and PDF files are allowed.',
+                'resource_documents.*.file.max' => 'Each file must not exceed 10MB in size.',
+            ]);
 
         if($validated)
         {
@@ -146,10 +148,36 @@ class ResourceController extends Controller
             "date_from_rts"  =>  $request->Date_from_RTS,
             "date_for_maintenance"  =>  $request->Date_for_maintenance,
             "hours_remaining"  =>  $request->Hours_Remaining,
-            "resource_logo"  =>  $logo_name[0] ?? null
-
+            "resource_logo"  =>  $logo_name[0] ?? null,
+            'enable_doc_upload' => $request->has('enable_doc_upload') ? 1 : 0,
            );
            $save_resource = Resource::create($resource_data);
+
+            // Save uploaded documents if enabled
+            if ($request->has('enable_doc_upload') && $request->has('resource_documents')) {
+                foreach ($request->resource_documents as $index => $doc) {
+                    if (isset($doc['file']) && $request->file("resource_documents.$index.file")->isValid()) {
+                        $uploadedFile = $request->file("resource_documents.$index.file");
+                        $originalName = $uploadedFile->getClientOriginalName();
+                        $extension = $uploadedFile->getClientOriginalExtension();
+                        $baseName = pathinfo($originalName, PATHINFO_FILENAME);
+
+                        // Generate a unique file name
+                        $timestamp = now()->format('YmdHis');
+                        $uniqueFileName = $baseName . '_' . $timestamp . '.' . $extension;
+
+                        // Store the file
+                        $storedPath = $uploadedFile->storeAs('resource_documents', $uniqueFileName, 'public');
+
+                        ResourceDocument::create([
+                            'resource_id' => $save_resource->id,
+                            'name' => $doc['name'] ?? 'Untitled',
+                            'file_path' => $storedPath,
+                        ]);
+                    }
+                }
+            }
+
            if($save_resource)
            {
             Session::flash('message', 'Resource created successfully');
@@ -160,60 +188,138 @@ class ResourceController extends Controller
 
     public function update(Request $request)
     {
-        $validated =   request()->validate([
-            'edit_name' => 'required'
-        ],
-        [
-            'edit_name.required'  => 'The Name field is required.'
-        ]);
+        $validated = $request->validate([
+                'edit_name' => 'required',
+                'resource_documents.*.file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240', // 10240 KB = 10 MB
+            ], [
+                'edit_name.required' => 'The Name field is required.',
+                'resource_documents.*.file.mimes' => 'Only JPG, JPEG, PNG, and PDF files are allowed.',
+                'resource_documents.*.file.max' => 'Each file must not exceed 10MB in size.',
+            ]);
 
-        $logo_name = [];
+        if($validated)
+        {    
+            $logo_name = [];
             if ($request->hasFile('edit_organization_logo')) {
-            $file = $request->file('edit_organization_logo');
-            $fileName = $file->getClientOriginalName(); // Get the original file name
-            $filePath = $file->storeAs('resource_logo', $fileName, 'public');
-            
-            // If you want to store only the filename instead of the path:
-            $storedFileName = basename($filePath); 
-            $logo_name[] = ($fileName);
-    }
+                $file = $request->file('edit_organization_logo');
+                $fileName = $file->getClientOriginalName(); // Get the original file name
+                $filePath = $file->storeAs('resource_logo', $fileName, 'public');
+                
+                // If you want to store only the filename instead of the path:
+                $storedFileName = basename($filePath); 
+                $logo_name[] = ($fileName);
+            }
 
-    $resource_data = array(
-        // 'ou_id'         => $request->edit_ou_id ?? null, 
-        'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->edit_ou_id : (auth()->user()->ou_id ?? null),
+            $resource_data = array(
+                // 'ou_id'         => $request->edit_ou_id ?? null, 
+                'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->edit_ou_id : (auth()->user()->ou_id ?? null),
+                "name"  =>  $request->edit_name,
+                "registration"  =>  $request->edit_registration,
+                "type"  =>  $request->edit_type,
+                "classroom"  =>  $request->edit_classroom,
+                "class"  =>  $request->edit_class,
+                "other"  =>  $request->edit_other,
+                "note"  =>  $request->edit_note,
+                "hours_from_rts"  =>  $request->edit_Hours_from_RTS,
+                "date_from_rts"  =>  $request->edit_Date_from_RTS,
+                "date_for_maintenance"  =>  $request->edit_Date_for_maintenance,
+                "hours_remaining"  =>  $request->edit_Hours_Remaining,
+                "resource_logo"  => $logo_name[0] ?? $request->existing_resourse_logo,
+                'enable_doc_upload' => $request->has('enable_doc_upload') ? 1 : 0
+            );
 
-        "name"  =>  $request->edit_name,
-        "registration"  =>  $request->edit_registration,
-        "type"  =>  $request->edit_type,
-        "classroom"  =>  $request->edit_classroom,
-        "class"  =>  $request->edit_class,
-        "other"  =>  $request->edit_other,
-        "note"  =>  $request->edit_note,
-        "hours_from_rts"  =>  $request->edit_Hours_from_RTS,
-        "date_from_rts"  =>  $request->edit_Date_from_RTS,
-        "date_for_maintenance"  =>  $request->edit_Date_for_maintenance,
-        "hours_remaining"  =>  $request->edit_Hours_Remaining,
-        "resource_logo"  => $logo_name[0] ?? $request->existing_resourse_logo
+            $resource = Resource::find($request->resourse_id); 
+            if ($resource) {
+                $resource->update($resource_data);
 
-       );
+                // Handle Resource Documents
+                if ($request->filled('resource_documents')) {
 
-       $resource = Resource::find($request->resourse_id); 
-        if ($resource) {
-            $resource->update($resource_data);
-            Session::flash('message', 'Resource Updated successfully');
-            return response()->json(['success' => 'success']);
+                    $submittedIds = collect($request->resource_documents)->pluck('row_id')->filter()->toArray();
+                    $existingIds = ResourceDocument::where('resource_id', $resource->id)->pluck('id')->toArray();
+                    $toDelete = array_diff($existingIds, $submittedIds);
+
+                    // Delete missing documents and their files
+                    foreach ($toDelete as $docId) {
+                        $doc = ResourceDocument::find($docId);
+                        if ($doc && Storage::disk('public')->exists($doc->file_path)) {
+                            Storage::disk('public')->delete($doc->file_path);
+                        }
+                        $doc?->delete();
+                    }
+
+                    foreach ($request->resource_documents as $doc) {
+                        $filePath = null;
+
+                        // Check if a new file is uploaded
+                        if (isset($doc['file']) && $doc['file'] instanceof \Illuminate\Http\UploadedFile) {
+                            // If an existing file path is provided, delete the old file
+                            if (!empty($doc['existing_file_path']) && Storage::disk('public')->exists($doc['existing_file_path'])) {
+                                Storage::disk('public')->delete($doc['existing_file_path']);
+                            }
+
+                            // Rename file to avoid overwriting
+                            $uploadedFile = $doc['file'];
+                            $originalName = $uploadedFile->getClientOriginalName();
+                            $extension = $uploadedFile->getClientOriginalExtension();
+                            $baseName = pathinfo($originalName, PATHINFO_FILENAME);
+                            $uniqueFileName = $baseName . '_' . now()->format('YmdHis') . '.' . $extension;
+                            // Store the new file with its original name
+                            $filePath = $uploadedFile->storeAs('resource_documents', $uniqueFileName, 'public');
+                        } else {
+                            // If no new file is uploaded, retain the existing file path
+                            $filePath = $doc['existing_file_path'] ?? null;
+                        }
+
+                        // Create or update the document record
+                       if (!empty($doc['row_id'])) {
+                            ResourceDocument::where('id', $doc['row_id'])->update([
+                                'resource_id' => $resource->id,
+                                'name' => $doc['name'] ?? '',
+                                'file_path' => $filePath,
+                            ]);
+                        } else {
+                            ResourceDocument::create([
+                                'resource_id' => $resource->id,
+                                'name' => $doc['name'] ?? '',
+                                'file_path' => $filePath,
+                            ]);
+                        }
+                    }
+                }
+
+                Session::flash('message', 'Resource Updated successfully');
+                return response()->json(['success' => 'success']);
+            }
         }
     }
 
     
     public function delete(Request $request)
-    {        
-        $resource = $request->filled('resource_id')? Resource::findOrFail(decode_id($request->resource_id)): null;
-       
+    {
+        $resource = $request->filled('resource_id') ? Resource::findOrFail(decode_id($request->resource_id)) : null;
+
         if ($resource) {
+            // Get all related documents
+            $documents = ResourceDocument::where('resource_id', $resource->id)->get();
+
+            foreach ($documents as $doc) {
+                // Delete the file from storage if it exists
+                if (!empty($doc->file_path) && Storage::disk('public')->exists($doc->file_path)) {
+                    Storage::disk('public')->delete($doc->file_path);
+                }
+
+                // Delete the document record
+                $doc->delete();
+            }
+
+            // Delete the resource itself
             $resource->delete();
-            return redirect()->route('resource.index')->with('message', 'Resource  deleted successfully');
+
+            return redirect()->route('resource.index')->with('message', 'Resource and associated documents deleted successfully');
         }
+
+        return redirect()->route('resource.index')->with('message', 'Resource not found');
     }
 
     public function getcourseResource(Request $request)
