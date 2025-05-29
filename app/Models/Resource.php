@@ -10,6 +10,15 @@ class Resource extends Model
     use HasFactory;
     protected $fillable = ['name','registration', 'type', 'classroom', 'class', 'other', 'note', 'hours_from_rts', 'date_from_rts', 'date_for_maintenance', 'hours_remaining','resource_logo', 'enable_doc_upload', 'ou_id']; 
 
+    // ✅ Add this section for date and time casting
+    protected $casts = [
+        'hours_from_rts' => 'datetime:H:i:s',
+        'hours_remaining' => 'datetime:H:i:s',
+        'date_from_rts' => 'date:Y-m-d',
+        'date_for_maintenance' => 'date:Y-m-d',
+        'enable_doc_upload' => 'boolean',
+    ];
+
     public function courseResources()
     {
         return $this->hasMany(CourseResources::class, 'resources_id');

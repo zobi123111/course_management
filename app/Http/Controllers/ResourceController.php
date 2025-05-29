@@ -62,14 +62,24 @@ class ResourceController extends Controller
 
             // Format data
             $data = $resources->map(function ($unit) {
+                $action = '';
+                if (checkAllowedModule('resource','edit.index')->isNotEmpty()) {
+                    $action .= '<i class="fa fa-edit edit-resource-icon me-2" data-resource-id="' . encode_id($unit->id) . '"></i>';                   
+                }
+                if (checkAllowedModule('resource','delete.index')->isNotEmpty()) {
+                    $action .= '<i class="fa-solid fa-trash delete-icon me-2" data-resource-id="' . encode_id($unit->id) . '"></i>';
+                }
+                if (checkAllowedModule('resource','delete.index')->isNotEmpty()) {
+                    $action .= '<a href="' . url('resource/show/' . encode_id($unit->id)) . '" class="view-icon" title="View Resource" style="font-size:18px; cursor: pointer;"><i class="fa fa-eye text-danger"></i></a>';                     
+                }
+
                 $row = [
                     'name' => $unit->name,
                     'registration' => $unit->registration,
                     'type' => $unit->type,
                     'class' => $unit->class,
                     'note' => $unit->note,
-                    'edit' => '<i class="fa fa-edit edit-resource-icon" data-resource-id="' . encode_id($unit->id) . '"></i>',
-                    'delete' => '<i class="fa-solid fa-trash delete-icon" data-resource-id="' . encode_id($unit->id) . '"></i>',
+                    'action' => $action,
                 ];
 
                 if (auth()->user()->is_owner == 1) {
@@ -151,8 +161,8 @@ class ResourceController extends Controller
             "resource_logo"  =>  $logo_name[0] ?? null,
             'enable_doc_upload' => $request->has('enable_doc_upload') ? 1 : 0,
            );
+           
            $save_resource = Resource::create($resource_data);
-
             // Save uploaded documents if enabled
             if ($request->has('enable_doc_upload') && $request->has('resource_documents')) {
                 foreach ($request->resource_documents as $index => $doc) {
@@ -367,102 +377,112 @@ class ResourceController extends Controller
         return view('booking.index', compact('courseResources','pending_resources', 'selected_course', 'approved_resources', 'rejected_resources'));
     }
 
- public function store(Request $request)
-{
-    $checkedResources = collect($request->input('resources', []))->filter(function ($resource) {
-        return isset($resource['id']); // Only validate checked resources
-    });
+    public function store(Request $request)
+    {
+        $checkedResources = collect($request->input('resources', []))->filter(function ($resource) {
+            return isset($resource['id']); // Only validate checked resources
+        });
 
-    $rules = [];
-    foreach ($checkedResources as $key => $resource) {
-        $rules["resources.$key.start_date"] = 'required|date';
-        $rules["resources.$key.end_date"] = 'required|date|after_or_equal:resources.'.$key.'.start_date';
-    }
-
-    $messages = [
-        'resources.*.start_date.required' => 'Start date is required.',
-        'resources.*.end_date.required' => 'End date is required.',
-        'resources.*.end_date.after_or_equal' => 'End date must be after or equal to start date.',
-    ];
-
-    $request->validate($rules, $messages);
-
-    // Save bookings if not duplicate
-    $userId = Auth::user()->id;
-    $ou_id = Auth::user()->ou_id;
- 
-    foreach ($checkedResources as $row) {
-        $exists = BookedResource::where('user_id', $userId)
-            ->where('course_id', $row['courses_id'])
-            ->where('resource_id', $row['id'])
-            ->exists();
-
-        if (!$exists) {
-            BookedResource::create([
-                "user_id" => $userId,
-                "ou_id" => $ou_id,
-                "course_id" => $row['courses_id'],
-                "resource_id" => $row['id'],
-                "start_date" => $row['start_date'],
-                "end_date" => $row['end_date'],
-                "status" => 0,
-            ]);
+        $rules = [];
+        foreach ($checkedResources as $key => $resource) {
+            $rules["resources.$key.start_date"] = 'required|date';
+            $rules["resources.$key.end_date"] = 'required|date|after_or_equal:resources.'.$key.'.start_date';
         }
-    }
-    Session::flash('message','Resource Booked successfully.');
-    return response()->json(['suceess' => 'suceess' ]);
-}
 
-public function resource_approval()
-{
-    $ou_id    = Auth::user()->ou_id;
-    $is_admin = Auth::user()->is_admin;
+        $messages = [
+            'resources.*.start_date.required' => 'Start date is required.',
+            'resources.*.end_date.required' => 'End date is required.',
+            'resources.*.end_date.after_or_equal' => 'End date must be after or equal to start date.',
+        ];
 
+        $request->validate($rules, $messages);
+
+        // Save bookings if not duplicate
+        $userId = Auth::user()->id;
+        $ou_id = Auth::user()->ou_id;
     
-    if($is_admin== 1){
-        $pending_approval = BookedResource::with('resource:id,name', 'user:id,fname,lname')->where('ou_id', $ou_id)->get();
-        return view('booking.approval', compact('pending_approval'));
-    }else{
-        $pending_approval = [];
-        return view('booking.approval', compact('pending_approval'));
+        foreach ($checkedResources as $row) {
+            $exists = BookedResource::where('user_id', $userId)
+                ->where('course_id', $row['courses_id'])
+                ->where('resource_id', $row['id'])
+                ->exists();
+
+            if (!$exists) {
+                BookedResource::create([
+                    "user_id" => $userId,
+                    "ou_id" => $ou_id,
+                    "course_id" => $row['courses_id'],
+                    "resource_id" => $row['id'],
+                    "start_date" => $row['start_date'],
+                    "end_date" => $row['end_date'],
+                    "status" => 0,
+                ]);
+            }
+        }
+        Session::flash('message','Resource Booked successfully.');
+        return response()->json(['suceess' => 'suceess' ]);
     }
+
+    public function resource_approval()
+    {
+        $ou_id    = Auth::user()->ou_id;
+        $is_admin = Auth::user()->is_admin;
+
+        
+        if($is_admin== 1){
+            $pending_approval = BookedResource::with('resource:id,name', 'user:id,fname,lname')->where('ou_id', $ou_id)->get();
+            return view('booking.approval', compact('pending_approval'));
+        }else{
+            $pending_approval = [];
+            return view('booking.approval', compact('pending_approval'));
+        }
+        
     
-   
-}
+    }
 
-public function approve_request(Request $request)
-{
-   $booking_id = $request->booking_id;
-
-   $approve = array(
-     "status" => 1
-   );
-
-   $approve_request = BookedResource::where('id', $booking_id)->update($approve);
-   if($approve_request)
-   {
-    Session::flash('message','Request Approved Successfully');
-    return response()->json(['success' => 'success' ]);
-   }
-
-}
-
-public function reject_request(Request $request)
-{
+    public function approve_request(Request $request)
+    {
     $booking_id = $request->booking_id;
 
     $approve = array(
-      "status" => 2
+        "status" => 1
     );
- 
+
     $approve_request = BookedResource::where('id', $booking_id)->update($approve);
     if($approve_request)
     {
-     Session::flash('message','Request Rejected Successfully');
-     return response()->json(['success' => 'success' ]);
+        Session::flash('message','Request Approved Successfully');
+        return response()->json(['success' => 'success' ]);
     }
-}
 
+    }
+
+    public function reject_request(Request $request)
+    {
+        $booking_id = $request->booking_id;
+
+        $approve = array(
+        "status" => 2
+        );
     
+        $approve_request = BookedResource::where('id', $booking_id)->update($approve);
+        if($approve_request)
+        {
+        Session::flash('message','Request Rejected Successfully');
+        return response()->json(['success' => 'success' ]);
+        }
+    }
+
+    public function showResource(Request $request, $resource_id)
+    {
+        $resourceData = Resource::with('documents')->find(decode_id($resource_id));
+
+        if ($resourceData) {
+            return view('resource.show', compact('resourceData'));
+        }
+
+        return redirect()->route('resource.index')->with('message', 'Resource not found.');
+    }
+
 
 }

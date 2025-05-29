@@ -16,7 +16,7 @@
     <div class="container">
         @if(!$event)
             <div class="alert alert-info text-center">
-                <i class="bi bi-info-circle-fill me-2"></i> No Grading available for this event.
+                <i class="bi bi-info-circle-fill me-2"></i> This Event has not been graded yet.
             </div>
         @else
             <div class="card shadow-lg mb-5 border-0">

@@ -506,7 +506,6 @@ class TrainingEventsController extends Controller
         if (!$trainingEvent) {
             return abort(404, 'Training Event not found');
         }
-    
         // Filter lessons based on role
         if (hasUserRole($currentUser, 'Instructor') && empty($currentUser->is_admin)) {
             // Only show lessons assigned to this instructor
@@ -705,14 +704,13 @@ class TrainingEventsController extends Controller
                 'documents.courseDocument:id,document_name', // 🆕 Add this to load document name from course_documents
             ])
             ->first(); // Use first() to get a single event
-        
-        if (!$event) {
-            abort(404, 'Training Event not found.');
-        }    
 
-        // dd($event);
+            if ($event) {
+            // return redirect()->route('training.index')->with('message', 'Grading not found for this event.');
+            $event->student_feedback_submitted = $event->trainingFeedbacks()->where('user_id', auth()->user()->id)->exists();    
+            // abort(404, 'Training Event not found.');
+            }    
         
-        $event->student_feedback_submitted = $event->trainingFeedbacks()->where('user_id', auth()->user()->id)->exists();    
         // dd($event->student_feedback_submitted);
         // dd($event->course->enable_feedback);
     

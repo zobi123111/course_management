@@ -15,8 +15,8 @@
     {{ session()->get('message') }}
 </div>
 @endif
-<div class="main_cont_outer" >
-    <div class="create_btn " >
+<div class="main_cont_outer">
+    <div class="create_btn">
         @if(checkAllowedModule('resource','save.index')->isNotEmpty())
         <button class="btn btn-primary create-button" id="create_resource" data-toggle="modal"
             data-target="#orgUnitModal">Create Resource</button>
@@ -36,12 +36,7 @@
                         <th scope="col">Class</th>
                         <th scope="col">Type</th>
                         <th scope="col">Note</th>
-                        @if(checkAllowedModule('resource','edit.index')->isNotEmpty())
-                        <th scope="col">Edit</th>
-                        @endif
-                        @if(checkAllowedModule('resource','delete.index')->isNotEmpty())
-                        <th scope="col">Delete</th>
-                        @endif
+                        <th scope="col">Action</th>                  
                     </tr>
                 </thead>
         
@@ -52,33 +47,6 @@
         </div>
     </div>
 </div>
-
-<!-- OU Users List Modal -->
-<div class="modal fade" id="orgUnitUsersModal" tabindex="-1" role="dialog" aria-labelledby="orgUnitUsersModalLabel"
-    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="orgUnitUsersModalLabel">OU Users</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-            <table class="table" id="orgUnitUsersTable">
-                <thead>
-                    <tr>
-                        <th scope="col">Image</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Email</th>
-                    </tr>
-                </thead>
-                <tbody id="tblBody">                    
-                </tbody>
-            </table>
-            </div>
-        </div>
-    </div>
-</div>
-<!--End of OU Users List Modal-->
 
 <!-- Create Resource  Unit-->
 <div class="modal fade" id="createResourceModel" tabindex="-1" role="dialog" aria-labelledby="orgUnitModalLabel"
@@ -373,19 +341,13 @@
         columns: [
             @if(auth()->user()->is_owner)
             { data: 'OU', name: 'OU' }, // dynamically add OU column for owners
-            @endif
-            
+            @endif            
             { data: 'name', name: 'name' ,class:'resource_name'},
             { data: 'registration', name: 'registration', class: 'orgUnitName' },
             { data: 'class', name: 'class' },
             { data: 'type', name: 'type' },
             { data: 'note', name: 'note' },
-            @if(checkAllowedModule('resource','edit.index')->isNotEmpty())
-            { data: 'edit', name: 'edit', orderable: false, searchable: false },
-            @endif
-            @if(checkAllowedModule('resource','delete.index')->isNotEmpty())
-            { data: 'delete', name: 'delete', orderable: false, searchable: false },
-            @endif
+            { data: 'action', name: 'action',  class: 'text-center', orderable: false, searchable: false }
         ]
     });
 
