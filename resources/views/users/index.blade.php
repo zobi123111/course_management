@@ -138,9 +138,7 @@
                             <select name="role_name" class="form-select" id="role">
                                 <option value="">Select role</option>
                                 @foreach($roles as $val)
-                                    @if($val->role_name !== 'Administrator' || auth()->user()->is_owner == 1)
                                         <option value="{{ $val->id }}">{{ $val->role_name }}</option>
-                                    @endif
                                 @endforeach
                             </select>
                             <div id="role_name_error" class="text-danger error_e"></div>
@@ -470,9 +468,7 @@
                             <select name="edit_role_name" class="form-select" id="edit_role">
                                 <option value="">Select role</option>
                                 @foreach($roles as $val)
-                                    @if($val->role_name !== 'Administrator' || auth()->user()->is_owner == 1)
                                         <option value="{{ $val->id }}">{{ $val->role_name }}</option>
-                                    @endif
                                 @endforeach
                             </select>
                             <div id="edit_role_name_error_up" class="text-danger error_e"></div>

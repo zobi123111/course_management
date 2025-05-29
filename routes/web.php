@@ -239,6 +239,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/resourse/update', [ResourceController::class, 'update'])->name('update.index'); 
     Route::post('/resource/delete', [ResourceController::class, 'delete'])->name('delete.index');
     Route::post('/resource/getcourseResource', [ResourceController::class, 'getcourseResource'])->name('getcourseResource.index');
+    Route::get('/resource/show/{resource_id}', [ResourceController::class, 'showResource'])->name('resource.show');
 
     // Booking Request
     Route::get('/booking/bookresource/{course_id}', [ResourceController::class, 'bookresource'])->name('bookresource.index');
