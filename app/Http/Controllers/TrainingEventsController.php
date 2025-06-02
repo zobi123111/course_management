@@ -154,7 +154,7 @@ class TrainingEventsController extends Controller
     }
     public function getStudentLicenseNumberAndCourses(Request $request,$user_id,$ou_id)
     {
-        $user = User::find($user_id);
+        $user = User::with('documents')->find($user_id);
         $groups = Group::where('ou_id', $ou_id)
         ->whereJsonContains('user_ids', strval($user_id)) // Ensure user_id is a string
         ->pluck('id'); // Get only the group IDs
@@ -165,7 +165,7 @@ class TrainingEventsController extends Controller
         })
         ->get();        
         if ($user) {
-            return response()->json(['success' => true, 'licence_number' => $user->licence, 'courses' => $courses]);
+            return response()->json(['success' => true, 'licence_number' => $user->licence ?: $user->licence_2, 'courses' => $courses]);
         } else {
             return response()->json(['success' => false]);
         }
@@ -173,12 +173,12 @@ class TrainingEventsController extends Controller
 
     public function getInstructorLicenseNumber(Request $request, $instructor_id)
     {
-        $instructor = User::find($instructor_id);      
+        $instructor = User::with('documents')->find($instructor_id);   
     
         if ($instructor) {
             return response()->json([
                 'success' => true,
-                'instructor_licence_number' => $instructor->licence
+                'instructor_licence_number' => $instructor->licence ?: $instructor->licence_2
             ]);
         }
     
@@ -292,7 +292,7 @@ class TrainingEventsController extends Controller
             'course_id' => $request->course_id,
             'lesson_ids' => json_encode($request->lesson_ids),  
             // 'event_date' => $request->event_date,
-            // 'total_time' => $request->total_time,
+            'total_time' => $request->total_time,
             'std_license_number' => $request->std_license_number,
             'ou_id' => auth()->user()->is_owner ? $request->ou_id : auth()->user()->ou_id,
         ]);
@@ -435,6 +435,7 @@ class TrainingEventsController extends Controller
             'course_id' => $request->course_id,
             'student_id' => $request->student_id,
             'lesson_ids' => json_encode(array_column($lessonData, 'lesson_id')),
+            'total_time' => $request->total_time ?? null,
             'std_license_number' => $request->std_license_number ?? null,
         ]);
     
@@ -506,17 +507,17 @@ class TrainingEventsController extends Controller
         if (!$trainingEvent) {
             return abort(404, 'Training Event not found');
         }
-        // Filter lessons based on role
+        //Filter lessons based on role
         if (hasUserRole($currentUser, 'Instructor') && empty($currentUser->is_admin)) {
             // Only show lessons assigned to this instructor
             $eventLessons = $trainingEvent->eventLessons->filter(function ($lesson) use ($currentUser) {
                 return $lesson->instructor_id == $currentUser->id;
             })->values();
         } else {
-            // Admins and others with access can view all lessons
+            //Admins and others with access can view all lessons
             $eventLessons = $trainingEvent->eventLessons;
         }
-        // dd($eventLessons);
+        //dd($eventLessons);
         $student = $trainingEvent->student;
         $lessonIds = $eventLessons->pluck('lesson_id')->filter()->unique();
         //Get task gradings (sublesson grades and comments)
@@ -526,21 +527,24 @@ class TrainingEventsController extends Controller
             ->get()
             ->keyBy('sub_lesson_id');
     
-        // Get competency grades (competency area grades and comments)
+        //Get competency grades (competency area grades and comments)
         $competencyGrades = CompetencyGrading::where('user_id', $student->id)
             ->where('event_id', $trainingEvent->id)
             ->whereIn('lesson_id', $lessonIds)
             ->get()
             ->groupBy('lesson_id');
 
-        // Optional: Also pass overall assessments if you need them
+        //Optional: Also pass overall assessments if you need them
         $overallAssessments = OverallAssessment::where('event_id', $trainingEvent->id)
             ->where('user_id', $student->id ?? null)
             ->first();
+        //dd($trainingEvent->eventLessons);
+        $hasCBTA = $trainingEvent->eventLessons->contains(function ($lesson) {
+            return $lesson->enable_cbta == 1;
+        });
+        $isGradingCompleted = $taskGrades->isNotEmpty() && ($hasCBTA ? $competencyGrades->isNotEmpty() : true);
 
-        $isGradingCompleted = $taskGrades->isNotEmpty() && $competencyGrades->isNotEmpty();    
-
-        // Retrieve feedback data
+        //Retrieve feedback data
         $trainingFeedbacks = $trainingEvent->trainingFeedbacks;    
         return view('trainings.show', compact(
             'trainingEvent', 
@@ -754,6 +758,7 @@ class TrainingEventsController extends Controller
     
         $event = TrainingEvents::with([
             'course:id,course_name',
+            'orgUnit:id,org_unit_name,org_logo',
             'instructor:id,fname,lname',
             'student:id,fname,lname',
             'eventLessons' => function ($query) use ($lesson_id) {

@@ -12,7 +12,17 @@
     </style>
 </head>
 <body>
-    <h1>Lesson Report</h1>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <h1 style="margin: 0; flex: 1; text-align: left;">Lesson Report</h1>
+            @if($event?->orgUnit?->org_logo)
+                <img src="{{ public_path('storage/organization_logo/' . $event->orgUnit->org_logo) }}"
+                    alt="Org Logo"
+                    style="height: 60px; object-fit: contain;">
+            @endif
+        </div>
+        <hr>
+
+
         <div class="section">
             <strong>Date:</strong> {{ date('M d, Y', strtotime($eventLesson?->lesson_date)) }}<br>
             <strong>Student Name:</strong> {{ $event?->student?->fname }} {{ $event?->student?->lname }}<br>

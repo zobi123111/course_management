@@ -192,11 +192,11 @@ class UserController extends Controller
                     if ($request->filled('licence')) {
                         $rules['licence'] = 'required';
                         if(!$request->has('licence_expiry_date') || !$request->has('non_expiring_licence')){
-                            $rules['licence_expiry_date'] = 'required'; 
+                            $rules['licence_expiry_date'] = 'nullable'; 
                         }
                         // Require a new file only if there's no existing file
                         if (!$userToUpdate->licence_file) {
-                            $rules['licence_file'] = 'required|file|mimes:pdf,jpg,jpeg,png';
+                            $rules['licence_file'] = 'nullable|file|mimes:pdf,jpg,jpeg,png';
                         } 
                     }                                       
                 }
@@ -216,10 +216,10 @@ class UserController extends Controller
                 if ($userToUpdate->passport_required == 1) {
                     if ($request->filled('passport')) {
                         $rules['passport'] = 'required';
-                        $rules['passport_expiry_date'] = 'required';
+                        $rules['passport_expiry_date'] = 'nullable';
                 
                         if (!$userToUpdate->passport_file) {
-                            $rules['passport_file'] = 'required|file|mimes:pdf,jpg,jpeg,png';
+                            $rules['passport_file'] = 'nullable|file|mimes:pdf,jpg,jpeg,png';
                         }
                     }
                 }
@@ -233,25 +233,24 @@ class UserController extends Controller
                             $rules['medical_class'] = 'required';
                         }
                 
-                        $rules['medical_issue_date'] = 'required';
-                        $rules['medical_expiry_date'] = 'required';
+                        $rules['medical_issue_date'] = 'nullable';
+                        $rules['medical_expiry_date'] = 'nullable';
                         // $rules['medical_detail'] = 'required';
                 
                         if (!$userToUpdate->medical_file) {
-                            $rules['medical_file'] = 'required|file|mimes:pdf,jpg,jpeg,png';
+                            $rules['medical_file'] = 'nullable|file|mimes:pdf,jpg,jpeg,png';
                         }
                     }
                 }
 
                if ($request->filled('issued_by_2')) {
-                    $rules['medical_issue_date_2'] = 'required';
-                    $rules['medical_expiry_date_2'] = 'required';
+                    $rules['medical_issue_date_2'] = 'nullable';
+                    $rules['medical_expiry_date_2'] = 'nullable';
 
                     if (!$document || !$document->medical_file_2) {
-                        $rules['medical_file_2'] = 'required|file|mimes:pdf,jpg,jpeg,png';
+                        $rules['medical_file_2'] = 'nullable|file|mimes:pdf,jpg,jpeg,png';
                     }
                 }
-
 
                 $customAttributes = [
                     'medical_issue_date_2' => 'medical issue date',
@@ -264,17 +263,16 @@ class UserController extends Controller
                 if ($request->filled('licence_2')) {
 
                     if(!$request->has('licence_expiry_date_2') || !$request->has('non_expiring_licence_2')){
-                        $rules['licence_expiry_date_2'] = 'required';
+                        $rules['licence_expiry_date_2'] = 'nullable';
                     }
                     // $rules['licence_file_2'] = 'required';
 
                     if ($document && !$document->licence_file_2) {
-                        $rules['licence_file_2'] = 'required|file|mimes:pdf,jpg,jpeg,png';
+                        $rules['licence_file_2'] = 'nullable|file|mimes:pdf,jpg,jpeg,png';
                     } else {
                         $rules['licence_file_2'] = 'nullable|file|mimes:pdf,jpg,jpeg,png';
                     }
                 }
-
 
                 $customAttributes = [
                     'licence_expiry_date_2' => 'licence expiry date',
@@ -282,7 +280,6 @@ class UserController extends Controller
                 ];
 
                 $this->validate($request, $rules, [], $customAttributes);
-
 
                 $medicalFileUploaded = $document?->medical_file_uploaded ?? false;
                 $medicalFileUploaded_2 = $document?->medical_file_uploaded_2 ?? false;
@@ -318,7 +315,6 @@ class UserController extends Controller
                 } else {
                     $medicalFilePath_2 = $request->old_medical_file_2;
                 }
-
             
                 if ($userToUpdate->currency_required == 1 && !$userToUpdate->currency) {
                     $rules['currency'] = 'required|string';
@@ -343,16 +339,14 @@ class UserController extends Controller
                         }
                     }
                 }
-                
-                
-            
+
                 if (!empty($rules)) {
                     $request->validate($rules);
                 }
             }         
 
             // Handle Licence File Upload
-            if ($userToUpdate->licence_required == 1) {
+            if ($userToUpdate->licence_required == 1){
                 if ($request->hasFile('licence_file')) {
                     if ($document && $document->licence_file) {
                         Storage::disk('public')->delete($document->licence_file);
@@ -363,7 +357,7 @@ class UserController extends Controller
                 } else {
                     $licenceFilePath = $request->old_licence_file;
                 }
-            } else {
+            }else{
                 $licenceFilePath = $document->licence_file;
             }
 
@@ -374,11 +368,11 @@ class UserController extends Controller
                 $licenceFilePath_2 = $request->file('licence_file_2')->store('licence_files', 'public');
                 $licenceFileUploaded_2 = true;
                 $document->update(['licence_verified_2' => 0]);
-            } else {
+            }else{
                 $licenceFilePath_2 = $request->old_licence_file_2;
             }
 
-            // Handle Passport File Upload
+            //Handle Passport File Upload
             if ($userToUpdate->passport_required == 1) {
                 if ($request->hasFile('passport_file')) {
                     if ($document && $document->passport_file) {
@@ -411,7 +405,6 @@ class UserController extends Controller
                 }
             }
             
-
             $newData = [
                 'fname' => $request->firstName,
                 'lname' => $request->lastName,
@@ -461,11 +454,11 @@ class UserController extends Controller
                     'description' => implode("\n", $changes), // New line for better readability
                 ]);
             }
-// dd($licenceFileUploaded_2);
+            //dd($licenceFileUploaded_2);
             $userToUpdate->documents()->updateOrCreate(
             ['user_id' => $userToUpdate->id], // Unique identifying condition
 
-            [ // Fields to update or set
+            [   //Fields to update or set
                 'licence' => $request->licence ?? null,
                 'licence_file' => $licenceFilePath ?? null,
                 'licence_expiry_date' => $request->licence_expiry_date ?? null,
@@ -658,7 +651,7 @@ class UserController extends Controller
         
 
         // Determine is_admin value
-        $is_admin = (!empty($request->ou_id) && $request->role_name==1)? 1 : null;
+        $is_admin = (!empty($request->ou_id) && $request->role_name==1) || (auth()->user()->is_admin==1 && $request->role_name==1)? 1 : null;
         // dd($is_admin);
 
         $store_user = array(
@@ -910,7 +903,7 @@ class UserController extends Controller
             $extra_roles = $request->has('extra_roles') ? json_encode($request->extra_roles) : $userToUpdate->extra_roles;
 
             // Determine is_admin value
-            if((!empty($request->ou_id) && $request->edit_role_name == 1) || ($request->edit_role_name == 1 && $userToUpdate->is_admin==1))
+            if((!empty($request->ou_id) && $request->edit_role_name == 1) || ($request->edit_role_name == 1 && auth()->user()->is_admin==1))
             {
                 $is_admin = 1;
             }else{

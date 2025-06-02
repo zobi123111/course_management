@@ -227,16 +227,16 @@
                 </div> -->
 
                 <!-- Total Time (Calculated) -->
-                <!-- <div class="col-md-6">
+                <div class="col-md-6">
                     <label class="form-label">Total Time (hh:mm)<span class="text-danger">*</span></label>
                     <input type="text" name="total_time" class="form-control" id="total_time" readonly>
                     <div id="total_time_error" class="text-danger error_e"></div>
-                </div> -->
+                </div>
 
                 <!-- License Number (Extracted from user profile) -->
                 <div class="col-md-6">
                     <label class="form-label">Student License Number</label>
-                    <input type="text" name="std_licence_number" class="form-control" id="std_licence_number" value="{{ auth()->user()->licence_number }}" readonly>
+                    <input type="text" name="std_licence_number" class="form-control" id="std_licence_number" value="" readonly>
                     <div id="std_licence_number_error" class="text-danger error_e"></div>
                 </div>
 
@@ -368,11 +368,11 @@
                     <div id="resource_id_error_up" class="text-danger error_e"></div>
                 </div> -->
                 <!-- Total Time (Calculated) -->
-                <!-- <div class="col-md-6">
+                <div class="col-md-6">
                     <label class="form-label">Total Time (hh:mm)<span class="text-danger">*</span></label>
                     <input type="text" name="total_time" class="form-control" id="edit_total_time" readonly>
                     <div id="total_time_error_up" class="text-danger error_e"></div>
-                </div> -->
+                </div>
                 <div class="col-md-6">
                     <label class="form-label">Student Licence Number</label>
                     <input type="text" name="std_licence_number" class="form-control" id="edit_std_licence_number" readonly>
@@ -558,47 +558,53 @@ $(document).ready(function() {
     $("#createTrainingEvent").on('click', function() {
         $(".error_e").html('');
         $("#trainingEventForm")[0].reset();
+        $('#total_time').val('');
         $("#createTrainingEventModal").modal('show');
         $('#createTrainingEventModal').on('shown.bs.modal', function() {
             initializeSelect2();
         });
     })
 
-    // Attach event listeners for both create and edit fields
-     $('#start_time, #end_time, #edit_start_time, #edit_end_time').on('change', function () {
-         calculateTotalTime($(this).closest('form')); // Pass the form context
-     });
+    // On create screen
+    $(document).on('change', '.lesson-start-time, .lesson-end-time', function () {
+        calculateTotalTime('#total_time');
+    });
 
-    function calculateTotalTime(form) {
-        let startInput = form.find('input[name="start_time"], input[name="edit_start_time"]');
-        let endInput = form.find('input[name="end_time"], input[name="edit_end_time"]');
-        let totalTimeInput = form.find('input[name="total_time"], input[name="edit_total_time"]');
+    // On edit screen
+    $(document).on('change', '.lesson-start-time, .lesson-end-time', function () {
+        calculateTotalTime('#edit_total_time');
+    });
 
-        let start = startInput.val();
-        let end = endInput.val();
 
-        if (start && end) {
-            let [startHours, startMinutes] = start.split(':').map(Number);
-            let [endHours, endMinutes] = end.split(':').map(Number);
 
-            let startTotalMinutes = startHours * 60 + startMinutes;
-            let endTotalMinutes = endHours * 60 + endMinutes;
+    function calculateTotalTime(outputSelector = '#total_time') {
+        let totalMinutes = 0;
 
-            if (endTotalMinutes > startTotalMinutes) {
-                let diffMinutes = endTotalMinutes - startTotalMinutes;
-                let hours = Math.floor(diffMinutes / 60);
-                let minutes = diffMinutes % 60;
+        $('.lesson-box').each(function () {
+            let lessonId = $(this).data('lesson-id');
+            let start = $(`input[name="lesson_data[${lessonId}][start_time]"]`).val();
+            let end = $(`input[name="lesson_data[${lessonId}][end_time]"]`).val();
 
-                let formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-                
-                totalTimeInput.val(formattedTime);
-            } else {
-                totalTimeInput.val('00:00'); 
+            if (start && end) {
+                let startTime = moment(start, "HH:mm");
+                let endTime = moment(end, "HH:mm");
+
+                if (endTime.isBefore(startTime)) {
+                    endTime.add(1, 'day');
+                }
+
+                totalMinutes += endTime.diff(startTime, 'minutes');
             }
-        } else {
-            totalTimeInput.val('00:00');
-        }
+        });
+
+        let hours = Math.floor(totalMinutes / 60);
+        let minutes = totalMinutes % 60;
+        let totalFormatted = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+
+        $(outputSelector).val(totalFormatted);
     }
+
+
 
     $(document).on('change', '#select_org_unit, #edit_ou_id', function() {
         var ou_id = $(this).val();
@@ -814,6 +820,8 @@ $(document).ready(function() {
                     // Set initial static values
                     $('#edit_event_id').val(event.id);
                     $('#edit_std_licence_number').val(event.std_licence_number);
+                    let totalTime = moment(event.total_time, 'HH:mm:ss').format('HH:mm'); 
+                    $('#edit_total_time').val(totalTime);
 
                     // Set OU and wait for dropdowns to populate
                     $('#edit_ou_id').val(selectedOU);
