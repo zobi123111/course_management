@@ -75,11 +75,11 @@
                         <div class="d-flex flex-wrap align-items-center gap-3">
                             <p class="mb-0"><strong>Number:</strong> {{ $document->passport }}</p>
 
+                            @if($user->passport_admin_verification_required==1 && $document?->passport_file)
                             <a href="{{ Storage::url($document->passport_file) }}" class="btn btn-outline-primary btn-sm" target="_blank">
                                 View File
                             </a>
 
-                            @if($user->passport_admin_verification_required==1)
                                 <div class="form-check form-switch mb-0">
                                     <input class="form-check-input verify-toggle" type="checkbox" id="passport_verify"
                                         data-user-id="{{ encode_id($user->id) }}" data-type="passport"
@@ -109,9 +109,9 @@
                     @if($document && $document->licence)
                         <div class="d-flex flex-wrap align-items-center gap-3">
                             <p class="mb-0"><strong>Number:</strong> {{ $document->licence }}</p>
+                            @if($user->licence_admin_verification_required == 1  && $document?->licence_file)
                             <a href="{{ Storage::url($document->licence_file) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
 
-                            @if($user->licence_admin_verification_required == 1)
                                 <div class="form-check form-switch mb-0">
                                     <input class="form-check-input verify-toggle" type="checkbox" id="licence_verify"
                                         data-user-id="{{ encode_id($user->id) }}" data-type="licence"
@@ -135,11 +135,9 @@
                     <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>Second License Details</h5>
                         <div class="d-flex flex-wrap align-items-center gap-3">
                             <p class="mb-0"><strong>Number:</strong> {{ $document->licence_2 }}</p>
-                            @if($document->licence_file_2)
+                            @if($user->licence_2_admin_verification_required == 1 && $document->licence_file_2)
                                 <a href="{{ Storage::url($document->licence_file_2) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
-                            @endif
 
-                            @if($user->licence_2_admin_verification_required == 1)
                                 <div class="form-check form-switch mb-0">
                                     <input class="form-check-input verify-toggle" type="checkbox" id="licence2_verify"
                                         data-user-id="{{ encode_id($user->id) }}" data-type="licence_2"
@@ -165,9 +163,9 @@
                             <p class="mb-0"><strong>Issue Date:</strong> {{ $document->medical_issuedate }}</p>
                             <p class="mb-0"><strong>Expiry Date:</strong> {{ $document->medical_expirydate }}</p>
 
+                            @if($user->medical_adminRequired == 1 && $document->medical_file)
                             <a href="{{ Storage::url($document->medical_file) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
 
-                            @if($user->medical_adminRequired == 1)
                                 <div class="form-check form-switch mb-0">
                                     <input class="form-check-input verify-toggle" type="checkbox" id="medical_verify"
                                         data-user-id="{{ encode_id($user->id) }}" data-type="medical"
@@ -195,9 +193,9 @@
                             <p class="mb-0"><strong>Issue Date:</strong> {{ $document->medical_issuedate_2 }}</p>
                             <p class="mb-0"><strong>Expiry Date:</strong> {{ $document->medical_expirydate_2 }}</p>
 
+                            @if($user->medical_2_adminRequired == 1 && $document->medical_file_2)
                             <a href="{{ Storage::url($document->medical_file_2) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
 
-                            @if($user->medical_2_adminRequired == 1)
                                 <div class="form-check form-switch mb-0">
                                     <input class="form-check-input verify-toggle" type="checkbox" id="medical2_verify"
                                         data-user-id="{{ encode_id($user->id) }}" data-type="medical_2"

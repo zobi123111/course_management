@@ -293,7 +293,7 @@ class TrainingEventsController extends Controller
             'lesson_ids' => json_encode($request->lesson_ids),  
             // 'event_date' => $request->event_date,
             'total_time' => $request->total_time,
-            'std_license_number' => $request->std_license_number,
+            'std_license_number' => $request->std_licence_number,
             'ou_id' => auth()->user()->is_owner ? $request->ou_id : auth()->user()->ou_id,
         ]);
     
@@ -436,7 +436,7 @@ class TrainingEventsController extends Controller
             'student_id' => $request->student_id,
             'lesson_ids' => json_encode(array_column($lessonData, 'lesson_id')),
             'total_time' => $request->total_time ?? null,
-            'std_license_number' => $request->std_license_number ?? null,
+            'std_license_number' => $request->std_licence_number ?? null,
         ]);
     
         // Get all lesson_ids from the request
