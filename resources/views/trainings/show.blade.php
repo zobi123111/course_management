@@ -455,7 +455,7 @@
                         </div>
                         <div class="col-md-6">
                             <strong><i class="fas fa-id-card"></i> License Number:</strong>
-                            {{ $trainingEvent->std_licence_number ?? 'N/A' }}
+                            {{ $trainingEvent->std_license_number ?? 'N/A' }}
                         </div>
                     </div>
                 @else
@@ -499,7 +499,7 @@
                         </div>
                         <div class="col-md-6">
                             <strong><i class="fas fa-id-card"></i> License Number:</strong>
-                            {{ $trainingEvent->std_licence_number ?? 'N/A' }}
+                            {{ $trainingEvent->std_license_number ?? 'N/A' }}
                         </div>
                     </div>
                 @endif

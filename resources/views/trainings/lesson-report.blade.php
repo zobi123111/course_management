@@ -12,14 +12,22 @@
     </style>
 </head>
 <body>
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <h1 style="margin: 0; flex: 1; text-align: left;">Lesson Report</h1>
-            @if($event?->orgUnit?->org_logo)
-                <img src="{{ public_path('storage/organization_logo/' . $event->orgUnit->org_logo) }}"
-                    alt="Org Logo"
-                    style="height: 60px; object-fit: contain;">
-            @endif
-        </div>
+        <table width="100%" style="border: none; border-collapse: collapse;">
+            <tr>
+                <td style="border: none; text-align: left; vertical-align: top;">
+                    <h1 style="margin: 0;">Lesson Report</h1>
+                </td>
+                <td style="border: none; text-align: right; vertical-align: top;">
+                    @if($event?->orgUnit?->org_logo)
+                        <img src="{{ public_path('storage/organization_logo/' . $event->orgUnit->org_logo) }}"
+                            alt="Org Logo"
+                            style="height: 60px;">
+                    @endif
+                </td>
+            </tr>
+        </table>
+
+
         <hr>
 
 

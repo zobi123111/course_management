@@ -24,7 +24,7 @@ class TrainingEvents extends Model
         'departure_airfield',
         'destination_airfield',
         'total_time',
-        'std_licence_number',
+        'std_license_number',
         'is_locked',
         'student_acknowledged',
         'student_acknowledgement_comments'

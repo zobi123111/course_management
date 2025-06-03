@@ -67,7 +67,7 @@
                                 </tr>
                                 <tr>
                                     <th>Hours From RTS</th>
-                                    <td>{{ optional($resourceData->hours_from_rts)->format('H:i:s') ?? 'N/A' }}</td>
+                                    <td>{{ $resourceData->hours_from_rts ?? 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Date From RTS</th>
@@ -79,7 +79,7 @@
                                 </tr>
                                 <tr>
                                     <th>Hours Remaining</th>
-                                    <td>{{ optional($resourceData->hours_remaining)->format('H:i:s') ?? 'N/A' }}</td>
+                                    <td>{{ $resourceData->hours_remaining ?? 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Enable Document Upload</th>

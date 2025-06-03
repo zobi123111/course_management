@@ -12,8 +12,6 @@ class Resource extends Model
 
     // ✅ Add this section for date and time casting
     protected $casts = [
-        'hours_from_rts' => 'datetime:H:i:s',
-        'hours_remaining' => 'datetime:H:i:s',
         'date_from_rts' => 'date:Y-m-d',
         'date_for_maintenance' => 'date:Y-m-d',
         'enable_doc_upload' => 'boolean',

@@ -199,10 +199,6 @@ class TrainingEventsController extends Controller
 
     public function createTrainingEvent(Request $request)
     {
-        // Convert total time
-        // $request->merge([
-        //     'total_time' => date('H:i', strtotime($request->total_time)),
-        // ]);
     
         // Validate base fields
         $request->validate([
