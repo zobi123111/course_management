@@ -69,7 +69,7 @@ class ResourceController extends Controller
                 if (checkAllowedModule('resource','delete.index')->isNotEmpty()) {
                     $action .= '<i class="fa-solid fa-trash delete-icon me-2" data-resource-id="' . encode_id($unit->id) . '"></i>';
                 }
-                if (checkAllowedModule('resource','delete.index')->isNotEmpty()) {
+                if (checkAllowedModule('resource','resource.show')->isNotEmpty()) {
                     $action .= '<a href="' . url('resource/show/' . encode_id($unit->id)) . '" class="view-icon" title="View Resource" style="font-size:18px; cursor: pointer;"><i class="fa fa-eye text-danger"></i></a>';                     
                 }
 

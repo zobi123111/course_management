@@ -293,6 +293,59 @@
 </div> <!-- end card -->
 @endif
 
+@if(auth()->user()->is_admin == 1 && isset($prerequisiteDetails) && count($prerequisiteDetails) > 0)
+    <div class="card pt-4">
+        <div class="card-body">
+            <h3>Submitted Prerequisites by Students</h3>
+
+                @forelse($prerequisiteDetails as $userId => $details)
+                    @php $user = $details->first()->creator; @endphp
+                    <div class="mb-4">
+                        <h5 class="mb-3 card-title">{{ $user->fname ?? 'Unknown' }} {{ $user->lname ?? '' }}</h5>
+
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 40%;">Prerequisite</th>
+                                    <th>Submitted Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($course->prerequisites as $prerequisite)
+                                    @php
+                                        $detail = $details->firstWhere('prereq_id', $prerequisite->id);
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $prerequisite->prerequisite_detail }}</td>
+                                        <td>
+                                            @if($prerequisite->prerequisite_type === 'file')
+                                                @if($detail && $detail->file_path)
+                                                    <a href="{{ asset('storage/' . $detail->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                        View File
+                                                    </a>
+                                                @else
+                                                    <span class="text-muted">Not submitted</span>
+                                                @endif
+                                            @elseif(in_array($prerequisite->prerequisite_type, ['text', 'number']))
+                                                {{ $detail->prerequisite_detail ?? 'Not submitted' }}
+                                            @else
+                                                <span class="text-muted">Unknown Type</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @empty
+                    <p>No prerequisite submissions found.</p>
+                @endforelse
+        </div>
+    </div>
+@endif
+
+
+
 <!-- Create Lesson-->
 <div class="modal fade" id="createLessonModal" tabindex="-1" role="dialog" aria-labelledby="lessonModalLabel"
     aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">

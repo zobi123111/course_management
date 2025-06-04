@@ -6,6 +6,8 @@ use App\Models\SubLesson;
 use Illuminate\Http\Request;
 use App\Models\CourseLesson;
 use App\Models\Courses;
+use App\Models\CoursePrerequisite;
+use App\Models\CoursePrerequisiteDetail;
 use App\Models\TrainingEvents;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -29,6 +31,7 @@ class LessonController extends Controller
             ['title' => 'Courses', 'url' => route('course.index')],
             ['title' => $course->course_name, 'url' => ''],
         ];
+        $prerequisiteDetails=null;
         if(get_user_role($user->role) == 'student'){
             $studentAcknowledged = TrainingEvents::where('course_id', decode_id($course_id))
             ->where('student_id', $user->id)
@@ -36,8 +39,17 @@ class LessonController extends Controller
             ->exists(); // returns true/false
         }else{
             $studentAcknowledged = false;
+
+            // Load prerequisite details grouped by student for admin
+            // dd($course->id);
+            $prerequisiteDetails = CoursePrerequisiteDetail::with('creator')
+                ->where('course_id', $course->id)
+                ->get()
+                ->groupBy('created_by');
+
+            // dd($prerequisiteDetails);
         }
-        return view('courses.show', compact('course', 'breadcrumbs','studentAcknowledged'));
+        return view('courses.show', compact('course', 'breadcrumbs','studentAcknowledged', 'prerequisiteDetails'));
     }
 
 
@@ -93,8 +105,12 @@ class LessonController extends Controller
             ['title' => $course->course_name, 'url' => route('course.show', encode_id($course->id))],
             ['title' => $lesson->lesson_title, 'url' => ''],
         ];
+         $lessonPrerequisiteDetails = LessonPrerequisiteDetail::with('creator')
+        ->where('lesson_id', $lesson->id)
+        ->get()
+        ->groupBy('created_by'); // grouped by student
 
-        return view('lesson.show', compact('lesson', 'breadcrumbs'));
+        return view('lesson.show', compact('lesson', 'breadcrumbs', 'lessonPrerequisiteDetails'));
     }
 
 
@@ -236,6 +252,7 @@ class LessonController extends Controller
                 $path = $file->store('prerequisites', 'public');
     
                 LessonPrerequisiteDetail::create([
+                    'prereq_id' => $prerequisite->id,
                     'course_id' => $course->id,
                     'lesson_id' => $lesson->id,
                     'prerequisite_type' => $prerequisite->prerequisite_type,
@@ -246,6 +263,7 @@ class LessonController extends Controller
             } else {
                 // dd("uu");
                 LessonPrerequisiteDetail::create([
+                    'prereq_id' => $prerequisite->id,
                     'course_id' => $course->id,
                     'prerequisite_type' => $prerequisite->prerequisite_type,
                     'prerequisite_detail' => $detail,

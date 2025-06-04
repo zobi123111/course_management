@@ -36,7 +36,9 @@
                         <th scope="col">Class</th>
                         <th scope="col">Type</th>
                         <th scope="col">Note</th>
-                        <th scope="col">Action</th>                  
+                        @if(checkAllowedModule('resource','edit.index')->isNotEmpty() || checkAllowedModule('resource','delete.index')->isNotEmpty() || checkAllowedModule('resource','resource.show')->isNotEmpty())
+                        <th scope="col">Action</th>         
+                        @endif         
                     </tr>
                 </thead>
         
