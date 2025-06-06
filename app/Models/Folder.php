@@ -11,7 +11,7 @@ class Folder extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $fillable = ['ou_id', 'parent_id', 'folder_name', 'description', 'status'];
+    protected $fillable = ['ou_id', 'parent_id', 'folder_name', 'description', 'status','is_published'];
 
     public function parent()
     {
@@ -24,7 +24,12 @@ class Folder extends Model
     }
 
     public function childrenRecursive()
-{
-    return $this->hasMany(Folder::class, 'parent_id')->with('childrenRecursive');
-}
+    {
+        return $this->hasMany(Folder::class, 'parent_id')->with('childrenRecursive');
+    }
+
+    // In Folder.php
+    public function groups() {  
+        return $this->belongsToMany(Group::class, 'folder_group_access', 'folder_id', 'group_id');
+    }
 }

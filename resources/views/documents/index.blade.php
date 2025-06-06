@@ -4,10 +4,10 @@
 @section('content')
 
 @if(session()->has('message'))  
-<div id="successMessage" class="alert alert-success fade show" role="alert">
-  <i class="bi bi-check-circle me-1"></i>
-  {{ session()->get('message') }}
-</div>
+    <div id="successMessage" class="alert alert-success fade show" role="alert">
+        <i class="bi bi-check-circle me-1"></i>
+            {{ session()->get('message') }} 
+    </div>
 @endif
 
 @if(checkAllowedModule('documents','document.store')->isNotEmpty())
@@ -109,7 +109,7 @@
                         <div id="issue_date_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="lastname" class="form-label">Completed Date<span class="text-danger">*</span></label>
+                        <label for="lastname" class="form-label">Completed Date</label>
                         <input type="date" name="completed_date" class="form-control">
                         <div id="completed_date_error" class="text-danger error_e"></div>
                     </div>
@@ -124,7 +124,7 @@
                         <div id="document_file_error" class="text-danger error_e"></div>            
                     </div>
                     <div class="form-group">
-                     <label for="email" class="form-label">Document Type<span class="text-danger">*</span></label>
+                     <label for="email" class="form-label">Document Type</label>
                         <select class="form-select" name="document_type" aria-label="Default select example" id="document_type">
                             <option value="">Select Document Type</option>
                             <option value="1"> SEP (land) </option>
@@ -216,7 +216,7 @@
                         <div id="issue_date_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="lastname" class="form-label">Completed Date<span class="text-danger">*</span></label>
+                        <label for="lastname" class="form-label">Completed Date</label>
                         <input type="date" name="completed_date" class="form-control" id="edit_completed_date">
                         <div id="completed_date_error_up" class="text-danger error_e"></div>
                     </div>
@@ -231,7 +231,7 @@
                         <div id="document_file_error_up" class="text-danger error_e"></div>            
                     </div>
                     <div class="form-group">
-                     <label for="email" class="form-label">Document Type<span class="text-danger">*</span></label>
+                     <label for="email" class="form-label">Document Type</label>
                         <select class="form-select" name="document_type" aria-label="Default select example" id="edit_document_type">
                             <option value="">Select Document Type</option>
                             <option value="1"> SEP (land) </option>

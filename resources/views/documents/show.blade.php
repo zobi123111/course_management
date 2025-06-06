@@ -4,96 +4,103 @@
 @extends('layout.app')
 @section('content')
 
-<div class="card mb-3">
-    <div class="row g-0">
-        <div class="container">    
-            <div class="doc_details d-flex justify-content-around m-3">
-                <span><strong>Document Title:</strong> {{ $document->doc_title }}</span>
-                <span><strong>Version No:</strong> {{ $document->version_no }}</span>
-                <span><strong>Issue Date:</strong> {{ $document->issue_date }}</span>
-                <span><strong>Expiry Date:</strong> {{ $document->expiry_date }}</span>
-            </div>
-            
-            @php
-                $file = asset('storage/' . $document->document_file); // Get file path
-                $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION)); // Extract extension
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fa fa-file-alt me-2"></i>Document Details</h5>
+    </div>
 
-                // Supported file types
+    <div class="card-body">
+        <div class="row g-3">
+
+            <div class="col-md-6">
+                <strong>📄 Title:</strong> {{ $document->doc_title }}
+            </div>
+
+            <div class="col-md-6">
+                <strong>📁 Folder:</strong> {{ $document?->folder?->folder_name ?? 'N/A' }}
+            </div>
+
+            <div class="col-md-6">
+                <strong>👥 Group:</strong> {{ $document?->group?->name ?? 'N/A' }}
+            </div>
+
+            <div class="col-md-6">
+                <strong>🆔 Version No:</strong> {{ $document->version_no }}
+            </div>
+
+            <div class="col-md-6">
+                <strong>📅 Issue Date:</strong> {{ $document->issue_date ? date('d/m/Y', strtotime($document->issue_date)): 'N/A' }}
+            </div>
+
+            <div class="col-md-6">
+                <strong>⏳ Expiry Date:</strong> {{ $document->expiry_date ? date('d/m/Y', strtotime($document->expiry_date)): 'N/A' }}
+            </div>
+
+            <div class="col-md-6">
+                <strong>✅ Completed Date:</strong> {{ $document->completed_date ? date('d/m/Y', strtotime($document->completed_date)): 'N/A' }}
+            </div>
+
+            <div class="col-md-6">
+                <strong>📂 Type:</strong> {{ $document->document_type ?? 'N/A' }}
+            </div>
+
+            <div class="col-md-6">
+                <strong>🔐 Acknowledged:</strong>
+                <span class="badge {{ $document->acknowledged ? 'bg-success' : 'bg-danger' }}">
+                    {{ $document->acknowledged ? 'Yes' : 'No' }}
+                </span>
+            </div>
+        </div>
+
+        <hr class="my-4">
+
+        {{-- File Preview --}}
+        <div class="text-center">
+            @php
+                $file = asset('storage/' . $document->document_file);
+                $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                 $imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
                 $pdfTypes = ['pdf'];
             @endphp
 
-                <!-- <div class="file-preview">
-                    @if(in_array($extension, $imageTypes))
-                        <img src="{{ $file }}" alt="Uploaded Image" style="max-width: 100%; height: auto;">
+            @if(in_array($extension, $imageTypes))
+                <img src="{{ $file }}" alt="Document Image" class="img-fluid rounded shadow">
+            @elseif(in_array($extension, $pdfTypes))
+                <iframe src="{{ $file }}" width="100%" height="600px" class="border rounded shadow"></iframe>
+            @else
+                <p class="text-muted">No preview available.</p>
+                <a href="{{ $file }}" class="btn btn-outline-secondary" download>
+                    <i class="fa fa-download"></i> Download File
+                </a>
+            @endif
+        </div>
 
-                    @elseif(in_array($extension, $pdfTypes))
-                        <iframe src="{{ $file }}" width="100%" height="600px"></iframe>
-
-                    @else
-                        <p>No preview available. <a href="{{ $file }}" download>Download file</a>.</p>
-                    @endif
-                </div> -->
-
-                <div class="file-preview text-center d-flex justify-content-center">
-                    <!-- Show Images -->
-                    @if(in_array($extension, $imageTypes))
-                        <img src="{{ $file }}" alt="Uploaded Image" style="max-width: 100%; height: auto;">
-
-                    <!-- Show PDFs -->
-                    @elseif(in_array($extension, $pdfTypes))
-                        <iframe src="{{ $file }}" width="80%" height="600px"></iframe>
-
-                    <!-- Show Download Link for Other Files -->
-                    @else
-                        <p>No preview available. <a href="{{ $file }}" download>Download file</a>.</p>
-                    @endif
-                </div>
-
-
-
-            <!-- Acknowledgment Form -->
-            <!-- <form method="POST" id="docAcknowledgeForm">
+        {{-- Acknowledgement Checkbox --}}
+        @if(empty(auth()->user()->is_admin) && empty(auth()->user()->is_owner))
+            <form method="POST" id="docAcknowledgeForm" class="mt-4">
                 @csrf
                 <input type="hidden" name="document_id" value="{{ $document->id }}">
-                
+                @php
+                    $acknowledgedByUsers = json_decode($document->acknowledge_by ?? '[]', true);
+                @endphp
                 <div class="mt-3 text-center">
-                    <input type="checkbox" id="acknowledged" name="acknowledged" value="1" {{ ($document->acknowledged==1)? 'checked': '' }}>
-                    <label for="acknowledged">I have read and acknowledged this document</label>
-                    <div class="create_btn">
-                        <a href="{{ route('document.index') }}" class="btn btn-primary create-button btn_primary_color mb-3" id="backBtn">
-                            <i class="bi bi-arrow-left-circle-fill"> </i> Back
-                        </a>
-                    </div>
+                    <input type="checkbox" class="form-check-input" id="acknowledged" name="acknowledged" value="1"
+                        {{ in_array(auth()->user()->id, $acknowledgedByUsers) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="acknowledged">
+                        I have read and acknowledged this document
+                    </label>
                 </div>
-            </form> -->
-            @if(empty(auth()->user()->is_admin) && empty(auth()->user()->is_owner))
-                <form method="POST" id="docAcknowledgeForm">
-                    @csrf
-                    <input type="hidden" name="document_id" value="{{ $document->id }}">
+            </form>
+        @endif
 
-                    <div class="mt-3 text-center">
-                        @php
-                            $acknowledgedByUsers = json_decode($document->acknowledge_by ?? '[]', true);
-                        @endphp
-                        <input type="checkbox" id="acknowledged" name="acknowledged" value="1"
-                            {{ in_array(auth()->user()->id, $acknowledgedByUsers) ? 'checked' : '' }}>
-                        <label for="acknowledged">I have read and acknowledged this document</label>
-
-                        
-                    </div>
-                </form>
-            @endif
-            <div class="mt-3 text-center">
-                <div class="create_btn">
-                    <a href="{{ route('document.index') }}" class="btn btn-primary create-button btn_primary_color mb-3" id="backBtn">
-                        <i class="bi bi-arrow-left-circle-fill"></i> Back
-                    </a>
-                </div>
-            </div>
+        <div class="text-center mt-4">
+            <a href="{{ route('document.index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left-circle-fill"></i> Back to Documents
+            </a>
         </div>
     </div>
 </div>
+
 
 @endsection
 
