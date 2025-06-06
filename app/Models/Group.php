@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\User;
+
 class Group extends Model
 {
     use HasFactory;
@@ -29,5 +30,10 @@ class Group extends Model
     public function ounit()
     {
         return $this->belongsTo(OrganizationUnits::class, 'ou_id', 'id');
+    }
+
+    public function folders()
+    {
+        return $this->belongsToMany(Folder::class, 'folder_group_access', 'group_id', 'folder_id');
     }
 }

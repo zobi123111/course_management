@@ -235,6 +235,26 @@
                                 <div id="description_error_up" class="text-danger error_e"></div>
                             </div>
 
+                            <!-- Publish Folder Checkbox -->
+                             <div class="form-group">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="edit_publish_folder" name="is_published" value="1">
+                                    <label class="form-check-label" for="edit_publish_folder">Publish Folder</label>
+                                </div>
+                            </div>
+
+                            <!-- Show only if publish is checked -->
+                            <div class="form-group d-none" id="edit_publish_access_box">
+                                <label class="form-label">Assign Access To Group<span class="text-danger">*</span></label>
+                                <select name="group" id="edit_group" class="form-select group-select">
+                                    @foreach($groups as $group)
+                                        <option value="{{ $group->id }}">{{ $group->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div id="access_users_error" class="text-danger error_e"></div>
+                                <small class="form-text text-muted">Select group of users who should have access to this folder.</small>
+                            </div>
+
                             <div class="form-group">
                                 <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                                 <select class="form-select" name="status" id="edit_status"
@@ -244,6 +264,7 @@
                                 </select>
                                 <div id="status_error_up" class="text-danger error_e"></div>
                             </div>
+
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                 <button type="button" id="updateFolder" class="btn btn-primary sbt_btn">Update</button>
@@ -344,6 +365,21 @@
                     $('#edit_description').val(response.folder.description);
                     $('#edit_ou_id').val(response.folder.ou_id);
                     $('#edit_status').val(response.folder.status);
+
+                    // Handle "is_published" checkbox
+                    if (response.folder.is_published == 1) {
+                        $('#edit_publish_folder').prop('checked', true);
+                        $('#edit_publish_access_box').removeClass('d-none');
+                    } else {
+                        $('#edit_publish_folder').prop('checked', false);
+                        $('#edit_publish_access_box').addClass('d-none');
+                    }
+                    
+                    // Handle selected group from pivot table
+                    if (response.group_id) {
+                        $('#edit_group').val(response.group_id).trigger('change');
+                    }
+                    
                     if (response.org_folders) {
                         var options = "<option value=''>No Parent (Root Folder)</option>";
 
@@ -504,8 +540,24 @@
                 }
             });
         });
+
+        function toggleAccessBox() {
+                if ($('#edit_publish_folder').is(':checked')) {
+                    $('#edit_publish_access_box').removeClass('d-none');
+                } else {
+                    $('#edit_publish_access_box').addClass('d-none');
+                }
+            }
+
+        // Run once on page load
+        toggleAccessBox();
+
+        // Bind change event
+        $('#edit_publish_folder').on('change', toggleAccessBox);
+
+
         setTimeout(function() {
             $('#alertMessage').fadeOut('slow');
         }, 2000);
-        </script>
-        @endsection
+</script>
+@endsection

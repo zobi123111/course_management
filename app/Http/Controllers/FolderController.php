@@ -1,11 +1,12 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 use App\Models\Folder;
 use App\Models\OrganizationUnits;
 use App\Models\Document;
+use App\Models\Group;
+use App\Models\FolderGroupAccess;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -15,20 +16,22 @@ class FolderController extends Controller
 {
     public function index()
     {  
-       $organizationUnits = OrganizationUnits::all();
+        $ou_id = auth()->user()->ou_id;
+        $organizationUnits = OrganizationUnits::all();
         if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
             // Admin without OU restriction: Fetch all folders with their children
             $folders = Folder::whereNull('parent_id')->with('children')->get();
             $documents = Document::whereNull('folder_id')->get();
+            $groups = Group::all();
             // dd($documents);
-        } else {
-           
+        } else {           
             // Regular users: Fetch only their org unit folders
+            $groups = Group::where('ou_id', $ou_id)->get();
             $folders = Folder::where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children')->get();
             $documents = Document::whereNull('folder_id')->where('ou_id', Auth::user()->ou_id)->get();
         }
     
-        return view('folders.index',compact('folders', 'documents', 'organizationUnits'));
+        return view('folders.index',compact('folders', 'documents', 'organizationUnits', 'groups'));
     }
 
     public function createFolder(Request $request)
@@ -65,7 +68,10 @@ class FolderController extends Controller
     public function getFolder(Request $request)
     {
     
-        $folder = Folder::findOrFail(decode_id($request->id));
+        $folder = Folder::with('groups')->findOrFail(decode_id($request->id));
+
+        // Assuming one group per folder, adjust if multiple groups are allowed
+        $groupId = $folder->groups->first()?->id;
    
         $ou_id = $folder->ou_id;
         $org_folders = Folder::where('ou_id', $ou_id)->whereNull('parent_id') ->with('childrenRecursive') ->get();
@@ -84,13 +90,13 @@ class FolderController extends Controller
             'folder' => $folder,
             'org_folders' => $org_folders,
             'current_folder_id' => $folder->id,
-            'selected_parent_id' => $folder->parent_id
+            'selected_parent_id' => $folder->parent_id,
+            'group_id' => $groupId
         ]);
     }
 
     public function updateFolder(Request $request)
     {
-        // dd($request);
         $request->validate([
             'folder_id'   => 'required|exists:folders,id',
             'folder_name' => 'required|string|max:255',
@@ -104,7 +110,9 @@ class FolderController extends Controller
                         $fail('The Organizational Unit (OU) is required for Super Admin.');
                     }
                 }
-            ]
+            ],
+            'group'       => 'nullable|exists:groups,id', // Only validate if publishing
+            'is_published' => 'nullable|boolean'
         ]);
     
         $folder = Folder::findOrFail($request->folder_id);  
@@ -125,25 +133,34 @@ class FolderController extends Controller
             'description' => $request->description,
             'status'      => $request->status,
             'parent_id'   => $request->parent_id,
-            'ou_id'       => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id
+            'ou_id'       => (auth()->user()->is_owner == 1) ? $request->ou_id : auth()->user()->ou_id,
+            'is_published'  => $request->has('is_published') ? $request->is_published : 0,
         ]);
 
-        // update child folder
+        //update child folder
         $check_parent = Folder::where('id', $request->folder_id)
                         ->whereNull('parent_id')
                         ->exists();
     
-    if ($check_parent) {
-        // Update child folders' ou_id
-        Folder::where('parent_id', $request->folder_id)->update(['ou_id' => $request->ou_id]);
-    }
+        if ($check_parent) {
+            // Update child folders' ou_id
+            Folder::where('parent_id', $request->folder_id)->update(['ou_id' => $request->ou_id]);
+        }
+
+        // Update access control
+        if ($request->filled('is_published') && $request->filled('group')) {
+            FolderGroupAccess::updateOrCreate(
+                ['folder_id' => $folder->id],
+                ['group_id' => $request->group]
+            );
+        } else {
+            FolderGroupAccess::where('folder_id', $folder->id)->delete();
+        }
 
 
         Session::flash('message', 'Folder updated successfully.');
         return response()->json(['success' => 'Folder updated successfully.']);
     }
-
-
 
     public function deleteFolder(Request $request)
     {

@@ -349,7 +349,9 @@
             { data: 'class', name: 'class' },
             { data: 'type', name: 'type' },
             { data: 'note', name: 'note' },
-            { data: 'action', name: 'action',  class: 'text-center', orderable: false, searchable: false }
+            @if(checkAllowedModule('resource','edit.index')->isNotEmpty() || checkAllowedModule('resource','delete.index')->isNotEmpty() || checkAllowedModule('resource','resource.show')->isNotEmpty())
+                { data: 'action', name: 'action', class: 'text-center', orderable: false, searchable: false },
+            @endif
         ]
     });
 

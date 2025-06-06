@@ -62,31 +62,36 @@ class ResourceController extends Controller
 
             // Format data
             $data = $resources->map(function ($unit) {
-                $action = '';
-                if (checkAllowedModule('resource','edit.index')->isNotEmpty()) {
-                    $action .= '<i class="fa fa-edit edit-resource-icon me-2" data-resource-id="' . encode_id($unit->id) . '"></i>';                   
-                }
-                if (checkAllowedModule('resource','delete.index')->isNotEmpty()) {
-                    $action .= '<i class="fa-solid fa-trash delete-icon me-2" data-resource-id="' . encode_id($unit->id) . '"></i>';
-                }
-                if (checkAllowedModule('resource','resource.show')->isNotEmpty()) {
-                    $action .= '<a href="' . url('resource/show/' . encode_id($unit->id)) . '" class="view-icon" title="View Resource" style="font-size:18px; cursor: pointer;"><i class="fa fa-eye text-danger"></i></a>';                     
-                }
 
+                $hasActionPermissions = checkAllowedModule('resource','edit.index')->isNotEmpty() || checkAllowedModule('resource','delete.index')->isNotEmpty() || checkAllowedModule('resource','resource.show')->isNotEmpty();
+                
                 $row = [
                     'name' => $unit->name,
                     'registration' => $unit->registration,
                     'type' => $unit->type,
                     'class' => $unit->class,
                     'note' => $unit->note,
-                    'action' => $action,
                 ];
 
-                if (auth()->user()->is_owner == 1) {
-                    $row['OU'] = $unit->orgUnit->org_unit_name;
+                if ($hasActionPermissions) {
+                    $action = '';
+                    if (checkAllowedModule('resource','edit.index')->isNotEmpty()) {
+                        $action .= '<i class="fa fa-edit edit-resource-icon me-2" data-resource-id="' . encode_id($unit->id) . '"></i>';                   
+                    }
+                    if (checkAllowedModule('resource','delete.index')->isNotEmpty()) {
+                        $action .= '<i class="fa-solid fa-trash delete-icon me-2" data-resource-id="' . encode_id($unit->id) . '"></i>';
+                    }
+                    if (checkAllowedModule('resource','resource.show')->isNotEmpty()) {
+                        $action .= '<a href="' . url('resource/show/' . encode_id($unit->id)) . '" class="view-icon" title="View Resource" style="font-size:18px; cursor: pointer;"><i class="fa fa-eye text-danger"></i></a>';                     
+                    }
+                    $row['action'] = $action;
                 }
 
-                return $row;
+                    if (auth()->user()->is_owner == 1) {
+                        $row['OU'] = $unit->orgUnit->org_unit_name;
+                    }
+
+                    return $row;
             });
 
             return response()->json([

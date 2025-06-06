@@ -16,38 +16,105 @@ use Illuminate\Support\Facades\DB;
 
 class DocumentController extends Controller
 {
+    // public function index()
+    // {
+    //     $userId = Auth::user()->id;
+    //     $ou_id =  auth()->user()->ou_id;
+    //     if(checkAllowedModule('courses', 'document.index')->isNotEmpty() && Auth()->user()->is_owner ==  1){
+    //         $groups = Group::all();
+    //         $folders = Folder::whereNull('parent_id')->with('children')->get();
+    //         $documents = Document::orderBy('id', 'asc')->get();
+
+    //     }
+    //     elseif(checkAllowedModule('documents', 'document.index')->isNotEmpty() && Auth()->user()->is_admin ==  0){   
+    //         $groups = Group::where('ou_id', $ou_id)->get();
+    //         $filteredGroups = $groups->filter(function ($group) use ($userId) {
+    //             $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);                
+    //             return in_array($userId, $userIds);
+    //         });
+    
+    //         $groupIds = $filteredGroups->pluck('id')->toArray();
+    //         $documents = Document::whereIn('group_id', $groupIds)
+    //                     ->where('status', 1)
+    //                     ->orderBy('id', 'desc')
+    //                     ->get();
+    //         $folders = [];
+    //     }else{           
+    //         $groups = Group::where('ou_id', $ou_id)->get();
+    //         $folders = Folder::where('ou_id', auth()->user()->ou_id)->whereNull('parent_id')->with('children')->get();
+    //         $documents = Document::where('ou_id', $ou_id)->orderBy('id', 'desc')->get();
+
+    //     }
+    //     $organizationUnits = OrganizationUnits::all();
+    //     return view('documents.index',compact('documents', 'folders', 'groups', 'organizationUnits'));
+    // }
+
     public function index()
     {
-        $userId = Auth::user()->id;
-        $ou_id =  auth()->user()->ou_id;
-        if(checkAllowedModule('courses', 'document.index')->isNotEmpty() && Auth()->user()->is_owner ==  1){
-            $groups = Group::all();
-            $folders = Folder::whereNull('parent_id')->with('children')->get();
-            $documents = Document::orderBy('id', 'asc')->get();
+        $user = Auth::user();
+        $userId = $user->id;
+        $ou_id = $user->ou_id;
 
-        }
-        elseif(checkAllowedModule('documents', 'document.index')->isNotEmpty() && Auth()->user()->is_admin ==  0){   
+        $groups = collect();
+        $folders = collect();
+        $documents = collect();
+
+        if (checkAllowedModule('courses', 'document.index')->isNotEmpty() && $user->is_owner == 1) {
+            // Owner view
+            $groups = Group::all();
+            $allDocuments = Document::with('folder.groups')->orderBy('id', 'asc')->get();
+            $allFolders = Folder::whereNull('parent_id')->with('children')->get();
+        } elseif (checkAllowedModule('documents', 'document.index')->isNotEmpty() && $user->is_admin == 0) {
+            // Non-admin regular user view
             $groups = Group::where('ou_id', $ou_id)->get();
             $filteredGroups = $groups->filter(function ($group) use ($userId) {
-                $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);                
+                $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);
                 return in_array($userId, $userIds);
             });
-    
             $groupIds = $filteredGroups->pluck('id')->toArray();
-            $documents = Document::whereIn('group_id', $groupIds)
-                        ->where('status', 1)
-                        ->orderBy('id', 'desc')
-                        ->get();
-            $folders = [];
-        }else{
-           
-            $groups = Group::where('ou_id', $ou_id)->get();
-            $folders = Folder::where('ou_id', auth()->user()->ou_id)->whereNull('parent_id')->with('children')->get();
-            $documents = Document::where('ou_id', $ou_id)->orderBy('id', 'desc')->get();
 
+            $allDocuments = Document::with('folder.groups')
+                ->whereIn('group_id', $groupIds)
+                ->where('status', 1)
+                ->orderBy('id', 'desc')
+                ->get();
+
+            $allFolders = Folder::where('ou_id', $ou_id)
+                ->whereNull('parent_id')
+                ->with('children')
+                ->get();
+        } else {
+            // Admin or other users
+            $groups = Group::where('ou_id', $ou_id)->get();
+            $allDocuments = Document::with('folder.groups')
+                ->where('ou_id', $ou_id)
+                ->orderBy('id', 'desc')
+                ->get();
+
+            $allFolders = Folder::where('ou_id', $ou_id)
+                ->whereNull('parent_id')
+                ->with('children')
+                ->get();
         }
+        //Filter documents and folders where document.group_id == folder.group_id
+        $validDocuments = collect();
+        $validFolders = collect();
+        foreach ($allDocuments as $doc) {
+            if ($doc->folder && $doc->folder->groups->contains('id', $doc->group_id)) {
+                $validDocuments->push($doc);
+                $validFolders->put($doc->folder->id, $doc->folder);
+            }
+        }
+        // Optional: also include folders that are root (parent_id null) and have children if needed
+        $folders = $validFolders->values(); // remove keys
+        $documents = $validDocuments;
+
         $organizationUnits = OrganizationUnits::all();
-        return view('documents.index',compact('documents', 'folders', 'groups', 'organizationUnits'));
+        if(auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1){
+            return view('documents.index', compact('documents', 'folders', 'groups', 'organizationUnits'));
+        }else{
+            return view('documents.doc-tabs', compact('documents', 'folders', 'groups', 'organizationUnits'));
+        }
     }
 
     public function createDocument(Request $request)
@@ -57,10 +124,10 @@ class DocumentController extends Controller
             'doc_title' => 'required',
             'version_no' => 'required',
             'issue_date' => 'required|date',
-            'completed_date' => 'required|date',
+            // 'completed_date' => 'required|date',
             'expiry_date' => 'required|date|after:issue_date',
             'document_file' => 'required|file',
-            'document_type' => 'required',
+            // 'document_type' => 'required',
             'status' => 'required',
             'group' => 'required',
             'folder' => 'required|nullable|exists:folders,id' 
@@ -110,10 +177,10 @@ class DocumentController extends Controller
             'doc_title' => 'required',
             'version_no' => 'required',
             'issue_date' => 'required|date',
-            'completed_date' => 'required|date',
+            // 'completed_date' => 'required|date',
             'expiry_date' => 'required|date|after:issue_date',
             'document_file' => 'nullable|file|max:2048', // File is optional
-            'document_type' => 'required',
+            // 'document_type' => 'required',
             'status' => 'required',
             'group' => 'required',
             'folder' => 'nullable|exists:folders,id' // Ensure folder exists if provided
