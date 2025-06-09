@@ -512,7 +512,7 @@
             $('input[name="Hours_Remaining"]').prop('disabled', isClassroomFilled);
         });
 
-        function toggleAndClearFields(selectedField, formType) {
+       function toggleAndClearFields(selectedField, formType) {
             let fields = ["class", "type", "other"];
             fields.forEach(field => {
                 let fieldName = formType + field;
@@ -522,6 +522,10 @@
                     $("input[name='" + fieldName + "']").prop("disabled", false).css("background-color", ""); // Enable selected
                 }
             });
+
+            // Also handle classroom field
+            let shouldDisableClassroom = selectedField === "class" || selectedField === "type";
+            $("input[name='" + formType + "classroom']").val("").prop("disabled", shouldDisableClassroom).css("background-color", shouldDisableClassroom ? "#e9ecef" : "");
         }
 
         function initFieldRestrictions(formType) {
@@ -530,16 +534,20 @@
                 if ($(this).val().trim() !== "") {
                     toggleAndClearFields(selectedName, formType);
                 } else {
-                    $("input[name='" + formType + "class'], input[name='" + formType + "type'], input[name='" + formType + "other']")
-                        .prop("disabled", false)
-                        .css("background-color", "");
+                    // Re-enable all related fields if input is cleared
+                    ["class", "type", "other", "classroom"].forEach(field => {
+                        $("input[name='" + formType + field + "']")
+                            .prop("disabled", false)
+                            .css("background-color", "");
+                    });
                 }
             });
         }
 
-        // Initialize for edit modal only
+        // Initialize for both normal and edit forms
         initFieldRestrictions("");
         initFieldRestrictions("edit_");
+
     });
 
     $("#save_resource").on("click", function(e) {
