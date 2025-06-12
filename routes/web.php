@@ -107,6 +107,8 @@ Route::group(['middleware' => ['auth']], function () {
     ->name('training.upload-documents');
     Route::get('/training/certificate/{event}', [TrainingEventsController::class, 'generateCertificate'])
      ->name('training.certificate');
+    Route::post('/training/submit_deferred_items', [TrainingEventsController::class, 'storeDeferredLessons'])
+    ->name('training.deferred-lessons.store');
 
 
     
@@ -250,8 +252,8 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/resource/approve/request', [ResourceController::class, 'approve_request'])->name('approve_request.index');
     Route::post('/resource/reject/request', [ResourceController::class, 'reject_request'])->name('reject_request.index');
 
-    Route::get('/document/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('document.getOrgfolder');
-    Route::get('/folder/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('folder.getOrgfolder');
+    // Route::get('/document/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('document.getOrgfolder');
+    // Route::get('/folder/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('folder.getOrgfolder');
     Route::get('/folder/edit', [FolderController::class, 'getFolder'])->name('folder.edit');
 
 });
