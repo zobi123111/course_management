@@ -548,12 +548,21 @@ class TrainingEventsController extends Controller
         //Retrieve feedback data
         $trainingFeedbacks = $trainingEvent->trainingFeedbacks;
 
-        $defTasks = DefTask::with(['task', 'event', 'user', 'creator', 'grading' => function ($query) {
-            // Constrain the grading manually here using subquery filters
-            $query->select('id', 'sub_lesson_id', 'event_id', 'user_id', 'task_grade', 'task_comment');
-        }])
-        ->where('event_id', $trainingEvent->id)
-        ->get();
+        $defTasks = collect(DB::select("
+            SELECT 
+                dt.*,
+                sl.title AS task_title,
+                tg.task_grade,
+                tg.task_comment
+            FROM def_tasks dt
+            LEFT JOIN task_gradings tg
+                ON tg.event_id = dt.event_id
+                AND tg.user_id = dt.user_id
+                AND tg.sub_lesson_id = dt.task_id
+            LEFT JOIN sub_lessons sl
+                ON sl.id = dt.task_id
+            WHERE dt.event_id = ?
+        ", [$trainingEvent->id]));
 
         $deferredLessons = DefLessonTask::with(['user', 'defLesson.instructor', 'defLesson.resource', 'task'])
             ->where('event_id', $trainingEvent->id)
@@ -589,13 +598,6 @@ class TrainingEventsController extends Controller
             'instructors',
             'defTasks',
             'deferredLessons'
-            // 'deferredItems',
-            // 'taskDeferredItems',
-            // 'lessonDeferredItems',
-            // 'deferredLessonTasks',
-            // 'deferredItemsGrading',
-            // 'deferredItemGradingMap'
-            // 'deferredTaskGrades'
         ));
     }
 

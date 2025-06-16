@@ -521,25 +521,23 @@
                             <ul class="mb-3 ps-4">
                                 @foreach($defTasks as $item)
                                     @php
-                                        $grade = $item->grading->task_grade ?? null;
-                                        $comment = $item->grading->task_comment ?? null;
-
-                                        // Set badge color based on grade
+                                        $grade = $item->task_grade ?? null;
+                                        $comment = $item->task_comment ?? null;
                                         $badgeColor = match ($grade) {
                                             'Incomplete' => 'bg-warning text-dark',
                                             'Further training required' => 'bg-danger',
                                             default => 'bg-secondary',
                                         };
-
                                         $badgeText = $grade ?? 'Not Graded';
+                                        // Use $item->task_title for the name:
+                                        $title = $item->task_title ?? 'Unnamed Task';
                                     @endphp
 
                                     <li class="mb-3">
                                         <div>
-                                            <strong>{{ $item->task->title ?? 'Unnamed Task' }}</strong>
+                                            <strong>{{ $title }}</strong>
                                             <span class="badge {{ $badgeColor }} ms-2">{{ $badgeText }}</span>
                                         </div>
-
                                         @if($comment)
                                             <div class="text-muted ps-1 mt-1">
                                                 <em>Reason: {{ $comment }}</em>
@@ -558,8 +556,6 @@
                         </div>
                     </div>
                 @endif
-
-
 
                 {{-- Deferred Lesson Modal Start --}}
                 <div class="modal fade" id="addDeferredLessonModal" tabindex="-1" aria-hidden="true">
@@ -622,7 +618,7 @@
                                                     <div class="form-check">
                                                         <input type="checkbox" class="form-check-input" name="item_ids[]" value="{{ $item->task_id }}">
                                                         <label class="form-check-label">
-                                                            {{ $item->task->title ?? 'N/A' }}
+                                                            {{ $item->task_title ?? 'N/A' }}
                                                         </label>
                                                     </div>
                                                 @endforeach
@@ -917,9 +913,9 @@
                     </form>
                     @if($deferredLessons->isNotEmpty())
                      <h4 class="mb-3 text-primary"><i class="bi bi-exclamation-triangle-fill me-2"></i>Deferred Lessons</h4>
+                     <form action="" method="POST" id="defGradingFrom">
                         @foreach($deferredLessons->groupBy('def_lesson_id') as $defLessonId => $tasks)
                             @php $defLesson = $tasks->first()->defLesson; @endphp
-                        <form action="" method="POST" id="defGradingFrom">
                             @csrf
                             <div class="accordion-item">
                                 <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
@@ -930,7 +926,6 @@
                                         {{ $defLesson->lesson_title ?? 'Untitled Deferred Lesson' }}
                                     </button>
                                 </h2>
-
                                 <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
                                     <div><strong>Instructor:</strong> {{ $defLesson->instructor->fname ?? '' }} {{ $defLesson->instructor->lname ?? '' }}</div>
                                     <div><strong>License No:</strong> {{ $defLesson->instructor_license_number ?? 'N/A' }}</div>
@@ -987,20 +982,19 @@
                                                     </div>
                                                 </div>
                                             </div>
-
                                             <!-- Toggleable Comment Box -->
                                             <div class="collapse mt-2" id="comment-box-{{ $task->id }}">
                                                 <textarea name="task_comment_def[{{ $task->id }}]" rows="3" class="form-control" placeholder="Add your remarks or feedback here...">{{ old("task_comment_def.$task->id", $selectedComment) }}</textarea>
                                             </div>
                                         @endforeach
                                     </div>
-                                    <div class="btn-container">
-                                        <button type="submit" class="btn btn-save" id="submitDefGrading">Save</button>
-                                    </div>
                                 </div>
                             </div>
+                            @endforeach
+                            <div class="btn-container">
+                                <button type="submit" class="btn btn-save" id="submitDefGrading">Save</button>
+                            </div>
                         </form>                            
-                        @endforeach
                     @endif
                 </div>
             </div>
