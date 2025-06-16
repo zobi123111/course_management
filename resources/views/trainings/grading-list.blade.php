@@ -85,7 +85,7 @@
                                 <span><i class="bi bi-exclamation-circle me-2"></i>Deferred Lesson Grading</span>
                                 <i class="bi bi-chevron-down"></i>
                             </h5>
-                            <div class="collapse show" id="defLessonGrading">
+                            <div class="collapse" id="defLessonGrading">
                                 @foreach($defLessonGrading as $defLessonId => $tasks)
                                     @php
                                         $defLesson = $tasks->first()?->defLesson;
@@ -192,7 +192,6 @@
                             @endif
                         </div>
                     </div>
-
                     <!-- Overall Assessments -->
                     <div class="mb-4">
                         <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#overallAssessments" role="button" aria-expanded="false" aria-controls="overallAssessments">
