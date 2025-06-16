@@ -109,6 +109,8 @@ Route::group(['middleware' => ['auth']], function () {
      ->name('training.certificate');
     Route::post('/training/submit_deferred_items', [TrainingEventsController::class, 'storeDeferredLessons'])
     ->name('training.deferred-lessons.store');
+    Route::post('/training/store-def-grading', [TrainingEventsController::class, 'storeDefGrading'])
+    ->name('training.store_def_grading');
 
 
     

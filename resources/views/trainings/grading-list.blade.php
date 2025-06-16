@@ -61,18 +61,79 @@
                                             @endif
                                         </div>
                                         <ul class="list-group shadow-sm">
-                                            @foreach($tasks as $task)
-                                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                    <span><i class="bi bi-chevron-double-right me-1"></i>{{ $task->subLesson?->title ?? 'N/A' }}</span>
-                                                    <span class="badge bg-success">{{ $task->task_grade }}</span>
-                                                </li>
-                                            @endforeach
+                                        @foreach($tasks as $task)
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span><i class="bi bi-chevron-double-right me-1"></i>{{ $task->subLesson?->title ?? 'N/A' }}</span>
+                                                <span class="badge 
+                                                    @if($task->task_grade === 'Incomplete') bg-warning text-dark
+                                                    @elseif($task->task_grade === 'Further training required') bg-danger
+                                                    @else bg-success
+                                                    @endif">
+                                                    {{ $task->task_grade ?? 'N/A' }}
+                                                </span>
+                                            </li>
+                                        @endforeach
                                         </ul>
                                     </div>
                                 @endforeach
                             @endif
                         </div>
                     </div>
+                    @if($defLessonGrading->isNotEmpty())
+                        <div class="mb-4">
+                            <h5 class="text-danger d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#defLessonGrading" role="button" aria-expanded="false" aria-controls="defLessonGrading">
+                                <span><i class="bi bi-exclamation-circle me-2"></i>Deferred Lesson Grading</span>
+                                <i class="bi bi-chevron-down"></i>
+                            </h5>
+                            <div class="collapse show" id="defLessonGrading">
+                                @foreach($defLessonGrading as $defLessonId => $tasks)
+                                    @php
+                                        $defLesson = $tasks->first()?->defLesson;
+                                        $instructor = $defLesson?->instructor;
+                                    @endphp
+                                    <div class="mb-3">
+                                        <div class="fw-bold text-secondary mb-2">
+                                            <i class="bi bi-book me-1"></i>Deferred Lesson: {{ $defLesson?->lesson_title ?? 'N/A' }}
+                                            @if($defLesson)
+                                                <br><small class="text-muted">
+                                                    @if($instructor)
+                                                        <i class="bi bi-person-video3 me-1"></i>Instructor: {{ $instructor->fname }} {{ $instructor->lname }} |
+                                                    @endif
+                                                    @if($defLesson->lesson_date)
+                                                        <i class="bi bi-calendar-date me-1"></i>Date: {{ \Carbon\Carbon::parse($defLesson->lesson_date)->format('M d, Y') }} |
+                                                    @endif
+                                                    @if($defLesson->start_time && $defLesson->end_time)
+                                                        <i class="bi bi-clock me-1"></i>Time: {{ date('h:i A', strtotime($defLesson->start_time)) }} - {{ date('h:i A', strtotime($defLesson->end_time)) }}
+                                                    @endif
+                                                </small>
+                                            @endif
+                                        </div>
+
+                                        <ul class="list-group shadow-sm">
+                                            @foreach($tasks as $item)
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <i class="bi bi-chevron-double-right me-1"></i>
+                                                        {{ $item->task?->title ?? 'N/A' }}
+                                                        @if($item->task_comment)
+                                                            <br><small class="text-muted"><i class="bi bi-chat-left-text"></i> {{ $item->task_comment }}</small>
+                                                        @endif
+                                                    </div>
+                                                    <span class="badge 
+                                                        @if($item->task_grade === 'Incomplete') bg-warning text-dark
+                                                        @elseif($item->task_grade === 'Further training required') bg-danger
+                                                        @else bg-success
+                                                        @endif">
+                                                        {{ $item->task_grade ?? 'N/A' }}
+                                                    </span>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
 
                     <!-- Competency Grading -->
                     <div class="mb-4">
@@ -145,7 +206,14 @@
                                 <ul class="list-group shadow-sm">
                                     @foreach($event->overallAssessments as $assessment)
                                         <li class="list-group-item">
-                                            <strong><i class="bi bi-check-circle-fill me-1"></i>Result:</strong> {{ $assessment->result }}
+                                            <strong><i class="bi bi-check-circle-fill me-1"></i>Result:</strong>
+                                            <span class="badge 
+                                                @if($assessment->result === 'Incomplete') bg-danger
+                                                @elseif($assessment->result === 'Further training required') bg-warning text-dark
+                                                @else bg-success
+                                                @endif">
+                                                {{ $assessment->result }}
+                                            </span>
                                             <br>
                                             <small class="text-muted">
                                                 <i class="bi bi-chat-left-dots me-1"></i>Remarks: {{ $assessment->remarks ?? 'No remarks' }}

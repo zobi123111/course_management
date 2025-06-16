@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('folder_id'); 
             $table->unsignedBigInteger('group_id');
             $table->timestamps();
-             $table->softDeletes();
+            $table->softDeletes();
         });
     }
 

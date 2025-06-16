@@ -235,8 +235,8 @@
 
                 <!-- License Number (Extracted from user profile) -->
                 <div class="col-md-6">
-                    <label class="form-label">Student License Number</label>
-                    <input type="text" name="std_licence_number" class="form-control" id="std_licence_number" value="" readonly>
+                    <label class="form-label">Student License Number</label>    
+                    <input type="text" name="std_licence_number" class="form-control" id="std_licence_number" value="">
                     <div id="std_licence_number_error" class="text-danger error_e"></div>
                 </div>
 

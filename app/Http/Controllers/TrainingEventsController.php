@@ -11,9 +11,13 @@ use App\Models\OrganizationUnits;
 use App\Models\TrainingEvents;
 use App\Models\TrainingEventLessons;
 use App\Models\TaskGrading;
+use App\Models\DeferredItem;
 use App\Models\Resource;
 use App\Models\CompetencyGrading;
 use App\Models\OverallAssessment;
+use App\Models\DefTask;
+use App\Models\DefLesson;
+use App\Models\DefLessonTask;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -152,6 +156,7 @@ class TrainingEventsController extends Controller
             return response()->json(['success' => false]);
         }
     }
+
     public function getStudentLicenseNumberAndCourses(Request $request,$user_id,$ou_id)
     {
         $user = User::with('documents')->find($user_id);
@@ -521,7 +526,7 @@ class TrainingEventsController extends Controller
             ->where('event_id', $trainingEvent->id)
             ->whereIn('lesson_id', $lessonIds)
             ->get()
-            ->keyBy('sub_lesson_id');
+            ->keyBy(fn($item) => $item->lesson_id . '_' . $item->sub_lesson_id);
     
         //Get competency grades (competency area grades and comments)
         $competencyGrades = CompetencyGrading::where('user_id', $student->id)
@@ -541,7 +546,36 @@ class TrainingEventsController extends Controller
         $isGradingCompleted = $taskGrades->isNotEmpty() && ($hasCBTA ? $competencyGrades->isNotEmpty() : true);
 
         //Retrieve feedback data
-        $trainingFeedbacks = $trainingEvent->trainingFeedbacks;    
+        $trainingFeedbacks = $trainingEvent->trainingFeedbacks;
+
+        $defTasks = DefTask::with(['task', 'event', 'user', 'creator', 'grading' => function ($query) {
+            // Constrain the grading manually here using subquery filters
+            $query->select('id', 'sub_lesson_id', 'event_id', 'user_id', 'task_grade', 'task_comment');
+        }])
+        ->where('event_id', $trainingEvent->id)
+        ->get();
+
+        $deferredLessons = DefLessonTask::with(['user', 'defLesson.instructor', 'defLesson.resource', 'task'])
+            ->where('event_id', $trainingEvent->id)
+            ->get();
+
+        if ($currentUser->is_owner == 1) {
+            // Super Admin: Get all data
+            $resources = Resource::all();
+            $instructors = User::whereHas('roles', function ($query) {
+                $query->where('role_name', 'like', '%Instructor%');
+            })->with('roles')->get();
+        }else {
+            $resources = $resources = Resource::where('ou_id', auth()->user()->ou_id)->get();
+            $instructors = User::where('ou_id', $currentUser->ou_id)
+            ->where(function ($query) {
+                $query->whereNull('is_admin')->orWhere('is_admin', false);
+            })
+            ->whereHas('roles', function ($query) {
+                $query->where('role_name', 'like', '%Instructor%');
+            })->with('roles')->get();
+        }
+        // dd($deferredLessons);
         return view('trainings.show', compact(
             'trainingEvent', 
             'student', 
@@ -550,7 +584,18 @@ class TrainingEventsController extends Controller
             'taskGrades',
             'competencyGrades',
             'trainingFeedbacks',
-            'isGradingCompleted'
+            'isGradingCompleted',
+            'resources',
+            'instructors',
+            'defTasks',
+            'deferredLessons'
+            // 'deferredItems',
+            // 'taskDeferredItems',
+            // 'lessonDeferredItems',
+            // 'deferredLessonTasks',
+            // 'deferredItemsGrading',
+            // 'deferredItemGradingMap'
+            // 'deferredTaskGrades'
         ));
     }
 
@@ -563,11 +608,13 @@ class TrainingEventsController extends Controller
             'task_grade.*.*'       => ['required', 'string', Rule::in(['Incomplete', 'Further training required', 'Competent', '1', '2', '3', '4', '5'])],
             'task_comments'        => 'nullable|array',
             'task_comments.*.*'    => 'nullable|string|max:255',  // Optional comment validation
+
             'comp_grade'           => 'nullable|array',
             'comp_grade.*.*'       => 'required|integer|min:1|max:5',  // Grading from 1-5
             'comp_comments'        => 'nullable|array',
             'comp_comments.*.*'    => 'nullable|string|max:255',  // Optional comment validation
             // Ensure the student being graded is provided from the form:
+
             'tg_user_id'           => 'required|integer|exists:users,id',
             'cg_user_id'           => 'required|integer|exists:users,id',
         ]);
@@ -577,31 +624,50 @@ class TrainingEventsController extends Controller
         
         try {
             $event_id = $request->input('event_id');
-            // Get the student ID being graded from the hidden fields:
+            //Get the student ID being graded from the hidden fields:
             $gradedStudentId = $request->input('tg_user_id');
             $gradedStudentIdForComp = $request->input('cg_user_id');
+
+            //Clear previous deferred items (optional: prevent duplicates)
+            //DeferredItem::where('event_id', $event_id)->where('created_by', $evaluatorId)->delete();
             
             // Store or update Task Grading (for sublessons):
             if ($request->has('task_grade')) {
                 foreach ($request->input('task_grade') as $lesson_id => $subLessons) {
                     foreach ($subLessons as $sub_lesson_id => $task_grade) {
+                        // Update or create the normal task grade
                         TaskGrading::updateOrCreate(
                             [
                                 'event_id'      => $event_id,
                                 'lesson_id'     => $lesson_id,
                                 'sub_lesson_id' => $sub_lesson_id,
-                                'user_id'       => $gradedStudentId,  // Use student ID being graded
+                                'user_id'       => $gradedStudentId,
                             ],
                             [
                                 'task_grade'    => $task_grade,
                                 'task_comment'  => $request->input("task_comments.$lesson_id.$sub_lesson_id", null),
-                                'created_by'    => auth()->user()->id,  // evaluator's ID
+                                'created_by'    => auth()->user()->id,
                             ]
                         );
+
+                        //If task_grade is not 'Competent', insert into def_tasks
+                        if (strtolower($task_grade) !== 'competent') {
+                            DefTask::firstOrCreate(
+                                [
+                                    'event_id' => $event_id,
+                                    'user_id'  => $gradedStudentId,
+                                    'task_id'  => $sub_lesson_id, // assuming this is the primary key of task_grading
+                                ],
+                                [
+                                    'created_by' => auth()->user()->id,
+                                ]
+                            );
+                        }
+
                     }
                 }
             }
-    
+
             // Store or update Competency Grading (lesson-level):
             if ($request->has('comp_grade')) {
                 foreach ($request->input('comp_grade') as $lesson_id => $competencyGrades) {
@@ -632,8 +698,41 @@ class TrainingEventsController extends Controller
                     );
                 }
             }
-            
-            // Commit the transaction on success
+
+            // Handle deferred lesson task grading
+            if ($request->has('task_grade_def')) {
+                foreach ($request->input('task_grade_def') as $task_id => $task_grade) {
+                    $task_comment = $request->input("task_comment_def.$task_id", null);
+                    $userId = $request->input('tg_user_id'); // get the same student ID from hidden field
+
+                    // Update grading in def_lesson_tasks
+                    DefLessonTask::where('id', $task_id)->update([
+                        'task_grade'    => $task_grade,
+                        'task_comment'  => $task_comment,
+                    ]);
+
+                    // If task is not 'Competent', insert/update into def_tasks
+                    if (strtolower($task_grade) !== 'competent') {
+                        $defTask = DefLessonTask::find($task_id);
+
+                        if ($defTask) {
+                            DefTask::firstOrCreate(
+                                [
+                                    'event_id' => $event_id,
+                                    'user_id'  => $defTask->user_id,
+                                    'task_id'  => $defTask->task_id,
+                                ],
+                                [
+                                    'created_by' => auth()->user()->id,
+                                ]
+                            );
+                        }
+                    }
+                }
+            }
+
+
+            // Commit the transaction on success    
             DB::commit();
 
             TrainingEvents::where('id', $event_id)->where('is_locked', '!=', 1)->update(['is_locked' => 1]);
@@ -705,6 +804,13 @@ class TrainingEventsController extends Controller
             ])
             ->first(); // Use first() to get a single event
 
+        $defLessonGrading = DefLessonTask::with(['task', 'defLesson'])
+            ->where('event_id', $event->id)
+            ->where('user_id', auth()->id())
+            // ->whereNotNull('task_grade') // Only show newly graded items
+            ->get()
+            ->groupBy('def_lesson_id');
+
             if ($event) {
             // return redirect()->route('training.index')->with('message', 'Grading not found for this event.');
             $event->student_feedback_submitted = $event->trainingFeedbacks()->where('user_id', auth()->user()->id)->exists();    
@@ -714,7 +820,7 @@ class TrainingEventsController extends Controller
         // dd($event->student_feedback_submitted);
         // dd($event->course->enable_feedback);
     
-        return view('trainings.grading-list', compact('event'));    
+        return view('trainings.grading-list', compact('event','defLessonGrading'));    
     }
     
     public function unlockEventGarding(Request $request, $event_id)
@@ -866,6 +972,117 @@ class TrainingEventsController extends Controller
         $filename = 'Certificate_' . Str::slug($student->fname . ' ' . $student->lname) . '.pdf';
 
         return $pdf->download($filename);
+    }
+
+    public function storeDeferredLessons(Request $request)
+    {
+        // Validate the incoming request data
+        $validatedData = $request->validate([   
+            'event_id'      => 'required|integer|exists:training_events,id',
+            'lesson_title'  => 'required|string|max:255',
+            'item_ids'      => 'required|array',
+            'item_ids.*'    => 'integer|exists:sub_lessons,id',
+            'lesson_date'   => 'required|date',
+            'start_time'    => 'required|date_format:H:i',
+            'end_time'      => 'required|date_format:H:i|after:start_time',
+            'resource_id'   => 'required|integer|exists:resources,id',
+            'instructor_id' => 'required|integer|exists:users,id',
+            'std_id'        => 'required|integer|exists:users,id',
+        ], [], [
+            'item_ids'     => 'Tasks',
+            'resource_id'  => 'Resource',
+            'instructor_id'=> 'Instructor'
+        ]);
+
+        $eventId = $validatedData['event_id'];
+        $studentId = $validatedData['std_id'];
+        $authId = auth()->id();
+
+        // Step 1: Delete matching records from def_tasks
+        DefTask::where('event_id', $eventId)
+            ->where('user_id', $studentId)
+            ->whereIn('task_id', $validatedData['item_ids'])
+            ->delete();
+
+        // Step 2: Create def_lesson entry
+        $defLesson = DefLesson::create([
+            'event_id'      => $eventId,
+            'user_id'       => $studentId,
+            'task_ids'      => $validatedData['item_ids'], // Optional if not needed
+            'instructor_id' => $validatedData['instructor_id'],
+            'resource_id'   => $validatedData['resource_id'],
+            'lesson_title'  => $validatedData['lesson_title'],
+            'lesson_date'   => $validatedData['lesson_date'],
+            'start_time'    => $validatedData['start_time'],
+            'end_time'      => $validatedData['end_time'],
+            'created_by'    => $authId,
+        ]);
+
+        // Step 3: Create def_lesson_tasks entries
+        foreach ($validatedData['item_ids'] as $index => $taskId) {
+            DefLessonTask::create([
+                'def_lesson_id' => $defLesson->id,
+                'event_id'      => $eventId,
+                'user_id'       => $studentId,
+                'task_id'       => $taskId,
+                'created_by'    => $authId,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Deferred lesson and tasks stored successfully.'
+        ], 201);
+    }    
+
+    
+    public function storeDefGrading(Request $request)
+    {
+         $request->validate([
+            'event_id' => 'required|integer|exists:training_events,id',
+            'task_grade_def' => 'required|array',
+            'task_grade_def.*' => 'required|string|in:Competent,Incomplete,Further training required',
+            'task_comment_def' => 'nullable|array',
+            'task_comment_def.*' => 'nullable|string|max:1000',
+        ]);
+
+        $event_id = $request->input('event_id');
+        $user_id = $request->input('tg_user_id');
+
+        foreach ($request->input('task_grade_def') as $task_id => $task_grade) {
+            $task_comment = $request->input("task_comment_def.$task_id", null);
+
+            // Update grading in def_lesson_tasks
+            DefLessonTask::where('id', $task_id)->update([
+                'task_grade'   => $task_grade,
+                'task_comment' => $task_comment,
+            ]);
+
+            // If task is not 'Competent', insert/update into def_tasks
+            if (strtolower($task_grade) !== 'competent') {
+                $defTask = DefLessonTask::find($task_id);
+
+                if ($defTask) {
+                    DefTask::firstOrCreate(
+                        [
+                            'event_id' => $event_id,
+                            'user_id'  => $defTask->user_id,
+                            'task_id'  => $defTask->task_id,
+                        ],
+                        [
+                            'created_by' => auth()->id(),
+                        ]
+                    );
+                }
+            }
+        }
+
+        Session::flash('message', 'Student grading updated successfully.');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Deferred Task Grading saved successfully.'
+        ]);
     }
     
 }
