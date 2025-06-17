@@ -109,11 +109,6 @@
                         <div id="issue_date_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="lastname" class="form-label">Completed Date</label>
-                        <input type="date" name="completed_date" class="form-control">
-                        <div id="completed_date_error" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
                         <label for="lastname" class="form-label">Expiry Date<span class="text-danger">*</span></label>
                         <input type="date" name="expiry_date" class="form-control">
                         <div id="expiry_date_error" class="text-danger error_e"></div>
@@ -122,18 +117,6 @@
                         <label for="email" class="form-label">Upload Document<span class="text-danger">*</span></label>
                         <input type="file" name="document_file" class="form-control">
                         <div id="document_file_error" class="text-danger error_e"></div>            
-                    </div>
-                    <div class="form-group">
-                     <label for="email" class="form-label">Document Type</label>
-                        <select class="form-select" name="document_type" aria-label="Default select example" id="document_type">
-                            <option value="">Select Document Type</option>
-                            <option value="1"> SEP (land) </option>
-                            <option value="2"> MEP (land) </option>
-                            <option value="3"> EA500 </option>
-                            <option value="4"> PC-12 </option>
-                            <option value="5"> GVI </option>
-                        </select>
-                        <div id="document_type_error" class="text-danger error_e"></div>             
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Select Folder<span class="text-danger">*</span></label>
@@ -216,11 +199,6 @@
                         <div id="issue_date_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="lastname" class="form-label">Completed Date</label>
-                        <input type="date" name="completed_date" class="form-control" id="edit_completed_date">
-                        <div id="completed_date_error_up" class="text-danger error_e"></div>
-                    </div>
-                    <div class="form-group">
                         <label for="lastname" class="form-label">Expiry Date<span class="text-danger">*</span></label>
                         <input type="date" name="expiry_date" id="edit_expiry_date"  class="form-control">
                         <div id="expiry_date_error_up" class="text-danger error_e"></div>
@@ -229,18 +207,6 @@
                         <label for="email" class="form-label">Upload Document<span class="text-danger">*</span></label>
                         <input type="file" name="document_file" id="edit_document_file" class="form-control">
                         <div id="document_file_error_up" class="text-danger error_e"></div>            
-                    </div>
-                    <div class="form-group">
-                     <label for="email" class="form-label">Document Type</label>
-                        <select class="form-select" name="document_type" aria-label="Default select example" id="edit_document_type">
-                            <option value="">Select Document Type</option>
-                            <option value="1"> SEP (land) </option>
-                            <option value="2"> MEP (land) </option>
-                            <option value="3"> EA500 </option>
-                            <option value="4"> PC-12 </option>
-                            <option value="5"> GVI </option>
-                        </select>
-                        <div id="document_type_error_up" class="text-danger error_e"></div>             
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Select Folder<span class="text-danger">*</span></label>
@@ -482,8 +448,6 @@ $(document).ready(function() {
                 $('#edit_group').val(response.document.group_id).trigger('change');
                 $('#edit_status').val(response.document.status);
                 $('#edit_select_org_unit').val(response.document.ou_id); 
-                $('#edit_completed_date').val(response.document.completed_date); 
-                $('#edit_document_type').val(response.document.document_type); 
                   
                 $('#editDocumentModal').modal('show');
             },
