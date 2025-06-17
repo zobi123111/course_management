@@ -99,7 +99,6 @@ span.ack-icon .fa-solid.text-danger:before {
 
                         <h4 class="mb-4">{{ $folder->folder_name ?? 'No Folder' }}</h4>
                         <hr>
-
                         <div class="d-flex flex-wrap gap-3">
                             @foreach($docs as $doc)
                                 @php
@@ -115,19 +114,23 @@ span.ack-icon .fa-solid.text-danger:before {
                                         : (in_array(auth()->user()->id, $ackUsers) ? '✔' : '❌');
 
                                     $ackColor = $ackDisplay === '✔' ? 'text-success' : 'text-danger';
-                                    $ackTooltip = $ackDisplay === '✔' ? 'Acknowledged' : 'Pending';
+                                    $ackTooltip = $ackDisplay === '✔' ? 'Acknowledged' : 'Acknowledgment Pending';
                                 @endphp
-
                                 <a href="{{ route('document.show', encode_id($doc->id)) }}"
                                 target="_blank"
                                 class="doc-tile text-decoration-none" 
                                 title="{{ $doc->doc_title }}">
                                     <div class="doc-tile-inner d-flex align-items-center justify-content-between">
-                                        <div class="d-flex align-items-center gap-2">
+                                        <div class="d-flex align-items-center flex-wrap gap-2">
                                             <i class="fa fa-file-alt fa-lg text-muted"></i>
-                                            <span class="doc-title">{{ $doc->doc_title }}</span>
+                                            <span class="doc-title">
+                                                <strong>Title:</strong> {{ $doc->doc_title }} |
+                                                <strong>Version No:</strong> {{ $doc->version_no }} |
+                                                <strong>Issue Date:</strong> {{ ($doc->issue_date ? date('d/m/Y', strtotime($doc->issue_date)): '') }} |
+                                                <strong>Expiry Date:</strong> {{ ($doc->expiry_date? date('d/m/Y', strtotime($doc->expiry_date)): '') }}
+                                            </span>
                                         </div>
-                                        <span class="ack-icon" title="{{ $ackTooltip }}">
+                                        <span class="ack-icon ms-3" title="{{ $ackTooltip }}">
                                             @if($ackDisplay === '✔')
                                                 <i class="fa-solid fa-check-circle text-success"></i>
                                             @else

@@ -162,17 +162,41 @@
                         </select>
                         <div id="parent_id_error_up" class="text-danger error_e"></div>
                     </div>
+                    
                     <div class="form-group">
                         <label for="firstname" class="form-label">Folder Name<span class="text-danger">*</span></label>
                         <input type="text" name="folder_name" id="edit_folder_name" class="form-control">
                         <input type="hidden" name="folder_id" id="folder_id" class="form-control">
                         <div id="folder_name_error_up" class="text-danger error_e"></div>
                     </div>
+
                     <div class="form-group">
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="description" id="edit_description" rows="3"></textarea>
                         <div id="description_error_up" class="text-danger error_e"></div>
                     </div>
+
+                    <!-- Publish Folder Checkbox -->
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="edit_publish_folder" name="is_published" value="1">
+                            <label class="form-check-label" for="edit_publish_folder">Publish Folder</label>
+                        </div>
+                    </div>
+
+                    <!-- Show only if publish is checked -->
+                    <div class="form-group d-none" id="edit_publish_access_box">
+                        <label class="form-label">Assign Access To Group<span class="text-danger">*</span></label>
+                        <select name="group" id="edit_group" class="form-select group-select">
+                            <option value="">Select Group</option>
+                            @foreach($groups as $group)
+                                <option value="{{ $group->id }}">{{ $group->name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="access_users_error" class="text-danger error_e"></div>
+                        <small class="form-text text-muted">Select group of users who should have access to this folder.</small>
+                    </div>
+
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
@@ -237,12 +261,25 @@ function editFolder(folderId) {
         },
         success: function(response) {
             console.log(response);
-            $('#edit_parent_folder').val(response.folder.parent_id).trigger('change');
+            $('#edit_parent_folder').val(response.folder.parent_id).trigger('change');  
             $('#edit_folder_name').val(response.folder.folder_name);
             $('#folder_id').val(response.folder.id);
             $('#edit_description').val(response.folder.description);
             $('#edit_ou_id').val(response.folder.ou_id);
             $('#edit_status').val(response.folder.status);
+
+            // Handle "is_published" checkbox
+            if (response.folder.is_published == 1) {
+                $('#edit_publish_folder').prop('checked', true);
+                $('#edit_publish_access_box').removeClass('d-none');                                          
+                // Handle selected group from pivot table
+                if (response.group_id) {
+                    $('#edit_group').val(response.group_id).trigger('change');
+                }
+            } else {
+                $('#edit_publish_folder').prop('checked', false);
+                $('#edit_publish_access_box').addClass('d-none');
+            }
 
             $('#editFolderModal').modal('show');
         },
@@ -329,6 +366,22 @@ $(document).on("change", "#edit_ou_id", function() {
         }
     });
 });
+
+function toggleAccessBox() {
+        if ($('#edit_publish_folder').is(':checked')) {
+            $('#edit_publish_access_box').removeClass('d-none');
+        } else {
+            $('#edit_publish_access_box').addClass('d-none');
+            $('#edit_group').prop('selectedIndex', 0); // Reset to default
+
+        }
+    }
+
+// Run once on page load
+toggleAccessBox();
+
+// Bind change event
+$('#edit_publish_folder').on('change', toggleAccessBox);
 
 setTimeout(function() {
     $('#alertMessage').fadeOut('slow');

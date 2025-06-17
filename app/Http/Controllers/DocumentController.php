@@ -49,6 +49,7 @@ class DocumentController extends Controller
     //     return view('documents.index',compact('documents', 'folders', 'groups', 'organizationUnits'));
     // }
 
+    //Used Index method for Student/Instructure Role & get_documents method for admin Roles 
     public function index()
     {
         $user = Auth::user();
@@ -62,8 +63,8 @@ class DocumentController extends Controller
         if (checkAllowedModule('courses', 'document.index')->isNotEmpty() && $user->is_owner == 1) {
             // Owner view
             $groups = Group::all();
-            $allDocuments = Document::with('folder.groups')->orderBy('id', 'asc')->get();
-            $allFolders = Folder::whereNull('parent_id')->with('children')->get();
+            $documents = Document::with('folder.groups')->orderBy('id', 'asc')->get();
+            $folders = Folder::whereNull('parent_id')->with('children')->get();
         } elseif (checkAllowedModule('documents', 'document.index')->isNotEmpty() && $user->is_admin == 0) {
             // Non-admin regular user view
             $groups = Group::where('ou_id', $ou_id)->get();
@@ -83,33 +84,38 @@ class DocumentController extends Controller
                 ->whereNull('parent_id')
                 ->with('children')
                 ->get();
+
+            //Filter documents and folders where document.group_id == folder.group_id
+            $validDocuments = collect();
+            $validFolders = collect();
+            foreach ($allDocuments as $doc) {
+                if ($doc->folder && $doc->folder->groups->contains('id', $doc->group_id)) {
+                    $validDocuments->push($doc);
+                    $validFolders->put($doc->folder->id, $doc->folder);
+                }
+            }
+
+            // Optional: also include folders that are root (parent_id null) and have children if needed
+            $folders = $validFolders->values(); // remove keys
+            $documents = $validDocuments;    
+
         } else {
             // Admin or other users
             $groups = Group::where('ou_id', $ou_id)->get();
-            $allDocuments = Document::with('folder.groups')
+            $documents = Document::with('folder.groups')
                 ->where('ou_id', $ou_id)
                 ->orderBy('id', 'desc')
                 ->get();
 
-            $allFolders = Folder::where('ou_id', $ou_id)
+            $folders = Folder::where('ou_id', $ou_id)
                 ->whereNull('parent_id')
                 ->with('children')
                 ->get();
+
         }
-        //Filter documents and folders where document.group_id == folder.group_id
-        $validDocuments = collect();
-        $validFolders = collect();
-        foreach ($allDocuments as $doc) {
-            if ($doc->folder && $doc->folder->groups->contains('id', $doc->group_id)) {
-                $validDocuments->push($doc);
-                $validFolders->put($doc->folder->id, $doc->folder);
-            }
-        }
-        // Optional: also include folders that are root (parent_id null) and have children if needed
-        $folders = $validFolders->values(); // remove keys
-        $documents = $validDocuments;
 
         $organizationUnits = OrganizationUnits::all();
+
         if(auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1){
             return view('documents.index', compact('documents', 'folders', 'groups', 'organizationUnits'));
         }else{
@@ -124,10 +130,8 @@ class DocumentController extends Controller
             'doc_title' => 'required',
             'version_no' => 'required',
             'issue_date' => 'required|date',
-            // 'completed_date' => 'required|date',
             'expiry_date' => 'required|date|after:issue_date',
             'document_file' => 'required|file',
-            // 'document_type' => 'required',
             'status' => 'required',
             'group' => 'required',
             'folder' => 'required|nullable|exists:folders,id' 
@@ -148,10 +152,8 @@ class DocumentController extends Controller
             'doc_title' => $request->doc_title,
             'version_no' => $request->version_no,
             'issue_date' => $request->issue_date,
-            'completed_date' => $request->completed_date,
             'expiry_date' => $request->expiry_date,
             'document_file' => $filePath,
-            'document_type' => $request->document_type,
             'original_filename' => $originalFilename, // Store original filename
             'status' => $request->status,
         ]);
@@ -177,10 +179,8 @@ class DocumentController extends Controller
             'doc_title' => 'required',
             'version_no' => 'required',
             'issue_date' => 'required|date',
-            // 'completed_date' => 'required|date',
             'expiry_date' => 'required|date|after:issue_date',
             'document_file' => 'nullable|file|max:2048', // File is optional
-            // 'document_type' => 'required',
             'status' => 'required',
             'group' => 'required',
             'folder' => 'nullable|exists:folders,id' // Ensure folder exists if provided
@@ -203,7 +203,6 @@ class DocumentController extends Controller
             $originalFilename = $request->file('document_file')->getClientOriginalName();
     
             // Store the new file in the 'documents' folder
-          //  $filePath = $request->file('document_file')->store('documents', 'public');
             $filePath =  $request->file('document_file')->storeAs('documents', $originalFilename, 'public');
         }
     

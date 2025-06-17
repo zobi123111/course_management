@@ -18,7 +18,7 @@ class FolderController extends Controller
     {  
         $ou_id = auth()->user()->ou_id;
         $organizationUnits = OrganizationUnits::all();
-        if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
+        if (Auth::user()->is_owner == 1) {
             // Admin without OU restriction: Fetch all folders with their children
             $folders = Folder::whereNull('parent_id')->with('children')->get();
             $documents = Document::whereNull('folder_id')->get();
@@ -27,7 +27,12 @@ class FolderController extends Controller
         } else {           
             // Regular users: Fetch only their org unit folders
             $groups = Group::where('ou_id', $ou_id)->get();
-            $folders = Folder::where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children')->get();
+            $folders = Folder::where('ou_id', Auth::user()->ou_id)
+                ->whereNull('parent_id')
+                ->with(['children' => function ($query) use ($ou_id) {
+                    $query->where('ou_id', $ou_id);
+                }])
+                ->get();
             $documents = Document::whereNull('folder_id')->where('ou_id', Auth::user()->ou_id)->get();
         }
     
@@ -97,6 +102,7 @@ class FolderController extends Controller
 
     public function updateFolder(Request $request)
     {
+        // dd($request->all());
         $request->validate([
             'folder_id'   => 'required|exists:folders,id',
             'folder_name' => 'required|string|max:255',
@@ -134,7 +140,7 @@ class FolderController extends Controller
             'status'      => $request->status,
             'parent_id'   => $request->parent_id,
             'ou_id'       => (auth()->user()->is_owner == 1) ? $request->ou_id : auth()->user()->ou_id,
-            'is_published'  => $request->has('is_published') ? $request->is_published : 0,
+            'is_published'  => $request->filled('is_published') ? $request->is_published : 0,
         ]);
 
         //update child folder
@@ -342,27 +348,29 @@ class FolderController extends Controller
      public function showFolder(Request $request)
     {
     
+        $ou_id = auth()->user()->ou_id;
         $organizationUnits = OrganizationUnits::all();
         $folderId = decode_id($request->folder_id);
         $editingFolder = Folder::find($folderId);
        
-        if (Auth::user()->role == 1 && empty(Auth::user()->ou_id)) {
+        if (Auth::user()->is_owner == 1) {
             //Admins can see all folders
             $folders = Folder::whereNull('parent_id')->with('children')->get();
             $subfolders = Folder::where('parent_id', $folderId)->get(); // Fetch all subfolders
+            $groups = Group::all();
         } else { 
-            $documentIds = Document::where('ou_id', Auth::user()->ou_id)->pluck('folder_id')->toArray();
+            $documentIds = Document::where('ou_id', $ou_id)->pluck('folder_id')->toArray();
             //Regular users see only folders in their assigned org unit
-            $folders = Folder::where('ou_id', Auth::user()->ou_id)
+            $folders = Folder::where('ou_id', $ou_id)
                         ->whereNull('parent_id')
                         ->with('children')
                         //->whereIn('id', $documentIds)
                         ->get();
 
-            $subfolders = Folder::where('ou_id', Auth::user()->ou_id)
+            $subfolders = Folder::where('ou_id', $ou_id)
                                 ->where('parent_id', $folderId)
                                 ->get(); 
-           
+            $groups = Group::where('ou_id', $ou_id)->get();                               
         }
 
         //Fetch documents of the selected folder
@@ -372,8 +380,9 @@ class FolderController extends Controller
         //Generate breadcrumbs
         $breadcrumbs = $this->getBreadcrumbs($editingFolder); 
     
-        return view('folders.show', compact('subfolders', 'folders', 'documents', 'editingFolder', 'organizationUnits', 'breadcrumbs'));
+        return view('folders.show', compact('subfolders', 'folders', 'documents', 'editingFolder', 'organizationUnits', 'breadcrumbs','groups'));
     }
+
 
 
     public function getSubfolders(Request $request)

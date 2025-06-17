@@ -247,6 +247,7 @@
                             <div class="form-group d-none" id="edit_publish_access_box">
                                 <label class="form-label">Assign Access To Group<span class="text-danger">*</span></label>
                                 <select name="group" id="edit_group" class="form-select group-select">
+                                    <option value="">Select Group</option>
                                     @foreach($groups as $group)
                                         <option value="{{ $group->id }}">{{ $group->name }}</option>
                                     @endforeach
@@ -369,16 +370,16 @@
                     // Handle "is_published" checkbox
                     if (response.folder.is_published == 1) {
                         $('#edit_publish_folder').prop('checked', true);
-                        $('#edit_publish_access_box').removeClass('d-none');
+                        $('#edit_publish_access_box').removeClass('d-none');                                          
+                        // Handle selected group from pivot table
+                        if (response.group_id) {
+                            $('#edit_group').val(response.group_id).trigger('change');
+                        }
                     } else {
                         $('#edit_publish_folder').prop('checked', false);
                         $('#edit_publish_access_box').addClass('d-none');
                     }
-                    
-                    // Handle selected group from pivot table
-                    if (response.group_id) {
-                        $('#edit_group').val(response.group_id).trigger('change');
-                    }
+
                     
                     if (response.org_folders) {
                         var options = "<option value=''>No Parent (Root Folder)</option>";
@@ -546,6 +547,8 @@
                     $('#edit_publish_access_box').removeClass('d-none');
                 } else {
                     $('#edit_publish_access_box').addClass('d-none');
+                     $('#edit_group').prop('selectedIndex', 0); // Reset to default
+
                 }
             }
 

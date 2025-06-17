@@ -29,7 +29,13 @@ class Folder extends Model
     }
 
     // In Folder.php
-    public function groups() {  
-        return $this->belongsToMany(Group::class, 'folder_group_access', 'folder_id', 'group_id');
+    // public function groups() {  
+    //     return $this->belongsToMany(Group::class, 'folder_group_access', 'folder_id', 'group_id');
+    // }
+
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class, 'folder_group_access', 'folder_id', 'group_id')
+                    ->wherePivotNull('deleted_at'); // if using SoftDeletes on pivot
     }
 }
