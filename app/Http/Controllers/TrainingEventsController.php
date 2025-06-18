@@ -697,7 +697,6 @@ class TrainingEventsController extends Controller
                             ]
                         );
                     
-                        // If task_grade is not 'Competent', insert into def_tasks
                         if (strtolower($task_grade) == 'incomplete' || strtolower($task_grade) == 'further training required') {
                             // Check if task already exists in def_lesson_tasks
                             $alreadyDeferred = DefLessonTask::where([
