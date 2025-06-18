@@ -549,7 +549,7 @@
 
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h5 class="mb-0 text-primary">Add More Deferred Lessons</h5>
-                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addDeferredLessonModal">
+                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addDeferredLessonModal" id="addDeferredLesson">
                                     + Lesson
                                 </button>
                             </div>
@@ -558,7 +558,7 @@
                 @endif
 
                 {{-- Deferred Lesson Modal Start --}}
-                <div class="modal fade" id="addDeferredLessonModal" tabindex="-1" aria-hidden="true">
+                <div class="modal fade" id="addDeferredLessonModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
                     <div class="modal-dialog">
                         <form action="" method="POST" id="deferredLessonForm">
                             @csrf
@@ -598,7 +598,7 @@
                                                     <option value="{{ $row->id }}" {{ (auth()->user()->id == $row->id) ? 'selected': '' }}>{{ $row->fname }} {{ $row->lname }}</option>
                                                     @endforeach
                                             </select>
-                                        <div id="resource_id_error" class="text-danger error_e"></div>
+                                        <div id="instructor_id_error" class="text-danger error_e"></div>
                                     </div>
                                     <div class="mb-2">
                                         <label class="form-label">Resource <span class="text-danger">*</span></label>
@@ -627,7 +627,7 @@
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                     <button class="btn btn-primary" type="submit" id="submitDeferredItems">Add Lesson</button>
                                 </div>
                             </div>
@@ -770,6 +770,7 @@
                                                                 $taskGrade = $taskGrades[$lesson->id . '_' . $sublesson->id] ?? null;
                                                                 $selectedGrade = $taskGrade->task_grade ?? null;
                                                                 $selectedComment = $taskGrade->task_comment ?? null;
+                                                                $isDeferred = in_array($sublesson->id, $deferredTaskIds);
                                                             @endphp
 
                                                                 <div class="main-tabledesign">
@@ -780,20 +781,20 @@
                                                                             @if($sublesson->grade_type == 'pass_fail')
                                                                                 <tr>
                                                                                     <td>
-                                                                                        <label class="radio-label">
-                                                                                            <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }}>
+                                                                                        <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
+                                                                                            <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
                                                                                             <span class="custom-radio">Incomplete</span>
                                                                                         </label>                                                                    
                                                                                     </td>
                                                                                     <td>
-                                                                                        <label class="radio-label">
-                                                                                            <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }}>
+                                                                                        <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
+                                                                                            <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Further training required"  {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
                                                                                             <span class="custom-radio highlight">Further training required</span>
                                                                                         </label>
                                                                                     </td>
                                                                                     <td>
-                                                                                        <label class="radio-label">
-                                                                                            <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Competent" {{ $selectedGrade == 'Competent' ? 'checked' : '' }}>
+                                                                                        <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
+                                                                                            <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Competent" {{ $selectedGrade == 'Competent' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
                                                                                             <span class="custom-radio competent">Competent</span>
                                                                                         </label>
                                                                                     </td>
@@ -818,7 +819,7 @@
                                                         </div>
                                                         <!-- Toggleable Comment Box -->
                                                         <div class="collapse mt-2" id="comment-box-{{ $sublesson->id }}">
-                                                            <textarea  name="task_comments[{{ $lesson->id }}][{{ $sublesson->id }}]" rows="3" class="form-control" placeholder="Add your remarks or feedback here...">{{ old("task_comments.$lesson->id.$sublesson->id.$student->id", $selectedComment) }}</textarea>
+                                                            <textarea  name="task_comments[{{ $lesson->id }}][{{ $sublesson->id }}]" rows="3" class="form-control" placeholder="Add your remarks or feedback here..." @if($isDeferred) readonly title="Deferred: You cannot edit this comment." @endif>{{ old("task_comments.$lesson->id.$sublesson->id.$student->id", $selectedComment) }}</textarea>
                                                         </div>
                                                     @endforeach 
                                                 @else($lesson->subLessons->isEmpty())
@@ -919,6 +920,7 @@
                             @csrf
                             <div class="accordion-item">
                                 <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
+                                <input type="hidden" name="tg_def_user_id" value="{{ $trainingEvent->student_id }}">
                                 <input type="hidden" name="tg_def_lesson_id[]" value="{{ $defLesson->id }}">
                                 <h2 class="accordion-header">
                                     <button class="accordion-button" type="button" data-bs-toggle="collapse"
@@ -946,33 +948,32 @@
                                                     <span class="question-mark">?</span>
                                                     <span class="title">{{ $task->task->title ?? 'Untitled Task' }}</span>
                                                 </div>
-
                                                 <div class="table-container">
                                                     <div class="main-tabledesign"> 
                                                         <h5>{{ $task->user->fname }} {{ $task->user->lname }}</h5>
                                                         @php
                                                             $selectedGrade = $task->task_grade;
                                                             $selectedComment = $task->task_comment;
+                                                             $isDeferredGraded = $gradedDefTasksMap->has($task->def_lesson_id . '_' . $task->task_id);
                                                         @endphp
-
                                                         <table>
                                                             <tbody>
                                                                 <tr>
                                                                     <td>
-                                                                        <label class="radio-label">
-                                                                            <input type="radio" name="task_grade_def[{{ $task->id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }}>
+                                                                        <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}" >
+                                                                            <input type="radio" name="task_grade_def[{{ $task->id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }} >
                                                                             <span class="custom-radio">Incomplete</span>
                                                                         </label>
                                                                     </td>
                                                                     <td>
-                                                                        <label class="radio-label">
-                                                                            <input type="radio" name="task_grade_def[{{ $task->id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }}>
+                                                                        <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
+                                                                            <input type="radio" name="task_grade_def[{{ $task->id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
                                                                             <span class="custom-radio highlight">Further training required</span>
                                                                         </label>
                                                                     </td>
                                                                     <td>
-                                                                        <label class="radio-label">
-                                                                            <input type="radio" name="task_grade_def[{{ $task->id }}]" value="Competent" {{ $selectedGrade == 'Competent' ? 'checked' : '' }}>
+                                                                        <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
+                                                                            <input type="radio" name="task_grade_def[{{ $task->id }}]" value="Competent" {{ $selectedGrade == 'Competent' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
                                                                             <span class="custom-radio competent">Competent</span>
                                                                         </label>
                                                                     </td>
@@ -984,7 +985,7 @@
                                             </div>
                                             <!-- Toggleable Comment Box -->
                                             <div class="collapse mt-2" id="comment-box-{{ $task->id }}">
-                                                <textarea name="task_comment_def[{{ $task->id }}]" rows="3" class="form-control" placeholder="Add your remarks or feedback here...">{{ old("task_comment_def.$task->id", $selectedComment) }}</textarea>
+                                                <textarea name="task_comment_def[{{ $task->id }}]" rows="3" class="form-control" placeholder="Add your remarks or feedback here..." @if($isDeferredGraded) readonly title="Deferred: You cannot edit this comment." @endif>{{ old("task_comment_def.$task->id", $selectedComment) }}</textarea>
                                             </div>
                                         @endforeach
                                     </div>
@@ -1060,6 +1061,11 @@
 
 <script>
     $(document).ready(function() {
+
+        $('#addDeferredLesson').on('click', function() {
+            $('.error_e').html('');
+            $("#deferredLessonForm")[0].reset();
+        })
 
         $(document).on("submit", "#gradingFrom", function(e) {
             e.preventDefault(); // Prevent default form submission
@@ -1228,7 +1234,7 @@
                     //     $('#' + key + '_error').html(msg);
                     // })
                     // Clear old errors
-                    $('.text-danger').html('');
+                    $('.error_e').html('');
                     $.each(validationErrors, function(key, value) {
                         var formattedKey = key.replace(/\./g, '_') + '_error';
                         var errorMsg = '<p>' + value[0] + '</p>';

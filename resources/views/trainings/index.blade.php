@@ -12,10 +12,10 @@
 @endif
 
 @if(checkAllowedModule('training','training.store')->isNotEmpty())
-<div class="create_btn">
-    <button class="btn btn-primary create-button" id="createTrainingEvent" data-toggle="modal"
-        data-target="#createTrainingEventModal">Create Training Event</button>
-</div>
+    <div class="create_btn">
+        <button class="btn btn-primary create-button" id="createTrainingEvent" data-toggle="modal"
+            data-target="#createTrainingEventModal">Create Training Event</button>
+    </div>
 @endif
 <br>
 
@@ -786,7 +786,7 @@ $(document).ready(function() {
                 //     $('#' + key + '_error').html(msg);
                 // })
                 // Clear old errors
-                $('.text-danger').html('');
+                $('.error_e').html('');
                 $.each(validationErrors, function(key, value) {
                     var formattedKey = key.replace(/\./g, '_') + '_error';
                     var errorMsg = '<p>' + value[0] + '</p>';
@@ -1046,7 +1046,7 @@ $(document).ready(function() {
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
                 // Clear old errors
-                $('.text-danger').html('');
+                $('.error_e').html('');
                 $.each(validationErrors, function(key, value) {
                     var formattedKey = key.replace(/\./g, '_') + '_error_up';
                     var errorMsg = '<p>' + value[0] + '</p>';
