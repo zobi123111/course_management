@@ -40,7 +40,7 @@
             @foreach($trainingEvents as $event)
                 @php
                     $lesson = $event->firstLesson;
-                @endphp
+                @endphp 
             <tr>
                 <td class="eventName">{{ $event->course?->course_name }}</td>
                 <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
@@ -148,15 +148,14 @@
                     </select>
                     <div id="course_id_error" class="text-danger error_e"></div>
                 </div>
+                <div id="lessonDetailsContainer" class="lesson-box mt-3"></div> 
                 <!-- Select Lesson -->
-                <div class="col-md-6">
+                <!-- <div class="col-md-6">
                     <label class="form-label">Select Lesson<span class="text-danger">*</span></label>
                     <select class="form-select select_lesson" name="lesson_ids[]" id="select_lesson" >
-                        <!-- Options will be populated dynamically -->
                     </select>
                     <div id="lesson_ids_error" class="text-danger error_e"></div>
-                </div>
-                <div id="lessonDetailsContainer" class="lesson-box mt-3"></div>
+                </div> -->
                 <!-- Event Date-->
                 <!-- <div class="col-md-4">
                     <label class="form-label">Event Date<span class="text-danger">*</span></label>
@@ -297,15 +296,14 @@
                     </select>
                     <div id="course_id_error_up" class="text-danger error_e"></div>
                 </div>
+                <div id="editLessonDetailsContainer" class="mt-3"></div>
                  <!-- Select Lesson -->
-                 <div class="col-md-6">
+                 <!-- <div class="col-md-6">
                     <label class="form-label">Select Lesson<span class="text-danger">*</span></label>
                     <select class="form-select select_lesson" name="lesson_ids[]" id="edit_select_lesson" >
-                        <!-- Options will be populated dynamically -->
                     </select>
                     <div id="lesson_ids_error_up" class="text-danger error_e"></div>
-                </div>
-                <div id="editLessonDetailsContainer" class="mt-3"></div>
+                </div> -->
                 <!-- Event Date-->
                 <!-- <div class="col-md-4">
                     <label class="form-label">Event Date<span class="text-danger">*</span></label>
@@ -423,90 +421,6 @@ instructorsdata = @json($instructors);
 var resourcesdata;
 resourcesdata = @json($resources);
 
-$('#select_lesson').on('change', function () {
-    let selectedLessons = $(this).val() || [];
-    let container = $('#lessonDetailsContainer');
-
-    // Keep track of current rendered lesson boxes
-    let existingLessonBoxes = {};
-    container.find('.lesson-box').each(function () {
-        let lessonId = $(this).data('lesson-id');
-        existingLessonBoxes[lessonId] = $(this);
-    });
-
-    // Step 1: Remove boxes for unselected lessons
-    Object.keys(existingLessonBoxes).forEach(lessonId => {
-        if (!selectedLessons.includes(lessonId)) {
-            existingLessonBoxes[lessonId].remove(); // remove that lesson box
-        }
-    });
-
-    // Step 2: Add new boxes for newly selected lessons
-    selectedLessons.forEach(lessonId => {
-        // Only add if not already rendered
-        if (!existingLessonBoxes[lessonId]) {
-            let lessonTitle = $("#select_lesson option[value='" + lessonId + "']").text();
-
-            let lessonBox = `
-                <div class="col-12 mb-3 border rounded p-3 lesson-box" data-lesson-id="${lessonId}">
-                    <input type="hidden" name="lesson_data[${lessonId}][lesson_id]" value="${lessonId}">
-                    <h6 class="fw-bold mb-3">Lesson: ${lessonTitle}</h6>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Instructor<span class="text-danger">*</span></label>
-                            <select class="form-select" name="lesson_data[${lessonId}][instructor_id]" id="lesson_data_${lessonId}_instructor_listbox">
-                                <option value="">Select Instructor</option>
-                                ${instructorsdata.map(i => `<option value="${i.id}">${i.fname} ${i.lname}</option>`).join('')}
-                            </select>
-                            <div id="lesson_data_${lessonId}_instructor_id_error" class="text-danger error_e"></div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Resource<span class="text-danger">*</span></label>
-                            <select class="form-select" name="lesson_data[${lessonId}][resource_id]">
-                                <option value="">Select Resource</option>
-                                ${resourcesdata.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
-                            </select>
-                            <div id="lesson_data_${lessonId}_resource_id_error" class="text-danger error_e"></div>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Lesson Date<span class="text-danger">*</span></label>
-                            <input type="date" name="lesson_data[${lessonId}][lesson_date]" class="form-control">
-                            <div id="lesson_data_${lessonId}_lesson_date_error" class="text-danger error_e"></div>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Start Time<span class="text-danger">*</span></label>
-                            <input type="time" name="lesson_data[${lessonId}][start_time]" class="form-control lesson-start-time" data-lesson-id="${lessonId}">
-                            <div id="lesson_data_${lessonId}_start_time_error" class="text-danger error_e"></div>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">End Time<span class="text-danger">*</span></label>
-                            <input type="time" name="lesson_data[${lessonId}][end_time]" class="form-control lesson-end-time" data-lesson-id="${lessonId}">
-                            <div id="lesson_data_${lessonId}_end_time_error" class="text-danger error_e"></div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Departure Airfield (4-letter code)<span class="text-danger">*</span></label>
-                            <input type="text" name="lesson_data[${lessonId}][departure_airfield]" class="form-control" maxlength="4">
-                            <div id="lesson_data_${lessonId}_departure_airfield_error" class="text-danger error_e"></div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Destination Airfield (4-letter code)<span class="text-danger">*</span></label>
-                            <input type="text" name="lesson_data[${lessonId}][destination_airfield]" class="form-control" maxlength="4">
-                            <div id="lesson_data_${lessonId}_destination_airfield_error" class="text-danger error_e"></div>
-                        </div>  
-                        <div class="col-md-6">
-                            <label class="form-label">Instructor License Number</label>
-                            <input type="text" name="lesson_data[${lessonId}][instructor_license_number]" class="form-control" id="instructor_license_number" value="" readonly>
-                            <div id="lesson_data_${lessonId}_instructor_license_number_error" class="text-danger error_e"></div>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            container.append(lessonBox);
-        }
-    });
-});
-
 // Delegate change event to dynamically added instructor selects
 $(document).on('change', 'select[name^="lesson_data"][name$="[instructor_id]"]', function () {
     let instructorId = $(this).val();
@@ -539,8 +453,6 @@ $(document).on('change', 'select[name^="lesson_data"][name$="[instructor_id]"]',
     }
 });
 
-
-
 function initializeSelect2() {
     $('.select_lesson').select2({
         allowClear: true,
@@ -559,6 +471,7 @@ $(document).ready(function() {
         $(".error_e").html('');
         $("#trainingEventForm")[0].reset();
         $('#total_time').val('');
+        $('#lessonDetailsContainer').empty();
         $("#createTrainingEventModal").modal('show');
         $('#createTrainingEventModal').on('shown.bs.modal', function() {
             initializeSelect2();
@@ -574,8 +487,6 @@ $(document).ready(function() {
     $(document).on('change', '.lesson-start-time, .lesson-end-time', function () {
         calculateTotalTime('#edit_total_time');
     });
-
-
 
     function calculateTotalTime(outputSelector = '#total_time') {
         let totalMinutes = 0;
@@ -604,9 +515,7 @@ $(document).ready(function() {
         $(outputSelector).val(totalFormatted);
     }
 
-
-
-    $(document).on('change', '#select_org_unit, #edit_ou_id', function() {
+    $(document).on('change', '#select_org_unit, #edit_ou_id', function() {      
         var ou_id = $(this).val();
         // Determine which modal is being used
         var isEditModal = $(this).attr('id') === 'edit_ou_id';
@@ -723,41 +632,47 @@ $(document).ready(function() {
         }
     });
 
-    $(document).on('change', '#select_course, #edit_select_course', function() {
+    $(document).on('change', '#select_course, #edit_select_course', function () {
         var courseId = $(this).val();
-        // alert(courseId);
-        // Determine if it's the edit form
         var isEditForm = $(this).attr('id') === 'edit_select_course';
+        var lessonContainer = isEditForm ? $('#editLessonDetailsContainer') : $('#lessonDetailsContainer');
 
-        // Select the correct dropdown based on the form
-        var lessonDropdown = isEditForm ? $('#edit_select_lesson') : $('#select_lesson');
+        // For edit mode, map saved lessons by lesson_id for quick lookup
+        var lessonPrefillMap = {};
+        if (isEditForm && typeof existingEventLessons !== 'undefined') {
+            existingEventLessons.forEach(lesson => {
+                lessonPrefillMap[lesson.lesson_id] = {
+                    instructor_id: lesson.instructor_id || '',
+                    resource_id: lesson.resource_id || '',
+                    lesson_date: lesson.lesson_date || '',
+                    start_time: lesson.start_time || '',
+                    end_time: lesson.end_time || '',
+                    departure_airfield: lesson.departure_airfield || '',
+                    destination_airfield: lesson.destination_airfield || '',
+                    instructor_license_number: lesson.instructor_license_number || ''
+                };
+            });
+        }
 
         $.ajax({
-            url: '{{ url("/training/get_course_lessons") }}', // Route to fetch lessons
+            url: '{{ url("/training/get_course_lessons") }}',
             type: 'GET',
             data: { course_id: courseId },
-            success: function(response) {
-                lessonDropdown.empty();
+            success: function (response) {
+                lessonContainer.empty(); // Clear existing lesson boxes
 
                 if (response.success && response.lessons.length > 0) {
-                    lessonDropdown.append('<option value="">Select Lesson</option>'); // Default option
-                    $.each(response.lessons, function(index, lesson) {
-                        lessonDropdown.append('<option value="' + lesson.id + '">' + lesson.lesson_title + '</option>');
+                    let lessons = response.lessons;
+                    resourcesdata = response.resources; 
+                    response.lessons.forEach(function (lesson) {
+                        let prefillData = isEditForm && lessonPrefillMap[lesson.id] ? lessonPrefillMap[lesson.id] : {};
+                        renderLessonBox(lesson, lessonContainer, prefillData);  // modified to support prefillData
                     });
-
-                    // Restore previously selected lessons in edit mode
-                    if (isEditForm) {
-                        setTimeout(function() {
-                            var selectedLessons = lessonDropdown.data('selected-lessons') || []; // Get stored lessons
-                            lessonDropdown.val(selectedLessons).trigger('change'); // Select the saved lessons
-                        }, 100); // Delay to ensure dropdown is populated
-                    }
                 } else {
                     alert('No lessons found for the selected course.');
-                    lessonDropdown.append('<option value="">Select Lesson</option>').trigger('change'); // Keep default option
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 console.error(xhr.responseText);
                 alert('Error fetching lessons. Please try again.');
             }
@@ -806,7 +721,6 @@ $(document).ready(function() {
             type: 'GET',
             data: { eventId: eventId },
             success: async function (response) {
-                // console.log(response);
                 if (response.success) {
                     const event = response.trainingEvent;
 
@@ -817,117 +731,39 @@ $(document).ready(function() {
                     const selectedResource = event.resource_id;
                     const selectedCourse = event.course_id;
 
-                    // Set initial static values
+                    // Set static values
                     $('#edit_event_id').val(event.id);
                     $('#edit_std_licence_number').val(event.std_licence_number);
-                    let totalTime = moment(event.total_time, 'HH:mm:ss').format('HH:mm'); 
-                    $('#edit_total_time').val(totalTime);
+                    $('#edit_total_time').val(moment(event.total_time, 'HH:mm:ss').format('HH:mm'));
 
-                    // Set OU and wait for dropdowns to populate
-                    $('#edit_ou_id').val(selectedOU);
-                    $('#edit_ou_id').trigger('change');
-                    // Wait a bit for student/instructor/resource dropdowns to populate
+                    // Set OU and wait for dependent dropdowns
+                    $('#edit_ou_id').val(selectedOU).trigger('change');
                     await new Promise(resolve => setTimeout(resolve, 500));
 
-                    // Set selected values
-                    $('#edit_select_user').data("selected-value", selectedStudent).val(selectedStudent);
-                    $('#edit_select_instructor').data("selected-value", selectedInstructor).val(selectedInstructor);
-                    $('#edit_select_resource').data("selected-value", selectedResource).val(selectedResource);
+                    // Set dropdown values
+                    $('#edit_select_user').val(selectedStudent).data("selected-value", selectedStudent);
+                    $('#edit_select_instructor').val(selectedInstructor).data("selected-value", selectedInstructor);
+                    $('#edit_select_resource').val(selectedResource).data("selected-value", selectedResource);
 
-                    // Wait for student change to load courses
                     await new Promise(resolve => setTimeout(resolve, 500));
-                    $('#edit_select_course').data("selected-value", selectedCourse).val(selectedCourse);
+                    $('#edit_select_course').val(selectedCourse).data("selected-value", selectedCourse);
 
-                    // Lessons (handled after course is loaded)
-                    let lessonIds = Array.isArray(event.lesson_ids) ? event.lesson_ids : JSON.parse(event.lesson_ids || "[]");
-                    $('#edit_select_lesson').data('selected-lessons', lessonIds);
+                    // ✅ Global map of existing lessons for prefill
+                    window.existingEventLessons = (event.event_lessons || []).map(l => ({
+                        lesson_id: l.lesson_id,
+                        instructor_id: l.instructor_id || '',
+                        resource_id: l.resource_id || '',
+                        lesson_date: l.lesson_date || '',
+                        start_time: l.start_time || '',
+                        end_time: l.end_time || '',
+                        departure_airfield: l.departure_airfield || '',
+                        destination_airfield: l.destination_airfield || '',
+                        instructor_license_number: l.instructor_license_number || ''
+                    }));
 
-                    // Clear any existing lesson boxes
-                    $('#editLessonDetailsContainer').empty();
+                    // ✅ Trigger the course change (will call renderLessonBox with prefill)
+                    $('#edit_select_course').trigger('change');
 
-                    if (response.trainingEvent.event_lessons && response.trainingEvent.event_lessons.length > 0) {
-                        const eventLessons = response.trainingEvent.event_lessons;
-                        // const instructors = @json($instructors); // Assuming you pass this in blade
-                        // const resources = @json($resources);     // Assuming you pass this in blade
-
-                        eventLessons.forEach((lesson) => {
-                            const lessonId = lesson.lesson_id;
-                            const lessonTitle = lesson.lesson.lesson_title || `Lesson ${lessonId}`; // fallback
-                            const selectedInstructor = lesson.instructor_id || '';
-                            const selectedResource = lesson.resource_id || '';
-                            const lessonDate = lesson.lesson_date || '';
-                            const startTime = lesson.start_time || '';
-                            const endTime = lesson.end_time || '';
-                            const departure_airfield = lesson.departure_airfield || '';
-                            const destination_airfield = lesson.destination_airfield || '';
-                            const instructor_license_number = lesson.instructor_license_number || '';
-
-                            var instructorOptions = instructorsdata.map(i =>
-                                `<option value="${i.id}" ${i.id == selectedInstructor ? 'selected' : ''}>${i.fname} ${i.lname}</option>`
-                            ).join('');
-
-                            var resourceOptions= resourcesdata.map(r =>
-                                `<option value="${r.id}" ${r.id == selectedResource ? 'selected' : ''}>${r.name}</option>`
-                            ).join('');
-
-                            const lessonBox = `
-                                <div class="col-12 mb-3 border rounded p-3 lesson-box" data-lesson-id="${lessonId}">
-                                    <input type="hidden" name="lesson_data[${lessonId}][lesson_id]" value="${lessonId}">
-                                    <h6 class="fw-bold mb-3">Lesson: ${lessonTitle}</h6>
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">Instructor<span class="text-danger">*</span></label>
-                                            <select class="form-select" name="lesson_data[${lessonId}][instructor_id]">
-                                                <option value="">Select Instructor</option>
-                                                ${instructorOptions}
-                                            </select>
-                                            <div id="lesson_data_${lessonId}_instructor_id_error_up" class="text-danger error_e"></div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Resource<span class="text-danger">*</span></label>
-                                            <select class="form-select" name="lesson_data[${lessonId}][resource_id]">
-                                                <option value="">Select Resource</option>
-                                                ${resourceOptions}
-                                            </select>
-                                            <div id="lesson_data_${lessonId}_resource_id_error_up" class="text-danger error_e"></div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Lesson Date<span class="text-danger">*</span></label>
-                                            <input type="date" name="lesson_data[${lessonId}][lesson_date]" value="${lessonDate}" class="form-control">
-                                            <div id="lesson_data_${lessonId}_lesson_date_error_up" class="text-danger error_e"></div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Start Time<span class="text-danger">*</span></label>
-                                            <input type="time" name="lesson_data[${lessonId}][start_time]" value="${startTime}" class="form-control lesson-start-time" data-lesson-id="${lessonId}">
-                                            <div id="lesson_data_${lessonId}_start_time_error_up" class="text-danger error_e"></div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">End Time<span class="text-danger">*</span></label>
-                                            <input type="time" name="lesson_data[${lessonId}][end_time]" value="${endTime}" class="form-control lesson-end-time" data-lesson-id="${lessonId}">
-                                            <div id="lesson_data_${lessonId}_end_time_error_up" class="text-danger error_e"></div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Departure Airfield (4-letter code)<span class="text-danger">*</span></label>
-                                            <input type="text" name="lesson_data[${lessonId}][departure_airfield]" value="${departure_airfield}" class="form-control" maxlength="4">
-                                            <div id="lesson_data_${lessonId}_departure_airfield_error" class="text-danger error_e"></div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Destination Airfield (4-letter code)<span class="text-danger">*</span></label>
-                                            <input type="text" name="lesson_data[${lessonId}][destination_airfield]" value="${destination_airfield}" class="form-control" maxlength="4">
-                                            <div id="lesson_data_${lessonId}_destination_airfield_error" class="text-danger error_e"></div>
-                                        </div>  
-                                        <div class="col-md-6">
-                                            <label class="form-label">Instructor License Number</label>
-                                            <input type="text" name="lesson_data[${lessonId}][instructor_license_number]" class="form-control" id="instructor_license_number" value="${instructor_license_number}" readonly>
-                                            <div id="lesson_data_${lessonId}_instructor_license_number_error" class="text-danger error_e"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-
-                            $('#editLessonDetailsContainer').append(lessonBox);
-                        });
-                    }
                     $('#editTrainingEventModal').modal('show');
                 } else {
                     console.error("Error: Invalid response format");
@@ -939,6 +775,7 @@ $(document).ready(function() {
             }
         });
     });
+
 
     $('#edit_select_lesson').on('change', function () {
         const selectedLessonIds = $(this).val() || []; // Get current selected values (array)
@@ -1098,6 +935,88 @@ $(document).ready(function() {
         $('#edit_select_course').trigger('change');
     });
 
+
+    function renderLessonBox(lesson, container, prefillData = {}) {
+        let lessonId = lesson.id;
+        let lessonTitle = lesson.lesson_title;
+
+        // Use prefilled data if available, otherwise fallback to empty strings
+        let {
+            instructor_id = '',
+            resource_id = '',
+            lesson_date = '',
+            start_time = '',
+            end_time = '',
+            departure_airfield = '',
+            destination_airfield = '',
+            instructor_license_number = ''
+        } = prefillData;
+
+        let instructorOptions = instructorsdata.map(i =>
+            `<option value="${i.id}" ${i.id == instructor_id ? 'selected' : ''}>${i.fname} ${i.lname}</option>`
+        ).join('');
+
+        let resourceOptions = resourcesdata.map(r =>
+            `<option value="${r.id}" ${r.id == resource_id ? 'selected' : ''}>${r.name}</option>`
+        ).join('');
+
+        let lessonBox = `
+            <div class="col-12 mb-3 border rounded p-3 lesson-box" data-lesson-id="${lessonId}">
+                <input type="hidden" name="lesson_data[${lessonId}][lesson_id]" value="${lessonId}">
+                <h6 class="fw-bold mb-3">Lesson: ${lessonTitle}</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Instructor<span class="text-danger">*</span></label>
+                        <select class="form-select" name="lesson_data[${lessonId}][instructor_id]" id="lesson_data_${lessonId}_instructor_listbox">
+                            <option value="">Select Instructor</option>
+                            ${instructorOptions}
+                        </select>
+                        <div id="lesson_data_${lessonId}_instructor_id_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Resource<span class="text-danger">*</span></label>
+                        <select class="form-select" name="lesson_data[${lessonId}][resource_id]">
+                            <option value="">Select Resource</option>
+                            ${resourceOptions}
+                        </select>
+                        <div id="lesson_data_${lessonId}_resource_id_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Lesson Date<span class="text-danger">*</span></label>
+                        <input type="date" name="lesson_data[${lessonId}][lesson_date]" class="form-control" value="${lesson_date}">
+                        <div id="lesson_data_${lessonId}_lesson_date_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Start Time<span class="text-danger">*</span></label>
+                        <input type="time" name="lesson_data[${lessonId}][start_time]" class="form-control lesson-start-time" data-lesson-id="${lessonId}" value="${start_time}">
+                        <div id="lesson_data_${lessonId}_start_time_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">End Time<span class="text-danger">*</span></label>
+                        <input type="time" name="lesson_data[${lessonId}][end_time]" class="form-control lesson-end-time" data-lesson-id="${lessonId}" value="${end_time}">
+                        <div id="lesson_data_${lessonId}_end_time_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Departure Airfield (4-letter code)<span class="text-danger">*</span></label>
+                        <input type="text" name="lesson_data[${lessonId}][departure_airfield]" class="form-control" maxlength="4" value="${departure_airfield}">
+                        <div id="lesson_data_${lessonId}_departure_airfield_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Destination Airfield (4-letter code)<span class="text-danger">*</span></label>
+                        <input type="text" name="lesson_data[${lessonId}][destination_airfield]" class="form-control" maxlength="4" value="${destination_airfield}">
+                        <div id="lesson_data_${lessonId}_destination_airfield_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Instructor License Number</label>
+                        <input type="text" name="lesson_data[${lessonId}][instructor_license_number]" class="form-control" id="instructor_license_number" value="${instructor_license_number}" readonly>
+                        <div id="lesson_data_${lessonId}_instructor_license_number_error" class="text-danger error_e"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.append(lessonBox);
+    }
 
 
     setTimeout(function() {
