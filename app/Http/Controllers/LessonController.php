@@ -60,7 +60,7 @@ class LessonController extends Controller
             'lesson_title' => 'required',
             'description' => 'required|string',
             'status' => 'required|boolean',
-            'grade_type' => 'required|in:pass_fail,score',
+            'grade_type' => 'required|in:pass_fail,score,percentage',
             'enable_cbta' => 'sometimes|boolean'
         ]);
     
@@ -121,7 +121,7 @@ class LessonController extends Controller
             'edit_lesson_title' => 'required',
             'edit_description' => 'required|string',
             'edit_status' => 'required|boolean',
-            'edit_grade_type' => 'required|in:pass_fail,score',
+            'edit_grade_type' => 'required|in:pass_fail,score,percentage',
             'edit_enable_cbta'    => 'sometimes|boolean',
         ]);
     
