@@ -191,14 +191,32 @@ class TrainingEventsController extends Controller
     }
     
 
+    // public function getCourseLessons(Request $request)
+    // {
+    //     $lessons = CourseLesson::where('course_id', $request->course_id)->get();
+    //     if ($lessons) {
+    //         return response()->json(['success' => true, 'lessons' => $lessons]);
+    //     } else {
+    //         return response()->json(['success' => false]);
+    //     }
+    // }
+
     public function getCourseLessons(Request $request)
     {
-        $lessons = CourseLesson::where('course_id', $request->course_id)->get();
-        if ($lessons) {
-            return response()->json(['success' => true, 'lessons' => $lessons]);
-        } else {
-            return response()->json(['success' => false]);
+        $course = Courses::with(['courseLessons', 'resources'])->find($request->course_id);
+
+        if (!$course) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Course not found.'
+            ]);
         }
+
+        return response()->json([
+            'success'   => true,
+            'lessons'   => $course->courseLessons,
+            'resources' => $course->resources,
+        ]);
     }
 
 
@@ -209,8 +227,8 @@ class TrainingEventsController extends Controller
         $request->validate([
             'student_id' => 'required|exists:users,id',
             'course_id' => 'required|exists:courses,id',
-            'lesson_ids' => 'required|array',
-            'lesson_ids.*' => 'exists:course_lessons,id',
+            // 'lesson_ids' => 'required|array',
+            // 'lesson_ids.*' => 'exists:course_lessons,id',
             // 'event_date' => 'required|date_format:Y-m-d',
             // 'total_time' => 'required|date_format:H:i',
             'std_license_number' => 'nullable|string',
@@ -255,12 +273,14 @@ class TrainingEventsController extends Controller
             'lesson_data.*.destination_airfield' => 'destination airfield',
             'lesson_data.*.instructor_license_number' => 'instructor license number',
         ]);
+        
+        $lesson_ids = collect($request->lesson_data)->pluck('lesson_id')->toArray();
 
         // Check for duplicate training event
         $existingEvent = TrainingEvents::where('student_id', $request->student_id)
             ->where('course_id', $request->course_id)
             ->where('ou_id', auth()->user()->is_owner ? $request->ou_id : auth()->user()->ou_id)
-            ->whereJsonContains('lesson_ids', $request->lesson_ids)
+            ->whereJsonContains('lesson_ids', $lesson_ids)
             ->get();
 
         foreach ($existingEvent as $event) {
@@ -291,7 +311,7 @@ class TrainingEventsController extends Controller
         $trainingEvent = TrainingEvents::create([
             'student_id' => $request->student_id,
             'course_id' => $request->course_id,
-            'lesson_ids' => json_encode($request->lesson_ids),  
+            'lesson_ids' => json_encode($lesson_ids),
             // 'event_date' => $request->event_date,
             'total_time' => $request->total_time,
             'std_license_number' => $request->std_licence_number,
@@ -591,9 +611,13 @@ class TrainingEventsController extends Controller
 
             WHERE dt.event_id = ?
         ", [$trainingEvent->id]));
-        $deferredTaskIds = collect($defTasks)->pluck('task_id')->toArray();
 
-        // dd($defTasks);
+        $getFirstdeftTasks = TaskGrading::where('event_id', $trainingEvent->id)
+            ->whereIn('task_grade', ['Incomplete', 'Further training required'])
+            ->get();
+        $deferredTaskIds = collect($getFirstdeftTasks)->pluck('sub_lesson_id')->toArray();
+
+        // dd($deferredTaskIds);
         $deferredLessons = DefLessonTask::with(['user', 'defLesson.instructor', 'defLesson.resource', 'task'])
             ->where('event_id', $trainingEvent->id)
             ->get();
@@ -614,12 +638,10 @@ class TrainingEventsController extends Controller
         // dd($gradedDefTaskIds);           
         if ($currentUser->is_owner == 1) {
             // Super Admin: Get all data
-            $resources = Resource::all();
             $instructors = User::whereHas('roles', function ($query) {
                 $query->where('role_name', 'like', '%Instructor%');
             })->with('roles')->get();
         }else {
-            $resources = $resources = Resource::where('ou_id', auth()->user()->ou_id)->get();
             $instructors = User::where('ou_id', $currentUser->ou_id)
             ->where(function ($query) {
                 $query->whereNull('is_admin')->orWhere('is_admin', false);
@@ -628,6 +650,9 @@ class TrainingEventsController extends Controller
                 $query->where('role_name', 'like', '%Instructor%');
             })->with('roles')->get();
         }
+
+        $course = Courses::with('resources')->find($trainingEvent->course_id);
+        $resources = $course ? $course->resources : collect(); // avoids null access
         // dd($deferredLessons);
         return view('trainings.show', compact(
             'trainingEvent', 
