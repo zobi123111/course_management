@@ -389,6 +389,9 @@
 
                             <input type="radio" name="grade_type" value="score" id="grade_score">
                             <label for="grade_score">Score (1-5)</label>
+
+                            <input type="radio" name="grade_type" value="percentage" id="grade_percentage">
+                            <label for="grade_percentage">Percentage (%)</label>
                         </div>
                     </div>
                     <div class="form-group">
