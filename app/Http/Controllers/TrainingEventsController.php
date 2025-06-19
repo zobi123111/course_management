@@ -653,7 +653,12 @@ class TrainingEventsController extends Controller
         $request->validate([
             'event_id'             => 'required|integer|exists:training_events,id',
             'task_grade'           => 'nullable|array',
-            'task_grade.*.*'       => ['required', 'string', Rule::in(['Incomplete', 'Further training required', 'Competent', '1', '2', '3', '4', '5'])],
+            'task_grade.*.*' => ['required', function ($attribute, $value, $fail) {
+                $allowedValues = ['Incomplete', 'Further training required', 'Competent'];
+                if (!in_array($value, $allowedValues) && !is_numeric($value)) {
+                    $fail('The ' . str_replace('_', ' ', $attribute) . ' must be a valid grade or a number.');
+                }
+            }],
             'task_comments'        => 'nullable|array',
             'task_comments.*.*'    => 'nullable|string|max:255',  // Optional comment validation
             'comp_grade'           => 'nullable|array',
