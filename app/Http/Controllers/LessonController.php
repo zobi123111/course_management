@@ -145,6 +145,10 @@ class LessonController extends Controller
             'enable_cbta' => $request->edit_enable_cbta ?? 0, // Update enable_cbta
             'enable_prerequisites' => (int) $request->input('enable_prerequisites', 0),
         ]);
+
+        if ($request->edit_grade_type === 'percentage') {
+            SubLesson::where('lesson_id', $lesson->id)->update(['grade_type' => null]);
+        }
     
         // Handle Prerequisites
         if ((int) $request->input('enable_prerequisites', 0)) {

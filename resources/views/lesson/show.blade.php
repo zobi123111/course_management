@@ -327,8 +327,7 @@
                         <div id="sub_description_error" class="text-danger error_e"></div>
                     </div>
                     
-                    <!-- Grading Type Selection -->
-                    @if($lesson->grade_type !== 'percentage')
+                   @if($lesson->grade_type !== 'percentage')
                     <div class="form-group">
                         <label class="form-label">Grading Type <span class="text-danger">*</span></label>
                         <div>
@@ -338,7 +337,10 @@
                             <input type="radio" name="grade_type" value="score" id="grade_score">
                             <label for="grade_score">Score (1-5)</label>
                         </div>
+                        <div id="grade_type_error" class="text-danger error_e"></div>
                     </div>
+                    @else
+                        <input type="hidden" name="grade_type" value="percentage">
                     @endif
 
                     <div class="form-group">
@@ -404,6 +406,8 @@
                         </div>
                         <div id="edit_grade_type_error" class="text-danger error_e"></div>
                     </div>
+                    @else
+                        <input type="hidden" name="edit_grade_type" value="percentage">
                      @endif
                     <div class="form-group">
                         <label for="edit_sub_status" class="form-label">Status <span class="text-danger">*</span></label>

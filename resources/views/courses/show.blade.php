@@ -393,6 +393,7 @@
                             <input type="radio" name="grade_type" value="percentage" id="grade_percentage">
                             <label for="grade_percentage">Percentage (%)</label>
                         </div>
+                        <div id="grade_type_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <div class="form-check">

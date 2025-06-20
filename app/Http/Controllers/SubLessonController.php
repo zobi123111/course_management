@@ -15,32 +15,36 @@ class SubLessonController extends Controller
     /**
         * SUB LESSON FUNCTIONS
     */    
-    public function createSubLesson(Request $request)
+        public function createSubLesson(Request $request)
     {
-        // Validate input data
-        $request->validate([            
+        $lesson = CourseLesson::findOrFail($request->lesson_id);
+        $rules = [
             'sub_lesson_title' => 'required',
-            'sub_description' => 'required',
-            'sub_status' => 'required|boolean',
-            'grade_type' => 'required|in:pass_fail,score', // Validate grade type
-            'mandatory' => 'nullable|boolean', // Validate mandatory field
-        ]);
-    
-        // Store data in the database
-        SubLesson::create([
-            'lesson_id' => $request->lesson_id,
-            'title' => $request->sub_lesson_title,
-            'description' => $request->sub_description,
-            'status' => $request->sub_status,
-            'grade_type' => $request->grade_type, // Save grade type
-            'is_mandatory' => $request->has('mandatory') ? 1 : 0, // Save as 1 if checked, otherwise 0
-        ]);
-    
+            'sub_description'  => 'required',
+            'sub_status'       => 'required|boolean',
+            'mandatory'        => 'nullable|boolean',
+        ];
+        if ($lesson->grade_type !== 'percentage') {
+            $rules['grade_type'] = 'required|in:pass_fail,score';
+        }
+        $request->validate($rules);
+        $data = [
+            'lesson_id'    => $request->lesson_id,
+            'title'        => $request->sub_lesson_title,
+            'description'  => $request->sub_description,
+            'status'       => $request->sub_status,
+            'is_mandatory' => $request->has('mandatory') ? 1 : 0,
+        ];
+
+        if ($lesson->grade_type !== 'percentage') {
+            $data['grade_type'] = $request->grade_type;
+        }
+        SubLesson::create($data);
+
         Session::flash('message', 'Task created successfully.');
         return response()->json(['success' => 'Task created successfully.']);
     }
-    
-    
+
 
     public function getSubLesson(Request $request)
     {
@@ -50,35 +54,48 @@ class SubLessonController extends Controller
     }
 
 
-    public function updateSubLesson(Request $request)
-    {
-        // dd($request->has('edit_mandatory'));
+   public function updateSubLesson(Request $request)
+{
+    // Find the sub-lesson
+    $lesson = SubLesson::findOrFail($request->edit_sub_lesson_id);
 
-        // Validate input data
-        $request->validate([
-            'edit_sub_lesson_title' => 'required',
-            'edit_sub_description' => 'required',
-            'edit_sub_status' => 'required|boolean',
-            'edit_grade_type' => 'required|in:pass_fail,score', // Validate grade type
-            // 'edit_mandatory' => 'nullable|boolean', // Validate mandatory field
-        ]);
-    
-        // Find the existing sub-lesson
-        $lesson = SubLesson::findOrFail($request->edit_sub_lesson_id);
-    
-        // Update the sub-lesson
-        $lesson->update([
-            'title' => $request->edit_sub_lesson_title,
-            'description' => $request->edit_sub_description,
-            'status' => $request->edit_sub_status,
-            'grade_type' => $request->edit_grade_type, // Update grade type
-            'is_mandatory' => $request->has('edit_mandatory') ? 1 : 0, // Save as 1 if checked, otherwise 0
-        ]);
-    
-        Session::flash('message', 'Task updated successfully.');
-        return response()->json(['success' => 'Task updated successfully.']);
+    // Get the parent lesson
+    $parentLesson = CourseLesson::findOrFail($lesson->lesson_id);
+
+    // Validation rules
+    $rules = [
+        'edit_sub_lesson_title' => 'required',
+        'edit_sub_description'  => 'required',
+        'edit_sub_status'       => 'required|boolean',
+        // 'edit_mandatory' => 'nullable|boolean',
+    ];
+
+    if ($parentLesson->grade_type !== 'percentage') {
+        $rules['edit_grade_type'] = 'required|in:pass_fail,score';
     }
-    
+
+    $request->validate($rules);
+
+    // Prepare update data
+    $updateData = [
+        'title'         => $request->edit_sub_lesson_title,
+        'description'   => $request->edit_sub_description,
+        'status'        => $request->edit_sub_status,
+        'is_mandatory'  => $request->has('edit_mandatory') ? 1 : 0,
+    ];
+
+    if ($parentLesson->grade_type !== 'percentage') {
+        $updateData['grade_type'] = $request->edit_grade_type;
+    } else {
+        $updateData['grade_type'] = null;
+    }
+
+    // Update sub-lesson
+    $lesson->update($updateData);
+
+    Session::flash('message', 'Task updated successfully.');
+    return response()->json(['success' => 'Task updated successfully.']);
+}
     
 
     public function deleteSubLesson(Request $request)
