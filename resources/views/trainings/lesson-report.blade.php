@@ -57,7 +57,11 @@
                         <tr>
                             <td>{{ $task->subLesson->title ?? 'N/A' }}</td>
                             <td>
-                                {{ is_numeric($task->task_grade) && $task->task_grade > 5 ? $task->task_grade . '%' : ($task->task_grade ?? 'N/A') }}
+                                @if($task->lesson?->grade_type === 'percentage')
+                                    {{ $task->task_grade }}%
+                                    @else
+                                    {{ $task->task_grade ?? 'N/A' }}
+                                @endif
                             </td>
                             <td>{{ $task->comments ?? '-' }}</td>
                         </tr>

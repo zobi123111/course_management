@@ -326,8 +326,9 @@
                         <textarea class="form-control" name="sub_description" rows="3"></textarea>
                         <div id="sub_description_error" class="text-danger error_e"></div>
                     </div>
-
+                    
                     <!-- Grading Type Selection -->
+                    @if($lesson->grade_type !== 'percentage')
                     <div class="form-group">
                         <label class="form-label">Grading Type <span class="text-danger">*</span></label>
                         <div>
@@ -338,7 +339,8 @@
                             <label for="grade_score">Score (1-5)</label>
                         </div>
                     </div>
-
+                    @endif
+                    
                     <div class="form-group">
                         <label for="sub_status" class="form-label">Status <span class="text-danger">*</span></label>
                         <select class="form-select" name="sub_status">
