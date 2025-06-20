@@ -797,8 +797,22 @@
                                                                                             <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Competent" {{ $selectedGrade == 'Competent' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
                                                                                             <span class="custom-radio competent">Competent</span>
                                                                                         </label>
-                                                                                    </td>
-                                                                                </tr>
+                                                                                          </td>
+                                                                                            </tr>
+                                                                                @elseif($lesson->grade_type == 'percentage')
+                                                                                    <tr>
+                                                                                    <td colspan="5">
+                                                                                    <input type="number"
+                                                                                        name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]"
+                                                                                        value="{{ old("task_grade.$lesson->id.$sublesson->id.$student->id", $selectedGrade) }}"
+                                                                                        class="form-control"
+                                                                                        placeholder="Enter percentage"
+                                                                                        min="0" max="100"
+                                                                                        step="0.1"
+                                                                                        style="width: 250px;" {{-- Increased width --}}
+                                                                                        {{ $isDeferred ? 'readonly title=Deferred: You cannot edit this grading.' : '' }}>
+                                                                                            </td>
+                                                                                        </tr>
                                                                             @else
                                                                                 <tr>
                                                                                     @for ($i = 1; $i <= 5; $i++)
@@ -1072,13 +1086,17 @@
             // $(".loader").fadeIn();
 
              // Collect task grade and competency grade data
-            let taskGradeData = $("input[name^='task_grade']:checked").length; // Count how many task grades are selected
-            let compGradeData = $("input[name^='comp_grade']:checked").length; // Count how many competency grades are selected
+            let taskGradeData = $("input[name^='task_grade']").filter(function () {
+                return ($(this).is(':radio') && $(this).is(':checked')) || ($(this).attr('type') === 'number' && $(this).val().trim() !== '');
+            }).length;
 
-            // Check if at least one task or competency grade is filled
+            let compGradeData = $("input[name^='comp_grade']").filter(function () {
+                return ($(this).is(':radio') && $(this).is(':checked')) || ($(this).attr('type') === 'number' && $(this).val().trim() !== '');
+            }).length;
+
             if (taskGradeData === 0 && compGradeData === 0) {
                 alert('You must fill in at least one task or competency grade for one lesson.');
-                return; // Stop the form from being submitted
+                return;
             }
 
             let formData = new FormData(this);

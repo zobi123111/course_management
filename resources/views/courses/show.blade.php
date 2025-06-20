@@ -389,7 +389,11 @@
 
                             <input type="radio" name="grade_type" value="score" id="grade_score">
                             <label for="grade_score">Score (1-5)</label>
+
+                            <input type="radio" name="grade_type" value="percentage" id="grade_percentage">
+                            <label for="grade_percentage">Percentage (%)</label>
                         </div>
+                        <div id="grade_type_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <div class="form-check">
@@ -462,6 +466,9 @@
 
                             <input type="radio" name="edit_grade_type" value="score" id="edit_grade_score">
                             <label for="edit_grade_score">Score (1-5)</label>
+
+                            <input type="radio" name="edit_grade_type" value="percentage" id="edit_grade_percentage">
+                            <label for="edit_grade_percentage">Percentage</label>
                         </div>
                         <div id="edit_grade_type_error_up" class="text-danger error_e"></div>
                     </div>
@@ -605,10 +612,12 @@ $(document).ready(function() {
                 $('#edit_status').val(response.lesson.status);
 
                 // Set the correct grading type radio button
-                if (response.lesson.grade_type === "pass_fail") {
+               if (response.lesson.grade_type === "pass_fail") {
                     $('#edit_grade_pass_fail').prop('checked', true);
                 } else if (response.lesson.grade_type === "score") {
                     $('#edit_grade_score').prop('checked', true);
+                } else if (response.lesson.grade_type === "percentage") {
+                    $('#edit_grade_percentage').prop('checked', true);
                 }
 
                 if (response.lesson.enable_prerequisites) {

@@ -326,8 +326,8 @@
                         <textarea class="form-control" name="sub_description" rows="3"></textarea>
                         <div id="sub_description_error" class="text-danger error_e"></div>
                     </div>
-
-                    <!-- Grading Type Selection -->
+                    
+                   @if($lesson->grade_type !== 'percentage')
                     <div class="form-group">
                         <label class="form-label">Grading Type <span class="text-danger">*</span></label>
                         <div>
@@ -337,7 +337,11 @@
                             <input type="radio" name="grade_type" value="score" id="grade_score">
                             <label for="grade_score">Score (1-5)</label>
                         </div>
+                        <div id="grade_type_error" class="text-danger error_e"></div>
                     </div>
+                    @else
+                        <input type="hidden" name="grade_type" value="percentage">
+                    @endif
 
                     <div class="form-group">
                         <label for="sub_status" class="form-label">Status <span class="text-danger">*</span></label>
@@ -389,7 +393,7 @@
                         <textarea class="form-control" name="edit_sub_description" id="edit_sub_description" rows="3"></textarea>
                         <div id="edit_sub_description_error" class="text-danger error_e"></div>
                     </div>
-
+                    @if($lesson->grade_type !== 'percentage')
                     <!-- Grading Type Selection -->
                     <div class="form-group">
                         <label class="form-label">Grading Type <span class="text-danger">*</span></label>
@@ -402,7 +406,9 @@
                         </div>
                         <div id="edit_grade_type_error" class="text-danger error_e"></div>
                     </div>
-
+                    @else
+                        <input type="hidden" name="edit_grade_type" value="percentage">
+                     @endif
                     <div class="form-group">
                         <label for="edit_sub_status" class="form-label">Status <span class="text-danger">*</span></label>
                         <select class="form-select" name="edit_sub_status" id="edit_sub_status">

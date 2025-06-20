@@ -60,7 +60,7 @@ class LessonController extends Controller
             'lesson_title' => 'required',
             'description' => 'required|string',
             'status' => 'required|boolean',
-            'grade_type' => 'required|in:pass_fail,score',
+            'grade_type' => 'required|in:pass_fail,score,percentage',
             'enable_cbta' => 'sometimes|boolean'
         ]);
     
@@ -121,7 +121,7 @@ class LessonController extends Controller
             'edit_lesson_title' => 'required',
             'edit_description' => 'required|string',
             'edit_status' => 'required|boolean',
-            'edit_grade_type' => 'required|in:pass_fail,score',
+            'edit_grade_type' => 'required|in:pass_fail,score,percentage',
             'edit_enable_cbta'    => 'sometimes|boolean',
         ]);
     
@@ -145,6 +145,10 @@ class LessonController extends Controller
             'enable_cbta' => $request->edit_enable_cbta ?? 0, // Update enable_cbta
             'enable_prerequisites' => (int) $request->input('enable_prerequisites', 0),
         ]);
+
+        if ($request->edit_grade_type === 'percentage') {
+            SubLesson::where('lesson_id', $lesson->id)->update(['grade_type' => null]);
+        }
     
         // Handle Prerequisites
         if ((int) $request->input('enable_prerequisites', 0)) {

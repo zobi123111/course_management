@@ -512,7 +512,7 @@ class TrainingEventsController extends Controller
             'instructor:id,fname,lname',
             'student:id,fname,lname',
             'resource:id,name',
-            'eventLessons.lesson:id,lesson_title,enable_cbta',
+            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type',
             'eventLessons.instructor:id,fname,lname',
             'eventLessons.resource:id,name',    
             'trainingFeedbacks.question', // Eager load the question relationship
@@ -678,7 +678,12 @@ class TrainingEventsController extends Controller
         $request->validate([
             'event_id'             => 'required|integer|exists:training_events,id',
             'task_grade'           => 'nullable|array',
-            'task_grade.*.*'       => ['required', 'string', Rule::in(['Incomplete', 'Further training required', 'Competent', '1', '2', '3', '4', '5'])],
+            'task_grade.*.*' => ['required', function ($attribute, $value, $fail) {
+                $allowedValues = ['Incomplete', 'Further training required', 'Competent'];
+                if (!in_array($value, $allowedValues) && !is_numeric($value)) {
+                    $fail('The ' . str_replace('_', ' ', $attribute) . ' must be a valid grade or a number.');
+                }
+            }],
             'task_comments'        => 'nullable|array',
             'task_comments.*.*'    => 'nullable|string|max:255',  // Optional comment validation
             'comp_grade'           => 'nullable|array',
@@ -835,7 +840,7 @@ class TrainingEventsController extends Controller
             ->with([
                 'taskGradings' => function ($query) use ($userId) {
                     $query->where('user_id', $userId)
-                        ->with('lesson:id,lesson_title') // Load only lesson_name
+                        ->with('lesson:id,lesson_title,grade_type') // Load only lesson_name
                         ->with('subLesson:id,title'); // Load only sub_lesson_name
                 },
                 'competencyGradings' => function ($query) use ($userId) {
@@ -917,7 +922,7 @@ class TrainingEventsController extends Controller
             'taskGradings' => function ($query) use ($userId, $lesson_id) {
                 $query->where('user_id', $userId)
                       ->where('lesson_id', $lesson_id)
-                      ->with('subLesson:id,title');
+                      ->with('subLesson:id,title,grade_type');
             },
             'competencyGradings' => function ($query) use ($userId, $lesson_id) {
                 $query->where('user_id', $userId)

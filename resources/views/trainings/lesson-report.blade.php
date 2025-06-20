@@ -56,7 +56,13 @@
                     @foreach($event->taskGradings as $task)
                         <tr>
                             <td>{{ $task->subLesson->title ?? 'N/A' }}</td>
-                            <td>{{ $task->task_grade }}</td>
+                            <td>
+                                @if($task->lesson?->grade_type === 'percentage')
+                                    {{ $task->task_grade }}%
+                                    @else
+                                    {{ $task->task_grade ?? 'N/A' }}
+                                @endif
+                            </td>
                             <td>{{ $task->comments ?? '-' }}</td>
                         </tr>
                     @endforeach

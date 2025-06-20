@@ -69,7 +69,11 @@
                                                     @elseif($task->task_grade === 'Further training required') bg-danger
                                                     @else bg-success
                                                     @endif">
-                                                    {{ $task->task_grade ?? 'N/A' }}
+                                                    @if($task->lesson?->grade_type === 'percentage')
+                                                        {{ $task->task_grade }}%
+                                                    @else
+                                                        {{ $task->task_grade ?? 'N/A' }}
+                                                    @endif
                                                 </span>
                                             </li>
                                         @endforeach
