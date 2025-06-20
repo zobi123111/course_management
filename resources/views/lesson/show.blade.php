@@ -340,7 +340,7 @@
                         </div>
                     </div>
                     @endif
-                    
+
                     <div class="form-group">
                         <label for="sub_status" class="form-label">Status <span class="text-danger">*</span></label>
                         <select class="form-select" name="sub_status">
@@ -391,7 +391,7 @@
                         <textarea class="form-control" name="edit_sub_description" id="edit_sub_description" rows="3"></textarea>
                         <div id="edit_sub_description_error" class="text-danger error_e"></div>
                     </div>
-
+                    @if($lesson->grade_type !== 'percentage')
                     <!-- Grading Type Selection -->
                     <div class="form-group">
                         <label class="form-label">Grading Type <span class="text-danger">*</span></label>
@@ -404,7 +404,7 @@
                         </div>
                         <div id="edit_grade_type_error" class="text-danger error_e"></div>
                     </div>
-
+                     @endif
                     <div class="form-group">
                         <label for="edit_sub_status" class="form-label">Status <span class="text-danger">*</span></label>
                         <select class="form-select" name="edit_sub_status" id="edit_sub_status">
