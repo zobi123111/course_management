@@ -69,7 +69,7 @@
                                                     @elseif($task->task_grade === 'Further training required') bg-danger
                                                     @else bg-success
                                                     @endif">
-                                                    {{ $task->task_grade ?? 'N/A' }}
+                                                    {{ is_numeric($task->task_grade) && $task->task_grade > 5 ? $task->task_grade . '%' : ($task->task_grade ?? 'N/A') }}
                                                 </span>
                                             </li>
                                         @endforeach

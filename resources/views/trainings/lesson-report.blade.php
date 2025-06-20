@@ -56,7 +56,9 @@
                     @foreach($event->taskGradings as $task)
                         <tr>
                             <td>{{ $task->subLesson->title ?? 'N/A' }}</td>
-                            <td>{{ $task->task_grade }}</td>
+                            <td>
+                                {{ is_numeric($task->task_grade) && $task->task_grade > 5 ? $task->task_grade . '%' : ($task->task_grade ?? 'N/A') }}
+                            </td>
                             <td>{{ $task->comments ?? '-' }}</td>
                         </tr>
                     @endforeach
