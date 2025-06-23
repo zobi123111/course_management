@@ -241,6 +241,7 @@ class CourseController extends Controller
     // Update course
     public function updateCourse(Request $request)
     {
+        // dd($request->all());
         // Validate input data
         $request->validate([
             'course_name' => 'required',
@@ -310,20 +311,48 @@ class CourseController extends Controller
         }
     
         // Handle Prerequisites
-        $course->prerequisites()->delete();
-        if ((int) $request->input('enable_prerequisites', 0) && $request->has('prerequisite_details')) {
-            foreach ($request->prerequisite_details as $index => $detail) {
-                if (!empty($detail)) {
-                    CoursePrerequisite::create([
-                        'course_id' => $course->id,
-                        'prerequisite_detail' => $detail,
-                        'prerequisite_type' => $request->prerequisite_type[$index] ?? 'text',
-                    ]);
-                }
-            }
-        } else {
+       // If prerequisites are disabled
+        $enable = (int) $request->input('enable_prerequisites', 0);
+
+        if (!$enable) {
+            $course->prerequisites()->delete();
             CoursePrerequisiteDetail::where('course_id', $course->id)
                 ->where('created_by', auth()->id())
+                ->delete();
+        } else {
+            $existingPrereqs = $course->prerequisites()->get()->keyBy('id');
+            $submittedIds = [];
+
+            if ($request->has('prerequisite_details')) {
+                foreach ($request->prerequisite_details as $index => $detail) {
+                    if (!empty($detail)) {
+                        $type = $request->prerequisite_type[$index] ?? 'text';
+                        $id = $request->prerequisite_id[$index] ?? null;
+
+                        if ($id && $existingPrereqs->has($id)) {
+                            // Update existing
+                            $prereq = $existingPrereqs->get($id);
+                            $prereq->update([
+                                'prerequisite_detail' => $detail,
+                                'prerequisite_type' => $type,
+                            ]);
+                            $submittedIds[] = $id;
+                        } else {
+                            // Insert new
+                            $newPrereq = CoursePrerequisite::create([
+                                'course_id' => $course->id,
+                                'prerequisite_detail' => $detail,
+                                'prerequisite_type' => $type,
+                            ]);
+                            $submittedIds[] = $newPrereq->id;
+                        }
+                    }
+                }
+            }
+
+            // Delete removed ones
+            $course->prerequisites()
+                ->whereNotIn('id', $submittedIds)
                 ->delete();
         }
     
