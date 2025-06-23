@@ -531,7 +531,6 @@ function initializeSelect2() {
     });
 
     $(".resources-select").select2({
-        maximumSelectionLength: 3,
         placeholder: 'Select the Resource',
         allowClear: true,
         dropdownParent: $('body') // move outside the modal
