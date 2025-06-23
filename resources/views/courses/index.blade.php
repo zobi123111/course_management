@@ -1006,6 +1006,7 @@ function generatePrerequisiteHtml(prerequisite, index) {
         <div class="prerequisite-item border p-2 mt-2">
             <div class="form-group">
                 <label class="form-label">Prerequisite Detail</label>
+                <input type="hidden" name="prerequisite_id[]" value="${prerequisite.id ?? '' }">
                 <input type="text" class="form-control" name="prerequisite_details[]" value="${prerequisite.prerequisite_detail}">
             </div>
 

@@ -239,39 +239,52 @@ class TrainingEventsController extends Controller
                     }
                 }
             ],
-            'lesson_data' => 'required|array',
-            'lesson_data.*.lesson_id' => 'required|exists:course_lessons,id',
-            'lesson_data.*.instructor_id' => 'required|exists:users,id',
-            'lesson_data.*.resource_id' => 'required|exists:resources,id',
-            'lesson_data.*.lesson_date' => 'required|date_format:Y-m-d',
-            'lesson_data.*.start_time' => 'required|date_format:H:i',
-            'lesson_data.*.end_time' => [
-                'required',
-                'date_format:H:i',
-                function ($attribute, $value, $fail) use ($request) {
-                    preg_match('/lesson_data\.(\d+)\.end_time/', $attribute, $matches);
-                    if (isset($matches[1])) {
-                        $index = $matches[1];
-                        $startTime = $request->input("lesson_data.$index.start_time");
-    
-                        if (strtotime($value) <= strtotime($startTime)) {
-                            $fail("End time must be after start time.");
-                        }
-                    }
-                },
-            ],
-            'lesson_data.*.departure_airfield' => 'required|string|size:4',
-            'lesson_data.*.destination_airfield' => 'required|string|size:4',
-            'lesson_data.*.instructor_license_number' => 'nullable|string',
-        ], [], [
-            'lesson_data.*.instructor_id' => 'instructor',
-            'lesson_data.*.resource_id' => 'resource',
-            'lesson_data.*.lesson_date' => 'lesson date',
-            'lesson_data.*.start_time' => 'start time',
-            'lesson_data.*.end_time' => 'end time',
-            'lesson_data.*.departure_airfield' => 'departure airfield',
-            'lesson_data.*.destination_airfield' => 'destination airfield',
-            'lesson_data.*.instructor_license_number' => 'instructor license number',
+            'lesson_data' => 'required|array|min:1',
+                // Validate ONLY the first lesson (index 0)
+                'lesson_data.0.lesson_id' => 'required|exists:course_lessons,id',
+                'lesson_data.0.instructor_id' => 'required|exists:users,id',
+                'lesson_data.0.resource_id' => 'required|exists:resources,id',
+                'lesson_data.0.lesson_date' => 'required|date_format:Y-m-d',
+                'lesson_data.*.start_time' => [
+                        'nullable',
+                        'date_format:H:i',
+                    ],
+                'lesson_data.*.end_time' => [
+                        'nullable',
+                        'date_format:H:i',
+                        function ($attribute, $value, $fail) use ($request) {
+                            preg_match('/lesson_data\.(\d+)\.end_time/', $attribute, $matches);
+                            if (!isset($matches[1])) return;
+
+                            $index = (int) $matches[1];
+                            $startTime = $request->input("lesson_data.$index.start_time");
+
+                            if ($index === 0) {
+                                if (empty($startTime) || empty($value)) {
+                                    return $fail("Start time and end time are required for the first lesson.");
+                                }
+                            }
+
+                            // Validate only if both times exist
+                            if (!empty($startTime) && !empty($value)) {
+                                if (strtotime($value) <= strtotime($startTime)) {
+                                    $fail("End time must be after start time.");
+                                }
+                            }
+                        },
+                    ],
+                'lesson_data.0.departure_airfield' => 'required|string|size:4',
+                'lesson_data.0.destination_airfield' => 'required|string|size:4',
+                'lesson_data.0.instructor_license_number' => 'nullable|string',
+            ], [], [
+                'lesson_data.0.instructor_id' => 'instructor',
+                'lesson_data.0.resource_id' => 'resource',
+                'lesson_data.0.lesson_date' => 'lesson date',
+                'lesson_data.0.start_time' => 'start time',
+                'lesson_data.0.end_time' => 'end time',
+                'lesson_data.0.departure_airfield' => 'departure airfield',
+                'lesson_data.0.destination_airfield' => 'destination airfield',
+                'lesson_data.0.instructor_license_number' => 'instructor license number',
         ]);
         
         $lesson_ids = collect($request->lesson_data)->pluck('lesson_id')->toArray();
@@ -291,6 +304,7 @@ class TrainingEventsController extends Controller
                 $match = $existingLessons->firstWhere(function ($existingLesson) use ($newLesson) {
                     return $existingLesson->lesson_id == $newLesson['lesson_id']
                         && $existingLesson->lesson_date == $newLesson['lesson_date'];
+                        
                 });
 
                 if (!$match) {
@@ -373,31 +387,6 @@ class TrainingEventsController extends Controller
             'event_id' => 'required|exists:training_events,id',
             'student_id' => 'required|exists:users,id',
             'course_id' => 'required|exists:courses,id',
-            'lesson_data' => 'required|array',
-    
-            'lesson_data.*.lesson_id' => 'required|exists:course_lessons,id',
-            'lesson_data.*.instructor_id' => 'required|exists:users,id',
-            'lesson_data.*.resource_id' => 'required|exists:resources,id',
-            'lesson_data.*.lesson_date' => 'required|date_format:Y-m-d',
-            'lesson_data.*.start_time' => 'required|date_format:H:i',
-            'lesson_data.*.end_time' => [
-                'required',
-                'date_format:H:i',
-                function ($attribute, $value, $fail) use ($request) {
-                    preg_match('/lesson_data\.(\d+)\.end_time/', $attribute, $matches);
-                    if (isset($matches[1])) {
-                        $index = $matches[1];
-                        $startTime = $request->input("lesson_data.$index.start_time");
-                        if (strtotime($value) <= strtotime($startTime)) {
-                            $fail("End time must be after start time.");
-                        }
-                    }
-                },
-            ],
-            'lesson_data.*.departure_airfield' => 'required|string|size:4',
-            'lesson_data.*.destination_airfield' => 'required|string|size:4',
-            'lesson_data.*.instructor_license_number' => 'nullable|string',
-    
             'std_license_number' => 'nullable|string',
             'ou_id' => [
                 function ($attribute, $value, $fail) {
@@ -406,14 +395,52 @@ class TrainingEventsController extends Controller
                     }
                 }
             ],
-        ], [], [
-            'lesson_data.*.instructor_id' => 'instructor',
-            'lesson_data.*.resource_id' => 'resource',
-            'lesson_data.*.lesson_date' => 'lesson date',
-            'lesson_data.*.start_time' => 'start time',
-            'lesson_data.*.end_time' => 'end time',
-            'lesson_data.*.departure_airfield' => 'departure airfield',
-            'lesson_data.*.destination_airfield' => 'destination airfield',
+            'lesson_data' => 'required|array|min:1',
+                // Validate ONLY the first lesson (index 0)
+                'lesson_data.0.lesson_id' => 'required|exists:course_lessons,id',
+                'lesson_data.0.instructor_id' => 'required|exists:users,id',
+                'lesson_data.0.resource_id' => 'required|exists:resources,id',
+                'lesson_data.0.lesson_date' => 'required|date_format:Y-m-d',
+                'lesson_data.*.start_time' => [
+                        'nullable',
+                        'date_format:H:i',
+                    ],
+                'lesson_data.*.end_time' => [
+                        'nullable',
+                        'date_format:H:i',
+                        function ($attribute, $value, $fail) use ($request) {
+                            preg_match('/lesson_data\.(\d+)\.end_time/', $attribute, $matches);
+                            if (!isset($matches[1])) return;
+
+                            $index = (int) $matches[1];
+                            $startTime = $request->input("lesson_data.$index.start_time");
+
+                            if ($index === 0) {
+                                if (empty($startTime) || empty($value)) {
+                                    return $fail("Start time and end time are required for the first lesson.");
+                                }
+                            }
+
+                            // Validate only if both times exist
+                            if (!empty($startTime) && !empty($value)) {
+                                if (strtotime($value) <= strtotime($startTime)) {
+                                    $fail("End time must be after start time.");
+                                }
+                            }
+                        },
+                    ],
+                'lesson_data.0.departure_airfield' => 'required|string|size:4',
+                'lesson_data.0.destination_airfield' => 'required|string|size:4',
+                'lesson_data.0.instructor_license_number' => 'nullable|string',
+            ], [], [
+                'lesson_data.0.instructor_id' => 'instructor',
+                'lesson_data.0.resource_id' => 'resource',
+                'lesson_data.0.lesson_date' => 'lesson date',
+                'lesson_data.0.start_time' => 'start time',
+                'lesson_data.0.end_time' => 'end time',
+                'lesson_data.0.departure_airfield' => 'departure airfield',
+                'lesson_data.0.destination_airfield' => 'destination airfield',
+                'lesson_data.0.instructor_license_number' => 'instructor license number',
         ]);
 
         // Check for duplicate training events (same student, course, and lesson dates)
