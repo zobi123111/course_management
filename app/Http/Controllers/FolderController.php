@@ -117,7 +117,7 @@ class FolderController extends Controller
                     }
                 }
             ],
-            'group'       => 'nullable|exists:groups,id', // Only validate if publishing
+            'group'       => 'nullable|exists:groups,id', //Only validate if publishing
             'is_published' => 'nullable|boolean'
         ]);
     
@@ -128,18 +128,20 @@ class FolderController extends Controller
             return response()->json(['error' => 'A folder cannot be its own parent.']);
         }
     
-        // Prevent moving a folder into its own subfolder (infinite loop prevention)
+        //Prevent moving a folder into its own subfolder (infinite loop prevention)
         if ($this->isDescendant($folder->id, $request->parent_id)) {
             return response()->json(['error' => 'Cannot move a folder into its own subfolder.']);
         }
         // dd((auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id);
+
+        $ou_id =(auth()->user()->is_owner == 1) ? $request->ou_id : auth()->user()->ou_id;
         // Update Parent folder
         $folder->update([
             'folder_name' => $request->folder_name,
             'description' => $request->description,
             'status'      => $request->status,
             'parent_id'   => $request->parent_id,
-            'ou_id'       => (auth()->user()->is_owner == 1) ? $request->ou_id : auth()->user()->ou_id,
+            'ou_id'       => $ou_id,
             'is_published'  => $request->filled('is_published') ? $request->is_published : 0,
         ]);
 
@@ -150,7 +152,7 @@ class FolderController extends Controller
     
         if ($check_parent) {
             // Update child folders' ou_id
-            Folder::where('parent_id', $request->folder_id)->update(['ou_id' => $request->ou_id]);
+            Folder::where('parent_id', $request->folder_id)->update(['ou_id' => $ou_id]);
         }
 
         // Update access control
