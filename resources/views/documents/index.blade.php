@@ -131,8 +131,8 @@
                     </div>
                     <div class="form-group">
                         <label for="users" class="form-label">Assign to Group<span class="text-danger">*</span></label>
-                        <select class="form-select group-select" name="group" id="group">
-                        <option value="">Select Group</option>
+                        <select class="form-select group-select" name="group[]" id="group" multiple="multiple">
+                        <!-- <option value="">Select Group</option> -->
                             @foreach($groups as $group)
                             <option value="{{ $group->id }}">{{ $group->name }}</option>
                             @endforeach
@@ -223,8 +223,8 @@
                     </div>
                     <div class="form-group">
                         <label for="users" class="form-label">Assign to Group<span class="text-danger">*</span></label>
-                        <select class="form-select group-select" name="group" id="edit_group">
-                        <option value="">Select Group</option>
+                        <select class="form-select group-select" name="group[]" id="edit_group" multiple="multiple">
+                        <!-- <option value="">Select Group</option> -->
                             @foreach($groups as $group)
                             <option value="{{ $group->id }}">{{ $group->name }}</option>
                             @endforeach
@@ -279,6 +279,18 @@
 
 <script>
 $(document).ready(function() {
+
+    // Initialize Select2 globally on all user selection dropdowns
+    function initializeSelect2() {
+        $('.group-select').select2({
+            allowClear: true,
+            placeholder: 'Select the Groups',
+            multiple: true,
+            dropdownParent: $('#createDocumentModal .modal-content:visible, #editDocumentModal .modal-content:visible') // More specific
+        });
+    }
+
+    initializeSelect2(); // Call on page load
     $('#documentTable').DataTable({
         processing: true,
         serverSide: true,
@@ -303,11 +315,15 @@ $(document).ready(function() {
 
     $('#documentTable').on('click', '.get_group_users', function() {
         var doc_id = $(this).data('doc-id');
+        var group_id = $(this).data('group-id');
 
         $.ajax({               
             url: "{{ url('document/user_list') }}",
             type: 'GET', 
-            data: { doc_id: doc_id },
+            data: {
+                doc_id: doc_id,
+                group_id: group_id  
+            },
             success: function(response) {
                 console.log(response);
 
@@ -353,12 +369,12 @@ $(document).ready(function() {
         });
     });
 
-
-
     $(document).on("click","#createDocument", function(){
         $(".error_e").html('');
         $("#documentsForm")[0].reset();
+        $(".group-select").val(null).trigger("change"); // Reset Select2
         $("#createDocumentModal").modal('show');
+        
     })
 
     $("#submitDocument").on("click", function(e){
@@ -443,12 +459,15 @@ $(document).ready(function() {
                 $('#edit_issue_date').val(response.document.issue_date);
                 $('#edit_expiry_date').val(response.document.expiry_date);
                 $('#edit_folder').val(response.document.folder_id);
-                var selectedGroups = response.document.folder_id;
-              
-                $('#edit_group').val(response.document.group_id).trigger('change');
                 $('#edit_status').val(response.document.status);
                 $('#edit_select_org_unit').val(response.document.ou_id); 
-                  
+
+                $("#edit_group").val(null).trigger("change");
+
+                // Populate Select2 with multiple groups
+                let selectedGroupIds = response.document.groups.map(group => group.id);
+                $('#edit_group').val(selectedGroupIds).trigger('change');
+                
                 $('#editDocumentModal').modal('show');
             },
             error: function(xhr, status, error) {
@@ -497,111 +516,119 @@ $(document).ready(function() {
             $('#successMessage').fadeOut('slow');
         }, 3000);
 
-$(document).on("change", "#select_org_unit", function(){ 
-    var ou_id = $(this).val(); 
-    var $groupSelect = $(".group-select"); 
-    var $folderSelect = $(".all-folders");
+    $(document).on("change", "#select_org_unit", function(){ 
+        var ou_id = $(this).val(); 
+        var $groupSelect = $(".group-select"); 
+        var $folderSelect = $(".all-folders");
 
-    $.ajax({
-        url: "/document/get_ou_folder/",
-        type: "GET",
-        data: { 'ou_id': ou_id },
-        dataType: "json",
-        success: function(response){
-            console.log(response);
-            if (response.org_group && Array.isArray(response.org_group)) { 
-                    var options = "<option value=''>Select Group </option>"; 
-                    
-                    response.org_group.forEach(function(value){
-                        options += "<option value='" + value.id + "'>" + value.name  + "</option>";
-                    });
-                    $groupSelect.html(options); 
-                    $groupSelect.trigger("change");
-                } 
-
-            if (response.org_folder && Array.isArray(response.org_folder)) { 
-                var options = "<option value=''>No Parent (Root Folder)</option>";
-
-                // Recursive function to generate folder options with indentation
-                function generateFolderOptions(folder, level) {
-                    var indent = "&nbsp;&nbsp;&nbsp;&nbsp;".repeat(level); // Indentation
-                    var option = `<option value="${folder.id}">${indent}${folder.folder_name}</option>`;
-
-                    if (folder.children_recursive && folder.children_recursive.length > 0) {
-                        folder.children_recursive.forEach(child => {
-                            option += generateFolderOptions(child, level + 1);
+        $.ajax({
+            url: "/document/get_ou_folder/",
+            type: "GET",
+            data: { 'ou_id': ou_id },
+            dataType: "json",
+            success: function(response){
+                console.log(response);
+                if (response.org_group && Array.isArray(response.org_group)) { 
+                        var options = "<option value=''>Select Group </option>"; 
+                        
+                        response.org_group.forEach(function(value){
+                            options += "<option value='" + value.id + "'>" + value.name  + "</option>";
                         });
+                        $groupSelect.html(options); 
+                        $groupSelect.trigger("change");
+                    } 
+
+                if (response.org_folder && Array.isArray(response.org_folder)) { 
+                    var options = "<option value=''>No Parent (Root Folder)</option>";
+
+                    // Recursive function to generate folder options with indentation
+                    function generateFolderOptions(folder, level) {
+                        var indent = "&nbsp;&nbsp;&nbsp;&nbsp;".repeat(level); // Indentation
+                        var option = `<option value="${folder.id}">${indent}${folder.folder_name}</option>`;
+
+                        if (folder.children_recursive && folder.children_recursive.length > 0) {
+                            folder.children_recursive.forEach(child => {
+                                option += generateFolderOptions(child, level + 1);
+                            });
+                        }
+                        return option;
                     }
-                    return option;
+
+                    // Process only the top-level folders
+                    response.org_folder.forEach(function(folder) {
+                        options += generateFolderOptions(folder, 0);
+                    });
+
+                    $folderSelect.html(options);
+                    $folderSelect.trigger("change");
                 }
+            },
+            error: function(xhr, status, error){
+            console.error(xhr);
+            } 
+        });
+    });
+
+
+    $(document).on("change", "#edit_select_org_unit", function(){ 
+        var ou_id = $(this).val(); 
+        var $groupSelect = $(".group-select"); 
+        var $folderSelect = $(".edit-all-folders");
+
+        $.ajax({
+            url: "/document/get_ou_folder/",
+            type: "GET",
+            data: { 'ou_id': ou_id },
+            dataType: "json",
+            success: function(response){
+                if (response.org_group && Array.isArray(response.org_group)) { 
+                        var options = "<option value=''>Select Group </option>"; 
+                        
+                        response.org_group.forEach(function(value){
+                            options += "<option value='" + value.id + "'>" + value.name  + "</option>";
+                        });
+                        $groupSelect.html(options); 
+                        $groupSelect.trigger("change");
+                    } 
+                if (response.org_folder && Array.isArray(response.org_folder)) { 
+                    var options = "<option value=''>No Parent (Root Folder)</option>";
+
+                //  Recursive function to generate folder options with indentation
+                    function generateFolderOptions(folder, level) {
+                        var indent = "&nbsp;&nbsp;&nbsp;&nbsp;".repeat(level); // Indentation
+                        var option = `<option value="${folder.id}">${indent}${folder.folder_name}</option>`;
+
+                        if (folder.children_recursive && folder.children_recursive.length > 0) {
+                            folder.children_recursive.forEach(child => {
+                                option += generateFolderOptions(child, level + 1);
+                            });
+                        }
+                        return option;
+                    }
 
                 // Process only the top-level folders
-                response.org_folder.forEach(function(folder) {
-                    options += generateFolderOptions(folder, 0);
-                });
-
-                $folderSelect.html(options);
-                $folderSelect.trigger("change");
-            }
-        },
-        error: function(xhr, status, error){
-           console.error(xhr);
-        } 
-    });
-});
-
-
-$(document).on("change", "#edit_select_org_unit", function(){ 
-    var ou_id = $(this).val(); 
-    var $groupSelect = $(".group-select"); 
-    var $folderSelect = $(".edit-all-folders");
-
-    $.ajax({
-        url: "/document/get_ou_folder/",
-        type: "GET",
-        data: { 'ou_id': ou_id },
-        dataType: "json",
-        success: function(response){
-            if (response.org_group && Array.isArray(response.org_group)) { 
-                    var options = "<option value=''>Select Group </option>"; 
-                    
-                    response.org_group.forEach(function(value){
-                        options += "<option value='" + value.id + "'>" + value.name  + "</option>";
+                    response.org_folder.forEach(function(folder) {
+                        options += generateFolderOptions(folder, 0);
                     });
-                    $groupSelect.html(options); 
-                    $groupSelect.trigger("change");
-                } 
-            if (response.org_folder && Array.isArray(response.org_folder)) { 
-                var options = "<option value=''>No Parent (Root Folder)</option>";
 
-              //  Recursive function to generate folder options with indentation
-                function generateFolderOptions(folder, level) {
-                    var indent = "&nbsp;&nbsp;&nbsp;&nbsp;".repeat(level); // Indentation
-                    var option = `<option value="${folder.id}">${indent}${folder.folder_name}</option>`;
+                    $folderSelect.html(options);
 
-                    if (folder.children_recursive && folder.children_recursive.length > 0) {
-                        folder.children_recursive.forEach(child => {
-                            option += generateFolderOptions(child, level + 1);
-                        });
-                    }
-                    return option;
+                    $folderSelect.trigger("change");
                 }
-
-               // Process only the top-level folders
-                response.org_folder.forEach(function(folder) {
-                    options += generateFolderOptions(folder, 0);
-                });
-
-                $folderSelect.html(options);
-
-                $folderSelect.trigger("change");
-            }
-        },
-        error: function(xhr, status, error){
-            console.error(xhr.responseText);
-        } 
+            },
+            error: function(xhr, status, error){
+                console.error(xhr.responseText);
+            } 
+        });
     });
-});
+
+    // $('#createDocumentModal').on('shown.bs.modal', function () {
+    //     initializeSelect2();
+    // });
+
+    $(document).on("shown.bs.modal", "#createDocumentModal, #editDocumentModal", function(){
+        initializeSelect2();
+    })
 
 
 });

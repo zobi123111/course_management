@@ -71,12 +71,11 @@ class FolderController extends Controller
     }
 
     public function getFolder(Request $request)
-    {
-    
+    {    
         $folder = Folder::with('groups')->findOrFail(decode_id($request->id));
 
-        // Assuming one group per folder, adjust if multiple groups are allowed
-        $groupId = $folder->groups->first()?->id;
+        // Get all group IDs related to the folder
+        $groupIds = $folder->groups->pluck('id')->toArray();
    
         $ou_id = $folder->ou_id;
         $org_folders = Folder::where('ou_id', $ou_id)->whereNull('parent_id') ->with('childrenRecursive') ->get();
@@ -96,7 +95,7 @@ class FolderController extends Controller
             'org_folders' => $org_folders,
             'current_folder_id' => $folder->id,
             'selected_parent_id' => $folder->parent_id,
-            'group_id' => $groupId
+            'group_ids' => $groupIds
         ]);
     }
 
@@ -117,8 +116,9 @@ class FolderController extends Controller
                     }
                 }
             ],
-            'group'       => 'nullable|exists:groups,id', //Only validate if publishing
-            'is_published' => 'nullable|boolean'
+            'is_published' => 'nullable|boolean',
+            'group' => 'nullable|array',
+            'group.*' => 'exists:groups,id'
         ]);
     
         $folder = Folder::findOrFail($request->folder_id);  
@@ -155,14 +155,27 @@ class FolderController extends Controller
             Folder::where('parent_id', $request->folder_id)->update(['ou_id' => $ou_id]);
         }
 
-        // Update access control
-        if ($request->filled('is_published') && $request->filled('group')) {
-            FolderGroupAccess::updateOrCreate(
-                ['folder_id' => $folder->id],
-                ['group_id' => $request->group]
-            );
+        // Update access control with timestamps
+        if ($request->filled('is_published') && $request->has('group')) {
+            // Detach all existing group access (including soft-deleted)
+            $folder->groups()->detach();
+
+            // Prepare attach data with timestamps
+            $now = now();
+            $attachData = [];
+
+            foreach ($request->group as $groupId) {
+                $attachData[$groupId] = [
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+
+            // Attach with timestamps
+            $folder->groups()->attach($attachData);
         } else {
-            FolderGroupAccess::where('folder_id', $folder->id)->delete();
+            // Remove all group access
+            $folder->groups()->detach();
         }
 
 
@@ -195,85 +208,85 @@ class FolderController extends Controller
         }
     }
 
-      public function getFolders(Request $request)
-        { 
-            $query = Folder::query();
-           // dd(Auth::user()->ou_id);
-            $documentIds = Document::where('ou_id', Auth::user()->ou_id)->pluck('folder_id');
-            //dd($documentIds);
-            // Apply user-based folder filtering
-            if (Auth::user()->role == 1 && empty(Auth::user()->ou_id) && Auth::user()->is_owner) { 
-                // Admin without OU restriction: Fetch all folders
-                $query->whereNull('parent_id')->with('children');
-            } 
-            else if(Auth::user()->is_admin == 1){ 
-              $query->where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children');
-            }
-            else {
-                //$query->where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children');
-                $query->where('ou_id', Auth::user()->ou_id)->whereIn('id', $documentIds);
-
-            }
-
-            // Get total record count before filtering
-            $totalRecords = (clone $query)->count();
-
-            // Clone the query for filtering
-            $filteredQuery = clone $query;
-          //  dd($filteredQuery);
-
-            // Apply search filter
-            if ($request->has('search') && !empty($request->search['value'])) {
-                $searchValue = $request->search['value'];
-
-                $filteredQuery->where(function ($q) use ($searchValue) {
-                    $q->where('folder_name', 'LIKE', "%{$searchValue}%")
-                    ->orWhere('description', 'LIKE', "%{$searchValue}%");
-
-                    // Search by status (accepting "Active" or "Inactive" as input)
-                    if (stripos('Active', $searchValue) !== false) {
-                        $q->orWhere('status', 1);
-                    } elseif (stripos('Inactive', $searchValue) !== false) {
-                        $q->orWhere('status', 0);
-                    }
-                });
-            }
-
-            // Get the filtered record count
-            $filteredRecords = $filteredQuery->count();
-
-            // Sorting
-            $orderColumn = $request->order[0]['column'] ?? 1; // Default to 'folder_name' if not provided
-            $orderDirection = $request->order[0]['dir'] ?? 'asc';
-            $columns = ['id', 'folder_name', 'description', 'status']; // Columns index reference
-
-            $filteredQuery->orderBy($columns[$orderColumn], $orderDirection);
-
-            // Pagination
-            $folders = $filteredQuery->offset($request->start)->limit($request->length)->get();
-            
-            // Prepare response data
-            $data = [];
-            foreach ($folders as $index => $val) {
-                $encodedId = encode_id($val->id); 
-                $actions = view('folders.partials.actions', ['folder' => $val])->render();  
-
-                $data[] = [
-                    'DT_RowIndex' => $index + 1,
-                    'folder_name' => $val->folder_name,
-                    'description' => $val->description,
-                    'status' => $val->status == 1 ? 'Active' : 'Inactive',
-                    'actions' => $actions,
-                ];
-            }
-
-            return response()->json([
-                'draw' => intval($request->draw),
-                'recordsTotal' => $totalRecords,
-                'recordsFiltered' => $filteredRecords,
-                'data' => $data,
-            ]);
+    public function getFolders(Request $request)
+    { 
+        $query = Folder::query();
+        // dd(Auth::user()->ou_id);
+        $documentIds = Document::where('ou_id', Auth::user()->ou_id)->pluck('folder_id');
+        //dd($documentIds);
+        // Apply user-based folder filtering
+        if (Auth::user()->role == 1 && empty(Auth::user()->ou_id) && Auth::user()->is_owner) { 
+            // Admin without OU restriction: Fetch all folders
+            $query->whereNull('parent_id')->with('children');
+        } 
+        else if(Auth::user()->is_admin == 1){ 
+            $query->where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children');
         }
+        else {
+            //$query->where('ou_id', Auth::user()->ou_id)->whereNull('parent_id')->with('children');
+            $query->where('ou_id', Auth::user()->ou_id)->whereIn('id', $documentIds);
+
+        }
+
+        // Get total record count before filtering
+        $totalRecords = (clone $query)->count();
+
+        // Clone the query for filtering
+        $filteredQuery = clone $query;
+        //  dd($filteredQuery);
+
+        // Apply search filter
+        if ($request->has('search') && !empty($request->search['value'])) {
+            $searchValue = $request->search['value'];
+
+            $filteredQuery->where(function ($q) use ($searchValue) {
+                $q->where('folder_name', 'LIKE', "%{$searchValue}%")
+                ->orWhere('description', 'LIKE', "%{$searchValue}%");
+
+                // Search by status (accepting "Active" or "Inactive" as input)
+                if (stripos('Active', $searchValue) !== false) {
+                    $q->orWhere('status', 1);
+                } elseif (stripos('Inactive', $searchValue) !== false) {
+                    $q->orWhere('status', 0);
+                }
+            });
+        }
+
+        // Get the filtered record count
+        $filteredRecords = $filteredQuery->count();
+
+        // Sorting
+        $orderColumn = $request->order[0]['column'] ?? 1; // Default to 'folder_name' if not provided
+        $orderDirection = $request->order[0]['dir'] ?? 'asc';
+        $columns = ['id', 'folder_name', 'description', 'status']; // Columns index reference
+
+        $filteredQuery->orderBy($columns[$orderColumn], $orderDirection);
+
+        // Pagination
+        $folders = $filteredQuery->offset($request->start)->limit($request->length)->get();
+        
+        // Prepare response data
+        $data = [];
+        foreach ($folders as $index => $val) {
+            $encodedId = encode_id($val->id); 
+            $actions = view('folders.partials.actions', ['folder' => $val])->render();  
+
+            $data[] = [
+                'DT_RowIndex' => $index + 1,
+                'folder_name' => $val->folder_name,
+                'description' => $val->description,
+                'status' => $val->status == 1 ? 'Active' : 'Inactive',
+                'actions' => $actions,
+            ];
+        }
+
+        return response()->json([
+            'draw' => intval($request->draw),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $filteredRecords,
+            'data' => $data,
+        ]);
+    }
 
     
 
