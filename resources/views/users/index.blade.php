@@ -506,7 +506,20 @@
                             <div id="edit_licence_error_up" class="text-danger error_e"></div>
                             <input type="file" name="edit_licence_file" id="edit_licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
                             <div id="edit_licence_file_error_up" class="text-danger error_e"></div>
+                            <div class="col-md-6">
+                                <label for="edit_licence_rating_checkbox" class="form-label">Select Ratings for Licence</label>
+                                <input type="checkbox" name="edit_licence_rating_checkbox" id="edit_licence_rating_checkbox" class="ms-2">
 
+                                <div id="edit_licence_rating_section" class="mt-2" style="display: none;">
+                                    <select class="form-select rating-select" name="licence_1_ratings[]" id="edit_licence_rating_value" multiple>
+                                        <option value="">Select Rating</option>
+                                        @foreach($rating as $val)
+                                            <option value="{{ $val->id }}">{{ $val->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <div id="edit_licence_rating_error" class="text-danger error_e"></div>
+                                </div>
+                            </div>
                             <!-- <button type="button" id="edit_second_licence_btn" class="btn btn-secondary mt-3" style="display: none;">
                                 Second Licence
                             </button> -->
@@ -527,7 +540,16 @@
                                 <input type="file" name="edit_licence_file_2" id="edit_licence_file_2" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
                                 <div id="edit_licence_file_2_error" class="text-danger error_e"></div>
                             </div>
-
+                            <div id="edit_licence_2_rating_section" class="mt-3">
+                                <label for="edit_licence_2_rating_value" class="form-label">Select Ratings for Licence 2</label>
+                                <select class="form-select rating-select" name="licence_2_ratings[]" id="edit_licence_2_rating_value" multiple>
+                                    <option value="">Select Rating</option>
+                                    @foreach($rating as $val)
+                                        <option value="{{ $val->id }}">{{ $val->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div id="edit_licence_2_rating_error" class="text-danger error_e"></div>
+                            </div>
                         </div>
                         <!--   // Medical  -->
                         <div class="col-md-6">
@@ -655,7 +677,7 @@
                             <label for="edit_rating_checkbox" class="form-label">Rating/s</label>
                             <input type="checkbox" name="edit_rating_checkbox" id="edit_rating_checkbox" class="ms-2">
                             <div id="edit_ratings" style="display: none;">
-                                <select class="form-select rating-select" name="edit_rating[]" id="edit_rating_value" aria-label="Default select example" multiple>
+                                <select class="form-select rating-select" name="general_ratings[]" id="edit_rating_value" aria-label="Default select example" multiple>
                                     <option value="">Select Rating</option>
                                     @foreach($rating as $val)
                                     <option value="{{ $val->id }}">{{ $val->name }}</option>
@@ -1133,14 +1155,20 @@
                 });
         //edit 
 
-        $('#edit_licence_checkbox').change(function () {
+            $('#edit_licence_checkbox').change(function () {
             if (this.checked) {
                 $('#edit_licence').show().prop('required', true);
                 $('#edit_licence_file').show().prop('required', true);
                 $('#edit_license2').show();
+                $('#edit_licence_rating_section').show();
+                 if (!$('#edit_licence_rating_value').hasClass("select2-hidden-accessible")) {
+            $('#edit_licence_rating_value').select2({ width: '100%' });
+        }
             } else {
                 $('#edit_licence').hide().prop('required', false).val('');
                 $('#edit_licence_file').hide().prop('required', false).val('');
+                $('#edit_licence_rating_section').hide();
+                $('#edit_licence_rating').val(null); // clear selection
                 $('#edit_licence_2').val('');
                 $('#edit_licence_file_2').val('');
                 $('#edit_license2').hide();
@@ -1151,12 +1179,13 @@
             if (this.checked) {
                 $('#edit_second_licence_section').show();
                 $('#edit_licence_2').prop('required', true);
-                $('#edit_licence_2_file').prop('required', true);
+                $('#edit_licence_file_2').prop('required', true);
+                $('#edit_licence_2_rating_section').show();
             } else {
                 $('#edit_licence_2').prop('required', false).val('');
-                $('#edit_licence_2_file').prop('required', false).val('');
-                $('#edit_licence_2').val('');
-                $('#edit_licence_file_2').val('');
+                $('#edit_licence_file_2').prop('required', false).val('');
+                $('#edit_licence_2_rating_section').hide();
+                $('#edit_licence_2_rating').val(null); // clear selection
                 $('#edit_second_licence_section').hide();
             }
         });
@@ -1271,7 +1300,39 @@
                         // else{
                         //     $('#edit_licence_checkbox').prop('checked', false);
                         //     $('#edit_second_licence_btn').hide()
-                        // }            
+                        // }     
+                        
+                        const ratings = response.user_ratings || {};
+
+// General Ratings
+if (ratings.general) {
+    $('#edit_rating_checkbox').prop('checked', true);
+    $('#edit_ratings').show();
+    $('#edit_rating_value').val(ratings.general).trigger('change');
+} else {
+    $('#edit_rating_checkbox').prop('checked', false);
+    $('#edit_ratings').hide();
+    $('#edit_rating_value').val([]).trigger('change');
+}
+
+// Licence 1 Ratings
+if (ratings.licence_1) {
+    $('#edit_licence_rating_checkbox').prop('checked', true);
+    $('#edit_licence_rating_section').show();
+    $('#edit_licence_rating_value').val(ratings.licence_1).trigger('change');
+} else {
+    $('#edit_licence_rating_checkbox').prop('checked', false);
+    $('#edit_licence_rating_section').hide();
+    $('#edit_licence_rating_value').val([]).trigger('change');
+}
+
+// Licence 2 Ratings
+if (ratings.licence_2) {
+    $('#edit_licence_2_rating_value').val(ratings.licence_2).trigger('change');
+} else {
+    $('#edit_licence_2_rating_value').val([]).trigger('change');
+}
+
                         if (response.user.licence_required) {
                             $('#edit_licence_checkbox').prop('checked', true).trigger('change'); // ✅ trigger the .change() to apply all show logic
 
@@ -1318,19 +1379,19 @@
                            
                         }
 
-                        if (response.user.rating_required && response.user.usr_ratings.length > 0) {
-                            $('#edit_rating_checkbox').prop('checked', true);
-                            $('#edit_ratings').show();
+                        // if (response.user.rating_required && response.user.usr_ratings.length > 0) {
+                        //     $('#edit_rating_checkbox').prop('checked', true);
+                        //     $('#edit_ratings').show();
 
-                            // Extract rating IDs and set them as selected
-                            let selectedRatingIds = response.user.usr_ratings.map(r => r.rating_id);
-                            $('#edit_rating_value').val(selectedRatingIds).trigger('change');
+                        //     // Extract rating IDs and set them as selected
+                        //     let selectedRatingIds = response.user.usr_ratings.map(r => r.rating_id);
+                        //     $('#edit_rating_value').val(selectedRatingIds).trigger('change');
 
-                        } else {
-                            $('#edit_rating_checkbox').prop('checked', false);
-                            $('#edit_ratings').hide();
-                            $('#edit_rating_value').val([]).trigger('change');
-                        }
+                        // } else {
+                        //     $('#edit_rating_checkbox').prop('checked', false);
+                        //     $('#edit_ratings').hide();
+                        //     $('#edit_rating_value').val([]).trigger('change');
+                        // }
 
 
                         // Set currency checkbox and field
@@ -1560,6 +1621,45 @@
         }, 2000);
 
     });
+    $(document).ready(function () {
+    // Initialize select2
+    $('#edit_licence_rating_value').select2({
+        width: '100%',
+        placeholder: "Select Rating",
+        allowClear: true
+    });
+
+    // Toggle display based on checkbox
+    $('#edit_licence_rating_checkbox').on('change', function () {
+        if ($(this).is(':checked')) {
+            $('#edit_licence_rating_section').slideDown();
+        } else {
+            $('#edit_licence_rating_section').slideUp();
+            $('#edit_licence_rating_value').val(null).trigger('change'); // Clear selection
+        }
+    });
+});
+$(document).ready(function () {
+    $('#edit_rating_value').select2({
+        width: '100%',
+        placeholder: "Select Rating",
+        allowClear: true
+    });
+});
+if (response.user_ratings?.licence_1?.length > 0) {
+    $('#edit_licence_checkbox').prop('checked', true).trigger('change');
+    setTimeout(function () {
+        $('#edit_licence_rating_value').val(response.user_ratings.licence_1).trigger('change');
+    }, 300);
+}
+
+
+
+if (response.user_ratings?.licence_2?.length > 0) {
+    $('#edit_licence_2_checkbox').prop('checked', true).trigger('change');
+    $('#edit_licence_2_rating_value').val(response.user_ratings.licence_2).trigger('change');
+}
+
 </script>
 
 

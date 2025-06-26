@@ -10,10 +10,15 @@ class Rating extends Model
 {
     use HasFactory;
     use SoftDeletes;
-
-    protected $fillable = [
+    
+ protected $fillable = [
         'name',
-        'status'
+        'status',
+        'kind_of_rating',
+        'is_fixed_wing',
+        'is_rotary',
+        'is_instructor',
+        'is_examiner',
     ];
 
 

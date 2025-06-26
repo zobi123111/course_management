@@ -263,7 +263,79 @@ h2 {
                                                     Add Second Licence
                                                 </button>
                                             @endif -->
-                                            
+                                       @if($user->rating_required == 1 && $licence1Ratings->isNotEmpty())
+                                        <h4 class="mt-4">Ratings linked to Licence 1</h4>
+                                        <div class="row mt-3">
+                                            @foreach($licence1Ratings as $userRating)
+                                            @php
+                                                $rating = $userRating->rating;
+                                            @endphp
+                                            <div class="col-12 border p-4 mb-4 rounded shadow-sm bg-white">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h5 class="mb-0">{{ $rating->name }}</h5>
+                                                    @if($userRating->admin_verified)
+                                                        <span class="text-success ms-3">
+                                                            <i class="bi bi-check-circle-fill"></i> Verified
+                                                        </span>
+                                                    @endif
+                                                </div>
+
+                                                {{-- Issue Date --}}
+                                                <label class="form-label mt-3" for="issue_date_{{ $rating->id }}">
+                                                    <strong>{{ $rating->name }} Issue Date</strong>
+                                                </label>
+                                                <input type="date"
+                                                    name="issue_date[{{ $rating->id }}]"
+                                                    id="issue_date_{{ $rating->id }}"
+                                                    class="form-control"
+                                                    value="{{ old("issue_date.$rating->id", $userRating->issue_date) }}">
+                                                <div class="text-danger error_e" id="issue_date_{{ $rating->id }}_error_up"></div>
+
+                                                {{-- Expiry Date --}}
+                                                <label class="form-label mt-3" for="expiry_date_{{ $rating->id }}">
+                                                    <strong>{{ $rating->name }} Expiry Date</strong>
+                                                    @php $status = $userRating->expiry_status; @endphp
+                                                    @if($status === 'Red')
+                                                        <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired</span>
+                                                    @elseif($status === 'Yellow')
+                                                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
+                                                    @elseif($status === 'Green')
+                                                        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
+                                                    @else
+                                                        <span class="text-secondary"><i class="bi bi-question-circle-fill"></i> N/A</span>
+                                                    @endif
+                                                </label>
+                                                <input type="date"
+                                                    name="expiry_date[{{ $rating->id }}]"
+                                                    id="expiry_date_{{ $rating->id }}"
+                                                    class="form-control"
+                                                    value="{{ old("expiry_date.$rating->id", $userRating->expiry_date) }}">
+                                                <div class="text-danger error_e" id="expiry_date_{{ $rating->id }}_error_up"></div>
+
+                                                {{-- File Upload --}}
+                                                <label class="form-label mt-3" for="rating_file_{{ $rating->id }}">
+                                                    <strong>{{ $rating->name }} File Upload</strong>
+                                                </label>
+                                                <input type="file"
+                                                    name="rating_file[{{ $rating->id }}]"
+                                                    id="rating_file_{{ $rating->id }}"
+                                                    class="form-control"
+                                                    accept=".pdf,.jpg,.jpeg,.png">
+                                                <div class="text-danger error_e" id="rating_file_{{ $rating->id }}_error_up"></div>
+
+                                                {{-- View File Link --}}
+                                                @if(!empty($userRating->file_path))
+                                                    <a href="{{ asset('storage/' . $userRating->file_path) }}" target="_blank"
+                                                        class="btn btn-outline-primary btn-sm d-flex align-items-center mt-3"
+                                                        style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
+                                                        <i class="bi bi-file-earmark-text me-1"></i> View File
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                        </div>
+                                    @endif
+
                                         </div>
 
                                         <!-- Second Licence -->
@@ -328,6 +400,79 @@ h2 {
                                                         </a>
                                                     </div>
                                                 @endif
+                                             @if($user->rating_required == 1 && $licence2Ratings->isNotEmpty())
+                                            <h4 class="mt-4">Ratings linked to Licence 2</h4>
+                                            <div class="row mt-3">
+                                               @foreach($licence2Ratings as $userRating)
+                                                @php
+                                                    $rating = $userRating->rating;
+                                                @endphp
+                                                <div class="col-12 border p-4 mb-4 rounded shadow-sm bg-white">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <h5 class="mb-0">{{ $rating->name }}</h5>
+                                                        @if($userRating->admin_verified)
+                                                            <span class="text-success ms-3">
+                                                                <i class="bi bi-check-circle-fill"></i> Verified
+                                                            </span>
+                                                        @endif
+                                                    </div>
+
+                                                    {{-- Issue Date --}}
+                                                    <label class="form-label mt-3" for="issue_date_{{ $rating->id }}">
+                                                        <strong>{{ $rating->name }} Issue Date</strong>
+                                                    </label>
+                                                    <input type="date"
+                                                        name="issue_date[{{ $rating->id }}]"
+                                                        id="issue_date_{{ $rating->id }}"
+                                                        class="form-control"
+                                                        value="{{ old("issue_date.$rating->id", $userRating->issue_date) }}">
+                                                    <div class="text-danger error_e" id="issue_date_{{ $rating->id }}_error_up"></div>
+
+                                                    {{-- Expiry Date --}}
+                                                    <label class="form-label mt-3" for="expiry_date_{{ $rating->id }}">
+                                                        <strong>{{ $rating->name }} Expiry Date</strong>
+                                                        @php $status = $userRating->expiry_status; @endphp
+                                                        @if($status === 'Red')
+                                                            <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired</span>
+                                                        @elseif($status === 'Yellow')
+                                                            <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
+                                                        @elseif($status === 'Green')
+                                                            <span class="text-success"><i class="bi bi-check-circle-fill"></i> Valid</span>
+                                                        @else
+                                                            <span class="text-secondary"><i class="bi bi-question-circle-fill"></i> N/A</span>
+                                                        @endif
+                                                    </label>
+                                                    <input type="date"
+                                                        name="expiry_date[{{ $rating->id }}]"
+                                                        id="expiry_date_{{ $rating->id }}"
+                                                        class="form-control"
+                                                        value="{{ old("expiry_date.$rating->id", $userRating->expiry_date) }}">
+                                                    <div class="text-danger error_e" id="expiry_date_{{ $rating->id }}_error_up"></div>
+
+                                                    {{-- File Upload --}}
+                                                    <label class="form-label mt-3" for="rating_file_{{ $rating->id }}">
+                                                        <strong>{{ $rating->name }} File Upload</strong>
+                                                    </label>
+                                                    <input type="file"
+                                                        name="rating_file[{{ $rating->id }}]"
+                                                        id="rating_file_{{ $rating->id }}"
+                                                        class="form-control"
+                                                        accept=".pdf,.jpg,.jpeg,.png">
+                                                    <div class="text-danger error_e" id="rating_file_{{ $rating->id }}_error_up"></div>
+
+                                                    {{-- Existing File --}}
+                                                    @if(!empty($userRating->file_path))
+                                                        <a href="{{ asset('storage/' . $userRating->file_path) }}" target="_blank"
+                                                            class="btn btn-outline-primary btn-sm d-flex align-items-center mt-3"
+                                                            style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
+                                                            <i class="bi bi-file-earmark-text me-1"></i> View File
+                                                        </a>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+
+                                            </div>
+                                        @endif
                                             <!-- </div> -->
                                         </div>
                                     </div>
@@ -586,6 +731,9 @@ h2 {
                                 @php
                                     $userRating = $userRatingsMap[$rating->id] ?? null;
                                 @endphp
+                                 @if($userRating && $userRating->linked_to !== 'general')
+                                    @continue
+                                @endif
                                 <div class="col-6 border p-3 mb-3 rounded">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h5 class="mb-0">{{ $rating->name }}</h5>

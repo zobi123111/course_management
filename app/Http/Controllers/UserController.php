@@ -175,8 +175,16 @@ class UserController extends Controller
         $ratings = $user->usrRatings->map(function ($userRating) {
             return $userRating->rating;
         });
+
+              $licence1Ratings = $user->usrRatings->filter(function ($userRating) {
+    return $userRating->linked_to === 'licence_1';
+});
+
+$licence2Ratings = $user->usrRatings->filter(function ($userRating) {
+    return $userRating->linked_to === 'licence_2';
+});
     
-        return view('users.profile', compact('user', 'ratings'));
+        return view('users.profile', compact('user', 'ratings', 'licence1Ratings', 'licence2Ratings'));
     }
     
     public function profileUpdate(Request $request)
@@ -787,14 +795,14 @@ class UserController extends Controller
                         }
                     }
                 ],
-                'edit_rating' => $request->has('edit_rating_checkbox') ? 'required|array|min:1' : 'nullable',
+                'general_ratings' => $request->has('edit_rating_checkbox') ? 'required|array|min:1' : 'nullable',
             ], [
                 'edit_firstname.required' => 'The First Name is required',
                 'edit_lastname.required' => 'The Last Name is required',
                 'edit_email.required' => 'The Email is required',
                 'edit_email.email' => 'Please enter a valid Email',
                 'password' => 'The password and confirm password do not match.',
-                'edit_rating' => 'Rating is required',
+                'general_ratings' => 'Rating is required',
             ]);
 
             // Handle Image Upload
@@ -1038,31 +1046,25 @@ class UserController extends Controller
             
 
             // === Handle User Ratings (NEW) ===
-            if ($request->has('edit_rating_checkbox')) {
-                $selectedRatingIds = $request->input('edit_rating', []);
+            // === Handle User Ratings with Linked Flag ===
+                UserRating::where('user_id', $userToUpdate->id)->delete(); // Remove all existing ratings
 
-                // Fetch current ratings from DB
-                $existingRatings = UserRating::where('user_id', $userToUpdate->id)->pluck('rating_id')->toArray();
+                $ratingsData = [
+                    'licence_1' => $request->input('licence_1_ratings', []),
+                    'licence_2' => $request->input('licence_2_ratings', []),
+                    'general'   => $request->input('general_ratings', []),
+                ];
+               foreach ($ratingsData as $linkedTo => $ratingIds) {
+                    foreach ($ratingIds as $ratingId) {
+                        \Log::info("Saving rating {$ratingId} linked to {$linkedTo}");
 
-                // Determine ratings to add
-                $ratingsToAdd = array_diff($selectedRatingIds, $existingRatings);
-
-                // Determine ratings to remove
-                $ratingsToRemove = array_diff($existingRatings, $selectedRatingIds);
-
-                // Add new ratings
-                foreach ($ratingsToAdd as $ratingId) {
-                    UserRating::create([
-                        'user_id' => $userToUpdate->id,
-                        'rating_id' => $ratingId
-                    ]);
+                        UserRating::create([
+                            'user_id'   => $userToUpdate->id,
+                            'rating_id' => $ratingId,
+                            'linked_to' => $linkedTo,
+                        ]);
+                    }
                 }
-
-                // Remove unselected ratings
-                UserRating::where('user_id', $userToUpdate->id)
-                    ->whereIn('rating_id', $ratingsToRemove)
-                    ->delete();
-            }
 
             // Log Changes
             if (!empty($changes)) {
@@ -1078,16 +1080,27 @@ class UserController extends Controller
     }
 
 
-    public function getUserById(Request $request) 
+        public function getUserById(Request $request) 
     {
         $user = User::with('usrRatings', 'documents')->find(decode_id($request->id));
-        
+
         if (!$user) {
             return response()->json(['error' => 'User not found']);
         }
-    
-        return response()->json(['user' => $user]);
+
+        $userRatings = $user->usrRatings
+            ->groupBy('linked_to')
+            ->map(function ($items) {
+                return $items->pluck('rating_id')->values();
+            })
+            ->toArray(); 
+
+        return response()->json([
+            'user' => $user,
+            'user_ratings' => $userRatings
+        ]);
     }
+
     
 
     public function destroy(Request $request)
@@ -1297,18 +1310,29 @@ class UserController extends Controller
         return view('users.ratings.show', compact('ratings'));
     } 
 
-    public function saveRating(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|unique:ratings,name,NULL,id,deleted_at,NULL',
-            'status' => 'required|boolean',
-        ]);
-    
-        Rating::create($request->only('name', 'status'));
-    
-        Session::flash('message', 'Rating saved successfully');
-        return response()->json(['success' => true, 'msg'=> 'Rating saved successfully.']);
-    }
+   public function saveRating(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|unique:ratings,name,NULL,id,deleted_at,NULL',
+        'status' => 'required|boolean',
+        'kind_of_rating' => 'required|string|in:type_rating,class_rating,instrument_rating,instructor_rating,examiner_rating,others',
+
+    ]);
+
+    Rating::create([
+        'name' => $request->name,
+        'status' => $request->status,
+        'kind_of_rating' => $request->kind_of_rating,
+        'is_fixed_wing' => $request->has('is_fixed_wing'),
+        'is_rotary' => $request->has('is_rotary'),
+        'is_instructor' => $request->has('is_instructor'),
+        'is_examiner' => $request->has('is_examiner'),
+    ]);
+
+    Session::flash('message', 'Rating saved successfully');
+    return response()->json(['success' => true, 'msg' => 'Rating saved successfully.']);
+}
+
 
     public function getRating(Request $request)
     {
@@ -1320,35 +1344,41 @@ class UserController extends Controller
        }
     }
 
-    public function updateRating(Request $request)
-    {
-        $request->validate([
-            'rating_id' => 'required|integer',
-            'name' => 'required|string|unique:ratings,name,' . $request->rating_id . ',id,deleted_at,NULL',
-            'status' => 'required|in:0,1',
+   public function updateRating(Request $request)
+{
+    $request->validate([
+        'rating_id' => 'required|integer',
+        'name' => 'required|string|unique:ratings,name,' . $request->rating_id . ',id,deleted_at,NULL',
+        'status' => 'required|in:0,1',
+        'kind_of_rating' => 'required|string|in:type_rating,class_rating,instrument_rating,instructor_rating,examiner_rating,others',
+    ]);
+
+    $rating = Rating::find($request->rating_id);
+
+    if ($rating) {
+        $rating->update([
+            'name' => $request->name,
+            'status' => $request->status,
+            'kind_of_rating' => $request->kind_of_rating,
+            'is_fixed_wing' => $request->has('is_fixed_wing'),
+            'is_rotary' => $request->has('is_rotary'),
+            'is_instructor' => $request->has('is_instructor'),
+            'is_examiner' => $request->has('is_examiner'),
         ]);
-    
-        $rating = Rating::find($request->rating_id);
-    
-        if ($rating) {
-            $rating->update([
-                'name' => $request->name,
-                'status' => $request->status,
-            ]);
-    
-            Session::flash('message', 'Rating updated successfully.');
-    
-            return response()->json([
-                'success' => true,
-                'msg' => 'Rating updated successfully.'
-            ]);
-        } else {
-            return response()->json([
-                'success' => false,
-                'msg' => 'Rating not found.'
-            ]);
-        }
+
+        Session::flash('message', 'Rating updated successfully.');
+
+        return response()->json([
+            'success' => true,
+            'msg' => 'Rating updated successfully.'
+        ]);
+    } else {
+        return response()->json([
+            'success' => false,
+            'msg' => 'Rating not found.'
+        ]);
     }
+}
 
     public function deleteRating(Request $request)
     {

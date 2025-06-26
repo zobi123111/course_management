@@ -38,6 +38,8 @@
                         <tr>
                             <th scope="col">#</th>
                             <th scope="col">Rating</th>
+                            <th scope="col">Kind Of Rating</th>
+                            <th scope="col">Rating Type</th>
                             <th scope="col">Status</th>
                             <th scope="col">Action</th>
                         </tr>
@@ -47,6 +49,21 @@
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td class="rating">{{ $row->name }}</td>
+                            <td class="rating">{{ $row->kind_of_rating }}</td>
+                             <td>
+                                @if ($row->is_fixed_wing)
+                                    <span class="badge bg-primary">Fixed Wing</span>
+                                @endif
+                                @if ($row->is_rotary)
+                                    <span class="badge bg-info">Rotary</span>
+                                @endif
+                                @if ($row->is_instructor)
+                                    <span class="badge bg-success">Instructor</span>
+                                @endif
+                                @if ($row->is_examiner)
+                                    <span class="badge bg-warning text-dark">Examiner</span>
+                                @endif
+                            </td>
                             <td>
                                 {!! $row->status == 1 
                                     ? '<span class="badge bg-success">Active</span>' 
@@ -84,6 +101,47 @@
                             <input type="text" name="name" class="form-control">
                             <div id="name_error" class="text-danger error_e"></div>
                         </div>
+
+                          <!-- Kind of Rating Dropdown -->
+                        <div class="form-group">
+                            <label for="kind_of_rating" class="form-label">Kind of Rating <span class="text-danger">*</span></label>
+                            <select name="kind_of_rating" id="kind_of_rating" class="form-select" required>
+                                <option value="">Select Kind</option>
+                                <option value="type_rating" {{ old('kind_of_rating') == 'type_rating' ? 'selected' : '' }}>Type Rating</option>
+                                <option value="class_rating" {{ old('kind_of_rating') == 'class_rating' ? 'selected' : '' }}>Class Rating</option>
+                                <option value="instrument_rating" {{ old('kind_of_rating') == 'instrument_rating' ? 'selected' : '' }}>Instrument Rating</option>
+                                <option value="instructor_rating" {{ old('kind_of_rating') == 'instructor_rating' ? 'selected' : '' }}>Instructor Rating</option>
+                                <option value="examiner_rating" {{ old('kind_of_rating') == 'examiner_rating' ? 'selected' : '' }}>Examiner Rating</option>
+                                <option value="others" {{ old('kind_of_rating') == 'others' ? 'selected' : '' }}>Others</option>
+                            </select>
+                            <div id="kind_of_rating_error" class="text-danger error_e"></div>
+                        </div>
+
+                        <!-- Category Tag Checkboxes -->
+                        <div class="mb-3">
+                            <label class="form-label d-block">Category Tag</label>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="is_fixed_wing" id="fixed_wing" value="1">
+                                <label class="form-check-label" for="fixed_wing">Fixed Wing</label>
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="is_rotary" id="rotary" value="1">
+                                <label class="form-check-label" for="rotary">Rotary</label>
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="is_instructor" id="instructor" value="1">
+                                <label class="form-check-label" for="instructor">Instructor</label>
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="is_examiner" id="examiner" value="1">
+                                <label class="form-check-label" for="examiner">Examiner</label>
+                            </div>
+                        </div>
+                        
                         <div class="form-group">
                             <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                             <select class="form-select" name="status" aria-label="Default select example">
@@ -123,7 +181,45 @@
                             <input type="text" name="name" id="edit_name" class="form-control">
                             <input type="hidden" name="rating_id" id="rating_id" class="form-control">
                             <div id="name_error_up" class="text-danger error_e"></div>
-                        </div>                      
+                        </div>   
+                         <!-- Kind of Rating Dropdown -->
+                    <div class="form-group">
+                        <label for="edit_kind_of_rating" class="form-label">Kind of Rating <span class="text-danger">*</span></label>
+                        <select name="kind_of_rating" id="edit_kind_of_rating" class="form-select" required>
+                            <option value="">Select Kind</option>
+                            <option value="type_rating">Type Rating</option>
+                            <option value="class_rating">Class Rating</option>
+                            <option value="instrument_rating">Instrument Rating</option>
+                            <option value="instructor_rating">Instructor Rating</option>
+                            <option value="examiner_rating">Examiner Rating</option>
+                            <option value="others">Others</option>
+                        </select>
+                        <div id="kind_of_rating_error_up" class="text-danger error_e"></div>
+                    </div> 
+                      <!-- Category Tag Checkboxes -->
+                        <div class="form-group mb-3">
+                            <label class="form-label">Category Tag <span class="text-danger">*</span></label>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="is_fixed_wing" id="edit_fixed_wing" value="1">
+                                <label class="form-check-label" for="edit_fixed_wing">Fixed Wing</label>
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="is_rotary" id="edit_rotary" value="1">
+                                <label class="form-check-label" for="edit_rotary">Rotary</label>
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="is_instructor" id="edit_instructor" value="1">
+                                <label class="form-check-label" for="edit_instructor">Instructor</label>
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="is_examiner" id="edit_examiner" value="1">
+                                <label class="form-check-label" for="edit_examiner">Examiner</label>
+                            </div>
+                        </div>           
                         <div class="form-group">
                             <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                             <select class="form-select" name="status" id="edit_status"
@@ -233,6 +329,11 @@
                         $('#rating_id').val(response.rating.id);
                         $('#edit_name').val(response.rating.name);
                         $('#edit_status').val(response.rating.status);
+                        $('#edit_fixed_wing').prop('checked', response.rating.is_fixed_wing == 1);
+                        $('#edit_rotary').prop('checked', response.rating.is_rotary == 1);
+                        $('#edit_instructor').prop('checked', response.rating.is_instructor == 1);
+                        $('#edit_examiner').prop('checked', response.rating.is_examiner == 1);
+                        $('#edit_kind_of_rating').val(response.rating.kind_of_rating);
                         $('#editRatingModal').modal('show');
                     } else {
                         alert(response.msg || 'Unable to fetch rating.');
@@ -302,6 +403,14 @@
                 $(selector).fadeOut('slow');
             }, 2000);
         });
+$('#ratingModal').on('hidden.bs.modal', function () {
+    $('#add_rating')[0].reset();
+    $('.error_e').html('');
+});
+$('#editRatingModal').on('hidden.bs.modal', function () {
+    $('#editRatingForm')[0].reset();
+    $('.error_e').html('');
+});
 
 
     })
