@@ -36,4 +36,9 @@ class Group extends Model
     {
         return $this->belongsToMany(Folder::class, 'folder_group_access', 'group_id', 'folder_id');
     }
+
+    public function documents()
+    {
+        return $this->belongsToMany(Document::class, 'document_group');
+    }
 }
