@@ -21,7 +21,7 @@
             </div>
 
             <div class="col-md-6">
-                <strong>👥 Group:</strong> {{ $document?->group?->name ?? 'N/A' }}
+                <strong>👥 Groups:</strong> {{ $document->groups->pluck('name')->implode(', ') ?: 'N/A' }}
             </div>
 
             <div class="col-md-6">
@@ -34,10 +34,6 @@
 
             <div class="col-md-6">
                 <strong>⏳ Expiry Date:</strong> {{ $document->expiry_date ? date('d/m/Y', strtotime($document->expiry_date)): 'N/A' }}
-            </div>
-
-            <div class="col-md-6">
-                <strong>📂 Type:</strong> {{ $document->document_type ?? 'N/A' }}
             </div>
 
             <div class="col-md-6">
