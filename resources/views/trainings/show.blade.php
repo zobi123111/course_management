@@ -59,9 +59,9 @@
         color: #4959dc;
     }
 
-    .custom-box .highlight {
+    /* .custom-box .highlight {
         color: #4154f1;
-    }
+    } */
 
     .accordion-body {
         display: flex;
@@ -188,11 +188,31 @@
         display: none;
     }
 
-    .radio-label input:checked+.custom-radio {
+    /* .radio-label input:checked+.custom-radio {
         background-color: #4154f1;
         color: white;
         font-weight: bold;
+    } */
+
+    /* value-specific styles for task grading */
+    .radio-label input:checked + .custom-radio.incomplete {
+        background-color: #ffc107; /* yellow */
+        color: white;
+        font-weight: bold;
     }
+
+    .radio-label input:checked + .custom-radio.ftr {
+        background-color: #FF0000; /* red */
+        color: white;
+        font-weight: bold;
+    }
+
+    .radio-label input:checked + .custom-radio.competent {
+        background-color: #28a745; /* green */
+        color: white;
+        font-weight: bold;
+    }
+
 
     .custom-radio {
         display: inline-block;
@@ -783,13 +803,13 @@
                                                                                     <td>
                                                                                         <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
                                                                                             <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
-                                                                                            <span class="custom-radio">Incomplete</span>
+                                                                                            <span class="custom-radio incomplete">Incomplete</span>
                                                                                         </label>                                                                    
                                                                                     </td>
                                                                                     <td>
                                                                                         <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
                                                                                             <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Further training required"  {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
-                                                                                            <span class="custom-radio highlight">Further training required</span>
+                                                                                            <span class="custom-radio ftr">Further training required</span>
                                                                                         </label>
                                                                                     </td>
                                                                                     <td>
@@ -797,29 +817,32 @@
                                                                                             <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Competent" {{ $selectedGrade == 'Competent' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
                                                                                             <span class="custom-radio competent">Competent</span>
                                                                                         </label>
-                                                                                          </td>
-                                                                                            </tr>
-                                                                                @elseif($lesson->grade_type == 'percentage')
-                                                                                    <tr>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            @elseif($lesson->grade_type == 'percentage')
+                                                                                <tr>
                                                                                     <td colspan="5">
-                                                                                    <input type="number"
-                                                                                        name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]"
-                                                                                        value="{{ old("task_grade.$lesson->id.$sublesson->id.$student->id", $selectedGrade) }}"
-                                                                                        class="form-control"
-                                                                                        placeholder="Enter percentage"
-                                                                                        min="0" max="100"
-                                                                                        step="0.1"
-                                                                                        style="width: 250px;" {{-- Increased width --}}
-                                                                                        {{ $isDeferred ? 'readonly title=Deferred: You cannot edit this grading.' : '' }}>
-                                                                                            </td>
-                                                                                        </tr>
+                                                                                        <input type="number"
+                                                                                            name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]"
+                                                                                            value="{{ old("task_grade.$lesson->id.$sublesson->id.$student->id", $selectedGrade) }}"
+                                                                                            class="form-control"
+                                                                                            placeholder="Enter percentage"
+                                                                                            min="0" max="100"
+                                                                                            step="0.1"
+                                                                                            style="width: 250px;" {{-- Increased width --}}
+                                                                                            {{ $isDeferred ? 'readonly title=Deferred: You cannot edit this grading.' : '' }}>
+                                                                                    </td>
+                                                                                </tr>
                                                                             @else
                                                                                 <tr>
                                                                                     @for ($i = 1; $i <= 5; $i++)
+                                                                                        @php
+                                                                                            $colorClass = $i == 1 ? 'ftr' : ($i == 2 ? 'incomplete' : 'competent');
+                                                                                        @endphp
                                                                                         <td>
                                                                                             <label class="radio-label">
                                                                                                 <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="{{ $i }}" {{ old("task_grade.$lesson->id.$sublesson->id.$student->id", $selectedGrade) == $i ? 'checked' : '' }}>
-                                                                                                <span class="custom-radio">{{ $i }}</span>
+                                                                                                <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
                                                                                             </label>
                                                                                         </td>
                                                                                     @endfor                                                          
@@ -894,13 +917,16 @@
                                                             <tbody>
                                                                 <tr>
                                                                 @for ($i = 1; $i <= 5; $i++)
+                                                                    @php
+                                                                        $colorClass = $i == 1 ? 'ftr' : ($i == 2 ? 'incomplete' : 'competent');
+                                                                    @endphp
                                                                     <td>
                                                                         <label class="radio-label">
                                                                             <input type="radio"
                                                                                 name="comp_grade[{{ $lesson->id }}][{{ $code }}]"
                                                                                 value="{{ $i }}"
                                                                                 {{ $selectedCompGrade == $i ? 'checked' : '' }}>
-                                                                            <span class="custom-radio">{{ $i }}</span>
+                                                                            <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
                                                                         </label>
                                                                     </td>
                                                                 @endfor
@@ -976,13 +1002,13 @@
                                                                     <td>
                                                                         <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}" >
                                                                             <input type="radio" name="task_grade_def[{{ $task->id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }} >
-                                                                            <span class="custom-radio">Incomplete</span>
+                                                                            <span class="custom-radio incomplete">Incomplete</span>
                                                                         </label>
                                                                     </td>
                                                                     <td>
                                                                         <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
                                                                             <input type="radio" name="task_grade_def[{{ $task->id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
-                                                                            <span class="custom-radio highlight">Further training required</span>
+                                                                            <span class="custom-radio ftr">Further training required</span>
                                                                         </label>
                                                                     </td>
                                                                     <td>
@@ -1030,19 +1056,19 @@
                                                 <td>
                                                     <label class="radio-label">
                                                         <input type="radio" name="user_result_{{ $student->id }}" value="Competent" {{ isset($overallAssessments) && isset($overallAssessments->result) && $overallAssessments->result == 'Competent' ? 'checked' : '' }} >
-                                                        <span class="custom-radio">Competent</span>
+                                                        <span class="custom-radio competent">Competent</span>
                                                     </label>                                                                    
                                                 </td>
                                                 <td>
                                                     <label class="radio-label">
                                                         <input type="radio" name="user_result_{{ $student->id }}" value="Further training required" {{ isset($overallAssessments) && isset($overallAssessments->result) && $overallAssessments->result == 'Further training required' ? 'checked' : '' }}>
-                                                        <span class="custom-radio">Further training required</span>
+                                                        <span class="custom-radio ftr">Further training required</span>
                                                     </label>
                                                 </td>
                                                 <td>
                                                     <label class="radio-label">
                                                         <input type="radio" name="user_result_{{ $student->id }}" value="Incomplete" {{ isset($overallAssessments) && isset($overallAssessments->result) && $overallAssessments->result == 'Incomplete' ? 'checked' : '' }}>
-                                                        <span class="custom-radio">Incomplete</span>
+                                                        <span class="custom-radio incomplete">Incomplete</span>
                                                     </label>
                                                 </td>                                                                 
                                             </tr>

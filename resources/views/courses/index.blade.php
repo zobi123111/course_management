@@ -745,7 +745,7 @@ $(document).ready(function() {
                         dropdownParent: $('#editCourseModal'),
                         width: '100%',
                         allowClear: true,
-                        placeholder: 'Select the Group',
+                        placeholder: 'Select the Resource',
                         multiple: true,
                         dropdownParent: $('body') // move outside the modal
                     });
