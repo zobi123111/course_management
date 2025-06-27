@@ -178,10 +178,22 @@
                                                 </thead>
                                                 <tbody>
                                                     @foreach(['kno','pro','com','fpa','fpm','ltw','psd','saw','wlm'] as $competency)
+                                                     @php
+                                                        $grade = $grading[$competency.'_grade'] ?? null;
+                                                        $badgeClass = 'bg-secondary'; // default color
+
+                                                        if ($grade == 1) {
+                                                            $badgeClass = 'bg-danger'; // red
+                                                        } elseif ($grade == 2) {
+                                                            $badgeClass = 'bg-warning text-dark'; // yellow
+                                                        } elseif (in_array($grade, [3, 4, 5])) {
+                                                            $badgeClass = 'bg-success'; // green
+                                                        }
+                                                    @endphp
                                                         <tr>
                                                             <td><strong>{{ strtoupper($competency) }}</strong></td>
                                                             <td>
-                                                                <span class="badge bg-info text-dark">
+                                                                <span class="badge {{ $badgeClass }}">
                                                                     {{ $grading[$competency.'_grade'] ?? 'N/A' }}
                                                                 </span>
                                                             </td>
