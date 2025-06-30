@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('training_events', function (Blueprint $table) {
-            $table->boolean('is_locked')->default(false)->after('licence_number'); // Locked after grading
+            $table->boolean('is_locked')->default(false)->after('std_license_number'); // Locked after grading
             $table->boolean('student_acknowledged')->default(false)->after('is_locked'); // Student has acknowledged
             $table->text('student_acknowledgement_comments')->nullable()->after('student_acknowledged'); // Optional comments
         });

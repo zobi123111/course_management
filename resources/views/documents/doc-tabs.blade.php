@@ -57,16 +57,27 @@ span.ack-icon .fa-solid.text-danger:before {
 <div class="card pt-4">
     <div class="card-body">
         @php
-            // Group documents by their folder_id
-            $groupedFolders = $documents->groupBy('folder_id');
-        @endphp
+            $userGroupIds = $groups->pluck('id')->toArray();
 
-        @if($groupedFolders->isNotEmpty())
-            <!-- Tab Navigation -->
+            $groupedFolders = collect();
+
+            foreach ($folders as $folder) {
+                $docsInFolder = $documents->filter(function ($doc) use ($folder, $userGroupIds) {
+                    return $doc->folder_id === $folder->id &&
+                        $doc->groups->pluck('id')->intersect($userGroupIds)->isNotEmpty();
+                });
+
+                $groupedFolders->put($folder->id, [
+                    'folder' => $folder,
+                    'documents' => $docsInFolder
+                ]);
+            }
+        @endphp
+        @if ($groupedFolders->isNotEmpty())
             <ul class="nav nav-tabs" id="myTab" role="tablist">
-                @foreach($groupedFolders as $folderId => $docs)
+                @foreach($groupedFolders as $folderId => $data)
                     @php
-                        $folder = $docs->first()->folder;
+                        $folder = $data['folder'];
                         $isFirst = $loop->first;
                     @endphp
                     <li class="nav-item" role="presentation">
@@ -84,11 +95,11 @@ span.ack-icon .fa-solid.text-danger:before {
                 @endforeach
             </ul>
 
-            <!-- Tab Content -->
             <div class="tab-content pt-3" id="myTabContent">
-                @foreach($groupedFolders as $folderId => $docs)
+                @foreach($groupedFolders as $folderId => $data)
                     @php
-                        $folder = $docs->first()->folder;
+                        $folder = $data['folder'];
+                        $docs = $data['documents'];
                         $isFirst = $loop->first;
                     @endphp
 
@@ -100,14 +111,14 @@ span.ack-icon .fa-solid.text-danger:before {
                         <h4 class="mb-4">{{ $folder->folder_name ?? 'No Folder' }}</h4>
                         <hr>
                         <div class="d-flex flex-wrap gap-3">
-                            @foreach($docs as $doc)
+                            @forelse($docs as $doc)
                                 @php
-                                    $groupUserIds = is_array($doc->group->user_ids ?? []) 
-                                        ? $doc->group->user_ids 
-                                        : explode(',', $doc->group->user_ids ?? '');
+                                    $groupUserIds = $doc->groups->flatMap(function($g) {
+                                        return is_array($g->user_ids) ? $g->user_ids : explode(',', $g->user_ids);
+                                    })->unique();
 
                                     $ackUsers = json_decode($doc->acknowledge_by ?? '[]', true);
-                                    $isFullyAck = !empty($groupUserIds) && !array_diff($groupUserIds, $ackUsers);
+                                    $isFullyAck = !empty($groupUserIds) && $groupUserIds->diff($ackUsers) == collect();
 
                                     $ackDisplay = auth()->user()->is_admin || auth()->user()->is_owner
                                         ? ($isFullyAck ? '✔' : '❌')
@@ -126,8 +137,8 @@ span.ack-icon .fa-solid.text-danger:before {
                                             <span class="doc-title">
                                                 <strong>Title:</strong> {{ $doc->doc_title }} |
                                                 <strong>Version No:</strong> {{ $doc->version_no }} |
-                                                <strong>Issue Date:</strong> {{ ($doc->issue_date ? date('d/m/Y', strtotime($doc->issue_date)): '') }} |
-                                                <strong>Expiry Date:</strong> {{ ($doc->expiry_date? date('d/m/Y', strtotime($doc->expiry_date)): '') }}
+                                                <strong>Issue Date:</strong> {{ $doc->issue_date ? date('d/m/Y', strtotime($doc->issue_date)): 'N/A' }} |
+                                                <strong>Expiry Date:</strong> {{ $doc->expiry_date ? date('d/m/Y', strtotime($doc->expiry_date)): 'N/A' }}
                                             </span>
                                         </div>
                                         <span class="ack-icon ms-3" title="{{ $ackTooltip }}">
@@ -139,14 +150,17 @@ span.ack-icon .fa-solid.text-danger:before {
                                         </span>
                                     </div>
                                 </a>
-                            @endforeach
+                            @empty
+                                <div class="alert alert-warning w-100">No documents available for this folder.</div>
+                            @endforelse
                         </div>
-
                     </div>
                 @endforeach
             </div>
         @else
-            <div class="alert alert-info mt-3">No documents found with matching folder-group access.</div>
+            <div class="alert alert-info text-center mt-3">
+                No folders available for your group access.
+            </div>
         @endif
     </div>
 </div>
@@ -158,7 +172,6 @@ span.ack-icon .fa-solid.text-danger:before {
 
 <script>
 $(document).ready(function() {
-
 
     $('#documentTable').on('click', '.get_group_users', function() {
         var doc_id = $(this).data('doc-id');

@@ -95,7 +95,18 @@ class TrainingEventsController extends Controller
             
                 $trainingEvents = $trainingEventsQuery->whereIn('id', $eventIds)->get();
             } else {
-                $trainingEvents = $trainingEventsQuery->where('student_id', $currentUser->id)->get();
+                $trainingEvents = $trainingEventsQuery
+                    ->where('student_id', $currentUser->id)
+                    ->where(function ($query) use ($currentUser) {
+                        $query->whereHas('taskGradings', function ($q) use ($currentUser) {
+                            $q->where('user_id', $currentUser->id);
+                        })->orWhereHas('competencyGradings', function ($q) use ($currentUser) {
+                            $q->where('user_id', $currentUser->id);
+                        })->orWhereHas('overallAssessments', function ($q) use ($currentUser) {
+                            $q->where('user_id', $currentUser->id);
+                        });
+                    })
+                    ->get();
             }
         } else {
             // Default Case: Users with limited access within their organization
@@ -189,7 +200,6 @@ class TrainingEventsController extends Controller
     
         return response()->json(['success' => false], 404);
     }
-    
 
     // public function getCourseLessons(Request $request)
     // {
@@ -218,7 +228,6 @@ class TrainingEventsController extends Controller
             'resources' => $course->resources,
         ]);
     }
-
 
     public function createTrainingEvent(Request $request)
     {
@@ -705,7 +714,7 @@ class TrainingEventsController extends Controller
         $request->validate([
             'event_id'             => 'required|integer|exists:training_events,id',
             'task_grade'           => 'nullable|array',
-            'task_grade.*.*' => ['required', function ($attribute, $value, $fail) {
+            'task_grade.*.*' => ['nullable', function ($attribute, $value, $fail) {
                 $allowedValues = ['Incomplete', 'Further training required', 'Competent'];
                 if (!in_array($value, $allowedValues) && !is_numeric($value)) {
                     $fail('The ' . str_replace('_', ' ', $attribute) . ' must be a valid grade or a number.');
@@ -883,6 +892,13 @@ class TrainingEventsController extends Controller
                 'documents.courseDocument:id,document_name', // 🆕 Add this to load document name from course_documents
             ])
             ->first(); // Use first() to get a single event
+
+            // ✅ Check if event exists
+            if (!$event) {
+                return redirect()
+                    ->route('training.index')
+                    ->with('error', 'Training event or grading not found.');
+            }    
 
         $defLessonGrading = DefLessonTask::with(['task', 'defLesson'])
             ->where('event_id', $event->id)

@@ -10,6 +10,12 @@
     {{ session()->get('message') }}
 </div>
 @endif
+@if(session()->has('error'))
+<div id="successMessage" class="alert alert-warning fade show" role="alert">
+    <i class="bi bi-check-circle me-1"></i>
+    {{ session()->get('error') }}
+</div>
+@endif
 
 @if(checkAllowedModule('training','training.store')->isNotEmpty())
     <div class="create_btn">
@@ -276,6 +282,11 @@ var instructorsdata;
 instructorsdata = @json($instructors);
 var resourcesdata;
 resourcesdata = @json($resources);
+
+const currentUser = {
+    id: {{ auth()->user()->id }},
+    role: "{{ get_user_role(auth()->user()->role) }}"
+};
 
 // Delegate change event to dynamically added instructor selects
 $(document).on('change', 'select[name^="lesson_data"][name$="[instructor_id]"]', function () {
@@ -811,9 +822,22 @@ $(document).ready(function() {
             instructor_license_number = ''
         } = prefillData;
 
-        let instructorOptions = instructorsdata.map(i =>
-            `<option value="${i.id}" ${i.id == instructor_id ? 'selected' : ''}>${i.fname} ${i.lname}</option>`
-        ).join('');
+        let isCurrentUserInstructor = currentUser.role === 'instructor';
+        let instructorOptions = instructorsdata.map(i => {
+            let selected = '';
+            let disabled = '';
+
+            if (isCurrentUserInstructor && i.id == currentUser.id) {
+                selected = 'selected';
+            } else if (isCurrentUserInstructor) {
+                disabled = 'disabled';
+            } else if (i.id == instructor_id) {
+                selected = 'selected';
+            }
+
+            return `<option value="${i.id}" ${selected} ${disabled}>${i.fname} ${i.lname}</option>`;
+        }).join('');
+
 
         let resourceOptions = resourcesdata.map(r =>
             `<option value="${r.id}" ${r.id == resource_id ? 'selected' : ''}>${r.name}</option>`
@@ -826,10 +850,12 @@ $(document).ready(function() {
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Instructor<span class="text-danger">*</span></label>
-                        <select class="form-select" name="lesson_data[${currentIndex}][instructor_id]" id="lesson_data_${currentIndex}_instructor_listbox">
+                        <select class="form-select" name="lesson_data[${currentIndex}][instructor_id]" id="lesson_data_${currentIndex}_instructor_listbox"
+                                ${isCurrentUserInstructor ? 'disabled' : ''}>
                             <option value="">Select Instructor</option>
                             ${instructorOptions}
                         </select>
+                        ${isCurrentUserInstructor ? `<input type="hidden" name="lesson_data[${currentIndex}][instructor_id]" value="${currentUser.id}">` : ''}
                         <div id="lesson_data_${currentIndex}_instructor_id_error" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-6">
@@ -875,6 +901,33 @@ $(document).ready(function() {
         `;
 
         container.append(lessonBox);
+
+        // Trigger license number fetch if current user is instructor
+        if (isCurrentUserInstructor) {
+            const $currentBox = container.find(`.lesson-box[data-lesson-id="${currentIndex}"]`);
+            const $licenseInput = $currentBox.find(`input[name="lesson_data[${currentIndex}][instructor_license_number]"]`);
+
+            $.ajax({
+                url: `/training/get_instructor_license_no/${currentUser.id}`,
+                type: 'GET',
+                success: function (response) {
+                    if (response.success) {
+                        $licenseInput.val(response.instructor_licence_number || '');
+                        if (!response.instructor_licence_number) {
+                            alert("Instructor license number not found.");
+                        }
+                    } else {
+                        $licenseInput.val('');
+                        alert("Instructor not found.");
+                    }
+                },
+                error: function () {
+                    $licenseInput.val('');
+                    console.error("Failed to fetch license number");
+                    alert("An error occurred while fetching the license number.");
+                }
+            });
+        }
     }
 
 
