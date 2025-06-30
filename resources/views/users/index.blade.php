@@ -186,7 +186,7 @@
     <div id="licence_rating_section" class="mt-3" style="display: none;">
         <label class="form-label">Select Ratings for Licence 1</label>
         <select class="form-select rating-select" name="licence_1_ratings[]" id="licence_rating_value" multiple>
-            <option value="">Select Rating</option>
+            {{-- <option value="">Select Rating</option> --}}
             @foreach($rating as $val)
                 <option value="{{ $val->id }}">{{ $val->name }}</option>
             @endforeach
@@ -215,7 +215,7 @@
         <div id="licence_2_rating_section" class="mt-3">
             <label class="form-label">Select Ratings for Licence 2</label>
             <select class="form-select rating-select" name="licence_2_ratings[]" id="licence_2_rating_value" multiple>
-                <option value="">Select Rating</option>
+                {{-- <option value="">Select Rating</option> --}}
                 @foreach($rating as $val)
                     <option value="{{ $val->id }}">{{ $val->name }}</option>
                 @endforeach
@@ -357,7 +357,7 @@
                             <input type="checkbox" name="rating_checkbox" id="rating_checkbox" class="ms-2">
                             <div id="ratings" style="display: none;">
                                 <select class="form-select rating-select" name="rating[]" aria-label="Default select example" multiple>
-                                    <option value="">Select Rating</option>
+                                    {{-- <option value="">Select Rating</option> --}}
                                     @foreach($rating as $val)
                                     <option value="{{ $val->id }}">{{ $val->name }}</option>
                                     @endforeach
