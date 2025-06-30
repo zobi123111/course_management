@@ -19,6 +19,7 @@ class Rating extends Model
         'is_rotary',
         'is_instructor',
         'is_examiner',
+        'parent_id'
     ];
 
 

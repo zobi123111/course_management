@@ -95,6 +95,15 @@
                     @csrf
                     <div class="row g-3 mb-3">
                         <!-- Bootstrap Grid -->
+                       <div class="form-group mt-2">
+                            <label for="parent_rating" class="form-label">Parent Rating</label>
+                        <select name="parent_id" id="parent_rating" class="form-select">
+                            <option value="">No Parent (This is a root rating)</option>
+                            @foreach($ratingDropdownOptions as $r)
+                                <option value="{{ $r->id }}">{!! $r->name !!}</option>
+                            @endforeach
+                        </select>
+                        </div>
                         <div class="form-group">
                             <label for="firstname" class="form-label">Rating Name<span
                                     class="text-danger">*</span></label>
@@ -106,7 +115,7 @@
                         <div class="form-group">
                             <label for="kind_of_rating" class="form-label">Kind of Rating <span class="text-danger">*</span></label>
                             <select name="kind_of_rating" id="kind_of_rating" class="form-select" required>
-                                <option value="">Select Kind</option>
+                                <option value="">Select Kind of rating</option>
                                 <option value="type_rating" {{ old('kind_of_rating') == 'type_rating' ? 'selected' : '' }}>Type Rating</option>
                                 <option value="class_rating" {{ old('kind_of_rating') == 'class_rating' ? 'selected' : '' }}>Class Rating</option>
                                 <option value="instrument_rating" {{ old('kind_of_rating') == 'instrument_rating' ? 'selected' : '' }}>Instrument Rating</option>
@@ -175,6 +184,20 @@
                 <form action="" method="POST" id="editRatingForm" class="row g-3 needs-validation">
                     @csrf
                     <div class="row g-3 mb-3">
+                        <!-- Parent Rating Dropdown -->
+                       <div class="form-group mt-3">
+    <label for="parent_rating" class="form-label">Parent Rating</label>
+    <select name="parent_id" id="edit_parent_rating" class="form-select">
+        <option value="">No Parent (This is a root rating)</option>
+        @foreach($ratingDropdownOptions as $r)
+            @if(isset($rating) && $rating->id != $r->id) {{-- Prevent selecting self as parent --}}
+                <option value="{{ $r->id }}" {{ $rating->parent_id == $r->id ? 'selected' : '' }}>
+                    {!! $r->name !!}
+                </option>
+            @endif
+        @endforeach
+    </select>
+</div>
                         <div class="form-group">
                             <label for="firstname" class="form-label">Rating Name<span
                                 class="text-danger">*</span></label>
@@ -334,6 +357,16 @@
                         $('#edit_instructor').prop('checked', response.rating.is_instructor == 1);
                         $('#edit_examiner').prop('checked', response.rating.is_examiner == 1);
                         $('#edit_kind_of_rating').val(response.rating.kind_of_rating);
+                        $('#edit_parent_rating').empty().append(`<option value="">No Parent (This is a root rating)</option>`);
+                        response.dropdown.forEach(function(r) {
+                            if (r.id != response.rating.id) {
+                                $('#edit_parent_rating').append(`
+                                    <option value="${r.id}" ${r.id == response.rating.parent_id ? 'selected' : ''}>
+                                        ${r.name}
+                                    </option>
+                                `);
+                            }
+                        });
                         $('#editRatingModal').modal('show');
                     } else {
                         alert(response.msg || 'Unable to fetch rating.');
