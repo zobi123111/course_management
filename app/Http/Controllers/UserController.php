@@ -177,12 +177,12 @@ class UserController extends Controller
         });
 
               $licence1Ratings = $user->usrRatings->filter(function ($userRating) {
-    return $userRating->linked_to === 'licence_1';
-});
+                return $userRating->linked_to === 'licence_1';
+            });
 
-$licence2Ratings = $user->usrRatings->filter(function ($userRating) {
-    return $userRating->linked_to === 'licence_2';
-});
+            $licence2Ratings = $user->usrRatings->filter(function ($userRating) {
+                return $userRating->linked_to === 'licence_2';
+            });
     
         return view('users.profile', compact('user', 'ratings', 'licence1Ratings', 'licence2Ratings'));
     }
@@ -742,18 +742,47 @@ $licence2Ratings = $user->usrRatings->filter(function ($userRating) {
                 'medical_file_uploaded_2' => $medicalFileUploaded_2
             ]);
 
-            // Save ratings in 'user_ratings' table
-            if ($request->has('rating') && is_array($request->rating)) {
-                foreach ($request->rating as $ratingId) {
-                    UserRating::create([
-                        'user_id' => $store->id,
-                        'rating_id' => $ratingId,
-                        'issue_date' => null,     // you can set default/null or extend your form to collect this
-                        'expiry_date' => null,
-                        'file_path' => null,
-                    ]);
-                }
-            }
+              // ✅ Save general ratings (already present — leave untouched)
+    if ($request->has('rating') && is_array($request->rating)) {
+        foreach ($request->rating as $ratingId) {
+            UserRating::create([
+                'user_id'    => $store->id,
+                'rating_id'  => $ratingId,
+                'issue_date' => null,
+                'expiry_date'=> null,
+                'file_path'  => null,
+                'linked_to'  => 'general' // optional, if you want to differentiate
+            ]);
+        }
+    }
+
+    // ✅ NEW: Save Licence 1 Ratings
+    if ($request->has('licence_1_ratings') && is_array($request->licence_1_ratings)) {
+        foreach ($request->licence_1_ratings as $ratingId) {
+            UserRating::create([
+                'user_id'    => $store->id,
+                'rating_id'  => $ratingId,
+                'issue_date' => null,
+                'expiry_date'=> null,
+                'file_path'  => null,
+                'linked_to'  => 'licence_1'
+            ]);
+        }
+    }
+
+    // ✅ NEW: Save Licence 2 Ratings
+    if ($request->has('licence_2_ratings') && is_array($request->licence_2_ratings)) {
+        foreach ($request->licence_2_ratings as $ratingId) {
+            UserRating::create([
+                'user_id'    => $store->id,
+                'rating_id'  => $ratingId,
+                'issue_date' => null,
+                'expiry_date'=> null,
+                'file_path'  => null,
+                'linked_to'  => 'licence_2'
+            ]);
+        }
+    }
     
             // Generate password to send in the email
             $password = $request->password;
@@ -1303,12 +1332,38 @@ $licence2Ratings = $user->usrRatings->filter(function ($userRating) {
         ], 200);
     }
 
-    //Rating Methods
-    public function showRating()
-    {
-        $ratings = Rating::all();
-        return view('users.ratings.show', compact('ratings'));
-    } 
+public function showRating()
+{
+    $allRatings = Rating::all();
+
+    // Build dropdown options with hierarchy
+    $ratingDropdownOptions = collect();
+    $this->buildRatingHierarchy($allRatings, null, 0, $ratingDropdownOptions);
+
+    return view('users.ratings.show', [
+        'ratings' => $allRatings, // full data for table
+        'ratingDropdownOptions' => $ratingDropdownOptions // for dropdown
+    ]);
+}
+
+private function buildRatingHierarchy($all, $parentId, $depth, &$result)
+{
+    // Use loose comparison to match null properly
+    foreach ($all->where('parent_id', $parentId) as $rating) {
+        $indent = str_repeat('&nbsp;&nbsp;&nbsp;', $depth);
+        $arrow = $depth > 0 ? '↳ ' : '';
+        $indentedName = $indent . $arrow . e($rating->name); // Escape name to be safe
+
+        $result->push((object)[
+            'id' => $rating->id,
+            'name' => $indentedName,
+            'parent_id' => $rating->parent_id
+        ]);
+
+        // Recursive call for children
+        $this->buildRatingHierarchy($all, $rating->id, $depth + 1, $result);
+    }
+}
 
    public function saveRating(Request $request)
 {
@@ -1327,6 +1382,7 @@ $licence2Ratings = $user->usrRatings->filter(function ($userRating) {
         'is_rotary' => $request->has('is_rotary'),
         'is_instructor' => $request->has('is_instructor'),
         'is_examiner' => $request->has('is_examiner'),
+        'parent_id' => $request->parent_id ?? null,
     ]);
 
     Session::flash('message', 'Rating saved successfully');
@@ -1334,15 +1390,28 @@ $licence2Ratings = $user->usrRatings->filter(function ($userRating) {
 }
 
 
-    public function getRating(Request $request)
-    {
-       $rating = Rating::find(decode_id($request->rating_id));
-       if($rating){
-            return response()->json(['success'=> true,'rating'=> $rating]);
-       }else{
-            return response()->json(['success'=> false,'msg'=> 'Rating not gound']);            
-       }
+   public function getRating(Request $request)
+{
+    $rating = Rating::find(decode_id($request->rating_id));
+
+    if ($rating) {
+        $allRatings = Rating::all();
+        $ratingDropdownOptions = collect();
+        $this->buildRatingHierarchy($allRatings, null, 0, $ratingDropdownOptions);
+
+        return response()->json([
+            'success' => true,
+            'rating' => $rating,
+            'dropdown' => $ratingDropdownOptions, // Send dropdown list too
+        ]);
+    } else {
+        return response()->json([
+            'success' => false,
+            'msg' => 'Rating not found',
+        ]);
     }
+}
+
 
    public function updateRating(Request $request)
 {
@@ -1364,6 +1433,7 @@ $licence2Ratings = $user->usrRatings->filter(function ($userRating) {
             'is_rotary' => $request->has('is_rotary'),
             'is_instructor' => $request->has('is_instructor'),
             'is_examiner' => $request->has('is_examiner'),
+            'parent_id' => $request->parent_id ?? null,
         ]);
 
         Session::flash('message', 'Rating updated successfully.');

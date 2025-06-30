@@ -169,38 +169,62 @@
                                 style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
                             <div id="licence_file_error" class="text-danger error_e"></div>
                         </div> -->
-                        <div class="col-md-6">
-                            <label for="licence_checkbox" class="form-label">Licence</label>
-                            <input type="checkbox" name="licence_checkbox" id="licence_checkbox" class="ms-2">
-                            <label for="licence_verification_required" class="form-label ms-4">Admin Verification
-                                required?</label>
-                            <input type="checkbox" name="licence_verification_required"
-                                id="licence_verification_required" class="ms-2" value="1">
-                            <input type="text" name="licence" id="licence" class="form-control" style="display: none;"
-                                placeholder="Enter Licence Number">
-                            <div id="licence_error" class="text-danger error_e"></div>
-                            <input type="file" name="licence_file" id="licence_file" class="form-control mt-3"
-                                style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                       <div class="col-md-6">
+    <label for="licence_checkbox" class="form-label">Licence</label>
+    <input type="checkbox" name="licence_checkbox" id="licence_checkbox" class="ms-2">
 
-                            <div class="mt-3" id="license_2" style="display: none;">
-                                <label for="licence2_checkbox" class="form-label">Enable Licence 2</label>
-                                <input type="checkbox" name="licence_2_checkbox" id="licence_2_checkbox" value="1" class="ms-2">
-                                <label for="licence_2_verification_required" class="form-label ms-4">Admin Verification required?</label>
-                                <input type="checkbox" name="licence_2_verification_required" id="licence_2_verification_required" class="ms-2" value="1">
-                            </div>
+    <label for="licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
+    <input type="checkbox" name="licence_verification_required" id="licence_verification_required" class="ms-2" value="1">
 
-                            <!-- Second Licence Fields (initially hidden) -->
-                            <div id="second_licence_section" style="display: none;" class="mt-3">
-                                <input type="text" name="licence_2" id="licence_2" class="form-control" placeholder="Enter Second Licence Number">
-                                <div id="licence_2_error" class="text-danger error_e"></div>
+    <input type="text" name="licence" id="licence" class="form-control mt-2" style="display: none;" placeholder="Enter Licence Number">
+    <div id="licence_error" class="text-danger error_e"></div>
 
-                                <input type="file" name="licence_file_2" id="licence_file_2" class="form-control mt-3"
-                                    accept=".pdf,.jpg,.jpeg,.png">
-                                <div id="licence_file_2_error" class="text-danger error_e"></div>
-                            </div>
+    <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+    <div id="licence_file_error" class="text-danger error_e"></div>
 
-                            <div id="licence_file_error" class="text-danger error_e"></div>
-                        </div>
+    <!-- 👇 Ratings for Licence 1 -->
+    <div id="licence_rating_section" class="mt-3" style="display: none;">
+        <label class="form-label">Select Ratings for Licence 1</label>
+        <select class="form-select rating-select" name="licence_1_ratings[]" id="licence_rating_value" multiple>
+            <option value="">Select Rating</option>
+            @foreach($rating as $val)
+                <option value="{{ $val->id }}">{{ $val->name }}</option>
+            @endforeach
+        </select>
+        <div id="licence_rating_error" class="text-danger error_e"></div>
+    </div>
+
+    <!-- Enable Licence 2 -->
+    <div class="mt-3" id="license_2" style="display: none;">
+        <label for="licence2_checkbox" class="form-label">Enable Licence 2</label>
+        <input type="checkbox" name="licence_2_checkbox" id="licence_2_checkbox" value="1" class="ms-2">
+
+        <label for="licence_2_verification_required" class="form-label ms-4">Admin Verification required?</label>
+        <input type="checkbox" name="licence_2_verification_required" id="licence_2_verification_required" class="ms-2" value="1">
+    </div>
+
+    <!-- Second Licence Fields -->
+    <div id="second_licence_section" style="display: none;" class="mt-3">
+        <input type="text" name="licence_2" id="licence_2" class="form-control" placeholder="Enter Second Licence Number">
+        <div id="licence_2_error" class="text-danger error_e"></div>
+
+        <input type="file" name="licence_file_2" id="licence_file_2" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
+        <div id="licence_file_2_error" class="text-danger error_e"></div>
+
+        <!-- 👇 Ratings for Licence 2 -->
+        <div id="licence_2_rating_section" class="mt-3">
+            <label class="form-label">Select Ratings for Licence 2</label>
+            <select class="form-select rating-select" name="licence_2_ratings[]" id="licence_2_rating_value" multiple>
+                <option value="">Select Rating</option>
+                @foreach($rating as $val)
+                    <option value="{{ $val->id }}">{{ $val->name }}</option>
+                @endforeach
+            </select>
+            <div id="licence_2_rating_error" class="text-danger error_e"></div>
+        </div>
+    </div>
+</div>
+
 
                         <!--   // Medical  -->
                         <div class="col-md-6">
@@ -506,10 +530,9 @@
                             <div id="edit_licence_error_up" class="text-danger error_e"></div>
                             <input type="file" name="edit_licence_file" id="edit_licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
                             <div id="edit_licence_file_error_up" class="text-danger error_e"></div>
-                            <div class="col-md-6">
-                                <label for="edit_licence_rating_checkbox" class="form-label">Select Ratings for Licence</label>
-                                <input type="checkbox" name="edit_licence_rating_checkbox" id="edit_licence_rating_checkbox" class="ms-2">
-
+                            
+                                {{-- <label for="edit_licence_rating_checkbox" class="form-label">Select Ratings for Licence</label>
+                                <input type="checkbox" name="edit_licence_rating_checkbox" id="edit_licence_rating_checkbox" class="ms-2"> --}}
                                 <div id="edit_licence_rating_section" class="mt-2" style="display: none;">
                                     <select class="form-select rating-select" name="licence_1_ratings[]" id="edit_licence_rating_value" multiple>
                                         <option value="">Select Rating</option>
@@ -519,7 +542,6 @@
                                     </select>
                                     <div id="edit_licence_rating_error" class="text-danger error_e"></div>
                                 </div>
-                            </div>
                             <!-- <button type="button" id="edit_second_licence_btn" class="btn btn-secondary mt-3" style="display: none;">
                                 Second Licence
                             </button> -->
@@ -541,7 +563,7 @@
                                 <div id="edit_licence_file_2_error" class="text-danger error_e"></div>
                             </div>
                             <div id="edit_licence_2_rating_section" class="mt-3">
-                                <label for="edit_licence_2_rating_value" class="form-label">Select Ratings for Licence 2</label>
+                                {{-- <label for="edit_licence_2_rating_value" class="form-label">Select Ratings for Licence 2</label> --}}
                                 <select class="form-select rating-select" name="licence_2_ratings[]" id="edit_licence_2_rating_value" multiple>
                                     <option value="">Select Rating</option>
                                     @foreach($rating as $val)
@@ -843,29 +865,44 @@
             ]   
         });
 
-        $('#licence_checkbox').change(function () {
-            if (this.checked) {
-                $('#licence').show().prop('required', true);
-                $('#licence_file').show().prop('required', true);
-                $('#license_2').show();
-            } else {
-                $('#licence').hide().prop('required', false).val('');
-                $('#licence_file').hide().prop('required', false).val('');
-                $('#licence_error, #licence_file_error').hide();
-                $('#second_licence_section').hide();
-                $('#license_2').hide();
-            }
-        });
-        $('#licence_2_checkbox').change(function () {
-            if (this.checked) {
-                $('#second_licence_section').show();
-                $('#licence_2').prop('required', true);
-                $('#licence_file_2').prop('required', true);
-            } else {
-                $('#licence_2').prop('required', false).val('');
-                $('#licence_file_2').prop('required', false).val('');
-            }
-        });
+       $('#licence_checkbox').change(function () {
+    if (this.checked) {
+        $('#licence').show().prop('required', true);
+        $('#licence_file').show().prop('required', true);
+        $('#license_2').show();
+
+        // 👉 Show the ratings for Licence 1
+        $('#licence_rating_section').show();
+    } else {
+        $('#licence').hide().prop('required', false).val('');
+        $('#licence_file').hide().prop('required', false).val('');
+        $('#licence_error, #licence_file_error').hide();
+        $('#second_licence_section').hide();
+        $('#license_2').hide();
+
+        // 👉 Hide the ratings for Licence 1
+        $('#licence_rating_section').hide();
+        $('#licence_rating_value').val(null).trigger('change'); // clear selection
+    }
+});
+
+$('#licence_2_checkbox').change(function () {
+    if (this.checked) {
+        $('#second_licence_section').show();
+        $('#licence_2').prop('required', true);
+        $('#licence_file_2').prop('required', true);
+
+        // 👉 Show the ratings for Licence 2
+        $('#licence_2_rating_section').show();
+    } else {
+        $('#licence_2').prop('required', false).val('');
+        $('#licence_file_2').prop('required', false).val('');
+
+        // 👉 Hide the ratings for Licence 2
+        $('#licence_2_rating_section').hide();
+        $('#licence_2_rating_value').val(null).trigger('change'); // clear selection
+    }
+});
 
 
         // Custom field 
@@ -1659,7 +1696,27 @@ if (response.user_ratings?.licence_2?.length > 0) {
     $('#edit_licence_2_checkbox').prop('checked', true).trigger('change');
     $('#edit_licence_2_rating_value').val(response.user_ratings.licence_2).trigger('change');
 }
+$('#licence_checkbox').change(function () {
+    if (this.checked) {
+        $('#licence').show();
+        $('#licence_file').show();
+        $('#licence_rating_section').show();
+    } else {
+        $('#licence').hide();
+        $('#licence_file').hide();
+        $('#licence_rating_section').hide();
+    }
+});
 
+$('#licence_2_checkbox').change(function () {
+    if (this.checked) {
+        $('#second_licence_section').show();
+        $('#licence_2_rating_section').show();
+    } else {
+        $('#second_licence_section').hide();
+        $('#licence_2_rating_section').hide();
+    }
+});
 </script>
 
 
