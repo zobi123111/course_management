@@ -95,7 +95,18 @@ class TrainingEventsController extends Controller
             
                 $trainingEvents = $trainingEventsQuery->whereIn('id', $eventIds)->get();
             } else {
-                $trainingEvents = $trainingEventsQuery->where('student_id', $currentUser->id)->get();
+                $trainingEvents = $trainingEventsQuery
+                    ->where('student_id', $currentUser->id)
+                    ->where(function ($query) use ($currentUser) {
+                        $query->whereHas('taskGradings', function ($q) use ($currentUser) {
+                            $q->where('user_id', $currentUser->id);
+                        })->orWhereHas('competencyGradings', function ($q) use ($currentUser) {
+                            $q->where('user_id', $currentUser->id);
+                        })->orWhereHas('overallAssessments', function ($q) use ($currentUser) {
+                            $q->where('user_id', $currentUser->id);
+                        });
+                    })
+                    ->get();
             }
         } else {
             // Default Case: Users with limited access within their organization
@@ -189,7 +200,6 @@ class TrainingEventsController extends Controller
     
         return response()->json(['success' => false], 404);
     }
-    
 
     // public function getCourseLessons(Request $request)
     // {
@@ -218,7 +228,6 @@ class TrainingEventsController extends Controller
             'resources' => $course->resources,
         ]);
     }
-
 
     public function createTrainingEvent(Request $request)
     {
