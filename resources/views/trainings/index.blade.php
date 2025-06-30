@@ -10,6 +10,12 @@
     {{ session()->get('message') }}
 </div>
 @endif
+@if(session()->has('error'))
+<div id="successMessage" class="alert alert-warning fade show" role="alert">
+    <i class="bi bi-check-circle me-1"></i>
+    {{ session()->get('error') }}
+</div>
+@endif
 
 @if(checkAllowedModule('training','training.store')->isNotEmpty())
     <div class="create_btn">
