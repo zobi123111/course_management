@@ -371,7 +371,7 @@ h2 {
                 <h5>{{ $rating->name }}</h5>
 
                 @if($childRatings->isNotEmpty())
-                    <h6 class="mt-3">Associated Child Ratings</h6>
+                    <h6 class="mt-3">Associated  Ratings</h6>
                     <div class="row mt-3">
                         @foreach($childRatings as $child)
                             @php
@@ -380,7 +380,7 @@ h2 {
                             <div class="col-md-6 mb-3">
                                 <div class="card border border-secondary h-100">
                                     <div class="card-body">
-                                        <h6 class="card-title">{{ $child->name }} (Child)</h6>
+                                        <h6 class="card-title">{{ $child->name }}</h6>
                                         <p class="card-text small">
                                             Issue Date: {{ $userRating->issue_date ?? 'N/A' }}<br>
                                             Expiry Date: {{ $userRating->expiry_date ?? 'N/A' }}
@@ -539,37 +539,40 @@ h2 {
                 {{-- Show all child ratings under this parent --}}
                @if($childRatings->isNotEmpty())
     <hr>
-    <h6>Child Ratings</h6>
     <div class="row">
-        @foreach($childRatings as $child)
-            @php
-                $childUserRating = $userRatingsMap[$child->id] ?? null;
-            @endphp
-            <div class="col-md-6 mb-3">
-                <div class="card border border-secondary h-100 shadow-sm">
-                    <div class="card-body">
-                        <h6 class="card-title">{{ $child->name }} (Child)</h6>
-                        <p class="card-text small">
-                            Issue Date: {{ $childUserRating?->issue_date ?? 'N/A' }}<br>
-                            Expiry Date: {{ $childUserRating?->expiry_date ?? 'N/A' }}
-                        </p>
+    @foreach($childRatings as $child)
+        @php
+            $childUserRating = $userRatingsMap[$child->id] ?? null;
+            $issueDate = $childUserRating?->issue_date ?? $parentUserRating?->issue_date ?? 'N/A';
+            $expiryDate = $childUserRating?->expiry_date ?? $parentUserRating?->expiry_date ?? 'N/A';
+            $filePath = $childUserRating?->file_path ?? $parentUserRating?->file_path;
+            $isVerified = $childUserRating?->admin_verified ?? $parentUserRating?->admin_verified ?? false;
+        @endphp
+        <div class="col-md-6 mb-3">
+            <div class="card border border-secondary h-100 shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">{{ $child->name }}</h6>
+                    <p class="card-text small">
+                        Issue Date: {{ $issueDate }}<br>
+                        Expiry Date: {{ $expiryDate }}
+                    </p>
 
-                        @if($childUserRating?->file_path)
-                            <a href="{{ asset('storage/' . $childUserRating->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
-                                <i class="bi bi-file-earmark-text me-1"></i> View File
-                            </a>
-                        @endif
+                    @if($filePath)
+                        <a href="{{ asset('storage/' . $filePath) }}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                            <i class="bi bi-file-earmark-text me-1"></i> View File
+                        </a>
+                    @endif
 
-                        @if($childUserRating?->admin_verified)
-                            <span class="text-success mt-2 d-inline-block">
-                                <i class="bi bi-check-circle-fill"></i> Verified
-                            </span>
-                        @endif
-                    </div>
+                    @if($isVerified)
+                        <span class="text-success mt-2 d-inline-block">
+                            <i class="bi bi-check-circle-fill"></i> Verified
+                        </span>
+                    @endif
                 </div>
             </div>
-        @endforeach
-    </div>
+        </div>
+    @endforeach
+</div>
 @endif
 
             </div>
@@ -594,7 +597,7 @@ h2 {
             <div class="col-md-6 mb-4">
                 <div class="card border p-3 shadow-sm h-100">
                     <div class="card-body">
-                        <h5 class="card-title">{{ $rating->name }} (Child)</h5>
+                        <h5 class="card-title">{{ $rating->name }}</h5>
 
                         <label class="form-label mt-2"><strong>Issue Date</strong></label>
                         <input type="date" name="issue_date[{{ $rating->id }}]" class="form-control"
@@ -969,14 +972,14 @@ h2 {
                 {{-- Child Ratings --}}
                 @if(count($childRatings) > 0)
                     <hr>
-                    <h6>Associated Child Ratings</h6>
+                    <h6>Associated  Ratings</h6>
                     <div class="row mt-3">
                         @foreach($childRatings as $childUserRating)
                             @php $child = $childUserRating->rating; @endphp
                             <div class="col-md-6 mb-3">
                                 <div class="card border border-secondary h-100">
                                     <div class="card-body">
-                                        <h6 class="card-title">{{ $child->name }} (Child)</h6>
+                                        <h6 class="card-title">{{ $child->name }}</h6>
                                         <p class="card-text small">
                                             Issue Date: {{ $userRating?->issue_date ?? 'N/A' }}<br>
                                             Expiry Date: {{ $userRating?->expiry_date ?? 'N/A' }}
