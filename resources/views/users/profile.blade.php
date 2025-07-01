@@ -502,6 +502,7 @@ h2 {
                 // CASE 1: If parent is selected, show parent + all children
                 if ($rating->parent_id === null) {
                     $childRatings = $allChildRatings[$rating->id] ?? collect();
+                    $parentUserRating = $userRating;
             @endphp
 
             {{-- Parent Rating Block --}}
