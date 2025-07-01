@@ -530,7 +530,8 @@ h2 {
                 <input type="file" name="rating_file[{{ $rating->id }}]" class="form-control"
                        accept=".pdf,.jpg,.jpeg,.png">
                 @if($userRating->file_path)
-                    <a href="{{ asset('storage/' . $userRating->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                    <a href="{{ asset('storage/' . $userRating->file_path) }}" target="_blank" class="btn btn-outline-primary btn-sm d-flex align-items-center mt-3"
+                        style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
                         <i class="bi bi-file-earmark-text me-1"></i> View File
                     </a>
                 @endif
