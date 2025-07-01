@@ -128,6 +128,49 @@
                         <p class="text-muted">No license details available.</p>
                     @endif
                 </div>
+                 @if($user->usrRatings->where('linked_to', 'licence_1')->count())
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <h6 class="text-secondary mb-3"><i class="bi bi-star-fill text-warning me-2"></i>Ratings Linked to Licence 1</h6>
+                            <div class="d-flex flex-wrap">
+                                @foreach($user->usrRatings->where('linked_to', 'licence_1') as $rating)
+                                    <div class="card shadow-sm border me-3 mb-3" style="width: 18rem;">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-primary">
+                                                {{ $rating->rating->name ?? 'Unknown Rating' }}
+                                            </h6>
+                                            <ul class="list-unstyled small mb-2">
+                                                <li><strong>Issue Date:</strong> {{ $rating->issue_date ?? 'N/A' }}</li>
+                                                <li><strong>Expiry Date:</strong> {{ $rating->expiry_date ?? 'N/A' }}</li>
+                                            </ul>
+
+                                            @if($rating->file_path)
+                                                <a href="{{ Storage::url($rating->file_path) }}" target="_blank"
+                                                    class="btn btn-outline-primary btn-sm me-2">
+                                                    <i class="bi bi-file-earmark-arrow-down"></i> View File
+                                                </a>
+
+                                                <div class="form-check form-switch mt-3">
+                                                    <input class="form-check-input verify-toggle" type="checkbox"
+                                                        id="rating_verify_{{ $rating->id }}"
+                                                        data-user-id="{{ encode_id($user->id) }}"
+                                                        data-type="user_rating"
+                                                        data-rating-id="{{ encode_id($rating->id) }}"
+                                                        {{ $rating->admin_verified ? 'checked disabled' : '' }}>
+                                                    <label class="form-check-label" for="rating_verify_{{ $rating->id }}">
+                                                        {{ $rating->admin_verified ? 'Verified' : 'Mark as Verified' }}
+                                                    </label>
+                                                </div>
+                                            @else
+                                                <p class="text-muted">No rating file available.</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @endif
 
                 <!-- Second License Details -->
                 @if($document && $document->licence_2)
@@ -151,6 +194,51 @@
                             @endif
                         </div>
                 </div>
+                @if($user->usrRatings->where('linked_to', 'licence_2')->count())
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <h6 class="text-secondary mb-3">
+                                <i class="bi bi-star-fill text-warning me-2"></i>Ratings Linked to Licence 2
+                            </h6>
+                            <div class="d-flex flex-wrap">
+                                @foreach($user->usrRatings->where('linked_to', 'licence_2') as $rating)
+                                    <div class="card shadow-sm border me-3 mb-3" style="width: 18rem;">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-primary">
+                                                {{ $rating->rating->name ?? 'Unknown Rating' }}
+                                            </h6>
+                                            <ul class="list-unstyled small mb-2">
+                                                <li><strong>Issue Date:</strong> {{ $rating->issue_date ?? 'N/A' }}</li>
+                                                <li><strong>Expiry Date:</strong> {{ $rating->expiry_date ?? 'N/A' }}</li>
+                                            </ul>
+
+                                            @if($rating->file_path)
+                                                <a href="{{ Storage::url($rating->file_path) }}" target="_blank"
+                                                    class="btn btn-outline-primary btn-sm me-2">
+                                                    <i class="bi bi-file-earmark-arrow-down"></i> View File
+                                                </a>
+
+                                                <div class="form-check form-switch mt-3">
+                                                    <input class="form-check-input verify-toggle" type="checkbox"
+                                                        id="rating_verify_{{ $rating->id }}"
+                                                        data-user-id="{{ encode_id($user->id) }}"
+                                                        data-type="user_rating"
+                                                        data-rating-id="{{ encode_id($rating->id) }}"
+                                                        {{ $rating->admin_verified ? 'checked disabled' : '' }}>
+                                                    <label class="form-check-label" for="rating_verify_{{ $rating->id }}">
+                                                        {{ $rating->admin_verified ? 'Verified' : 'Mark as Verified' }}
+                                                    </label>
+                                                </div>
+                                            @else
+                                                <p class="text-muted">No rating file available.</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @endif
                 @endif
 
                 <!-- Medical Details -->
@@ -223,7 +311,7 @@
 
                     <div class="d-flex flex-wrap">
                         @if($user->usrRatings->count())
-                            @foreach($user->usrRatings as $rating)
+                            @foreach($user->usrRatings->where('linked_to', 'general') as $rating)
                                 <div class="card shadow-sm border-0 me-3 mb-3" style="width: 18rem;">
                                     <div class="card-body">
                                         <h5 class="card-title mb-3 text-primary">
