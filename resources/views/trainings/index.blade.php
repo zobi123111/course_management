@@ -57,7 +57,7 @@
                 <td>{{ $lesson?->end_time ? date('h:i A', strtotime($lesson->end_time)) : '' }}</td>
                 <td>
                 @if(get_user_role(auth()->user()->role) == 'administrator')  
-                    @if($event->is_locked == 0)
+                    @if(empty($event->is_locked))
                         @if(checkAllowedModule('training','training.edit')->isNotEmpty()  && !$event->is_graded)
                             <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
                             data-event-id="{{ encode_id($event->id) }}"></i>
