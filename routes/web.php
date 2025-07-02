@@ -20,6 +20,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\CourseTemplateController;
 use App\Http\Controllers\UserActivityLogController;
 use App\Http\Controllers\TrainingFeedbackController;
+use App\Http\Controllers\ReportsController;
 
 
 
@@ -111,6 +112,10 @@ Route::group(['middleware' => ['auth']], function () {
     ->name('training.deferred-lessons.store');
     Route::post('/training/store-def-grading', [TrainingEventsController::class, 'storeDefGrading'])
     ->name('training.store_def_grading');
+    Route::post('/training/end-course/{id}', [TrainingEventsController::class, 'endCourse'])->name('training.endCourse');
+    Route::post('/training/unlock-lesson', [TrainingEventsController::class, 'unlockLesson'])->name('training.unlockLesson');
+
+
 
 
     
@@ -257,6 +262,10 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     // Route::get('/document/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('document.getOrgfolder');
     // Route::get('/folder/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('folder.getOrgfolder');
     Route::get('/folder/edit', [FolderController::class, 'getFolder'])->name('folder.edit');
+
+    // Reporting section Routes
+    Route::get('/reports', [ReportsController::class, 'index'])->name('reports.index');
+
 
 });
 

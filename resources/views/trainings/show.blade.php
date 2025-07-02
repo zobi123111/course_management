@@ -406,10 +406,26 @@
                 <button class="nav-link " id="Lesson-tab" data-bs-toggle="tab" data-bs-target="#Lesson" type="button" role="tab" aria-controls="Lesson" aria-selected="true">Lesson Plan</button>
             </li>
             @if($trainingEvent?->course?->course_type === 'one_event' && $student)
+                @php
+                    $eventLesson = $trainingEvent->eventLessons->first();
+                    $isLocked = $eventLessons->first()?->is_locked ?? 0;
+                @endphp
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="student-tab-{{ $student->id }}" data-bs-toggle="tab" data-bs-target="#student-{{ $student->id }}" type="button" role="tab" aria-controls="student-{{ $student->id }}" aria-selected="false">
-                        {{ $student->fname }} {{ $student->lname }}
-                    </button>
+                        <button class="nav-link {{ $isLocked ? 'disabled' : '' }}"
+                                id="student-tab-{{ $student->id }}"
+                                data-bs-toggle="tab"
+                                data-bs-target="#student-{{ $student->id }}"
+                                type="button"
+                                role="tab"
+                                aria-controls="student-{{ $student->id }}"
+                                aria-selected="false"
+                                @if($isLocked) disabled @endif
+                        >
+                            {{ $student->fname }} {{ $student->lname }}
+                            @if($isLocked)
+                                <i class="bi bi-lock-fill ms-1" data-bs-toggle="tooltip" title="This lesson is locked"></i>
+                            @endif
+                        </button>
                 </li>
             @endif
 
@@ -754,15 +770,39 @@
                                 @foreach($eventLessons as $eventLesson)
                                 @php
                                     $lesson = $eventLesson->lesson;
+                                    $isLocked = $eventLesson->is_locked == 1;
                                 @endphp
                                     <div class="accordion-item">
                                         <input type="hidden" name="tg_lesson_id[]" value="{{ $eventLesson->id }}">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                                data-bs-target="#lesson-{{ $eventLesson->id }}" aria-expanded="false">
-                                                {{ $lesson->lesson_title ?? 'Untitled Lesson' }}
-                                            </button>
-                                        </h2>
+                                                 <h2 class="accordion-header">
+                                                    <button class="accordion-button {{ $isLocked ? 'collapsed' : '' }}"
+                                                        type="button"
+                                                        {{ $isLocked ? '' : 'data-bs-toggle=collapse' }}
+                                                        {{ $isLocked ? '' : 'data-bs-target=#lesson-' . $eventLesson->id }}
+                                                        aria-expanded="{{ $isLocked ? 'false' : 'true' }}"
+                                                        aria-controls="lesson-{{ $eventLesson->id }}"
+                                                        style="{{ $isLocked ? 'cursor: not-allowed; background-color: #f8f9fa;' : '' }}">
+                                                        
+                                                        {{ $lesson->lesson_title ?? 'Untitled Lesson' }}
+
+                                                        @if($isLocked)
+                                                            @if(auth()->user()?->is_admin==1)
+                                                                <button type="button"
+                                                                        class="btn btn-sm btn-outline-secondary ms-2 unlock-lesson-btn"
+                                                                        data-event-id="{{ $eventLesson->training_event_id }}"
+                                                                        data-lesson-id="{{ $eventLesson->lesson_id }}"
+                                                                        data-bs-toggle="tooltip"
+                                                                        title="Unlock this event to enable grading edits.">
+                                                                    <i class="bi bi-lock-fill"></i>
+                                                                </button>
+                                                            @else
+                                                                <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
+                                                                    <i class="bi bi-lock-fill"></i>
+                                                                </span>
+                                                            @endif
+                                                        @endif
+                                                    </button>
+                                                </h2>
                                         <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
                                             <div><strong>Instructor:</strong> {{ $eventLesson->instructor->fname ?? '' }} {{ $eventLesson->instructor->lname ?? '' }}</div>
                                             <div><strong>License No:</strong> {{ $eventLesson->instructor_license_number ?? 'N/A' }}</div>
@@ -792,7 +832,6 @@
                                                                 $selectedComment = $taskGrade->task_comment ?? null;
                                                                 $isDeferred = in_array($sublesson->id, $deferredTaskIds);
                                                             @endphp
-
                                                                 <div class="main-tabledesign">
                                                                     <input type="hidden" name="tg_user_id" value="{{ $student->id }}">
                                                                     <h5>{{ $student->fname }} {{ $student->lname }}</h5>
@@ -1288,6 +1327,35 @@
             });
 
         })
+
+        $('.unlock-lesson-btn').on('click', function () {
+            const eventId = $(this).data('event-id');
+            const lessonId = $(this).data('lesson-id');
+
+            if (confirm('Are you sure you want to unlock this lesson for editing?')) {
+                $.ajax({
+                    url: '/training/unlock-lesson',
+                    method: 'POST',
+                    data: {
+                        event_id: eventId,
+                        lesson_id: lessonId,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            alert('Lesson unlocked successfully.');
+                            location.reload(); // Optional: You can replace this with dynamic DOM update
+                        } else {
+                            alert(response.message || 'Failed to unlock lesson.');
+                        }
+                    },
+                    error: function (xhr) {
+                        console.error(xhr);
+                        alert('An error occurred while unlocking the lesson.');
+                    }
+                });
+            }
+        });
 
         setTimeout(function() {
             $('#successMessage').fadeOut('slow');

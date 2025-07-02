@@ -48,7 +48,7 @@
     <h3 style="text-align: center; font-weight: bold; color: #35a1e1; margin-bottom: 0px; padding: bottom 0;">{{ $event->orgUnit?->org_unit_name }} ATO COURSE COMPLETION CERTIFICATE</h3>
     <h4 style="text-align: center; color: #083d5d; font-weight: 600; margin-bottom: 0px; margin: top 0; font-size:20px;">{{ $event->course?->course_name }}</h4>
 
-    <div style="text-align: center; margin: 0px 0 30px;" >
+    <div style="text-align: center; margin: 0px 0 30px;">
       <p>This is to certify that:</p>
       <h5 style="font-weight: bold; margin: 10px 0;">{{ $student->fname }} {{ $student->lname }}</h5>
       <p>has successfully Completed: <strong style="color: #35a1e1;">PC-12 SET Class Rating:</strong></p>
@@ -64,9 +64,9 @@
         </tr>
         <tr>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Training commenced:</th>
-          <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">09/11/2023</td>
+          <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">{{ $event->event_date? date('d-m-Y', strtotime($event->event_date)): 'N/A' }}</td>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Training completed:</th>
-          <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">07/05/2024</td>
+          <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">{{ $event->course_end_date? date('d-m-Y', strtotime($event->course_end_date)): 'N/A' }}</td>
         </tr>
         <tr style="background-color: #f8f9fa;">
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Rating:</th>
