@@ -232,14 +232,14 @@ class TrainingEventsController extends Controller
     public function createTrainingEvent(Request $request)
     {
     
-        // Validate base fields
+        //Validate base fields
         $request->validate([
             'student_id' => 'required|exists:users,id',
             'course_id' => 'required|exists:courses,id',
             // 'lesson_ids' => 'required|array',
             // 'lesson_ids.*' => 'exists:course_lessons,id',
-            // 'event_date' => 'required|date_format:Y-m-d',
             // 'total_time' => 'required|date_format:H:i',
+            'event_date' => 'required|date_format:Y-m-d',
             'std_license_number' => 'nullable|string',
             'ou_id' => [
                 function ($attribute, $value, $fail) {
@@ -286,6 +286,7 @@ class TrainingEventsController extends Controller
                 'lesson_data.0.destination_airfield' => 'required|string|size:4',
                 'lesson_data.0.instructor_license_number' => 'nullable|string',
             ], [], [
+                'event_date' => 'Course start date',
                 'lesson_data.0.instructor_id' => 'instructor',
                 'lesson_data.0.resource_id' => 'resource',
                 'lesson_data.0.lesson_date' => 'lesson date',
@@ -331,11 +332,11 @@ class TrainingEventsController extends Controller
         }
     
         // Create main training event
-        $trainingEvent = TrainingEvents::create([
+          $trainingEvent = TrainingEvents::create([
             'student_id' => $request->student_id,
             'course_id' => $request->course_id,
             'lesson_ids' => json_encode($lesson_ids),
-            // 'event_date' => $request->event_date,
+            'event_date' => $request->event_date,
             'total_time' => $request->total_time,
             'std_license_number' => $request->std_licence_number,
             'ou_id' => auth()->user()->is_owner ? $request->ou_id : auth()->user()->ou_id,
@@ -396,6 +397,7 @@ class TrainingEventsController extends Controller
             'event_id' => 'required|exists:training_events,id',
             'student_id' => 'required|exists:users,id',
             'course_id' => 'required|exists:courses,id',
+            'event_date' => 'required|date_format:Y-m-d',
             'std_license_number' => 'nullable|string',
             'ou_id' => [
                 function ($attribute, $value, $fail) {
@@ -442,6 +444,7 @@ class TrainingEventsController extends Controller
                 'lesson_data.0.destination_airfield' => 'required|string|size:4',
                 'lesson_data.0.instructor_license_number' => 'nullable|string',
             ], [], [
+                'event_date' => 'Course start date',
                 'lesson_data.0.instructor_id' => 'instructor',
                 'lesson_data.0.resource_id' => 'resource',
                 'lesson_data.0.lesson_date' => 'lesson date',
@@ -487,6 +490,7 @@ class TrainingEventsController extends Controller
             'ou_id' => auth()->user()->is_owner ? $request->ou_id : auth()->user()->ou_id,
             'course_id' => $request->course_id,
             'student_id' => $request->student_id,
+            'event_date' => $request->event_date,
             'lesson_ids' => json_encode(array_column($lessonData, 'lesson_id')),
             'total_time' => $request->total_time ?? null,
             'std_license_number' => $request->std_licence_number ?? null,
@@ -763,7 +767,7 @@ class TrainingEventsController extends Controller
                             ]
                         );
                     
-                        if (strtolower($task_grade) == 'incomplete' || strtolower($task_grade) == 'further training required') {
+                        if (strtolower($task_grade) == 'incomplete' || strtolower($task_grade) == 'further training required') {    
                             // Check if task already exists in def_lesson_tasks
                             $alreadyDeferred = DefLessonTask::where([
                                 'event_id' => $event_id,
@@ -785,8 +789,8 @@ class TrainingEventsController extends Controller
                                 );
                             }
                         }
-
                     }
+                    TrainingEventLessons::where('training_event_id', $event_id)->where('lesson_id', $lesson_id)->update(['is_locked' => 1]);
                 }
             }
 
@@ -824,7 +828,7 @@ class TrainingEventsController extends Controller
             // Commit the transaction on success    
             DB::commit();
 
-            TrainingEvents::where('id', $event_id)->where('is_locked', '!=', 1)->update(['is_locked' => 1]);
+
             Session::flash('message', 'Student grading updated successfully.');
             return response()->json(['success' => true, 'message' => 'Student grading updated successfully.']);
         
@@ -1130,7 +1134,6 @@ class TrainingEventsController extends Controller
             'message' => 'Deferred lesson and tasks stored successfully.'
         ], 201);
     }    
-
     
     public function storeDefGrading(Request $request)
     {
@@ -1180,6 +1183,54 @@ class TrainingEventsController extends Controller
             'message' => 'Deferred Task Grading saved successfully.'
         ]);
     }
+
+    public function unlockLesson(Request $request)
+    {
+        $user = auth()->user();
+        if ($user->is_admin!=1) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $eventId = $request->input('event_id');
+        $lessonId = $request->input('lesson_id');
+
+        $eventLesson = TrainingEventLessons::where('training_event_id', $eventId)
+            ->where('lesson_id', $lessonId)
+            ->first();
+
+        if (!$eventLesson) {
+            return response()->json(['success' => false, 'message' => 'Lesson not found'], 404);
+        }
+
+        $eventLesson->is_locked = 0;
+        $eventLesson->save();
+
+        return response()->json(['success' => true]);
+    }
+
+
+    public function endCourse($encodedId)
+    {
+        $id = decode_id($encodedId);
+        $event = TrainingEvents::findOrFail($id);
+
+        if (auth()->user()->is_admin != 1) {
+            return response()->json(['error' => 'Unauthorized action.'], 403);
+        }
+
+        if ($event->is_locked==1) {
+            return response()->json(['error' => 'Course already ended.'], 400);
+        }
+
+        $event->update([
+            'course_end_date' => now(),
+            'is_locked' => 1
+        ]);
+
+        //return redirect()->route('training.index')->with('message', 'Course has been ended and locked.');
+        return response()->json(['success' => 'Course has been ended and locked.']);
+    }
+
 
     
 }
