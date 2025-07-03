@@ -36,12 +36,17 @@ class TrainingEventsController extends Controller
         // $resources = Resource::all();
         // Define relationships for trainingEvents query
         $trainingEventsRelations = [
-            'course:id,course_name',
-            'instructor:id,fname,lname',
+            'course:id,course_name,course_type',
             'student:id,fname,lname',
+            'instructor:id,fname,lname',
             'resource:id,name',
             'firstLesson.instructor:id,fname,lname',
             'firstLesson.resource:id,name',
+            
+            // for your getCanEndCourseAttribute()
+            'eventLessons.lesson:id,enable_cbta',            // pull enable_cbta from course_lessons
+            'eventLessons.lesson.subLessons:id,lesson_id,title', // pull sub-lessons from each lesson
+            'overallAssessments',                              // for single-event overall check
         ];
 
         if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) {

@@ -67,15 +67,26 @@
                             data-event-id="{{ encode_id($event->id) }}"></i>
                         @endif
                         @if(checkAllowedModule('training','training.show')->isNotEmpty())
-                                <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
-                                <i class="fa fa-eye text-danger me-2"></i>
-                                </a>            
-                                <i class="fa fa-flag-checkered text-primary end-course-icon me-2" 
-                                    title="End Course" 
-                                    style="font-size:20px; cursor: pointer;"
-                                    data-event-id="{{ encode_id($event->id) }}">
-                                </i>
+                            <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                            <i class="fa fa-eye text-danger me-2"></i>
+                            </a>            
                         @endif
+                        @if($event->can_end_course)
+                            {{-- Active “End Course” button/icon --}}
+                            <button
+                                class="btn btn-sm btn-flag-checkered end-course-btn"
+                                data-event-id="{{ encode_id($event->id) }}"
+                                title="End Course/Event"
+                            >
+                                <i class="fa fa-flag-checkered text-primary"></i>
+                            </button>
+                        @endif
+                    @else
+                        {{-- This event is already locked/ended --}}
+                        <span class="badge bg-secondary" data-bs-toggle="tooltip"
+                            title="This course has been ended and is locked from editing">
+                            <i class="bi bi-lock-fill me-1"></i>Ended
+                        </span>
                     @endif
                 @elseif(get_user_role(auth()->user()->role) == 'instructor')   
                    @if($event->is_locked == 0)
@@ -940,7 +951,7 @@ $(document).ready(function() {
         }
     }
     
-    $(document).on('click', '.end-course-icon', function () {
+    $(document).on('click', '.end-course-btn', function () {
         let eventId = $(this).data('event-id');
 
         if (confirm('Are you sure you want to end this course? Once ended, it will be locked for further editing.')) {
