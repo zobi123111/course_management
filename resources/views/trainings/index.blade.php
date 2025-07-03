@@ -89,12 +89,22 @@
                         </span>
                     @endif
                 @elseif(get_user_role(auth()->user()->role) == 'instructor')   
-                   @if($event->is_locked == 0)
-                        @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
-                            <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
-                            <i class="fa fa-list text-danger me-2"></i>
-                            </a>
+                    @if(empty($event->is_locked))
+                        @if(checkAllowedModule('training','training.edit')->isNotEmpty()  && !$event->is_graded)
+                            <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                            data-event-id="{{ encode_id($event->id) }}"></i>
                         @endif
+                        @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                            <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                            <i class="fa fa-eye text-danger me-2"></i>
+                            </a>            
+                        @endif
+                    @else
+                        {{-- This event is already locked/ended --}}
+                        <span class="badge bg-secondary" data-bs-toggle="tooltip"
+                            title="This course has been ended and is locked from editing">
+                            <i class="bi bi-lock-fill me-1"></i>Ended
+                        </span>
                     @endif
                 @else                   
                     @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
