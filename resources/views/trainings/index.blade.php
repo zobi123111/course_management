@@ -333,11 +333,11 @@
                         <label for="courseEndDate" class="form-label">Course End Date</label>
                         <input type="date" class="form-control" id="courseEndDate" name="course_end_date" value="{{ old('course_end_date', date('Y-m-d')) }}" required>
                     </div>
-                    <input type="hidden" name="event_id" id="courseEndEventId" >
+                    <input type="hidden" name="event_id" id="courseEndEventId">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" id="confirmCourseEnding" class="btn btn-danger">>End Course</button>
+                    <button type="submit" id="confirmCourseEnding" class="btn btn-danger">End Course</button>
                 </div>
             </div>
         </div>
