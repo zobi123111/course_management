@@ -597,7 +597,7 @@
                                     <li class="mb-3">
                                         <div>
                                             <strong>{{ $title }}</strong>
-                                            <span class="badge {{ $badgeColor }} ms-2">{{ $badgeText }}</span>
+                                            <span class="badge {{ $badgeClass }} ms-2">{{ $badgeText }}</span>
                                         </div>
                                         @if($comment)
                                             <div class="text-muted ps-1 mt-1">

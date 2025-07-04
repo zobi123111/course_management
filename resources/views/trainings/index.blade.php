@@ -317,15 +317,17 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                  <div class="modal-body">
-                    @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
+                    <div id="modalErrorContainer">
+                        @if ($errors->any())
+                            <div class="alert alert-danger">
+                                <ul class="mb-0">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                    </div>
                     <p>Are you sure you want to end this course? Once ended, it will be locked for further editing.</p>
                     <div class="mb-3">
                         <label for="courseEndDate" class="form-label">Course End Date</label>
@@ -1014,10 +1016,17 @@ $(document).ready(function() {
 
    // Open Course End Modal
     $(document).on('click', '.end-course-btn', function() {
+        // Set current date in YYYY-MM-DD format
+        const today = new Date().toISOString().split('T')[0];
+
+        // Set the input values
         $('#endCourseModal').modal('show');
-        var eventId = $(this).data('event-id');
-        $('#courseEndEventId').val(eventId);      
+        $('#courseEndEventId').val($(this).data('event-id'));
+        $('#courseEndDate').val(today); // Reset to today's date
+        // Clear any validation error messages
+        $('#modalErrorContainer').html('');
     });
+
 
 
 
