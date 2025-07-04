@@ -9,9 +9,13 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-     public function up(): void
+    public function up(): void
     {
         Schema::table('ratings', function (Blueprint $table) {
+            // First drop the foreign key constraint
+            $table->dropForeign(['parent_id']);
+
+            // Then drop the column
             $table->dropColumn('parent_id');
         });
     }
@@ -22,7 +26,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('ratings', function (Blueprint $table) {
+            // Recreate the column
             $table->unsignedBigInteger('parent_id')->nullable()->after('id');
+
+            // Recreate the foreign key constraint
+            $table->foreign('parent_id')->references('id')->on('ratings')->onDelete('set null');
         });
     }
 };
