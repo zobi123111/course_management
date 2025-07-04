@@ -70,5 +70,24 @@ class Courses extends Model
     {
         return $this->hasMany(CourseDocuments::class, 'course_id');
     }
+
+    public function getCourseStudents($ouId = null)
+    {
+        $groupIds = $this->groups->pluck('id')->toArray();
+
+        $userIds = Group::whereIn('id', $groupIds)
+            ->where('ou_id', $ouId ?? $this->ou_id) // use parameter or fallback to course's ou_id
+            ->pluck('user_ids')
+            ->flatten()
+            ->unique()
+            ->toArray();
+
+        $users = User::whereIn('id', $userIds)->get();
+
+        return $users->filter(function ($user) {
+            return get_user_role($user->role_id) === 'student';
+        })->values();
+    }
+
 }
 
