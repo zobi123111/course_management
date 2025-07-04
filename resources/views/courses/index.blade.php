@@ -78,6 +78,23 @@
 .modal {
     z-index: 1050;
 }
+
+.course-card {
+    cursor: grab;
+    transition: background 0.2s;
+}
+
+.course-card:active {
+    cursor: grabbing;
+}
+
+/* Prevent transparent dragging effect */
+.ui-sortable-helper {
+    opacity: 1 !important;
+    background: #fff !important;
+    /* box-shadow: 0 2px 6px rgba(0,0,0,0.2); */
+}
+
 </style>
 
 
@@ -100,10 +117,18 @@
 <div class="card pt-4">
     <div class="card-body">
         <div class="container-fluid">
-            <div class="row">
+
+            @php
+                $disableDragDrop = '';
+                if (Auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1) {
+                    $disableDragDrop = 'sortable-courses';
+                }
+            @endphp
+
+            <div class="row" id="{{ $disableDragDrop }}">
                 @forelse($courses as $val)
                 <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
-                    <div class="course_card course-card">
+                    <div class="course_card course-card" data-id="{{ $val->id }}">
                         <div class="course-image-container" style="position: relative;">
                             @if($val->image)
                             <img src="{{ asset('storage/' . $val->image) }}" class="card-img-top course-image"
@@ -520,8 +545,38 @@
 @endsection
 
 @section('js_scripts')
-
 <script>
+
+$(function() {
+    $('#sortable-courses').sortable({
+        helper: 'clone',
+        cursor: 'grabbing',
+        update: function(event, ui) {
+            let order = [];
+            $('.course-card').each(function(index) {
+                order.push({
+                    id: $(this).data('id'),
+                    position: index + 1
+                });
+            });
+
+            $.ajax({
+                url: '{{ route("courses.reorder") }}',
+                method: 'POST',
+                data: {
+                    order: order,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    console.log('Order saved successfully');
+                }
+            });
+        }
+    });
+
+    $('.course-card').css('cursor', 'grab');
+});
+
 function initializeSelect2() {
     $('.groups-select').select2({
         allowClear: true,

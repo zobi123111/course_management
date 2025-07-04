@@ -70,7 +70,8 @@ class CourseController extends Controller
     
         if (checkAllowedModule('courses', 'course.index')->isNotEmpty() && Auth()->user()->is_owner == 1) {
             // dd("if working");
-            $courses = Courses::all();
+            // $courses = Courses::all();
+            $courses = Courses::orderBy('position')->get();
             $groups = Group::all();  
             $resource  = Resource::all();
         } 
@@ -85,12 +86,17 @@ class CourseController extends Controller
                 return in_array($userId, $userIds);
             });
             $groupIds = $filteredGroups->pluck('id')->toArray();
+            // $courses = Courses::whereIn('id', function ($query) use ($groupIds) {
+            //     $query->select('courses_id')
+            //             ->from('courses_group')
+            //             ->whereIn('group_id', $groupIds);
+            //             })->where('status', 1)
+            //                 ->get();
             $courses = Courses::whereIn('id', function ($query) use ($groupIds) {
                 $query->select('courses_id')
                         ->from('courses_group')
                         ->whereIn('group_id', $groupIds);
-                        })->where('status', 1)
-                            ->get();
+                        })->where('status', 1)->orderBy('position')->get();
                      //  dump($courses);     
         }
         else 
@@ -99,7 +105,7 @@ class CourseController extends Controller
             if ($role == 1 && empty($ouId)) {
                 $courses = Courses::all();
             } else {
-                $courses = Courses::where('ou_id', $ouId)->get();
+                $courses = Courses::where('ou_id', $ouId)->orderBy('position')->get();
             }
             $groups = Group::where('ou_id', $ouId)->get();
             $resource  = Resource::where('ou_id', $ouId)->get();
@@ -205,11 +211,6 @@ class CourseController extends Controller
         return response()->json(['success' => 'Course created successfully.']);
     }
     
-
-    
-
-
-
     public function getCourse(Request $request)
     {
        //dd((decode_id($request->id)));
@@ -413,6 +414,14 @@ class CourseController extends Controller
         return redirect()->route('course.index')->with('message', 'This Course deleted successfully');
     }
 
+    public function reorder(Request $request)
+    {
+        foreach ($request->order as $item) {
+            Courses::where('id', $item['id'])->update(['position' => $item['position']]);
+        }
+
+        return response()->json(['status' => 'success']);
+    }
     // public function showCourse(Request $request,$course_id)
     // {
     //     // $course = Courses::with('courseLessons')->find(decode_id($course_id));

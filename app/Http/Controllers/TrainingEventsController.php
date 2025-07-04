@@ -52,7 +52,8 @@ class TrainingEventsController extends Controller
         if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) {
             // Super Admin: Get all data
             $resources = Resource::all();
-            $courses = Courses::all();
+            // $courses = Courses::all();
+            $courses = Courses::orderBy('position')->get();
             $groups = Group::all();
             $instructors = User::whereHas('roles', function ($query) {
                 $query->where('role_name', 'like', '%Instructor%');
@@ -68,7 +69,8 @@ class TrainingEventsController extends Controller
         } elseif (checkAllowedModule('training', 'training.index')->isNotEmpty() && empty($currentUser->is_admin)) {
             // Regular User: Get data within their organizational unit
             $resources = Resource::where('ou_id', $currentUser->ou_id)->get();
-            $courses = Courses::where('ou_id', $currentUser->ou_id)->get();
+            // $courses = Courses::where('ou_id', $currentUser->ou_id)->get();
+            $courses = Courses::where('ou_id', $currentUser->ou_id)->orderBy('position')->get();
             $groups = Group::where('ou_id', $currentUser->ou_id)->get();
 
             $instructors = User::where('ou_id', $currentUser->ou_id)
@@ -116,7 +118,7 @@ class TrainingEventsController extends Controller
         } else {
             // Default Case: Users with limited access within their organization
             $resources = Resource::where('ou_id', $currentUser->ou_id)->get();
-            $courses = Courses::where('ou_id', $currentUser->ou_id)->get();
+            $courses = Courses::where('ou_id', $currentUser->ou_id)->orderBy('position')->get();
             $groups = Group::where('ou_id', $currentUser->ou_id)->get();
 
             $instructors = User::where('ou_id', $currentUser->ou_id)

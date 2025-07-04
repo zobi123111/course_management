@@ -86,6 +86,14 @@ class LessonController extends Controller
         return response()->json(['success' => 'Lesson created successfully.']);
     }
     
+    public function reorder(Request $request)
+    {
+        foreach ($request->order as $item) {
+            CourseLesson::where('id', $item['id'])->update(['position' => $item['position']]);
+        }
+
+        return response()->json(['status' => 'success']);
+    }
 
 
     public function getLesson(Request $request)
