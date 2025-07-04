@@ -196,20 +196,20 @@
 
     /* value-specific styles for task grading */
     .radio-label input:checked + .custom-radio.incomplete {
-        background-color: #ffc107; /* yellow */
-        color: white;
+        background-color:  #FFFF00; /* Yellow */
+        color: black;
         font-weight: bold;
     }
 
     .radio-label input:checked + .custom-radio.ftr {
-        background-color: #FF0000; /* red */
-        color: white;
+        background-color: #ffc107; /* Amber */
+        color: black;
         font-weight: bold;
     }
 
     .radio-label input:checked + .custom-radio.competent {
-        background-color: #28a745; /* green */
-        color: white;
+        background-color: #008000; /* green */
+        color: black;
         font-weight: bold;
     }
 
@@ -379,6 +379,24 @@
 
     .accordion-flush .accordion-button {
         color: #000 !important;
+    }
+
+    .grade-incomplete {
+    background-color: #FFFF00;
+    color: black;
+    font-weight: bold;
+    }
+
+    .grade-ftr {
+        background-color: #ffc107;
+        color: black;
+        font-weight: bold;
+    }
+
+    .grade-competent {
+        background-color: #008000;
+        color: black;
+        font-weight: bold;
     }
 </style>
 
@@ -559,14 +577,21 @@
                                     @php
                                         $grade = $item->task_grade ?? null;
                                         $comment = $item->task_comment ?? null;
-                                        $badgeColor = match ($grade) {
-                                            'Incomplete' => 'bg-warning text-dark',
-                                            'Further training required' => 'bg-danger',
-                                            default => 'bg-secondary',
-                                        };
-                                        $badgeText = $grade ?? 'Not Graded';
-                                        // Use $item->task_title for the name:
                                         $title = $item->task_title ?? 'Unnamed Task';
+
+                                        $badgeClass = 'badge'; // base class
+
+                                        if ($grade === 'Further training required') {
+                                            $badgeClass .= ' grade-ftr';
+                                        } elseif ($grade === 'Incomplete') {
+                                            $badgeClass .= ' grade-incomplete';
+                                        } elseif (in_array($grade, ['Competent', 'Completed', 'Passed'])) {
+                                            $badgeClass .= ' grade-competent';
+                                        } else {
+                                            $badgeClass .= ' bg-secondary'; // fallback style
+                                        }
+
+                                        $badgeText = $grade ?? 'Deferred';
                                     @endphp
 
                                     <li class="mb-3">
@@ -876,7 +901,7 @@
                                                                                 <tr>
                                                                                     @for ($i = 1; $i <= 5; $i++)
                                                                                         @php
-                                                                                            $colorClass = $i == 1 ? 'ftr' : ($i == 2 ? 'incomplete' : 'competent');
+                                                                                            $colorClass = $i == 1 ? 'incomplete' : ($i == 2 ? 'ftr' : 'competent');
                                                                                         @endphp
                                                                                         <td>
                                                                                             <label class="radio-label">
@@ -957,7 +982,7 @@
                                                                 <tr>
                                                                 @for ($i = 1; $i <= 5; $i++)
                                                                     @php
-                                                                        $colorClass = $i == 1 ? 'ftr' : ($i == 2 ? 'incomplete' : 'competent');
+                                                                        $colorClass = $i == 1 ? 'incomplete' : ($i == 2 ? 'ftr' : 'competent');
                                                                     @endphp
                                                                     <td>
                                                                         <label class="radio-label">
