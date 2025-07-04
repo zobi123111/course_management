@@ -424,29 +424,12 @@
                 <button class="nav-link " id="Lesson-tab" data-bs-toggle="tab" data-bs-target="#Lesson" type="button" role="tab" aria-controls="Lesson" aria-selected="true">Lesson Plan</button>
             </li>
             @if($trainingEvent?->course?->course_type === 'one_event' && $student)
-                @php
-                    $eventLesson = $trainingEvent->eventLessons->first();
-                    $isLocked = $eventLessons->first()?->is_locked ?? 0;
-                @endphp
                 <li class="nav-item" role="presentation">
-                        <button class="nav-link {{ $isLocked ? 'disabled' : '' }}"
-                                id="student-tab-{{ $student->id }}"
-                                data-bs-toggle="tab"
-                                data-bs-target="#student-{{ $student->id }}"
-                                type="button"
-                                role="tab"
-                                aria-controls="student-{{ $student->id }}"
-                                aria-selected="false"
-                                @if($isLocked) disabled @endif
-                        >
-                            {{ $student->fname }} {{ $student->lname }}
-                            @if($isLocked)
-                                <i class="bi bi-lock-fill ms-1" data-bs-toggle="tooltip" title="This lesson is locked"></i>
-                            @endif
-                        </button>
+                    <button class="nav-link" id="student-tab-{{ $student->id }}" data-bs-toggle="tab" data-bs-target="#student-{{ $student->id }}" type="button" role="tab" aria-controls="student-{{ $student->id }}" aria-selected="false">
+                        {{ $student->fname }} {{ $student->lname }}
+                    </button>
                 </li>
             @endif
-
         </ul>
         <div class="tab-content pt-2" id="myTabContent">
         <div class="tab-pane fade p-3 active show" id="overview" role="tabpanel" aria-labelledby="overview-tab">
