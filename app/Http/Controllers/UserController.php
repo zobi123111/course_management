@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\UserCreated;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
+use App\Models\ParentRating;
 
 
 class UserController extends Controller
@@ -196,18 +197,27 @@ class UserController extends Controller
             if ($userToUpdate) {
                 $rules = [];
            
-                if ($userToUpdate->licence_required === 1) {    
-                    if ($request->filled('licence')) {
-                        $rules['licence'] = 'required';
-                        if(!$request->has('licence_expiry_date') || !$request->has('non_expiring_licence')){
-                            $rules['licence_expiry_date'] = 'nullable'; 
-                        }
-                        // Require a new file only if there's no existing file
-                        if (!$userToUpdate->licence_file) {
-                            $rules['licence_file'] = 'nullable|file|mimes:pdf,jpg,jpeg,png';
-                        } 
-                    }                                       
-                }
+              $licenceFileUploaded = $document?->licence_file_uploaded ?? false;
+
+          $licenceFileUploaded = false;
+
+if ($userToUpdate->licence_required == 1) {
+    if ($request->hasFile('licence_file')) {
+        if ($document && $document->licence_file) {
+            Storage::disk('public')->delete($document->licence_file);
+        }
+
+        $licenceFilePath = $request->file('licence_file')->store('licence_files', 'public');
+        $licenceFileUploaded = true;
+        $userToUpdate->update(['licence_verified' => 0]);
+    } else {
+        $licenceFilePath = $request->old_licence_file ?? $document?->licence_file;
+        $licenceFileUploaded = $document?->licence_file_uploaded ?? false;
+    }
+}
+
+
+
 
                 if ($request->hasFile('profile_image')) {
                     // Delete old image if it exists
@@ -340,7 +350,7 @@ class UserController extends Controller
                                                         ->first();
                 
                             if (empty($existingRating?->file_path)) {
-                                $rules["rating_file.$ratingId"] = 'required|file|mimes:pdf,jpg,jpeg,png|max:15360';
+                                $rules["rating_file.$ratingId"] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:15360';
                             } else {
                                 $rules["rating_file.$ratingId"] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:15360';
                             }
@@ -439,7 +449,7 @@ class UserController extends Controller
                 'custom_field_text' => $request->custom_field_text ?? $userToUpdate->custom_field_text
             ];
 
-            //dd($newData);
+            // dd($newData);
         
             $oldData = $userToUpdate->only(array_keys($newData));
             $changes = [];
@@ -454,7 +464,10 @@ class UserController extends Controller
                 }
             } 
 
-            $userToUpdate->update($newData);
+            \Log::info('Updating user with:', $newData);
+$userToUpdate->update($newData);
+\Log::info('User updated:', $userToUpdate->only(['licence_file', 'licence_file_uploaded']));
+
             if (!empty($changes)) {
                 UserActivityLog::create([
                     'user_id' => auth()->user()->id,
@@ -463,7 +476,15 @@ class UserController extends Controller
                 ]);
             }
             //dd($licenceFileUploaded_2);
-            $userToUpdate->documents()->updateOrCreate(
+            \Log::info('Updating documents with:', [
+    'licence_file' => $licenceFilePath,
+    'licence_file_uploaded' => $licenceFileUploaded,
+    'old_licence_file' => $request->old_licence_file ?? 'N/A',
+    'has new file' => $request->hasFile('licence_file') ? 'yes' : 'no',
+]);
+
+$userToUpdate->documents()->updateOrCreate(
+
             ['user_id' => $userToUpdate->id], // Unique identifying condition
 
             [   //Fields to update or set
@@ -471,13 +492,19 @@ class UserController extends Controller
                 'licence_file' => $licenceFilePath ?? null,
                 'licence_expiry_date' => $request->licence_expiry_date ?? null,
                 'licence_non_expiring' => $request->has('non_expiring_licence') ? 1 : 0,
-                'licence_file_uploaded' => $licenceFileUploaded ?? $document?->licence_file_uploaded,
+                'licence_file_uploaded' => $request->hasFile('licence_file')
+                ? true
+                : ($document?->licence_file_uploaded ?? false),
+
 
                 'licence_2' => $request->licence_2 ?? null,
                 'licence_file_2' => $licenceFilePath_2 ?? null,
                 'licence_expiry_date_2' => $request->licence_expiry_date_2 ?? null,
                 'licence_non_expiring_2' => $request->has('non_expiring_licence_2') ? 1 : 0,
-                'licence_file_uploaded_2' => $licenceFileUploaded_2 ?? $document?->licence_file_uploaded_2,    
+                'licence_file_uploaded_2' => $request->hasFile('licence_file_2')
+                ? true
+                : ($document?->licence_file_uploaded_2 ?? false),
+    
 
                 'passport' => $request->passport ?? null,
                 'passport_expiry_date' => $request->passport_expiry_date ?? null,
@@ -1334,47 +1361,75 @@ class UserController extends Controller
 
 public function showRating()
 {
-    $allRatings = Rating::all();
+    $allRatings = Rating::all(); // All ratings (from ratings table)
+    $organizationUnits = OrganizationUnits::all(); // For UI context
 
-    // Build dropdown options with hierarchy
-    $ratingDropdownOptions = collect();
-    $this->buildRatingHierarchy($allRatings, null, 0, $ratingDropdownOptions);
+    // Group parent-child mappings from parent_rating table
+    $parentRelations = ParentRating::all()->groupBy('parent_id');
+
+    $ratingDropdownOptions = collect(); // To store formatted dropdown items
+    $usedIds = collect(); // To track already added children
+
+    // Build hierarchy from parent_rating
+    $this->buildFullHierarchy($parentRelations, $allRatings, null, 0, $ratingDropdownOptions, $usedIds);
+
+    // Add orphan ratings (those not in parent_rating table as children)
+    $remaining = $allRatings->whereNotIn('id', $usedIds);
+    foreach ($remaining as $rating) {
+        $ratingDropdownOptions->push((object)[
+            'id' => $rating->id,
+            'name' => e($rating->name),
+            'parent_id' => null,
+            'ou_id' => $rating->ou_id ?? null,
+        ]);
+    }
 
     return view('users.ratings.show', [
-        'ratings' => $allRatings, // full data for table
-        'ratingDropdownOptions' => $ratingDropdownOptions // for dropdown
+        'ratings' => $allRatings->groupBy('name'),
+        'ratingDropdownOptions' => $ratingDropdownOptions,
+        'organizationUnits' => $organizationUnits
     ]);
 }
 
-private function buildRatingHierarchy($all, $parentId, $depth, &$result)
+
+
+private function buildFullHierarchy($relations, $allRatings, $parentId, $depth, &$result, &$usedIds)
 {
-    // Use loose comparison to match null properly
-    foreach ($all->where('parent_id', $parentId) as $rating) {
+    if (!isset($relations[$parentId])) {
+        return;
+    }
+
+    foreach ($relations[$parentId] as $relation) {
+        $childRating = $allRatings->firstWhere('id', $relation->rating_id);
+        if (!$childRating) continue;
+
         $indent = str_repeat('&nbsp;&nbsp;&nbsp;', $depth);
         $arrow = $depth > 0 ? '↳ ' : '';
-        $indentedName = $indent . $arrow . e($rating->name); // Escape name to be safe
+        $name = is_object($childRating->name) ? ($childRating->name->en ?? '') : $childRating->name;
 
         $result->push((object)[
-            'id' => $rating->id,
-            'name' => $indentedName,
-            'parent_id' => $rating->parent_id
+            'id' => $childRating->id,
+            'name' => $indent . $arrow . e($name),
+            'ou_id' => $childRating->ou_id ?? null,
         ]);
 
-        // Recursive call for children
-        $this->buildRatingHierarchy($all, $rating->id, $depth + 1, $result);
+        $usedIds->push($childRating->id);
+
+        $this->buildFullHierarchy($relations, $allRatings, $childRating->id, $depth + 1, $result, $usedIds);
     }
 }
 
-   public function saveRating(Request $request)
+
+public function saveRating(Request $request)
 {
     $request->validate([
         'name' => 'required|string|unique:ratings,name,NULL,id,deleted_at,NULL',
         'status' => 'required|boolean',
         'kind_of_rating' => 'required|string|in:type_rating,class_rating,instrument_rating,instructor_rating,examiner_rating,others',
-
     ]);
 
-    Rating::create([
+    // Create new rating
+    $rating = Rating::create([
         'name' => $request->name,
         'status' => $request->status,
         'kind_of_rating' => $request->kind_of_rating,
@@ -1382,27 +1437,65 @@ private function buildRatingHierarchy($all, $parentId, $depth, &$result)
         'is_rotary' => $request->has('is_rotary'),
         'is_instructor' => $request->has('is_instructor'),
         'is_examiner' => $request->has('is_examiner'),
-        'parent_id' => $request->parent_id ?? null,
+        'ou_id' => $request->has('ou_id')
     ]);
+
+    // Save multiple parent relationships
+    $parentIds = $request->input('parent_id', []);
+    foreach ($parentIds as $parentId) {
+        if ($parentId) {
+            ParentRating::create([
+                'rating_id' => $rating->id,
+                'parent_id' => $parentId,
+            ]);
+        }
+    }
 
     Session::flash('message', 'Rating saved successfully');
     return response()->json(['success' => true, 'msg' => 'Rating saved successfully.']);
 }
 
-
-   public function getRating(Request $request)
+public function getRating(Request $request)
 {
-    $rating = Rating::find(decode_id($request->rating_id));
+    $mainRating = Rating::find(decode_id($request->rating_id));
 
-    if ($rating) {
+    if ($mainRating) {
+        // Get all ratings with same name (e.g. different versions)
+        $relatedRatings = Rating::where('name', $mainRating->name)->get();
+        $relatedIds = $relatedRatings->pluck('id')->toArray();
+
+        // Get selected parent IDs from parent_rating table (NOT from ratings table!)
+        $selectedParentIds = ParentRating::whereIn('rating_id', $relatedIds)
+                                    ->pluck('parent_id')->filter()->unique()->values()->all();
+
         $allRatings = Rating::all();
+        $relations = \App\Models\ParentRating::all()->groupBy('parent_id');
+
         $ratingDropdownOptions = collect();
-        $this->buildRatingHierarchy($allRatings, null, 0, $ratingDropdownOptions);
+        $usedIds = collect();
+        $this->buildFullHierarchy($relations, $allRatings, null, 0, $ratingDropdownOptions, $usedIds);
+
+        // Add orphan ratings (not in parent_rating)
+        $remaining = $allRatings->whereNotIn('id', $usedIds);
+        foreach ($remaining as $rating) {
+            $ratingDropdownOptions->push((object)[
+                'id' => $rating->id,
+                'name' => e($rating->name),
+                'parent_id' => null,
+                'ou_id' => $rating->ou_id ?? null,
+            ]);
+        }
 
         return response()->json([
             'success' => true,
-            'rating' => $rating,
-            'dropdown' => $ratingDropdownOptions, // Send dropdown list too
+            'rating' => $mainRating,
+            'selected' => $selectedParentIds,
+            'dropdown' => $ratingDropdownOptions->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => strip_tags(html_entity_decode($item->name)),
+                ];
+            }),
         ]);
     } else {
         return response()->json([
@@ -1425,6 +1518,7 @@ private function buildRatingHierarchy($all, $parentId, $depth, &$result)
     $rating = Rating::find($request->rating_id);
 
     if ($rating) {
+        // Update rating details
         $rating->update([
             'name' => $request->name,
             'status' => $request->status,
@@ -1433,8 +1527,22 @@ private function buildRatingHierarchy($all, $parentId, $depth, &$result)
             'is_rotary' => $request->has('is_rotary'),
             'is_instructor' => $request->has('is_instructor'),
             'is_examiner' => $request->has('is_examiner'),
-            'parent_id' => $request->parent_id ?? null,
+            'ou_id' => $request->ou_id ?? null,
         ]);
+
+        // Delete old parent relations for this rating
+        ParentRating::where('rating_id', $rating->id)->delete();
+
+        // Save new parent relationships
+        $parentIds = $request->input('parent_id', []);
+        foreach ($parentIds as $parentId) {
+            if ($parentId) {
+                ParentRating::create([
+                    'rating_id' => $rating->id,
+                    'parent_id' => $parentId,
+                ]);
+            }
+        }
 
         Session::flash('message', 'Rating updated successfully.');
 
@@ -1450,17 +1558,67 @@ private function buildRatingHierarchy($all, $parentId, $depth, &$result)
     }
 }
 
-    public function deleteRating(Request $request)
-    {
-        $rating = Rating::findOrFail(decode_id($request->rating_id));        
-        if ($rating) {
-            $rating->delete();
-            return redirect()->route('users.rating')->with('message', 'Rating deleted successfully.');
-        }
-        return redirect()->route('users.rating')->with('error', 'Rating not found.');
+  public function deleteRating(Request $request)
+{
+    $rating = Rating::findOrFail(decode_id($request->rating_id));
+
+    if ($rating) {
+        // Soft delete all parent-child mappings involving this rating
+        ParentRating::where('rating_id', $rating->id)
+            ->orWhere('parent_id', $rating->id)
+            ->get()
+            ->each(function ($relation) {
+                $relation->delete(); // Uses soft delete
+            });
+
+        // Soft delete the rating
+        $rating->delete();
+
+        return redirect()->route('users.rating')->with('message', 'Rating and its hierarchy soft deleted successfully.');
     }
+
+    return redirect()->route('users.rating')->with('error', 'Rating not found.');
+}
+
+public function getRatingsByOU(Request $request)
+{
+    $ouId = $request->ou_id;
+    $ratingId = decode_id($request->rating_id);
+    $selectedParents = is_array($request->selected_parents) ? array_map('intval', $request->selected_parents) : [];
+
+    $allRatings = Rating::query()
+        ->when($ouId, fn($q) => $q->where('ou_id', $ouId))
+        ->get();
+
+    $relations = ParentRating::all()->groupBy('parent_id');
+    $dropdownOptions = collect();
+    $usedIds = collect();
+
+    $this->buildFullHierarchy($relations, $allRatings, null, 0, $dropdownOptions, $usedIds);
+
+    // Add selected parents even if not part of current OU
+    $missing = Rating::whereIn('id', $selectedParents)->whereNotIn('id', $usedIds)->get();
+    foreach ($missing as $rating) {
+        $dropdownOptions->push((object)[
+            'id' => $rating->id,
+            'name' => '↳ ' . e($rating->name),
+            'ou_id' => $rating->ou_id
+        ]);
+    }
+
+    return response()->json([
+        'success' => true,
+        'selected' => array_map('strval', $selectedParents),
+        'dropdown' => $dropdownOptions->map(fn($item) => [
+            'id' => $item->id,
+            'name' => strip_tags(html_entity_decode($item->name)),
+        ]),
+    ]);
+}
+
     
     
+   
 
 
 }

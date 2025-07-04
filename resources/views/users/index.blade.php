@@ -143,7 +143,7 @@
                             </select>
                             <div id="role_name_error" class="text-danger error_e"></div>
                         </div>
-                        <div class="col-md-6">
+                        {{-- <div class="col-md-6">
                             <label for="extra_roles" class="form-label">Select Multiple Roles<span
                                     class="text-danger"></span></label>
                             <select class="form-select extra_roles" name="extra_roles[]" id="extra_roles" multiple="multiple">
@@ -153,7 +153,7 @@
                                 @endforeach
                             </select>
                             <div id="extra_roles_error" class="text-danger error_e"></div>
-                        </div>
+                        </div> --}}
                         <!-- Licence -->
                         <!-- <div class="col-md-6">
                             <label for="licence_checkbox" class="form-label">Licence</label>
@@ -352,19 +352,19 @@
                         </div>
 
                         <!-- Rating/s (Stars) -->
-                        <div class="col-md-6">
+                        {{-- <div class="col-md-6">
                             <label for="rating_checkbox" class="form-label">Rating/s</label>
                             <input type="checkbox" name="rating_checkbox" id="rating_checkbox" class="ms-2">
                             <div id="ratings" style="display: none;">
-                                <select class="form-select rating-select" name="rating[]" aria-label="Default select example" multiple>
+                                <select class="form-select rating-select" name="rating[]" aria-label="Default select example" multiple> --}}
                                     {{-- <option value="">Select Rating</option> --}}
-                                    @foreach($rating as $val)
+                                    {{-- @foreach($rating as $val)
                                     <option value="{{ $val->id }}">{{ $val->name }}</option>
                                     @endforeach
                                 </select>
                                 <div id="rating_error" class="text-danger error_e"></div>
                             </div>
-                        </div>
+                        </div> --}}
 
 
                         <!-- Currency (Optional) -->
@@ -497,7 +497,7 @@
                             </select>
                             <div id="edit_role_name_error_up" class="text-danger error_e"></div>
                         </div>
-                        <div class="col-md-6">
+                        {{-- <div class="col-md-6">
                             <label for="extra_roles" class="form-label">Select Multiple Roles<span
                                     class="text-danger"></span></label>
                             <select class="form-select extra_roles" name="extra_roles[]" id="edit_extra_roles" multiple="multiple">
@@ -507,7 +507,7 @@
                                 @endforeach
                             </select>
                             <div id="extra_roles_error_up" class="text-danger error_e"></div>
-                        </div>
+                        </div> --}}
                         <!-- Update Password Checkbox -->
                         <div class="col-md-6">
                             <label for="edit_update_password_checkbox" class="form-label">Password Change on next
@@ -695,7 +695,7 @@
                         </div>
 
                         <!-- Rating/s (Stars) -->
-                        <div class="col-md-6">
+                        {{-- <div class="col-md-6">
                             <label for="edit_rating_checkbox" class="form-label">Rating/s</label>
                             <input type="checkbox" name="edit_rating_checkbox" id="edit_rating_checkbox" class="ms-2">
                             <div id="edit_ratings" style="display: none;">
@@ -707,7 +707,7 @@
                                 </select>
                                 <div id="edit_rating_error_up" class="text-danger error_e"></div>
                             </div>
-                        </div>
+                        </div> --}}
 
                         <!-- Currency (Optional) -->
                         <div class="col-md-6">

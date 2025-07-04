@@ -128,49 +128,95 @@
                         <p class="text-muted">No license details available.</p>
                     @endif
                 </div>
-                 @if($user->usrRatings->where('linked_to', 'licence_1')->count())
-                    <div class="row mt-3">
-                        <div class="col-md-12">
-                            <h6 class="text-secondary mb-3"><i class="bi bi-star-fill text-warning me-2"></i>Ratings Linked to Licence 1</h6>
-                            <div class="d-flex flex-wrap">
-                                @foreach($user->usrRatings->where('linked_to', 'licence_1') as $rating)
-                                    <div class="card shadow-sm border me-3 mb-3" style="width: 18rem;">
-                                        <div class="card-body">
-                                            <h6 class="card-title text-primary">
-                                                {{ $rating->rating->name ?? 'Unknown Rating' }}
-                                            </h6>
-                                            <ul class="list-unstyled small mb-2">
-                                                <li><strong>Issue Date:</strong> {{ $rating->issue_date ?? 'N/A' }}</li>
-                                                <li><strong>Expiry Date:</strong> {{ $rating->expiry_date ?? 'N/A' }}</li>
-                                            </ul>
+                @php
+    // Group all parent-child relationships
+    $parentChildMap = \App\Models\ParentRating::all()->groupBy('parent_id');
 
-                                            @if($rating->file_path)
-                                                <a href="{{ Storage::url($rating->file_path) }}" target="_blank"
-                                                    class="btn btn-outline-primary btn-sm me-2">
-                                                    <i class="bi bi-file-earmark-arrow-down"></i> View File
-                                                </a>
+    // All ratings (for names, IDs, etc.)
+    $allRatings = \App\Models\Rating::all()->keyBy('id');
 
-                                                <div class="form-check form-switch mt-3">
-                                                    <input class="form-check-input verify-toggle" type="checkbox"
-                                                        id="rating_verify_{{ $rating->id }}"
-                                                        data-user-id="{{ encode_id($user->id) }}"
-                                                        data-type="user_rating"
-                                                        data-rating-id="{{ encode_id($rating->id) }}"
-                                                        {{ $rating->admin_verified ? 'checked disabled' : '' }}>
-                                                    <label class="form-check-label" for="rating_verify_{{ $rating->id }}">
-                                                        {{ $rating->admin_verified ? 'Verified' : 'Mark as Verified' }}
-                                                    </label>
-                                                </div>
-                                            @else
-                                                <p class="text-muted">No rating file available.</p>
-                                            @endif
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
+    // User ratings mapped by rating_id
+    $userRatingsMap = $user->usrRatings->keyBy('rating_id');
+@endphp
+
+@if($user->usrRatings->where('linked_to', 'licence_1')->count())
+    <div class="row mt-3">
+        <div class="col-md-12">
+            <h6 class="text-secondary mb-3">
+                <i class="bi bi-star-fill text-warning me-2"></i>Ratings Linked to Licence 1
+            </h6>
+            <div class="d-flex flex-wrap">
+                @foreach($user->usrRatings->where('linked_to', 'licence_1') as $userRating)
+                    @php
+                        $parentRating = $userRating->rating;
+                        if (!$parentRating || $parentRating->parent_id) continue; // skip child-only entries
+
+                        $childRelations = $parentChildMap[$parentRating->id] ?? collect();
+                    @endphp
+
+                    <div class="card shadow-sm border me-3 mb-3" style="width: 18rem;">
+                        <div class="card-body">
+                            <h6 class="card-title text-primary">{{ $parentRating->name ?? 'Unknown Rating' }}</h6>
+                            <ul class="list-unstyled small mb-2">
+                                <li><strong>Issue Date:</strong> {{ $userRating->issue_date ?? 'N/A' }}</li>
+                                <li><strong>Expiry Date:</strong> {{ $userRating->expiry_date ?? 'N/A' }}</li>
+                            </ul>
+
+                            {{-- File + Verify --}}
+                            @if($userRating->file_path)
+                                <a href="{{ Storage::url($userRating->file_path) }}" target="_blank"
+                                    class="btn btn-outline-primary btn-sm me-2">
+                                    <i class="bi bi-file-earmark-arrow-down"></i> View File
+                                </a>
+
+                                <div class="form-check form-switch mt-3">
+                                    <input class="form-check-input verify-toggle" type="checkbox"
+                                        id="rating_verify_{{ $userRating->id }}"
+                                        data-user-id="{{ encode_id($user->id) }}"
+                                        data-type="user_rating"
+                                        data-rating-id="{{ encode_id($userRating->id) }}"
+                                        {{ $userRating->admin_verified ? 'checked disabled' : '' }}>
+                                    <label class="form-check-label" for="rating_verify_{{ $userRating->id }}">
+                                        {{ $userRating->admin_verified ? 'Verified' : 'Mark as Verified' }}
+                                    </label>
+                                </div>
+                            @else
+                                <p class="text-muted">No rating file available.</p>
+                            @endif
+
+                            {{-- Child Ratings --}}
+                            @if($childRelations->isNotEmpty())
+                                <hr>
+                                <p class="mb-1"><strong>Associated Ratings:</strong></p>
+                                <ul class="list-unstyled small">
+                                    @foreach($childRelations as $childRel)
+                                        @php
+                                            $child = $childRel->child; // eager-loaded relationship
+                                            $childUserRating = $userRatingsMap[$child->id] ?? null;
+                                        @endphp
+                                        @if($child)
+                                            <li>
+                                                <i class="bi bi-chevron-right small text-muted"></i>
+                                                {{ $child->name }} —
+                                                <span title="Issue Date">{{ $childUserRating?->issue_date ?? 'N/A' }}</span> /
+                                                <span title="Expiry Date">{{ $childUserRating?->expiry_date ?? 'N/A' }}</span>
+                                                @if($childUserRating?->admin_verified)
+                                                    <i class="bi bi-check-circle-fill text-success ms-1" title="Verified"></i>
+                                                @endif
+                                            </li>
+                                        @endif
+                                    @endforeach
+                                </ul>
+                            @endif
                         </div>
                     </div>
-                @endif
+                @endforeach
+            </div>
+        </div>
+    </div>
+@endif
+
+
 
                 <!-- Second License Details -->
                 @if($document && $document->licence_2)
@@ -194,51 +240,85 @@
                             @endif
                         </div>
                 </div>
-                @if($user->usrRatings->where('linked_to', 'licence_2')->count())
-                    <div class="row mt-3">
-                        <div class="col-md-12">
-                            <h6 class="text-secondary mb-3">
-                                <i class="bi bi-star-fill text-warning me-2"></i>Ratings Linked to Licence 2
+               @if($user->usrRatings->where('linked_to', 'licence_2')->count())
+    <div class="row mt-3">
+        <div class="col-md-12">
+            <h6 class="text-secondary mb-3">
+                <i class="bi bi-star-fill text-warning me-2"></i>Ratings Linked to Licence 2
+            </h6>
+            <div class="d-flex flex-wrap">
+                @foreach($user->usrRatings->where('linked_to', 'licence_2') as $userRating)
+                    @php
+                        $parentRating = $userRating->rating;
+                        if (!$parentRating || $parentRating->parent_id) continue;
+
+                        $childRelations = $parentChildMap[$parentRating->id] ?? collect();
+                    @endphp
+
+                    <div class="card shadow-sm border me-3 mb-3" style="width: 18rem;">
+                        <div class="card-body">
+                            <h6 class="card-title text-primary">
+                                {{ $parentRating->name ?? 'Unknown Rating' }}
                             </h6>
-                            <div class="d-flex flex-wrap">
-                                @foreach($user->usrRatings->where('linked_to', 'licence_2') as $rating)
-                                    <div class="card shadow-sm border me-3 mb-3" style="width: 18rem;">
-                                        <div class="card-body">
-                                            <h6 class="card-title text-primary">
-                                                {{ $rating->rating->name ?? 'Unknown Rating' }}
-                                            </h6>
-                                            <ul class="list-unstyled small mb-2">
-                                                <li><strong>Issue Date:</strong> {{ $rating->issue_date ?? 'N/A' }}</li>
-                                                <li><strong>Expiry Date:</strong> {{ $rating->expiry_date ?? 'N/A' }}</li>
-                                            </ul>
+                            <ul class="list-unstyled small mb-2">
+                                <li><strong>Issue Date:</strong> {{ $userRating->issue_date ?? 'N/A' }}</li>
+                                <li><strong>Expiry Date:</strong> {{ $userRating->expiry_date ?? 'N/A' }}</li>
+                            </ul>
 
-                                            @if($rating->file_path)
-                                                <a href="{{ Storage::url($rating->file_path) }}" target="_blank"
-                                                    class="btn btn-outline-primary btn-sm me-2">
-                                                    <i class="bi bi-file-earmark-arrow-down"></i> View File
-                                                </a>
+                            {{-- File + Verify --}}
+                            @if($userRating->file_path)
+                                <a href="{{ Storage::url($userRating->file_path) }}" target="_blank"
+                                   class="btn btn-outline-primary btn-sm me-2">
+                                    <i class="bi bi-file-earmark-arrow-down"></i> View File
+                                </a>
 
-                                                <div class="form-check form-switch mt-3">
-                                                    <input class="form-check-input verify-toggle" type="checkbox"
-                                                        id="rating_verify_{{ $rating->id }}"
-                                                        data-user-id="{{ encode_id($user->id) }}"
-                                                        data-type="user_rating"
-                                                        data-rating-id="{{ encode_id($rating->id) }}"
-                                                        {{ $rating->admin_verified ? 'checked disabled' : '' }}>
-                                                    <label class="form-check-label" for="rating_verify_{{ $rating->id }}">
-                                                        {{ $rating->admin_verified ? 'Verified' : 'Mark as Verified' }}
-                                                    </label>
-                                                </div>
-                                            @else
-                                                <p class="text-muted">No rating file available.</p>
-                                            @endif
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
+                                <div class="form-check form-switch mt-3">
+                                    <input class="form-check-input verify-toggle" type="checkbox"
+                                           id="rating_verify_{{ $userRating->id }}"
+                                           data-user-id="{{ encode_id($user->id) }}"
+                                           data-type="user_rating"
+                                           data-rating-id="{{ encode_id($userRating->id) }}"
+                                           {{ $userRating->admin_verified ? 'checked disabled' : '' }}>
+                                    <label class="form-check-label" for="rating_verify_{{ $userRating->id }}">
+                                        {{ $userRating->admin_verified ? 'Verified' : 'Mark as Verified' }}
+                                    </label>
+                                </div>
+                            @else
+                                <p class="text-muted">No rating file available.</p>
+                            @endif
+
+                            {{-- Child Ratings --}}
+                            @if($childRelations->isNotEmpty())
+                                <hr>
+                                <p class="mb-1"><strong>Associated Ratings:</strong></p>
+                                <ul class="list-unstyled small">
+                                    @foreach($childRelations as $childRel)
+                                        @php
+                                            $child = $childRel->child;
+                                            $childUserRating = $userRatingsMap[$child->id] ?? null;
+                                        @endphp
+                                        @if($child)
+                                            <li>
+                                                <i class="bi bi-chevron-right small text-muted"></i>
+                                                {{ $child->name }} —
+                                                <span title="Issue Date">{{ $childUserRating?->issue_date ?? 'N/A' }}</span> /
+                                                <span title="Expiry Date">{{ $childUserRating?->expiry_date ?? 'N/A' }}</span>
+                                                @if($childUserRating?->admin_verified)
+                                                    <i class="bi bi-check-circle-fill text-success ms-1" title="Verified"></i>
+                                                @endif
+                                            </li>
+                                        @endif
+                                    @endforeach
+                                </ul>
+                            @endif
                         </div>
                     </div>
-                @endif
+                @endforeach
+            </div>
+        </div>
+    </div>
+@endif
+
                 @endif
 
                 <!-- Medical Details -->

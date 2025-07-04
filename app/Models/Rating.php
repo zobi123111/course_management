@@ -19,8 +19,21 @@ class Rating extends Model
         'is_rotary',
         'is_instructor',
         'is_examiner',
-        'parent_id'
+        'ou_id',
     ];
+
+  public function parents()
+{
+    return $this->belongsToMany(Rating::class, 'parent_rating', 'rating_id', 'parent_id');
+}
+
+public function children()
+{
+    return $this->belongsToMany(Rating::class, 'parent_rating', 'parent_id', 'rating_id');
+}
+
+
+
 
 
 }

@@ -266,8 +266,7 @@ h2 {
                       @php
     $hasLicence1 = $licence1Ratings->contains('linked_to', 'licence_1');
 @endphp
-
-@if($user->rating_required == 1 && $hasLicence1)
+@if($hasLicence1)
     <h4 class="mt-4">Ratings linked to Licence 1</h4>
     <div class="row mt-3">
         @foreach($licence1Ratings as $userRating)
@@ -340,16 +339,18 @@ h2 {
             </div>
         @endforeach
     </div>
-       @php
-    // All ratings keyed by id
-    $allRatings = \App\Models\Rating::all()->keyBy('id');
+     @php
+    // Load all ratings keyed by ID
+    $allRatings = \App\Models\Rating::with('children')->get()->keyBy('id');
 
-    // Group all child ratings from DB by parent_id
-    $allGroupedByParent = \App\Models\Rating::whereNotNull('parent_id')->get()->groupBy('parent_id');
+    // Build a group of children by parent_id from the parent_rating table
+    $allGroupedByParent = \App\Models\ParentRating::all()
+        ->groupBy('parent_id');
 
-    // User ratings keyed by rating_id for quick access
+    // Map user ratings by rating_id
     $userRatingsMap = $user->usrRatings->keyBy('rating_id');
 @endphp
+
 
        @foreach($licence1Ratings as $userRating)
     @if($userRating->linked_to !== 'licence_1')
@@ -366,24 +367,27 @@ h2 {
     @endphp
 
     <div class="col-12 mb-4">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h5>{{ $rating->name }}</h5>
+    <div class="card shadow-sm">
+        <div class="card-body">
 
-                @if($childRatings->isNotEmpty())
-                    <h6 class="mt-3">Associated  Ratings</h6>
-                    <div class="row mt-3">
-                        @foreach($childRatings as $child)
-                            @php
-                                $childUserRating = $userRatingsMap[$child->id] ?? null;
-                            @endphp
+            @if($childRatings->isNotEmpty())
+                <h6 class="mt-3">Associated Ratings</h6>
+                <div class="row mt-3">
+                    @foreach($childRatings as $childRelation)
+                        @php
+                            // Get the actual child Rating model using rating_id
+                            $child = $allRatings[$childRelation->rating_id] ?? null;
+                            $childUserRating = $userRatingsMap[$child->id] ?? null;
+                        @endphp
+
+                        @if($child)
                             <div class="col-md-6 mb-3">
                                 <div class="card border border-secondary h-100">
                                     <div class="card-body">
                                         <h6 class="card-title">{{ $child->name }}</h6>
                                         <p class="card-text small">
-                                            Issue Date: {{ $userRating->issue_date ?? 'N/A' }}<br>
-                                            Expiry Date: {{ $userRating->expiry_date ?? 'N/A' }}
+                                            Issue Date: {{ $childUserRating->issue_date ?? 'N/A' }}<br>
+                                            Expiry Date: {{ $childUserRating->expiry_date ?? 'N/A' }}
                                         </p>
 
                                         {{-- Verification --}}
@@ -392,15 +396,26 @@ h2 {
                                                 <i class="bi bi-check-circle-fill"></i> Verified
                                             </span>
                                         @endif
+
+                                        {{-- View File --}}
+                                        @if(!empty($childUserRating?->file_path))
+                                            <a href="{{ asset('storage/' . $childUserRating->file_path) }}"
+                                               target="_blank"
+                                               class="btn btn-outline-primary btn-sm mt-2 d-inline-flex align-items-center">
+                                                <i class="bi bi-file-earmark-text me-1"></i> View File
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
-                        @endforeach
-                    </div>
-                @endif
-            </div>
+                        @endif
+                    @endforeach
+                </div>
+            @endif
+
         </div>
     </div>
+</div>
 @endforeach
 
                                         </div>
@@ -471,13 +486,14 @@ h2 {
                     </div>
                 @endif
 
-   @php
-    // Get all child ratings from the ratings table grouped by parent_id
-    $allChildRatings = \App\Models\Rating::whereNotNull('parent_id')->get()->groupBy('parent_id');
+  @php
+    // Get all child relationships from parent_rating table grouped by parent_id
+    $allChildRatings = \App\Models\ParentRating::all()->groupBy('parent_id');
 
     // User's ratings keyed by rating_id
     $userRatingsMap = $user->usrRatings->keyBy('rating_id');
 @endphp
+
 
 @php
     $userRatingsMap = $user->usrRatings->where('linked_to', 'licence_2')->keyBy('rating_id');
@@ -486,13 +502,13 @@ h2 {
     $selectedRatingIds = $userRatingsMap->keys();
 
     // Group all ratings in DB by parent_id
-    $allChildRatings = \App\Models\Rating::whereNotNull('parent_id')->get()->groupBy('parent_id');
+$allChildRatings = \App\Models\ParentRating::with('child', 'parent')->get()->groupBy('parent_id');
 
     // Get all selected user ratings with loaded rating
     $licence2Ratings = $user->usrRatings->where('linked_to', 'licence_2')->load('rating');
 @endphp
 
-@if($user->rating_required == 1 && $licence2Ratings->isNotEmpty())
+@if($licence2Ratings->isNotEmpty())
     <h4 class="mt-4">Ratings linked to Licence 2</h4>
     <div class="row mt-3">
         @foreach($licence2Ratings as $userRating)
@@ -538,43 +554,45 @@ h2 {
                 @endif
 
                 {{-- Show all child ratings under this parent --}}
-               @if($childRatings->isNotEmpty())
-    <hr>
-    <div class="row">
-    @foreach($childRatings as $child)
-        @php
-            $childUserRating = $userRatingsMap[$child->id] ?? null;
-            $issueDate = $childUserRating?->issue_date ?? $parentUserRating?->issue_date ?? 'N/A';
-            $expiryDate = $childUserRating?->expiry_date ?? $parentUserRating?->expiry_date ?? 'N/A';
-            $filePath = $childUserRating?->file_path ?? $parentUserRating?->file_path;
-            $isVerified = $childUserRating?->admin_verified ?? $parentUserRating?->admin_verified ?? false;
-        @endphp
-        <div class="col-md-6 mb-3">
-            <div class="card border border-secondary h-100 shadow-sm">
-                <div class="card-body">
-                    <h6 class="card-title">{{ $child->name }}</h6>
-                    <p class="card-text small">
-                        Issue Date: {{ $issueDate }}<br>
-                        Expiry Date: {{ $expiryDate }}
-                    </p>
+             @if($childRatings->isNotEmpty())
+                    <h6 class="mt-4">Associated Ratings</h6>
+                    <div class="row mt-2">
+                        @foreach($childRatings as $child)
+                            @php
+                                $childRating = $child->child;
+                                if (!$childRating) continue;
 
-                    @if($filePath)
-                        <a href="{{ asset('storage/' . $filePath) }}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
-                            <i class="bi bi-file-earmark-text me-1"></i> View File
-                        </a>
-                    @endif
+                                $childUserRating = $userRatingsMap[$childRating->id] ?? null;
+                            @endphp
 
-                    @if($isVerified)
-                        <span class="text-success mt-2 d-inline-block">
-                            <i class="bi bi-check-circle-fill"></i> Verified
-                        </span>
-                    @endif
-                </div>
-            </div>
-        </div>
-    @endforeach
-</div>
-@endif
+                            <div class="col-md-6 mb-3">
+                                <div class="card border border-secondary h-100 shadow-sm">
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ $childRating->name }}</h6>
+                                        <p class="card-text small">
+                                            Issue Date: {{ $childUserRating?->issue_date ?? $userRating->issue_date ?? 'N/A' }}<br>
+                                            Expiry Date: {{ $childUserRating?->expiry_date ?? $userRating->expiry_date ?? 'N/A' }}
+                                        </p>
+
+                                        @if(!empty($childUserRating?->file_path ?? $userRating->file_path))
+                                            <a href="{{ asset('storage/' . ($childUserRating?->file_path ?? $userRating->file_path)) }}"
+                                               target="_blank"
+                                               class="btn btn-sm btn-outline-primary mt-2 d-inline-flex align-items-center">
+                                                <i class="bi bi-file-earmark-text me-1"></i> View File
+                                            </a>
+                                        @endif
+
+                                        @if($childUserRating?->admin_verified ?? $userRating->admin_verified)
+                                            <span class="text-success mt-2 d-inline-block">
+                                                <i class="bi bi-check-circle-fill"></i> Verified
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
 
             </div>
 

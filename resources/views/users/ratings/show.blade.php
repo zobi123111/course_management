@@ -45,43 +45,45 @@
                         </tr>
                     </thead>
                     <tbody>
-                    @foreach($ratings as $row)
-                        <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td class="rating">{{ $row->name }}</td>
-                            <td class="rating">{{ $row->kind_of_rating }}</td>
-                             <td>
-                                @if ($row->is_fixed_wing)
-                                    <span class="badge bg-primary">Fixed Wing</span>
-                                @endif
-                                @if ($row->is_rotary)
-                                    <span class="badge bg-info">Rotary</span>
-                                @endif
-                                @if ($row->is_instructor)
-                                    <span class="badge bg-success">Instructor</span>
-                                @endif
-                                @if ($row->is_examiner)
-                                    <span class="badge bg-warning text-dark">Examiner</span>
-                                @endif
-                            </td>
-                            <td>
-                                {!! $row->status == 1 
-                                    ? '<span class="badge bg-success">Active</span>' 
-                                    : '<span class="badge bg-danger">Inactive</span>' !!}
-                            </td>
-                            <td>
-                                <i class="fa fa-edit edit-user-icon text-primary me-2" style="font-size:18px; cursor: pointer;" data-rating-id="{{ encode_id($row->id) }}"></i>
-                                <i class="fa-solid fa-trash delete-icon text-danger" style="font-size:18px; cursor: pointer;" data-rating-id="{{ encode_id($row->id) }}"></i>
-                            </td>
-                        </tr>
-                    @endforeach
-
+                        @php $count = 1; @endphp
+                        @foreach($ratings as $name => $group)
+                            @php $first = $group->first(); @endphp
+                            <tr>
+                                <td>{{ $count++ }}</td>
+                                <td class="rating">{{ $name }}</td>
+                                <td class="rating">{{ $first->kind_of_rating }}</td>
+                                <td>
+                                    @if ($first->is_fixed_wing)
+                                        <span class="badge bg-primary">Fixed Wing</span>
+                                    @endif
+                                    @if ($first->is_rotary)
+                                        <span class="badge bg-info">Rotary</span>
+                                    @endif
+                                    @if ($first->is_instructor)
+                                        <span class="badge bg-success">Instructor</span>
+                                    @endif
+                                    @if ($first->is_examiner)
+                                        <span class="badge bg-warning text-dark">Examiner</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    {!! $first->status == 1 
+                                        ? '<span class="badge bg-success">Active</span>' 
+                                        : '<span class="badge bg-danger">Inactive</span>' !!}
+                                </td>
+                                <td>
+                                    <i class="fa fa-edit edit-user-icon text-primary me-2" style="font-size:18px; cursor: pointer;" data-rating-id="{{ encode_id($first->id) }}"></i>
+                                    <i class="fa-solid fa-trash delete-icon text-danger" style="font-size:18px; cursor: pointer;" data-rating-id="{{ encode_id($first->id) }}"></i>
+                                </td>
+                            </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <div class="modal fade" id="ratingModal" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false"
     aria-labelledby="ratingModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -91,18 +93,32 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="" method="POST" id="add_rating" class="row g-3 needs-validation">
+                <form action="" method="POST" enctype="multipart/form-data" id="add_rating" class="row g-3 needs-validation">
                     @csrf
                     <div class="row g-3 mb-3">
                         <!-- Bootstrap Grid -->
-                       <div class="form-group mt-2">
-                            <label for="parent_rating" class="form-label">Parent Rating</label>
-                        <select name="parent_id" id="parent_rating" class="form-select">
-                            <option value="">No Parent (This is a root rating)</option>
-                            @foreach($ratingDropdownOptions as $r)
-                                <option value="{{ $r->id }}">{!! $r->name !!}</option>
-                            @endforeach
-                        </select>
+                        @if(auth()->user()->is_owner == 1)
+                            <div class="form-group mt-2">
+                                <label for="select_org_unit" class="form-label">Select Org Unit </label>
+                                <select class="form-select" name="ou_id" id="select_org_unit">
+                                    <option value="">Select Org Unit</option>
+                                    @foreach($organizationUnits as $val)
+                                        <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                                    @endforeach
+                                </select>
+                                <div id="ou_id_error" class="text-danger error_e"></div>            
+                            </div>
+                        @endif
+                        <div class="form-group">
+                            <label for="parent_rating" class="form-label">Parent Rating(s)</label>
+                            <select name="parent_id[]" id="parent_rating" class="form-select" multiple>
+                                @foreach($ratingDropdownOptions as $r)
+                                    <option value="{{ $r->id }}"
+                                        {{ in_array($r->id, old('parent_id', $existingParentIds ?? [])) ? 'selected' : '' }}>
+                                        {!! $r->name !!}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="firstname" class="form-label">Rating Name<span
@@ -185,19 +201,32 @@
                     @csrf
                     <div class="row g-3 mb-3">
                         <!-- Parent Rating Dropdown -->
+                          @if(auth()->user()->is_owner == 1)
+                            <div class="form-group">
+                                <label for="edit_select_org_unit" class="form-label">Select Org Unit</label>
+                                <select class="form-select" name="ou_id" id="edit_select_org_unit">
+                                    <option value="">Select Org Unit</option>
+                                    @foreach($organizationUnits as $val)
+                                        <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                                    @endforeach
+                                </select>
+                                <div id="ou_id_error_up" class="text-danger error_e"></div>            
+                            </div>
+                        @endif
                        <div class="form-group mt-3">
-    <label for="parent_rating" class="form-label">Parent Rating</label>
-    <select name="parent_id" id="edit_parent_rating" class="form-select">
-        <option value="">No Parent (This is a root rating)</option>
-        @foreach($ratingDropdownOptions as $r)
-            @if(isset($rating) && $rating->id != $r->id) {{-- Prevent selecting self as parent --}}
-                <option value="{{ $r->id }}" {{ $rating->parent_id == $r->id ? 'selected' : '' }}>
-                    {!! $r->name !!}
-                </option>
-            @endif
-        @endforeach
-    </select>
-</div>
+                            <label for="parent_rating" class="form-label">Parent Rating</label>
+                            <select name="parent_id[]" id="edit_parent_rating" class="form-select" multiple>
+                                <option value="">No Parent (This is a root rating)</option>
+                                @foreach($ratingDropdownOptions as $r)
+                                    @if(isset($rating) && $rating->id != $r->id) {{-- Prevent selecting self as parent --}}
+                                        <option value="{{ $r->id }}" {{ $rating->parent_id == $r->id ? 'selected' : '' }}>
+                                            {!! $r->name !!}
+                                        </option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+
                         <div class="form-group">
                             <label for="firstname" class="form-label">Rating Name<span
                                 class="text-danger">*</span></label>
@@ -293,7 +322,9 @@
 @endsection
 
 @section('js_scripts')
-
+<script>
+    const allParentRatings = @json($ratingDropdownOptions);
+</script>
 <script>
     $(document).ready(function (){
 
@@ -304,80 +335,208 @@
             $('.alert-danger').css('display', 'none');
             $('#ratingModal').modal('show');                   
         });
+            $('#parent_rating').select2({
+            dropdownParent: $('#ratingModal'),
+            placeholder: "Select parent rating(s)",
+            allowClear: true,
+            width: '100%'
+        });
 
-        $('#saveRating').click(function(e) {
-            e.preventDefault();
-            // $('#loader').show();
-            $(".loader").fadeIn();
-            $('.error_e').html('');            
-            var formData = new FormData($('#add_rating')[0]);
-            $.ajax({
-                url: '{{ url("/rating/save") }}',
-                type: 'POST',
-                data: formData,
-                processData: false, 
-                contentType: false,
-                success: function(response) {
-                    $(".loader").fadeOut("slow");
-                    $('#ratingModal').modal('hide');
-                    location.reload();
-                },
-                error: function(xhr, status, error) {
-                    // $('#loader').hide();
-                    $(".loader").fadeOut("slow");
-                    var errorMessage = JSON.parse(xhr.responseText);
-                    var validationErrors = errorMessage.errors;
-                    $.each(validationErrors, function(key, value) {
-                        var html1 = '<p>' + value + '</p>';
-                        $('#' + key + '_error').html(html1);
+    // Filter Parent Rating by OU
+        $('#select_org_unit').on('change', function () {
+            let selectedOuId = $(this).val();
+            let $parentRating = $('#parent_rating');
+            $parentRating.empty();
+
+            if (selectedOuId) {
+                const filtered = allParentRatings.filter(r => r.ou_id == selectedOuId);
+
+                if (filtered.length === 0) {
+                    $parentRating.append('<option disabled>No ratings available for this OU</option>');
+                } else {
+                    filtered.forEach(function (r) {
+                        $parentRating.append(`<option value="${r.id}">${r.name}</option>`);
                     });
                 }
+            }
+
+            // Reinitialize Select2
+            $parentRating.select2({
+                dropdownParent: $('#ratingModal'),
+                placeholder: "Select parent rating(s)",
+                allowClear: true,
+                width: '100%'
             });
         });
 
-        $(document).on('click', '.edit-user-icon', function() {
-            $('.error_e').html('');
-            $("#editRatingForm")[0].reset();
-            var ratingId = $(this).data('rating-id');
+           $('#saveRating').click(function (e) {
+        e.preventDefault();
+        $(".loader").show();
+        $('.error_e').html('');
 
-            $.ajax({
-                type: 'GET',
-                url: "{{ url('/rating/edit') }}",
-                data: {
-                    rating_id: ratingId,
-                    _token: '{{ csrf_token() }}' // Include CSRF token
-                },
-                success: function(response) {
-                    if (response.success) {
-                        $('#rating_id').val(response.rating.id);
-                        $('#edit_name').val(response.rating.name);
-                        $('#edit_status').val(response.rating.status);
-                        $('#edit_fixed_wing').prop('checked', response.rating.is_fixed_wing == 1);
-                        $('#edit_rotary').prop('checked', response.rating.is_rotary == 1);
-                        $('#edit_instructor').prop('checked', response.rating.is_instructor == 1);
-                        $('#edit_examiner').prop('checked', response.rating.is_examiner == 1);
-                        $('#edit_kind_of_rating').val(response.rating.kind_of_rating);
-                        $('#edit_parent_rating').empty().append(`<option value="">No Parent (This is a root rating)</option>`);
-                        response.dropdown.forEach(function(r) {
-                            if (r.id != response.rating.id) {
-                                $('#edit_parent_rating').append(`
-                                    <option value="${r.id}" ${r.id == response.rating.parent_id ? 'selected' : ''}>
-                                        ${r.name}
-                                    </option>
-                                `);
-                            }
-                        });
-                        $('#editRatingModal').modal('show');
-                    } else {
-                        alert(response.msg || 'Unable to fetch rating.');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('AJAX Error:', xhr.responseText);
-                    alert('An error occurred while fetching the rating.');
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        var formData = new FormData($('#add_rating')[0]);
+
+        // Debug: Show form fields in console
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+
+        $.ajax({
+            url: '{{ url("/rating/save") }}',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                $(".loader").hide();
+                $('#ratingModal').modal('hide');
+                location.reload();
+            },
+            error: function (xhr) {
+                $(".loader").hide();
+                console.log("XHR Status:", xhr.status);
+                console.log("XHR Response:", xhr.responseText);
+
+                try {
+                    var res = JSON.parse(xhr.responseText);
+                    $.each(res.errors || {}, function (key, value) {
+                        $('#' + key + '_error').html('<p>' + value + '</p>');
+                    });
+                } catch (e) {
+                    console.error("Could not parse JSON:", xhr.responseText);
+                    alert("Something went wrong. Please check console.");
                 }
-            });
+            }
         });
+        
+    });
+
+
+    $(document).on('click', '.edit-user-icon', function () {
+    $('.error_e').html('');
+    $("#editRatingForm")[0].reset();
+    
+    const ratingId = $(this).data('rating-id');
+    const $select = $('#edit_parent_rating');
+
+    $.ajax({
+        type: 'GET',
+        url: "{{ url('/rating/edit') }}",
+        data: { rating_id: ratingId },
+        success: function (response) {
+            if (response.success) {
+                const selected = (response.selected || []).map(String); // ensure all are strings
+                const rating = response.rating;
+
+                if (!rating) {
+                    alert('Rating data missing.');
+                    return;
+                }
+
+                // Populate form fields
+                $('#rating_id').val(rating.id);
+                $('#edit_name').val(rating.name || '');
+                $('#edit_status').val(rating.status || 0);
+                $('#edit_fixed_wing').prop('checked', rating.is_fixed_wing == 1);
+                $('#edit_rotary').prop('checked', rating.is_rotary == 1);
+                $('#edit_instructor').prop('checked', rating.is_instructor == 1);
+                $('#edit_examiner').prop('checked', rating.is_examiner == 1);
+                $('#edit_kind_of_rating').val(rating.kind_of_rating || '');
+                $('#edit_select_org_unit').val(rating.ou_id || '');
+
+                // Destroy Select2 if already initialized
+                if ($select.hasClass("select2-hidden-accessible")) {
+                    $select.select2('destroy');
+                }
+
+                // Clear and populate dropdown
+                $select.empty();
+
+                if (Array.isArray(response.dropdown) && response.dropdown.length > 0) {
+                    response.dropdown.forEach(function (r) {
+                        if (r && r.id && r.name && r.id != rating.id) {
+                            const isSelected = selected.includes(r.id.toString()) ? 'selected' : '';
+                            $select.append(`<option value="${r.id}" ${isSelected}>${r.name}</option>`);
+                        }
+                    });
+                } else {
+                    console.warn("Dropdown is empty or invalid", response.dropdown);
+                }
+
+                // Reinitialize Select2 after modal opens
+                $('#editRatingModal').on('shown.bs.modal', function () {
+                    $select.select2({
+                        dropdownParent: $('#editRatingModal'),
+                        placeholder: "Select parent rating(s)",
+                        allowClear: true,
+                        width: '100%'
+                    });
+                });
+
+                // Show modal
+                $('#editRatingModal').modal('show');
+            } else {
+                alert(response.msg || 'Unable to fetch rating data.');
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('AJAX Error:', xhr.responseText);
+            alert('An error occurred while fetching the rating.');
+        }
+    });
+});
+
+$('#edit_select_org_unit').on('change', function () {
+    const selectedOU = $(this).val();
+    const currentRatingId = $('#rating_id').val();
+
+    $.ajax({
+        type: 'GET',
+        url: "{{ url('/rating/get-by-ou') }}",
+        data: {
+            ou_id: selectedOU,
+            rating_id: currentRatingId
+        },
+        success: function (response) {
+            if (response.success) {
+                const $select = $('#edit_parent_rating');
+                const validOptions = [];
+                $select.empty();
+
+                response.dropdown.forEach(function (r) {
+                    validOptions.push(r.id.toString());
+                    $select.append(`<option value="${r.id}">${r.name}</option>`);
+                });
+
+                // Re-initialize Select2 and remove invalid selections
+                $select.select2({
+                    dropdownParent: $('#editRatingModal'),
+                    placeholder: "Select parent rating(s)",
+                    allowClear: true,
+                    width: '100%'
+                });
+
+                // Reset selections if they no longer exist
+                const currentSelected = $select.val() || [];
+                const filteredSelected = currentSelected.filter(id => validOptions.includes(id));
+                $select.val(filteredSelected).trigger('change');
+            }
+        },
+        error: function () {
+            alert("Failed to load parent ratings for selected OU.");
+        }
+    });
+});
+
+
+
+
 
         $(document).on('click', '#updateRating', function(e) {
             e.preventDefault();
@@ -439,6 +598,8 @@
 $('#ratingModal').on('hidden.bs.modal', function () {
     $('#add_rating')[0].reset();
     $('.error_e').html('');
+    $('#add_rating select').val('').trigger('change');
+    $('#add_rating input[type="checkbox"]').prop('checked', false);
 });
 $('#editRatingModal').on('hidden.bs.modal', function () {
     $('#editRatingForm')[0].reset();
