@@ -5,6 +5,26 @@
 
 @section('content')
 
+<style>
+.grade-incomplete {
+    background-color: #FFFF00;
+    color: black;
+    font-weight: bold;
+}
+
+.grade-ftr {
+    background-color: #ffc107;
+    color: black;
+    font-weight: bold;
+}
+
+.grade-competent {
+    background-color: #008000;
+    color: black;
+    font-weight: bold;
+}
+</style>
+
 @if(session()->has('message'))
 <div id="successMessage" class="alert alert-success fade show" role="alert">
     <i class="bi bi-check-circle me-1"></i>
@@ -64,16 +84,34 @@
                                         @foreach($tasks as $task)
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span><i class="bi bi-chevron-double-right me-1"></i>{{ $task->subLesson?->title ?? 'N/A' }}</span>
-                                                <span class="badge 
-                                                    @if($task->task_grade === 'Incomplete') bg-warning text-dark
-                                                    @elseif($task->task_grade === 'Further training required') bg-danger
-                                                    @else bg-success
-                                                    @endif">
-                                                    @if($task->lesson?->grade_type === 'percentage')
-                                                        {{ $task->task_grade }}%
-                                                    @else
-                                                        {{ $task->task_grade ?? 'N/A' }}
-                                                    @endif
+                                                @php
+                                                    $grade = $task->task_grade ?? null;
+
+                                                    // Default class
+                                                    $gradeClass = 'bg-secondary';
+
+                                                    if (in_array($grade, ['Incomplete', 'Further training required'])) {
+                                                        $gradeClass = match($grade) {
+                                                            'Incomplete' => 'grade-incomplete',
+                                                            'Further training required' => 'grade-ftr',
+                                                        };
+                                                    } elseif (in_array($grade, [1, 2, 3, 4, 5])) {
+                                                        $gradeClass = match((int) $grade) {
+                                                            1 => 'grade-incomplete',
+                                                            2 => 'grade-ftr',
+                                                            3, 4, 5 => 'grade-competent',
+                                                        };
+                                                    } elseif (is_numeric($grade)) {
+                                                        // fallback for other numeric values (if ever)
+                                                        $gradeClass = 'grade-competent';
+                                                    } else {
+                                                        $gradeClass = 'grade-competent';
+                                                    }
+                                                @endphp
+
+
+                                                <span class="badge {{ $gradeClass }}">
+                                                    {{ $task->task_grade ?? 'N/A' }}
                                                 </span>
                                             </li>
                                         @endforeach
@@ -123,11 +161,14 @@
                                                             <br><small class="text-muted"><i class="bi bi-chat-left-text"></i> {{ $item->task_comment }}</small>
                                                         @endif
                                                     </div>
-                                                    <span class="badge 
-                                                        @if($item->task_grade === 'Incomplete') bg-warning text-dark
-                                                        @elseif($item->task_grade === 'Further training required') bg-danger
-                                                        @else bg-success
-                                                        @endif">
+                                                    @php
+                                                        $gradeClass = match($item->task_grade) {
+                                                            'Incomplete' => 'grade-incomplete',
+                                                            'Further training required' => 'grade-ftr',
+                                                            default => 'grade-competent',
+                                                        };
+                                                    @endphp
+                                                    <span class="badge {{ $gradeClass }}">
                                                         {{ $item->task_grade ?? 'N/A' }}
                                                     </span>
                                                 </li>
@@ -177,29 +218,29 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    @foreach(['kno','pro','com','fpa','fpm','ltw','psd','saw','wlm'] as $competency)
-                                                     @php
+                                                @foreach(['kno','pro','com','fpa','fpm','ltw','psd','saw','wlm'] as $competency)
+                                                    @php
                                                         $grade = $grading[$competency.'_grade'] ?? null;
-                                                        $badgeClass = 'bg-secondary'; // default color
+                                                        $badgeClass = 'bg-secondary'; // default
 
                                                         if ($grade == 1) {
-                                                            $badgeClass = 'bg-danger'; // red
+                                                            $badgeClass = 'grade-incomplete';
                                                         } elseif ($grade == 2) {
-                                                            $badgeClass = 'bg-warning text-dark'; // yellow
+                                                            $badgeClass = 'grade-ftr';
                                                         } elseif (in_array($grade, [3, 4, 5])) {
-                                                            $badgeClass = 'bg-success'; // green
+                                                            $badgeClass = 'grade-competent';
                                                         }
                                                     @endphp
-                                                        <tr>
-                                                            <td><strong>{{ strtoupper($competency) }}</strong></td>
-                                                            <td>
-                                                                <span class="badge {{ $badgeClass }}">
-                                                                    {{ $grading[$competency.'_grade'] ?? 'N/A' }}
-                                                                </span>
-                                                            </td>
-                                                            <td class="text-start">{{ $grading[$competency.'_comment'] ?? '-' }}</td>
-                                                        </tr>
-                                                    @endforeach
+                                                    <tr>
+                                                        <td><strong>{{ strtoupper($competency) }}</strong></td>
+                                                        <td>
+                                                            <span class="badge {{ $badgeClass }}">
+                                                                {{ $grade ?? 'N/A' }}
+                                                            </span>
+                                                        </td>
+                                                        <td class="text-start">{{ $grading[$competency.'_comment'] ?? '-' }}</td>
+                                                    </tr>
+                                                @endforeach
                                                 </tbody>
                                             </table>
                                         </div>
@@ -222,12 +263,19 @@
                                     @foreach($event->overallAssessments as $assessment)
                                         <li class="list-group-item">
                                             <strong><i class="bi bi-check-circle-fill me-1"></i>Result:</strong>
-                                            <span class="badge 
-                                                @if($assessment->result === 'Incomplete') bg-danger
-                                                @elseif($assessment->result === 'Further training required') bg-warning text-dark
-                                                @else bg-success
-                                                @endif">
-                                                {{ $assessment->result }}
+                                            @php
+                                                $resultClass = 'bg-secondary'; // default
+
+                                                if ($assessment->result === 'Incomplete') {
+                                                    $resultClass = 'grade-incomplete';
+                                                } elseif ($assessment->result === 'Further training required') {
+                                                    $resultClass = 'grade-ftr';
+                                                } elseif ($assessment->result === 'Competent') {
+                                                    $resultClass = 'grade-competent';
+                                                }
+                                            @endphp
+                                            <span class="badge {{ $resultClass }}">
+                                                {{ $assessment->result ?? 'N/A' }}
                                             </span>
                                             <br>
                                             <small class="text-muted">
@@ -360,8 +408,6 @@ $(document).ready(function() {
     $(document).on('click', '.acknowledge-btn', function(){
         var eventId = $(this).data('event-id');
         var ack_comment = $('#ack_comments').val();
-// alert(ack_comment);
-// return;
         $.ajax({
                 url: '/grading/acknowledge',
                 type: 'POST',

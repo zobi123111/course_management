@@ -298,7 +298,44 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" id="confirmDeleteTrainingEvent" class="btn btn-danger delete_group">Delete</button>
+                    <button type="submit" id="confirmCourseEnding" class="btn btn-primary">End Course</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!--End Course Model -->
+<form action="{{ url('training/end-course') }}" id="endCourseForm" method="POST">
+    @csrf
+    <div class="modal fade" id="endCourseModal" tabindex="-1" aria-labelledby="endCourseLabel" aria-hidden="true"
+        data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="endCourseLabel">End Course/Event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                 <div class="modal-body">
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                    <p>Are you sure you want to end this course? Once ended, it will be locked for further editing.</p>
+                    <div class="mb-3">
+                        <label for="courseEndDate" class="form-label">Course End Date</label>
+                        <input type="date" class="form-control" id="courseEndDate" name="course_end_date" value="{{ old('course_end_date', date('Y-m-d')) }}" required>
+                    </div>
+                    <input type="hidden" name="event_id" id="courseEndEventId" >
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" id="confirmCourseEnding" class="btn btn-danger delete_group">Delete</button>
                 </div>
             </div>
         </div>
@@ -308,7 +345,20 @@
 
 @section('js_scripts')
 
+@if ($errors->any())
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let endCourseModal = new bootstrap.Modal(document.getElementById('endCourseModal'));
+            endCourseModal.show();
+        });
+    </script>
+@endif
+
+
 <script>
+
+
+
 var instructorsdata;
 instructorsdata = @json($instructors);
 var resourcesdata;
@@ -961,25 +1011,12 @@ $(document).ready(function() {
         }
     }
     
-    $(document).on('click', '.end-course-btn', function () {
-        let eventId = $(this).data('event-id');
 
-        if (confirm('Are you sure you want to end this course? Once ended, it will be locked for further editing.')) {
-            $.ajax({
-                url: '/training/end-course/' + eventId,
-                type: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function (response) {
-                    alert(response.success);
-                    location.reload(); // Reload to reflect the locked status
-                },
-                error: function (xhr) {
-                    alert(xhr.responseJSON?.error || 'Something went wrong.');
-                }
-            });
-        }
+   // Open Course End Modal
+    $(document).on('click', '.end-course-btn', function() {
+        $('#endCourseModal').modal('show');
+        var eventId = $(this).data('event-id');
+        $('#courseEndEventId').val(eventId);      
     });
 
 

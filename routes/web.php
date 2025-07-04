@@ -112,7 +112,7 @@ Route::group(['middleware' => ['auth']], function () {
     ->name('training.deferred-lessons.store');
     Route::post('/training/store-def-grading', [TrainingEventsController::class, 'storeDefGrading'])
     ->name('training.store_def_grading');
-    Route::post('/training/end-course/{id}', [TrainingEventsController::class, 'endCourse'])->name('training.endCourse');
+    Route::post('/training/end-course', [TrainingEventsController::class, 'endCourse'])->name('training.endCourse');
     Route::post('/training/unlock-lesson', [TrainingEventsController::class, 'unlockLesson'])->name('training.unlockLesson');
 
 

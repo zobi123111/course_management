@@ -1216,26 +1216,29 @@ class TrainingEventsController extends Controller
     }
 
 
-    public function endCourse($encodedId)
+    public function endCourse(Request $request)
     {
-        $id = decode_id($encodedId);
+        $request->validate([
+            'course_end_date' => 'required|date|before_or_equal:today',
+        ]);
+
+        $id = decode_id($request->event_id);
         $event = TrainingEvents::findOrFail($id);
 
         if (auth()->user()->is_admin != 1) {
-            return response()->json(['error' => 'Unauthorized action.'], 403);
+            abort(403, 'Unauthorized action.');
         }
 
-        if ($event->is_locked==1) {
-            return response()->json(['error' => 'Course already ended.'], 400);
+        if ($event->is_locked) {
+            return back()->withErrors(['error' => 'Course already ended.']);
         }
 
         $event->update([
-            'course_end_date' => now(),
-            'is_locked' => 1
+            'course_end_date' => $request->course_end_date,
+            'is_locked' => 1,
         ]);
 
-        //return redirect()->route('training.index')->with('message', 'Course has been ended and locked.');
-        return response()->json(['success' => 'Course has been ended and locked.']);
+        return redirect()->route('training.index')->with('message', 'Course has been ended and locked.');
     }
 
 
