@@ -72,7 +72,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/rating/edit', [UserController::class, 'getRating'])->name('rating.edit');
     Route::post('/rating/update', [UserController::class, 'updateRating'])->name('rating.update');
     Route::post('/rating/delete', [UserController::class, 'deleteRating'])->name('rating.delete');
-
+    Route::get('/rating/get-by-ou', [UserController::class, 'getRatingsByOU']);
     //Server-Side Datatable Routes
     Route::get('/orgunit/data', [OrganizationController::class, 'getData'])->name('orgunit.data');  
     Route::post('/users/switch_role', [UserController::class, 'switchRole'])->name('user.switch_role');
