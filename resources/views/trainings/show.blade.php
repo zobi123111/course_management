@@ -196,20 +196,20 @@
 
     /* value-specific styles for task grading */
     .radio-label input:checked + .custom-radio.incomplete {
-        background-color: #ffc107; /* yellow */
-        color: white;
+        background-color:  #FFFF00; /* Yellow */
+        color: black;
         font-weight: bold;
     }
 
     .radio-label input:checked + .custom-radio.ftr {
-        background-color: #FF0000; /* red */
-        color: white;
+        background-color: #ffc107; /* Amber */
+        color: black;
         font-weight: bold;
     }
 
     .radio-label input:checked + .custom-radio.competent {
-        background-color: #28a745; /* green */
-        color: white;
+        background-color: #008000; /* green */
+        color: black;
         font-weight: bold;
     }
 
@@ -380,6 +380,24 @@
     .accordion-flush .accordion-button {
         color: #000 !important;
     }
+
+    .grade-incomplete {
+    background-color: #FFFF00;
+    color: black;
+    font-weight: bold;
+    }
+
+    .grade-ftr {
+        background-color: #ffc107;
+        color: black;
+        font-weight: bold;
+    }
+
+    .grade-competent {
+        background-color: #008000;
+        color: black;
+        font-weight: bold;
+    }
 </style>
 
 <div class="card">
@@ -412,7 +430,6 @@
                     </button>
                 </li>
             @endif
-
         </ul>
         <div class="tab-content pt-2" id="myTabContent">
         <div class="tab-pane fade p-3 active show" id="overview" role="tabpanel" aria-labelledby="overview-tab">
@@ -543,20 +560,27 @@
                                     @php
                                         $grade = $item->task_grade ?? null;
                                         $comment = $item->task_comment ?? null;
-                                        $badgeColor = match ($grade) {
-                                            'Incomplete' => 'bg-warning text-dark',
-                                            'Further training required' => 'bg-danger',
-                                            default => 'bg-secondary',
-                                        };
-                                        $badgeText = $grade ?? 'Not Graded';
-                                        // Use $item->task_title for the name:
                                         $title = $item->task_title ?? 'Unnamed Task';
+
+                                        $badgeClass = 'badge'; // base class
+
+                                        if ($grade === 'Further training required') {
+                                            $badgeClass .= ' grade-ftr';
+                                        } elseif ($grade === 'Incomplete') {
+                                            $badgeClass .= ' grade-incomplete';
+                                        } elseif (in_array($grade, ['Competent', 'Completed', 'Passed'])) {
+                                            $badgeClass .= ' grade-competent';
+                                        } else {
+                                            $badgeClass .= ' bg-secondary'; // fallback style
+                                        }
+
+                                        $badgeText = $grade ?? 'Deferred';
                                     @endphp
 
                                     <li class="mb-3">
                                         <div>
                                             <strong>{{ $title }}</strong>
-                                            <span class="badge {{ $badgeColor }} ms-2">{{ $badgeText }}</span>
+                                            <span class="badge {{ $badgeClass }} ms-2">{{ $badgeText }}</span>
                                         </div>
                                         @if($comment)
                                             <div class="text-muted ps-1 mt-1">
@@ -754,15 +778,39 @@
                                 @foreach($eventLessons as $eventLesson)
                                 @php
                                     $lesson = $eventLesson->lesson;
+                                    $isLocked = $eventLesson->is_locked == 1;
                                 @endphp
                                     <div class="accordion-item">
                                         <input type="hidden" name="tg_lesson_id[]" value="{{ $eventLesson->id }}">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                                data-bs-target="#lesson-{{ $eventLesson->id }}" aria-expanded="false">
-                                                {{ $lesson->lesson_title ?? 'Untitled Lesson' }}
-                                            </button>
-                                        </h2>
+                                                 <h2 class="accordion-header">
+                                                    <button class="accordion-button {{ $isLocked ? 'collapsed' : '' }}"
+                                                        type="button"
+                                                        {{ $isLocked ? '' : 'data-bs-toggle=collapse' }}
+                                                        {{ $isLocked ? '' : 'data-bs-target=#lesson-' . $eventLesson->id }}
+                                                        aria-expanded="{{ $isLocked ? 'false' : 'true' }}"
+                                                        aria-controls="lesson-{{ $eventLesson->id }}"
+                                                        style="{{ $isLocked ? 'cursor: not-allowed; background-color: #f8f9fa;' : '' }}">
+                                                        
+                                                        {{ $lesson->lesson_title ?? 'Untitled Lesson' }}
+
+                                                        @if($isLocked)
+                                                            @if(auth()->user()?->is_admin==1)
+                                                                <button type="button"
+                                                                        class="btn btn-sm btn-outline-secondary ms-2 unlock-lesson-btn"
+                                                                        data-event-id="{{ $eventLesson->training_event_id }}"
+                                                                        data-lesson-id="{{ $eventLesson->lesson_id }}"
+                                                                        data-bs-toggle="tooltip"
+                                                                        title="Unlock this event to enable grading edits.">
+                                                                    <i class="bi bi-lock-fill"></i>
+                                                                </button>
+                                                            @else
+                                                                <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
+                                                                    <i class="bi bi-lock-fill"></i>
+                                                                </span>
+                                                            @endif
+                                                        @endif
+                                                    </button>
+                                                </h2>
                                         <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
                                             <div><strong>Instructor:</strong> {{ $eventLesson->instructor->fname ?? '' }} {{ $eventLesson->instructor->lname ?? '' }}</div>
                                             <div><strong>License No:</strong> {{ $eventLesson->instructor_license_number ?? 'N/A' }}</div>
@@ -792,7 +840,6 @@
                                                                 $selectedComment = $taskGrade->task_comment ?? null;
                                                                 $isDeferred = in_array($sublesson->id, $deferredTaskIds);
                                                             @endphp
-
                                                                 <div class="main-tabledesign">
                                                                     <input type="hidden" name="tg_user_id" value="{{ $student->id }}">
                                                                     <h5>{{ $student->fname }} {{ $student->lname }}</h5>
@@ -837,7 +884,7 @@
                                                                                 <tr>
                                                                                     @for ($i = 1; $i <= 5; $i++)
                                                                                         @php
-                                                                                            $colorClass = $i == 1 ? 'ftr' : ($i == 2 ? 'incomplete' : 'competent');
+                                                                                            $colorClass = $i == 1 ? 'incomplete' : ($i == 2 ? 'ftr' : 'competent');
                                                                                         @endphp
                                                                                         <td>
                                                                                             <label class="radio-label">
@@ -918,7 +965,7 @@
                                                                 <tr>
                                                                 @for ($i = 1; $i <= 5; $i++)
                                                                     @php
-                                                                        $colorClass = $i == 1 ? 'ftr' : ($i == 2 ? 'incomplete' : 'competent');
+                                                                        $colorClass = $i == 1 ? 'incomplete' : ($i == 2 ? 'ftr' : 'competent');
                                                                     @endphp
                                                                     <td>
                                                                         <label class="radio-label">
@@ -1288,6 +1335,35 @@
             });
 
         })
+
+        $('.unlock-lesson-btn').on('click', function () {
+            const eventId = $(this).data('event-id');
+            const lessonId = $(this).data('lesson-id');
+
+            if (confirm('Are you sure you want to unlock this lesson for editing?')) {
+                $.ajax({
+                    url: '/training/unlock-lesson',
+                    method: 'POST',
+                    data: {
+                        event_id: eventId,
+                        lesson_id: lessonId,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            alert('Lesson unlocked successfully.');
+                            location.reload(); // Optional: You can replace this with dynamic DOM update
+                        } else {
+                            alert(response.message || 'Failed to unlock lesson.');
+                        }
+                    },
+                    error: function (xhr) {
+                        console.error(xhr);
+                        alert('An error occurred while unlocking the lesson.');
+                    }
+                });
+            }
+        });
 
         setTimeout(function() {
             $('#successMessage').fadeOut('slow');

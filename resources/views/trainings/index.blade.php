@@ -57,46 +57,61 @@
                 <td>{{ $lesson?->end_time ? date('h:i A', strtotime($lesson->end_time)) : '' }}</td>
                 <td>
                 @if(get_user_role(auth()->user()->role) == 'administrator')  
-
-                    @if(checkAllowedModule('training','training.edit')->isNotEmpty()  && !$event->is_graded)
-                        <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                        data-event-id="{{ encode_id($event->id) }}"></i>
-                    @endif
-
-                    @if(checkAllowedModule('training','training.delete')->isNotEmpty())
-                        <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                        data-event-id="{{ encode_id($event->id) }}"></i>
-                    @endif
-
-                    @if($event->is_locked == 1)
-                        <i class="fa fa-lock unlock-event-icon text-success me-2" title="Unlock this event to enable grading edits." 
-                        data-event-id="{{ encode_id($event->id) }}" style="font-size:20px; cursor: pointer;"></i>
-                    @endif
-                    @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                    @if(empty($event->is_locked))
+                        @if(checkAllowedModule('training','training.edit')->isNotEmpty()  && !$event->is_graded)
+                            <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                            data-event-id="{{ encode_id($event->id) }}"></i>
+                        @endif
+                        @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                            <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                            data-event-id="{{ encode_id($event->id) }}"></i>
+                        @endif
+                        @if(checkAllowedModule('training','training.show')->isNotEmpty())
                             <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
                             <i class="fa fa-eye text-danger me-2"></i>
                             </a>            
+                        @endif
+                        @if($event->can_end_course)
+                            {{-- Active “End Course” button/icon --}}
+                            <button
+                                class="btn btn-sm btn-flag-checkered end-course-btn"
+                                data-event-id="{{ encode_id($event->id) }}"
+                                title="End Course/Event"
+                            >
+                                <i class="fa fa-flag-checkered text-primary"></i>
+                            </button>
+                        @endif
+                    @else
+                        {{-- This event is already locked/ended --}}
+                        <span class="badge bg-secondary" data-bs-toggle="tooltip"
+                            title="This course has been ended and is locked from editing">
+                            <i class="bi bi-lock-fill me-1"></i>Ended
+                        </span>
                     @endif
-
                 @elseif(get_user_role(auth()->user()->role) == 'instructor')   
-
-                    @if($event->is_locked != 1)
+                    @if(empty($event->is_locked))
+                        @if(checkAllowedModule('training','training.edit')->isNotEmpty()  && !$event->is_graded)
+                            <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                            data-event-id="{{ encode_id($event->id) }}"></i>
+                        @endif
                         @if(checkAllowedModule('training','training.show')->isNotEmpty())
                             <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
                             <i class="fa fa-eye text-danger me-2"></i>
                             </a>            
                         @endif
                     @else
-                        <i class="fa fa-lock text-secondary" title="This event is locked and cannot be edited or viewed." style="font-size:20px;"></i>
-                    @endif    
-                @else
-                   
+                        {{-- This event is already locked/ended --}}
+                        <span class="badge bg-secondary" data-bs-toggle="tooltip"
+                            title="This course has been ended and is locked from editing">
+                            <i class="bi bi-lock-fill me-1"></i>Ended
+                        </span>
+                    @endif
+                @else                   
                     @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
                         <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
                         <i class="fa fa-list text-danger me-2"></i>
                         </a>
-                    @endif
-
+                    @endif    
                 @endif
                 </td>
             </tr>
@@ -154,6 +169,14 @@
                     </select>
                     <div id="course_id_error" class="text-danger error_e"></div>
                 </div>
+                <!-- Event Date-->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Course Start Date<span class="text-danger">*</span></label>
+                        <input type="date" name="event_date" class="form-control" id="event_date">
+                        <div id="event_date_error" class="text-danger error_e"></div>
+                    </div>
+                </div>
                 <div id="lessonDetailsContainer" class="lesson-box mt-3"></div> 
                 <!-- Total Time (Calculated) -->
                 <div class="col-md-6">
@@ -203,7 +226,7 @@
                                 <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
                             @endforeach
                         </select>
-                        <div id="ou_id_error" class="text-danger error_e"></div>
+                        <div id="ou_id_error_up" class="text-danger error_e"></div>
                     </div>
                 @endif
                 <div class="col-md-6">
@@ -214,7 +237,7 @@
                         <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
                         @endforeach
                     </select>
-                    <div id="student_id_error" class="text-danger error_e"></div>
+                    <div id="student_id_error_up" class="text-danger error_e"></div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Select Course<span class="text-danger">*</span></label>
@@ -224,19 +247,27 @@
                             <option value="{{ $val->id }}">{{ $val->course_name }}</option>
                         @endforeach
                     </select>
-                    <div id="course_id_error" class="text-danger error_e"></div>
+                    <div id="course_id_error_up" class="text-danger error_e"></div>
+                </div>
+                <!-- Event Date-->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Course Start Date<span class="text-danger">*</span></label>
+                        <input type="date" name="event_date" class="form-control" id="edit_event_date">
+                        <div id="event_date_error_up" class="text-danger error_e"></div>
+                    </div>
                 </div>
                 <div id="editLessonDetailsContainer" class="mt-3"></div>
                 <!-- Total Time (Calculated) -->
                 <div class="col-md-6">
                     <label class="form-label">Total Time (hh:mm)<span class="text-danger">*</span></label>
                     <input type="text" name="total_time" class="form-control" id="edit_total_time" readonly>
-                    <div id="total_time_error" class="text-danger error_e"></div>
+                    <div id="total_time_error_up" class="text-danger error_e"></div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Student Licence Number</label>
                     <input type="text" name="std_licence_number" class="form-control" id="edit_std_licence_number" readonly>
-                    <div id="std_licence_number_error" class="text-danger error_e" ></div>
+                    <div id="std_licence_number_error_up" class="text-danger error_e" ></div>
                 </div>
 
                 <div class="modal-footer">
@@ -267,7 +298,46 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" id="confirmDeleteTrainingEvent" class="btn btn-danger delete_group">Delete</button>
+                    <button type="submit" id="confirmCourseEnding" class="btn btn-primary">End Course</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!--End Course Model -->
+<form action="{{ url('training/end-course') }}" id="endCourseForm" method="POST">
+    @csrf
+    <div class="modal fade" id="endCourseModal" tabindex="-1" aria-labelledby="endCourseLabel" aria-hidden="true"
+        data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="endCourseLabel">End Course/Event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                 <div class="modal-body">
+                    <div id="modalErrorContainer">
+                        @if ($errors->any())
+                            <div class="alert alert-danger">
+                                <ul class="mb-0">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                    </div>
+                    <p>Are you sure you want to end this course? Once ended, it will be locked for further editing.</p>
+                    <div class="mb-3">
+                        <label for="courseEndDate" class="form-label">Course End Date</label>
+                        <input type="date" class="form-control" id="courseEndDate" name="course_end_date" value="{{ old('course_end_date', date('Y-m-d')) }}" required>
+                    </div>
+                    <input type="hidden" name="event_id" id="courseEndEventId">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" id="confirmCourseEnding" class="btn btn-danger">End Course</button>
                 </div>
             </div>
         </div>
@@ -277,7 +347,20 @@
 
 @section('js_scripts')
 
+@if ($errors->any())
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let endCourseModal = new bootstrap.Modal(document.getElementById('endCourseModal'));
+            endCourseModal.show();
+        });
+    </script>
+@endif
+
+
 <script>
+
+
+
 var instructorsdata;
 instructorsdata = @json($instructors);
 var resourcesdata;
@@ -582,7 +665,6 @@ $(document).ready(function() {
     $(document).on('click', '.edit-event-icon', function () {
         $('.error_e').html('');
         var eventId = $(this).data('event-id');
-
         $.ajax({
             url: "{{ url('/training/edit') }}",
             type: 'GET',
@@ -601,6 +683,7 @@ $(document).ready(function() {
                     // Set static values
                     $('#edit_event_id').val(event.id);
                     $('#edit_std_licence_number').val(event.std_licence_number);
+                    $('#edit_event_date').val(event.event_date);
                     $('#edit_total_time').val(moment(event.total_time, 'HH:mm:ss').format('HH:mm'));
 
                     // Set OU and wait for dependent dropdowns
@@ -752,7 +835,7 @@ $(document).ready(function() {
                 // Clear old errors
                 $('.error_e').html('');
                 $.each(validationErrors, function(key, value) {
-                    var formattedKey = key.replace(/\./g, '_') + '_error';
+                    var formattedKey = key.replace(/\./g, '_') + '_error_up';
                     var errorMsg = '<p>' + value[0] + '</p>';
                     $('#' + formattedKey).html(errorMsg);
                 });
@@ -929,6 +1012,22 @@ $(document).ready(function() {
             });
         }
     }
+    
+
+   // Open Course End Modal
+    $(document).on('click', '.end-course-btn', function() {
+        // Set current date in YYYY-MM-DD format
+        const today = new Date().toISOString().split('T')[0];
+
+        // Set the input values
+        $('#endCourseModal').modal('show');
+        $('#courseEndEventId').val($(this).data('event-id'));
+        $('#courseEndDate').val(today); // Reset to today's date
+        // Clear any validation error messages
+        $('#modalErrorContainer').html('');
+    });
+
+
 
 
     setTimeout(function() {

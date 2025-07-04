@@ -114,6 +114,16 @@
     border-radius: 5px;
     font-size: 0.9em;
 }
+
+.ui-sortable-helper {
+    opacity: 1 !important;
+    background-color: white;
+}
+
+.lesson-card {
+    cursor: grab;
+}
+
 </style>
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb">
@@ -169,57 +179,63 @@
     <div class="card-body">
         <div class="list-group">
             <div class="container-fluid">
+                @php
+                    $disableDragDrop = '';
+                    if (Auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1) {
+                        $disableDragDrop = 'sortable-lessons';
+                    }
+                @endphp
                 <h3>Lessons</h3>
-                <div class="row">
+                <div class="row" id="{{ $disableDragDrop }}">
                     @foreach($course->courseLessons as $val)
-                    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
-                        <div class="lesson_card course-card">
-                            <div class="course-image-container" style="position: relative;">
-                            @if($studentAcknowledged)
-                                <a href="{{ url('lesson-pdf/'. $val->id) }}" 
-                                style="position: absolute; top: 10px; right: 75px; background-color: green; border: none; border-radius: 5px; padding: 4px 5px; color: white;">
-                                    Export PDF
-                                </a>
-                            @endif 
-                                <span class="status-label"
-                                    style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
-                                    {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
-                                </span>
-                            </div>
+                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3 lesson-card" data-id="{{ $val->id }}">
+                            <div class="lesson_card course-card">
+                                <div class="course-image-container" style="position: relative;">
+                                @if($studentAcknowledged)
+                                    <a href="{{ url('lesson-pdf/'. $val->id) }}" 
+                                    style="position: absolute; top: 10px; right: 75px; background-color: green; border: none; border-radius: 5px; padding: 4px 5px; color: white;">
+                                        Export PDF
+                                    </a>
+                                @endif 
+                                    <span class="status-label"
+                                        style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
+                                        {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </div>
 
-                            <div class="card-body">
-                                <h5 class="card-title lessonName">{{ $val->lesson_title}}</h5>
+                                <div class="card-body">
+                                    <h5 class="card-title lessonName">{{ $val->lesson_title}}</h5>
 
-                                <p class="card-text">
-                                    {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
-                                </p>
-                            </div>
+                                    <p class="card-text">
+                                        {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
+                                    </p>
+                                </div>
 
-                            <div class="card-footer d-flex justify-content-between">
-                                @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
-                                <a href="javascript:void(0)" class="btn btn-light show-lesson-icon"
-                                    data-lesson-id="{{ encode_id($val->id) }}">
-                                    <i class="fa fa-edit"></i> Show
-                                </a>
-                                @endif
+                                <div class="card-footer d-flex justify-content-between">
+                                    @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
+                                    <a href="javascript:void(0)" class="btn btn-light show-lesson-icon"
+                                        data-lesson-id="{{ encode_id($val->id) }}">
+                                        <i class="fa fa-edit"></i> Show
+                                    </a>
+                                    @endif
 
-                                @if(checkAllowedModule('courses', 'lesson.edit')->isNotEmpty())
-                                <a href="javascript:void(0)" class="btn btn-light edit-lesson-icon"
-                                    data-lesson-id="{{ encode_id($val->id) }}">
-                                    <i class="fa fa-edit"></i> Edit
-                                </a>
-                                @endif
+                                    @if(checkAllowedModule('courses', 'lesson.edit')->isNotEmpty())
+                                    <a href="javascript:void(0)" class="btn btn-light edit-lesson-icon"
+                                        data-lesson-id="{{ encode_id($val->id) }}">
+                                        <i class="fa fa-edit"></i> Edit
+                                    </a>
+                                    @endif
 
-                                @if(checkAllowedModule('courses', 'lesson.delete')->isNotEmpty())
-                                <a href="javascript:void(0)" class="btn btn-light delete-lesson-icon"
-                                    data-lesson-id="{{ encode_id($val->id) }}">
-                                    <i class="fa-solid fa-trash"></i> Delete
-                                </a>
-                                @endif
+                                    @if(checkAllowedModule('courses', 'lesson.delete')->isNotEmpty())
+                                    <a href="javascript:void(0)" class="btn btn-light delete-lesson-icon"
+                                        data-lesson-id="{{ encode_id($val->id) }}">
+                                        <i class="fa-solid fa-trash"></i> Delete
+                                    </a>
+                                    @endif
 
+                                </div>
                             </div>
                         </div>
-                    </div>
                     @endforeach
                 </div>
             </div>
@@ -543,6 +559,40 @@
 @section('js_scripts')
 
 <script>
+
+    $(function() {
+        $('#sortable-lessons').sortable({
+            items: '.lesson-card',
+            helper: 'clone',
+            cursor: 'grabbing',
+            tolerance: 'pointer',
+            update: function(event, ui) {
+                let order = [];
+                $('.lesson-card').each(function(index) {
+                    order.push({
+                        id: $(this).data('id'),
+                        position: index + 1
+                    });
+                });
+
+                $.ajax({
+                    url: '{{ route("lessons.reorder") }}', // Replace with actual route
+                    method: 'POST',
+                    data: {
+                        order: order,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        console.log('Lesson order updated');
+                    }
+                });
+            }
+        });
+
+        // Grab cursor on each card
+        $('.lesson-card').css('cursor', 'grab');
+    });
+
 $(document).ready(function() {
 
     // $("#comment_required").on('change', function() {

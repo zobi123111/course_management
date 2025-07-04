@@ -24,5 +24,7 @@ tinymce.init({
 });
 </script>
 
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
 <!-- Template Main JS File -->
 <script src="{{ url('assets/js/main.js') }}"></script>

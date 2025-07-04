@@ -20,6 +20,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\CourseTemplateController;
 use App\Http\Controllers\UserActivityLogController;
 use App\Http\Controllers\TrainingFeedbackController;
+use App\Http\Controllers\ReportsController;
 
 
 
@@ -111,6 +112,10 @@ Route::group(['middleware' => ['auth']], function () {
     ->name('training.deferred-lessons.store');
     Route::post('/training/store-def-grading', [TrainingEventsController::class, 'storeDefGrading'])
     ->name('training.store_def_grading');
+    Route::post('/training/end-course', [TrainingEventsController::class, 'endCourse'])->name('training.endCourse');
+    Route::post('/training/unlock-lesson', [TrainingEventsController::class, 'unlockLesson'])->name('training.unlockLesson');
+
+
 
 
     
@@ -168,6 +173,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/course/update', [CourseController::class, 'updateCourse'])->name('course.update');
     Route::post('/course/delete', [CourseController::class, 'deleteCourse'])->name('course.delete'); 
     Route::get('/course/show/{course_id}', [LessonController::class, 'showCourse'])->name('course.show');
+    Route::post('/courses/reorder', [CourseController::class, 'reorder'])->name('courses.reorder');
 
     //Lesson 
     Route::post('/lesson/create', [LessonController::class, 'createLesson'])->name('lesson.store');
@@ -175,6 +181,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/lesson/{id}', [LessonController::class, 'showLesson'])->name('lesson.show');
     Route::post('/lesson/update', [LessonController::class, 'updateLesson'])->name('lesson.update');
     Route::post('/lesson/delete', [LessonController::class, 'deleteLesson'])->name('lesson.delete');
+    Route::post('/lessons/reorder', [LessonController::class, 'reorder'])->name('lessons.reorder');
 
     //Sub-Lesson 
     Route::post('/sub-lesson/create', [SubLessonController::class, 'createSubLesson'])->name('sub-lesson.store');
@@ -182,7 +189,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/sub-lesson/{id}', [SubLessonController::class, 'showSubLesson'])->name('sub-lesson.show');
     Route::post('/sub-lesson/update', [SubLessonController::class, 'updateSubLesson'])->name('sub-lesson.update');
     Route::post('/sub-lesson/delete', [SubLessonController::class, 'deleteSubLesson'])->name('sub-lesson.delete');
-    
+    Route::post('/sublessons/reorder', [SubLessonController::class, 'reorder'])->name('sublessons.reorder');   
 
 
     //Groups Route
@@ -257,6 +264,10 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     // Route::get('/document/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('document.getOrgfolder');
     // Route::get('/folder/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('folder.getOrgfolder');
     Route::get('/folder/edit', [FolderController::class, 'getFolder'])->name('folder.edit');
+
+    // Reporting section Routes
+    Route::get('/reports', [ReportsController::class, 'index'])->name('reports.index');
+
 
 });
 
