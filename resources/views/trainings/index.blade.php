@@ -337,7 +337,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" id="confirmCourseEnding" class="btn btn-danger delete_group">Delete</button>
+                    <button type="submit" id="confirmCourseEnding" class="btn btn-danger">>End Course</button>
                 </div>
             </div>
         </div>
