@@ -173,6 +173,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/course/update', [CourseController::class, 'updateCourse'])->name('course.update');
     Route::post('/course/delete', [CourseController::class, 'deleteCourse'])->name('course.delete'); 
     Route::get('/course/show/{course_id}', [LessonController::class, 'showCourse'])->name('course.show');
+    Route::post('/courses/reorder', [CourseController::class, 'reorder'])->name('courses.reorder');
 
     //Lesson 
     Route::post('/lesson/create', [LessonController::class, 'createLesson'])->name('lesson.store');
@@ -180,6 +181,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/lesson/{id}', [LessonController::class, 'showLesson'])->name('lesson.show');
     Route::post('/lesson/update', [LessonController::class, 'updateLesson'])->name('lesson.update');
     Route::post('/lesson/delete', [LessonController::class, 'deleteLesson'])->name('lesson.delete');
+    Route::post('/lessons/reorder', [LessonController::class, 'reorder'])->name('lessons.reorder');
 
     //Sub-Lesson 
     Route::post('/sub-lesson/create', [SubLessonController::class, 'createSubLesson'])->name('sub-lesson.store');
@@ -187,7 +189,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/sub-lesson/{id}', [SubLessonController::class, 'showSubLesson'])->name('sub-lesson.show');
     Route::post('/sub-lesson/update', [SubLessonController::class, 'updateSubLesson'])->name('sub-lesson.update');
     Route::post('/sub-lesson/delete', [SubLessonController::class, 'deleteSubLesson'])->name('sub-lesson.delete');
-    
+    Route::post('/sublessons/reorder', [SubLessonController::class, 'reorder'])->name('sublessons.reorder');   
 
 
     //Groups Route

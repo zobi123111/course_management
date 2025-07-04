@@ -76,6 +76,16 @@
         border-radius: 5px;
         font-size: 0.9em;
     }
+
+    .ui-sortable-helper {
+        opacity: 1 !important;
+        background-color: white;
+    }
+
+    .sublesson-card {
+        cursor: grab;
+    }
+
 </style>
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb">
@@ -123,10 +133,16 @@
     <div class="card-body">
         <div class="list-group">
             <div class="container-fluid">
+                @php
+                    $disableDragDrop = '';
+                    if (Auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1) {
+                        $disableDragDrop = 'sortable-tasks';
+                    }
+                @endphp
                 <h3>Tasks</h3>
-                <div class="row">
+                <div class="row" id="{{ $disableDragDrop }}">
                     @foreach($lesson->subLessons as $val)
-                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3 sublesson-card" data-id="{{ $val->id }}">
                             <div class="sublesson_card course-card">
             
                                 <div class="course-image-container" style="position: relative;">
@@ -460,6 +476,39 @@
 @section('js_scripts')
 
 <script>
+
+    $(function () {
+        $('#sortable-tasks').sortable({
+            items: '.sublesson-card',
+            helper: 'clone',
+            cursor: 'grabbing',
+            tolerance: 'pointer',
+            update: function (event, ui) {
+                let order = [];
+                $('.sublesson-card').each(function (index) {
+                    order.push({
+                        id: $(this).data('id'),
+                        position: index + 1
+                    });
+                });
+
+                $.ajax({
+                    url: '{{ route("sublessons.reorder") }}',
+                    method: 'POST',
+                    data: {
+                        order: order,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function (response) {
+                        console.log('Sublesson order updated');
+                    }
+                });
+            }
+        });
+
+        $('.sublesson-card').css('cursor', 'grab');
+    });
+
     // Show modal for creating sub-lesson
     $("#createSubLessonBtn").on('click', function(){
         $(".error_e").html('');
