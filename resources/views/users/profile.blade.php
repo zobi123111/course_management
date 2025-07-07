@@ -199,7 +199,7 @@ h2 {
                                     <div class="row">
                                         <div class="col-md-6">
                                             <label for="licence_checkbox" class="form-label">
-                                                <strong>Licence <span class="text-danger">*</span>
+                                                <strong>UK Licence <span class="text-danger">*</span>
                                                 @if($document?->licence_invalidate == 1)
                                                     <span class="text-danger">(Re-upload a new document and date.)</span>
                                                 @endif
@@ -208,7 +208,7 @@ h2 {
                                                 <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
                                                 @endif
                                             </label>
-                                            <input type="text" name="licence" id="licence" value="{{ $document?->licence ?? '' }}" placeholder="Enter Licence Number" class="form-control">
+                                            <input type="text" name="licence" id="licence" value="{{ $document?->licence ?? '' }}" placeholder="Enter UK Licence Number" class="form-control">
 
                                             <div id="licence_error_up" class="text-danger error_e"> </div>
                                             <label for="licence_expiry_date" class="form-label mt-3">
@@ -267,7 +267,7 @@ h2 {
     $hasLicence1 = $licence1Ratings->contains('linked_to', 'licence_1');
 @endphp
 @if($hasLicence1)
-    <h4 class="mt-4">Ratings linked to Licence 1</h4>
+    <h4 class="mt-4">Ratings linked to UK Licence</h4>
     <div class="row mt-3">
         @foreach($licence1Ratings as $userRating)
             @if($userRating->linked_to !== 'licence_1')
@@ -438,7 +438,7 @@ h2 {
                                         <div class="col-sm-6" id="second_licence_section" style="display: {{ !empty($user->licence_2_required) ? 'block' : 'none' }};">
 
                 <label for="licence_checkbox" class="form-label">
-                    <strong>Second Licence <span class="text-danger">*</span>
+                    <strong>EASA Licence <span class="text-danger">*</span>
                         @if($document?->licence_2_invalidate == 1)
                             <span class="text-danger">(Re-upload a new document and date.)</span>
                         @endif
@@ -447,7 +447,7 @@ h2 {
                         <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
                     @endif
                 </label>
-                <input type="text" name="licence_2" id="licence_2" value="{{ $document?->licence_2 ?? '' }}" placeholder="Enter Second Licence Number" class="form-control">
+                <input type="text" name="licence_2" id="licence_2" value="{{ $document?->licence_2 ?? '' }}" placeholder="Enter EASA Licence Number" class="form-control">
 
                 <div id="licence_error_up" class="text-danger error_e"></div>
 
@@ -726,7 +726,7 @@ $allChildRatings = \App\Models\ParentRating::with('child', 'parent')->get()->gro
                                 <div class="row">
 
                                     <div class="col-md-6">
-                                        <label for="extra_roles" class="form-label"><strong> Medical Issued By </strong>
+                                        <label for="extra_roles" class="form-label"><strong>UK Medical Issued By </strong>
                                             <span class="text-danger"></span>
                                             @if($document?->medical_invalidate == 1)
                                                 <span class="text-danger">(Re-upload a new document and date.)</span>
@@ -783,7 +783,6 @@ $allChildRatings = \App\Models\ParentRating::with('child', 'parent')->get()->gro
                                             class="form-control" placeholder="Medical Expiry Date" value="<?php echo isset($document?->medical_expirydate) ? $document?->medical_expirydate : ''; ?>" >
                                             <div id="medical_expiry_date_error_up" class="text-danger error_e"></div>
 
-
                                         <label for="extra_roles" class="form-label mt-3"><strong> Medical Detail </strong> <span
                                                 class="text-danger"></span></label>
                                             <textarea name="medical_detail" id="medical_detail" class="form-control"
@@ -813,7 +812,7 @@ $allChildRatings = \App\Models\ParentRating::with('child', 'parent')->get()->gro
 
                                     <div class="col-md-6" id="edit_second_medical_section" style="display: {{ !empty($user?->medical_2_required) ? 'block' : 'none' }};">
                                         <!-- <div> -->
-                                            <label for="extra_roles" class="form-label"><strong>Second Medical Issued By </strong>
+                                            <label for="extra_roles" class="form-label"><strong>EASA Medical Issued By </strong>
                                             <span class="text-danger"></span></label>
                                             @if($document?->medical_2_invalidate == 1)
                                                 <span class="text-danger">(Re-upload a new document and date.)</span>

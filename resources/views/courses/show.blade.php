@@ -1,6 +1,7 @@
+@section('title', 'Lessons')
 @section('sub-title', 'Course')
 @extends('layout.app')
-@section('content')
+@section('content') 
 
 {{-- <style>
     .course-image {
