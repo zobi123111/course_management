@@ -195,16 +195,21 @@
                                             $childUserRating = $userRatingsMap[$child->id] ?? null;
                                         @endphp
                                         @if($child)
-                                            <li>
-                                                <i class="bi bi-chevron-right small text-muted"></i>
-                                                <strong>{{ $child->name }}</strong><br>
-                                                <span class="ms-3">
-                                                    <strong>Issue Date:</strong> {{ $childUserRating?->issue_date ?? $userRating->issue_date ?? 'N/A' }}<br>
-                                                    <strong>Expiry Date:</strong> {{ $childUserRating?->expiry_date ?? $userRating->expiry_date ?? 'N/A' }}
-                                                    @if($childUserRating?->admin_verified)
-                                                        <i class="bi bi-check-circle-fill text-success ms-1" title="Verified"></i>
-                                                    @endif
-                                                </span>
+                                            <li class="mb-2">
+                                                <div class="d-flex align-items-start">
+                                                    <i class="bi bi-chevron-right text-muted mt-1 me-2"></i>
+                                                    <div>
+                                                        <strong class="text-dark">{{ $child->name }}</strong>
+                                                        <div class="ms-1 small text-secondary">
+                                                            <div><strong>Issue Date:</strong> {{ $childUserRating?->issue_date ?? $userRating->issue_date ?? 'N/A' }}</div>
+                                                            <div><strong>Expiry Date:</strong> {{ $childUserRating?->expiry_date ?? $userRating->expiry_date ?? 'N/A' }}
+                                                                @if($childUserRating?->admin_verified)
+                                                                    <i class="bi bi-check-circle-fill text-success ms-1" title="Verified"></i>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </li>
                                         @endif
                                     @endforeach
@@ -300,16 +305,26 @@
                                             $childUserRating = $userRatingsMap[$child->id] ?? null;
                                         @endphp
                                         @if($child)
-                                            <li>
-                                                <i class="bi bi-chevron-right small text-muted"></i>
-                                                <strong>{{ $child->name }}</strong><br>
-                                                <span class="ms-3">
-                                                    <strong>Issue Date:</strong> {{ $childUserRating?->issue_date ?? $userRating->issue_date ?? 'N/A' }}<br>
-                                                    <strong>Expiry Date:</strong> {{ $childUserRating?->expiry_date ?? $userRating->expiry_date ?? 'N/A' }}
-                                                    @if($childUserRating?->admin_verified)
-                                                        <i class="bi bi-check-circle-fill text-success ms-1" title="Verified"></i>
-                                                    @endif
-                                                </span>
+                                           <li class="mb-2">
+                                                <div class="d-flex align-items-start">
+                                                    <i class="bi bi-chevron-right text-muted mt-1 me-2"></i>
+                                                    <div>
+                                                        <strong class="text-dark">{{ $child->name }}</strong>
+                                                        <div class="ms-1 mt-1 small text-secondary">
+                                                            <div>
+                                                                <strong>Issue Date:</strong>
+                                                                {{ $childUserRating?->issue_date ?? $userRating->issue_date ?? 'N/A' }}
+                                                            </div>
+                                                            <div>
+                                                                <strong>Expiry Date:</strong>
+                                                                {{ $childUserRating?->expiry_date ?? $userRating->expiry_date ?? 'N/A' }}
+                                                                @if($childUserRating?->admin_verified)
+                                                                    <i class="bi bi-check-circle-fill text-success ms-1" title="Verified"></i>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </li>
                                         @endif
                                     @endforeach
