@@ -275,7 +275,7 @@ h2 {
             @endif
             @php $rating = $userRating->rating; @endphp
 
-            <div class="col-12">
+            <div class="col-11 border p-4 mb-4 rounded shadow-sm bg-white">
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">{{ $rating->name }}</h5>
                     @if($userRating->admin_verified)
@@ -336,9 +336,9 @@ h2 {
                         <i class="bi bi-file-earmark-text me-1"></i> View File
                     </a>
                 @endif
-            </div>
+            
         @endforeach
-    </div>
+    
      @php
     // Load all ratings keyed by ID
     $allRatings = \App\Models\Rating::with('children')->get()->keyBy('id');
@@ -366,8 +366,7 @@ h2 {
         $childRatings = $allGroupedByParent[$rating->id] ?? collect();
     @endphp
 
-    <div class="col-12 mb-4">
-    <div class="card shadow-sm">
+    <div class="col-11 mb-4">
             @if($childRatings->isNotEmpty())
                 <h6 class="mt-3">Associated Ratings</h6>
                 <div class="row mt-3">
@@ -410,7 +409,8 @@ h2 {
                     @endforeach
                 </div>
             @endif
-    </div>
+            </div>
+            </div>
 </div>
 @endforeach
 
@@ -552,7 +552,7 @@ $allChildRatings = \App\Models\ParentRating::with('child', 'parent')->get()->gro
                 {{-- Show all child ratings under this parent --}}
              @if($childRatings->isNotEmpty())
                     <h6 class="mt-4">Associated Ratings</h6>
-                    <div class="row mt-2">
+                    <div class="row mt-3">
                         @foreach($childRatings as $child)
                             @php
                                 $childRating = $child->child;
