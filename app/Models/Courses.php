@@ -89,5 +89,10 @@ class Courses extends Model
         })->values();
     }
 
+    public function trainingEvents()
+    {
+        return $this->hasMany(TrainingEvents::class, 'course_id');
+    }
+
 }
 
