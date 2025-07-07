@@ -876,8 +876,11 @@ class TrainingEventsController extends Controller
 
     public function getStudentGrading(Request $request, $event_id)
     {
-        $userId = auth()->user()->id;
-        $ouId = auth()->user()->ou_id;
+        $eventId = decode_id($event_id);
+        $trainingEvent = TrainingEvents::select('ou_id', 'student_id')->findOrFail($eventId);
+
+        $ouId = $trainingEvent->ou_id;
+        $userId = $trainingEvent->student_id;
     
         $event = TrainingEvents::where('ou_id', $ouId)
             ->where('id', decode_id($event_id))
