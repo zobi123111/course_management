@@ -110,14 +110,6 @@
 
     // On page load: restore selected OU filter if available
     document.addEventListener('DOMContentLoaded', function () {
-        const savedOu = sessionStorage.getItem('selected_ou');
-        const ouFilter = document.getElementById('ou_filter');
-
-        if (ouFilter && savedOu) {
-            ouFilter.value = savedOu;
-            filterCoursesByOU(savedOu);
-        }
-
         @foreach($courses as $course)
             const enrolled_{{ $course->id }} = {{ $course->students_enrolled }};
             const active_{{ $course->id }} = {{ $course->students_active }};

@@ -111,7 +111,7 @@
                        <tr class="clickable-row {{ $student->show_alert ? 'row-alert' : '' }}" 
                             data-href="{{ route('training.grading-list', ['event_id' => encode_id($student->event_id)]) }}" 
                             style="cursor: pointer;">
-                            <td>
+                            <td class="expiry">
                                 @if($student->show_alert)
                                     <i class="fas fa-exclamation-triangle me-1" style="color: #dc3545 !important;" title="Nearing 6-month deadline"></i>
                                 @endif
