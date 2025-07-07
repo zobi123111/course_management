@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('parent_rating', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('rating_id');
-            $table->unsignedBigInteger('parent_id');
-            $table->timestamps();
+        Schema::table('ratings', function (Blueprint $table) {
+            $table->unsignedBigInteger('ou_id')->nullable()->after('id');
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('parent_rating');
+        Schema::table('ratings', function (Blueprint $table) {
+            $table->dropColumn('ou_id');
+        });
     }
 };
