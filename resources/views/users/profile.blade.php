@@ -268,14 +268,14 @@ h2 {
 @endphp
 @if($hasLicence1)
     <h4 class="mt-4">Ratings linked to Licence 1</h4>
-    <div class="row mt-3">
+    <div class="row mt-3 rating-left-cont">
         @foreach($licence1Ratings as $userRating)
             @if($userRating->linked_to !== 'licence_1')
                 @continue
             @endif
             @php $rating = $userRating->rating; @endphp
 
-            <div class="col-11 border p-4 mb-4 rounded shadow-sm bg-white">
+            <div class="col-12 border p-4 mb-4 rounded shadow-sm bg-white">
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">{{ $rating->name }}</h5>
                     @if($userRating->admin_verified)
@@ -366,7 +366,7 @@ h2 {
         $childRatings = $allGroupedByParent[$rating->id] ?? collect();
     @endphp
 
-    <div class="col-11 mb-4">
+    <div class="col-12 mb-4">
             @if($childRatings->isNotEmpty())
                 <h6 class="mt-3">Associated Ratings</h6>
                 <div class="row mt-3">
