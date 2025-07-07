@@ -197,12 +197,14 @@
                                         @if($child)
                                             <li>
                                                 <i class="bi bi-chevron-right small text-muted"></i>
-                                                {{ $child->name }} —
-                                                <span title="Issue Date">{{ $childUserRating?->issue_date ?? 'N/A' }}</span> /
-                                                <span title="Expiry Date">{{ $childUserRating?->expiry_date ?? 'N/A' }}</span>
-                                                @if($childUserRating?->admin_verified)
-                                                    <i class="bi bi-check-circle-fill text-success ms-1" title="Verified"></i>
-                                                @endif
+                                                <strong>{{ $child->name }}</strong><br>
+                                                <span class="ms-3">
+                                                    <strong>Issue Date:</strong> {{ $childUserRating?->issue_date ?? $userRating->issue_date ?? 'N/A' }}<br>
+                                                    <strong>Expiry Date:</strong> {{ $childUserRating?->expiry_date ?? $userRating->expiry_date ?? 'N/A' }}
+                                                    @if($childUserRating?->admin_verified)
+                                                        <i class="bi bi-check-circle-fill text-success ms-1" title="Verified"></i>
+                                                    @endif
+                                                </span>
                                             </li>
                                         @endif
                                     @endforeach
@@ -300,12 +302,14 @@
                                         @if($child)
                                             <li>
                                                 <i class="bi bi-chevron-right small text-muted"></i>
-                                                {{ $child->name }} —
-                                                <span title="Issue Date">{{ $childUserRating?->issue_date ?? 'N/A' }}</span> /
-                                                <span title="Expiry Date">{{ $childUserRating?->expiry_date ?? 'N/A' }}</span>
-                                                @if($childUserRating?->admin_verified)
-                                                    <i class="bi bi-check-circle-fill text-success ms-1" title="Verified"></i>
-                                                @endif
+                                                <strong>{{ $child->name }}</strong><br>
+                                                <span class="ms-3">
+                                                    <strong>Issue Date:</strong> {{ $childUserRating?->issue_date ?? $userRating->issue_date ?? 'N/A' }}<br>
+                                                    <strong>Expiry Date:</strong> {{ $childUserRating?->expiry_date ?? $userRating->expiry_date ?? 'N/A' }}
+                                                    @if($childUserRating?->admin_verified)
+                                                        <i class="bi bi-check-circle-fill text-success ms-1" title="Verified"></i>
+                                                    @endif
+                                                </span>
                                             </li>
                                         @endif
                                     @endforeach
