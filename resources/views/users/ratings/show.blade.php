@@ -341,8 +341,6 @@
             allowClear: true,
             width: '100%'
         });
-
-    // Filter Parent Rating by OU
         $('#select_org_unit').on('change', function () {
             let selectedOuId = $(this).val();
             let $parentRating = $('#parent_rating');
@@ -417,21 +415,18 @@
         
     });
 
-
     $(document).on('click', '.edit-user-icon', function () {
     $('.error_e').html('');
     $("#editRatingForm")[0].reset();
-    
     const ratingId = $(this).data('rating-id');
     const $select = $('#edit_parent_rating');
-
     $.ajax({
         type: 'GET',
         url: "{{ url('/rating/edit') }}",
         data: { rating_id: ratingId },
         success: function (response) {
             if (response.success) {
-                const selected = (response.selected || []).map(String); // ensure all are strings
+                const selected = (response.selected || []).map(String); 
                 const rating = response.rating;
 
                 if (!rating) {
@@ -439,7 +434,6 @@
                     return;
                 }
 
-                // Populate form fields
                 $('#rating_id').val(rating.id);
                 $('#edit_name').val(rating.name || '');
                 $('#edit_status').val(rating.status || 0);
@@ -449,15 +443,10 @@
                 $('#edit_examiner').prop('checked', rating.is_examiner == 1);
                 $('#edit_kind_of_rating').val(rating.kind_of_rating || '');
                 $('#edit_select_org_unit').val(rating.ou_id || '');
-
-                // Destroy Select2 if already initialized
                 if ($select.hasClass("select2-hidden-accessible")) {
                     $select.select2('destroy');
                 }
-
-                // Clear and populate dropdown
                 $select.empty();
-
                 if (Array.isArray(response.dropdown) && response.dropdown.length > 0) {
                     response.dropdown.forEach(function (r) {
                         if (r && r.id && r.name && r.id != rating.id) {
@@ -468,8 +457,6 @@
                 } else {
                     console.warn("Dropdown is empty or invalid", response.dropdown);
                 }
-
-                // Reinitialize Select2 after modal opens
                 $('#editRatingModal').on('shown.bs.modal', function () {
                     $select.select2({
                         dropdownParent: $('#editRatingModal'),
@@ -492,109 +479,103 @@
     });
 });
 
+let previousOuId = $('#edit_select_org_unit').val(); 
+$('#edit_select_org_unit').on('focus', function () {
+    previousOuId = $(this).val();
+});
 $('#edit_select_org_unit').on('change', function () {
-    const selectedOU = $(this).val();
-    const currentRatingId = $('#rating_id').val();
+    const selectedOuId = $(this).val();
+    const $parentRating = $('#edit_parent_rating');
 
-    $.ajax({
-        type: 'GET',
-        url: "{{ url('/rating/get-by-ou') }}",
-        data: {
-            ou_id: selectedOU,
-            rating_id: currentRatingId
-        },
-        success: function (response) {
-            if (response.success) {
-                const $select = $('#edit_parent_rating');
-                const validOptions = [];
-                $select.empty();
-
-                response.dropdown.forEach(function (r) {
-                    validOptions.push(r.id.toString());
-                    $select.append(`<option value="${r.id}">${r.name}</option>`);
-                });
-
-                // Re-initialize Select2 and remove invalid selections
-                $select.select2({
-                    dropdownParent: $('#editRatingModal'),
-                    placeholder: "Select parent rating(s)",
-                    allowClear: true,
-                    width: '100%'
-                });
-
-                // Reset selections if they no longer exist
-                const currentSelected = $select.val() || [];
-                const filteredSelected = currentSelected.filter(id => validOptions.includes(id));
-                $select.val(filteredSelected).trigger('change');
-            }
-        },
-        error: function () {
-            alert("Failed to load parent ratings for selected OU.");
+    if (selectedOuId && selectedOuId !== previousOuId) {
+        const confirmChange = confirm("⚠️ If you change the Org Unit, all selected parent ratings will be cleared. Do you want to proceed?");
+        
+        if (!confirmChange) {
+            $(this).val(previousOuId).trigger('change.select2');
+            return; 
         }
+
+        previousOuId = selectedOuId;
+    } else {
+        return; 
+    }
+    $parentRating.empty();
+
+    const filtered = allParentRatings.filter(r => r.ou_id == selectedOuId);
+
+    if (filtered.length === 0) {
+        $parentRating.append('<option disabled>No ratings available for this OU</option>');
+    } else {
+        filtered.forEach(function (r) {
+            $parentRating.append(`<option value="${r.id}">${r.name}</option>`);
+        });
+    }
+    if ($parentRating.hasClass('select2-hidden-accessible')) {
+        $parentRating.select2('destroy');
+    }
+    $parentRating.select2({
+        dropdownParent: $('#editRatingModal'),
+        placeholder: "Select parent rating(s)",
+        allowClear: true,
+        width: '100%'
     });
+    $parentRating.val(null).trigger('change');
 });
 
+$(document).on('click', '#updateRating', function(e) {
+   e.preventDefault();
+    var formData = new FormData($('#editRatingForm')[0]);        
+    $(".loader").fadeIn('fast');
 
-
-
-
-        $(document).on('click', '#updateRating', function(e) {
-            e.preventDefault();
-
-            var formData = new FormData($('#editRatingForm')[0]);        
-            $(".loader").fadeIn('fast');
-
-            $.ajax({
-                type: 'POST',
-                url: '/rating/update',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    $(".loader").fadeOut('slow');
-                    if (response.success) {
-                        $('#editRatingModal').modal('hide');
-                        $('#update_success_msg').html(`
-                            <div class="alert alert-success fade show" role="alert">
-                                <i class="bi bi-check-circle me-1"></i>
-                                ${response.msg}
-                            </div>
-                        `).stop(true, true).fadeIn();
-                        setTimeout(function() {
-                            $('#update_success_msg').fadeOut('slow');
-                        }, 3000);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    $(".loader").fadeOut("slow");
-                    $('.error_e').html(''); // Clear previous errors
-
-                    if (xhr.status === 422) {
-                        var errors = xhr.responseJSON.errors;
-                        $.each(errors, function(key, value) {
-                            $('#' + key + '_error_up').html('<p>' + value + '</p>');
-                        });
-                    } else {
+    $.ajax({
+    type: 'POST',
+    url: '/rating/update',
+    data: formData,
+    processData: false,
+    contentType: false,
+    success: function(response) {
+        $(".loader").fadeOut('slow');
+        if (response.success) {
+        $('#editRatingModal').modal('hide');
+        $('#update_success_msg').html(`
+        <div class="alert alert-success fade show" role="alert">
+        <i class="bi bi-check-circle me-1"></i>
+        ${response.msg}
+        </div>
+        `).stop(true, true).fadeIn();
+        setTimeout(function() {
+        $('#update_success_msg').fadeOut('slow');
+        }, 3000);
+            }
+        },
+    error: function(xhr, status, error) {
+        $(".loader").fadeOut("slow");
+        $('.error_e').html(''); // Clear previous errors
+        if (xhr.status === 422) {
+        var errors = xhr.responseJSON.errors;
+            $.each(errors, function(key, value) {
+            $('#' + key + '_error_up').html('<p>' + value + '</p>');
+             });
+             } else {
                         alert('Something went wrong. Please try again.');
                     }
                 }
-            });
-        });
+    });
+});
 
+$(document).on('click', '.delete-icon', function() {
+     var ratingId = $(this).data('rating-id');
+     var rating = $(this).closest('tr').find('.rating').text();
+     $('#ratingId').val(ratingId);
+     $('#append_name').text(rating);
+     $('#deleteRatingModal').modal('show');
+});
 
-        $(document).on('click', '.delete-icon', function() {
-            var ratingId = $(this).data('rating-id');
-            var rating = $(this).closest('tr').find('.rating').text();
-            $('#ratingId').val(ratingId);
-            $('#append_name').text(rating);
-            $('#deleteRatingModal').modal('show');
-        });
-
-        ['#successMessage', '#errorMessage'].forEach(function(selector) {
-            setTimeout(function() {
+['#successMessage', '#errorMessage'].forEach(function(selector) {
+    setTimeout(function() {
                 $(selector).fadeOut('slow');
             }, 2000);
-        });
+    });
 $('#ratingModal').on('hidden.bs.modal', function () {
     $('#add_rating')[0].reset();
     $('.error_e').html('');
@@ -605,8 +586,6 @@ $('#editRatingModal').on('hidden.bs.modal', function () {
     $('#editRatingForm')[0].reset();
     $('.error_e').html('');
 });
-
-
-    })
+})
 </script>
 @endsection

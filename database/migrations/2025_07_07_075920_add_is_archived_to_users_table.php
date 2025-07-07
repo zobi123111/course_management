@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('ratings', function (Blueprint $table) {
-            $table->unsignedBigInteger('ou_id')->nullable()->after('id');
+        Schema::table('users', function (Blueprint $table) {
+            $table->boolean('is_archived')->default(false);
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('ratings', function (Blueprint $table) {
-            $table->dropColumn('ou_id');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('is_archived');
         });
     }
 };
