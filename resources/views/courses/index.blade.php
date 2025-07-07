@@ -106,6 +106,10 @@
 </div>
 @endif
 
+<div id="reoderMessage" class="alert alert-success d-none fade show" role="alert">
+  <i class="bi bi-check-circle me-1"></i>
+</div>
+
 @if(checkAllowedModule('courses','course.store')->isNotEmpty())
 <div class="create_btn">
     <button class="btn btn-primary create-button" id="createCourse" data-toggle="modal"
@@ -567,8 +571,22 @@ $(function() {
                     order: order,
                     _token: '{{ csrf_token() }}'
                 },
-                success: function(response) {
-                    console.log('Order saved successfully');
+                success: function (response) {
+                    console.log('Sublesson order updated');
+
+                    let $msg = $('#reoderMessage');
+                    if ($msg.length) {
+                        $msg.removeClass('d-none')
+                            .fadeIn()
+                            .text('Course order updated successfully!');
+                    }
+
+                    setTimeout(function () {
+                        $msg.fadeOut();
+                    }, 2000);
+                },
+                error: function () {
+                    console.error('Error updating order');
                 }
             });
         }
