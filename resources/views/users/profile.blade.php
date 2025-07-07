@@ -275,7 +275,7 @@ h2 {
             @endif
             @php $rating = $userRating->rating; @endphp
 
-            <div class="col-12 border p-4 mb-4 rounded shadow-sm bg-white">
+            <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">{{ $rating->name }}</h5>
                     @if($userRating->admin_verified)
@@ -368,8 +368,6 @@ h2 {
 
     <div class="col-12 mb-4">
     <div class="card shadow-sm">
-        <div class="card-body">
-
             @if($childRatings->isNotEmpty())
                 <h6 class="mt-3">Associated Ratings</h6>
                 <div class="row mt-3">
@@ -386,8 +384,8 @@ h2 {
                                     <div class="card-body">
                                         <h6 class="card-title">{{ $child->name }}</h6>
                                         <p class="card-text small">
-                                            Issue Date: {{ $childUserRating->issue_date ?? 'N/A' }}<br>
-                                            Expiry Date: {{ $childUserRating->expiry_date ?? 'N/A' }}
+                                            Issue Date: {{ $childUserRating?->issue_date ?? $userRating->issue_date ?? 'N/A' }}<br>
+                                            Expiry Date: {{ $childUserRating?->expiry_date ?? $userRating->expiry_date ?? 'N/A' }}
                                         </p>
 
                                         {{-- Verification --}}
@@ -412,8 +410,6 @@ h2 {
                     @endforeach
                 </div>
             @endif
-
-        </div>
     </div>
 </div>
 @endforeach
