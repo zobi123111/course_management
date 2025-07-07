@@ -267,7 +267,8 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
 
     // Reporting section Routes
     Route::get('/reports', [ReportsController::class, 'index'])->name('reports.index');
-
+    Route::get('/reports/course/{hashedId}', [ReportsController::class, 'showCourse'])->name('reports.course');
+    Route::post('/students/archive', [ReportsController::class, 'updateStudentArchiveStatus'])->name('students.archive.ajax');
 
 });
 
