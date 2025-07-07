@@ -146,6 +146,10 @@
 </div>
 @endif
 
+<div id="reoderMessage" class="alert alert-success d-none fade show" role="alert">
+  <i class="bi bi-check-circle me-1"></i>
+</div>
+
 <!-- Card with an image on left -->
 <div class="card mb-3">
     <div class="row g-0">
@@ -576,14 +580,28 @@
                 });
 
                 $.ajax({
-                    url: '{{ route("lessons.reorder") }}', // Replace with actual route
+                    url: '{{ route("lessons.reorder") }}',
                     method: 'POST',
                     data: {
                         order: order,
                         _token: '{{ csrf_token() }}'
                     },
-                    success: function(response) {
-                        console.log('Lesson order updated');
+                    success: function (response) {
+                        console.log('Sublesson order updated');
+
+                        let $msg = $('#reoderMessage');
+                        if ($msg.length) {
+                            $msg.removeClass('d-none')
+                                .fadeIn()
+                                .text('Lesson order updated successfully!');
+                        }
+
+                        setTimeout(function () {
+                            $msg.fadeOut();
+                        }, 2000);
+                    },
+                    error: function () {
+                        console.error('Error updating order');
                     }
                 });
             }
