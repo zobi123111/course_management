@@ -267,8 +267,6 @@ h2 {
     $hasLicence1 = $licence1Ratings->contains('linked_to', 'licence_1');
 @endphp
 @if($hasLicence1)
-    <h4 class="mt-4">Ratings linked to UK Licence</h4>
-    <div class="row mt-3">
         @foreach($licence1Ratings as $userRating)
             @if($userRating->linked_to !== 'licence_1')
                 @continue
@@ -336,9 +334,9 @@ h2 {
                         <i class="bi bi-file-earmark-text me-1"></i> View File
                     </a>
                 @endif
-            </div>
+            
         @endforeach
-    </div>
+    
      @php
     // Load all ratings keyed by ID
     $allRatings = \App\Models\Rating::with('children')->get()->keyBy('id');
@@ -367,9 +365,6 @@ h2 {
     @endphp
 
     <div class="col-12 mb-4">
-    <div class="card shadow-sm">
-        <div class="card-body">
-
             @if($childRatings->isNotEmpty())
                 <h6 class="mt-3">Associated Ratings</h6>
                 <div class="row mt-3">
@@ -386,8 +381,8 @@ h2 {
                                     <div class="card-body">
                                         <h6 class="card-title">{{ $child->name }}</h6>
                                         <p class="card-text small">
-                                            Issue Date: {{ $childUserRating->issue_date ?? 'N/A' }}<br>
-                                            Expiry Date: {{ $childUserRating->expiry_date ?? 'N/A' }}
+                                            Issue Date: {{ $childUserRating?->issue_date ?? $userRating->issue_date ?? 'N/A' }}<br>
+                                            Expiry Date: {{ $childUserRating?->expiry_date ?? $userRating->expiry_date ?? 'N/A' }}
                                         </p>
 
                                         {{-- Verification --}}
@@ -412,9 +407,8 @@ h2 {
                     @endforeach
                 </div>
             @endif
-
-        </div>
-    </div>
+            </div>
+            </div>
 </div>
 @endforeach
 
@@ -556,7 +550,7 @@ $allChildRatings = \App\Models\ParentRating::with('child', 'parent')->get()->gro
                 {{-- Show all child ratings under this parent --}}
              @if($childRatings->isNotEmpty())
                     <h6 class="mt-4">Associated Ratings</h6>
-                    <div class="row mt-2">
+                    <div class="row mt-3">
                         @foreach($childRatings as $child)
                             @php
                                 $childRating = $child->child;
