@@ -170,13 +170,13 @@
                             <div id="licence_file_error" class="text-danger error_e"></div>
                         </div> -->
                        <div class="col-md-6">
-    <label for="licence_checkbox" class="form-label">Licence</label>
+    <label for="licence_checkbox" class="form-label">UK Licence</label>
     <input type="checkbox" name="licence_checkbox" id="licence_checkbox" class="ms-2">
 
     <label for="licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
     <input type="checkbox" name="licence_verification_required" id="licence_verification_required" class="ms-2" value="1">
 
-    <input type="text" name="licence" id="licence" class="form-control mt-2" style="display: none;" placeholder="Enter Licence Number">
+    <input type="text" name="licence" id="licence" class="form-control mt-2" style="display: none;" placeholder="Enter UK Licence Number">
     <div id="licence_error" class="text-danger error_e"></div>
 
     <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
@@ -184,7 +184,7 @@
 
     <!-- 👇 Ratings for Licence 1 -->
     <div id="licence_rating_section" class="mt-3" style="display: none;">
-        <label class="form-label">Select Ratings for Licence 1</label>
+        <label class="form-label">Select Ratings for UK Licence</label>
         <select class="form-select rating-select" name="licence_1_ratings[]" id="licence_rating_value" multiple>
             {{-- <option value="">Select Rating</option> --}}
             @foreach($rating as $val)
@@ -196,7 +196,7 @@
 
     <!-- Enable Licence 2 -->
     <div class="mt-3" id="license_2" style="display: none;">
-        <label for="licence2_checkbox" class="form-label">Enable Licence 2</label>
+        <label for="licence2_checkbox" class="form-label">Enable EASA Licence</label>
         <input type="checkbox" name="licence_2_checkbox" id="licence_2_checkbox" value="1" class="ms-2">
 
         <label for="licence_2_verification_required" class="form-label ms-4">Admin Verification required?</label>
@@ -205,7 +205,7 @@
 
     <!-- Second Licence Fields -->
     <div id="second_licence_section" style="display: none;" class="mt-3">
-        <input type="text" name="licence_2" id="licence_2" class="form-control" placeholder="Enter Second Licence Number">
+        <input type="text" name="licence_2" id="licence_2" class="form-control" placeholder="Enter EASA Licence Number">
         <div id="licence_2_error" class="text-danger error_e"></div>
 
         <input type="file" name="licence_file_2" id="licence_file_2" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
@@ -213,7 +213,7 @@
 
         <!-- 👇 Ratings for Licence 2 -->
         <div id="licence_2_rating_section" class="mt-3">
-            <label class="form-label">Select Ratings for Licence 2</label>
+            <label class="form-label">Select Ratings for EASA Licence</label>
             <select class="form-select rating-select" name="licence_2_ratings[]" id="licence_2_rating_value" multiple>
                 {{-- <option value="">Select Rating</option> --}}
                 @foreach($rating as $val)
@@ -228,7 +228,7 @@
 
                         <!--   // Medical  -->
                         <div class="col-md-6">
-                            <label for="medical_checkbox" class="form-label">Medical</label>
+                            <label for="medical_checkbox" class="form-label">UK Medical</label>
                             <input type="checkbox" name="medical_checkbox" id="medical_checkbox" class="ms-2" value="1">
                             <label for="medical_verification_required" class="form-label ms-4">Admin Verification
                                 required?</label>
@@ -284,7 +284,7 @@
                                     Second Medical
                                 </button>
                                 <div class="mt-3" id="medical_2" style="display: none;">
-                                    <label for="medical_2_checkbox" class="form-label">Enable Medical 2</label>
+                                    <label for="medical_2_checkbox" class="form-label">Enable EASA Medical</label>
                                     <input type="checkbox" name="medical_2_checkbox" id="medical_2_checkbox" class="ms-2" value="1">
                                     <label for="medical_2_verification_required" class="form-label ms-4">Admin Verification
                                         required?</label>
@@ -520,18 +520,18 @@
 
                         <!-- Licence -->
                         <div class="col-md-6">
-                            <label for="edit_licence_checkbox" class="form-label">Licence</label>
+                            <label for="edit_licence_checkbox" class="form-label">UK Licence</label>
                             <input type="checkbox" name="edit_licence_checkbox" value="1" id="edit_licence_checkbox" class="ms-2">
 
                             <label for="edit_licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
                             <input type="checkbox" name="edit_licence_verification_required" id="edit_licence_verification_required" class="ms-2" value="1">
 
-                            <input type="text" name="edit_licence" id="edit_licence" class="form-control" style="display: none;" placeholder="Enter Licence Number">
+                            <input type="text" name="edit_licence" id="edit_licence" class="form-control" style="display: none;" placeholder="Enter UK Licence Number">
                             <div id="edit_licence_error_up" class="text-danger error_e"></div>
                             <input type="file" name="edit_licence_file" id="edit_licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
                             <div id="edit_licence_file_error_up" class="text-danger error_e"></div>
                             
-                                {{-- <label for="edit_licence_rating_checkbox" class="form-label">Select Ratings for Licence</label>
+                                {{-- <label for="edit_licence_rating_checkbox" class="form-label">Select Ratings for UK Licence</label>
                                 <input type="checkbox" name="edit_licence_rating_checkbox" id="edit_licence_rating_checkbox" class="ms-2"> --}}
                                 <div id="edit_licence_rating_section" class="mt-2" style="display: none;">
                                     <select class="form-select rating-select" name="licence_1_ratings[]" id="edit_licence_rating_value" multiple>
@@ -547,7 +547,7 @@
                             </button> -->
 
                             <div class="mt-3" id="edit_license2" style="display: none;">
-                                <label for="edit_licence_checkbox" class="form-label">Enable Licence 2</label>
+                                <label for="edit_licence_checkbox" class="form-label">Enable EASA Licence</label>
                                 <input type="checkbox" name="edit_licence_2_checkbox" value="1" id="edit_licence_2_checkbox" class="ms-2">
 
                                 <label for="edit_licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
@@ -556,15 +556,16 @@
 
                             <!-- Second Licence Fields (initially hidden) -->
                             <div id="edit_second_licence_section" style="display: none;" class="mt-3">
-                                <input type="text" name="edit_licence_2" id="edit_licence_2" class="form-control" placeholder="Enter Second Licence Number">
+                                <input type="text" name="edit_licence_2" id="edit_licence_2" class="form-control" placeholder="Enter EASA Licence Number">
                                 <div id="edit_licence_2_error" class="text-danger error_e"></div>
 
                                 <input type="file" name="edit_licence_file_2" id="edit_licence_file_2" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
                                 <div id="edit_licence_file_2_error" class="text-danger error_e"></div>
                             </div>
                             <div id="edit_licence_2_rating_section" class="mt-3">
-                                {{-- <label for="edit_licence_2_rating_value" class="form-label">Select Ratings for Licence 2</label> --}}
-                                <select class="form-select rating-select" name="licence_2_ratings[]" id="edit_licence_2_rating_value" multiple>
+                                
+                                {{-- <label for="edit_licence_2_rating_value" class="form-label">Select Ratings for EASA Licence</label> --}}
+                                <select class="form-select rating-select" name="licence_2_ratings[]" id="edit_licence_2_ra ting_value" multiple>
                                     <option value="">Select Rating</option>
                                     @foreach($rating as $val)
                                         <option value="{{ $val->id }}">{{ $val->name }}</option>
@@ -575,7 +576,7 @@
                         </div>
                         <!--   // Medical  -->
                         <div class="col-md-6">
-                            <label for="licence_checkbox" class="form-label">Medical</label>
+                            <label for="licence_checkbox" class="form-label">UK Medical</label>
                             <input type="checkbox" name="editmedical_checkbox" id="editmedical_checkbox" class="ms-2"
                                 value="1">
                             <label for="licence_verification_required" class="form-label ms-4">Admin Verification
@@ -629,7 +630,7 @@
                                     Second Medical
                                 </button> -->
                                 <div class="mt-3" id="edit_medical_2">
-                                    <label for="licence_checkbox" class="form-label">Enable Medical 2</label>
+                                    <label for="licence_checkbox" class="form-label">Enable EASA Medical</label>
                                     <input type="checkbox" name="edit_medical_2_checkbox" id="edit_medical_2_checkbox" class="ms-2" value="1">
                                     <label for="licence_verification_required" class="form-label ms-4">Admin Verification
                                         required?</label>
@@ -639,7 +640,6 @@
                             </div>
 
                             
-
                             <!-- Second Medical Fields -->
                             <div id="edit_second_medical_section" style="display: none;" class="mt-3">
 
@@ -648,7 +648,7 @@
                                 <input type="checkbox" name="editmedical_verification_required_2" id="editmedical_verification_required_2" class="ms-2" value="1">
                             </div> -->
 
-                                <label class="form-label">Second Medical Issued By</label>
+                                <label class="form-label">EASA Medical Issued By</label>
                                 <select class="form-select" name="editissued_by_2" id="editissued_by_2">
                                     <option value="">Select Issued By</option>
                                     <option value="UKCAA">UK CAA</option>
@@ -656,23 +656,23 @@
                                     <option value="FAA">FAA</option>
                                 </select>
 
-                                <label class="form-label mt-2">Second Medical Class</label>
+                                <label class="form-label mt-2">EASA Medical Class</label>
                                 <select class="form-select" name="editmedical_class_2" id="editmedical_class_2">
                                     <option value="">Select the Class</option>
                                     <option value="class1">Class 1</option>
                                     <option value="class2">Class 2</option>
                                 </select>
 
-                                <label class="form-label mt-2">Second Medical Issue Date</label>
+                                <label class="form-label mt-2">EASA Medical Issue Date</label>
                                 <input type="date" name="editmedical_issue_date_2" id="editmedical_issue_date_2" class="form-control">
 
-                                <label class="form-label mt-2">Second Medical Expiry Date</label>
+                                <label class="form-label mt-2">EASA Medical Expiry Date</label>
                                 <input type="date" name="editmedical_expiry_date_2" id="editmedical_expiry_date_2" class="form-control">
 
-                                <label class="form-label mt-2">Second Medical Detail</label>
+                                <label class="form-label mt-2">EASA Medical Detail</label>
                                 <textarea name="editmedical_detail_2" id="editmedical_detail_2" class="form-control" placeholder="Enter the Detail"></textarea>
 
-                                <label class="form-label mt-2">Second Medical Upload</label>
+                                <label class="form-label mt-2">EASA Medical Upload</label>
                                 <input type="file" name="editmedical_file_2" id="editmedical_file_2" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
                             </div>
                         </div>

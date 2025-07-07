@@ -890,7 +890,8 @@ $(document).ready(function() {
 
     function renderLessonBox(lesson, container, prefillData = {}, index = null) {
         const currentIndex = index !== null ? index : lessonIndex++; 
-        let lessonId = lesson.id;
+        const isFirstLesson = currentIndex === 0;
+        let lessonId = lesson.id;   
         let lessonTitle = lesson.lesson_title;
 
         // Use prefilled data if available, otherwise fallback to empty strings
@@ -927,12 +928,12 @@ $(document).ready(function() {
         ).join('');
 
         let lessonBox = `
-            <div class="col-12 mb-3 border rounded p-3 lesson-box" data-lesson-id="${currentIndex}">
+            <div class="col-12 mb-3 border rounded p-3 lesson-box" data-lesson-id="${currentIndex}">    
                 <input type="hidden" name="lesson_data[${currentIndex}][lesson_id]" value="${lessonId}">
                 <h6 class="fw-bold mb-3">Lesson: ${lessonTitle}</h6>
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label">Instructor<span class="text-danger">*</span></label>
+                        <label class="form-label">Instructor${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <select class="form-select" name="lesson_data[${currentIndex}][instructor_id]" id="lesson_data_${currentIndex}_instructor_listbox"
                                 ${isCurrentUserInstructor ? 'disabled' : ''}>
                             <option value="">Select Instructor</option>
@@ -942,7 +943,7 @@ $(document).ready(function() {
                         <div id="lesson_data_${currentIndex}_instructor_id_error" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Resource<span class="text-danger">*</span></label>
+                        <label class="form-label">Resource${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <select class="form-select" name="lesson_data[${currentIndex}][resource_id]">
                             <option value="">Select Resource</option>
                             ${resourceOptions}
@@ -950,27 +951,27 @@ $(document).ready(function() {
                         <div id="lesson_data_${currentIndex}_resource_id_error" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Lesson Date<span class="text-danger">*</span></label>
+                        <label class="form-label">Lesson Date${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <input type="date" name="lesson_data[${currentIndex}][lesson_date]" class="form-control" value="${lesson_date}">
                         <div id="lesson_data_${currentIndex}_lesson_date_error" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Start Time<span class="text-danger">*</span></label>
+                        <label class="form-label">Start Time${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <input type="time" name="lesson_data[${currentIndex}][start_time]" class="form-control lesson-start-time" data-lesson-id="${currentIndex}" value="${start_time}">
                         <div id="lesson_data_${currentIndex}_start_time_error" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">End Time<span class="text-danger">*</span></label>
+                        <label class="form-label">End Time${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <input type="time" name="lesson_data[${currentIndex}][end_time]" class="form-control lesson-end-time" data-lesson-id="${currentIndex}" value="${end_time}">
                         <div id="lesson_data_${currentIndex}_end_time_error" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Departure Airfield (4-letter code)<span class="text-danger">*</span></label>
+                        <label class="form-label">Departure Airfield (4-letter code)${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <input type="text" name="lesson_data[${currentIndex}][departure_airfield]" class="form-control" maxlength="4" value="${departure_airfield}">
                         <div id="lesson_data_${currentIndex}_departure_airfield_error" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Destination Airfield (4-letter code)<span class="text-danger">*</span></label>
+                        <label class="form-label">Destination Airfield (4-letter code)${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <input type="text" name="lesson_data[${currentIndex}][destination_airfield]" class="form-control" maxlength="4" value="${destination_airfield}">
                         <div id="lesson_data_${currentIndex}_destination_airfield_error" class="text-danger error_e"></div>
                     </div>
