@@ -475,7 +475,7 @@ h2 {
                         <a href="{{ asset('storage/' . $document->licence_file_2) }}" target="_blank"
                             class="btn btn-outline-primary btn-sm d-flex align-items-center mt-3"
                             style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
-                            <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View Second Licence
+                            <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View Licence
                         </a>
                     </div>
                 @endif
@@ -503,7 +503,7 @@ $allChildRatings = \App\Models\ParentRating::with('child', 'parent')->get()->gro
 @endphp
 
 @if($licence2Ratings->isNotEmpty())
-    <h4 class="mt-4">Ratings linked to Licence 2</h4>
+    <h4 class="mt-4">Ratings linked to EASA Licence</h4>
     <div class="row mt-3">
         @foreach($licence2Ratings as $userRating)
             @php

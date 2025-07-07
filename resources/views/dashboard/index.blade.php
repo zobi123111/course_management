@@ -174,10 +174,10 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
     <thead>
         <tr>
             <th>Name</th>
-            <th>Licence 1 Status</th>
-            <th>Licence 2 Status</th>
-            <th>Medical 1 Status</th> 
-            <th>Medical 2 Status</th> 
+            <th>UK Licence Status</th>
+            <th>EASA Licence Status</th>
+            <th>UK Medical Status</th> 
+            <th>EASA Medical Status</th> 
             <th>Passport Status</th> 
             <th>Action</th> 
         </tr>
