@@ -1518,5 +1518,6 @@ display: flex;
   font-size: 14px;
 }
 }
-
-
+.expiry .fas.fa-exclamation-triangle::before {
+    color: #dc3545 !important;
+}
