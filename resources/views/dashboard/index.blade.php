@@ -220,6 +220,40 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
             @else
                 <span class="text-muted">Not Uploaded</span>
             @endif
+
+            {{-- Licence 1 Ratings --}}
+            @if(isset($user->ratings_by_license['license_1']) && $user->ratings_by_license['license_1']->count())
+                <div class="mt-2">
+                    @foreach($user->ratings_by_license['license_1'] as $ur)
+                        @php
+                            $r = $ur->rating;
+                            $expiry = $ur->expiry_date ? \Carbon\Carbon::parse($ur->expiry_date)->format('d/m/Y') : 'N/A';
+                            $status = $ur->expiry_status; // Uses accessor from model
+                            $color = match($status) {
+                                'Red' => 'danger',
+                                'Orange' => 'warning',
+                                'Amber' => 'info',
+                                'Blue' => 'primary',
+                                default => 'secondary'
+                            };
+                            $tooltip = "$r->name expires on $expiry";
+                        @endphp
+
+                        <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
+                            {{ $r->name }}
+                        </span>
+
+                        {{-- Nested (child) ratings --}}
+                        @if($r->children && $r->children->count())
+                            @foreach($r->children as $child)
+                                <span class="badge bg-light text-dark border ms-1" data-bs-toggle="tooltip" title="Child of {{ $r->name }} (inherits expiry)">
+                                    → {{ $child->name }}
+                                </span>
+                            @endforeach
+                        @endif
+                    @endforeach
+                </div>
+            @endif
         </td>
 
         {{-- Licence 2 --}}
