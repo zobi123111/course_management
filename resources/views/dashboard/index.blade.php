@@ -29,11 +29,11 @@ if ($user->is_admin == "1") {
 
         // Admin Verification Alerts
         if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
-            $messages[] = "📝 <strong>Licence 1</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+            $messages[] = "📝 <strong>UK Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
         }
 
         if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
-            $messages[] = "📝 <strong>Licence 2</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+            $messages[] = "📝 <strong>EASA Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
         }
 
         if ($u->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
@@ -41,20 +41,20 @@ if ($user->is_admin == "1") {
         }
 
         if ($u->medical_adminRequired == '1' && $userDoc?->medical_verified == "0" && !empty($userDoc?->medical_file)) {
-            $messages[] = "📝 <strong>Medical 1</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+            $messages[] = "📝 <strong>UK Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
         }
 
         if ($u->medical_adminRequired == '1' && $userDoc?->medical_verified_2 == "0" && !empty($userDoc?->medical_file_2)) {
-            $messages[] = "📝 <strong>Medical 2</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+            $messages[] = "📝 <strong>EASA Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
         }
 
         // Expiry Alerts
         $expiryStatuses = [
-            'Licence 1' => $userDoc?->licence_status,
-            'Licence 2' => $userDoc?->licence_2_status,
+            'UK Licence' => $userDoc?->licence_status,
+            'EASA Licence' => $userDoc?->licence_2_status,
             'Passport' => $userDoc?->passport_status,
-            'Medical 1' => $userDoc?->medical_status,
-            'Medical 2' => $userDoc?->medical_2_status,
+            'UK Medical' => $userDoc?->medical_status,
+            'EASA Medical' => $userDoc?->medical_2_status,
         ];
 
         foreach ($expiryStatuses as $doc => $status) {
@@ -89,11 +89,11 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
     $userDoc = $user->documents;
 
     if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
-        $messages[] = "📝 Your <strong>Licence 1</strong> is pending admin verification.";
+        $messages[] = "📝 Your <strong>UK Licence</strong> is pending admin verification.";
     }
 
     if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
-        $messages[] = "📝 Your <strong>Licence 2</strong> is pending admin verification.";
+        $messages[] = "📝 Your <strong>EASA Licence</strong> is pending admin verification.";
     }
 
     if ($user->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
@@ -101,19 +101,19 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
     }
 
     if ($user->medical_adminRequired == '1' && $userDoc?->medical_verified == "0" && !empty($userDoc?->medical_file)) {
-        $messages[] = "📝 Your <strong>Medical 1</strong> is pending admin verification.";
+        $messages[] = "📝 Your <strong>UK Medical</strong> is pending admin verification.";
     }
 
     if ($user->medical_adminRequired == '1' && $userDoc?->medical_verified_2 == "0" && !empty($userDoc?->medical_file_2)) {
-        $messages[] = "📝 Your <strong>Medical 2</strong> is pending admin verification.";
+        $messages[] = "📝 Your <strong>EASA Medical</strong> is pending admin verification.";
     }
 
     $expiryStatuses = [
-        'Licence 1' => $userDoc?->licence_status,
-        'Licence 2' => $userDoc?->licence_2_status,
+        'UK Licence' => $userDoc?->licence_status,
+        'EASA Licence' => $userDoc?->licence_2_status,
         'Passport' => $userDoc?->passport_status,
-        'Medical 1' => $userDoc?->medical_status,
-        'Medical 2' => $userDoc?->medical_2_status,
+        'UK Medical' => $userDoc?->medical_status,
+        'EASA Medical' => $userDoc?->medical_2_status,
     ];
 
     foreach ($expiryStatuses as $doc => $status) {
@@ -174,15 +174,15 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
     <thead>
         <tr>
             <th>Name</th>
-            <th>Licence 1 Status</th>
-            <th>Licence 2 Status</th>
-            <th>Medical 1 Status</th> 
-            <th>Medical 2 Status</th> 
+            <th>UK Licence Status</th>
+            <th>EASA Licence Status</th>
+            <th>UK Medical Status</th> 
+            <th>EASA Medical Status</th> 
             <th>Passport Status</th> 
             <th>Action</th> 
         </tr>
     </thead>
-<tbody>
+<tbody> 
 @php
     function getTooltip($status, $type) {
         return match ($status) {
@@ -219,6 +219,40 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
             @else
                 <span class="text-muted">Not Uploaded</span>
+            @endif
+
+            {{-- Licence 1 Ratings --}}
+            @if(isset($user->ratings_by_license['license_1']) && $user->ratings_by_license['license_1']->count())
+                <div class="mt-2">
+                    @foreach($user->ratings_by_license['license_1'] as $ur)
+                        @php
+                            $r = $ur->rating;
+                            $expiry = $ur->expiry_date ? \Carbon\Carbon::parse($ur->expiry_date)->format('d/m/Y') : 'N/A';
+                            $status = $ur->expiry_status; // Uses accessor from model
+                            $color = match($status) {
+                                'Red' => 'danger',
+                                'Orange' => 'warning',
+                                'Amber' => 'info',
+                                'Blue' => 'primary',
+                                default => 'secondary'
+                            };
+                            $tooltip = "$r->name expires on $expiry";
+                        @endphp
+
+                        <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
+                            {{ $r->name }}
+                        </span>
+
+                        {{-- Nested (child) ratings --}}
+                        @if($r->children && $r->children->count())
+                            @foreach($r->children as $child)
+                                <span class="badge bg-light text-dark border ms-1" data-bs-toggle="tooltip" title="Child of {{ $r->name }} (inherits expiry)">
+                                    → {{ $child->name }}
+                                </span>
+                            @endforeach
+                        @endif
+                    @endforeach
+                </div>
             @endif
         </td>
 

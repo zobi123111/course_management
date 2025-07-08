@@ -105,7 +105,7 @@
 
                 <!-- License Details -->
                 <div class="col-md-12 mb-4">
-                    <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>License Details</h5>
+                    <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>UK License Details</h5>
                     @if($document && $document->licence)
                         <div class="d-flex flex-wrap align-items-center gap-3">
                             <p class="mb-0"><strong>Number:</strong> {{ $document->licence }}</p>
@@ -143,7 +143,7 @@
     <div class="row mt-3">
         <div class="col-md-12">
             <h6 class="text-secondary mb-3">
-                <i class="bi bi-star-fill text-warning me-2"></i>Ratings Linked to Licence 1
+                <i class="bi bi-star-fill text-warning me-2"></i>Ratings Linked to UK Licence
             </h6>
             <div class="d-flex flex-wrap">
                 @foreach($user->usrRatings->where('linked_to', 'licence_1') as $userRating)
@@ -228,7 +228,7 @@
                 <!-- Second License Details -->
                 @if($document && $document->licence_2)
                 <div class="col-md-12 mb-4">
-                    <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>Second License Details</h5>
+                    <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>EASA License Details</h5>
                         <div class="d-flex flex-wrap align-items-center gap-3">
                             <p class="mb-0"><strong>Number:</strong> {{ $document->licence_2 }}</p>
                             @if($user->licence_2_admin_verification_required == 1 && $document->licence_file_2)
@@ -251,7 +251,7 @@
     <div class="row mt-3">
         <div class="col-md-12">
             <h6 class="text-secondary mb-3">
-                <i class="bi bi-star-fill text-warning me-2"></i>Ratings Linked to Licence 2
+                <i class="bi bi-star-fill text-warning me-2"></i>Ratings Linked to EASA Licence
             </h6>
             <div class="d-flex flex-wrap">
                 @foreach($user->usrRatings->where('linked_to', 'licence_2') as $userRating)
@@ -342,7 +342,7 @@
 
                 <!-- Medical Details -->
                 <div class="col-md-12 mb-4">
-                    <h5 class="text-muted mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>Medical Details</h5>
+                    <h5 class="text-muted mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>UK Medical Details</h5>
                     @if($document && $document->medical && !empty($document->medical_issuedby) && !empty($document->medical_class) && !empty($document->medical_issuedate))
                         <div class="d-flex flex-wrap align-items-center gap-3">
                             <p class="mb-0"><strong>Issued By:</strong> {{ $document->medical_issuedby }}</p>
@@ -373,7 +373,7 @@
                 <!-- Second Medical Details -->
                 @if($document && $document->medical_2 && !empty($document->medical_issuedby_2) && !empty($document->medical_class_2) && !empty($document->medical_issuedate_2))
                 <div class="col-md-12 mb-4">
-                    <h5 class="text-muted mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>Second Medical Details</h5>
+                    <h5 class="text-muted mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>EASA Medical Details</h5>
                         <div class="d-flex flex-wrap align-items-center gap-3">
                             <p class="mb-0"><strong>Issued By:</strong> {{ $document->medical_issuedby_2 }}</p>
                             <p class="mb-0"><strong>Class:</strong> {{ $document->medical_class_2 }}</p>
@@ -398,7 +398,6 @@
                 </div>
                 @endif
 
-
             <hr class="my-4">
 
             <!-- Ratings & Organization -->
@@ -407,7 +406,6 @@
                     <h4 class="text-dark mb-4">
                         <i class="bi bi-award-fill text-warning me-2"></i> User Rating Files
                     </h4>
-
                     <div class="d-flex flex-wrap">
                         @if($user->usrRatings->count())
                             @foreach($user->usrRatings->where('linked_to', 'general') as $rating)

@@ -87,14 +87,25 @@ class ReportsController extends Controller
                     ->unique('id')
                     ->values();
 
+        $activeStudents = $students->filter(fn($s) => $s->course_end_date === null);
+        $activeStudentIds = $activeStudents->pluck('id');
+
+        // Active training events only
+        $activeEventIds = $course->trainingEvents
+            ->filter(fn($e) => $e->course_end_date === null && $e->student !== null)
+            ->pluck('id');
+
         // Apply failing student filter
         $failingStudentIds = TaskGrading::whereIn('task_grade', ['1', '2', 'Incomplete', 'Further training required'])
-            ->whereIn('user_id', $students->pluck('id'))
+            ->whereIn('user_id', $activeStudentIds)
+            ->whereIn('event_id', $activeEventIds)
             ->pluck('user_id')
             ->unique();
 
         if ($showFailing) {
-            $students = $students->filter(fn($s) => $failingStudentIds->contains($s->id))->values();
+            $students->each(function ($student) use ($failingStudentIds) {
+                $student->is_failing = $failingStudentIds->contains($student->id);
+            });
         }
 
         // Attach event data to each student
@@ -171,8 +182,15 @@ class ReportsController extends Controller
             ->unique('id')
             ->values();
 
+        $activeStudents = $students->filter(fn($s) => $s->course_end_date === null);
+        $activeStudentIds = $activeStudents->pluck('id');
+        $activeEventIds = $course->trainingEvents
+            ->filter(fn($e) => $e->course_end_date === null && $e->student !== null)
+            ->pluck('id');
+
         $failingStudentIds = TaskGrading::whereIn('task_grade', ['1', '2', 'Incomplete', 'Further training required'])
-            ->whereIn('user_id', $students->pluck('id'))
+            ->whereIn('user_id', $activeStudentIds)
+            ->whereIn('event_id', $activeEventIds)
             ->pluck('user_id')
             ->unique();
 
