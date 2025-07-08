@@ -17,31 +17,146 @@ $subTitle = "Welcome to Admin Dashboard";
 @extends('layout.app')
 @section('content')
 
-<?php 
-if(Auth()->user()->is_admin == "1"){
+@php
+
 $messages = [];
-foreach ($users as $user) {
+$user = Auth::user();
 
-    if ($user->licence_file_uploaded == "1" && $user->licence_admin_verification_required == '1' && $user->licence_verified=="0") { 
-        $messages[] = "Licence verification required for " . $user->fname . " " . $user->lname;
+// Check for Admin
+if ($user->is_admin == "1") {
+    foreach ($users as $u) {
+        $userDoc = $u->documents; 
 
-    }
-    if ($user->passport_file_uploaded == "1" && $user->passport_admin_verification_required == '1' && $user->passport_verified=="0") {
-        $messages[] = "Passport verification required for " . $user->fname . " " . $user->lname;
+        // Admin Verification Alerts
+        if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
+            $messages[] = "📝 <strong>UK Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+        }
 
-    }
-    if ($user->medical_file_uploaded == "1"  && $user->medical_adminRequired == '1' && $user->medical_verified=="0") {
-        $messages[] = "Medical verification required for " . $user->fname . " " . $user->lname;
+        if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
+            $messages[] = "📝 <strong>EASA Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+        }
 
+        if ($u->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
+            $messages[] = "📝 <strong>Passport</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+        }
+
+        if ($u->medical_adminRequired == '1' && $userDoc?->medical_verified == "0" && !empty($userDoc?->medical_file)) {
+            $messages[] = "📝 <strong>UK Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+        }
+
+        if ($u->medical_adminRequired == '1' && $userDoc?->medical_verified_2 == "0" && !empty($userDoc?->medical_file_2)) {
+            $messages[] = "📝 <strong>EASA Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+        }
+
+        // Expiry Alerts
+        $expiryStatuses = [
+            'UK Licence' => $userDoc?->licence_status,
+            'EASA Licence' => $userDoc?->licence_2_status,
+            'Passport' => $userDoc?->passport_status,
+            'UK Medical' => $userDoc?->medical_status,
+            'EASA Medical' => $userDoc?->medical_2_status,
+        ];
+
+        foreach ($expiryStatuses as $doc => $status) {
+            if ($status === 'Red') {
+                $messages[] = "❌ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
+            } elseif ($status === 'Yellow') {
+                $messages[] = "⚠️ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
+            }
+        }
+
+        // User Ratings (untouched)
+        foreach ($u->usrRatings as $userRating) {
+            $ratingName = $userRating->rating?->name ?? 'Unknown Rating';
+
+            if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
+                $messages[] = "📝 <strong>{$ratingName}</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+            }
+
+            $status = $userRating->expiry_status;
+            if ($status === 'Red') {
+                $messages[] = "❌ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
+            } elseif ($status === 'Yellow') {
+                $messages[] = "⚠️ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
+            }
+        }
+        
     }
 }
 
-if (!empty($messages)) { ?>
-    <div id="successMessage" class="alert alert-success fade show" role="alert">
-       
-        <?php echo implode('<br>', $messages); ?>
+// For Regular Users
+if ($user->is_admin != "1" && !empty($user->ou_id)) {
+    $userDoc = $user->documents;
+
+    if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
+        $messages[] = "📝 Your <strong>UK Licence</strong> is pending admin verification.";
+    }
+
+    if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
+        $messages[] = "📝 Your <strong>EASA Licence</strong> is pending admin verification.";
+    }
+
+    if ($user->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
+        $messages[] = "📝 Your <strong>Passport</strong> is pending admin verification.";
+    }
+
+    if ($user->medical_adminRequired == '1' && $userDoc?->medical_verified == "0" && !empty($userDoc?->medical_file)) {
+        $messages[] = "📝 Your <strong>UK Medical</strong> is pending admin verification.";
+    }
+
+    if ($user->medical_adminRequired == '1' && $userDoc?->medical_verified_2 == "0" && !empty($userDoc?->medical_file_2)) {
+        $messages[] = "📝 Your <strong>EASA Medical</strong> is pending admin verification.";
+    }
+
+    $expiryStatuses = [
+        'UK Licence' => $userDoc?->licence_status,
+        'EASA Licence' => $userDoc?->licence_2_status,
+        'Passport' => $userDoc?->passport_status,
+        'UK Medical' => $userDoc?->medical_status,
+        'EASA Medical' => $userDoc?->medical_2_status,
+    ];
+
+    foreach ($expiryStatuses as $doc => $status) {
+        if ($status === 'Red') {
+            $messages[] = "❌ Your <strong>{$doc}</strong> has <strong>expired</strong>.";
+        } elseif ($status === 'Yellow') {
+            $messages[] = "⚠️ Your <strong>{$doc}</strong> will expire in <strong>less than 90 days</strong>.";
+        }
+    }
+
+    // User Ratings (untouched)
+    foreach ($user->usrRatings as $userRating) {
+        $ratingName = $userRating->rating?->name ?? 'Unknown Rating';
+
+        if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
+            $messages[] = "📝 Your <strong>{$ratingName}</strong> is pending admin verification.";
+        }
+
+        $status = $userRating->expiry_status;
+        if ($status === 'Red') {
+            $messages[] = "❌ Your <strong>{$ratingName}</strong> has <strong>expired</strong>.";
+        } elseif ($status === 'Yellow') {
+            $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong>less than 90 days</strong>.";
+        }
+    }
+
+}
+@endphp
+
+
+@if (!empty($messages))
+    <div id="alertBox" class="alert alert-warning alert-dismissible fade show" role="alert">
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <h5><strong>⚠️ Attention Required</strong></h5>
+        <ul class="mb-0">
+            @foreach ($messages as $message)
+                <li>{!! $message !!}</li>
+            @endforeach
+        </ul>
     </div>
-<?php }} ?>
+@endif
+
+
 
 
 
@@ -59,78 +174,163 @@ if (!empty($messages)) { ?>
     <thead>
         <tr>
             <th>Name</th>
-            <th>Licence Status</th>
-            <th>Medical Status</th> 
+            <th>UK Licence Status</th>
+            <th>EASA Licence Status</th>
+            <th>UK Medical Status</th> 
+            <th>EASA Medical Status</th> 
             <th>Passport Status</th> 
+            <th>Action</th> 
         </tr>
     </thead>
-    <tbody>
-        @foreach($users as $user)
-        <tr>
-            <td>{{ $user->fname }} {{ $user->lname }}</td>
-            <td>
-            @if($user->licence_file_uploaded)
-                <strong style="color: 
-                    {{ $user->licence_status == 'Red' ? 'red' : 
-                       ($user->licence_status == 'Amber' ? 'orange' : 'green') }}">
-                
-                    @if($user->licence_status == 'Red')
-                         <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
-                    @elseif($user->licence_status == 'Orange')
-                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
-                    @elseif($user->licence_status == 'Amber')
-                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
-                    @else
-                        <span class="text-success"> Valid </span>
-                    @endif
-                </strong>
-                @else
-                <span class="text-muted">Document Not Uploaded</span>
-             @endif
-            </td>
-            <td>
-            @if($user->medical_issuedby)
-                <strong style="color: 
-                    {{ $user->medical_status == 'Red' ? 'red' : 
-                       ($user->medical_status == 'Amber' ? 'orange' : 'green') }}">
-                  <?php //  dump($user->Medical_Status ); ?>
-                    @if($user->Medical_Status == 'Red')
-                         <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
-                    @elseif($user->Medical_Status == 'Orange')
-                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
-                    @elseif($user->Medical_Status == 'Amber')
-                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
-                    @else
-                        <span class="text-success"> Valid </span>
-                    @endif
-                </strong>
-                @else
-                <span class="text-muted">Document Not Uploaded</span>
-            @endif
-            </td>
-            <td>
-                @if($user->passport_file)
-                    <strong style="color: 
-                        {{ $user->passport_status == 'Red' ? 'red' : 
-                        ($user->passport_status == 'Amber' ? 'orange' : 'green') }}">
-                            @if($user->passport_status == 'Red')
-                                        <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired </span>
-                                    @elseif($user->passport_status == 'Orange')
-                                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon</span>
-                                    @elseif($user->passport_status == 'Amber')
-                                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Expiring in 3 Months</span>
-                                    @else
-                                        <span class="text-success"> Valid </span>
-                                    @endif
-                    </strong>
-                    @else
-                 <span class="text-muted">Document Not Uploaded</span>
-                @endif
+<tbody> 
+@php
+    function getTooltip($status, $type) {
+        return match ($status) {
+            'Red' => "This {$type} has expired.",
+            'Yellow' => "This {$type} will expire soon.",
+            'Green' => "This {$type} is valid.",
+            'Non-Expiring' => "This {$type} does not expire.",
+            default => "Status unknown.",
+        };
+    }
+@endphp
 
-            </td>
-        </tr>
-        @endforeach
-    </tbody>
+@foreach($users as $user)
+    <tr>
+        <td>{{ $user->fname }} {{ $user->lname }}</td>
+
+        @php $doc = $user->documents;  @endphp
+
+        {{-- Licence 1 --}}
+        <td>
+            @if($doc && $doc->licence_file_uploaded)
+                @php
+                    if ($doc->licence_non_expiring) {
+                        $status = 'Non-Expiring';
+                        $color = 'success';
+                        $date = 'Non-Expiring';
+                    } else {
+                        $status = $doc->licence_status;
+                        $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                        $date = $doc->licence_expiry_date ? date('d/m/Y', strtotime($doc->licence_expiry_date)) : 'N/A';
+                    }
+                    $tooltip = getTooltip($status, 'licence 1');
+                @endphp
+                <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
+            @else
+                <span class="text-muted">Not Uploaded</span>
+            @endif
+
+            {{-- Licence 1 Ratings --}}
+            @if(isset($user->ratings_by_license['license_1']) && $user->ratings_by_license['license_1']->count())
+                <div class="mt-2">
+                    @foreach($user->ratings_by_license['license_1'] as $ur)
+                        @php
+                            $r = $ur->rating;
+                            $expiry = $ur->expiry_date ? \Carbon\Carbon::parse($ur->expiry_date)->format('d/m/Y') : 'N/A';
+                            $status = $ur->expiry_status; // Uses accessor from model
+                            $color = match($status) {
+                                'Red' => 'danger',
+                                'Orange' => 'warning',
+                                'Amber' => 'info',
+                                'Blue' => 'primary',
+                                default => 'secondary'
+                            };
+                            $tooltip = "$r->name expires on $expiry";
+                        @endphp
+
+                        <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
+                            {{ $r->name }}
+                        </span>
+
+                        {{-- Nested (child) ratings --}}
+                        @if($r->children && $r->children->count())
+                            @foreach($r->children as $child)
+                                <span class="badge bg-light text-dark border ms-1" data-bs-toggle="tooltip" title="Child of {{ $r->name }} (inherits expiry)">
+                                    → {{ $child->name }}
+                                </span>
+                            @endforeach
+                        @endif
+                    @endforeach
+                </div>
+            @endif
+        </td>
+
+        {{-- Licence 2 --}}
+        <td>
+            @if($doc && $doc->licence_file_uploaded_2)
+                @php
+                    if ($doc->licence_non_expiring_2) {
+                        $status = 'Non-Expiring';
+                        $color = 'success';
+                        $date = 'Non-Expiring';
+                    } else {
+                        $status = $doc->licence_2_status;
+                        $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                        $date = $doc->licence_expiry_date_2 ? date('d/m/Y', strtotime($doc->licence_expiry_date_2)) : 'N/A';
+                    }
+                    $tooltip = getTooltip($status, 'licence 2');
+                @endphp
+                <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
+            @else
+                <span class="text-muted">Not Uploaded</span>
+            @endif
+        </td>
+
+        {{-- Medical 1 --}}
+        <td>
+            @if($doc && $doc->medical_file_uploaded)
+                @php
+                    $status = $doc->medical_status;
+                    $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                    $date = $doc->medical_expirydate ? date('d/m/Y', strtotime($doc->medical_expirydate)) : 'N/A';
+                    $tooltip = getTooltip($status, 'medical 1');
+                @endphp
+                <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
+            @else
+                <span class="text-muted">Not Uploaded</span>
+            @endif
+        </td>
+
+        {{-- Medical 2 --}}
+        <td>
+            @if($doc && $doc->medical_file_uploaded_2)
+                @php
+                    $status = $doc->medical_2_status;
+                    $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                    $date = $doc->medical_expirydate_2 ? date('d/m/Y', strtotime($doc->medical_expirydate_2)) : 'N/A';
+                    $tooltip = getTooltip($status, 'medical 2');
+                @endphp
+                <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
+            @else
+                <span class="text-muted">Not Uploaded</span>
+            @endif
+        </td>
+
+        {{-- Passport --}}
+        <td>
+            @if($doc && $doc->passport_file_uploaded)
+                @php
+                    $status = $doc->passport_status;
+                    $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                    $date = $doc->passport_expiry_date ? date('d/m/Y', strtotime($doc->passport_expiry_date)) : 'N/A';
+                    $tooltip = getTooltip($status, 'passport');
+                @endphp
+                <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
+            @else
+                <span class="text-muted">Not Uploaded</span>
+            @endif
+        </td>
+
+        {{-- View Link --}}
+        <td>
+            <a href="{{ route('user.show', ['user_id' => encode_id($user->id)]) }}" class="view-icon" title="View User" style="font-size:18px; cursor: pointer;">
+                <i class="fa fa-eye text-danger me-2"></i>
+            </a>
+        </td>
+    </tr>
+@endforeach
+</tbody>
 </table>
 @endif
 
@@ -638,16 +838,24 @@ if (!empty($messages)) { ?>
  $(document).ready(function() {
     $('#document_table').DataTable({ 
         searching: true,
-        pageLength: 5,
+        pageLength: 10,
         language: {
         emptyTable: "No records found"
       }
     });
+
 });
 
-    setTimeout(function() {
-            $('#successMessage').fadeOut('fast');
-        }, 3000);
+setTimeout(function() {
+        $('#successMessage').fadeOut('fast');
+}, 3000);
+
+document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
 </script>
 
 @endsection

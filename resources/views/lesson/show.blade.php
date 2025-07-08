@@ -76,6 +76,16 @@
         border-radius: 5px;
         font-size: 0.9em;
     }
+
+    .ui-sortable-helper {
+        opacity: 1 !important;
+        background-color: white;
+    }
+
+    .sublesson-card {
+        cursor: grab;
+    }
+
 </style>
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb">
@@ -97,6 +107,12 @@
   {{ session()->get('message') }}
 </div>
 @endif
+
+    <div id="reoderMessage" class="alert alert-success d-none fade show" role="alert">
+    <i class="bi bi-check-circle me-1"></i>
+    <!-- Tasks order updated successfully! -->
+    </div>
+
 
 <!-- Card with an image on left -->
 <div class="card mb-3">
@@ -123,10 +139,16 @@
     <div class="card-body">
         <div class="list-group">
             <div class="container-fluid">
+                @php
+                    $disableDragDrop = '';
+                    if (Auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1) {
+                        $disableDragDrop = 'sortable-tasks';
+                    }
+                @endphp
                 <h3>Tasks</h3>
-                <div class="row">
+                <div class="row" id="{{ $disableDragDrop }}">
                     @foreach($lesson->subLessons as $val)
-                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3 sublesson-card" data-id="{{ $val->id }}">
                             <div class="sublesson_card course-card">
             
                                 <div class="course-image-container" style="position: relative;">
@@ -214,7 +236,7 @@
                                             @elseif ($prerequisite->prerequisite_type == 'file')
                                                 <input type="file" 
                                                        class="form-control" 
-                                                       name="prerequisite_details[{{ $index }}]">
+                                                       name="prerequisite_details[{{ $index }}]" >
                                                        @error("prerequisite_details.$index")
                                                             <span class="text-danger">{{ $message }}</span>
                                                         @enderror
@@ -242,6 +264,58 @@
         </div> <!-- end card-body -->
     </div> <!-- end card -->
 @endif
+
+@if(auth()->user()->is_admin == 1 && isset($lessonPrerequisiteDetails) && count($lessonPrerequisiteDetails) > 0)
+    <div class="card pt-4">
+        <div class="card-body">
+            <h3>Submitted Lesson Prerequisites by Students</h3>
+
+            @forelse($lessonPrerequisiteDetails as $userId => $details)
+                @php $user = $details->first()->creator; @endphp
+                <div class="mb-4">
+                    <h5 class="mb-3 card-title">{{ $user->fname ?? 'Unknown' }} {{ $user->lname ?? '' }}</h5>
+
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 40%;">Prerequisite</th>
+                                <th>Submitted Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($lesson->prerequisites as $prerequisite)
+                                @php
+                                    $detail = $details->firstWhere('prereq_id', $prerequisite->id);
+                                @endphp
+                                <tr>
+                                    <td>{{ $prerequisite->prerequisite_detail }}</td>
+                                    <td>
+                                        @if($prerequisite->prerequisite_type === 'file')
+                                            @if($detail && $detail->file_path)
+                                                <a href="{{ asset('storage/' . $detail->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                    View File
+                                                </a>
+                                            @else
+                                                <span class="text-muted">Not submitted</span>
+                                            @endif
+                                        @elseif(in_array($prerequisite->prerequisite_type, ['text', 'number']))
+                                            {{ $detail->prerequisite_detail ?? 'Not submitted' }}
+                                        @else
+                                            <span class="text-muted">Unknown Type</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @empty
+                <p>No student prerequisite submissions found.</p>
+            @endforelse
+        </div>
+    </div>
+@endif
+
 
 <!-- End List group Advanced Content -->
 
@@ -274,8 +348,8 @@
                         <textarea class="form-control" name="sub_description" rows="3"></textarea>
                         <div id="sub_description_error" class="text-danger error_e"></div>
                     </div>
-
-                    <!-- Grading Type Selection -->
+                    
+                   @if($lesson->grade_type !== 'percentage')
                     <div class="form-group">
                         <label class="form-label">Grading Type <span class="text-danger">*</span></label>
                         <div>
@@ -285,7 +359,11 @@
                             <input type="radio" name="grade_type" value="score" id="grade_score">
                             <label for="grade_score">Score (1-5)</label>
                         </div>
+                        <div id="grade_type_error" class="text-danger error_e"></div>
                     </div>
+                    @else
+                        <input type="hidden" name="grade_type" value="percentage">
+                    @endif
 
                     <div class="form-group">
                         <label for="sub_status" class="form-label">Status <span class="text-danger">*</span></label>
@@ -337,7 +415,7 @@
                         <textarea class="form-control" name="edit_sub_description" id="edit_sub_description" rows="3"></textarea>
                         <div id="edit_sub_description_error" class="text-danger error_e"></div>
                     </div>
-
+                    @if($lesson->grade_type !== 'percentage')
                     <!-- Grading Type Selection -->
                     <div class="form-group">
                         <label class="form-label">Grading Type <span class="text-danger">*</span></label>
@@ -350,7 +428,9 @@
                         </div>
                         <div id="edit_grade_type_error" class="text-danger error_e"></div>
                     </div>
-
+                    @else
+                        <input type="hidden" name="edit_grade_type" value="percentage">
+                     @endif
                     <div class="form-group">
                         <label for="edit_sub_status" class="form-label">Status <span class="text-danger">*</span></label>
                         <select class="form-select" name="edit_sub_status" id="edit_sub_status">
@@ -402,6 +482,53 @@
 @section('js_scripts')
 
 <script>
+
+    $(function () {
+        $('#sortable-tasks').sortable({
+            items: '.sublesson-card',
+            helper: 'clone',
+            cursor: 'grabbing',
+            tolerance: 'pointer',
+            update: function (event, ui) {
+                let order = [];
+                $('.sublesson-card').each(function (index) {
+                    order.push({
+                        id: $(this).data('id'),
+                        position: index + 1
+                    });
+                });
+
+                $.ajax({
+                    url: '{{ route("sublessons.reorder") }}',
+                    method: 'POST',
+                    data: {
+                        order: order,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function (response) {
+                        console.log('Sublesson order updated');
+
+                        let $msg = $('#reoderMessage');
+                        if ($msg.length) {
+                            $msg.removeClass('d-none')
+                                .fadeIn()
+                                .text('Tasks order updated successfully!');
+                        }
+
+                        setTimeout(function () {
+                            $msg.fadeOut();
+                        }, 2000);
+                    },
+                    error: function () {
+                        console.error('Error updating order');
+                    }
+                });
+            }
+        });
+
+        $('.sublesson-card').css('cursor', 'grab');
+    });
+
     // Show modal for creating sub-lesson
     $("#createSubLessonBtn").on('click', function(){
         $(".error_e").html('');

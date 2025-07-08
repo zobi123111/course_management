@@ -6,11 +6,15 @@ use App\Models\SubLesson;
 use Illuminate\Http\Request;
 use App\Models\CourseLesson;
 use App\Models\Courses;
+use App\Models\CoursePrerequisite;
+use App\Models\CoursePrerequisiteDetail;
+use App\Models\TrainingEvents;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use App\Models\LessonPrerequisite;
 use App\Models\LessonPrerequisiteDetail;
+use PDF;
 
 class LessonController extends Controller 
 {
@@ -20,13 +24,32 @@ class LessonController extends Controller
     
     public function showCourse(Request $request, $course_id)
     {
+        $user = auth()->user();
         $course = Courses::with('courseLessons', 'prerequisites')->findOrFail(decode_id($course_id));
+
         $breadcrumbs = [
             ['title' => 'Courses', 'url' => route('course.index')],
             ['title' => $course->course_name, 'url' => ''],
         ];
+        $prerequisiteDetails=null;
+        if(get_user_role($user->role) == 'student'){
+            $studentAcknowledged = TrainingEvents::where('course_id', decode_id($course_id))
+            ->where('student_id', $user->id)
+            ->where('student_acknowledged', 1)
+            ->exists(); // returns true/false
+        }else{
+            $studentAcknowledged = false;
 
-        return view('courses.show', compact('course', 'breadcrumbs'));
+            // Load prerequisite details grouped by student for admin
+            // dd($course->id);
+            $prerequisiteDetails = CoursePrerequisiteDetail::with('creator')
+                ->where('course_id', $course->id)
+                ->get()
+                ->groupBy('created_by');
+
+            // dd($prerequisiteDetails);
+        }
+        return view('courses.show', compact('course', 'breadcrumbs','studentAcknowledged', 'prerequisiteDetails'));
     }
 
 
@@ -34,10 +57,11 @@ class LessonController extends Controller
     {
         // Validate request data
         $request->validate([
-            'lesson_title' => 'required|unique:course_lessons,lesson_title,NULL,id,deleted_at,NULL',
+            'lesson_title' => 'required',
             'description' => 'required|string',
             'status' => 'required|boolean',
-            'grade_type' => 'required|in:pass_fail,score'
+            'grade_type' => 'required|in:pass_fail,score,percentage',
+            'enable_cbta' => 'sometimes|boolean'
         ]);
     
         if ($request->has('comment_required') && $request->comment_required) {
@@ -54,13 +78,22 @@ class LessonController extends Controller
             'description' => $request->description,
             'comment' => $request->comment ?? null,
             'status' => $request->status,
-            'grade_type' => $request->grade_type
+            'grade_type' => $request->grade_type,
+            'enable_cbta' => $request->enable_cbta ?? 0
         ]);
     
         Session::flash('message', 'Lesson created successfully.');
         return response()->json(['success' => 'Lesson created successfully.']);
     }
     
+    public function reorder(Request $request)
+    {
+        foreach ($request->order as $item) {
+            CourseLesson::where('id', $item['id'])->update(['position' => $item['position']]);
+        }
+
+        return response()->json(['status' => 'success']);
+    }
 
 
     public function getLesson(Request $request)
@@ -80,8 +113,12 @@ class LessonController extends Controller
             ['title' => $course->course_name, 'url' => route('course.show', encode_id($course->id))],
             ['title' => $lesson->lesson_title, 'url' => ''],
         ];
+         $lessonPrerequisiteDetails = LessonPrerequisiteDetail::with('creator')
+        ->where('lesson_id', $lesson->id)
+        ->get()
+        ->groupBy('created_by'); // grouped by student
 
-        return view('lesson.show', compact('lesson', 'breadcrumbs'));
+        return view('lesson.show', compact('lesson', 'breadcrumbs', 'lessonPrerequisiteDetails'));
     }
 
 
@@ -89,10 +126,11 @@ class LessonController extends Controller
     {
         // Validate request data
         $request->validate([
-            'edit_lesson_title' => 'required|unique:course_lessons,lesson_title,' . $request->lesson_id . ',id,deleted_at,NULL',
+            'edit_lesson_title' => 'required',
             'edit_description' => 'required|string',
             'edit_status' => 'required|boolean',
-            'edit_grade_type' => 'required|in:pass_fail,score'
+            'edit_grade_type' => 'required|in:pass_fail,score,percentage',
+            'edit_enable_cbta'    => 'sometimes|boolean',
         ]);
     
         if ($request->has('edit_comment_required') && $request->edit_comment_required) {
@@ -112,8 +150,13 @@ class LessonController extends Controller
             'comment' => $comment,
             'status' => $request->edit_status,
             'grade_type' => $request->edit_grade_type, // Update grading type
+            'enable_cbta' => $request->edit_enable_cbta ?? 0, // Update enable_cbta
             'enable_prerequisites' => (int) $request->input('enable_prerequisites', 0),
         ]);
+
+        if ($request->edit_grade_type === 'percentage') {
+            SubLesson::where('lesson_id', $lesson->id)->update(['grade_type' => null]);
+        }
     
         // Handle Prerequisites
         if ((int) $request->input('enable_prerequisites', 0)) {
@@ -221,6 +264,7 @@ class LessonController extends Controller
                 $path = $file->store('prerequisites', 'public');
     
                 LessonPrerequisiteDetail::create([
+                    'prereq_id' => $prerequisite->id,
                     'course_id' => $course->id,
                     'lesson_id' => $lesson->id,
                     'prerequisite_type' => $prerequisite->prerequisite_type,
@@ -231,6 +275,7 @@ class LessonController extends Controller
             } else {
                 // dd("uu");
                 LessonPrerequisiteDetail::create([
+                    'prereq_id' => $prerequisite->id,
                     'course_id' => $course->id,
                     'prerequisite_type' => $prerequisite->prerequisite_type,
                     'prerequisite_detail' => $detail,
@@ -243,4 +288,17 @@ class LessonController extends Controller
     
         return back()->with('success', 'Prerequisites saved successfully.');
     }
+
+    public function lessonPdf(Request $request, $lessonId)
+    {
+        $lesson_detail = CourseLesson::with('course')->where('id', $lessonId)->get();
+       // dd($sublesson_detail[0]['course']['course_name']);
+        $data = [
+            'date' => date('m/d/Y'),
+            'lesson_detail' => $lesson_detail
+        ]; 
+        $pdf = PDF::loadView('courses\generateLessonPdf', $data);
+        return $pdf->download('lesson.pdf');
+    }
+
 }

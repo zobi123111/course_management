@@ -1286,8 +1286,35 @@ h6 {
   padding: 0px 7px;
   line-height: 23px;
 }
+.instructor-documents-item {
+  position: relative;
+}
+.remove-documents-container {
+  position: absolute;
+  right: -6px;
+  top: -18px;
+  font-size: 13px;
+  border-radius: 50%;
+  padding: 0px 7px;
+  line-height: 23px;
+}
+.edit-remove-documents-container {
+  position: absolute;
+  right: -6px;
+  top: -18px;
+  font-size: 13px;
+  border-radius: 50%;
+  padding: 0px 7px;
+  line-height: 23px;
+}
+.resource-documents-item {
+  position: relative;
+}
+.edit-resource-documents-item {
+  position: relative;
+}
 .avms_logo{
-  width: 20%;
+  /* width: 20%; */
   height: 48px;
 }
 .avms_logo_login{
@@ -1491,5 +1518,6 @@ display: flex;
   font-size: 14px;
 }
 }
-
-
+.rating-left-cont{
+  margin-right: 10px;
+}

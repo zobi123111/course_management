@@ -16,38 +16,104 @@ use Illuminate\Support\Facades\DB;
 
 class DocumentController extends Controller
 {
+    // public function index()
+    // {
+    //     $userId = Auth::user()->id;
+    //     $ou_id =  auth()->user()->ou_id;
+    //     if(checkAllowedModule('courses', 'document.index')->isNotEmpty() && Auth()->user()->is_owner ==  1){
+    //         $groups = Group::all();
+    //         $folders = Folder::whereNull('parent_id')->with('children')->get();
+    //         $documents = Document::orderBy('id', 'asc')->get();
+
+    //     }
+    //     elseif(checkAllowedModule('documents', 'document.index')->isNotEmpty() && Auth()->user()->is_admin ==  0){   
+    //         $groups = Group::where('ou_id', $ou_id)->get();
+    //         $filteredGroups = $groups->filter(function ($group) use ($userId) {
+    //             $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);                
+    //             return in_array($userId, $userIds);
+    //         });
+    
+    //         $groupIds = $filteredGroups->pluck('id')->toArray();
+    //         $documents = Document::whereIn('group_id', $groupIds)
+    //                     ->where('status', 1)
+    //                     ->orderBy('id', 'desc')
+    //                     ->get();
+    //         $folders = [];
+    //     }else{           
+    //         $groups = Group::where('ou_id', $ou_id)->get();
+    //         $folders = Folder::where('ou_id', auth()->user()->ou_id)->whereNull('parent_id')->with('children')->get();
+    //         $documents = Document::where('ou_id', $ou_id)->orderBy('id', 'desc')->get();
+
+    //     }
+    //     $organizationUnits = OrganizationUnits::all();
+    //     return view('documents.index',compact('documents', 'folders', 'groups', 'organizationUnits'));
+    // }
+
+    //Used Index method for Student/Instructure Role & get_documents method for admin Roles 
     public function index()
     {
-        $userId = Auth::user()->id;
-        $ou_id =  auth()->user()->ou_id;
-        if(checkAllowedModule('courses', 'document.index')->isNotEmpty() && Auth()->user()->is_owner ==  1){
-            $groups = Group::all();
-            $folders = Folder::whereNull('parent_id')->with('children')->get();
-            $documents = Document::orderBy('id', 'asc')->get();
+        $user = Auth::user();
+        $userId = $user->id;
+        $ou_id = $user->ou_id;
 
-        }
-        elseif(checkAllowedModule('documents', 'document.index')->isNotEmpty() && Auth()->user()->is_admin ==  0){   
+        $groups = collect();
+        $folders = collect();
+        $documents = collect();
+
+        if (checkAllowedModule('courses', 'document.index')->isNotEmpty() && $user->is_owner == 1) {
+            // Owner view
+            $groups = Group::all();
+            $documents = Document::with('folder.groups')->orderBy('id', 'asc')->get();
+            $folders = Folder::whereNull('parent_id')->with('children')->get();
+        }elseif (checkAllowedModule('documents', 'document.index')->isNotEmpty() && $user->is_admin == 0) {
+            // Get user's group IDs
             $groups = Group::where('ou_id', $ou_id)->get();
+
             $filteredGroups = $groups->filter(function ($group) use ($userId) {
-                $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);                
+                $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);
                 return in_array($userId, $userIds);
             });
-    
+
             $groupIds = $filteredGroups->pluck('id')->toArray();
-            $documents = Document::whereIn('group_id', $groupIds)
-                        ->where('status', 1)
-                        ->orderBy('id', 'desc')
-                        ->get();
-            $folders = [];
-        }else{
-           
+
+            // Get folders that are assigned to user's groups
+            $folders = Folder::whereHas('groups', function ($query) use ($groupIds) {
+                $query->whereIn('groups.id', $groupIds);
+            })
+            ->with(['parent', 'groups']) // Load parent if you want to show folder hierarchy
+            ->get();
+
+
+            // Get documents assigned to the same user's group
+            $documents = Document::whereHas('groups', function ($query) use ($groupIds) {
+                $query->whereIn('groups.id', $groupIds);
+            })
+            ->with(['folder.groups', 'groups'])
+            ->where('status', 1)
+            ->orderBy('id', 'desc')
+            ->get();
+        }else {
+            // Admin or other users
             $groups = Group::where('ou_id', $ou_id)->get();
-            $folders = Folder::where('ou_id', auth()->user()->ou_id)->whereNull('parent_id')->with('children')->get();
-            $documents = Document::where('ou_id', $ou_id)->orderBy('id', 'desc')->get();
+            $documents = Document::with('folder.groups')
+                ->where('ou_id', $ou_id)
+                ->orderBy('id', 'desc')
+                ->get();
+
+            $folders = Folder::where('ou_id', $ou_id)
+                ->whereNull('parent_id')
+                ->with('children')
+                ->get();
 
         }
+
         $organizationUnits = OrganizationUnits::all();
-        return view('documents.index',compact('documents', 'folders', 'groups', 'organizationUnits'));
+
+        if(auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1){
+            return view('documents.index', compact('documents', 'folders', 'groups', 'organizationUnits'));
+        }else{
+            return view('documents.doc-tabs', compact('documents', 'folders', 'groups', 'organizationUnits'));
+        }
     }
 
     public function createDocument(Request $request)
@@ -57,13 +123,12 @@ class DocumentController extends Controller
             'doc_title' => 'required',
             'version_no' => 'required',
             'issue_date' => 'required|date',
-            'completed_date' => 'required|date',
             'expiry_date' => 'required|date|after:issue_date',
-            'document_file' => 'required|file',
-            'document_type' => 'required',
+            'document_file' => 'required|file|max:20480',
             'status' => 'required',
-            'group' => 'required',
-            'folder' => 'required|nullable|exists:folders,id' 
+            'group' => 'required|array', //Ensure it's an array of group IDs
+            'group.*' => 'exists:groups,id', //Validate each group ID
+            'folder' => 'required|exists:folders,id' 
         ]);
 
         // Get the original filename
@@ -73,32 +138,43 @@ class DocumentController extends Controller
        // $filePath = $request->file('document_file')->store('documents', 'public');
         $filePath =  $request->file('document_file')->storeAs('documents', $originalFilename, 'public');
 
+        $ou_id = (auth()->user()->is_owner == 1) ? $request->ou_id : (auth()->user()->ou_id ?? null);
+
         // Create the document record in the database
-        Document::create([
-             'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : (auth()->user()->ou_id ?? null),
+        $document = Document::create([
+             'ou_id' => $ou_id,
             'folder_id' => $request->folder ?? null, // Store only folder ID, not folder name
-            'group_id' => $request->group,
+            // 'group_id' => $request->group,
             'doc_title' => $request->doc_title,
             'version_no' => $request->version_no,
             'issue_date' => $request->issue_date,
-            'completed_date' => $request->completed_date,
             'expiry_date' => $request->expiry_date,
             'document_file' => $filePath,
-            'document_type' => $request->document_type,
             'original_filename' => $originalFilename, // Store original filename
             'status' => $request->status,
         ]);
 
-        // Flash success message and return JSON response
+        $timestamp = now();
+        $groupData = [];
+
+        foreach ($request->group as $groupId) {
+            $groupData[$groupId] = [
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp
+            ];
+        }
+
+        $document->groups()->sync($groupData);
+        //Flash success message and return JSON response
         Session::flash('message', 'Document added successfully.');
         return response()->json(['success' => 'Document added successfully.']);
     }
 
     public function getDocument(Request $request)
     {
-        $document = Document::findOrFail(decode_id($request->id));
+        $document = Document::with('groups')->findOrFail(decode_id($request->id));
         $group = Group::where('ou_id', $document->ou_id)->get();
-        $folders = Folder::where('ou_id', $document->ou_id)->whereNull('parent_id') ->with('childrenRecursive') ->get();
+        $folders = Folder::where('ou_id', $document->ou_id)->whereNull('parent_id') ->with('childrenRecursive')->get();
         return response()->json(['document'=> $document, 'group'=> $group, 'folders'=> $folders]);
     }
 
@@ -110,14 +186,13 @@ class DocumentController extends Controller
             'doc_title' => 'required',
             'version_no' => 'required',
             'issue_date' => 'required|date',
-            'completed_date' => 'required|date',
             'expiry_date' => 'required|date|after:issue_date',
-            'document_file' => 'nullable|file|max:2048', // File is optional
-            'document_type' => 'required',
+            'document_file' => 'nullable|file|max:20480', // File is optional
             'status' => 'required',
-            'group' => 'required',
-            'folder' => 'nullable|exists:folders,id' // Ensure folder exists if provided
-        ]);
+            'group' => 'required|array',
+            'group.*' => 'exists:groups,id',
+            'folder' => 'required|exists:folders,id' // Ensure folder exists if provided
+        ]); 
     
         // Retrieve the document by ID
         $document = Document::findOrFail($request->document_id);
@@ -136,15 +211,15 @@ class DocumentController extends Controller
             $originalFilename = $request->file('document_file')->getClientOriginalName();
     
             // Store the new file in the 'documents' folder
-          //  $filePath = $request->file('document_file')->store('documents', 'public');
             $filePath =  $request->file('document_file')->storeAs('documents', $originalFilename, 'public');
         }
     
+        $ou_id = (auth()->user()->is_owner == 1) ? $request->ou_id : (auth()->user()->ou_id ?? null);
         // Update the document in the database
         $document->update([
-            'ou_id' =>  (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id, 
+            'ou_id' =>  $ou_id, 
             'folder_id' => $request->folder ?? null,
-            'group_id' => $request->group,
+            // 'group_id' => $request->group,
             'doc_title' => $request->doc_title,  
             'version_no' => $request->version_no,
             'issue_date' => $request->issue_date,
@@ -155,6 +230,15 @@ class DocumentController extends Controller
             'original_filename' => $originalFilename, 
             'status' => $request->status,
         ]);
+
+        //Sync group assignments to pivot table with timestamps
+        $timestamp = now();
+        $groupData = [];
+        foreach ($request->group as $groupId) {
+            $groupData[$groupId] = ['created_at' => $timestamp, 'updated_at' => $timestamp];
+        }
+
+        $document->groups()->sync($groupData);
     
         // Flash success message and return JSON response
         Session::flash('message', 'Document updated successfully.');
@@ -196,7 +280,7 @@ class DocumentController extends Controller
     
         // Determine which documents to fetch based on user role and permissions
         if (checkAllowedModule('courses', 'document.index')->isNotEmpty() && $user->is_owner == 1) {
-            $query = Document::with('group:id,name,user_ids')->orderBy('id', 'desc'); 
+            $query = Document::with('groups:id,name,user_ids')->orderBy('id', 'desc'); 
         } elseif (checkAllowedModule('documents', 'document.index')->isNotEmpty() && $user->is_admin == 0) {
             $groups = Group::where('ou_id', $ou_id)->get();
             $filteredGroups = $groups->filter(function ($group) use ($userId) {
@@ -205,9 +289,9 @@ class DocumentController extends Controller
             });
     
             $groupIds = $filteredGroups->pluck('id')->toArray();
-            $query = Document::with('group:id,name,user_ids')->whereIn('group_id', $groupIds)->where('status', 1);
+            $query = Document::with('groups:id,name,user_ids')->whereIn('group_id', $groupIds)->where('status', 1);
         } else {
-            $query = Document::with('group:id,name,user_ids')->where('ou_id', $ou_id);
+            $query = Document::with('groups:id,name,user_ids')->where('ou_id', $ou_id);
         }
     
         // Get total record count before filtering
@@ -244,11 +328,11 @@ class DocumentController extends Controller
             $groupUserIds = [];
         
             // Ensure the document has a valid group before accessing its user IDs
-            if (!empty($row->group) && !empty($row->group->user_ids)) {
+            if (!empty($row->groups) && !empty($row->groups->user_ids)) {
                 // Convert user_ids string to array safely
-                $groupUserIds = is_array($row->group->user_ids) 
-                    ? $row->group->user_ids 
-                    : explode(',', trim($row->group->user_ids));
+                $groupUserIds = is_array($row->groups->user_ids) 
+                    ? $row->groups->user_ids 
+                    : explode(',', trim($row->groups->user_ids));
             }
         
             // Get acknowledged user IDs from the document
@@ -274,13 +358,14 @@ class DocumentController extends Controller
                 'version_no' => $row->version_no,
                 'issue_date' => $row->issue_date,
                 'expiry_date' => $row->expiry_date,
-                'assigned_group' => $row->group_id 
-                    ? ($row->group 
-                        ? (auth()->user()->is_admin == 1 || auth()->user()->is_owner == 1 
-                            ? '<a href="#" class="get_group_users" data-doc-id="' . encode_id($row->id) . '">' . $row->group->name . '</a>' 
-                            : $row->group->name
-                        )
-                        : 'Group Not Found') 
+                'assigned_group' => $row->groups->isNotEmpty()
+                    ? $row->groups->map(function ($group) use ($row) {
+                        if (auth()->user()->is_admin == 1 || auth()->user()->is_owner == 1) {
+                            return '<a href="#" class="get_group_users" data-doc-id="' . encode_id($row->id) . '" data-group-id="' . encode_id($group->id) . '">' . e($group->name) . '</a>';
+                        } else {
+                            return e($group->name);
+                        }
+                    })->implode(', ')
                     : 'No Group Assigned',
                 'document' => $row->document_file
                     ? '<a href="' . route('document.show', encode_id($row->id)) . '">View Document</a>'
@@ -313,26 +398,64 @@ class DocumentController extends Controller
         return view('documents.show',compact('document'));
     }
 
+    // public function getDocUserList(Request $request)
+    // {
+       
+    //     $doc_id = decode_id($request->doc_id);
+    //     $document = Document::where('id', $doc_id)->with('group')->first();
+    
+    //     // Check if document exists
+    //     if (!$document || !$document->group) {
+    //         return response()->json(['error' => 'Document or Group Not Found.'], 404);
+    //     }
+    
+    //     // Ensure user_ids is an array
+    //     $groupUserIds = is_array($document->group->user_ids) 
+    //         ? $document->group->user_ids 
+    //         : explode(',', $document->group->user_ids ?? '');
+    
+    //     // Get acknowledged user IDs from document
+    //     $acknowledgedUsers = json_decode($document->acknowledge_by ?? '[]', true);
+    
+    //     // Get users from group and check acknowledgment status
+    //     $groupUsers = User::whereIn('id', $groupUserIds)
+    //         ->select('id', 'fname', 'lname', 'email', 'image')
+    //         ->get()
+    //         ->map(function ($user) use ($acknowledgedUsers) {
+    //             $user->acknowledged = in_array($user->id, $acknowledgedUsers);
+    //             return $user;
+    //         });    
+    //     return response()->json(['groupUsers' => $groupUsers]);
+    // }
+
     public function getDocUserList(Request $request)
     {
-       
         $doc_id = decode_id($request->doc_id);
-        $document = Document::where('id', $doc_id)->with('group')->first();
-    
-        // Check if document exists
-        if (!$document || !$document->group) {
-            return response()->json(['error' => 'Document or Group Not Found.'], 404);
+        $group_id = decode_id($request->group_id);
+
+        // Load the document
+        $document = Document::find($doc_id);
+
+        if (!$document) {
+            return response()->json(['error' => 'Document not found.'], 404);
         }
-    
-        // Ensure user_ids is an array
-        $groupUserIds = is_array($document->group->user_ids) 
-            ? $document->group->user_ids 
-            : explode(',', $document->group->user_ids ?? '');
-    
+
+        // Load the group
+        $group = Group::find($group_id);
+
+        if (!$group) {
+            return response()->json(['error' => 'Group not found.'], 404);
+        }
+
+        // Get user IDs from the group
+        $groupUserIds = is_array($group->user_ids)
+            ? $group->user_ids
+            : explode(',', $group->user_ids ?? '');
+
         // Get acknowledged user IDs from document
         $acknowledgedUsers = json_decode($document->acknowledge_by ?? '[]', true);
-    
-        // Get users from group and check acknowledgment status
+
+        // Fetch user details with acknowledgment status
         $groupUsers = User::whereIn('id', $groupUserIds)
             ->select('id', 'fname', 'lname', 'email', 'image')
             ->get()
@@ -341,57 +464,9 @@ class DocumentController extends Controller
                 return $user;
             });
 
-    
         return response()->json(['groupUsers' => $groupUsers]);
     }
-    
-    
 
-    // public function acknowledgeDocument(Request $request)
-    // {
-    //     $request->validate([
-    //         'document_id' => 'required|exists:documents,id',
-    //         'acknowledged' => 'required|boolean',
-    //     ]);
-    
-    //     $document = Document::findOrFail($request->document_id);
-    //     if($document){
-    //         $document->update(['acknowledged' => $request->acknowledged]); // Assuming you have an 'acknowledged' column
-    //         return response()->json(['success' => 'Document acknowledged successfully.']);
-    //     }else{
-    //         return response()->json(['error' => 'Something went wrong, Please try after some time.']);
-    //     }
-    
-    // }
-
-    // public function acknowledgeDocument(Request $request)
-    // {
-    //     $userId = auth()->user()->id;
-    //     $request->validate([
-    //         'document_id' => 'required|exists:documents,id',
-    //         'acknowledged' => 'required|integer|in:' . $userId,
-    //     ]);
-        
-    //     $document = Document::findOrFail($request->document_id);
-        
-    //     // dd($document);
-    //     if ($document) {
-    //         // Decode the existing acknowledged users (if any)
-    //         $acknowledgedUsers = json_decode($document->acknowledge_by ?? '[]', true);
-
-    //         // Check if the logged-in user already acknowledged the document
-    //         if (!in_array($userId, $acknowledgedUsers)) {
-    //             $acknowledgedUsers[] = $userId; // Add logged-in user's ID
-    //         }
-
-    //         // Update the document with the new acknowledge_by array
-    //         $document->update(['acknowledge_by' => json_encode($acknowledgedUsers)]);
-
-    //         return response()->json(['success' => 'Document acknowledged successfully.']);
-    //     }
-
-    //     return response()->json(['error' => 'Something went wrong, please try again later.'], 500);
-    // }
     public function acknowledgeDocument(Request $request)
     {
         $userId = auth()->user()->id;

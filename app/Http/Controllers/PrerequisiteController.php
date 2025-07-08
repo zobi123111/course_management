@@ -8,44 +8,58 @@ use App\Models\Courses;
 
 class PrerequisiteController extends Controller
 {
-    public function store(Request $request, Courses $course) {
+    public function store(Request $request, Courses $course)
+    {
         $request->validate([
             'prerequisite_details.*' => 'nullable',
         ]);
-        CoursePrerequisiteDetail::where('course_id', $course->id)
-        ->where('created_by', auth()->id())
-        ->delete();
+
         foreach ($course->prerequisites as $index => $prerequisite) {
             $detail = $request->input("prerequisite_details.$index");
-    
-            if ($prerequisite->prerequisite_type == 'file' && $request->hasFile("prerequisite_details.$index")) {
-                $file = $request->file("prerequisite_details.$index");
-                if (!in_array($file->getClientOriginalExtension(), ['jpg', 'jpeg', 'png', 'pdf']) || $file->getSize() > 2048000) {
-                    return back()->withErrors([
-                        "prerequisite_details.$index" => 'Invalid file type or size. Only JPG, JPEG, PNG, and PDF files under 2MB are allowed.',
-                    ])->withInput();
+
+            $baseConditions = [
+                'course_id' => $course->id,
+                'prereq_id' => $prerequisite->id,
+                'created_by' => auth()->id(),
+            ];
+
+            $existing = CoursePrerequisiteDetail::where($baseConditions)->first();
+
+            $data = [
+                'prerequisite_type' => $prerequisite->prerequisite_type,
+            ];
+
+            if ($prerequisite->prerequisite_type === 'file') {
+                if ($request->hasFile("prerequisite_details.$index")) {
+                    $file = $request->file("prerequisite_details.$index");
+                    $allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
+
+                    if (!in_array($file->getClientOriginalExtension(), $allowedExtensions) || $file->getSize() > 10485760) {
+                        return back()->withErrors([
+                            "prerequisite_details.$index" => 'Invalid file type or size. Only JPG, JPEG, PNG, and PDF files under 10MB are allowed.',
+                        ])->withInput();
+                    }
+
+                    $path = $file->store('prerequisites', 'public');
+                    $data['file_path'] = $path;
+                } else {
+                    // Keep existing file path if no new file uploaded
+                    $data['file_path'] = $existing->file_path ?? null;
                 }
-                $path = $file->store('prerequisites', 'public');
-    
-                CoursePrerequisiteDetail::create([
-                    'course_id' => $course->id,
-                    'prerequisite_type' => $prerequisite->prerequisite_type,
-                    'prerequisite_detail' => null,
-                    'file_path' => $path,
-                    'created_by' => auth()->id(),
-                ]);
+
+                $data['prerequisite_detail'] = null;
             } else {
-                CoursePrerequisiteDetail::create([
-                    'course_id' => $course->id,
-                    'prerequisite_type' => $prerequisite->prerequisite_type,
-                    'prerequisite_detail' => $detail,
-                    'file_path' => null,
-                    'created_by' => auth()->id(),
-                ]);
+                $data['prerequisite_detail'] = $detail;
+                $data['file_path'] = null;
+            }
+
+            if ($existing) {
+                $existing->update($data);
+            } else {
+                CoursePrerequisiteDetail::create(array_merge($baseConditions, $data));
             }
         }
-    
-        return back()->with('success', 'Prerequisites saved successfully.');
-    }
-    
+
+        return back()->with('message', 'Prerequisites saved successfully.');
+    }    
 }

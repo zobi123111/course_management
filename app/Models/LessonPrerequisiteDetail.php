@@ -10,6 +10,7 @@ class LessonPrerequisiteDetail extends Model
     use HasFactory;
 
     protected $fillable = [
+        'prereq_id',
         'course_id',
         'lesson_id',
         'prerequisite_type',

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;  
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -18,6 +18,9 @@ class TrainingEventLessons extends Model
         'lesson_date',
         'start_time',
         'end_time',
+        'departure_airfield',
+        'destination_airfield',
+        'instructor_license_number',
     ];
 
     // protected $dates = ['lesson_date', 'start_time', 'end_time', 'total_time', 'deleted_at'];

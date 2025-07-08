@@ -33,6 +33,8 @@ class User extends Authenticatable
         'licence_verified',
         'licence_expiry_date',
         'licence_non_expiring',
+        'licence_2_required',
+        'licence_2_admin_verification_required',
         'passport_required',
         'passport',
         'passport_file',
@@ -50,8 +52,10 @@ class User extends Authenticatable
         'password_flag',
         'ou_id',
         'extra_roles',
-        'custom_field_file',
+        'custom_field_required',
+        'custom_field_date',
         'custom_field_text',
+        'custom_field_admin_verification_required',
         'medical',
         'medical_adminRequired',
         'medical_issuedby',
@@ -64,6 +68,8 @@ class User extends Authenticatable
         'passport_file_uploaded',
         'medical_file',
         'medical_file_uploaded',
+        'medical_2_required',
+        'medical_2_adminRequired',
         'is_admin'  
     ];
 
@@ -128,7 +134,7 @@ class User extends Authenticatable
     //     return $this->getExpiryStatus($this->medical_expirydate);
     // }
 
-    public function getExpiryStatus($date)
+    public function getExpiryStatus($date)  
     {
         if (!$date) return 'N/A';
 
@@ -139,15 +145,15 @@ class User extends Authenticatable
             return 'Red'; 
         }
 
-        if ($expiryDate->diffInDays($now) <= 30) {
-            return 'Orange';
+        if ($expiryDate->diffInDays($now) < 90) {
+            return 'Yellow';
         }
 
-        if ($expiryDate->diffInDays($now) <= 90) {
-            return 'Amber';  // Expiring in 3 Months
+        if ($expiryDate->diffInDays($now) > 90) {
+            return 'Green';  // valid more than 3 months
         }
 
-        return 'Blue';  // Valid
+        // return 'Blue';  // Valid
     }
 
     /**
@@ -173,18 +179,19 @@ class User extends Authenticatable
      */
     public function isLicenceExpiring()
     {
-        return in_array($this->licence_status, ['Red', 'Orange', 'Amber']);
+        return in_array($this->licence_status, ['Red', 'Yellow']);
     }
-
+    
     public function isMedicalExpiring()
     {
-        return in_array($this->medical_status, ['Red', 'Orange', 'Amber']);
+        return in_array($this->medical_status, ['Red', 'Yellow']);
     }
-
+    
     public function isPassportExpiring()
     {
-        return in_array($this->passport_status, ['Red', 'Orange', 'Amber']);
+        return in_array($this->passport_status, ['Red', 'Yellow']);
     }
+    
 
     // Expiry Date Fucntion End //
 
@@ -211,6 +218,16 @@ class User extends Authenticatable
     public function activityLogs()
     {
         return $this->hasMany(UserActivityLog::class, 'user_id');
+    }
+
+    public function usrRatings()
+    {
+        return $this->hasMany(UserRating::class);
+    }
+
+    public function documents()
+    {
+        return $this->hasOne(UserDocument::class, 'user_id');
     }
     
 }

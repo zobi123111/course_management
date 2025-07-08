@@ -23,7 +23,7 @@ return new class extends Migration
              $table->string('departure_airfield', 4)->nullable()->after('end_time'); // 4-letter text
              $table->string('destination_airfield', 4)->nullable()->after('departure_airfield'); // 4-letter text
              $table->time('total_time')->nullable()->after('destination_airfield'); // To be calculated
-             $table->string('licence_number')->nullable()->after('total_time'); // From user profile
+             $table->string('std_license_number')->nullable()->after('total_time'); // From user profile
          });
      }
      

@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->date('custom_field_file')->nullable()->after('currency');
-            $table->string('custom_field_text')->nullable()->after('custom_field_file');
+            $table->date('custom_field_date')->nullable()->after('currency');
+            $table->string('custom_field_text')->nullable()->after('custom_field_date');
+            $table->boolean('custom_field_admin_verification_required')->default(0)->after('custom_field_text');   
         });
     }
 
@@ -23,8 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('custom_field_file');
+            $table->dropColumn('custom_field_date');
             $table->dropColumn('custom_field_text');
+            $table->dropColumn('custom_field_admin_verification_required');
         });
     }
 };

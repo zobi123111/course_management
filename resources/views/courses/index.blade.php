@@ -78,6 +78,23 @@
 .modal {
     z-index: 1050;
 }
+
+.course-card {
+    cursor: grab;
+    transition: background 0.2s;
+}
+
+.course-card:active {
+    cursor: grabbing;
+}
+
+/* Prevent transparent dragging effect */
+.ui-sortable-helper {
+    opacity: 1 !important;
+    background: #fff !important;
+    /* box-shadow: 0 2px 6px rgba(0,0,0,0.2); */
+}
+
 </style>
 
 
@@ -88,6 +105,10 @@
     {{ session()->get('message') }}
 </div>
 @endif
+
+<div id="reoderMessage" class="alert alert-success d-none fade show" role="alert">
+  <i class="bi bi-check-circle me-1"></i>
+</div>
 
 @if(checkAllowedModule('courses','course.store')->isNotEmpty())
 <div class="create_btn">
@@ -100,10 +121,18 @@
 <div class="card pt-4">
     <div class="card-body">
         <div class="container-fluid">
-            <div class="row">
+
+            @php
+                $disableDragDrop = '';
+                if (Auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1) {
+                    $disableDragDrop = 'sortable-courses';
+                }
+            @endphp
+
+            <div class="row" id="{{ $disableDragDrop }}">
                 @forelse($courses as $val)
                 <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
-                    <div class="course_card course-card">
+                    <div class="course_card course-card" data-id="{{ $val->id }}">
                         <div class="course-image-container" style="position: relative;">
                             @if($val->image)
                             <img src="{{ asset('storage/' . $val->image) }}" class="card-img-top course-image"
@@ -252,10 +281,59 @@
                         </select>
                         <div id="status_error" class="text-danger error_e"></div>
                     </div>
+                    <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="enable_feedback" name="enable_feedback">
+                        <label class="form-check-label" for="enable_feedback">
+                            Enable Training Feedback
+                        </label>
+                    </div>
+                    </div>
+
+                    <div id="feedbackConfigSection" style="display:none; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <label class="form-label">Feedback Questions <span class="text-muted">(Optional)</span></label>                        
+                        <div id="feedback_questions_container">
+                            <!-- Question Template -->
+                            <div class="feedback-question mb-3">
+                                <input type="text" name="feedback_questions[0][question]" class="form-control mb-2" placeholder="Enter question">
+                                <div id="feedback_questions_0_question_error" class="text-danger error_e"></div>
+                                <select name="feedback_questions[0][answer_type]" class="form-select">
+                                    <option value="">Select Answer Type</option>
+                                    <option value="yes_no">Yes / No</option>
+                                    <option value="rating">Rating (1-5)</option>
+                                </select>
+                                <div id="feedback_questions_0_answer_type_error" class="text-danger error_e"></div>
+                            </div>
+                        </div>                        
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="add_question_btn">Add Another Question</button>
+                    </div>
+                    <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="enable_instructor_upload" name="enable_instructor_upload">
+                        <label class="form-check-label" for="enable_instructor_upload">
+                             Enable Instructor Upload
+                        </label>
+                    </div>
+                    </div>
+                    <div id="instructor_documents_container" style="display: none;">
+                        <div id="instructor_documents_items">
+                            <div class="instructor-documents-item border p-2 mt-2">
+                                <div class="form-group">
+                                    <label class="form-label">Document Name</label>
+                                    <input type="text" name="instructor_documents[0][name]" class="form-control">
+                                    <div id="instructor_documents_0_name_error" class="text-danger error_e"></div>
+                                </div>
+                                <button type="button" class="btn btn-danger remove-documents-container">X</button>
+                            </div>
+                        </div>
+                        <button type="button" id="addDocumentsContainer" class="btn btn-primary mt-2">Add More</button>
+                    </div>
+
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="submitCourse" class="btn btn-primary sbt_btn">Save </button>
                     </div>
+                    <div class="loader" style="display: none;"></div>
                 </form>
             </div>
         </div>
@@ -312,7 +390,7 @@
                     <div class="form-group">
                         <label for="lastname" class="form-label">Image<span class="text-danger">*</span></label>
                         <input type="file" name="image" class="form-control" accept="image/*">
-                        <div id="image_error" class="text-danger error_e"></div>
+                        <div id="image_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="duration" class="form-label">Course Duration<span
@@ -354,15 +432,45 @@
                             <option value="0">Inactive</option>
                         </select>
                         <div id="status_error_up" class="text-danger error_e"></div>
-                    </div>
+                    </div>      
                     <div class="form-group">
-                        <label class="form-label">
-                            <input type="checkbox" id="enable_prerequisites"> Enable Prerequisites
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="edit_enable_feedback" name="enable_feedback">
+                            <label class="form-check-label" for="edit_enable_feedback">
+                                Enable Training Feedback
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="edit_feedbackConfigSection" style="display:none; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <label class="form-label">Feedback Questions <span class="text-muted">(Optional)</span></label>
+                        
+                        <div id="edit_feedback_questions_container">
+                            <!-- Question Template -->
+                            <div class="feedback-question mb-3">
+                                <input type="text" name="feedback_questions[0][question]" class="form-control mb-2" placeholder="Enter question">
+                                <div id="feedback_questions_0_question_error_up" class="text-danger error_e"></div>
+                                <select name="feedback_questions[0][answer_type]" class="form-select">
+                                    <option value="">Select Answer Type</option>
+                                    <option value="yes_no">Yes / No</option>
+                                    <option value="rating">Rating (1-5)</option>
+                                </select>
+                                <div id="feedback_questions_0_answer_type_error_up" class="text-danger error_e"></div>
+                            </div>
+                        </div>                        
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="edit_add_question_btn">Add Another Question</button>
+                    </div>    
+                    <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="enable_prerequisites">
+                        <label class="form-check-label" for="enable_prerequisites">
+                            Enable Prerequisites
                         </label>
+                    </div>
                     </div>
                     <div id="prerequisites_container" style="display: none;">
                         <div id="prerequisite_items">
-                            <div class="prerequisite-item ">
+                            <div class="prerequisite-item">
                                 <div class="form-group">
                                     <label class="form-label">Prerequisite Detail</label>
                                     <input type="text" class="form-control" name="prerequisite_details[]">
@@ -381,11 +489,32 @@
                         </div>
                         <button type="button" id="addPrerequisite" class="btn btn-primary mt-2">Add More</button>
                     </div>
-
+                    <div class="form-group">
+                    <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="1" id="edit_enable_instructor_upload" name="enable_instructor_upload">
+                        <label class="form-check-label" for="edit_enable_instructor_upload">
+                             Enable Instructor Upload
+                        </label>
+                    </div>
+                    </div>
+                    <div id="edit_instructor_documents_container" style="display: none;">
+                        <div id="edit_instructor_documents_items">
+                            <div class="instructor-documents-item border p-2 mt-2">
+                                <div class="form-group">
+                                    <label class="form-label">Document Name</label>
+                                    <input type="text" name="instructor_documents[0][name]" class="form-control">
+                                    <div id="instructor_documents_0_name_error_up" class="text-danger error_e"></div>
+                                </div>
+                                <button type="button" class="btn btn-danger remove-documents-container">X</button>
+                            </div>
+                        </div>
+                        <button type="button" id="editAddDocumentsContainer" class="btn btn-primary mt-2">Add More</button>
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="updateCourse" class="btn btn-primary sbt_btn">Update</button>
                     </div>
+                    <div class="loader" style="display: none;"></div>
                 </form>
             </div>
         </div>
@@ -420,8 +549,52 @@
 @endsection
 
 @section('js_scripts')
-
 <script>
+
+$(function() {
+    $('#sortable-courses').sortable({
+        helper: 'clone',
+        cursor: 'grabbing',
+        update: function(event, ui) {
+            let order = [];
+            $('.course-card').each(function(index) {
+                order.push({
+                    id: $(this).data('id'),
+                    position: index + 1
+                });
+            });
+
+            $.ajax({
+                url: '{{ route("courses.reorder") }}',
+                method: 'POST',
+                data: {
+                    order: order,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function (response) {
+                    console.log('Sublesson order updated');
+
+                    let $msg = $('#reoderMessage');
+                    if ($msg.length) {
+                        $msg.removeClass('d-none')
+                            .fadeIn()
+                            .text('Course order updated successfully!');
+                    }
+
+                    setTimeout(function () {
+                        $msg.fadeOut();
+                    }, 2000);
+                },
+                error: function () {
+                    console.error('Error updating order');
+                }
+            });
+        }
+    });
+
+    $('.course-card').css('cursor', 'grab');
+});
+
 function initializeSelect2() {
     $('.groups-select').select2({
         allowClear: true,
@@ -431,7 +604,6 @@ function initializeSelect2() {
     });
 
     $(".resources-select").select2({
-        maximumSelectionLength: 3,
         placeholder: 'Select the Resource',
         allowClear: true,
         dropdownParent: $('body') // move outside the modal
@@ -446,6 +618,11 @@ $(document).ready(function() {
         $(".error_e").html('');
         $("#courses")[0].reset();
         $(".groups-select").val(null).trigger("change");
+        // Hide feedback and instructor upload sections if visible
+        $("#enable_feedback").prop("checked", false);
+        $("#feedbackConfigSection").hide();
+        $("#enable_instructor_upload").prop("checked", false);
+        $("#instructor_documents_container").hide();
         $("#createCourseModal").modal('show');
         $('#createCourseModal').on('shown.bs.modal', function() {
             initializeSelect2();
@@ -454,6 +631,7 @@ $(document).ready(function() {
 
     $("#submitCourse").on("click", function(e) {
         e.preventDefault();
+        $(".loader").fadeIn();
         $('.error_e').html('');
         var formData = new FormData($('#courses')[0]);
 
@@ -464,15 +642,18 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function(response) {
+                $(".loader").fadeOut("slow");
                 $('#createCourseModal').modal('hide');
                 location.reload();
             },
             error: function(xhr, status, error) {
+                $(".loader").fadeOut("slow");
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
                 $.each(validationErrors, function(key, value) {
-                    var msg = '<p>' + value + '<p>';
-                    $('#' + key + '_error').html(msg);
+                    var formattedKey = key.replace(/\./g, '_') + '_error';
+                    var errorMsg = '<p>' + value[0] + '</p>';
+                    $('#' + formattedKey).html(errorMsg);
                 });
             }
         });
@@ -546,6 +727,7 @@ $(document).ready(function() {
                         }
                     },
                     error: function(xhr) {
+
                         console.error("Error loading groups:", xhr
                         .responseText);
                     }
@@ -576,7 +758,59 @@ $(document).ready(function() {
                     $('#prerequisite_items').append(prerequisiteHtml);
                 }
 
+                //Handle Document Container
+                if (response.course.enable_instructor_upload) {
+                    $('#edit_enable_instructor_upload').prop('checked', true);
+                    $('#edit_instructor_documents_container').show();
+                } else {
+                    $('#edit_enable_instructor_upload').prop('checked', false);
+                    $('#edit_instructor_documents_container').hide();
+                }
 
+                $('#edit_instructor_documents_items').empty();  // Clear existing containers
+                let instructor_documents = response.course.documents;
+                // console.log(instructor_documents);
+                if (instructor_documents.length > 0) {
+                    instructor_documents.forEach((instructor_documents, index) => {
+                        let instructorDocumentHtml = generateDocumentsContainerHtml(
+                            instructor_documents, index
+                        );
+                        $('#edit_instructor_documents_items').append(instructorDocumentHtml);
+                    });
+                } else {
+                    let instructorDocumentHtml = generateDocumentsContainerHtml({
+                        document_name: '',
+                        file_path: ''
+                    }, 0);
+                    $('#edit_instructor_documents_items').append(instructorDocumentHtml);
+                }
+
+
+                //Training Feedback
+                const questions = response.course.training_feedback_questions || [];
+                if (questions.length > 0) {
+                    $('#edit_enable_feedback').prop('checked', true);
+                    $('#edit_feedbackConfigSection').show();
+                    $('#edit_feedback_questions_container').empty();
+
+                    questions.forEach((q, i) => {
+                        $('#edit_feedback_questions_container').append(`
+                            <div class="feedback-question mb-3 position-relative border rounded p-3">
+                                <input type="text" name="feedback_questions[${i}][question]" class="form-control mb-2" placeholder="Enter question" value="${q.question}">
+                                <select name="feedback_questions[${i}][answer_type]" class="form-select">
+                                    <option value="">Select Answer Type</option>
+                                    <option value="yes_no" ${q.answer_type === 'yes_no' ? 'selected' : ''}>Yes / No</option>
+                                    <option value="rating" ${q.answer_type === 'rating' ? 'selected' : ''}>Rating (1-5)</option>
+                                </select>
+                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-question-btn" title="Remove Question" aria-label="Remove Question">&times;</button>
+                            </div>
+                        `);
+                    });
+                } else {
+                    $('#edit_enable_feedback').prop('checked', false);
+                    $('#edit_feedbackConfigSection').hide();
+                    // $('#edit_feedback_questions_container').empty();
+                }
                 $('#editCourseModal').modal('show');
 
                 $('#editCourseModal').on('shown.bs.modal', function() {
@@ -584,7 +818,7 @@ $(document).ready(function() {
                         dropdownParent: $('#editCourseModal'),
                         width: '100%',
                         allowClear: true,
-                        placeholder: 'Select the Group',
+                        placeholder: 'Select the Resource',
                         multiple: true,
                         dropdownParent: $('body') // move outside the modal
                     });
@@ -606,10 +840,41 @@ $(document).ready(function() {
         });
     });
 
+    // Enable/Disable feedback on edit modal
+    $(document).on('change', '#edit_enable_feedback', function () {
+        $('#edit_feedbackConfigSection').toggle(this.checked);
+    });
+
+    //Adding extra questions box on edit modal
+    $('#edit_add_question_btn').click(function() {
+        let index = $('#edit_feedback_questions_container .feedback-question').length;  
+
+        let questionHtml = `
+            <div class="feedback-question mb-3 position-relative border rounded p-3">
+                <input type="text" name="feedback_questions[${index}][question]" class="form-control mb-2" placeholder="Enter question">
+                <select name="feedback_questions[${index}][answer_type]" class="form-select">
+                    <option value="">Select Answer Type</option>
+                    <option value="yes_no">Yes / No</option>
+                    <option value="rating">Rating (1-5)</option>
+                </select>
+                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-question-btn" title="Remove Question" aria-label="Remove Question">&times;</button>
+            </div>
+        `;
+
+        $('#edit_feedback_questions_container').append(questionHtml);
+    });
+
+    // Remove a question block
+    $('#edit_feedback_questions_container').on('click', '.remove-question-btn', function () {
+        $(this).closest('.feedback-question').remove();
+    });
+
+
 
     // Update Course functionality
     $('#updateCourse').on('click', function(e) {
         e.preventDefault();
+        $(".loader").fadeIn('fast');        
         var formData = new FormData($('#editCourse')[0]);
         formData.append('enable_prerequisites', $('#enable_prerequisites').is(':checked') ? 1 : 0);
         $.ajax({
@@ -619,15 +884,18 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function(response) {
+                $(".loader").fadeOut("slow");
                 $('#editCourseModal').modal('hide');
                 location.reload();
             },
             error: function(xhr, status, error) {
+                $(".loader").fadeOut("slow");
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
                 $.each(validationErrors, function(key, value) {
-                    var msg = '<p>' + value + '<p>';
-                    $('#' + key + '_error_up').html(msg);
+                    var formattedKey = key.replace(/\./g, '_') + '_error_up';
+                    var errorMsg = '<p>' + value[0] + '</p>';
+                    $('#' + formattedKey).html(errorMsg);
                 });
             }
         });
@@ -649,14 +917,15 @@ $(document).ready(function() {
         $('#successMessage').fadeOut('slow');
     }, 2000);
     // Toggle prerequisites section
-    $("#enable_prerequisites").change(function() {
-        if ($(this).is(":checked")) {
-            $("#prerequisites_container").show();
-        } else {
-            $("#prerequisites_container").hide();
-            // $("#prerequisite_items").empty();
-        }
+    $("#enable_prerequisites").change(function () {
+            if ($(this).is(":checked")) {
+                $("#prerequisites_container").show();
+            } else {
+                $("#prerequisites_container").hide();
+                // $("#prerequisite_items").empty();
+            }
     });
+
 
     // Add new prerequisite
     $("#addPrerequisite").click(function() {
@@ -695,6 +964,113 @@ $(document).ready(function() {
     $(document).on("click", ".remove-prerequisite", function() {
         $(this).closest(".prerequisite-item").remove();
     });
+
+    // Toggle Instructor Documents section
+    $("#enable_instructor_upload").change(function () {
+            if ($(this).is(":checked")) {
+                $("#instructor_documents_container").show();
+            } else {
+                $("#instructor_documents_container").hide();
+                // $("#prerequisite_items").empty();
+            }
+    });
+    // Toggle Instructor Documents section On Editing
+    $("#edit_enable_instructor_upload").change(function () {
+            if ($(this).is(":checked")) {
+                $("#edit_instructor_documents_container").show();
+            } else {
+                $("#edit_instructor_documents_container").hide();
+                // $("#prerequisite_items").empty();
+            }
+    });
+
+    // Add New Documents Container
+    $("#addDocumentsContainer").click(function() {
+        let index = $(".instructor-documents-item").length;
+
+        let documentContainerHTML = `
+                            <div class="instructor-documents-item border p-2 mt-2">
+                                <div class="form-group">
+                                    <label class="form-label">Document Name</label>
+                                    <input type="text" name="instructor_documents[${index}][name]" id="documents_name_${index}" class="form-control">
+                                </div>
+                                <button type="button" class="btn btn-danger remove-documents-container">X</button>
+                            </div>
+        `;
+        $("#instructor_documents_items").append(documentContainerHTML);
+    });
+
+// Add New Documents Container while editing
+$("#editAddDocumentsContainer").click(function() {
+    // Find the highest existing index first
+    let maxIndex = 0;
+    $(".instructor-documents-item").each(function() {
+        $(this).find('input[name^="instructor_documents"]').each(function() {
+            let match = $(this).attr('name').match(/\[(\d+)\]/);
+            if (match && parseInt(match[1]) > maxIndex) {
+                maxIndex = parseInt(match[1]);
+            }
+        });
+    });
+
+    // Increment to get the new index
+    let newIndex = maxIndex + 1;
+
+    let documentContainerHTML = `
+        <div class="instructor-documents-item border p-2 mt-2">
+            <div class="form-group">
+                <label class="form-label" for="documents_name_${newIndex}">Document Name</label>
+                <input type="text" name="instructor_documents[${newIndex}][name]" id="documents_name_${newIndex}" class="form-control">
+                <div id="instructor_documents_${newIndex}_name_error_up" class="text-danger error_e"></div>
+            </div>
+
+            <button type="button" class="btn btn-danger remove-documents-container">X</button>
+        </div>
+    `;
+
+    $("#edit_instructor_documents_items").append(documentContainerHTML);
+});
+
+
+
+    // Remove Instructor Documents section
+    $(document).on("click", ".remove-documents-container", function() {
+        $(this).closest(".instructor-documents-item").remove();
+    });
+
+
+
+    // Enable feedback questions
+    let questionIndex = 1;
+
+    $('#enable_feedback').on('change', function () {
+        $('#feedbackConfigSection').toggle(this.checked);
+    });
+
+    $('#add_question_btn').on('click', function () {
+        $('#feedback_questions_container').append(`
+            <div class="feedback-question mb-3 border p-3 position-relative rounded">
+                <input type="text" name="feedback_questions[${questionIndex}][question]" class="form-control mb-2 question-input" placeholder="Enter question">
+                <div id="feedback_questions_${questionIndex}_question_error" class="text-danger error_e"></div>
+                <select name="feedback_questions[${questionIndex}][answer_type]" class="form-select answer-type">
+                    <option value="">Select Answer Type</option>
+                    <option value="yes_no">Yes / No</option>
+                    <option value="rating">Rating (1-5)</option>
+                </select>
+                <div id="feedback_questions_${questionIndex}_answer_type_error" class="text-danger error_e"></div>
+                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-question-btn">&times;</button>
+            </div>
+        `);
+        questionIndex++;
+    });
+
+    // Remove a question block
+    $('#feedback_questions_container').on('click', '.remove-question-btn', function () {
+        $(this).closest('.feedback-question').remove();
+    });
+
+   
+
 });
 
 function generatePrerequisiteHtml(prerequisite, index) {
@@ -702,6 +1078,7 @@ function generatePrerequisiteHtml(prerequisite, index) {
         <div class="prerequisite-item border p-2 mt-2">
             <div class="form-group">
                 <label class="form-label">Prerequisite Detail</label>
+                <input type="hidden" name="prerequisite_id[]" value="${prerequisite.id ?? '' }">
                 <input type="text" class="form-control" name="prerequisite_details[]" value="${prerequisite.prerequisite_detail}">
             </div>
 
@@ -726,6 +1103,33 @@ function generatePrerequisiteHtml(prerequisite, index) {
         </div>
     `;
 }
+
+
+function generateDocumentsContainerHtml(instructor_documents, index) {
+    let documentName = instructor_documents.document_name || '';
+    let filePath = instructor_documents.file_path ? `/storage/${instructor_documents.file_path}` : '';
+    let existingFilePath = instructor_documents.file_path || '';
+    let docRowId = instructor_documents.id || '';
+
+    let uploadedFileLinkHtml = '';
+    if (filePath) {
+        uploadedFileLinkHtml = `<div class="mt-2">
+                                <a href="${filePath}" target="_blank">View Uploaded Document</a>
+                            </div>`;
+    }
+
+    return `<div class="instructor-documents-item border p-2 mt-2">
+                <div class="form-group">
+                    <label class="form-label">Document Name</label>
+                    <input type="text" name="instructor_documents[${index}][name]" value="${documentName}" id="documents_name_${index}" class="form-control">
+                    <div id="instructor_documents_${index}_name_error_up" class="text-danger error_e"></div>
+                </div>
+                <button type="button" class="btn btn-danger remove-documents-container mt-2">X</button>
+            </div>`;
+}
+
+
+
 
 $(document).on("change", "#select_org_unit", function() {
     var ou_id = $(this).val();
@@ -760,7 +1164,6 @@ $(document).on("change", "#select_org_unit", function() {
                     resource += "<option value='" + value.id + "'>" + value.name +
                         "</option>";
 
-                    console.log(resource)
                 });
                 $resourceSelect.html(resource);
                 $resourceSelect.trigger("change");

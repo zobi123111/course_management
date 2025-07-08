@@ -90,13 +90,13 @@ class DashboardController extends Controller
             $course_count = Courses::count();
             $group_count = Group::count();
             $folder_count = Folder::whereNull('parent_id')->with('children')->count();
-            $documents = Document::with('group')->get();
+            $documents = Document::with('groups')->get();
         } elseif ($user->is_admin) {
             $user_count = User::where('ou_id', $ou_id)->count();
             $course_count = Courses::where('ou_id', $ou_id)->count();
-            $group_count = Group::where('ou_id', $ou_id)->count();
+            $group_count = Group::where('ou_id', $ou_id)->count();      
             $folder_count = Folder::whereNull('parent_id')->where('ou_id', $ou_id)->with('children')->count();
-            $documents = Document::where('ou_id', $ou_id)->with('group')->get();
+            $documents = Document::where('ou_id', $ou_id)->with('groups')->get();
             $requestCount = BookedResource::where('ou_id', $ou_id)->count();
         } else {
             $groups = Group::all();
@@ -111,12 +111,13 @@ class DashboardController extends Controller
                 $query->select('courses_id')->from('courses_group')->whereIn('group_id', $groupIds);
             })->get();
     
-            $documents = Document::where('ou_id', $ou_id)
-                ->whereHas('group', function ($query) use ($userId) {
-                    $query->whereJsonContains('user_ids', (string) $userId);
-                })
-                ->with('group')
-                ->get();
+            // Get documents where user has access via group pivot
+            $documents = Document::whereHas('groups', function ($query) use ($groupIds) {
+                $query->whereIn('groups.id', $groupIds);
+            })
+            ->where('ou_id', $ou_id)
+            ->with('groups')
+            ->get();
     
             $course_count = $courses->count();
             $group_count = $filteredGroups->count();
@@ -127,7 +128,23 @@ class DashboardController extends Controller
         $readDocuments = countAcknowledgedDocuments($documents, $user);
         $unreadDocuments = $totalDocuments - $readDocuments;
     
-        $users = User::where('ou_id', $ou_id)->whereNull('is_admin')->get();
+        // $users = User::where('ou_id', $ou_id)->whereNull('is_admin')->with(['usrRatings.rating', 'documents'])->get();
+        $users = User::where('ou_id', $ou_id)
+        ->whereNull('is_admin')
+        ->with([
+            'documents',
+            'usrRatings.rating.children', // Load rating & its children (for nested ratings)
+        ])
+        ->get()
+        ->map(function ($user) {
+            // Group ratings by linked_to license
+            $user->ratings_by_license = [
+                'license_1' => $user->usrRatings->filter(fn($r) => $r->linked_to === 'license_1')->values(),
+                'license_2' => $user->usrRatings->filter(fn($r) => $r->linked_to === 'license_2')->values(),
+            ];
+            return $user;
+        });
+
     
         return view('dashboard.index', compact(
             'user_count', 'course_count', 'group_count', 'folder_count',

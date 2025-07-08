@@ -39,40 +39,42 @@
                 <h5 class="mb-0 fw-bold" style="color:black">Folders</h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    @if(count($subfolders) > 0)
-                    @foreach ($subfolders as $folder)
-                    <div class="col-md-3 col-sm-4 mb-4">
-                        <div class="folder-wrapper" onclick="openFolder('{{ $folder->id }}')">
-                            <div class="folder-visual">
-                                <div class="folder-container">
-                                    <div class="folder-tab"></div>
-                                    <div class="folder-icon">
-                                        <i class="fas fa-folder"></i>
+                @if ($subfolders->isNotEmpty())
+                    <div class="row">                    
+                        @foreach ($subfolders as $folder)
+                        <div class="col-md-3 col-sm-4 mb-4">
+                            <div class="folder-wrapper" onclick="openFolder('{{ $folder->id }}')">
+                                <div class="folder-visual">
+                                    <div class="folder-container" title="{{ $folder->folder_name }}">
+                                        <div class="folder-tab"></div>
+                                        <div class="folder-icon">
+                                            <i class="fas fa-folder"></i>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="text-center mt-2 fw-bold folder_name">{{ $folder->folder_name }}</div>
-                            <div class="folder-actions">
-                                <a href="{{ url('folder/show/'.encode_id($folder->id)) }}" title="View">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a href="javascript:void(0);" title="Edit"
-                                    onclick="editFolder('{{ encode_id($folder->id) }}')">
-                                    <i class="fas fa-pen-to-square"></i>
-                                </a>
-                                <a href="javascript:void(0);" title="Delete"
-                                    onclick="deleteFolder('{{ encode_id($folder->id) }}', '{{ $folder->folder_name }}'); event.stopPropagation();">
-                                    <i class="fas fa-trash"></i>
-                                </a>
+                                <div class="text-center mt-2 fw-bold folder_name text-truncate" style="max-width: 100%;">{{ $folder->folder_name }}</div>
+                                <div class="folder-actions">
+                                    <a href="{{ url('folder/show/'.encode_id($folder->id)) }}" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="javascript:void(0);" title="Edit"
+                                        onclick="editFolder('{{ encode_id($folder->id) }}')">
+                                        <i class="fas fa-pen-to-square"></i>
+                                    </a>
+                                    <a href="javascript:void(0);" title="Delete"
+                                        onclick="deleteFolder('{{ encode_id($folder->id) }}', '{{ $folder->folder_name }}'); event.stopPropagation();">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
                             </div>
                         </div>
+                        @endforeach
                     </div>
-                    @endforeach
-                    @else
-                    <div class="col-12 text-center text-muted">No Sub Folder Found</div>
-                    @endif
-                </div>
+                @else
+                    <div class="alert alert-info text-center mt-3">
+                        No folders available.
+                    </div>
+                @endif        
             </div>
         </div>
     </div>
@@ -91,14 +93,14 @@
                             <div class="col-md-3 col-sm-4 mb-4">
                                 <div class="folder-wrapper">
                                     <div class="folder-visual">
-                                        <div class="file-container" style="background-color: #60a5fa;">
+                                        <div class="file-container" style="background-color: #60a5fa;" title="{{ $doc->original_filename }}">
                                             <div class="file-corner" style="background-color: #fff;"></div>
                                             <div class="file-content">
                                                 <i class="fas fa-file-alt"></i>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="text-center mt-2 fw-bold document_title">{{ $doc->original_filename }}
+                                    <div class="text-center mt-2 fw-bold document_title text-truncate" style="max-width: 100%;">{{ $doc->original_filename }}
                                     </div>
                                     <div class="file-actions">
                                         <a href="{{ Storage::url($doc->document_file) }}" title="View"
@@ -114,8 +116,10 @@
                                 </div>
                             </div>
                             @endforeach
-                            @else
-                            <div class="col-12 text-center text-muted">No Document Found</div>
+                        </div>
+                        @else
+                        <div class="alert alert-info text-center mt-3">
+                            No Documents available.
                         </div>
                         @endif
                     </div>
@@ -162,17 +166,41 @@
                         </select>
                         <div id="parent_id_error_up" class="text-danger error_e"></div>
                     </div>
+                    
                     <div class="form-group">
                         <label for="firstname" class="form-label">Folder Name<span class="text-danger">*</span></label>
                         <input type="text" name="folder_name" id="edit_folder_name" class="form-control">
                         <input type="hidden" name="folder_id" id="folder_id" class="form-control">
                         <div id="folder_name_error_up" class="text-danger error_e"></div>
                     </div>
+
                     <div class="form-group">
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="description" id="edit_description" rows="3"></textarea>
                         <div id="description_error_up" class="text-danger error_e"></div>
                     </div>
+
+                    <!-- Publish Folder Checkbox -->
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="edit_publish_folder" name="is_published" value="1">
+                            <label class="form-check-label" for="edit_publish_folder">Publish Folder</label>
+                        </div>
+                    </div>
+
+                    <!-- Show only if publish is checked -->
+                    <div class="form-group d-none" id="edit_publish_access_box">
+                        <label class="form-label">Assign Access To Group<span class="text-danger">*</span></label>
+                        <select name="group[]" id="edit_group" class="form-select group-select" multiple="multiple">
+                            <!-- <option value="">Select Group</option> -->
+                            @foreach($groups as $group)
+                                <option value="{{ $group->id }}">{{ $group->name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="access_users_error" class="text-danger error_e"></div>
+                        <small class="form-text text-muted">Select group of users who should have access to this folder.</small>
+                    </div>
+
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" id="edit_status" aria-label="Default select example">
@@ -226,6 +254,18 @@ function openFolder(folderId) {
     // alert("Opening folder ID: " + folderId);
 }
 
+//Initialize Select2 globally on all user selection dropdowns
+function initializeSelect2() {
+    $('.group-select').select2({
+        allowClear: true,
+        placeholder: 'Select the Groups',
+        multiple: true,
+        dropdownParent: $('#editFolderModal .modal-content:visible') // More specific
+    });
+}
+
+initializeSelect2(); // Call on page load
+
 function editFolder(folderId) {
 
     $('.error_e').html('');
@@ -237,12 +277,27 @@ function editFolder(folderId) {
         },
         success: function(response) {
             console.log(response);
-            $('#edit_parent_folder').val(response.folder.parent_id).trigger('change');
+            $('#edit_parent_folder').val(response.folder.parent_id).trigger('change');  
             $('#edit_folder_name').val(response.folder.folder_name);
             $('#folder_id').val(response.folder.id);
             $('#edit_description').val(response.folder.description);
             $('#edit_ou_id').val(response.folder.ou_id);
             $('#edit_status').val(response.folder.status);
+
+            // Handle "is_published" checkbox
+            if (response.folder.is_published == 1) {
+                $('#edit_publish_folder').prop('checked', true);
+                $('#edit_publish_access_box').removeClass('d-none');                                          
+                // Handle selected group from pivot table
+                if (response.group_ids && response.group_ids.length > 0) {
+                    $('#edit_group').val(response.group_ids).trigger('change');
+                } else {
+                    $('#edit_group').val(null).trigger('change');
+                }
+            } else {
+                $('#edit_publish_folder').prop('checked', false);
+                $('#edit_publish_access_box').addClass('d-none');
+            }
 
             $('#editFolderModal').modal('show');
         },
@@ -328,6 +383,26 @@ $(document).on("change", "#edit_ou_id", function() {
             console.error(xhr.responseText);
         }
     });
+});
+
+function toggleAccessBox() {
+        if ($('#edit_publish_folder').is(':checked')) {
+            $('#edit_publish_access_box').removeClass('d-none');
+        } else {
+            $('#edit_publish_access_box').addClass('d-none');
+            $('#edit_group').prop('selectedIndex', 0); // Reset to default
+
+        }
+    }
+
+// Run once on page load
+toggleAccessBox();
+
+// Bind change event
+$('#edit_publish_folder').on('change', toggleAccessBox);
+
+$('#editFolderModal').on('shown.bs.modal', function () {
+    initializeSelect2();
 });
 
 setTimeout(function() {

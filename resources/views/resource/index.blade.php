@@ -15,66 +15,40 @@
     {{ session()->get('message') }}
 </div>
 @endif
-<div class="main_cont_outer" >
-    <div class="create_btn " >
+<div class="main_cont_outer">
+    <div class="create_btn">
+        @if(checkAllowedModule('resource','save.index')->isNotEmpty())
         <button class="btn btn-primary create-button" id="create_resource" data-toggle="modal"
             data-target="#orgUnitModal">Create Resource</button>
+        @endif
     </div>
-    <br>
     <div id="update_success_msg"></div>
     <div class="card pt-4">
         <div class="card-body">
-    <table class="table table-hover" id="resourceTable">
-        <thead>
-            <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Registration</th> 
-                <th scope="col">Class</th>
-                <th scope="col">Type</th>
-                <th scope="col">Note</th>
-                @if(checkAllowedModule('resource','edit.index')->isNotEmpty())
-                <th scope="col">Edit</th>
-                @endif
-                @if(checkAllowedModule('resource','delete.index')->isNotEmpty())
-                <th scope="col">Delete</th>
-                @endif
-            </tr>
-        </thead>
-   
-        <tbody>
-
-        </tbody>
-    </table>
-</div>
-</div>
-</div>
-
-<!-- OU Users List Modal -->
-<div class="modal fade" id="orgUnitUsersModal" tabindex="-1" role="dialog" aria-labelledby="orgUnitUsersModalLabel"
-    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="orgUnitUsersModalLabel">OU Users</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-            <table class="table" id="orgUnitUsersTable">
+            <table class="table table-hover" id="resourceTable">
                 <thead>
                     <tr>
-                        <th scope="col">Image</th>
+                        @if(auth()->user()->is_owner==1)
+                        <th scope="col">OU</th>
+                        @endif
                         <th scope="col">Name</th>
-                        <th scope="col">Email</th>
+                        <th scope="col">Registration</th> 
+                        <th scope="col">Class</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Note</th>
+                        @if(checkAllowedModule('resource','edit.index')->isNotEmpty() || checkAllowedModule('resource','delete.index')->isNotEmpty() || checkAllowedModule('resource','resource.show')->isNotEmpty())
+                        <th scope="col">Action</th>         
+                        @endif         
                     </tr>
                 </thead>
-                <tbody id="tblBody">                    
+        
+                <tbody>
+
                 </tbody>
             </table>
-            </div>
         </div>
     </div>
 </div>
-<!--End of OU Users List Modal-->
 
 <!-- Create Resource  Unit-->
 <div class="modal fade" id="createResourceModel" tabindex="-1" role="dialog" aria-labelledby="orgUnitModalLabel"
@@ -109,18 +83,23 @@
                     </div>
                     <div class="form-group">
                         <label for="registration" class="form-label">Registration</label>
-                        <input type="number" name="registration" class="form-control">
+                        <input type="text" name="registration" class="form-control">
                         <div id="registration_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="Class" class="form-label">Class</label>
                         <input type="text" name="class" class="form-control">
                         <div id="class_error" class="text-danger error_e"></div>
-                    </div>
+                    </div>                    
                     <div class="form-group">
                         <label for="Type" class="form-label">Type</label>
                         <input type="text" name="type" class="form-control">
                         <div id="type_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="Type" class="form-label">Classroom</label>
+                        <input type="text" name="classroom" id="classroom" class="form-control">
+                        <div id="classroom_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="Class" class="form-label">Others</label>
@@ -134,28 +113,54 @@
                     </div>
                     <div class="form-group">
                         <label for="Hours from RTS" class="form-label">Hours from RTS</label>
-                        <input type="number" name="Hours_from_RTS" class="form-control">
+                        <input type="number" name="Hours_from_RTS" id="Hours_from_RTS" class="form-control">
                         <div id="Hours_from_RTS_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="Date from RTS" class="form-label">Date from RTS</label>
-                        <input type="date" name="Date_from_RTS" class="form-control">
+                        <input type="date" name="Date_from_RTS" id="Date_from_RTS" class="form-control">
                         <div id="Date_from_RTS_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                             <label for="image" class="form-label">Image</label>
-                            <input type="file" name="resource_logo" class="form-control" accept="image/*">
+                            <input type="file" name="resource_logo" class="form-control" accept="image/*" >
                             <div id="resource_logo_error" class="text-danger error_e"></div>           
                     </div>
                     <div class="form-group">
                         <label for="Date for maintenance" class="form-label">Date for maintenance</label>
-                        <input type="date" name="Date_for_maintenance" class="form-control">
+                        <input type="date" name="Date_for_maintenance" id="Date_for_maintenance" class="form-control">
                         <div id="Date_for_maintenance_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="Hours_Remaining" class="form-label">Hours Remaining</label>
                         <input type="number" name="Hours_Remaining" id="Hours_Remaining" class="form-control" min="0" step="1">
                         <div id="Hours_Remaining_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="enable_doc_upload" name="enable_doc_upload">
+                        <label class="form-check-label" for="enable_doc_upload">
+                             Enable Document Upload
+                        </label>
+                    </div>
+                    </div>
+                    <div id="resource_documents_container" style="display: none;">
+                        <div id="resource_documents_items">
+                            <div class="resource-documents-item border p-2 mt-2">
+                                <div class="form-group">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" name="resource_documents[0][name]" class="form-control">
+                                    <div id="resource_documents_0_name_error" class="text-danger error_e"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">File</label>
+                                    <input type="file" name="resource_documents[0][file]" class="form-control">
+                                    <div id="resource_documents_0_file_error" class="text-danger error_e"></div>
+                                </div>
+                                <button type="button" class="btn btn-danger remove-documents-container">X</button>
+                            </div>
+                        </div>
+                        <button type="button" id="addDocumentsContainer" class="btn btn-primary mt-2">Add More</button>
                     </div>
                     <div class="modal-footer"> 
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
@@ -216,6 +221,11 @@
                         <div id="edit_type_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
+                        <label for="Type" class="form-label">Classroom</label>
+                        <input type="text" name="edit_classroom" id="edit_classroom" class="form-control">
+                        <div id="edit_classroom_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
                         <label for="Class" class="form-label">Other</label>
                         <input type="text" name="edit_other" class="form-control">
                         <div id="other_error_up" class="text-danger error_e"></div>
@@ -253,6 +263,32 @@
                         <label for="Hours_Remaining" class="form-label">Hours Remaining</label>
                         <input type="number" name="edit_Hours_Remaining" id="Hours_Remaining" class="form-control" min="0" step="1">
                         <div id="edit_Hours_Remaining_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="edit_enable_doc_upload" name="enable_doc_upload">
+                            <label class="form-check-label" for="edit_enable_doc_upload">
+                                Enable Resource Upload
+                            </label>
+                        </div>
+                    </div>
+                    <div id="edit_resource_documents_container" style="display: none;">
+                        <div id="edit_resource_documents_items">
+                            <div class="edit-resource-documents-item border p-2 mt-2">
+                                <div class="form-group">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" name="resource_documents[0][name]" class="form-control">
+                                    <div id="resource_documents_0_name_error_up" class="text-danger error_e"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">File</label>
+                                    <input type="file" name="resource_documents[0][file]" class="form-control">
+                                    <div id="resource_documents_0_file_error_up" class="text-danger error_e"></div>
+                                </div>
+                                <button type="button" class="btn btn-danger edit-remove-documents-container">X</button>
+                            </div>
+                        </div>
+                        <button type="button" id="editAddDocumentsContainer" class="btn btn-primary mt-2">Add More</button>
                     </div>
                     <div class="modal-footer"> 
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
@@ -305,16 +341,16 @@
             type: "GET",
         },
         columns: [
+            @if(auth()->user()->is_owner)
+            { data: 'OU', name: 'OU' }, // dynamically add OU column for owners
+            @endif            
             { data: 'name', name: 'name' ,class:'resource_name'},
             { data: 'registration', name: 'registration', class: 'orgUnitName' },
             { data: 'class', name: 'class' },
             { data: 'type', name: 'type' },
             { data: 'note', name: 'note' },
-            @if(checkAllowedModule('resource','edit.index')->isNotEmpty())
-            { data: 'edit', name: 'edit', orderable: false, searchable: false },
-            @endif
-            @if(checkAllowedModule('resource','delete.index')->isNotEmpty())
-            { data: 'delete', name: 'delete', orderable: false, searchable: false },
+            @if(checkAllowedModule('resource','edit.index')->isNotEmpty() || checkAllowedModule('resource','delete.index')->isNotEmpty() || checkAllowedModule('resource','resource.show')->isNotEmpty())
+                { data: 'action', name: 'action', class: 'text-center', orderable: false, searchable: false },
             @endif
         ]
     });
@@ -325,36 +361,194 @@
         $("#createResourceModel").modal('show'); 
     })
 
+        // Toggle Instructor Documents section
+    $("#enable_doc_upload").change(function () {
+            if ($(this).is(":checked")) {
+                $("#resource_documents_container").show();
+            } else {
+                $("#resource_documents_container").hide();
+                // $("#prerequisite_items").empty();
+
+                
+            // Clear all inputs inside the container
+            $("#resource_documents_container input").val('');
+            $("#resource_documents_container input[type='file']").val('');
+            $("#resource_documents_container .error_e").html('');
+
+            // Optional: Reset to the default single resource item
+            $('#resource_documents_items').html(`
+                <div class="resource-documents-item border p-2 mt-2">
+                    <div class="form-group">
+                        <label class="form-label">Name</label>
+                        <input type="text" name="resource_documents[0][name]" class="form-control">
+                        <div id="resource_documents_0_name_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">File</label>
+                        <input type="file" name="resource_documents[0][file]" class="form-control">
+                        <div id="resource_documents_0_file_error" class="text-danger error_e"></div>
+                    </div>
+                </div>
+            `);
+
+            }
+    });
+    // Toggle Instructor Documents section On Editing
+    $("#edit_enable_doc_upload").change(function () {
+            if ($(this).is(":checked")) {
+                $("#edit_resource_documents_container").show();
+            } else {
+                $("#edit_resource_documents_container").hide();
+                // $("#prerequisite_items").empty();
+            }
+    });
+
+        // Add New Documents Container
+    $("#addDocumentsContainer").click(function() {
+        let index = $(".resource-documents-item").length;
+
+        let documentContainerHTML = `
+                            <div class="resource-documents-item border p-2 mt-2">
+                                <div class="form-group">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" name="resource_documents[${index}][name]"  class="form-control">
+                                    <div id="resource_documents_${index}_name_error" class="text-danger error_e"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">File</label>
+                                    <input type="file" name="resource_documents[${index}][file]" class="form-control">
+                                    <div id="resource_documents_${index}_file_error" class="text-danger error_e"></div>
+                                </div>
+                                <button type="button" class="btn btn-danger remove-documents-container">X</button>
+                            </div>
+        `;
+        $("#resource_documents_items").append(documentContainerHTML);
+    });
+
+    // Remove Resource Documents section
+    $(document).on("click", ".remove-documents-container", function() {
+        $(this).closest(".resource-documents-item").remove();
+    });
+
+    // Remove Edit Resource Documents section
+    $(document).on("click", ".edit-remove-documents-container", function() {
+        $(this).closest(".edit-resource-documents-item").remove();
+    });
+
+    function generateDocumentsContainerHtml(resource_documents, index) {
+        let documentName = resource_documents.name || '';
+        let filePath = resource_documents.file_path ? `/storage/${resource_documents.file_path}` : '';
+        let existingFilePath = resource_documents.file_path || '';
+        let docRowId = resource_documents.id || '';
+
+        let uploadedFileLinkHtml = '';
+        if (filePath) {
+            uploadedFileLinkHtml = `<div class="mt-2">
+                                    <a href="${filePath}" target="_blank">View Uploaded Document</a>
+                                </div>`;
+        }
+
+        return `<div class="edit-resource-documents-item border p-2 mt-2">
+                    <div class="form-group">
+                        <label class="form-label">Name</label>
+                        <input type="text" name="resource_documents[${index}][name]" value="${documentName}" id="documents_name_${index}" class="form-control">
+                        <div id="resource_documents_${index}_name_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">File</label>
+                        <input type="file" name="resource_documents[${index}][file]" class="form-control">
+                        <div id="resource_documents_${index}_file_error_up" class="text-danger error_e"></div>
+                        ${uploadedFileLinkHtml}
+                        <input type="hidden" name="resource_documents[${index}][existing_file_path]" value="${existingFilePath}">
+                        <input type="hidden" name="resource_documents[${index}][row_id]" value="${docRowId}">
+                    </div>
+                    <button type="button" class="btn btn-danger edit-remove-documents-container mt-2">X</button>
+                </div>`;
+    }
+
+
+    // Add New Documents Container while editing
+    $("#editAddDocumentsContainer").click(function() {
+        // Find the highest existing index first
+        let maxIndex = 0;
+        $(".edit-resource-documents-item").each(function() {
+            $(this).find('input[name^="resource_documents"]').each(function() {
+                let match = $(this).attr('name').match(/\[(\d+)\]/);
+                if (match && parseInt(match[1]) > maxIndex) {
+                    maxIndex = parseInt(match[1]);
+                }
+            });
+        });
+
+        // Increment to get the new index
+        let newIndex = maxIndex + 1;
+
+        let documentContainerHTML = `
+            <div class="edit-resource-documents-item border p-2 mt-2">
+                <div class="form-group">
+                    <label class="form-label" for="documents_name_${newIndex}">Name</label>
+                    <input type="text" name="resource_documents[${newIndex}][name]" id="documents_name_${newIndex}" class="form-control">
+                    <div id="resource_documents_${newIndex}_name_error_up" class="text-danger error_e"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="documents_file_${newIndex}">File</label>
+                    <input type="file" name="resource_documents[${newIndex}][file]" id="documents_file_${newIndex}" class="form-control">
+                    <div id="resource_documents_${newIndex}_file_error_up" class="text-danger error_e"></div>
+                </div>
+                <button type="button" class="btn btn-danger edit-remove-documents-container">X</button>
+            </div>
+        `;
+        $("#edit_resource_documents_items").append(documentContainerHTML);
+    });
+
     $(document).ready(function () {
-    function toggleAndClearFields(selectedField, formType) {
-        let fields = ["class", "type", "other"];
-        fields.forEach(field => {
-            let fieldName = formType + field;
-            if (field !== selectedField) {
-                $("input[name='" + fieldName + "']").val("").prop("disabled", true).css("background-color", "#e9ecef"); // Clear & disable
-            } else {
-                $("input[name='" + fieldName + "']").prop("disabled", false).css("background-color", ""); // Enable selected
-            }
-        });
-    }
 
-    function initFieldRestrictions(formType) {
-        $("input[name='" + formType + "class'], input[name='" + formType + "type'], input[name='" + formType + "other']").on("input", function () {
-            let selectedName = $(this).attr("name").replace(formType, "");
-            if ($(this).val().trim() !== "") {
-                toggleAndClearFields(selectedName, formType);
-            } else {
-                $("input[name='" + formType + "class'], input[name='" + formType + "type'], input[name='" + formType + "other']")
-                    .prop("disabled", false)
-                    .css("background-color", "");
-            }
-        });
-    }
+        $('#classroom').on('input', function() {
+            let isClassroomFilled = $(this).val().trim() !== '';
 
-    // Initialize for edit modal only
-    initFieldRestrictions("");
-    initFieldRestrictions("edit_");
-});
+            $('input[name="Hours_from_RTS"]').prop('disabled', isClassroomFilled);
+            $('input[name="Date_from_RTS"]').prop('disabled', isClassroomFilled);
+            $('input[name="Date_for_maintenance"]').prop('disabled', isClassroomFilled);
+            $('input[name="Hours_Remaining"]').prop('disabled', isClassroomFilled);
+        });
+
+       function toggleAndClearFields(selectedField, formType) {
+            let fields = ["class", "type", "other"];
+            fields.forEach(field => {
+                let fieldName = formType + field;
+                if (field !== selectedField) {
+                    $("input[name='" + fieldName + "']").val("").prop("disabled", true).css("background-color", "#e9ecef"); // Clear & disable
+                } else {
+                    $("input[name='" + fieldName + "']").prop("disabled", false).css("background-color", ""); // Enable selected
+                }
+            });
+
+            // Also handle classroom field
+            let shouldDisableClassroom = selectedField === "class" || selectedField === "type";
+            $("input[name='" + formType + "classroom']").val("").prop("disabled", shouldDisableClassroom).css("background-color", shouldDisableClassroom ? "#e9ecef" : "");
+        }
+
+        function initFieldRestrictions(formType) {
+            $("input[name='" + formType + "class'], input[name='" + formType + "type'], input[name='" + formType + "other']").on("input", function () {
+                let selectedName = $(this).attr("name").replace(formType, "");
+                if ($(this).val().trim() !== "") {
+                    toggleAndClearFields(selectedName, formType);
+                } else {
+                    // Re-enable all related fields if input is cleared
+                    ["class", "type", "other", "classroom"].forEach(field => {
+                        $("input[name='" + formType + field + "']")
+                            .prop("disabled", false)
+                            .css("background-color", "");
+                    });
+                }
+            });
+        }
+
+        // Initialize for both normal and edit forms
+        initFieldRestrictions("");
+        initFieldRestrictions("edit_");
+
+    });
 
     $("#save_resource").on("click", function(e) {
         e.preventDefault();
@@ -381,12 +575,18 @@
                 var errorMessage = JSON.parse(xhr.responseText); 
                 var validationErrors = errorMessage.errors;
                 $.each(validationErrors, function(key, value) {
-                    var msg = '<p>' + value + '<p>';
-                    $('#' + key + '_error').html(msg);
+                    var formattedKey = key.replace(/\./g, '_') + '_error';
+                    var errorMsg = '<p>' + value[0] + '</p>';
+                    $('#' + formattedKey).html(errorMsg);
                 })
             }
         });
     })
+
+    $("#edit_classroom").on("input", function () {
+        handleClassroomFieldDependency("edit_");
+    });
+
     $(document).on('click', '.edit-resource-icon', function() { 
         $('.error_e').html('');
         $("#editResource")[0].reset();
@@ -405,6 +605,7 @@
                     $('input[name="edit_name"]').val(response.resourcedata.name || '');
                     $('input[name="edit_registration"]').val(response.resourcedata.registration || '');
                     $('input[name="edit_type"]').val(response.resourcedata.type || '');
+                    $('input[name="edit_classroom"]').val(response.resourcedata.classroom || ''); 
                     $('input[name="edit_class"]').val(response.resourcedata.class || '');
                     $('input[name="edit_other"]').val(response.resourcedata.other || '');
                      $('input[name="edit_note"]').val(response.resourcedata.note || '');
@@ -444,6 +645,34 @@
                         }
                     });
                     autoDisableFields("edit_");
+                    handleClassroomFieldDependency("edit_");
+
+                     //Handle Document Container
+                    if (response.resourcedata.enable_doc_upload) {
+                        $('#edit_enable_doc_upload').prop('checked', true);
+                        $('#edit_resource_documents_container').show();
+                    } else {
+                        $('#edit_enable_doc_upload').prop('checked', false);
+                        $('#edit_resource_documents_container').hide();
+                    }
+
+                    $('#edit_resource_documents_items').empty();  // Clear existing containers
+                    let resource_documents = response.resourcedata.documents;
+                    // console.log(instructor_documents);
+                    if (resource_documents.length > 0) {
+                        resource_documents.forEach((resource_documents, index) => {
+                            let resourceDocumentHtml = generateDocumentsContainerHtml(
+                                resource_documents, index
+                            );
+                            $('#edit_resource_documents_items').append(resourceDocumentHtml);
+                        });
+                    } else {
+                        let resourceDocumentHtml = generateDocumentsContainerHtml({
+                            document_name: '',
+                            file_path: ''
+                        }, 0);
+                        $('#edit_resource_documents_items').append(resourceDocumentHtml);
+                    }
                 }
            
                 $('#editOrgUnitModal').modal('show');
@@ -453,36 +682,59 @@
             }
         });
     });
+
     // Function to disable and grey out other fields if one is filled
-function autoDisableFields(formType) {
-    let fields = ["class", "type", "other"];
-    let selectedField = null;
+    function autoDisableFields(formType) {
+        let fields = ["class", "type", "other"];
+        let selectedField = null;
 
-    // Check which field has data
-    fields.forEach(field => {
-        let fieldName = formType + field;
-        if ($("input[name='" + fieldName + "']").val().trim() !== "") {
-            selectedField = field;
-        }
-    });
-
-    // If one field has data, disable others
-    if (selectedField) {
+        // Check which field has data
         fields.forEach(field => {
             let fieldName = formType + field;
-            if (field !== selectedField) {
-                $("input[name='" + fieldName + "']").val("").prop("disabled", true).css("background-color", "#e9ecef");
+            if ($("input[name='" + fieldName + "']").val().trim() !== "") {
+                selectedField = field;
+            }
+        });
+
+        // If one field has data, disable others
+        if (selectedField) {
+            fields.forEach(field => {
+                let fieldName = formType + field;
+                if (field !== selectedField) {
+                    $("input[name='" + fieldName + "']").val("").prop("disabled", true).css("background-color", "#e9ecef");
+                } else {
+                    $("input[name='" + fieldName + "']").prop("disabled", false).css("background-color", "");
+                }
+            });
+        }
+    }
+
+    function handleClassroomFieldDependency(formType) {
+        const classroomValue = $("input[name='" + formType + "classroom']").val().trim();
+
+        const rtsFields = [
+            "Hours_from_RTS",
+            "Date_from_RTS",
+            "Date_for_maintenance",
+            "Hours_Remaining"
+        ];
+
+        rtsFields.forEach(field => {
+            const fullFieldName = "input[name='" + formType + field + "']";
+            if (classroomValue !== "") {
+                $(fullFieldName).val("").prop("disabled", true).css("background-color", "#e9ecef");
             } else {
-                $("input[name='" + fieldName + "']").prop("disabled", false).css("background-color", "");
+                $(fullFieldName).prop("disabled", false).css("background-color", "");
             }
         });
     }
-}
-        $('#update_resourse').on('click', function(e) { 
+
+
+    $('#update_resourse').on('click', function(e) { 
         e.preventDefault();
         $(".loader").fadeIn();
         var formData = new FormData($('#editResource')[0]);
-      
+    
         $.ajax({
             url: "{{ url('resourse/update') }}",
             type: "POST",
@@ -498,16 +750,13 @@ function autoDisableFields(formType) {
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
                 $.each(validationErrors, function(key, value) {
-                    var msg = '<p>' + value + '<p>';
-                    $('#' + key + '_error_up').html(msg);
+                    var formattedKey = key.replace(/\./g, '_') + '_error_up';
+                    var errorMsg = '<p>' + value[0] + '</p>';
+                    $('#' + formattedKey).html(errorMsg);
                 })
             }
         })
     })
-
-
-
-
 
     $(document).on('click', '.delete-icon', function(e) {
         e.preventDefault();

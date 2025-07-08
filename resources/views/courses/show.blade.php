@@ -1,6 +1,7 @@
+@section('title', 'Lessons')
 @section('sub-title', 'Course')
 @extends('layout.app')
-@section('content')
+@section('content') 
 
 {{-- <style>
     .course-image {
@@ -114,6 +115,16 @@
     border-radius: 5px;
     font-size: 0.9em;
 }
+
+.ui-sortable-helper {
+    opacity: 1 !important;
+    background-color: white;
+}
+
+.lesson-card {
+    cursor: grab;
+}
+
 </style>
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb">
@@ -135,6 +146,10 @@
     {{ session()->get('message') }}
 </div>
 @endif
+
+<div id="reoderMessage" class="alert alert-success d-none fade show" role="alert">
+  <i class="bi bi-check-circle me-1"></i>
+</div>
 
 <!-- Card with an image on left -->
 <div class="card mb-3">
@@ -169,56 +184,63 @@
     <div class="card-body">
         <div class="list-group">
             <div class="container-fluid">
+                @php
+                    $disableDragDrop = '';
+                    if (Auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1) {
+                        $disableDragDrop = 'sortable-lessons';
+                    }
+                @endphp
                 <h3>Lessons</h3>
-                <div class="row">
+                <div class="row" id="{{ $disableDragDrop }}">
                     @foreach($course->courseLessons as $val)
-                    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
-                        <div class="lesson_card course-card">
-                            <div class="course-image-container" style="position: relative;">
-                            @if(auth()->user()->role == 3)
-                                <a href="{{ url('lesson-pdf/'. $val->id) }}" style="position: absolute; top: 10px; right: 75px; background-color: green; border: none;border-radius: 5px; padding: 4px 5px; color: white;">Download
-                                </a>
-                            @endif    
-                                <span class="status-label"
-                                    style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
-                                    {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
-                                </span>
-                            </div>
+                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3 lesson-card" data-id="{{ $val->id }}">
+                            <div class="lesson_card course-card">
+                                <div class="course-image-container" style="position: relative;">
+                                @if($studentAcknowledged)
+                                    <a href="{{ url('lesson-pdf/'. $val->id) }}" 
+                                    style="position: absolute; top: 10px; right: 75px; background-color: green; border: none; border-radius: 5px; padding: 4px 5px; color: white;">
+                                        Export PDF
+                                    </a>
+                                @endif 
+                                    <span class="status-label"
+                                        style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
+                                        {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </div>
 
-                            <div class="card-body">
-                                <h5 class="card-title lessonName">{{ $val->lesson_title}}</h5>
+                                <div class="card-body">
+                                    <h5 class="card-title lessonName">{{ $val->lesson_title}}</h5>
 
-                                <p class="card-text">
-                                    {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
-                                </p>
-                            </div>
+                                    <p class="card-text">
+                                        {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
+                                    </p>
+                                </div>
 
-                            <div class="card-footer d-flex justify-content-between">
+                                <div class="card-footer d-flex justify-content-between">
+                                    @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
+                                    <a href="javascript:void(0)" class="btn btn-light show-lesson-icon"
+                                        data-lesson-id="{{ encode_id($val->id) }}">
+                                        <i class="fa fa-edit"></i> Show
+                                    </a>
+                                    @endif
 
-                                @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
-                                <a href="javascript:void(0)" class="btn btn-light show-lesson-icon"
-                                    data-lesson-id="{{ encode_id($val->id) }}">
-                                    <i class="fa fa-edit"></i> Show
-                                </a>
-                                @endif
+                                    @if(checkAllowedModule('courses', 'lesson.edit')->isNotEmpty())
+                                    <a href="javascript:void(0)" class="btn btn-light edit-lesson-icon"
+                                        data-lesson-id="{{ encode_id($val->id) }}">
+                                        <i class="fa fa-edit"></i> Edit
+                                    </a>
+                                    @endif
 
-                                @if(checkAllowedModule('courses', 'lesson.edit')->isNotEmpty())
-                                <a href="javascript:void(0)" class="btn btn-light edit-lesson-icon"
-                                    data-lesson-id="{{ encode_id($val->id) }}">
-                                    <i class="fa fa-edit"></i> Edit
-                                </a>
-                                @endif
+                                    @if(checkAllowedModule('courses', 'lesson.delete')->isNotEmpty())
+                                    <a href="javascript:void(0)" class="btn btn-light delete-lesson-icon"
+                                        data-lesson-id="{{ encode_id($val->id) }}">
+                                        <i class="fa-solid fa-trash"></i> Delete
+                                    </a>
+                                    @endif
 
-                                @if(checkAllowedModule('courses', 'lesson.delete')->isNotEmpty())
-                                <a href="javascript:void(0)" class="btn btn-light delete-lesson-icon"
-                                    data-lesson-id="{{ encode_id($val->id) }}">
-                                    <i class="fa-solid fa-trash"></i> Delete
-                                </a>
-                                @endif
-
+                                </div>
                             </div>
                         </div>
-                    </div>
                     @endforeach
                 </div>
             </div>
@@ -241,9 +263,9 @@
                         @php
                         // Get saved prerequisite for the logged-in user
                         $savedPrerequisite = $course->prerequisiteDetails()
-                        ->where('created_by', auth()->id())
-                        ->where('prerequisite_type', $prerequisite->prerequisite_type)
-                        ->first();
+                            ->where('created_by', auth()->id())
+                            ->where('prereq_id', $prerequisite->id)
+                            ->first();
                         @endphp
 
                         <div class="col-md-6 mb-3">
@@ -292,6 +314,59 @@
 </div> <!-- end card -->
 @endif
 
+@if(auth()->user()->is_admin == 1 && isset($prerequisiteDetails) && count($prerequisiteDetails) > 0)
+    <div class="card pt-4">
+        <div class="card-body">
+            <h3>Submitted Prerequisites by Students</h3>
+
+                @forelse($prerequisiteDetails as $userId => $details)
+                    @php $user = $details->first()->creator; @endphp
+                    <div class="mb-4">
+                        <h5 class="mb-3 card-title">{{ $user->fname ?? 'Unknown' }} {{ $user->lname ?? '' }}</h5>
+
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 40%;">Prerequisite</th>
+                                    <th>Submitted Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($course->prerequisites as $prerequisite)
+                                    @php
+                                        $detail = $details->firstWhere('prereq_id', $prerequisite->id);
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $prerequisite->prerequisite_detail }}</td>
+                                        <td>
+                                            @if($prerequisite->prerequisite_type === 'file')
+                                                @if($detail && $detail->file_path)
+                                                    <a href="{{ asset('storage/' . $detail->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                        View File
+                                                    </a>
+                                                @else
+                                                    <span class="text-muted">Not submitted</span>
+                                                @endif
+                                            @elseif(in_array($prerequisite->prerequisite_type, ['text', 'number']))
+                                                {{ $detail->prerequisite_detail ?? 'Not submitted' }}
+                                            @else
+                                                <span class="text-muted">Unknown Type</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @empty
+                    <p>No prerequisite submissions found.</p>
+                @endforelse
+        </div>
+    </div>
+@endif
+
+
+
 <!-- Create Lesson-->
 <div class="modal fade" id="createLessonModal" tabindex="-1" role="dialog" aria-labelledby="lessonModalLabel"
     aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -335,6 +410,18 @@
 
                             <input type="radio" name="grade_type" value="score" id="grade_score">
                             <label for="grade_score">Score (1-5)</label>
+
+                            <input type="radio" name="grade_type" value="percentage" id="grade_percentage">
+                            <label for="grade_percentage">Percentage (%)</label>
+                        </div>
+                        <div id="grade_type_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="enable_cbta" name="enable_cbta">
+                            <label class="form-check-label" for="enable_cbta">
+                                Enbale CBTA
+                            </label>
                         </div>
                     </div>
                     <div class="form-group">
@@ -400,8 +487,19 @@
 
                             <input type="radio" name="edit_grade_type" value="score" id="edit_grade_score">
                             <label for="edit_grade_score">Score (1-5)</label>
+
+                            <input type="radio" name="edit_grade_type" value="percentage" id="edit_grade_percentage">
+                            <label for="edit_grade_percentage">Percentage</label>
                         </div>
-                        <div id="edit_grade_type_error" class="text-danger error_e"></div>
+                        <div id="edit_grade_type_error_up" class="text-danger error_e"></div>
+                    </div>
+                     <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="edit_enable_cbta" name="edit_enable_cbta">
+                            <label class="form-check-label" for="edit_enable_cbta">
+                                Enbale CBTA
+                            </label>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
@@ -466,6 +564,54 @@
 @section('js_scripts')
 
 <script>
+
+    $(function() {
+        $('#sortable-lessons').sortable({
+            items: '.lesson-card',
+            helper: 'clone',
+            cursor: 'grabbing',
+            tolerance: 'pointer',
+            update: function(event, ui) {
+                let order = [];
+                $('.lesson-card').each(function(index) {
+                    order.push({
+                        id: $(this).data('id'),
+                        position: index + 1
+                    });
+                });
+
+                $.ajax({
+                    url: '{{ route("lessons.reorder") }}',
+                    method: 'POST',
+                    data: {
+                        order: order,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function (response) {
+                        console.log('Sublesson order updated');
+
+                        let $msg = $('#reoderMessage');
+                        if ($msg.length) {
+                            $msg.removeClass('d-none')
+                                .fadeIn()
+                                .text('Lesson order updated successfully!');
+                        }
+
+                        setTimeout(function () {
+                            $msg.fadeOut();
+                        }, 2000);
+                    },
+                    error: function () {
+                        console.error('Error updating order');
+                    }
+                });
+            }
+        });
+
+        // Grab cursor on each card
+        $('.lesson-card').css('cursor', 'grab');
+    });
+
 $(document).ready(function() {
 
     // $("#comment_required").on('change', function() {
@@ -535,10 +681,12 @@ $(document).ready(function() {
                 $('#edit_status').val(response.lesson.status);
 
                 // Set the correct grading type radio button
-                if (response.lesson.grade_type === "pass_fail") {
+               if (response.lesson.grade_type === "pass_fail") {
                     $('#edit_grade_pass_fail').prop('checked', true);
                 } else if (response.lesson.grade_type === "score") {
                     $('#edit_grade_score').prop('checked', true);
+                } else if (response.lesson.grade_type === "percentage") {
+                    $('#edit_grade_percentage').prop('checked', true);
                 }
 
                 if (response.lesson.enable_prerequisites) {
@@ -581,6 +729,12 @@ $(document).ready(function() {
                         prerequisite_type: 'text'
                     }, 0);
                     $('#prerequisite_items').append(prerequisiteHtml);
+                }
+
+                if (response.lesson.enable_cbta == 1) {
+                    $('#edit_enable_cbta').prop('checked', true);
+                } else {
+                    $('#edit_enable_cbta').prop('checked', false);
                 }
 
                 $('#editLessonModal').modal('show');

@@ -273,6 +273,18 @@ if (!function_exists('countAcknowledgedDocuments')) {
     }
 }
 
+function get_user_role($roleId)
+{
+    $role = Role::find($roleId);
+
+    return $role ? strtolower($role->role_name) : null;
+}
+
+
+
+
+
+
 
 
 ?>

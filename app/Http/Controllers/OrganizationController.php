@@ -140,7 +140,7 @@ class OrganizationController extends Controller
             $rules = array_merge($rules, [
                 'firstname' => 'required',
                 'lastname' => 'required',
-                'email' => 'required|email|max:255|unique:users,email',
+                'email' => 'required|email|max:255|unique:users,email,NULL,id,deleted_at,NULL',
                 'password' => 'required|min:6|confirmed',
             ]);
         }
@@ -274,14 +274,14 @@ class OrganizationController extends Controller
             $rules = array_merge($rules, [
                 'edit_firstname' => 'required',
                 'edit_lastname' => 'required',
-                'edit_email' => 'required|email|unique:users,email,' . $request->user_id,
+                'edit_email' => 'required|email|unique:users,email,' . $request->user_id.',id,deleted_at,NULL',
             ]);
         }
         if(!$request->filled('user_id') && ($request->filled('edit_email') || $request->filled('edit_firstname') || $request->filled('edit_lastname') || $request->filled('password'))){
             $rules = array_merge($rules, [
                 'edit_firstname' => 'required',
                 'edit_lastname' => 'required',
-                'edit_email' => 'required|email|unique:users,email',
+                'edit_email' => 'required|email|unique:users,email,' . $request->user_id.',id,deleted_at,NULL',
                 'password' => 'required|min:6|confirmed',
             ]);
         }
@@ -368,7 +368,7 @@ class OrganizationController extends Controller
     public function showOrgUsers(Request $request)
     {
         // dd($request->ou_id);
-        $orgUnitUsers = User::where('ou_id', decode_id($request->ou_id))->get();
+        $orgUnitUsers = User::with('roles')->where('ou_id', decode_id($request->ou_id))->get();
          // Check if users exist
         if ($orgUnitUsers->isEmpty()) {
             return response()->json(['error' => 'No users found for this Organizational Unit.'], 404);
