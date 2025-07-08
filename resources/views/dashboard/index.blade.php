@@ -174,8 +174,10 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
     <thead>
         <tr>
             <th>Name</th>
-            <th>UK Licence Status</th>
+            <th>UK Licence Status</th>\
+            <th>Associated Ratings (UK)</th>
             <th>EASA Licence Status</th>
+            <th>Associated Ratings (EASA)</th> 
             <th>UK Medical Status</th> 
             <th>EASA Medical Status</th> 
             <th>Passport Status</th> 
@@ -214,7 +216,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
                         $date = $doc->licence_expiry_date ? date('d/m/Y', strtotime($doc->licence_expiry_date)) : 'N/A';
                     }
-                    $tooltip = getTooltip($status, 'licence 1');
+                    $tooltip = getTooltip($status, 'UK License');
                 @endphp
                 <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
             @else
@@ -256,6 +258,65 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
             @endif
         </td>
 
+        <td>
+            @if($user->ratings_by_license['licence_1']->count())
+                @foreach($user->ratings_by_license['licence_1'] as $ur)
+                    @php
+                        $r = $ur->rating;
+                        $expiry = $ur->expiry_date ? \Carbon\Carbon::parse($ur->expiry_date)->format('d/m/Y') : 'N/A';
+                        $status = $ur->expiry_status ?? 'Grey'; // Make sure your model has this accessor
+                        $color = match($status) {
+                            'Red' => 'danger',
+                            'Orange', 'Amber' => 'warning',
+                            'Yellow' => 'info',
+                            'Blue' => 'primary',
+                            default => 'secondary'
+                        };
+                        $tooltip = $r->name . ' expires on ' . $expiry;
+                    @endphp
+
+                    {{-- Parent badge --}}
+                    <div class="mb-2">
+                        <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
+                            {{ $r->name }} ({{ $expiry }})
+                        </span>
+
+                        {{-- Child ratings --}}
+                        @if($ur->associated_details && $ur->associated_details->count())
+                            <div class="mt-2">
+                                @foreach($ur->associated_details as $assoc)
+                                    @php
+                                        $assocData = $assoc->user_rating ?? null;
+                                        $assocExpiry = $assocData && $assocData->expiry_date
+                                            ? \Carbon\Carbon::parse($assocData->expiry_date)->format('d/m/Y')
+                                            : $expiry;
+
+                                        $assocStatus = $assocData->expiry_status ?? $status;
+                                        $assocColor = match($assocStatus) {
+                                            'Red' => 'danger',
+                                            'Orange', 'Amber' => 'warning',
+                                            'Yellow' => 'info',
+                                            'Blue' => 'primary',
+                                            default => 'light'
+                                        };
+
+                                        $tooltip = "{$assoc->name} expires on {$assocExpiry}";
+                                    @endphp
+
+                                    <span class="badge bg-{{ $assocColor }} text-dark ms-1" data-bs-toggle="tooltip" title="{{ $tooltip }}">
+                                        → {{ $assoc->name }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
+            @else
+                <span class="text-muted">None</span>
+            @endif
+        </td>
+
+
         {{-- Licence 2 --}}
         <td>
             @if($doc && $doc->licence_file_uploaded_2)
@@ -269,13 +330,74 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
                         $date = $doc->licence_expiry_date_2 ? date('d/m/Y', strtotime($doc->licence_expiry_date_2)) : 'N/A';
                     }
-                    $tooltip = getTooltip($status, 'licence 2');
+                    $tooltip = getTooltip($status, 'EASA Licence');
                 @endphp
                 <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
             @else
                 <span class="text-muted">Not Uploaded</span>
             @endif
         </td>
+
+        {{-- Associated Ratings (Licence 2) --}}
+        <td>
+            @if($user->ratings_by_license['licence_2']->count())
+                @foreach($user->ratings_by_license['licence_2'] as $ur)
+                    @php
+                        $r = $ur->rating;
+                        $parentExpiry = $ur->expiry_date ? \Carbon\Carbon::parse($ur->expiry_date)->format('d/m/Y') : 'N/A';
+                        $status = $ur->expiry_status ?? 'Grey';
+                        $color = match($status) {
+                            'Red' => 'danger',
+                            'Orange', 'Amber' => 'warning',
+                            'Yellow' => 'info',
+                            'Blue' => 'primary',
+                            default => 'secondary'
+                        };
+                        $tooltip = $r->name . ' expires on ' . $parentExpiry;
+                    @endphp
+
+                    {{-- Parent Rating --}}
+                    <div class="mb-2">
+                        <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
+                            {{ $r->name }} ({{ $parentExpiry }})
+                        </span>
+
+                        {{-- Associated/Child Ratings --}}
+                        @if($ur->associated_details && $ur->associated_details->count())
+                            <div class="mt-2">
+                                @foreach($ur->associated_details as $assoc)
+                                    @php
+                                        $assocData = $assoc->user_rating ?? null;
+                                        $childExpiry = $assocData && $assocData->expiry_date
+                                            ? \Carbon\Carbon::parse($assocData->expiry_date)->format('d/m/Y')
+                                            : $parentExpiry;
+
+                                        $childStatus = $assocData->expiry_status ?? $status;
+                                        $childColor = match($childStatus) {
+                                            'Red' => 'danger',
+                                            'Orange', 'Amber' => 'warning',
+                                            'Yellow' => 'info',
+                                            'Blue' => 'primary',
+                                            default => 'light'
+                                        };
+
+                                        $tooltip = "{$assoc->name} expires on {$childExpiry}";
+                                    @endphp
+
+                                    <span class="badge bg-{{ $childColor }} text-dark ms-1" data-bs-toggle="tooltip" title="{{ $tooltip }}">
+                                        → {{ $assoc->name }} ({{ $childExpiry }})
+                                    </span>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
+            @else
+                <span class="text-muted">None</span>
+            @endif
+        </td>
+
+
 
         {{-- Medical 1 --}}
         <td>
