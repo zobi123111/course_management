@@ -95,10 +95,10 @@
             <div class="modal-body">
                 <form action="" method="POST" enctype="multipart/form-data" id="add_rating" class="row g-3 needs-validation">
                     @csrf
-                    <div class="row g-3 mb-3">
+                    <div class="row g-2 ">
                         <!-- Bootstrap Grid -->
                         @if(auth()->user()->is_owner == 1)
-                            <div class="form-group mt-2">
+                            <div class="form-group ">
                                 <label for="select_org_unit" class="form-label">Select Org Unit </label>
                                 <select class="form-select" name="ou_id" id="select_org_unit">
                                     <option value="">Select Org Unit</option>
@@ -143,7 +143,7 @@
                         </div>
 
                         <!-- Category Tag Checkboxes -->
-                        <div class="mb-3">
+                        <div>
                             <label class="form-label d-block">Category Tag</label>
 
                             <div class="form-check form-check-inline">
@@ -199,7 +199,7 @@
             <div class="modal-body">
                 <form action="" method="POST" id="editRatingForm" class="row g-3 needs-validation">
                     @csrf
-                    <div class="row g-3 mb-3">
+                    <div class="row g-2">
                         <!-- Parent Rating Dropdown -->
                           @if(auth()->user()->is_owner == 1)
                             <div class="form-group">
@@ -213,7 +213,7 @@
                                 <div id="ou_id_error_up" class="text-danger error_e"></div>            
                             </div>
                         @endif
-                       <div class="form-group mt-3">
+                       <div class="form-group ">
                             <label for="parent_rating" class="form-label">Parent Rating</label>
                             <select name="parent_id[]" id="edit_parent_rating" class="form-select" multiple>
                                 <option value="">No Parent (This is a root rating)</option>
@@ -249,8 +249,8 @@
                         <div id="kind_of_rating_error_up" class="text-danger error_e"></div>
                     </div> 
                       <!-- Category Tag Checkboxes -->
-                        <div class="form-group mb-3">
-                            <label class="form-label">Category Tag <span class="text-danger">*</span></label>
+                        <div class="form-group">
+                            <label class="form-label d-block">Category Tag</label>
 
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="checkbox" name="is_fixed_wing" id="edit_fixed_wing" value="1">
