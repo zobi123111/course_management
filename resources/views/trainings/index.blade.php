@@ -178,11 +178,19 @@
                     </div>
                 </div>
                 <div id="lessonDetailsContainer" class="lesson-box mt-3"></div> 
+                
                 <!-- Total Time (Calculated) -->
                 <div class="col-md-6">
                     <label class="form-label">Total Time (hh:mm)<span class="text-danger">*</span></label>
                     <input type="text" name="total_time" class="form-control" id="total_time" readonly>
                     <div id="total_time_error" class="text-danger error_e"></div>
+                </div>
+
+                <!-- Total Time (Calculated) -->
+                <div class="col-md-6">
+                    <label class="form-label">Total Groundschool Time (hh:mm)<span class="text-danger">*</span></label>
+                    <input type="text" name="total_groundschool_time" class="form-control" id="total_groundschool_time" readonly>
+                    <div id="total_groundschool_time_error" class="text-danger error_e"></div>
                 </div>
 
                 <!-- License Number (Extracted from user profile) -->
@@ -889,12 +897,16 @@ $(document).ready(function() {
     let lessonIndex = 0;
 
     function renderLessonBox(lesson, container, prefillData = {}, index = null) {
-        const currentIndex = index !== null ? index : lessonIndex++; 
+        const currentIndex = index !== null ? index : lessonIndex++;
         const isFirstLesson = currentIndex === 0;
-        let lessonId = lesson.id;   
+        let lessonId = lesson.id;
         let lessonTitle = lesson.lesson_title;
+        let lessonType = lesson.lesson_type || '';
 
-        // Use prefilled data if available, otherwise fallback to empty strings
+        // Hide fields if lesson_type is groundschool
+        let hideFlightFields = (lessonType === 'groundschool') ? 'style="display:none;"' : '';
+
+        // Use prefilled data if available
         let {
             instructor_id = '',
             resource_id = '',
@@ -921,7 +933,6 @@ $(document).ready(function() {
 
             return `<option value="${i.id}" ${selected} ${disabled}>${i.fname} ${i.lname}</option>`;
         }).join('');
-
 
         let resourceOptions = resourcesdata.map(r =>
             `<option value="${r.id}" ${r.id == resource_id ? 'selected' : ''}>${r.name}</option>`
@@ -955,22 +966,22 @@ $(document).ready(function() {
                         <input type="date" name="lesson_data[${currentIndex}][lesson_date]" class="form-control" value="${lesson_date}">
                         <div id="lesson_data_${currentIndex}_lesson_date_error" class="text-danger error_e"></div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-4" ${hideFlightFields}>
                         <label class="form-label">Start Time${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <input type="time" name="lesson_data[${currentIndex}][start_time]" class="form-control lesson-start-time" data-lesson-id="${currentIndex}" value="${start_time}">
                         <div id="lesson_data_${currentIndex}_start_time_error" class="text-danger error_e"></div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-4" ${hideFlightFields}>
                         <label class="form-label">End Time${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <input type="time" name="lesson_data[${currentIndex}][end_time]" class="form-control lesson-end-time" data-lesson-id="${currentIndex}" value="${end_time}">
                         <div id="lesson_data_${currentIndex}_end_time_error" class="text-danger error_e"></div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6" ${hideFlightFields}>
                         <label class="form-label">Departure Airfield (4-letter code)${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <input type="text" name="lesson_data[${currentIndex}][departure_airfield]" class="form-control" maxlength="4" value="${departure_airfield}">
                         <div id="lesson_data_${currentIndex}_departure_airfield_error" class="text-danger error_e"></div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6" ${hideFlightFields}>
                         <label class="form-label">Destination Airfield (4-letter code)${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <input type="text" name="lesson_data[${currentIndex}][destination_airfield]" class="form-control" maxlength="4" value="${destination_airfield}">
                         <div id="lesson_data_${currentIndex}_destination_airfield_error" class="text-danger error_e"></div>
@@ -986,7 +997,7 @@ $(document).ready(function() {
 
         container.append(lessonBox);
 
-        // Trigger license number fetch if current user is instructor
+        // Auto-fetch license number if current user is instructor
         if (isCurrentUserInstructor) {
             const $currentBox = container.find(`.lesson-box[data-lesson-id="${currentIndex}"]`);
             const $licenseInput = $currentBox.find(`input[name="lesson_data[${currentIndex}][instructor_license_number]"]`);
@@ -1013,6 +1024,7 @@ $(document).ready(function() {
             });
         }
     }
+
     
 
    // Open Course End Modal

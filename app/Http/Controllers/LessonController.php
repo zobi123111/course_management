@@ -61,6 +61,7 @@ class LessonController extends Controller
             'description' => 'required|string',
             'status' => 'required|boolean',
             'grade_type' => 'required|in:pass_fail,score,percentage',
+            'lesson_type' => 'required|string',
             'enable_cbta' => 'sometimes|boolean'
         ]);
     
@@ -79,6 +80,7 @@ class LessonController extends Controller
             'comment' => $request->comment ?? null,
             'status' => $request->status,
             'grade_type' => $request->grade_type,
+            'lesson_type' => $request->lesson_type,
             'enable_cbta' => $request->enable_cbta ?? 0
         ]);
     
@@ -130,7 +132,8 @@ class LessonController extends Controller
             'edit_description' => 'required|string',
             'edit_status' => 'required|boolean',
             'edit_grade_type' => 'required|in:pass_fail,score,percentage',
-            'edit_enable_cbta'    => 'sometimes|boolean',
+            'edit_lesson_type' => 'required|string',
+            'edit_enable_cbta'    => 'sometimes|boolean'
         ]);
     
         if ($request->has('edit_comment_required') && $request->edit_comment_required) {
@@ -151,6 +154,7 @@ class LessonController extends Controller
             'status' => $request->edit_status,
             'grade_type' => $request->edit_grade_type, // Update grading type
             'enable_cbta' => $request->edit_enable_cbta ?? 0, // Update enable_cbta
+            'lesson_type' => $request->edit_lesson_type,
             'enable_prerequisites' => (int) $request->input('enable_prerequisites', 0),
         ]);
 
