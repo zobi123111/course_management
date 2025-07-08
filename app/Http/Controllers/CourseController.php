@@ -154,11 +154,24 @@ class CourseController extends Controller
             // Validation for Instructor Upload Documents
             'enable_instructor_upload' => 'nullable|boolean',
             'instructor_documents' => 'nullable|array',
-            'instructor_documents.*.name' => 'nullable|string|max:255'
+            'instructor_documents.*.name' => 'nullable|string|max:255',
+
+            // Validation for Ground Time Tracking
+            'enable_groundschool_time' => 'nullable|boolean',
+            'groundschool_hours' => 'nullable|numeric|min:0',
+
+            'enable_simulator_time' => 'nullable|boolean',
+            'simulator_hours' => 'nullable|numeric|min:0',
+
+            'enable_custom_time_tracking' => 'nullable|boolean',
+            'custom_time_name' => 'nullable|string|max:255',
+            'custom_time_hours' => 'nullable|numeric|min:0',
         ], [], [
             'feedback_questions.*.question' => 'Feedback question',
             'feedback_questions.*.answer_type' => 'Answer type',
-            'instructor_documents.*.name' => 'Document Name'
+            'instructor_documents.*.name' => 'Document Name',
+            'custom_time_name' => 'Custom Time Name',
+            'custom_time_hours' => 'Custom Time Hours',
         ]);
     
         if ($request->hasFile('image')) {
@@ -176,6 +189,13 @@ class CourseController extends Controller
             'course_type' => $request->course_type,
             'enable_feedback' => (int) $request->input('enable_feedback', 0),
             'enable_instructor_upload' => (int) $request->input('enable_instructor_upload', 0),
+            'enable_groundschool_time' => (int) $request->input('enable_groundschool_time', 0),
+            'groundschool_hours' => $request->groundschool_hours ?? null,
+            'enable_simulator_time' => (int) $request->input('enable_simulator_time', 0),
+            'simulator_hours' => $request->simulator_hours ?? null,
+            'enable_custom_time_tracking' => (int) $request->input('enable_custom_time_tracking', 0),
+            'custom_time_name' => $request->custom_time_name ?? null,
+            'custom_time_hours' => $request->custom_time_hours ?? null,
         ]);
     
         $course->groups()->attach($request->group_ids);
