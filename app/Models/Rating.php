@@ -31,6 +31,29 @@ public function children()
 {
     return $this->belongsToMany(Rating::class, 'parent_rating', 'parent_id', 'rating_id');
 }
+// app/Models/Rating.php
+
+public function associatedChildren()
+{
+    return $this->belongsToMany(
+        Rating::class,          // Related model (self-reference)
+        'parent_rating',        // Pivot table name
+        'parent_id',            // Foreign key on the pivot table for THIS model
+        'rating_id'             // Foreign key for the associated (child) ratings
+    );
+}
+
+public function associatedParents()
+{
+    return $this->belongsToMany(
+        Rating::class,
+        'parent_rating',
+        'rating_id',            // Foreign key on the pivot for THIS model
+        'parent_id'             // Foreign key for the parent
+    );
+}
+
+
 
 
 

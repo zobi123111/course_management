@@ -10,7 +10,7 @@ use App\Models\Folder;
 use App\Models\Document;
 use App\Models\BookedResource;
 use Illuminate\Support\Facades\Auth;
-
+use App\Models\ParentRating;
 
 class DashboardController extends Controller
 {
@@ -129,23 +129,44 @@ class DashboardController extends Controller
         $unreadDocuments = $totalDocuments - $readDocuments;
     
         // $users = User::where('ou_id', $ou_id)->whereNull('is_admin')->with(['usrRatings.rating', 'documents'])->get();
-        $users = User::where('ou_id', $ou_id)
-        ->whereNull('is_admin')
-        ->with([
-            'documents',
-            'usrRatings.rating.children', // Load rating & its children (for nested ratings)
-        ])
-        ->get()
-        ->map(function ($user) {
-            // Group ratings by linked_to license
-            $user->ratings_by_license = [
-                'license_1' => $user->usrRatings->filter(fn($r) => $r->linked_to === 'license_1')->values(),
-                'license_2' => $user->usrRatings->filter(fn($r) => $r->linked_to === 'license_2')->values(),
-            ];
-            return $user;
-        });
+       
 
-    
+        $users = User::where('ou_id', $ou_id)
+            ->whereNull('is_admin')
+            ->with([
+                'documents',
+                'usrRatings.rating.associatedChildren', // required
+            ])
+            ->get()
+            ->map(function ($user) {
+                $userRatingsMap = $user->usrRatings->keyBy('rating_id');
+
+                $user->ratings_by_license = [
+                    'licence_1' => $user->usrRatings
+                        ->filter(fn($r) => strtolower($r->linked_to) === 'licence_1')
+                        ->map(function ($r) use ($userRatingsMap) {
+                            $r->associated_details = optional($r->rating)->associatedChildren->map(function ($assocRating) use ($userRatingsMap) {
+                                $assocRating->user_rating = $userRatingsMap[$assocRating->id] ?? null;
+                                return $assocRating;
+                            }) ?? collect();
+                            return $r;
+                        })->values(),
+
+                    'licence_2' => $user->usrRatings
+                        ->filter(fn($r) => strtolower($r->linked_to) === 'licence_2')
+                        ->map(function ($r) use ($userRatingsMap) {
+                            $r->associated_details = optional($r->rating)->associatedChildren->map(function ($assocRating) use ($userRatingsMap) {
+                                $assocRating->user_rating = $userRatingsMap[$assocRating->id] ?? null;
+                                return $assocRating;
+                            }) ?? collect();
+                            return $r;
+                        })->values(),
+                ];
+
+                return $user;
+            });
+
+
         return view('dashboard.index', compact(
             'user_count', 'course_count', 'group_count', 'folder_count',
             'totalDocuments', 'readDocuments', 'unreadDocuments', 'requestCount', 'users'
