@@ -29,7 +29,7 @@ class TrainingEventLessons extends Model
 
     public function trainingEvent()
     {
-        return $this->belongsTo(TrainingEvent::class);
+        return $this->belongsTo(TrainingEvents::class);
     }
 
     public function lesson()
