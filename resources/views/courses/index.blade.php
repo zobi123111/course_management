@@ -200,8 +200,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="" id="courses" method="POST" enctype="multipart/form-data"
-                    class="row g-3 needs-validation">
+                <form action="" id="courses" method="POST" enctype="multipart/form-data" class="row g-3 needs-validation" >
                     @csrf
                     @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                     <div class="form-group">
@@ -253,6 +252,51 @@
                             placeholder="Enter number of hours/events">
                         <div id="duration_error" class="text-danger error_e"></div>
                     </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="enable_groundschool_time" name="enable_groundschool_time">
+                        <label class="form-check-label" for="enable_feedback">
+                            Enable Groundschool Tracking 
+                        </label>
+                    </div>
+
+                    <!-- Groundschool Time Input -->
+                    <div id="groundschool_time_container" class="mt-2" style="display: none;">
+                        <label for="groundschool_hours" class="form-label">Required Groundschool Hours</label>
+                        <input type="number" class="form-control" name="groundschool_hours" id="groundschool_hours" placeholder="Enter groundschool hours">
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="enable_simulator_time" name="enable_simulator_time">
+                        <label class="form-check-label" for="enable_feedback">
+                            Enable Simulator Tracking 
+                        </label>
+                    </div>
+                    
+                    <!-- Simulator Time Input -->
+                    <div id="simulator_time_container" class="mt-2" style="display: none;">
+                        <label for="simulator_hours" class="form-label">Required Simulator Hours</label>
+                        <input type="number" class="form-control" name="simulator_hours" id="simulator_hours" placeholder="Enter simulator hours">
+                    </div>
+
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="enable_custom_time_tracking">
+                        <label class="form-check-label" for="enable_custom_time_tracking">
+                            Enable Custom Time Tracking
+                        </label>
+                    </div>
+
+                    <div id="custom_time_tracking_container" class="border p-2 mb-3" style="display: none;">
+                        <div class="form-group mb-2">
+                            <label for="custom_time_name">Custom Time Type Name</label>
+                            <input type="text" name="custom_time_name" id="custom_time_name" class="form-control" placeholder="e.g. Night Flying">
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="custom_time_hours">Required Hours</label>
+                            <input type="number" name="custom_time_hours" id="custom_time_hours" class="form-control" placeholder="e.g. 4.5">
+                        </div>
+                    </div>
+
+
                     <div class="form-group">
                         <label for="groups" class="form-label">Assigned Resource<span
                                 class="text-danger"></span></label>
@@ -869,7 +913,18 @@ $(document).ready(function() {
         $(this).closest('.feedback-question').remove();
     });
 
+    //Enabling Ground Time
+    $('#enable_groundschool_time').change(function () {
+        $('#groundschool_time_container').toggle(this.checked);
+    });
+    $('#enable_simulator_time').change(function () {
+        $('#simulator_time_container').toggle(this.checked);
+    });
 
+    //Enabling Custom Time
+    $('#enable_custom_time_tracking').change(function () {
+        $('#custom_time_tracking_container').toggle(this.checked);
+    });
 
     // Update Course functionality
     $('#updateCourse').on('click', function(e) {

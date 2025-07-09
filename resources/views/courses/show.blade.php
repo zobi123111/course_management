@@ -365,8 +365,6 @@
     </div>
 @endif
 
-
-
 <!-- Create Lesson-->
 <div class="modal fade" id="createLessonModal" tabindex="-1" role="dialog" aria-labelledby="lessonModalLabel"
     aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -401,6 +399,17 @@
                         <textarea class="form-control" name="comment" rows="3"></textarea>
                         <div id="comment_error" class="text-danger error_e"></div>
                     </div>
+
+                    <div class="form-group">
+                        <label for="lesson_type" class="form-label">Lesson Type <span class="text-danger">*</span></label>
+                        <select class="form-select" name="lesson_type" id="lesson_type" required>
+                            <option value="flight" selected>Flight</option>
+                            <option value="simulator">Simulator</option>
+                            <option value="groundschool">Groundschool</option>
+                        </select>
+                        <div id="lesson_type_error" class="text-danger error_e"></div>
+                    </div>
+
                     <!-- Grading Type Selection -->
                     <div class="form-group">
                         <label class="form-label">Grading Type <span class="text-danger">*</span></label>
@@ -477,6 +486,16 @@
                         <label for="comment" class="form-label">Comment<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="edit_comment" id="edit_comment" rows="3"></textarea>
                         <div id="edit_comment_error_up" class="text-danger error_e"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit_lesson_type" class="form-label">Lesson Type <span class="text-danger">*</span></label>
+                        <select name="edit_lesson_type" id="edit_lesson_type" class="form-select">
+                            <option value="flight" selected>Flight</option>
+                            <option value="simulator">Simulator</option>
+                            <option value="groundschool">Groundschool</option>
+                        </select>
+                        <div id="edit_lesson_type_error_up" class="text-danger error_e"></div>
                     </div>
                     <!-- Grading Type Selection -->
                     <div class="form-group">
@@ -679,6 +698,7 @@ $(document).ready(function() {
                 $('input[name="lesson_id"]').val(response.lesson.id);
                 $('#edit_description').val(response.lesson.description);
                 $('#edit_status').val(response.lesson.status);
+                $('#edit_lesson_type').val(response.lesson.lesson_type);
 
                 // Set the correct grading type radio button
                if (response.lesson.grade_type === "pass_fail") {
