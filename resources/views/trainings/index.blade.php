@@ -87,6 +87,10 @@
                             title="This course has been ended and is locked from editing">
                             <i class="bi bi-lock-fill me-1"></i>Ended
                         </span>
+                        @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                            <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                            data-event-id="{{ encode_id($event->id) }}"></i>
+                        @endif
                     @endif
                 @elseif(get_user_role(auth()->user()->role) == 'instructor')   
                     @if(empty($event->is_locked))
@@ -594,6 +598,7 @@ $(document).ready(function() {
         var courseId = $(this).val();
         var isEditForm = $(this).attr('id') === 'edit_select_course';
         var lessonContainer = isEditForm ? $('#editLessonDetailsContainer') : $('#lessonDetailsContainer');
+        var mode = isEditForm ? 'update' : 'create'; 
 
         // For edit mode, map saved lessons by lesson_id for quick lookup
         var lessonPrefillMap = {};
@@ -624,7 +629,7 @@ $(document).ready(function() {
                     resourcesdata = response.resources; 
                         response.lessons.forEach(function (lesson, idx) {
                             let prefillData = isEditForm && lessonPrefillMap[lesson.id] ? lessonPrefillMap[lesson.id] : {};
-                            renderLessonBox(lesson, lessonContainer, prefillData, idx);  // ✅ index passed
+                            renderLessonBox(lesson, lessonContainer, prefillData, idx, mode);  // ✅ index passed
                         });
                 } else {
                     alert('No lessons found for the selected course.');
@@ -719,7 +724,7 @@ $(document).ready(function() {
                         instructor_license_number: l.instructor_license_number || ''
                     }));
 
-                    // ✅ Trigger the course change (will call renderLessonBox with prefill)
+                    // Trigger the course change (will call renderLessonBox with prefill)
                     $('#edit_select_course').trigger('change');
 
                     $('#editTrainingEventModal').modal('show');
@@ -896,7 +901,9 @@ $(document).ready(function() {
 
     let lessonIndex = 0;
 
-    function renderLessonBox(lesson, container, prefillData = {}, index = null) {
+    function renderLessonBox(lesson, container, prefillData = {}, index = null, mode) {
+        const errorSuffix = mode === 'update' ? '_error_up' : '_error';
+        console.log(errorSuffix);
         const currentIndex = index !== null ? index : lessonIndex++;
         const isFirstLesson = currentIndex === 0;
         let lessonId = lesson.id;
@@ -951,7 +958,7 @@ $(document).ready(function() {
                             ${instructorOptions}
                         </select>
                         ${isCurrentUserInstructor ? `<input type="hidden" name="lesson_data[${currentIndex}][instructor_id]" value="${currentUser.id}">` : ''}
-                        <div id="lesson_data_${currentIndex}_instructor_id_error" class="text-danger error_e"></div>
+                        <div id="lesson_data_${currentIndex}_instructor_id${errorSuffix}" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Resource${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
@@ -959,37 +966,37 @@ $(document).ready(function() {
                             <option value="">Select Resource</option>
                             ${resourceOptions}
                         </select>
-                        <div id="lesson_data_${currentIndex}_resource_id_error" class="text-danger error_e"></div>
+                        <div id="lesson_data_${currentIndex}_resource_id${errorSuffix}" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Lesson Date${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <input type="date" name="lesson_data[${currentIndex}][lesson_date]" class="form-control" value="${lesson_date}">
-                        <div id="lesson_data_${currentIndex}_lesson_date_error" class="text-danger error_e"></div>
+                        <div id="lesson_data_${currentIndex}_lesson_date${errorSuffix}" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-4" ${hideFlightFields}>
                         <label class="form-label">Start Time${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <input type="time" name="lesson_data[${currentIndex}][start_time]" class="form-control lesson-start-time" data-lesson-id="${currentIndex}" value="${start_time}">
-                        <div id="lesson_data_${currentIndex}_start_time_error" class="text-danger error_e"></div>
+                        <div id="lesson_data_${currentIndex}_start_time${errorSuffix}" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-4" ${hideFlightFields}>
                         <label class="form-label">End Time${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <input type="time" name="lesson_data[${currentIndex}][end_time]" class="form-control lesson-end-time" data-lesson-id="${currentIndex}" value="${end_time}">
-                        <div id="lesson_data_${currentIndex}_end_time_error" class="text-danger error_e"></div>
+                        <div id="lesson_data_${currentIndex}_end_time${errorSuffix}" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-6" ${hideFlightFields}>
                         <label class="form-label">Departure Airfield (4-letter code)${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <input type="text" name="lesson_data[${currentIndex}][departure_airfield]" class="form-control" maxlength="4" value="${departure_airfield}">
-                        <div id="lesson_data_${currentIndex}_departure_airfield_error" class="text-danger error_e"></div>
+                        <div id="lesson_data_${currentIndex}_departure_airfield${errorSuffix}" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-6" ${hideFlightFields}>
                         <label class="form-label">Destination Airfield (4-letter code)${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <input type="text" name="lesson_data[${currentIndex}][destination_airfield]" class="form-control" maxlength="4" value="${destination_airfield}">
-                        <div id="lesson_data_${currentIndex}_destination_airfield_error" class="text-danger error_e"></div>
+                        <div id="lesson_data_${currentIndex}_destination_airfield${errorSuffix}" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Instructor License Number</label>
                         <input type="text" name="lesson_data[${currentIndex}][instructor_license_number]" class="form-control" id="instructor_license_number" value="${instructor_license_number}" readonly>
-                        <div id="lesson_data_${currentIndex}_instructor_license_number_error" class="text-danger error_e"></div>
+                        <div id="lesson_data_${currentIndex}_instructor_license_number${errorSuffix}" class="text-danger error_e"></div>
                     </div>
                 </div>
             </div>
