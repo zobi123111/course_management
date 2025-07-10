@@ -371,8 +371,6 @@
 
 <script>
 
-
-
 var instructorsdata;
 instructorsdata = @json($instructors);
 var resourcesdata;
@@ -941,9 +939,23 @@ $(document).ready(function() {
             return `<option value="${i.id}" ${selected} ${disabled}>${i.fname} ${i.lname}</option>`;
         }).join('');
 
-        let resourceOptions = resourcesdata.map(r =>
-            `<option value="${r.id}" ${r.id == resource_id ? 'selected' : ''}>${r.name}</option>`
-        ).join('');
+        let resourceOptions = resourcesdata
+            .filter(r => {
+                if (lessonType === 'groundschool') {
+                    return ['Classroom', 'Homestudy'].includes(r.name);
+                }
+                return true;
+            })
+            .map(r =>
+                `<option value="${r.id}" ${r.id == resource_id ? 'selected' : ''}>${r.name}</option>`
+            );
+
+        if (resourceOptions.length === 0 && lessonType === 'groundschool') {
+            resourceOptions.push('<option disabled>No suitable resources available</option>');
+        }
+
+        resourceOptions = resourceOptions.join('');
+
 
         let lessonBox = `
             <div class="col-12 mb-3 border rounded p-3 lesson-box" data-lesson-id="${currentIndex}">    

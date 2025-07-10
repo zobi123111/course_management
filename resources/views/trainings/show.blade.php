@@ -606,8 +606,8 @@
                     <div class="modal-dialog">
                         <form action="" method="POST" id="deferredLessonForm">
                             @csrf
-                            <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
-                            <input type="hidden" name="std_id" value="{{ $trainingEvent->student_id }}">
+                            <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}" >
+                            <input type="hidden" name="std_id" value="{{ $trainingEvent->student_id }}" >
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title">Add Deferred Lesson</h5>
@@ -724,7 +724,7 @@
 
                 @if($isGradingCompleted && $trainingEvent->course->documents->isNotEmpty())
                     <div class="mt-4">
-                        <h5><i class="fas fa-file-upload"></i>Instructor Document Uploads</h5>z
+                        <h5><i class="fas fa-file-upload"></i>Instructor Document Uploads</h5>
                         <form action="{{ route('training.upload-documents', $trainingEvent->id) }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             <div class="row">
@@ -1022,8 +1022,6 @@
                                     <div><strong>Lesson Date:</strong> {{ $defLesson->lesson_date ? \Carbon\Carbon::parse($defLesson->lesson_date)->format('d/m/Y') : 'N/A' }}</div>
                                     <div><strong>Start Time:</strong> {{ $defLesson->start_time ? \Carbon\Carbon::parse($defLesson->start_time)->format('h:i A') : 'N/A' }}</div>
                                     <div><strong>End Time:</strong> {{ $defLesson->end_time ? \Carbon\Carbon::parse($defLesson->end_time)->format('h:i A') : 'N/A' }}</div>
-                                    <div><strong>Departure Airfield:</strong> {{ $defLesson->departure_airfield ?? 'N/A' }}</div>
-                                    <div><strong>Destination Airfield:</strong> {{ $defLesson->destination_airfield ?? 'N/A' }}</div>
                                 </div>
 
                                 <div id="def-lesson-{{ $defLesson->id }}" class="accordion-collapse collapse" data-bs-parent="#faq-group-2">
@@ -1305,19 +1303,24 @@
 
         $("#submitDeferredItems").on("click", function(e) { 
             e.preventDefault();
+            $(".loader").fadeIn();
+            alert('buegeqg'); return;
             $.ajax({
                 url: '{{ url("/training/submit_deferred_items") }}',
                 type: 'POST',
                 data: $("#deferredLessonForm").serialize(),
                 success: function(response) {
                     if(response.success){
+                        $(".loader").fadeOut("slow");
                         $('#addDeferredLessonModal').modal('hide');
                         location.reload();
                     }else{
+                        $(".loader").fadeOut("slow");
                         alert(response.message);
                     }
                 },
                 error: function(xhr, status, error) {
+                    $(".loader").fadeOut("slow");
                     var errorMessage = JSON.parse(xhr.responseText);
                     var validationErrors = errorMessage.errors;
                     // $.each(validationErrors, function(key, value) {

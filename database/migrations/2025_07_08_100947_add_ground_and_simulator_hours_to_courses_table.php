@@ -17,6 +17,7 @@ return new class extends Migration
 
             $table->boolean('enable_simulator_time')->default(0)->after('groundschool_hours');
             $table->decimal('simulator_hours', 5, 2)->nullable()->after('enable_simulator_time');
+            $table->boolean('enable_custom_time_tracking')->default(0)->after('simulator_hours');
         });
     }
 
