@@ -72,8 +72,7 @@
                                         : '<span class="badge bg-danger">Inactive</span>' !!}
                                 </td>
                                 <td>
-                                    <i class="fa fa-edit edit-user-icon text-primary me-2" style="font-size:18px; cursor: pointer;" data-rating-id="{{ encode_id($first->id) }}"></i>
-                                    <i class="fa-solid fa-trash delete-icon text-danger" style="font-size:18px; cursor: pointer;" data-rating-id="{{ encode_id($first->id) }}"></i>
+                                   <input type="checkbox"  class="select_rating" data-rating-id="{{ encode_id($first->id) }}"  {{ in_array($first->id, $selectedRatingIds) ? 'checked' : '' }}
                                 </td>
                             </tr>
                         @endforeach
@@ -415,69 +414,36 @@
         
     });
 
-    $(document).on('click', '.edit-user-icon', function () {
+$(document).on('click', '.select_rating', function () {
     $('.error_e').html('');
-    $("#editRatingForm")[0].reset();
+
+    const isChecked = $(this).is(':checked');
     const ratingId = $(this).data('rating-id');
-    const $select = $('#edit_parent_rating');
+    const url = isChecked 
+        ? "{{ url('/rating/select_rating') }}" 
+        : "{{ url('/rating/deselect_rating') }}";
+
     $.ajax({
-        type: 'GET',
-        url: "{{ url('/rating/edit') }}",
-        data: { rating_id: ratingId },
+        type: 'post',
+        url: url,
+        data: {
+            rating_id: ratingId,
+            "_token": "{{ csrf_token() }}"
+        },
         success: function (response) {
             if (response.success) {
-                const selected = (response.selected || []).map(String); 
-                const rating = response.rating;
-
-                if (!rating) {
-                    alert('Rating data missing.');
-                    return;
-                }
-
-                $('#rating_id').val(rating.id);
-                $('#edit_name').val(rating.name || '');
-                $('#edit_status').val(rating.status || 0);
-                $('#edit_fixed_wing').prop('checked', rating.is_fixed_wing == 1);
-                $('#edit_rotary').prop('checked', rating.is_rotary == 1);
-                $('#edit_instructor').prop('checked', rating.is_instructor == 1);
-                $('#edit_examiner').prop('checked', rating.is_examiner == 1);
-                $('#edit_kind_of_rating').val(rating.kind_of_rating || '');
-                $('#edit_select_org_unit').val(rating.ou_id || '');
-                if ($select.hasClass("select2-hidden-accessible")) {
-                    $select.select2('destroy');
-                }
-                $select.empty();
-                if (Array.isArray(response.dropdown) && response.dropdown.length > 0) {
-                    response.dropdown.forEach(function (r) {
-                        if (r && r.id && r.name && r.id != rating.id) {
-                            const isSelected = selected.includes(r.id.toString()) ? 'selected' : '';
-                            $select.append(`<option value="${r.id}" ${isSelected}>${r.name}</option>`);
-                        }
-                    });
-                } else {
-                    console.warn("Dropdown is empty or invalid", response.dropdown);
-                }
-                $('#editRatingModal').on('shown.bs.modal', function () {
-                    $select.select2({
-                        dropdownParent: $('#editRatingModal'),
-                        placeholder: "Select parent rating(s)",
-                        allowClear: true,
-                        width: '100%'
-                    });
-                });
-
-                // Show modal
-                $('#editRatingModal').modal('show');
+                location.reload();
             } else {
-                alert(response.msg || 'Unable to fetch rating data.');
+                alert(response.message || 'Operation failed.');
             }
         },
         error: function (xhr, status, error) {
             console.error('AJAX Error:', xhr.responseText);
-            alert('An error occurred while fetching the rating.');
+            alert('An error occurred while processing the request.');
         }
     });
 });
+
 
 let previousOuId = $('#edit_select_org_unit').val(); 
 $('#edit_select_org_unit').on('focus', function () {

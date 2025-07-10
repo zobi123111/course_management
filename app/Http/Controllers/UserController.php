@@ -9,6 +9,7 @@ use App\Models\UserActivityLog;
 use App\Models\Rating;
 use App\Models\UserRating;
 use App\Models\UserDocument;
+use App\Models\OuRating;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -28,10 +29,16 @@ class UserController extends Controller
         $is_owner = $authUser->is_owner;
         $is_admin = $authUser->is_admin;
     
-        $organizationUnits = OrganizationUnits::all();
+        $organizationUnits = OrganizationUnits::all(); 
         $roles = Role::all(); 
         $rating = Rating::where('status', 1)->get(); 
+       
 
+        $ou_id = auth()->user()->ou_id;
+        if ($ou_id != null) {
+            $rating = Rating::with(['ou_ratings.organization_unit'])->where('status', 1)->whereHas('ou_ratings')->get();
+        }
+          
         if ($request->ajax()) {
             $query = User::query()
                     ->leftJoin('roles', 'users.role', '=', 'roles.id')
@@ -108,7 +115,7 @@ class UserController extends Controller
                 })
                 ->rawColumns(['status', 'action'])
                 ->make(true);
-        }
+        } 
     
          return view('users.index', compact('roles', 'organizationUnits','rating'));
     }
@@ -1384,9 +1391,9 @@ public function showRating()
         ]);
     }
 
-    return view('users.ratings.show', [
+    return view('users.ratings.show', [ 
         'ratings' => $allRatings->groupBy('name'),
-        'ratingDropdownOptions' => $ratingDropdownOptions,
+        'ratingDropdownOptions' => $allRatings,
         'organizationUnits' => $organizationUnits
     ]);
 }
@@ -1437,7 +1444,7 @@ public function saveRating(Request $request)
         'is_rotary' => $request->has('is_rotary'),
         'is_instructor' => $request->has('is_instructor'),
         'is_examiner' => $request->has('is_examiner'),
-        'ou_id' => $request->has('ou_id')
+        'ou_id' => NULL
     ]);
 
     // Save multiple parent relationships
@@ -1616,9 +1623,99 @@ public function getRatingsByOU(Request $request)
     ]);
 }
 
+public function ou_rating()
+{
+    $allRatings = Rating::all(); // All ratings (from ratings table)
+    $organizationUnits = OrganizationUnits::all(); // For UI context
+
+    // Group parent-child mappings from parent_rating table
+    $parentRelations = ParentRating::all()->groupBy('parent_id');
+
+    $ratingDropdownOptions = collect(); // To store formatted dropdown items
+    $usedIds = collect(); // To track already added children
+
+    // Build hierarchy from parent_rating
+    $this->buildFullHierarchy($parentRelations, $allRatings, null, 0, $ratingDropdownOptions, $usedIds);
+
+     $ou_id = auth()->user()->ou_id;
+
+    // Get selected rating IDs for current OU
+    $selectedRatingIds = OuRating::where('ou_id', $ou_id)->pluck('rating_id')->toArray();
+
+    return view('users.ou_show_rating', [
+        'ratings' => $allRatings->groupBy('name'),
+        'ratingDropdownOptions' => $allRatings,
+        'organizationUnits' => $organizationUnits,
+        'selectedRatingIds' => $selectedRatingIds
+    ]);
+
+
+}
+
+public function select_rating(Request $request)
+{
+    $rating_id = decode_id($request->rating_id);
+    $ou_id     = auth()->user()->ou_id;
+
+    // Check if rating already exists for this OU
+    $exists = OuRating::where('rating_id', $rating_id)
+                      ->where('ou_id', $ou_id)
+                      ->exists();
+
+    if ($exists) {
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Rating already selected for this OU.'
+        ]);
+    }
+
+    // Save the new rating
+    $store_ou_rating = OuRating::create([
+        'rating_id' => $rating_id,
+        'ou_id'     => $ou_id
+    ]);
+
+    if ($store_ou_rating) {
+         Session::flash('message', 'Rating saved successfully');
+        return response()->json([
+            'success' => true,
+            'message' => 'Rating selected successfully.'
+        ]);
+    }
     
+    return response()->json([
+        'success' => false,
+        'message' => 'Failed to select rating.'
+    ]);
+}
+
+public function deselect_rating(Request $request)
+{
+    $rating_id = decode_id($request->rating_id);
+    $ou_id = auth()->user()->ou_id;
+
+    $deleted = OuRating::where('rating_id', $rating_id)
+                       ->where('ou_id', $ou_id)
+                       ->delete();
+
+    if ($deleted) {
+         Session::flash('message', 'Rating removed successfully');
+        return response()->json([
+            'success' => true,
+            'message' => 'Rating deselected successfully.'
+        ]);
+    }
     
-   
+    return response()->json([
+        'success' => false,
+        'message' => 'Failed to deselect rating or it was not found.'
+    ]);
+}
+
+
+
+    
 
 
 }
