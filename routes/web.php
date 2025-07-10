@@ -67,9 +67,17 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/users/data', [UserController::class, 'getData'])->name('users.data');
     Route::get('/users/show/{user_id}', [UserController::class, 'showUser'])->name('user.show');
     //Users rating routes
-    Route::get('/users/rating', [UserController::class, 'showRating'])->name('users.rating');
+    Route::get('/users/rating', [UserController::class, 'showRating'])->name('users.rating'); 
+    Route::get('/users/ou_rating', [UserController::class, 'ou_rating'])->name('users.ou_rating');  
+
     Route::post('/rating/save', [UserController::class, 'saveRating'])->name('rating.store');
     Route::get('/rating/edit', [UserController::class, 'getRating'])->name('rating.edit');
+    Route::post('/rating/select_rating', [UserController::class, 'select_rating'])->name('rating.select_rating');
+     Route::post('/rating/deselect_rating', [UserController::class, 'deselect_rating'])->name('rating.deselect_rating');
+
+
+
+
     Route::post('/rating/update', [UserController::class, 'updateRating'])->name('rating.update');
     Route::post('/rating/delete', [UserController::class, 'deleteRating'])->name('rating.delete');
     Route::get('/rating/get-by-ou', [UserController::class, 'getRatingsByOU']);
@@ -146,7 +154,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/users/document-data', [UserController::class, 'userData'])->name('users.document.data');
     
     //Users Route
-    Route::get('/users', [UserController::class, 'getData'])->name('user.index');
+    Route::get('/users', [UserController::class, 'getData'])->name('user.index'); 
     // Route::get('/users/profile', [UserController::class, 'profile'])->name('user.profile');
     // Route::post('/users/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update');
     Route::post('/users/save', [UserController::class, 'save_user'])->name('user.store');

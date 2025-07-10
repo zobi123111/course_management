@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Rating extends Model
 {
@@ -51,6 +52,11 @@ public function associatedParents()
         'rating_id',            // Foreign key on the pivot for THIS model
         'parent_id'             // Foreign key for the parent
     );
+}
+
+public function ou_ratings(): HasMany
+{
+     return $this->hasMany(OuRating::class);
 }
 
 

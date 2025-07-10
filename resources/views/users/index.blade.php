@@ -46,7 +46,10 @@
             <a href="#" class="btn btn-primary me-2 create-button" id="createUser" data-toggle="modal"
                 data-target="#userModal">Create Users</a>
             @if(auth()->user()->is_owner == 1)
-                <a href="{{ route('users.rating') }}" class="btn btn-primary" id="addRating">View Rating</a>
+                <a href="{{ route('users.rating') }}" class="btn btn-primary" id="addRating">View Rating</a> 
+            @endif
+            @if(auth()->user()->ou_id != null)
+            <a href="{{ route('users.ou_rating') }}" class="btn btn-primary" id="addRating">View OU  Rating</a>
             @endif
         </div>
 
@@ -195,7 +198,7 @@
     </div>
 
     <!-- Enable Licence 2 -->
-    <div class="mt-3" id="license_2" style="display: none;">
+    <div class="mt-3" id="license_2" >
         <label for="licence2_checkbox" class="form-label">Enable EASA Licence</label>
         <input type="checkbox" name="licence_2_checkbox" id="licence_2_checkbox" value="1" class="ms-2">
 
@@ -283,15 +286,16 @@
                                 <button type="button" id="add_second_medical_btn" class="btn btn-secondary mt-3" style="display: none;">
                                     Second Medical
                                 </button>
-                                <div class="mt-3" id="medical_2" style="display: none;">
-                                    <label for="medical_2_checkbox" class="form-label">Enable EASA Medical</label>
+                           
+                            </div>
+                                 <div class="mt-3" id="medical_2" >
+                                    <label for="medical_2_checkbox" class="form-label">EASA Medical</label>
                                     <input type="checkbox" name="medical_2_checkbox" id="medical_2_checkbox" class="ms-2" value="1">
                                     <label for="medical_2_verification_required" class="form-label ms-4">Admin Verification
                                         required?</label>
                                     <input type="checkbox" name="medical_2_verification_required"
                                         id="medical_2_verification_required" class="ms-2" value="1">
                                 </div>
-                            </div>
                             <div id="second_medical_section" class="mt-3" style="display: none;">
                                 <div class="medical_issued_div_2">
                                     <label for="issued_by_2" class="form-label">Medical Issued By</label>
@@ -546,8 +550,8 @@
                                 Second Licence
                             </button> -->
 
-                            <div class="mt-3" id="edit_license2" style="display: none;">
-                                <label for="edit_licence_checkbox" class="form-label">Enable EASA Licence</label>
+                            <div class="mt-3" id="edit_license2" >
+                                <label for="edit_licence_checkbox" class="form-label"> EASA Licence</label>
                                 <input type="checkbox" name="edit_licence_2_checkbox" value="1" id="edit_licence_2_checkbox" class="ms-2">
 
                                 <label for="edit_licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
@@ -869,7 +873,7 @@
     if (this.checked) {
         $('#licence').show().prop('required', true);
         $('#licence_file').show().prop('required', true);
-        $('#license_2').show();
+        // $('#license_2').show();
 
         // 👉 Show the ratings for Licence 1
         $('#licence_rating_section').show();
@@ -878,7 +882,7 @@
         $('#licence_file').hide().prop('required', false).val('');
         $('#licence_error, #licence_file_error').hide();
         $('#second_licence_section').hide();
-        $('#license_2').hide();
+        // $('#license_2').hide();
 
         // 👉 Hide the ratings for Licence 1
         $('#licence_rating_section').hide();
@@ -888,6 +892,8 @@
 
 $('#licence_2_checkbox').change(function () {
     if (this.checked) {
+        $('#licence_2').show();
+        $('#licence_file_2').show();
         $('#second_licence_section').show();
         $('#licence_2').prop('required', true);
         $('#licence_file_2').prop('required', true);
@@ -899,6 +905,8 @@ $('#licence_2_checkbox').change(function () {
         $('#licence_file_2').prop('required', false).val('');
 
         // 👉 Hide the ratings for Licence 2
+        $('#licence_2').hide();
+        $('#licence_file_2').hide();
         $('#licence_2_rating_section').hide();
         $('#licence_2_rating_value').val(null).trigger('change'); // clear selection
     }
@@ -1043,11 +1051,11 @@ $('#licence_2_checkbox').change(function () {
             if (this.checked) {
                 $('.medical_issued_div').show();
                 $('.medical_class_div').show();
-                $('#medical_2').show();
+                // $('#medical_2').show();
             } else {
                 $('.medical_issued_div').hide();
                 $('.medical_class_div').hide();
-                $('#medical_2').hide();
+                // $('#medical_2').hide();
                 $('#second_medical_section').hide();
 
                 // Reset second medical fields
@@ -1124,7 +1132,7 @@ $('#licence_2_checkbox').change(function () {
             $('#licence').hide().prop('required', false).val('');
             $('#licence_file').hide().prop('required', false).val('');
             $('#licence_error, #licence_file_error').hide();
-            $('#license_2').hide();
+            // $('#license_2').hide();
             $('#licence_2_checkbox').prop('checked', false);
             $('#second_licence_section').hide();
             $('#licence_2').prop('required', false).val('');
@@ -1139,7 +1147,7 @@ $('#licence_2_checkbox').change(function () {
             $('#medical_verification_required').prop('checked', false);
             $('.medical_issued_div').hide();
             $('.medical_class_div').hide();
-            $('#medical_2').hide();
+             $('#medical_2').show();
             $('#issued_by').val('');
             $('#medical_class').val('');
             $('#medical_issue_date').val('');
@@ -1147,7 +1155,7 @@ $('#licence_2_checkbox').change(function () {
             $('#medical_detail').val('');
             $('#medical_file').val('');
             // Hide and reset second medical section
-            $('#medical_2_checkbox').prop('checked', false);
+            // $('#medical_2_checkbox').prop('checked', false);
             $('#medical_2_verification_required').prop('checked', false);
             $('#second_medical_section').hide();
             $('#issued_by_2').val('');
@@ -1196,7 +1204,7 @@ $('#licence_2_checkbox').change(function () {
             if (this.checked) {
                 $('#edit_licence').show().prop('required', true);
                 $('#edit_licence_file').show().prop('required', true);
-                $('#edit_license2').show();
+                // $('#edit_license2').show();
                 $('#edit_licence_rating_section').show();
                  if (!$('#edit_licence_rating_value').hasClass("select2-hidden-accessible")) {
             $('#edit_licence_rating_value').select2({ width: '100%' });
@@ -1208,7 +1216,7 @@ $('#licence_2_checkbox').change(function () {
                 $('#edit_licence_rating').val(null); // clear selection
                 $('#edit_licence_2').val('');
                 $('#edit_licence_file_2').val('');
-                $('#edit_license2').hide();
+                // $('#edit_license2').hide();
             }
         });
 
