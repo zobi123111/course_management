@@ -199,7 +199,7 @@
 
     <!-- Enable Licence 2 -->
     <div class="mt-3" id="license_2" >
-        <label for="licence2_checkbox" class="form-label">Enable EASA Licence</label>
+        <label for="licence2_checkbox" class="form-label"> EASA Licence</label>
         <input type="checkbox" name="licence_2_checkbox" id="licence_2_checkbox" value="1" class="ms-2">
 
         <label for="licence_2_verification_required" class="form-label ms-4">Admin Verification required?</label>
@@ -633,15 +633,16 @@
                                 <!-- <button type="button" id="edit_second_medical_btn" class="btn btn-secondary mt-3">
                                     Second Medical
                                 </button> -->
-                                <div class="mt-3" id="edit_medical_2">
-                                    <label for="licence_checkbox" class="form-label">Enable EASA Medical</label>
+                             
+                            </div>
+                               <div class="mt-3" id="edit_medical_2">
+                                    <label for="licence_checkbox" class="form-label">EASA Medical</label>
                                     <input type="checkbox" name="edit_medical_2_checkbox" id="edit_medical_2_checkbox" class="ms-2" value="1">
                                     <label for="licence_verification_required" class="form-label ms-4">Admin Verification
                                         required?</label>
                                     <input type="checkbox" name="edit_medical_2_verification_required"
                                         id="edit_medical_2_verification_required" class="ms-2" value="1">
                                 </div>
-                            </div>
 
                             
                             <!-- Second Medical Fields -->
@@ -1090,7 +1091,7 @@ $('#licence_2_checkbox').change(function () {
             if (this.checked) {
                 $('.editmedical_issued_div').show();
                 $('.editmedical_class_div').show();
-                $('#edit_medical_2').show();
+                // $('#edit_medical_2').show();
 
                 // Make fields required
                 $('#editissued_by').prop('required', true);
@@ -1102,7 +1103,7 @@ $('#licence_2_checkbox').change(function () {
             } else {
                 $('.editmedical_issued_div').hide();
                 $('.editmedical_class_div').hide();
-                $('#edit_medical_2').hide();
+                // $('#edit_medical_2').hide();
                 $('#edit_second_medical_section').hide();
 
                 $('#editissued_by, #editmedical_class, #editmedical_issue_date, #editmedical_expiry_date, #editmedical_detail, #editmedical_file').val('').prop('required', false);
