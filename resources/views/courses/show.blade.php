@@ -410,6 +410,24 @@
                         <div id="lesson_type_error" class="text-danger error_e"></div>
                     </div>
 
+                    <div class="form-group">
+                        <label class="form-label">Custom Time Type</label>
+                        <div>
+                            @if ($course->customTimes->count())
+                                @foreach ($course->customTimes as $customTime)
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="custom_time_type" id="custom_time_{{ $customTime->id }}" value="{{ $customTime->id }}">
+                                        <label class="form-check-label" for="custom_time_{{ $customTime->id }}">
+                                            {{ $customTime->name }} ({{ $customTime->hours }} hrs)
+                                        </label>
+                                    </div>
+                                @endforeach
+                            @else
+                                <p class="text-muted">No custom time types configured for this course.</p>
+                            @endif
+                        </div>
+                    </div>
+
                     <!-- Grading Type Selection -->
                     <div class="form-group">
                         <label class="form-label">Grading Type <span class="text-danger">*</span></label>
@@ -496,6 +514,25 @@
                             <option value="groundschool">Groundschool</option>
                         </select>
                         <div id="edit_lesson_type_error_up" class="text-danger error_e"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Custom Time Type</label>
+                        <div>
+                            @if ($course->customTimes->count())
+                                @foreach ($course->customTimes as $customTime)
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="edit_custom_time_type" id="edit_custom_time_{{ $customTime->id }}" value="{{ $customTime->id }}">
+                                        <label class="form-check-label" for="custom_time_{{ $customTime->id }}">
+                                            {{ $customTime->name }} ({{ $customTime->hours }} hrs)
+                                        </label>
+                                        <div id="edit_custom_time_type_error_up" class="text-danger error_e"></div>
+                                    </div>
+                                @endforeach
+                            @else
+                                <p class="text-muted">No custom time types configured for this course.</p>
+                            @endif
+                        </div>
                     </div>
                     <!-- Grading Type Selection -->
                     <div class="form-group">
@@ -700,6 +737,13 @@ $(document).ready(function() {
                 $('#edit_status').val(response.lesson.status);
                 $('#edit_lesson_type').val(response.lesson.lesson_type);
 
+                //Check the correct custom time type radio button
+                console.log(response.lesson.custom_time_id);
+                if (response.lesson.custom_time_id) {
+                    $('#edit_custom_time_'+response.lesson.custom_time_id).prop('checked', true);  
+
+                }
+
                 // Set the correct grading type radio button
                if (response.lesson.grade_type === "pass_fail") {
                     $('#edit_grade_pass_fail').prop('checked', true);
@@ -708,6 +752,7 @@ $(document).ready(function() {
                 } else if (response.lesson.grade_type === "percentage") {
                     $('#edit_grade_percentage').prop('checked', true);
                 }
+
 
                 if (response.lesson.enable_prerequisites) {
                     $('#enable_prerequisites').prop('checked', true);

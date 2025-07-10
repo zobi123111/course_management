@@ -11,7 +11,7 @@ class Courses extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $fillable = ['ou_id','course_type','course_name','description','duration_type','duration_value','enable_groundschool_time', 'groundschool_hours', 'enable_simulator_time', 'simulator_hours', 'image','enable_feedback','enable_instructor_upload', 'status', 'enable_prerequisites', 'position'];
+    protected $fillable = ['ou_id','course_type','course_name','description','duration_type','duration_value','enable_groundschool_time', 'groundschool_hours', 'enable_simulator_time', 'simulator_hours', 'enable_custom_time_tracking', 'image','enable_feedback','enable_instructor_upload', 'status', 'enable_prerequisites', 'position'];
 
     public function organizationUnit()
     {
@@ -92,6 +92,11 @@ class Courses extends Model
     public function trainingEvents()
     {
         return $this->hasMany(TrainingEvents::class, 'course_id');
+    }
+
+    public function customTimes()
+    {
+        return $this->hasMany(CourseCustomTime::class, 'course_id');
     }
 
 }
