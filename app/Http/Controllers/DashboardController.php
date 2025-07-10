@@ -142,26 +142,26 @@ class DashboardController extends Controller
                 $userRatingsMap = $user->usrRatings->keyBy('rating_id');
 
                 $user->ratings_by_license = [
-                    'licence_1' => $user->usrRatings
-                        ->filter(fn($r) => strtolower($r->linked_to) === 'licence_1')
-                        ->map(function ($r) use ($userRatingsMap) {
-                            $r->associated_details = optional($r->rating)->associatedChildren->map(function ($assocRating) use ($userRatingsMap) {
-                                $assocRating->user_rating = $userRatingsMap[$assocRating->id] ?? null;
-                                return $assocRating;
-                            }) ?? collect();
-                            return $r;
-                        })->values(),
+                'licence_1' => $user->usrRatings
+                    ->filter(fn($r) => strtolower($r->linked_to) === 'licence_1')
+                    ->map(function ($r) use ($userRatingsMap) {
+                        $r->associated_details = optional(optional($r->rating)->associatedChildren)->map(function ($assocRating) use ($userRatingsMap) {
+                            $assocRating->user_rating = $userRatingsMap[$assocRating->id] ?? null;
+                            return $assocRating;
+                        }) ?? collect();
+                        return $r;
+                    })->values(),
 
-                    'licence_2' => $user->usrRatings
-                        ->filter(fn($r) => strtolower($r->linked_to) === 'licence_2')
-                        ->map(function ($r) use ($userRatingsMap) {
-                            $r->associated_details = optional($r->rating)->associatedChildren->map(function ($assocRating) use ($userRatingsMap) {
-                                $assocRating->user_rating = $userRatingsMap[$assocRating->id] ?? null;
-                                return $assocRating;
-                            }) ?? collect();
-                            return $r;
-                        })->values(),
-                ];
+                'licence_2' => $user->usrRatings
+                    ->filter(fn($r) => strtolower($r->linked_to) === 'licence_2')
+                    ->map(function ($r) use ($userRatingsMap) {
+                        $r->associated_details = optional(optional($r->rating)->associatedChildren)->map(function ($assocRating) use ($userRatingsMap) {
+                            $assocRating->user_rating = $userRatingsMap[$assocRating->id] ?? null;
+                            return $assocRating;
+                        }) ?? collect();
+                        return $r;
+                    })->values(),
+            ];
 
                 return $user;
             });
