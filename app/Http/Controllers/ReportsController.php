@@ -33,21 +33,29 @@ class ReportsController extends Controller
 
         foreach ($courses as $course) {
             $events = $course->trainingEvents;
-
-            // Only keep training events with a valid (non-deleted) student
             $validEvents = $events->filter(function ($event) {
                 return $event->student !== null;
             });
 
-            // Count only valid student IDs
-            $enrolledStudentIds = $validEvents->pluck('student_id')->unique();
-            $completedStudentIds = $events
-                ->filter(fn($event) => !empty($event->course_end_date))
-                ->pluck('student_id')->unique();
+            $validStudentIds = $validEvents->pluck('student_id')->unique();
 
-            $course->students_enrolled = $enrolledStudentIds->count();
+            $taskGrades = TaskGrading::whereIn('user_id', $validStudentIds)
+                ->whereIn('event_id', $events->pluck('id'))
+                ->get()
+                ->groupBy('user_id');
+            $completedStudentIds = collect($taskGrades)->filter(function ($grades) {
+                if ($grades->isEmpty()) return false;
+
+                $normalized = $grades->pluck('task_grade')->map(fn($grade) =>
+                    strtolower(trim((string) $grade))
+                );
+
+                return $normalized->every(fn($g) => in_array($g, ['3', '4', '5', 'competent']));
+            })->keys();
+
+            $course->students_enrolled = $validStudentIds->count();
             $course->students_completed = $completedStudentIds->count();
-            $course->students_active = $enrolledStudentIds->diff($completedStudentIds)->count();
+            $course->students_active = $validStudentIds->diff($completedStudentIds)->count();
         }
 
         $ous = $user->is_owner ? OrganizationUnits::select('id', 'org_unit_name')->get() : [];
@@ -142,8 +150,26 @@ class ReportsController extends Controller
         // === Chart Data ===
         $chartData = [
             'enrolled'    => $students->count(),
-            'completed'   => $students->filter(fn($s) => !$s->is_archived && $s->course_end_date !== null)->count(),
-            'active'      => $students->filter(fn($s) => !$s->is_archived && $s->course_end_date === null)->count(),
+            'completed' => $students->filter(function ($s) {
+                if ($s->is_archived) return false;
+
+                $progress = $s->progress ?? [];
+
+                return isset($progress['total'], $progress['competent']) &&
+                    $progress['total'] > 0 &&
+                    $progress['total'] === $progress['competent'];
+            })->count(),
+            'active' => $students->filter(function ($s) {
+                if ($s->is_archived) return false;
+
+                $progress = $s->progress ?? [];
+
+                $isCompleted = isset($progress['total'], $progress['competent']) &&
+                            $progress['total'] > 0 &&
+                            $progress['total'] === $progress['competent'];
+
+                return !$isCompleted;
+            })->count(),
             'archived'    => $students->filter(fn($s) => $s->is_archived)->count(),
             'failing'     => $failingStudentIds->intersect($students->pluck('id'))->count(),
         ];
