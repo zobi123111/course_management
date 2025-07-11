@@ -252,50 +252,57 @@
                             placeholder="Enter number of hours/events">
                         <div id="duration_error" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="1" id="enable_groundschool_time" name="enable_groundschool_time">
-                        <label class="form-check-label" for="enable_feedback">
-                            Enable Groundschool Tracking 
-                        </label>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="enable_groundschool_time" name="enable_groundschool_time">
+                            <label class="form-check-label" for="enable_feedback">
+                                Enable Groundschool Tracking 
+                            </label>
+                        </div>
                     </div>
 
                     <!-- Groundschool Time Input -->
                     <div id="groundschool_time_container" class="mt-2" style="display: none;">
-                        <label for="groundschool_hours" class="form-label">Required Groundschool Hours</label>
+                        <!-- <label for="groundschool_hours" class="form-label">Groundschool Hours</label> -->
                         <input type="number" class="form-control" name="groundschool_hours" id="groundschool_hours" placeholder="Enter groundschool hours">
                     </div>
 
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="1" id="enable_simulator_time" name="enable_simulator_time">
-                        <label class="form-check-label" for="enable_feedback">
-                            Enable Simulator Tracking 
-                        </label>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="enable_simulator_time" name="enable_simulator_time">
+                            <label class="form-check-label" for="enable_feedback">
+                                Enable Simulator Tracking 
+                            </label>
+                        </div>
                     </div>
                     
                     <!-- Simulator Time Input -->
                     <div id="simulator_time_container" class="mt-2" style="display: none;">
-                        <label for="simulator_hours" class="form-label">Required Simulator Hours</label>
+                        <!-- <label for="simulator_hours" class="form-label">Simulator Hours</label> -->
                         <input type="number" class="form-control" name="simulator_hours" id="simulator_hours" placeholder="Enter simulator hours">
                     </div>
 
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" id="enable_custom_time_tracking">
-                        <label class="form-check-label" for="enable_custom_time_tracking">
-                            Enable Custom Time Tracking
-                        </label>
-                    </div>
-
-                    <div id="custom_time_tracking_container" class="border p-2 mb-3" style="display: none;">
-                        <div class="form-group mb-2">
-                            <label for="custom_time_name">Custom Time Type Name</label>
-                            <input type="text" name="custom_time_name" id="custom_time_name" class="form-control" placeholder="e.g. Night Flying">
-                        </div>
-                        <div class="form-group mb-2">
-                            <label for="custom_time_hours">Required Hours</label>
-                            <input type="number" name="custom_time_hours" id="custom_time_hours" class="form-control" placeholder="e.g. 4.5">
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="enable_custom_time_tracking" id="enable_custom_time_tracking" value="1">
+                            <label class="form-check-label" for="enable_custom_time_tracking">
+                                Enable Custom Time Tracking
+                            </label>
                         </div>
                     </div>
-
+                    <div id="customTimeConfigSection" style="display:none; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <div id="custom_time_tracking_container">
+                            <div class="custom-time mb-3">
+                                <label for="custom_time_name">Custom Time Type Name</label>
+                                <input type="text" name="custom_time[0][name]" id="custom_time_name" class="form-control" placeholder="e.g. Night Flying">
+                                <div id="custom_time_0_name_error" class="text-danger error_e"></div>
+                                <label for="custom_time_hours">Required Hours</label>
+                                <input type="number" name="custom_time[0][hours]" id="custom_time_hours" class="form-control" placeholder="e.g. 4">
+                                <div id="custom_time_0_hours_error" class="text-danger error_e"></div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="add_another_time_btn">Add More</button>
+                    </div>
 
                     <div class="form-group">
                         <label for="groups" class="form-label">Assigned Resource<span
@@ -437,8 +444,7 @@
                         <div id="image_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
-                        <label for="duration" class="form-label">Course Duration<span
-                                class="text-danger">*</span></label>
+                        <label for="duration" class="form-label">Course Duration<span class="text-danger">*</span></label>
                         <select class="form-select" name="duration_type" id="edit_duration_type">
                             <option value="">Select Duration Type</option>
                             <option value="hours">Hours</option>
@@ -447,6 +453,56 @@
                         <input type="number" name="duration_value" class="form-control mt-2" id="edit_duration_value"
                             placeholder="Enter number of hours/events">
                         <div id="duration_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="edit_enable_groundschool_time" name="enable_groundschool_time">
+                            <label class="form-check-label" for="enable_feedback">
+                                Enable Groundschool Tracking 
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Groundschool Time Input -->
+                    <div id="edit_groundschool_time_container" class="mt-2" style="display: none;">
+                        <!-- <label for="groundschool_hours" class="form-label">Groundschool Hours</label> -->
+                        <input type="number" class="form-control" name="groundschool_hours" id="edit_groundschool_hours" placeholder="Enter groundschool hours">
+                    </div>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="edit_enable_simulator_time" name="enable_simulator_time">
+                            <label class="form-check-label" for="enable_feedback">
+                                Enable Simulator Tracking 
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Simulator Time Input -->
+                    <div id="edit_simulator_time_container" class="mt-2" style="display: none;">
+                        <!-- <label for="simulator_hours" class="form-label">Simulator Hours</label> -->
+                        <input type="number" class="form-control" name="simulator_hours" id="edit_simulator_hours" placeholder="Enter simulator hours">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="enable_custom_time_tracking" id="edit_enable_custom_time_tracking" value="1">
+                            <label class="form-check-label" for="edit_enable_custom_time_tracking">
+                                Enable Custom Time Tracking
+                            </label>
+                        </div>
+                    </div>
+                    <div id="editCustomTimeConfigSection" style="display:none; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <div id="edit_custom_time_tracking_container">
+                            <div class="custom-time mb-3">
+                                <label for="custom_time_name">Custom Time Type Name</label>
+                                <input type="text" name="custom_time[0][name]" id="custom_time_name" class="form-control" placeholder="e.g. Night Flying">
+                                <div id="custom_time_0_name_error_up" class="text-danger error_e"></div>
+                                <label for="custom_time_hours">Required Hours</label>
+                                <input type="number" name="custom_time[0][hours]" id="custom_time_hours" class="form-control" placeholder="e.g. 4">
+                                <div id="custom_time_0_hours_error_up" class="text-danger error_e"></div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="edit_add_another_time_btn">Add More</button>
                     </div>
                     <div class="form-group">
                         <label for="groups" class="form-label">Assigned Resource<span
@@ -665,6 +721,7 @@ $(document).ready(function() {
         // Hide feedback and instructor upload sections if visible
         $("#enable_feedback").prop("checked", false);
         $("#feedbackConfigSection").hide();
+        $("#customTimeConfigSection").hide();
         $("#enable_instructor_upload").prop("checked", false);
         $("#instructor_documents_container").hide();
         $("#createCourseModal").modal('show');
@@ -702,7 +759,6 @@ $(document).ready(function() {
             }
         });
     });
-
 
     $('.edit-course-icon').click(function(e) {
         e.preventDefault();
@@ -771,11 +827,33 @@ $(document).ready(function() {
                         }
                     },
                     error: function(xhr) {
-
                         console.error("Error loading groups:", xhr
                         .responseText);
                     }
                 });
+
+                // Groundschool Time
+                if (response.course.enable_groundschool_time) {
+                    $('#edit_enable_groundschool_time').prop('checked', true);
+                    $('#edit_groundschool_time_container').show();
+                    $('#edit_groundschool_hours').val(response.course.groundschool_hours);
+                } else {
+                    $('#edit_enable_groundschool_time').prop('checked', false);
+                    $('#edit_groundschool_time_container').hide();
+                    $('#edit_groundschool_hours').val('');
+                }
+
+                // Simulator Time
+                if (response.course.enable_simulator_time) {
+                    $('#edit_enable_simulator_time').prop('checked', true);
+                    $('#edit_simulator_time_container').show();
+                    $('#edit_simulator_hours').val(response.course.simulator_hours);
+                } else {
+                    $('#edit_enable_simulator_time').prop('checked', false);
+                    $('#edit_simulator_time_container').hide();
+                    $('#edit_simulator_hours').val('');
+                }
+
 
                 // Handle Prerequisites
                 if (response.course.enable_prerequisites) {
@@ -829,9 +907,9 @@ $(document).ready(function() {
                     $('#edit_instructor_documents_items').append(instructorDocumentHtml);
                 }
 
-
                 //Training Feedback
                 const questions = response.course.training_feedback_questions || [];
+                // console.log('feedback questions:', questions);
                 if (questions.length > 0) {
                     $('#edit_enable_feedback').prop('checked', true);
                     $('#edit_feedbackConfigSection').show();
@@ -853,6 +931,32 @@ $(document).ready(function() {
                 } else {
                     $('#edit_enable_feedback').prop('checked', false);
                     $('#edit_feedbackConfigSection').hide();
+                    // $('#edit_feedback_questions_container').empty();
+                }
+
+                //Course custom times
+                const custom_times = response.course.custom_times || [];
+                if (custom_times.length > 0) {
+                    $('#edit_enable_custom_time_tracking').prop('checked', true);
+                    $('#editCustomTimeConfigSection').show();
+                    $('#edit_custom_time_tracking_container').empty();
+
+                    custom_times.forEach((t, i) => {
+                        $('#edit_custom_time_tracking_container').append(`
+                            <div class="custom-time mb-3 position-relative border rounded p-3">
+                                <label for="custom_time_name">Custom Time Type Name</label>
+                                <input type="text" name="custom_time[${i}][name]" id="custom_time_name" value="${t.name}" class="form-control" placeholder="e.g. Night Flying">
+                                <div id="custom_time_${i}_name_error_up" class="text-danger error_e"></div>
+                                <label for="custom_time_hours">Required Hours</label>
+                                <input type="number" name="custom_time[${i}][hours]" id="custom_time_hours" value="${t.hours}"  class="form-control" placeholder="e.g. 4">
+                                <div id="custom_time_${i}_hours_error_up" class="text-danger error_e"></div>
+                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-custom-time-btn" style="transform: translate(18px, -18px);" title="Remove Custom times" aria-label="Remove Custom times">&times;</button>
+                            </div>
+                        `);
+                    });
+                } else {
+                    $('#edit_enable_custom_time_tracking').prop('checked', false);
+                    $('#editCustomTimeConfigSection').hide();
                     // $('#edit_feedback_questions_container').empty();
                 }
                 $('#editCourseModal').modal('show');
@@ -904,7 +1008,6 @@ $(document).ready(function() {
                 <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-question-btn" title="Remove Question" aria-label="Remove Question">&times;</button>
             </div>
         `;
-
         $('#edit_feedback_questions_container').append(questionHtml);
     });
 
@@ -913,18 +1016,51 @@ $(document).ready(function() {
         $(this).closest('.feedback-question').remove();
     });
 
+    // Enable/Disable custoim time on edit modal
+    $(document).on('change', '#edit_enable_custom_time_tracking', function () {
+        $('#editCustomTimeConfigSection').toggle(this.checked);
+    });
+
+    //Adding extra custome time box on edit modal
+    $('#edit_add_another_time_btn').click(function() {
+        let index = $('#edit_custom_time_tracking_container .custom-time').length;  
+
+        let customTimeHtml = `
+            <div class="custom-time mb-3 position-relative border rounded p-3">
+                <label for="custom_time_name">Custom Time Type Name</label>
+                <input type="text" name="custom_time[${index}][name]" id="custom_time_name"  class="form-control" placeholder="e.g. Night Flying">
+                <div id="custom_time_${index}_name_error_up" class="text-danger error_e"></div>
+                <label for="custom_time_hours">Required Hours</label>
+                <input type="number" name="custom_time[${index}][hours]" id="custom_time_hours"   class="form-control" placeholder="e.g. 4">
+                <div id="custom_time_${index}_hours_error_up" class="text-danger error_e"></div>
+                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-custom-time-btn" style="transform: translate(18px, -18px);" title="Remove Custom times" aria-label="Remove Custom times">&times;</button>
+            </div>`;
+        $('#edit_custom_time_tracking_container').append(customTimeHtml);
+    });
+
+    // Remove a question block
+    $('#edit_custom_time_tracking_container').on('click', '.remove-custom-time-btn', function () {
+        $(this).closest('.custom-time').remove();
+    });
+
     //Enabling Ground Time
     $('#enable_groundschool_time').change(function () {
         $('#groundschool_time_container').toggle(this.checked);
     });
+    //Enabling Simulator Time
     $('#enable_simulator_time').change(function () {
         $('#simulator_time_container').toggle(this.checked);
     });
 
-    //Enabling Custom Time
-    $('#enable_custom_time_tracking').change(function () {
-        $('#custom_time_tracking_container').toggle(this.checked);
+    //Enabling Edit Ground Time
+    $('#edit_enable_groundschool_time').change(function () {
+        $('#edit_groundschool_time_container').toggle(this.checked);
     });
+    //Enabling Edit Simulator Time
+    $('#edit_enable_simulator_time').change(function () {
+        $('#edit_simulator_time_container').toggle(this.checked);
+    });
+
 
     // Update Course functionality
     $('#updateCourse').on('click', function(e) {
@@ -1068,7 +1204,7 @@ $("#editAddDocumentsContainer").click(function() {
         });
     });
 
-    // Increment to get the new index
+    //Increment to get the new index
     let newIndex = maxIndex + 1;
 
     let documentContainerHTML = `
@@ -1124,7 +1260,34 @@ $("#editAddDocumentsContainer").click(function() {
         $(this).closest('.feedback-question').remove();
     });
 
-   
+    //Enabling Custom Time
+
+    let customTimeIndex = 1;
+    $('#enable_custom_time_tracking').on('change', function () {
+        $('#customTimeConfigSection').toggle(this.checked);
+    });
+
+    $('#add_another_time_btn').on('click', function () {
+        $('#custom_time_tracking_container').append(`
+            <div class="custom-time mb-3 border p-3 position-relative rounded">
+                <label for="custom_time_name">Custom Time Type Name</label>
+                <input type="text" name="custom_time[${customTimeIndex}][name]" id="custom_time_name" class="form-control" placeholder="e.g. Night Flying">
+                <div id="custom_time_${customTimeIndex}_name_error" class="text-danger error_e"></div>
+                <label for="custom_time_hours">Required Hours</label>
+                <input type="number" name="custom_time[${customTimeIndex}][hours]" id="custom_time_hours" class="form-control" placeholder="e.g. 4">
+                <div id="custom_time_${customTimeIndex}_hours_error" class="text-danger error_e"></div>
+                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-custom-time-btn" style="transform: translate(18px, -18px);">&times;</button>
+        </div>
+        `);
+        customTimeIndex++;
+    });
+
+    // Remove Custom time con
+    $('#customTimeConfigSection').on('click', '.remove-custom-time-btn', function () {
+        $(this).closest('.custom-time').remove();
+    });
+
+
 
 });
 

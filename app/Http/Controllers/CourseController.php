@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\Resource;
 use App\Models\CourseResources;
 use App\Models\CourseDocuments;
+use App\Models\CourseCustomTime;
 use Illuminate\Support\Facades\DB;
 
 
@@ -146,10 +147,17 @@ class CourseController extends Controller
                     }
                 }
             ],
+            // Validation for add feedback questions
             'enable_feedback' => 'nullable|boolean',
             'feedback_questions' => 'nullable|array',
             'feedback_questions.*.question' => 'required_if:enable_feedback,1|string',
             'feedback_questions.*.answer_type' => 'required_if:enable_feedback,1|in:yes_no,rating',
+
+            // Validation for add custom time tracking
+            'enable_custom_time_tracking' => 'nullable|boolean',
+            'custom_time'                 => 'required_if:enable_custom_time_tracking,1|array',
+            'custom_time.*.name'          => 'required_with:custom_time|string',
+            'custom_time.*.hours'         => 'required_with:custom_time|numeric|min:0',
     
             // Validation for Instructor Upload Documents
             'enable_instructor_upload' => 'nullable|boolean',
@@ -169,6 +177,8 @@ class CourseController extends Controller
         ], [], [
             'feedback_questions.*.question' => 'Feedback question',
             'feedback_questions.*.answer_type' => 'Answer type',
+            'custom_time.*.name' => 'Custom time name',
+            'custom_time.*.hours' => 'Custom time hours',
             'instructor_documents.*.name' => 'Document Name',
             'custom_time_name' => 'Custom Time Name',
             'custom_time_hours' => 'Custom Time Hours',
@@ -188,6 +198,7 @@ class CourseController extends Controller
             'duration_value' => $request->duration_value ?? null,
             'course_type' => $request->course_type,
             'enable_feedback' => (int) $request->input('enable_feedback', 0),
+            'enable_custom_time_tracking' => (int) $request->input('enable_custom_time_tracking', 0),
             'enable_instructor_upload' => (int) $request->input('enable_instructor_upload', 0),
             'enable_groundschool_time' => (int) $request->input('enable_groundschool_time', 0),
             'groundschool_hours' => $request->groundschool_hours ?? null,
@@ -208,6 +219,17 @@ class CourseController extends Controller
                     'course_id' => $course->id,
                     'question' => $q['question'],
                     'answer_type' => $q['answer_type'],
+                ]);
+            }
+        }
+
+        // Store course custom time
+        if ($request->enable_custom_time_tracking && $request->custom_time) {
+            foreach ($request->custom_time as $t) {
+                CourseCustomTime::create([
+                    'course_id' => $course->id,
+                    'name' => $t['name'],
+                    'hours' => $t['hours'],
                 ]);
             }
         }
@@ -234,9 +256,8 @@ class CourseController extends Controller
     public function getCourse(Request $request)
     {
        //dd((decode_id($request->id)));
-       $course = Courses::with(['groups', 'prerequisites', 'training_feedback_questions','documents'])
+       $course = Courses::with(['groups', 'prerequisites', 'training_feedback_questions','documents','customTimes'])
        ->findOrFail(decode_id($request->id));
-     
         $ou_id = $course->ou_id;
         $allGroups = Group::all();
         $courseResources = CourseResources::where('courses_id', decode_id($request->id))->get();
@@ -262,8 +283,6 @@ class CourseController extends Controller
     // Update course
     public function updateCourse(Request $request)
     {
-        // dd($request->all());
-        // Validate input data
         $request->validate([
             'course_name' => 'required',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
@@ -275,6 +294,10 @@ class CourseController extends Controller
             'prerequisite_type' => 'nullable|array',
             'duration_type' => 'nullable|in:hours,events',
             'duration_value' => 'nullable|numeric|min:1',
+            'enable_groundschool_time' => 'nullable|boolean',
+            'groundschool_hours' => 'nullable|numeric|min:0',
+            'enable_simulator_time' => 'nullable|boolean',
+            'simulator_hours' => 'nullable|numeric|min:0',
             'enable_feedback' => 'nullable|boolean',
             'feedback_questions' => 'nullable|array',
             'feedback_questions.*.question' => 'nullable|string',
@@ -295,7 +318,7 @@ class CourseController extends Controller
             'instructor_documents.*.name' => 'Document Name',
         ]);
     
-        // Find the course to be updated
+        //Find the course to be updated
         $course = Courses::findOrFail($request->course_id);
     
         // Handle Image Update
@@ -321,6 +344,10 @@ class CourseController extends Controller
             'enable_instructor_upload' => (int) $request->input('enable_instructor_upload', 0),
             'duration_type' => $request->duration_type,
             'duration_value' => $request->duration_value,
+            'enable_groundschool_time' => (int) $request->input('enable_groundschool_time', 0),
+            'groundschool_hours' => $request->groundschool_hours,
+            'enable_simulator_time' => (int) $request->input('enable_simulator_time', 0),
+            'simulator_hours' => $request->simulator_hours,
         ]);
     
         // Update groups and resources relationships
@@ -387,6 +414,20 @@ class CourseController extends Controller
                         'question' => $feedback['question'],
                         'answer_type' => $feedback['answer_type'] ?? null,
                         'created_by' => auth()->id(),
+                    ]);
+                }
+            }
+        }
+
+        //Handle Custom time
+        CourseCustomTime::where('course_id', $course->id)->delete();
+        if ((int) $request->input('enable_custom_time_tracking', 0) && $request->has('custom_time')) {
+            foreach ($request->custom_time as $time) {
+                if (!empty($time['name'])) {
+                    CourseCustomTime::create([
+                        'course_id' => $course->id,
+                        'name' => $time['name'],
+                        'hours' => $time['hours'] ?? null
                     ]);
                 }
             }

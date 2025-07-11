@@ -25,7 +25,7 @@ class LessonController extends Controller
     public function showCourse(Request $request, $course_id)
     {
         $user = auth()->user();
-        $course = Courses::with('courseLessons', 'prerequisites')->findOrFail(decode_id($course_id));
+        $course = Courses::with('courseLessons', 'prerequisites', 'customTimes')->findOrFail(decode_id($course_id));
 
         $breadcrumbs = [
             ['title' => 'Courses', 'url' => route('course.index')],
@@ -62,7 +62,8 @@ class LessonController extends Controller
             'status' => 'required|boolean',
             'grade_type' => 'required|in:pass_fail,score,percentage',
             'lesson_type' => 'required|string',
-            'enable_cbta' => 'sometimes|boolean'
+            'enable_cbta' => 'sometimes|boolean',
+            'custom_time' => 'nullable|exists:course_custom_times,id'
         ]);
     
         if ($request->has('comment_required') && $request->comment_required) {
@@ -81,7 +82,8 @@ class LessonController extends Controller
             'status' => $request->status,
             'grade_type' => $request->grade_type,
             'lesson_type' => $request->lesson_type,
-            'enable_cbta' => $request->enable_cbta ?? 0
+            'enable_cbta' => $request->enable_cbta ?? 0,
+            'custom_time_id' => $request->custom_time_type ?? null
         ]);
     
         Session::flash('message', 'Lesson created successfully.');
@@ -93,7 +95,6 @@ class LessonController extends Controller
         foreach ($request->order as $item) {
             CourseLesson::where('id', $item['id'])->update(['position' => $item['position']]);
         }
-
         return response()->json(['status' => 'success']);
     }
 
@@ -126,6 +127,7 @@ class LessonController extends Controller
 
     public function updateLesson(Request $request)
     {
+        // dd($request->all());
         // Validate request data
         $request->validate([
             'edit_lesson_title' => 'required',
@@ -133,7 +135,8 @@ class LessonController extends Controller
             'edit_status' => 'required|boolean',
             'edit_grade_type' => 'required|in:pass_fail,score,percentage',
             'edit_lesson_type' => 'required|string',
-            'edit_enable_cbta'    => 'sometimes|boolean'
+            'edit_enable_cbta'    => 'sometimes|boolean',
+            'edit_custom_time_type' => 'nullable|exists:course_custom_times,id' // validate custom_time_type_id
         ]);
     
         if ($request->has('edit_comment_required') && $request->edit_comment_required) {
@@ -156,6 +159,7 @@ class LessonController extends Controller
             'enable_cbta' => $request->edit_enable_cbta ?? 0, // Update enable_cbta
             'lesson_type' => $request->edit_lesson_type,
             'enable_prerequisites' => (int) $request->input('enable_prerequisites', 0),
+            'custom_time_id' => $request->edit_custom_time_type ?? null
         ]);
 
         if ($request->edit_grade_type === 'percentage') {

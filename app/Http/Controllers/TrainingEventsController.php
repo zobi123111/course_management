@@ -470,19 +470,14 @@ class TrainingEventsController extends Controller
 
         $incomingLessonDates = collect($lessonData)->pluck('lesson_date')->toArray();
 
-        $existingEvents = TrainingEvents::where('student_id', $studentId)
-            ->where('course_id', $courseId)
-            ->where('id', '!=', $eventId)
-            ->get();
+        $duplicateFound = TrainingEventLessons::whereHas('trainingEvent', function ($query) use ($studentId, $courseId, $eventId) {
+                $query->where('student_id', $studentId)
+                    ->where('course_id', $courseId)
+                    ->where('id', '!=', $eventId); // exclude current event
+            })
+            ->whereIn('lesson_date', $incomingLessonDates)
+            ->exists();
 
-        foreach ($existingEvents as $event) {
-            $eventLessonDates = $event->eventLessons->pluck('lesson_date')->toArray();
-            $commonDates = array_intersect($incomingLessonDates, $eventLessonDates);
-            if (!empty($commonDates)) {
-                $duplicateFound = true;
-                break;
-            }
-        }
         if ($duplicateFound) {
             return response()->json([
                 'success' => false,
