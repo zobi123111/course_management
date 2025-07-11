@@ -201,7 +201,7 @@
                     @csrf
                     <div class="row g-2">
                         <!-- Parent Rating Dropdown -->
-                          @if(auth()->user()->is_owner == 1)
+                          <!-- @if(auth()->user()->is_owner == 1)
                             <div class="form-group">
                                 <label for="edit_select_org_unit" class="form-label">Select Org Unit</label>
                                 <select class="form-select" name="ou_id" id="edit_select_org_unit">
@@ -212,7 +212,7 @@
                                 </select>
                                 <div id="ou_id_error_up" class="text-danger error_e"></div>            
                             </div>
-                        @endif
+                        @endif -->
                        <div class="form-group ">
                             <label for="parent_rating" class="form-label">Parent Rating</label>
                             <select name="parent_id[]" id="edit_parent_rating" class="form-select" multiple>
@@ -415,7 +415,7 @@
         
     });
 
-    $(document).on('click', '.edit-user-icon', function () {
+    $(document).on('click', '.edit-user-icon', function () { 
     $('.error_e').html('');
     $("#editRatingForm")[0].reset();
     const ratingId = $(this).data('rating-id');
