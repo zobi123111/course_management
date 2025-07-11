@@ -95,9 +95,10 @@ class TrainingEvents extends Model
     public function eventLessons()
     {
         return $this->hasMany(TrainingEventLessons::class, 'training_event_id', 'id')
-            ->join('course_lessons', 'training_event_lessons.lesson_id', '=', 'course_lessons.id')
+            ->join('course_lessons', 'training_event_lessons.lesson_id', '=', 'course_lessons.id') 
+            ->join('resources', 'training_event_lessons.resource_id', '=', 'resources.id')
             ->orderBy('course_lessons.position')
-            ->select('training_event_lessons.*');
+            ->select('training_event_lessons.*', 'resources.name as resource_name');
     }
 
     public function trainingFeedbacks()

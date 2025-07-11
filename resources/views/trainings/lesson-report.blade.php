@@ -39,7 +39,8 @@
             <strong>End Time:</strong> {{ date('h:i A', strtotime($eventLesson?->end_time)) }}<br>
             <strong>Total Lesson Time:</strong> {{ \Carbon\Carbon::parse($eventLesson?->end_time)->diffInMinutes(\Carbon\Carbon::parse($eventLesson?->start_time)) }} minutes<br>
             <strong>Departure Airfield:</strong> {{ $eventLesson?->departure_airfield ?? 'N/A' }}<br>
-            <strong>Destination Airfield:</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}
+            <strong>Destination Airfield:</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}<br>
+            <strong>Resource :</strong> {{ $eventLesson?->resource_name ?? 'N/A' }}<br>
         </div>
 
         <div class="section">
