@@ -147,6 +147,7 @@ class CourseController extends Controller
                     }
                 }
             ],
+
             // Validation for add feedback questions
             'enable_feedback' => 'nullable|boolean',
             'feedback_questions' => 'nullable|array',
@@ -155,9 +156,9 @@ class CourseController extends Controller
 
             // Validation for add custom time tracking
             'enable_custom_time_tracking' => 'nullable|boolean',
-            'custom_time'                 => 'required_if:enable_custom_time_tracking,1|array',
-            'custom_time.*.name'          => 'required_with:custom_time|string',
-            'custom_time.*.hours'         => 'required_with:custom_time|numeric|min:0',
+            'custom_time'                 => 'nullable|array',
+            'custom_time.*.name'          => 'nullable|string',
+            'custom_time.*.hours'         => 'nullable|numeric|min:0',
     
             // Validation for Instructor Upload Documents
             'enable_instructor_upload' => 'nullable|boolean',
