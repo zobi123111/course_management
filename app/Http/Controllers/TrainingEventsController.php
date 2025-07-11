@@ -238,7 +238,6 @@ class TrainingEventsController extends Controller
 
     public function createTrainingEvent(Request $request)
     {
-    
         //Validate base fields
         $request->validate([
             'student_id' => 'required|exists:users,id',
@@ -257,41 +256,41 @@ class TrainingEventsController extends Controller
             ],
             'lesson_data' => 'required|array|min:1',
                 // Validate ONLY the first lesson (index 0)
-                'lesson_data.0.lesson_id' => 'required|exists:course_lessons,id',
-                'lesson_data.0.instructor_id' => 'required|exists:users,id',
-                'lesson_data.0.resource_id' => 'required|exists:resources,id',
-                'lesson_data.0.lesson_date' => 'required|date_format:Y-m-d',
-                'lesson_data.*.start_time' => [
-                        'nullable',
-                        'date_format:H:i',
-                    ],
-                'lesson_data.*.end_time' => [
-                        'nullable',
-                        'date_format:H:i',
-                        function ($attribute, $value, $fail) use ($request) {
-                            preg_match('/lesson_data\.(\d+)\.end_time/', $attribute, $matches);
-                            if (!isset($matches[1])) return;
+                // 'lesson_data.0.lesson_id' => 'required|exists:course_lessons,id',
+                // 'lesson_data.0.instructor_id' => 'required|exists:users,id',
+                // 'lesson_data.0.resource_id' => 'required|exists:resources,id',
+                // 'lesson_data.0.lesson_date' => 'required|date_format:Y-m-d',
+                // 'lesson_data.*.start_time' => [
+                //         'nullable',
+                //         'date_format:H:i',
+                //     ],
+                // 'lesson_data.*.end_time' => [
+                //         'nullable',
+                //         'date_format:H:i',
+                //         function ($attribute, $value, $fail) use ($request) {
+                //             preg_match('/lesson_data\.(\d+)\.end_time/', $attribute, $matches);
+                //             if (!isset($matches[1])) return;
 
-                            $index = (int) $matches[1];
-                            $startTime = $request->input("lesson_data.$index.start_time");
+                //             $index = (int) $matches[1];
+                //             $startTime = $request->input("lesson_data.$index.start_time");
 
-                            if ($index === 0) {
-                                if (empty($startTime) || empty($value)) {
-                                    return $fail("Start time and end time are required for the first lesson.");
-                                }
-                            }
+                //             if ($index === 0) {
+                //                 if (empty($startTime) || empty($value)) {
+                //                     return $fail("Start time and end time are required for the first lesson.");
+                //                 }
+                //             }
 
-                            // Validate only if both times exist
-                            if (!empty($startTime) && !empty($value)) {
-                                if (strtotime($value) <= strtotime($startTime)) {
-                                    $fail("End time must be after start time.");
-                                }
-                            }
-                        },
-                    ],
-                'lesson_data.0.departure_airfield' => 'required|string|size:4',
-                'lesson_data.0.destination_airfield' => 'required|string|size:4',
-                'lesson_data.0.instructor_license_number' => 'nullable|string',
+                //             // Validate only if both times exist
+                //             if (!empty($startTime) && !empty($value)) {
+                //                 if (strtotime($value) <= strtotime($startTime)) {
+                //                     $fail("End time must be after start time.");
+                //                 }
+                //             }
+                //         },
+                //     ],
+                // 'lesson_data.0.departure_airfield' => 'required|string|size:4',
+                // 'lesson_data.0.destination_airfield' => 'required|string|size:4',
+                // 'lesson_data.0.instructor_license_number' => 'nullable|string',
             ], [], [
                 'event_date' => 'Course start date',
                 'lesson_data.0.instructor_id' => 'instructor',
@@ -305,6 +304,8 @@ class TrainingEventsController extends Controller
         ]);
         
         $lesson_ids = collect($request->lesson_data)->pluck('lesson_id')->toArray();
+
+
 
         // Check for duplicate training event
         $existingEvent = TrainingEvents::where('student_id', $request->student_id)
@@ -338,35 +339,81 @@ class TrainingEventsController extends Controller
             }
         }
     
-        // Create main training event
-          $trainingEvent = TrainingEvents::create([
+        // Variables for simulator time accumulation
+        $totalSimulatorMinutes = 0;
+
+        // Create main training event first with simulator_time = 0
+        $trainingEvent = TrainingEvents::create([
             'student_id' => $request->student_id,
             'course_id' => $request->course_id,
             'lesson_ids' => json_encode($lesson_ids),
             'event_date' => $request->event_date,
             'total_time' => $request->total_time,
+            'simulator_time' => '00:00', // temp value, updated later
             'std_license_number' => $request->std_licence_number,
             'ou_id' => auth()->user()->is_owner ? $request->ou_id : auth()->user()->ou_id,
         ]);
-    
-        // Insert lesson details into TrainingEventLessons
+
+        // Loop through lesson data
         foreach ($request->lesson_data as $lesson) {
+            $lessonModel = \App\Models\CourseLesson::find($lesson['lesson_id']);
+            $resourceModel = \App\Models\Resource::find($lesson['resource_id']);
+
+            $lessonType = $lessonModel?->lesson_type;
+            $resourceName = $resourceModel?->name;
+
+            $start = $lesson['start_time'] ?? null;
+            $end = $lesson['end_time'] ?? null;
+            $creditMinutes = 0;
+
+            // Calculate credit_hours if applicable
+            if (
+                $lessonType !== 'simulator' &&
+                ($lessonType !== 'groundschool' || !in_array($resourceName, ['Classroom', 'Homestudy'])) &&
+                $start && $end
+            ) {
+                $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
+                $endTime = \Carbon\Carbon::createFromFormat('H:i', $end);
+                if ($endTime->lessThan($startTime)) {
+                    $endTime->addDay(); // handle overnight lessons
+                }
+                $creditMinutes = $startTime->diffInMinutes($endTime);
+            }
+
+            // Add simulator time if applicable
+            if ($lessonType === 'simulator' && $start && $end) {
+                $simStart = \Carbon\Carbon::createFromFormat('H:i', $start);
+                $simEnd = \Carbon\Carbon::createFromFormat('H:i', $end);
+                if ($simEnd->lessThan($simStart)) {
+                    $simEnd->addDay();
+                }
+                $totalSimulatorMinutes += $simStart->diffInMinutes($simEnd);
+            }
+
             TrainingEventLessons::create([
                 'training_event_id' => $trainingEvent->id,
                 'lesson_id' => $lesson['lesson_id'],
                 'instructor_id' => $lesson['instructor_id'],
                 'resource_id' => $lesson['resource_id'],
                 'lesson_date' => $lesson['lesson_date'],
-                'start_time' => $lesson['start_time'],
-                'end_time' => $lesson['end_time'],
-                'departure_airfield' => strtoupper($lesson['departure_airfield']),
-                'destination_airfield' => strtoupper($lesson['destination_airfield']),
+                'start_time' => $start,
+                'end_time' => $end,
+                'departure_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($lesson['departure_airfield']),
+                'destination_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($lesson['destination_airfield']),
                 'instructor_license_number' => $lesson['instructor_license_number'] ?? null,
+                'credit_hours' => gmdate("H:i", $creditMinutes * 60),
             ]);
         }
-    
+
+        // Update simulator time in main event
+        if ($totalSimulatorMinutes > 0) {
+            $trainingEvent->update([
+                'simulator_time' => gmdate("H:i", $totalSimulatorMinutes * 60)
+            ]);
+        }
+
         Session::flash('message', 'Training event created successfully.');
-    
+
         return response()->json([
             'success' => true,
             'message' => 'Training event created successfully',

@@ -162,6 +162,7 @@
                     </select>
                     <div id="student_id_error" class="text-danger error_e"></div>
                 </div>
+
                 <!-- Select Course -->
                 <div class="col-md-6">
                     <label class="form-label">Select Course<span class="text-danger">*</span></label>
@@ -173,6 +174,7 @@
                     </select>
                     <div id="course_id_error" class="text-danger error_e"></div>
                 </div>
+
                 <!-- Event Date-->
                 <div class="col-md-6">
                     <div class="form-group">
@@ -190,11 +192,11 @@
                     <div id="total_time_error" class="text-danger error_e"></div>
                 </div>
 
-                <!-- Total Time (Calculated) -->
+                <!-- Total Simulator Time (Calculated) -->
                 <div class="col-md-6">
-                    <label class="form-label">Total Groundschool Time (hh:mm)<span class="text-danger">*</span></label>
-                    <input type="text" name="total_groundschool_time" class="form-control" id="total_groundschool_time" readonly>
-                    <div id="total_groundschool_time_error" class="text-danger error_e"></div>
+                    <label class="form-label">Total Simulator Time (hh:mm)<span class="text-danger">*</span></label>
+                    <input type="text" name="total_simulator_time" class="form-control" id="total_simulator_time" readonly>
+                    <div id="total_simulator_time_error" class="text-danger error_e"></div>
                 </div>
 
                 <!-- License Number (Extracted from user profile) -->
@@ -270,12 +272,21 @@
                     </div>
                 </div>
                 <div id="editLessonDetailsContainer" class="mt-3"></div>
+
+                <!-- Total Simulator Time (Calculated) -->
+                <div class="col-md-6">
+                    <label class="form-label">Total Simulator Time (hh:mm)<span class="text-danger">*</span></label>
+                    <input type="text" name="total_simulator_time" class="form-control" id="edit_total_simulator_time" readonly>
+                    <div id="total_simulator_time_error_up" class="text-danger error_e"></div>
+                </div>
+
                 <!-- Total Time (Calculated) -->
                 <div class="col-md-6">
                     <label class="form-label">Total Time (hh:mm)<span class="text-danger">*</span></label>
                     <input type="text" name="total_time" class="form-control" id="edit_total_time" readonly>
                     <div id="total_time_error_up" class="text-danger error_e"></div>
                 </div>
+
                 <div class="col-md-6">
                     <label class="form-label">Student Licence Number</label>
                     <input type="text" name="std_licence_number" class="form-control" id="edit_std_licence_number" readonly>
@@ -427,7 +438,7 @@ $(document).ready(function() {
     $('#groupTable').DataTable();
     initializeSelect2();
     
-    $("#createTrainingEvent").on('click', function() {
+    $("#createTrainingEvent").on('click', function() {  
         $(".error_e").html('');
         $("#trainingEventForm")[0].reset();
         $('#total_time').val('');
@@ -438,21 +449,33 @@ $(document).ready(function() {
         });
     })
 
-    // On create screen
     $(document).on('change', '.lesson-start-time, .lesson-end-time', function () {
         calculateTotalTime('#total_time');
-    });
-
-    // On edit screen
-    $(document).on('change', '.lesson-start-time, .lesson-end-time', function () {
-        calculateTotalTime('#edit_total_time');
+        calculateTotalTime('#edit_total_time'); // Will only affect if the field exists
+        calculateTotalSimulatorTime();
     });
 
     function calculateTotalTime(outputSelector = '#total_time') {
         let totalMinutes = 0;
 
         $('.lesson-box').each(function () {
-            let lessonId = $(this).data('lesson-id');
+            let $box = $(this);
+            let lessonId = $box.data('lesson-id');
+            let lessonType = $box.data('lesson-type');
+
+            // Get selected resource ID and name
+            let resourceId = $box.find(`select[name="lesson_data[${lessonId}][resource_id]"]`).val();
+            let resourceName = resourcesdata.find(r => r.id == resourceId)?.name || '';
+
+            // Skip time calculation for groundschool (with classroom/homestudy) and simulator lessons
+            if (
+                lessonType === 'simulator' ||
+                (lessonType === 'groundschool' && (resourceName === 'Classroom' || resourceName === 'Homestudy'))
+            ) {
+                return; // skip this lesson
+            }
+
+            // Read time inputs
             let start = $(`input[name="lesson_data[${lessonId}][start_time]"]`).val();
             let end = $(`input[name="lesson_data[${lessonId}][end_time]"]`).val();
 
@@ -901,17 +924,12 @@ $(document).ready(function() {
 
     function renderLessonBox(lesson, container, prefillData = {}, index = null, mode) {
         const errorSuffix = mode === 'update' ? '_error_up' : '_error';
-        console.log(errorSuffix);
         const currentIndex = index !== null ? index : lessonIndex++;
         const isFirstLesson = currentIndex === 0;
         let lessonId = lesson.id;
         let lessonTitle = lesson.lesson_title;
         let lessonType = lesson.lesson_type || '';
 
-        // Hide fields if lesson_type is groundschool
-        let hideFlightFields = (lessonType === 'groundschool') ? 'style="display:none;"' : '';
-
-        // Use prefilled data if available
         let {
             instructor_id = '',
             resource_id = '',
@@ -925,17 +943,10 @@ $(document).ready(function() {
 
         let isCurrentUserInstructor = currentUser.role === 'instructor';
         let instructorOptions = instructorsdata.map(i => {
-            let selected = '';
-            let disabled = '';
-
-            if (isCurrentUserInstructor && i.id == currentUser.id) {
-                selected = 'selected';
-            } else if (isCurrentUserInstructor) {
-                disabled = 'disabled';
-            } else if (i.id == instructor_id) {
-                selected = 'selected';
-            }
-
+            let selected = '', disabled = '';
+            if (isCurrentUserInstructor && i.id == currentUser.id) selected = 'selected';
+            else if (isCurrentUserInstructor) disabled = 'disabled';
+            else if (i.id == instructor_id) selected = 'selected';
             return `<option value="${i.id}" ${selected} ${disabled}>${i.fname} ${i.lname}</option>`;
         }).join('');
 
@@ -946,9 +957,7 @@ $(document).ready(function() {
                 }
                 return true;
             })
-            .map(r =>
-                `<option value="${r.id}" ${r.id == resource_id ? 'selected' : ''}>${r.name}</option>`
-            );
+            .map(r => `<option value="${r.id}" ${r.id == resource_id ? 'selected' : ''}>${r.name}</option>`);
 
         if (resourceOptions.length === 0 && lessonType === 'groundschool') {
             resourceOptions.push('<option disabled>No suitable resources available</option>');
@@ -956,15 +965,14 @@ $(document).ready(function() {
 
         resourceOptions = resourceOptions.join('');
 
-
         let lessonBox = `
-            <div class="col-12 mb-3 border rounded p-3 lesson-box" data-lesson-id="${currentIndex}">    
+            <div class="col-12 mb-3 border rounded p-3 lesson-box" data-lesson-id="${currentIndex}" data-lesson-type="${lessonType}">    
                 <input type="hidden" name="lesson_data[${currentIndex}][lesson_id]" value="${lessonId}">
                 <h6 class="fw-bold mb-3">Lesson: ${lessonTitle}</h6>
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Instructor${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
-                        <select class="form-select" name="lesson_data[${currentIndex}][instructor_id]" id="lesson_data_${currentIndex}_instructor_listbox"
+                        <select class="form-select" name="lesson_data[${currentIndex}][instructor_id]"
                                 ${isCurrentUserInstructor ? 'disabled' : ''}>
                             <option value="">Select Instructor</option>
                             ${instructorOptions}
@@ -974,7 +982,10 @@ $(document).ready(function() {
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Resource${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
-                        <select class="form-select" name="lesson_data[${currentIndex}][resource_id]">
+                        <select class="form-select resource-selector" 
+                            name="lesson_data[${currentIndex}][resource_id]" 
+                            data-lesson-type="${lessonType}" 
+                            data-lesson-index="${currentIndex}">
                             <option value="">Select Resource</option>
                             ${resourceOptions}
                         </select>
@@ -985,30 +996,33 @@ $(document).ready(function() {
                         <input type="date" name="lesson_data[${currentIndex}][lesson_date]" class="form-control" value="${lesson_date}">
                         <div id="lesson_data_${currentIndex}_lesson_date${errorSuffix}" class="text-danger error_e"></div>
                     </div>
-                    <div class="col-md-4" ${hideFlightFields}>
+                    <div class="col-md-4 start-time-block">
                         <label class="form-label">Start Time${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
-                        <input type="time" name="lesson_data[${currentIndex}][start_time]" class="form-control lesson-start-time" data-lesson-id="${currentIndex}" value="${start_time}">
+                        <input type="time" name="lesson_data[${currentIndex}][start_time]" class="form-control lesson-start-time" value="${start_time}" data-lesson-id="${currentIndex}">
                         <div id="lesson_data_${currentIndex}_start_time${errorSuffix}" class="text-danger error_e"></div>
                     </div>
-                    <div class="col-md-4" ${hideFlightFields}>
+                    <div class="col-md-4 end-time-block">
                         <label class="form-label">End Time${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
-                        <input type="time" name="lesson_data[${currentIndex}][end_time]" class="form-control lesson-end-time" data-lesson-id="${currentIndex}" value="${end_time}">
+                        <input type="time" name="lesson_data[${currentIndex}][end_time]" class="form-control lesson-end-time" value="${end_time}" data-lesson-id="${currentIndex}">
                         <div id="lesson_data_${currentIndex}_end_time${errorSuffix}" class="text-danger error_e"></div>
                     </div>
-                    <div class="col-md-6" ${hideFlightFields}>
-                        <label class="form-label">Departure Airfield (4-letter code)${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
+                    <div class="col-md-6 departure-block">
+                        <label class="form-label">Departure Airfield</label>
                         <input type="text" name="lesson_data[${currentIndex}][departure_airfield]" class="form-control" maxlength="4" value="${departure_airfield}">
                         <div id="lesson_data_${currentIndex}_departure_airfield${errorSuffix}" class="text-danger error_e"></div>
                     </div>
-                    <div class="col-md-6" ${hideFlightFields}>
-                        <label class="form-label">Destination Airfield (4-letter code)${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
+                    <div class="col-md-6 destination-block">
+                        <label class="form-label">Destination Airfield</label>
                         <input type="text" name="lesson_data[${currentIndex}][destination_airfield]" class="form-control" maxlength="4" value="${destination_airfield}">
                         <div id="lesson_data_${currentIndex}_destination_airfield${errorSuffix}" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Instructor License Number</label>
-                        <input type="text" name="lesson_data[${currentIndex}][instructor_license_number]" class="form-control" id="instructor_license_number" value="${instructor_license_number}" readonly>
+                        <input type="text" name="lesson_data[${currentIndex}][instructor_license_number]" class="form-control" value="${instructor_license_number}" readonly>
                         <div id="lesson_data_${currentIndex}_instructor_license_number${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-12 total-simulator-time-box" style="display:none;">
+                        <label class="form-label fw-bold">Total Simulator Time: <span class="simulator-total-time">00:00</span> hrs</label>
                     </div>
                 </div>
             </div>
@@ -1016,20 +1030,69 @@ $(document).ready(function() {
 
         container.append(lessonBox);
 
-        // Auto-fetch license number if current user is instructor
-        if (isCurrentUserInstructor) {
-            const $currentBox = container.find(`.lesson-box[data-lesson-id="${currentIndex}"]`);
-            const $licenseInput = $currentBox.find(`input[name="lesson_data[${currentIndex}][instructor_license_number]"]`);
+        const $box = container.find(`.lesson-box[data-lesson-id="${currentIndex}"]`);
+        const $resourceSelect = $box.find('.resource-selector');
+        const $startBlock = $box.find('.start-time-block');
+        const $endBlock = $box.find('.end-time-block');
+        const $departureBlock = $box.find('.departure-block');
+        const $destinationBlock = $box.find('.destination-block');
+        const $simTimeBox = $box.find('.total-simulator-time-box');
 
+        function toggleFields(resourceName) {
+            if (lessonType === 'groundschool') {
+                if (resourceName === 'Classroom') {
+                    $startBlock.show();
+                    $endBlock.show();
+                    $departureBlock.hide();
+                    $destinationBlock.hide();
+                    $simTimeBox.hide();
+                } else if (resourceName === 'Homestudy') {
+                    $startBlock.hide();
+                    $endBlock.hide();
+                    $departureBlock.hide();
+                    $destinationBlock.hide();
+                    $simTimeBox.hide();
+                }
+            } else if (lessonType === 'simulator') {
+                $startBlock.show();
+                $endBlock.show();
+                $departureBlock.show();
+                $destinationBlock.show();
+                $simTimeBox.show();
+                calculateTotalSimulatorTime();
+            } else {
+                $startBlock.show();
+                $endBlock.show();
+                $departureBlock.show();
+                $destinationBlock.show();
+                $simTimeBox.hide();
+            }
+        }
+
+        const initialResourceName = resourcesdata.find(r => r.id == resource_id)?.name || '';
+        toggleFields(initialResourceName);
+
+        $resourceSelect.on('change', function () {
+            const selectedId = $(this).val();
+            const selectedName = resourcesdata.find(r => r.id == selectedId)?.name || '';
+            toggleFields(selectedName);
+        });
+
+        $box.find('.lesson-start-time, .lesson-end-time').on('change', function () {
+            // Call simulator total time calculation if lesson type is simulator
+            if (lessonType === 'simulator') {
+                setTimeout(() => calculateTotalSimulatorTime(), 100);
+            }
+        });
+
+        if (isCurrentUserInstructor) {
+            const $licenseInput = $box.find(`input[name="lesson_data[${currentIndex}][instructor_license_number]"]`);
             $.ajax({
                 url: `/training/get_instructor_license_no/${currentUser.id}`,
                 type: 'GET',
                 success: function (response) {
                     if (response.success) {
                         $licenseInput.val(response.instructor_licence_number || '');
-                        if (!response.instructor_licence_number) {
-                            alert("Instructor license number not found.");
-                        }
                     } else {
                         $licenseInput.val('');
                         alert("Instructor not found.");
@@ -1037,11 +1100,40 @@ $(document).ready(function() {
                 },
                 error: function () {
                     $licenseInput.val('');
-                    console.error("Failed to fetch license number");
-                    alert("An error occurred while fetching the license number.");
+                    alert("Error fetching license number.");
                 }
             });
         }
+    }
+
+
+    function calculateTotalSimulatorTime() {
+        let totalMinutes = 0;
+
+        $('.lesson-box[data-lesson-type="simulator"]').each(function () {
+            const lessonId = $(this).data('lesson-id');
+            const start = $(`input[name="lesson_data[${lessonId}][start_time]"]`).val();
+            const end = $(`input[name="lesson_data[${lessonId}][end_time]"]`).val();
+
+            if (start && end) {
+                let startTime = moment(start, "HH:mm");
+                let endTime = moment(end, "HH:mm");
+
+                if (endTime.isBefore(startTime)) {
+                    endTime.add(1, 'day');
+                }
+
+                totalMinutes += endTime.diff(startTime, 'minutes');
+            }
+        });
+
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        const totalFormatted = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+
+        // Fill both fields if they exist
+        $('#total_simulator_time').val(totalFormatted);
+        $('#edit_total_simulator_time').val(totalFormatted);
     }
 
     
