@@ -56,6 +56,7 @@
 
         <div class="section">
             <h2>Tasks Completed</h2>
+            @if($event->taskGradings->isNotEmpty() && $event->taskGradings->contains('subLesson'))
             <table>
                 <thead>
                     <tr>
@@ -80,6 +81,9 @@
                     @endforeach
                 </tbody>
             </table>
+            @else
+                <p><strong>No Data Available</strong></p>
+            @endif
         </div>
 
         @if($event->competencyGradings->isNotEmpty())
