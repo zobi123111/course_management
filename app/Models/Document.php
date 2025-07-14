@@ -23,8 +23,14 @@ class Document extends Model
     /**
      * Get the group that the document belongs to.
      */
-    public function group()
+    // public function group()
+    // {
+    //     return $this->belongsTo(Group::class, 'group_id');
+    // }
+
+    public function groups()
     {
-        return $this->belongsTo(Group::class, 'group_id');
+        return $this->belongsToMany(Group::class, 'document_group');
     }
+
 }

@@ -20,6 +20,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\CourseTemplateController;
 use App\Http\Controllers\UserActivityLogController;
 use App\Http\Controllers\TrainingFeedbackController;
+use App\Http\Controllers\ReportsController;
 
 
 
@@ -66,12 +67,20 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/users/data', [UserController::class, 'getData'])->name('users.data');
     Route::get('/users/show/{user_id}', [UserController::class, 'showUser'])->name('user.show');
     //Users rating routes
-    Route::get('/users/rating', [UserController::class, 'showRating'])->name('users.rating');
+    Route::get('/users/rating', [UserController::class, 'showRating'])->name('users.rating'); 
+    Route::get('/users/ou_rating', [UserController::class, 'ou_rating'])->name('users.ou_rating');  
+
     Route::post('/rating/save', [UserController::class, 'saveRating'])->name('rating.store');
     Route::get('/rating/edit', [UserController::class, 'getRating'])->name('rating.edit');
+    Route::post('/rating/select_rating', [UserController::class, 'select_rating'])->name('rating.select_rating');
+     Route::post('/rating/deselect_rating', [UserController::class, 'deselect_rating'])->name('rating.deselect_rating');
+
+
+
+
     Route::post('/rating/update', [UserController::class, 'updateRating'])->name('rating.update');
     Route::post('/rating/delete', [UserController::class, 'deleteRating'])->name('rating.delete');
-
+    Route::get('/rating/get-by-ou', [UserController::class, 'getRatingsByOU']);
     //Server-Side Datatable Routes
     Route::get('/orgunit/data', [OrganizationController::class, 'getData'])->name('orgunit.data');  
     Route::post('/users/switch_role', [UserController::class, 'switchRole'])->name('user.switch_role');
@@ -111,6 +120,10 @@ Route::group(['middleware' => ['auth']], function () {
     ->name('training.deferred-lessons.store');
     Route::post('/training/store-def-grading', [TrainingEventsController::class, 'storeDefGrading'])
     ->name('training.store_def_grading');
+    Route::post('/training/end-course', [TrainingEventsController::class, 'endCourse'])->name('training.endCourse');
+    Route::post('/training/unlock-lesson', [TrainingEventsController::class, 'unlockLesson'])->name('training.unlockLesson');
+
+
 
 
     
@@ -141,7 +154,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/users/document-data', [UserController::class, 'userData'])->name('users.document.data');
     
     //Users Route
-    Route::get('/users', [UserController::class, 'getData'])->name('user.index');
+    Route::get('/users', [UserController::class, 'getData'])->name('user.index'); 
     // Route::get('/users/profile', [UserController::class, 'profile'])->name('user.profile');
     // Route::post('/users/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update');
     Route::post('/users/save', [UserController::class, 'save_user'])->name('user.store');
@@ -168,6 +181,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/course/update', [CourseController::class, 'updateCourse'])->name('course.update');
     Route::post('/course/delete', [CourseController::class, 'deleteCourse'])->name('course.delete'); 
     Route::get('/course/show/{course_id}', [LessonController::class, 'showCourse'])->name('course.show');
+    Route::post('/courses/reorder', [CourseController::class, 'reorder'])->name('courses.reorder');
 
     //Lesson 
     Route::post('/lesson/create', [LessonController::class, 'createLesson'])->name('lesson.store');
@@ -175,6 +189,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/lesson/{id}', [LessonController::class, 'showLesson'])->name('lesson.show');
     Route::post('/lesson/update', [LessonController::class, 'updateLesson'])->name('lesson.update');
     Route::post('/lesson/delete', [LessonController::class, 'deleteLesson'])->name('lesson.delete');
+    Route::post('/lessons/reorder', [LessonController::class, 'reorder'])->name('lessons.reorder');
 
     //Sub-Lesson 
     Route::post('/sub-lesson/create', [SubLessonController::class, 'createSubLesson'])->name('sub-lesson.store');
@@ -182,7 +197,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/sub-lesson/{id}', [SubLessonController::class, 'showSubLesson'])->name('sub-lesson.show');
     Route::post('/sub-lesson/update', [SubLessonController::class, 'updateSubLesson'])->name('sub-lesson.update');
     Route::post('/sub-lesson/delete', [SubLessonController::class, 'deleteSubLesson'])->name('sub-lesson.delete');
-    
+    Route::post('/sublessons/reorder', [SubLessonController::class, 'reorder'])->name('sublessons.reorder');   
 
 
     //Groups Route
@@ -257,6 +272,11 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     // Route::get('/document/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('document.getOrgfolder');
     // Route::get('/folder/get_ou_folder/', [DocumentController::class, 'getOrgfolder'])->name('folder.getOrgfolder');
     Route::get('/folder/edit', [FolderController::class, 'getFolder'])->name('folder.edit');
+
+    // Reporting section Routes
+    Route::get('/reports', [ReportsController::class, 'index'])->name('reports.index');
+    Route::get('/reports/course/{hashedId}', [ReportsController::class, 'showCourse'])->name('reports.course');
+    Route::post('/students/archive', [ReportsController::class, 'updateStudentArchiveStatus'])->name('students.archive.ajax');
 
 });
 

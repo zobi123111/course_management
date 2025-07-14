@@ -1518,5 +1518,9 @@ display: flex;
   font-size: 14px;
 }
 }
-
-
+.rating-left-cont{
+  margin-right: 10px;
+}
+.expiry .fas.fa-exclamation-triangle:before{
+  color: #dc3545 !important;
+}

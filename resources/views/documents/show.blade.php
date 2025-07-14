@@ -21,7 +21,7 @@
             </div>
 
             <div class="col-md-6">
-                <strong>👥 Group:</strong> {{ $document?->group?->name ?? 'N/A' }}
+                <strong>👥 Groups:</strong> {{ $document->groups->pluck('name')->implode(', ') ?: 'N/A' }}
             </div>
 
             <div class="col-md-6">
@@ -37,17 +37,9 @@
             </div>
 
             <div class="col-md-6">
-                <strong>✅ Completed Date:</strong> {{ $document->completed_date ? date('d/m/Y', strtotime($document->completed_date)): 'N/A' }}
-            </div>
-
-            <div class="col-md-6">
-                <strong>📂 Type:</strong> {{ $document->document_type ?? 'N/A' }}
-            </div>
-
-            <div class="col-md-6">
                 <strong>🔐 Acknowledged:</strong>
-                <span class="badge {{ $document->acknowledged ? 'bg-success' : 'bg-danger' }}">
-                    {{ $document->acknowledged ? 'Yes' : 'No' }}
+                <span class="badge {{ in_array(auth()->id(), json_decode($document->acknowledge_by ?? '[]')) ? 'bg-success' : 'bg-danger' }}">
+                    {{ in_array(auth()->id(), json_decode($document->acknowledge_by ?? '[]')) ? 'Yes' : 'No' }}
                 </span>
             </div>
         </div>

@@ -1,6 +1,7 @@
+@section('title', 'Lessons')
 @section('sub-title', 'Course')
 @extends('layout.app')
-@section('content')
+@section('content') 
 
 {{-- <style>
     .course-image {
@@ -114,6 +115,16 @@
     border-radius: 5px;
     font-size: 0.9em;
 }
+
+.ui-sortable-helper {
+    opacity: 1 !important;
+    background-color: white;
+}
+
+.lesson-card {
+    cursor: grab;
+}
+
 </style>
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb">
@@ -135,6 +146,10 @@
     {{ session()->get('message') }}
 </div>
 @endif
+
+<div id="reoderMessage" class="alert alert-success d-none fade show" role="alert">
+  <i class="bi bi-check-circle me-1"></i>
+</div>
 
 <!-- Card with an image on left -->
 <div class="card mb-3">
@@ -169,57 +184,63 @@
     <div class="card-body">
         <div class="list-group">
             <div class="container-fluid">
+                @php
+                    $disableDragDrop = '';
+                    if (Auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1) {
+                        $disableDragDrop = 'sortable-lessons';
+                    }
+                @endphp
                 <h3>Lessons</h3>
-                <div class="row">
+                <div class="row" id="{{ $disableDragDrop }}">
                     @foreach($course->courseLessons as $val)
-                    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
-                        <div class="lesson_card course-card">
-                            <div class="course-image-container" style="position: relative;">
-                            @if($studentAcknowledged)
-                                <a href="{{ url('lesson-pdf/'. $val->id) }}" 
-                                style="position: absolute; top: 10px; right: 75px; background-color: green; border: none; border-radius: 5px; padding: 4px 5px; color: white;">
-                                    Export PDF
-                                </a>
-                            @endif 
-                                <span class="status-label"
-                                    style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
-                                    {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
-                                </span>
-                            </div>
+                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3 lesson-card" data-id="{{ $val->id }}">
+                            <div class="lesson_card course-card">
+                                <div class="course-image-container" style="position: relative;">
+                                @if($studentAcknowledged)
+                                    <a href="{{ url('lesson-pdf/'. $val->id) }}" 
+                                    style="position: absolute; top: 10px; right: 75px; background-color: green; border: none; border-radius: 5px; padding: 4px 5px; color: white;">
+                                        Export PDF
+                                    </a>
+                                @endif 
+                                    <span class="status-label"
+                                        style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
+                                        {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </div>
 
-                            <div class="card-body">
-                                <h5 class="card-title lessonName">{{ $val->lesson_title}}</h5>
+                                <div class="card-body">
+                                    <h5 class="card-title lessonName">{{ $val->lesson_title}}</h5>
 
-                                <p class="card-text">
-                                    {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
-                                </p>
-                            </div>
+                                    <p class="card-text">
+                                        {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
+                                    </p>
+                                </div>
 
-                            <div class="card-footer d-flex justify-content-between">
-                                @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
-                                <a href="javascript:void(0)" class="btn btn-light show-lesson-icon"
-                                    data-lesson-id="{{ encode_id($val->id) }}">
-                                    <i class="fa fa-edit"></i> Show
-                                </a>
-                                @endif
+                                <div class="card-footer d-flex justify-content-between">
+                                    @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
+                                    <a href="javascript:void(0)" class="btn btn-light show-lesson-icon"
+                                        data-lesson-id="{{ encode_id($val->id) }}">
+                                        <i class="fa fa-edit"></i> Show
+                                    </a>
+                                    @endif
 
-                                @if(checkAllowedModule('courses', 'lesson.edit')->isNotEmpty())
-                                <a href="javascript:void(0)" class="btn btn-light edit-lesson-icon"
-                                    data-lesson-id="{{ encode_id($val->id) }}">
-                                    <i class="fa fa-edit"></i> Edit
-                                </a>
-                                @endif
+                                    @if(checkAllowedModule('courses', 'lesson.edit')->isNotEmpty())
+                                    <a href="javascript:void(0)" class="btn btn-light edit-lesson-icon"
+                                        data-lesson-id="{{ encode_id($val->id) }}">
+                                        <i class="fa fa-edit"></i> Edit
+                                    </a>
+                                    @endif
 
-                                @if(checkAllowedModule('courses', 'lesson.delete')->isNotEmpty())
-                                <a href="javascript:void(0)" class="btn btn-light delete-lesson-icon"
-                                    data-lesson-id="{{ encode_id($val->id) }}">
-                                    <i class="fa-solid fa-trash"></i> Delete
-                                </a>
-                                @endif
+                                    @if(checkAllowedModule('courses', 'lesson.delete')->isNotEmpty())
+                                    <a href="javascript:void(0)" class="btn btn-light delete-lesson-icon"
+                                        data-lesson-id="{{ encode_id($val->id) }}">
+                                        <i class="fa-solid fa-trash"></i> Delete
+                                    </a>
+                                    @endif
 
+                                </div>
                             </div>
                         </div>
-                    </div>
                     @endforeach
                 </div>
             </div>
@@ -344,8 +365,6 @@
     </div>
 @endif
 
-
-
 <!-- Create Lesson-->
 <div class="modal fade" id="createLessonModal" tabindex="-1" role="dialog" aria-labelledby="lessonModalLabel"
     aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -380,6 +399,35 @@
                         <textarea class="form-control" name="comment" rows="3"></textarea>
                         <div id="comment_error" class="text-danger error_e"></div>
                     </div>
+
+                    <div class="form-group">
+                        <label for="lesson_type" class="form-label">Lesson Type <span class="text-danger">*</span></label>
+                        <select class="form-select" name="lesson_type" id="lesson_type" required>
+                            <option value="flight" selected>Flight</option>
+                            <option value="simulator">Simulator</option>
+                            <option value="groundschool">Groundschool</option>
+                        </select>
+                        <div id="lesson_type_error" class="text-danger error_e"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Custom Time Type</label>
+                        <div>
+                            @if ($course->customTimes->count())
+                                @foreach ($course->customTimes as $customTime)
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="custom_time_type" id="custom_time_{{ $customTime->id }}" value="{{ $customTime->id }}">
+                                        <label class="form-check-label" for="custom_time_{{ $customTime->id }}">
+                                            {{ $customTime->name }} ({{ $customTime->hours }} hrs)
+                                        </label>
+                                    </div>
+                                @endforeach
+                            @else
+                                <p class="text-muted">No custom time types configured for this course.</p>
+                            @endif
+                        </div>
+                    </div>
+
                     <!-- Grading Type Selection -->
                     <div class="form-group">
                         <label class="form-label">Grading Type <span class="text-danger">*</span></label>
@@ -389,7 +437,11 @@
 
                             <input type="radio" name="grade_type" value="score" id="grade_score">
                             <label for="grade_score">Score (1-5)</label>
+
+                            <input type="radio" name="grade_type" value="percentage" id="grade_percentage">
+                            <label for="grade_percentage">Percentage (%)</label>
                         </div>
+                        <div id="grade_type_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <div class="form-check">
@@ -453,6 +505,35 @@
                         <textarea class="form-control" name="edit_comment" id="edit_comment" rows="3"></textarea>
                         <div id="edit_comment_error_up" class="text-danger error_e"></div>
                     </div>
+
+                    <div class="form-group">
+                        <label for="edit_lesson_type" class="form-label">Lesson Type <span class="text-danger">*</span></label>
+                        <select name="edit_lesson_type" id="edit_lesson_type" class="form-select">
+                            <option value="flight" selected>Flight</option>
+                            <option value="simulator">Simulator</option>
+                            <option value="groundschool">Groundschool</option>
+                        </select>
+                        <div id="edit_lesson_type_error_up" class="text-danger error_e"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Custom Time Type</label>
+                        <div>
+                            @if ($course->customTimes->count())
+                                @foreach ($course->customTimes as $customTime)
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="edit_custom_time_type" id="edit_custom_time_{{ $customTime->id }}" value="{{ $customTime->id }}">
+                                        <label class="form-check-label" for="custom_time_{{ $customTime->id }}">
+                                            {{ $customTime->name }} ({{ $customTime->hours }} hrs)
+                                        </label>
+                                        <div id="edit_custom_time_type_error_up" class="text-danger error_e"></div>
+                                    </div>
+                                @endforeach
+                            @else
+                                <p class="text-muted">No custom time types configured for this course.</p>
+                            @endif
+                        </div>
+                    </div>
                     <!-- Grading Type Selection -->
                     <div class="form-group">
                         <label class="form-label">Grading Type <span class="text-danger">*</span></label>
@@ -462,6 +543,9 @@
 
                             <input type="radio" name="edit_grade_type" value="score" id="edit_grade_score">
                             <label for="edit_grade_score">Score (1-5)</label>
+
+                            <input type="radio" name="edit_grade_type" value="percentage" id="edit_grade_percentage">
+                            <label for="edit_grade_percentage">Percentage</label>
                         </div>
                         <div id="edit_grade_type_error_up" class="text-danger error_e"></div>
                     </div>
@@ -536,6 +620,54 @@
 @section('js_scripts')
 
 <script>
+
+    $(function() {
+        $('#sortable-lessons').sortable({
+            items: '.lesson-card',
+            helper: 'clone',
+            cursor: 'grabbing',
+            tolerance: 'pointer',
+            update: function(event, ui) {
+                let order = [];
+                $('.lesson-card').each(function(index) {
+                    order.push({
+                        id: $(this).data('id'),
+                        position: index + 1
+                    });
+                });
+
+                $.ajax({
+                    url: '{{ route("lessons.reorder") }}',
+                    method: 'POST',
+                    data: {
+                        order: order,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function (response) {
+                        console.log('Sublesson order updated');
+
+                        let $msg = $('#reoderMessage');
+                        if ($msg.length) {
+                            $msg.removeClass('d-none')
+                                .fadeIn()
+                                .text('Lesson order updated successfully!');
+                        }
+
+                        setTimeout(function () {
+                            $msg.fadeOut();
+                        }, 2000);
+                    },
+                    error: function () {
+                        console.error('Error updating order');
+                    }
+                });
+            }
+        });
+
+        // Grab cursor on each card
+        $('.lesson-card').css('cursor', 'grab');
+    });
+
 $(document).ready(function() {
 
     // $("#comment_required").on('change', function() {
@@ -603,13 +735,24 @@ $(document).ready(function() {
                 $('input[name="lesson_id"]').val(response.lesson.id);
                 $('#edit_description').val(response.lesson.description);
                 $('#edit_status').val(response.lesson.status);
+                $('#edit_lesson_type').val(response.lesson.lesson_type);
+
+                //Check the correct custom time type radio button
+                console.log(response.lesson.custom_time_id);
+                if (response.lesson.custom_time_id) {
+                    $('#edit_custom_time_'+response.lesson.custom_time_id).prop('checked', true);  
+
+                }
 
                 // Set the correct grading type radio button
-                if (response.lesson.grade_type === "pass_fail") {
+               if (response.lesson.grade_type === "pass_fail") {
                     $('#edit_grade_pass_fail').prop('checked', true);
                 } else if (response.lesson.grade_type === "score") {
                     $('#edit_grade_score').prop('checked', true);
+                } else if (response.lesson.grade_type === "percentage") {
+                    $('#edit_grade_percentage').prop('checked', true);
                 }
+
 
                 if (response.lesson.enable_prerequisites) {
                     $('#enable_prerequisites').prop('checked', true);

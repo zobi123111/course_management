@@ -10,6 +10,12 @@
     {{ session()->get('message') }}
 </div>
 @endif
+@if(session()->has('error'))
+<div id="successMessage" class="alert alert-warning fade show" role="alert">
+    <i class="bi bi-check-circle me-1"></i>
+    {{ session()->get('error') }}
+</div>
+@endif
 
 @if(checkAllowedModule('training','training.store')->isNotEmpty())
     <div class="create_btn">
@@ -40,7 +46,7 @@
             @foreach($trainingEvents as $event)
                 @php
                     $lesson = $event->firstLesson;
-                @endphp
+                @endphp 
             <tr>
                 <td class="eventName">{{ $event->course?->course_name }}</td>
                 <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
@@ -51,46 +57,65 @@
                 <td>{{ $lesson?->end_time ? date('h:i A', strtotime($lesson->end_time)) : '' }}</td>
                 <td>
                 @if(get_user_role(auth()->user()->role) == 'administrator')  
-
-                    @if(checkAllowedModule('training','training.edit')->isNotEmpty()  && !$event->is_graded)
-                        <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                        data-event-id="{{ encode_id($event->id) }}"></i>
-                    @endif
-
-                    @if(checkAllowedModule('training','training.delete')->isNotEmpty())
-                        <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                        data-event-id="{{ encode_id($event->id) }}"></i>
-                    @endif
-
-                    @if($event->is_locked == 1)
-                        <i class="fa fa-lock unlock-event-icon text-success me-2" title="Unlock this event to enable grading edits." 
-                        data-event-id="{{ encode_id($event->id) }}" style="font-size:20px; cursor: pointer;"></i>
-                    @endif
-                    @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                    @if(empty($event->is_locked))
+                        @if(checkAllowedModule('training','training.edit')->isNotEmpty()  && !$event->is_graded)
+                            <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                            data-event-id="{{ encode_id($event->id) }}"></i>
+                        @endif
+                        @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                            <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                            data-event-id="{{ encode_id($event->id) }}"></i>
+                        @endif
+                        @if(checkAllowedModule('training','training.show')->isNotEmpty())
                             <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
                             <i class="fa fa-eye text-danger me-2"></i>
                             </a>            
+                        @endif
+                        @if($event->can_end_course)
+                            {{-- Active “End Course” button/icon --}}
+                            <button
+                                class="btn btn-sm btn-flag-checkered end-course-btn"
+                                data-event-id="{{ encode_id($event->id) }}"
+                                title="End Course/Event"
+                            >
+                                <i class="fa fa-flag-checkered text-primary"></i>
+                            </button>
+                        @endif
+                    @else
+                        {{-- This event is already locked/ended --}}
+                        <span class="badge bg-secondary" data-bs-toggle="tooltip"
+                            title="This course has been ended and is locked from editing">
+                            <i class="bi bi-lock-fill me-1"></i>Ended
+                        </span>
+                        @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                            <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                            data-event-id="{{ encode_id($event->id) }}"></i>
+                        @endif
                     @endif
-
                 @elseif(get_user_role(auth()->user()->role) == 'instructor')   
-
-                    @if($event->is_locked != 1)
+                    @if(empty($event->is_locked))
+                        @if(checkAllowedModule('training','training.edit')->isNotEmpty()  && !$event->is_graded)
+                            <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                            data-event-id="{{ encode_id($event->id) }}"></i>
+                        @endif
                         @if(checkAllowedModule('training','training.show')->isNotEmpty())
                             <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
                             <i class="fa fa-eye text-danger me-2"></i>
                             </a>            
                         @endif
                     @else
-                        <i class="fa fa-lock text-secondary" title="This event is locked and cannot be edited or viewed." style="font-size:20px;"></i>
-                    @endif    
-                @else
-                   
+                        {{-- This event is already locked/ended --}}
+                        <span class="badge bg-secondary" data-bs-toggle="tooltip"
+                            title="This course has been ended and is locked from editing">
+                            <i class="bi bi-lock-fill me-1"></i>Ended
+                        </span>
+                    @endif
+                @else                   
                     @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
                         <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
                         <i class="fa fa-list text-danger me-2"></i>
                         </a>
-                    @endif
-
+                    @endif    
                 @endif
                 </td>
             </tr>
@@ -148,89 +173,28 @@
                     </select>
                     <div id="course_id_error" class="text-danger error_e"></div>
                 </div>
-                <!-- Select Lesson -->
-                <div class="col-md-6">
-                    <label class="form-label">Select Lesson<span class="text-danger">*</span></label>
-                    <select class="form-select select_lesson" name="lesson_ids[]" id="select_lesson" >
-                        <!-- Options will be populated dynamically -->
-                    </select>
-                    <div id="lesson_ids_error" class="text-danger error_e"></div>
-                </div>
-                <div id="lessonDetailsContainer" class="lesson-box mt-3"></div>
                 <!-- Event Date-->
-                <!-- <div class="col-md-4">
-                    <label class="form-label">Event Date<span class="text-danger">*</span></label>
-                    <input type="date" name="event_date" class="form-control" id="event_date">
-                    <div id="event_date_error" class="text-danger error_e"></div>
-                </div> -->
-                <!-- Start Date & Time -->
-                <!-- <div class="col-md-4">
-                    <label class="form-label">Start Time<span class="text-danger">*</span></label>
-                    <input type="time" name="start_time" class="form-control" id="start_time">
-                    <div id="start_time_error" class="text-danger error_e"></div>
-                </div> -->
-
-                <!-- End Date & Time -->
-                <!-- <div class="col-md-4">
-                    <label class="form-label">End Time<span class="text-danger">*</span></label>
-                    <input type="time" name="end_time" class="form-control" id="end_time">
-                    <div id="end_time_error" class="text-danger error_e"></div>
-                </div> -->
-
-                <!-- Departure Airfield -->
-                <!-- <div class="col-md-6">
-                    <label class="form-label">Departure Airfield (4-letter code)<span class="text-danger">*</span></label>
-                    <input type="text" name="departure_airfield" class="form-control" maxlength="4">
-                    <div id="departure_airfield_error" class="text-danger error_e"></div>
-                </div> -->
-
-                <!-- Destination Airfield -->
-                <!-- <div class="col-md-6">
-                    <label class="form-label">Destination Airfield (4-letter code)<span class="text-danger">*</span></label>
-                    <input type="text" name="destination_airfield" class="form-control" maxlength="4">
-                    <div id="destination_airfield_error" class="text-danger error_e"></div>
-                </div>                 -->
-                <!-- Select Group -->
-                <!-- <div class="form-group">
-                    <label class="form-label">Select Group<span class="text-danger">*</span></label>
-                    <select class="form-select" name="group_id" id="select_group">
-                        <option value="">Select Group</option>
-                        @foreach($groups as $val)
-                        <option value="{{ $val->id }}">{{ $val->name }}</option>
-                        @endforeach
-                    </select>
-                    <div id="group_id_error" class="text-danger error_e"></div>
-                </div> -->
-
-                <!-- Select Instructor -->
-                <!-- <div class="col-md-6">
-                    <label class="form-label">Select Instructor<span class="text-danger">*</span></label>
-                    <select class="form-select" name="instructor_id" id="select_instructor">
-                        <option value="">Select Instructor</option>
-                        @foreach($instructors as $val)
-                        <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
-                        @endforeach
-                    </select>
-                    <div id="instructor_id_error" class="text-danger error_e"></div>
-                </div> -->
-
-                <!-- Select Resource -->
-                <!-- <div class="col-md-6">
-                    <label class="form-label">Select Resource<span class="text-danger">*</span></label>
-                    <select class="form-select" name="resource_id" id="select_resource">
-                        <option value="">Select Resource</option>
-                        @foreach($resources as $val)
-                        <option value="{{ $val->id }}">{{ $val->name }}</option>
-                        @endforeach
-                    </select>
-                    <div id="resource_id_error" class="text-danger error_e"></div>
-                </div> -->
-
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Course Start Date<span class="text-danger">*</span></label>
+                        <input type="date" name="event_date" class="form-control" id="event_date">
+                        <div id="event_date_error" class="text-danger error_e"></div>
+                    </div>
+                </div>
+                <div id="lessonDetailsContainer" class="lesson-box mt-3"></div> 
+                
                 <!-- Total Time (Calculated) -->
                 <div class="col-md-6">
                     <label class="form-label">Total Time (hh:mm)<span class="text-danger">*</span></label>
                     <input type="text" name="total_time" class="form-control" id="total_time" readonly>
                     <div id="total_time_error" class="text-danger error_e"></div>
+                </div>
+
+                <!-- Total Time (Calculated) -->
+                <div class="col-md-6">
+                    <label class="form-label">Total Groundschool Time (hh:mm)<span class="text-danger">*</span></label>
+                    <input type="text" name="total_groundschool_time" class="form-control" id="total_groundschool_time" readonly>
+                    <div id="total_groundschool_time_error" class="text-danger error_e"></div>
                 </div>
 
                 <!-- License Number (Extracted from user profile) -->
@@ -285,7 +249,7 @@
                         <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
                         @endforeach
                     </select>
-                    <div id="group_id_error" class="text-danger error_e"></div>
+                    <div id="student_id_error_up" class="text-danger error_e"></div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Select Course<span class="text-danger">*</span></label>
@@ -297,76 +261,15 @@
                     </select>
                     <div id="course_id_error_up" class="text-danger error_e"></div>
                 </div>
-                 <!-- Select Lesson -->
-                 <div class="col-md-6">
-                    <label class="form-label">Select Lesson<span class="text-danger">*</span></label>
-                    <select class="form-select select_lesson" name="lesson_ids[]" id="edit_select_lesson" >
-                        <!-- Options will be populated dynamically -->
-                    </select>
-                    <div id="lesson_ids_error_up" class="text-danger error_e"></div>
+                <!-- Event Date-->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Course Start Date<span class="text-danger">*</span></label>
+                        <input type="date" name="event_date" class="form-control" id="edit_event_date">
+                        <div id="event_date_error_up" class="text-danger error_e"></div>
+                    </div>
                 </div>
                 <div id="editLessonDetailsContainer" class="mt-3"></div>
-                <!-- Event Date-->
-                <!-- <div class="col-md-4">
-                    <label class="form-label">Event Date<span class="text-danger">*</span></label>
-                    <input type="date" name="event_date" class="form-control" id="edit_event_date">
-                    <div id="event_date_error" class="text-danger error_e"></div>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Start Time<span class="text-danger">*</span></label>
-                    <input type="time" name="start_time" class="form-control" id="edit_start_time">
-                    <div id="start_time_error_up" class="text-danger error_e"></div>
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">End Time<span class="text-danger">*</span></label>
-                    <input type="time" name="end_time" class="form-control" id="edit_end_time">
-                    <div id="end_time_error_up" class="text-danger error_e"></div>
-                </div> -->
-                <!-- <div class="form-group">
-                    <label class="form-label">Select Group<span class="text-danger">*</span></label>
-                    <select class="form-select" name="group_id" id="edit_select_group">
-                        <option value="">Select Group</option>
-                        @foreach($groups as $val)
-                            <option value="{{ $val->id }}">{{ $val->name }}</option>
-                        @endforeach
-                    </select>
-                    <div id="group_id_error_up" class="text-danger error_e"></div>
-                </div> -->
-
-                <!-- <div class="col-md-6">
-                    <label class="form-label">Departure Airfield</label>
-                    <input type="text" name="departure_airfield" class="form-control" id="edit_departure_airfield">
-                    <div id="departure_airfield_error_up" class="text-danger error_e"></div>
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label">Destination Airfield</label>
-                    <input type="text" name="destination_airfield" class="form-control" id="edit_destination_airfield">
-                    <div id="destination_airfield_error_up" class="text-danger error_e"></div>
-                </div> -->
-                <!-- <div class="col-md-6">
-                    <label class="form-label">Select Instructor<span class="text-danger">*</span></label>
-                    <select class="form-select" name="instructor_id" id="edit_select_instructor">
-                        <option value="">Select Instructor</option>
-                        @foreach($instructors as $val)
-                            <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
-                        @endforeach
-                    </select>
-                    <div id="instructor_id_error_up" class="text-danger error_e"></div>
-                </div> -->
-
-                <!-- New Fields -->
-                <!-- <div class="col-md-6">
-                    <label class="form-label">Select Resource</label>
-                    <select class="form-select" name="resource_id" id="edit_select_resource">
-                        <option value="">Select Resource</option>   
-                        @foreach($resources as $val)
-                            <option value="{{ $val->id }}">{{ $val->name }}</option>
-                        @endforeach
-                    </select>
-                    <div id="resource_id_error_up" class="text-danger error_e"></div>
-                </div> -->
                 <!-- Total Time (Calculated) -->
                 <div class="col-md-6">
                     <label class="form-label">Total Time (hh:mm)<span class="text-danger">*</span></label>
@@ -407,7 +310,46 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" id="confirmDeleteTrainingEvent" class="btn btn-danger delete_group">Delete</button>
+                    <button type="submit" id="confirmCourseEnding" class="btn btn-primary">End Course</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!--End Course Model -->
+<form action="{{ url('training/end-course') }}" id="endCourseForm" method="POST">
+    @csrf
+    <div class="modal fade" id="endCourseModal" tabindex="-1" aria-labelledby="endCourseLabel" aria-hidden="true"
+        data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="endCourseLabel">End Course/Event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                 <div class="modal-body">
+                    <div id="modalErrorContainer">
+                        @if ($errors->any())
+                            <div class="alert alert-danger">
+                                <ul class="mb-0">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                    </div>
+                    <p>Are you sure you want to end this course? Once ended, it will be locked for further editing.</p>
+                    <div class="mb-3">
+                        <label for="courseEndDate" class="form-label">Course End Date</label>
+                        <input type="date" class="form-control" id="courseEndDate" name="course_end_date" value="{{ old('course_end_date', date('Y-m-d')) }}" required>
+                    </div>
+                    <input type="hidden" name="event_id" id="courseEndEventId">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" id="confirmCourseEnding" class="btn btn-danger">End Course</button>
                 </div>
             </div>
         </div>
@@ -417,95 +359,27 @@
 
 @section('js_scripts')
 
+@if ($errors->any())
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let endCourseModal = new bootstrap.Modal(document.getElementById('endCourseModal'));
+            endCourseModal.show();
+        });
+    </script>
+@endif
+
+
 <script>
+
 var instructorsdata;
 instructorsdata = @json($instructors);
 var resourcesdata;
 resourcesdata = @json($resources);
 
-$('#select_lesson').on('change', function () {
-    let selectedLessons = $(this).val() || [];
-    let container = $('#lessonDetailsContainer');
-
-    // Keep track of current rendered lesson boxes
-    let existingLessonBoxes = {};
-    container.find('.lesson-box').each(function () {
-        let lessonId = $(this).data('lesson-id');
-        existingLessonBoxes[lessonId] = $(this);
-    });
-
-    // Step 1: Remove boxes for unselected lessons
-    Object.keys(existingLessonBoxes).forEach(lessonId => {
-        if (!selectedLessons.includes(lessonId)) {
-            existingLessonBoxes[lessonId].remove(); // remove that lesson box
-        }
-    });
-
-    // Step 2: Add new boxes for newly selected lessons
-    selectedLessons.forEach(lessonId => {
-        // Only add if not already rendered
-        if (!existingLessonBoxes[lessonId]) {
-            let lessonTitle = $("#select_lesson option[value='" + lessonId + "']").text();
-
-            let lessonBox = `
-                <div class="col-12 mb-3 border rounded p-3 lesson-box" data-lesson-id="${lessonId}">
-                    <input type="hidden" name="lesson_data[${lessonId}][lesson_id]" value="${lessonId}">
-                    <h6 class="fw-bold mb-3">Lesson: ${lessonTitle}</h6>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Instructor<span class="text-danger">*</span></label>
-                            <select class="form-select" name="lesson_data[${lessonId}][instructor_id]" id="lesson_data_${lessonId}_instructor_listbox">
-                                <option value="">Select Instructor</option>
-                                ${instructorsdata.map(i => `<option value="${i.id}">${i.fname} ${i.lname}</option>`).join('')}
-                            </select>
-                            <div id="lesson_data_${lessonId}_instructor_id_error" class="text-danger error_e"></div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Resource<span class="text-danger">*</span></label>
-                            <select class="form-select" name="lesson_data[${lessonId}][resource_id]">
-                                <option value="">Select Resource</option>
-                                ${resourcesdata.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
-                            </select>
-                            <div id="lesson_data_${lessonId}_resource_id_error" class="text-danger error_e"></div>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Lesson Date<span class="text-danger">*</span></label>
-                            <input type="date" name="lesson_data[${lessonId}][lesson_date]" class="form-control">
-                            <div id="lesson_data_${lessonId}_lesson_date_error" class="text-danger error_e"></div>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Start Time<span class="text-danger">*</span></label>
-                            <input type="time" name="lesson_data[${lessonId}][start_time]" class="form-control lesson-start-time" data-lesson-id="${lessonId}">
-                            <div id="lesson_data_${lessonId}_start_time_error" class="text-danger error_e"></div>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">End Time<span class="text-danger">*</span></label>
-                            <input type="time" name="lesson_data[${lessonId}][end_time]" class="form-control lesson-end-time" data-lesson-id="${lessonId}">
-                            <div id="lesson_data_${lessonId}_end_time_error" class="text-danger error_e"></div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Departure Airfield (4-letter code)<span class="text-danger">*</span></label>
-                            <input type="text" name="lesson_data[${lessonId}][departure_airfield]" class="form-control" maxlength="4">
-                            <div id="lesson_data_${lessonId}_departure_airfield_error" class="text-danger error_e"></div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Destination Airfield (4-letter code)<span class="text-danger">*</span></label>
-                            <input type="text" name="lesson_data[${lessonId}][destination_airfield]" class="form-control" maxlength="4">
-                            <div id="lesson_data_${lessonId}_destination_airfield_error" class="text-danger error_e"></div>
-                        </div>  
-                        <div class="col-md-6">
-                            <label class="form-label">Instructor License Number</label>
-                            <input type="text" name="lesson_data[${lessonId}][instructor_license_number]" class="form-control" id="instructor_license_number" value="" readonly>
-                            <div id="lesson_data_${lessonId}_instructor_license_number_error" class="text-danger error_e"></div>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            container.append(lessonBox);
-        }
-    });
-});
+const currentUser = {
+    id: {{ auth()->user()->id }},
+    role: "{{ get_user_role(auth()->user()->role) }}"
+};
 
 // Delegate change event to dynamically added instructor selects
 $(document).on('change', 'select[name^="lesson_data"][name$="[instructor_id]"]', function () {
@@ -539,8 +413,6 @@ $(document).on('change', 'select[name^="lesson_data"][name$="[instructor_id]"]',
     }
 });
 
-
-
 function initializeSelect2() {
     $('.select_lesson').select2({
         allowClear: true,
@@ -559,6 +431,7 @@ $(document).ready(function() {
         $(".error_e").html('');
         $("#trainingEventForm")[0].reset();
         $('#total_time').val('');
+        $('#lessonDetailsContainer').empty();
         $("#createTrainingEventModal").modal('show');
         $('#createTrainingEventModal').on('shown.bs.modal', function() {
             initializeSelect2();
@@ -574,8 +447,6 @@ $(document).ready(function() {
     $(document).on('change', '.lesson-start-time, .lesson-end-time', function () {
         calculateTotalTime('#edit_total_time');
     });
-
-
 
     function calculateTotalTime(outputSelector = '#total_time') {
         let totalMinutes = 0;
@@ -604,9 +475,7 @@ $(document).ready(function() {
         $(outputSelector).val(totalFormatted);
     }
 
-
-
-    $(document).on('change', '#select_org_unit, #edit_ou_id', function() {
+    $(document).on('change', '#select_org_unit, #edit_ou_id', function() {      
         var ou_id = $(this).val();
         // Determine which modal is being used
         var isEditModal = $(this).attr('id') === 'edit_ou_id';
@@ -723,41 +592,48 @@ $(document).ready(function() {
         }
     });
 
-    $(document).on('change', '#select_course, #edit_select_course', function() {
+    $(document).on('change', '#select_course, #edit_select_course', function () {
         var courseId = $(this).val();
-        // alert(courseId);
-        // Determine if it's the edit form
         var isEditForm = $(this).attr('id') === 'edit_select_course';
+        var lessonContainer = isEditForm ? $('#editLessonDetailsContainer') : $('#lessonDetailsContainer');
+        var mode = isEditForm ? 'update' : 'create'; 
 
-        // Select the correct dropdown based on the form
-        var lessonDropdown = isEditForm ? $('#edit_select_lesson') : $('#select_lesson');
+        // For edit mode, map saved lessons by lesson_id for quick lookup
+        var lessonPrefillMap = {};
+        if (isEditForm && typeof existingEventLessons !== 'undefined') {
+            existingEventLessons.forEach(lesson => {
+                lessonPrefillMap[lesson.lesson_id] = {
+                    instructor_id: lesson.instructor_id || '',
+                    resource_id: lesson.resource_id || '',
+                    lesson_date: lesson.lesson_date || '',
+                    start_time: lesson.start_time || '',
+                    end_time: lesson.end_time || '',
+                    departure_airfield: lesson.departure_airfield || '',
+                    destination_airfield: lesson.destination_airfield || '',
+                    instructor_license_number: lesson.instructor_license_number || ''
+                };
+            });
+        }
 
         $.ajax({
-            url: '{{ url("/training/get_course_lessons") }}', // Route to fetch lessons
+            url: '{{ url("/training/get_course_lessons") }}',
             type: 'GET',
             data: { course_id: courseId },
-            success: function(response) {
-                lessonDropdown.empty();
+            success: function (response) {
+                lessonContainer.empty(); // Clear existing lesson boxes
 
                 if (response.success && response.lessons.length > 0) {
-                    lessonDropdown.append('<option value="">Select Lesson</option>'); // Default option
-                    $.each(response.lessons, function(index, lesson) {
-                        lessonDropdown.append('<option value="' + lesson.id + '">' + lesson.lesson_title + '</option>');
-                    });
-
-                    // Restore previously selected lessons in edit mode
-                    if (isEditForm) {
-                        setTimeout(function() {
-                            var selectedLessons = lessonDropdown.data('selected-lessons') || []; // Get stored lessons
-                            lessonDropdown.val(selectedLessons).trigger('change'); // Select the saved lessons
-                        }, 100); // Delay to ensure dropdown is populated
-                    }
+                    let lessons = response.lessons;
+                    resourcesdata = response.resources; 
+                        response.lessons.forEach(function (lesson, idx) {
+                            let prefillData = isEditForm && lessonPrefillMap[lesson.id] ? lessonPrefillMap[lesson.id] : {};
+                            renderLessonBox(lesson, lessonContainer, prefillData, idx, mode);  // ✅ index passed
+                        });
                 } else {
                     alert('No lessons found for the selected course.');
-                    lessonDropdown.append('<option value="">Select Lesson</option>').trigger('change'); // Keep default option
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 console.error(xhr.responseText);
                 alert('Error fetching lessons. Please try again.');
             }
@@ -800,13 +676,11 @@ $(document).ready(function() {
     $(document).on('click', '.edit-event-icon', function () {
         $('.error_e').html('');
         var eventId = $(this).data('event-id');
-
         $.ajax({
             url: "{{ url('/training/edit') }}",
             type: 'GET',
             data: { eventId: eventId },
             success: async function (response) {
-                // console.log(response);
                 if (response.success) {
                     const event = response.trainingEvent;
 
@@ -817,117 +691,40 @@ $(document).ready(function() {
                     const selectedResource = event.resource_id;
                     const selectedCourse = event.course_id;
 
-                    // Set initial static values
+                    // Set static values
                     $('#edit_event_id').val(event.id);
                     $('#edit_std_licence_number').val(event.std_licence_number);
-                    let totalTime = moment(event.total_time, 'HH:mm:ss').format('HH:mm'); 
-                    $('#edit_total_time').val(totalTime);
+                    $('#edit_event_date').val(event.event_date);
+                    $('#edit_total_time').val(moment(event.total_time, 'HH:mm:ss').format('HH:mm'));
 
-                    // Set OU and wait for dropdowns to populate
-                    $('#edit_ou_id').val(selectedOU);
-                    $('#edit_ou_id').trigger('change');
-                    // Wait a bit for student/instructor/resource dropdowns to populate
+                    // Set OU and wait for dependent dropdowns
+                    $('#edit_ou_id').val(selectedOU).trigger('change');
                     await new Promise(resolve => setTimeout(resolve, 500));
 
-                    // Set selected values
-                    $('#edit_select_user').data("selected-value", selectedStudent).val(selectedStudent);
-                    $('#edit_select_instructor').data("selected-value", selectedInstructor).val(selectedInstructor);
-                    $('#edit_select_resource').data("selected-value", selectedResource).val(selectedResource);
+                    // Set dropdown values
+                    $('#edit_select_user').val(selectedStudent).data("selected-value", selectedStudent);
+                    $('#edit_select_instructor').val(selectedInstructor).data("selected-value", selectedInstructor);
+                    $('#edit_select_resource').val(selectedResource).data("selected-value", selectedResource);
 
-                    // Wait for student change to load courses
                     await new Promise(resolve => setTimeout(resolve, 500));
-                    $('#edit_select_course').data("selected-value", selectedCourse).val(selectedCourse);
+                    $('#edit_select_course').val(selectedCourse).data("selected-value", selectedCourse);
 
-                    // Lessons (handled after course is loaded)
-                    let lessonIds = Array.isArray(event.lesson_ids) ? event.lesson_ids : JSON.parse(event.lesson_ids || "[]");
-                    $('#edit_select_lesson').data('selected-lessons', lessonIds);
+                    // ✅ Global map of existing lessons for prefill
+                    window.existingEventLessons = (event.event_lessons || []).map(l => ({
+                        lesson_id: l.lesson_id,
+                        instructor_id: l.instructor_id || '',
+                        resource_id: l.resource_id || '',
+                        lesson_date: l.lesson_date || '',
+                        start_time: l.start_time || '',
+                        end_time: l.end_time || '',
+                        departure_airfield: l.departure_airfield || '',
+                        destination_airfield: l.destination_airfield || '',
+                        instructor_license_number: l.instructor_license_number || ''
+                    }));
 
-                    // Clear any existing lesson boxes
-                    $('#editLessonDetailsContainer').empty();
+                    // Trigger the course change (will call renderLessonBox with prefill)
+                    $('#edit_select_course').trigger('change');
 
-                    if (response.trainingEvent.event_lessons && response.trainingEvent.event_lessons.length > 0) {
-                        const eventLessons = response.trainingEvent.event_lessons;
-                        // const instructors = @json($instructors); // Assuming you pass this in blade
-                        // const resources = @json($resources);     // Assuming you pass this in blade
-
-                        eventLessons.forEach((lesson) => {
-                            const lessonId = lesson.lesson_id;
-                            const lessonTitle = lesson.lesson.lesson_title || `Lesson ${lessonId}`; // fallback
-                            const selectedInstructor = lesson.instructor_id || '';
-                            const selectedResource = lesson.resource_id || '';
-                            const lessonDate = lesson.lesson_date || '';
-                            const startTime = lesson.start_time || '';
-                            const endTime = lesson.end_time || '';
-                            const departure_airfield = lesson.departure_airfield || '';
-                            const destination_airfield = lesson.destination_airfield || '';
-                            const instructor_license_number = lesson.instructor_license_number || '';
-
-                            var instructorOptions = instructorsdata.map(i =>
-                                `<option value="${i.id}" ${i.id == selectedInstructor ? 'selected' : ''}>${i.fname} ${i.lname}</option>`
-                            ).join('');
-
-                            var resourceOptions= resourcesdata.map(r =>
-                                `<option value="${r.id}" ${r.id == selectedResource ? 'selected' : ''}>${r.name}</option>`
-                            ).join('');
-
-                            const lessonBox = `
-                                <div class="col-12 mb-3 border rounded p-3 lesson-box" data-lesson-id="${lessonId}">
-                                    <input type="hidden" name="lesson_data[${lessonId}][lesson_id]" value="${lessonId}">
-                                    <h6 class="fw-bold mb-3">Lesson: ${lessonTitle}</h6>
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">Instructor<span class="text-danger">*</span></label>
-                                            <select class="form-select" name="lesson_data[${lessonId}][instructor_id]">
-                                                <option value="">Select Instructor</option>
-                                                ${instructorOptions}
-                                            </select>
-                                            <div id="lesson_data_${lessonId}_instructor_id_error_up" class="text-danger error_e"></div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Resource<span class="text-danger">*</span></label>
-                                            <select class="form-select" name="lesson_data[${lessonId}][resource_id]">
-                                                <option value="">Select Resource</option>
-                                                ${resourceOptions}
-                                            </select>
-                                            <div id="lesson_data_${lessonId}_resource_id_error_up" class="text-danger error_e"></div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Lesson Date<span class="text-danger">*</span></label>
-                                            <input type="date" name="lesson_data[${lessonId}][lesson_date]" value="${lessonDate}" class="form-control">
-                                            <div id="lesson_data_${lessonId}_lesson_date_error_up" class="text-danger error_e"></div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Start Time<span class="text-danger">*</span></label>
-                                            <input type="time" name="lesson_data[${lessonId}][start_time]" value="${startTime}" class="form-control lesson-start-time" data-lesson-id="${lessonId}">
-                                            <div id="lesson_data_${lessonId}_start_time_error_up" class="text-danger error_e"></div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">End Time<span class="text-danger">*</span></label>
-                                            <input type="time" name="lesson_data[${lessonId}][end_time]" value="${endTime}" class="form-control lesson-end-time" data-lesson-id="${lessonId}">
-                                            <div id="lesson_data_${lessonId}_end_time_error_up" class="text-danger error_e"></div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Departure Airfield (4-letter code)<span class="text-danger">*</span></label>
-                                            <input type="text" name="lesson_data[${lessonId}][departure_airfield]" value="${departure_airfield}" class="form-control" maxlength="4">
-                                            <div id="lesson_data_${lessonId}_departure_airfield_error" class="text-danger error_e"></div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Destination Airfield (4-letter code)<span class="text-danger">*</span></label>
-                                            <input type="text" name="lesson_data[${lessonId}][destination_airfield]" value="${destination_airfield}" class="form-control" maxlength="4">
-                                            <div id="lesson_data_${lessonId}_destination_airfield_error" class="text-danger error_e"></div>
-                                        </div>  
-                                        <div class="col-md-6">
-                                            <label class="form-label">Instructor License Number</label>
-                                            <input type="text" name="lesson_data[${lessonId}][instructor_license_number]" class="form-control" id="instructor_license_number" value="${instructor_license_number}" readonly>
-                                            <div id="lesson_data_${lessonId}_instructor_license_number_error" class="text-danger error_e"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-
-                            $('#editLessonDetailsContainer').append(lessonBox);
-                        });
-                    }
                     $('#editTrainingEventModal').modal('show');
                 } else {
                     console.error("Error: Invalid response format");
@@ -939,6 +736,7 @@ $(document).ready(function() {
             }
         });
     });
+
 
     $('#edit_select_lesson').on('change', function () {
         const selectedLessonIds = $(this).val() || []; // Get current selected values (array)
@@ -1097,6 +895,170 @@ $(document).ready(function() {
         await new Promise(resolve => setTimeout(resolve, 300));
         $('#edit_select_course').trigger('change');
     });
+
+
+    let lessonIndex = 0;
+
+    function renderLessonBox(lesson, container, prefillData = {}, index = null, mode) {
+        const errorSuffix = mode === 'update' ? '_error_up' : '_error';
+        console.log(errorSuffix);
+        const currentIndex = index !== null ? index : lessonIndex++;
+        const isFirstLesson = currentIndex === 0;
+        let lessonId = lesson.id;
+        let lessonTitle = lesson.lesson_title;
+        let lessonType = lesson.lesson_type || '';
+
+        // Hide fields if lesson_type is groundschool
+        let hideFlightFields = (lessonType === 'groundschool') ? 'style="display:none;"' : '';
+
+        // Use prefilled data if available
+        let {
+            instructor_id = '',
+            resource_id = '',
+            lesson_date = '',
+            start_time = '',
+            end_time = '',
+            departure_airfield = '',
+            destination_airfield = '',
+            instructor_license_number = ''
+        } = prefillData;
+
+        let isCurrentUserInstructor = currentUser.role === 'instructor';
+        let instructorOptions = instructorsdata.map(i => {
+            let selected = '';
+            let disabled = '';
+
+            if (isCurrentUserInstructor && i.id == currentUser.id) {
+                selected = 'selected';
+            } else if (isCurrentUserInstructor) {
+                disabled = 'disabled';
+            } else if (i.id == instructor_id) {
+                selected = 'selected';
+            }
+
+            return `<option value="${i.id}" ${selected} ${disabled}>${i.fname} ${i.lname}</option>`;
+        }).join('');
+
+        let resourceOptions = resourcesdata
+            .filter(r => {
+                if (lessonType === 'groundschool') {
+                    return ['Classroom', 'Homestudy'].includes(r.name);
+                }
+                return true;
+            })
+            .map(r =>
+                `<option value="${r.id}" ${r.id == resource_id ? 'selected' : ''}>${r.name}</option>`
+            );
+
+        if (resourceOptions.length === 0 && lessonType === 'groundschool') {
+            resourceOptions.push('<option disabled>No suitable resources available</option>');
+        }
+
+        resourceOptions = resourceOptions.join('');
+
+
+        let lessonBox = `
+            <div class="col-12 mb-3 border rounded p-3 lesson-box" data-lesson-id="${currentIndex}">    
+                <input type="hidden" name="lesson_data[${currentIndex}][lesson_id]" value="${lessonId}">
+                <h6 class="fw-bold mb-3">Lesson: ${lessonTitle}</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Instructor${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
+                        <select class="form-select" name="lesson_data[${currentIndex}][instructor_id]" id="lesson_data_${currentIndex}_instructor_listbox"
+                                ${isCurrentUserInstructor ? 'disabled' : ''}>
+                            <option value="">Select Instructor</option>
+                            ${instructorOptions}
+                        </select>
+                        ${isCurrentUserInstructor ? `<input type="hidden" name="lesson_data[${currentIndex}][instructor_id]" value="${currentUser.id}">` : ''}
+                        <div id="lesson_data_${currentIndex}_instructor_id${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Resource${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
+                        <select class="form-select" name="lesson_data[${currentIndex}][resource_id]">
+                            <option value="">Select Resource</option>
+                            ${resourceOptions}
+                        </select>
+                        <div id="lesson_data_${currentIndex}_resource_id${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Lesson Date${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
+                        <input type="date" name="lesson_data[${currentIndex}][lesson_date]" class="form-control" value="${lesson_date}">
+                        <div id="lesson_data_${currentIndex}_lesson_date${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-4" ${hideFlightFields}>
+                        <label class="form-label">Start Time${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
+                        <input type="time" name="lesson_data[${currentIndex}][start_time]" class="form-control lesson-start-time" data-lesson-id="${currentIndex}" value="${start_time}">
+                        <div id="lesson_data_${currentIndex}_start_time${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-4" ${hideFlightFields}>
+                        <label class="form-label">End Time${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
+                        <input type="time" name="lesson_data[${currentIndex}][end_time]" class="form-control lesson-end-time" data-lesson-id="${currentIndex}" value="${end_time}">
+                        <div id="lesson_data_${currentIndex}_end_time${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-6" ${hideFlightFields}>
+                        <label class="form-label">Departure Airfield (4-letter code)${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
+                        <input type="text" name="lesson_data[${currentIndex}][departure_airfield]" class="form-control" maxlength="4" value="${departure_airfield}">
+                        <div id="lesson_data_${currentIndex}_departure_airfield${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-6" ${hideFlightFields}>
+                        <label class="form-label">Destination Airfield (4-letter code)${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
+                        <input type="text" name="lesson_data[${currentIndex}][destination_airfield]" class="form-control" maxlength="4" value="${destination_airfield}">
+                        <div id="lesson_data_${currentIndex}_destination_airfield${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Instructor License Number</label>
+                        <input type="text" name="lesson_data[${currentIndex}][instructor_license_number]" class="form-control" id="instructor_license_number" value="${instructor_license_number}" readonly>
+                        <div id="lesson_data_${currentIndex}_instructor_license_number${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.append(lessonBox);
+
+        // Auto-fetch license number if current user is instructor
+        if (isCurrentUserInstructor) {
+            const $currentBox = container.find(`.lesson-box[data-lesson-id="${currentIndex}"]`);
+            const $licenseInput = $currentBox.find(`input[name="lesson_data[${currentIndex}][instructor_license_number]"]`);
+
+            $.ajax({
+                url: `/training/get_instructor_license_no/${currentUser.id}`,
+                type: 'GET',
+                success: function (response) {
+                    if (response.success) {
+                        $licenseInput.val(response.instructor_licence_number || '');
+                        if (!response.instructor_licence_number) {
+                            alert("Instructor license number not found.");
+                        }
+                    } else {
+                        $licenseInput.val('');
+                        alert("Instructor not found.");
+                    }
+                },
+                error: function () {
+                    $licenseInput.val('');
+                    console.error("Failed to fetch license number");
+                    alert("An error occurred while fetching the license number.");
+                }
+            });
+        }
+    }
+
+    
+
+   // Open Course End Modal
+    $(document).on('click', '.end-course-btn', function() {
+        // Set current date in YYYY-MM-DD format
+        const today = new Date().toISOString().split('T')[0];
+
+        // Set the input values
+        $('#endCourseModal').modal('show');
+        $('#courseEndEventId').val($(this).data('event-id'));
+        $('#courseEndDate').val(today); // Reset to today's date
+        // Clear any validation error messages
+        $('#modalErrorContainer').html('');
+    });
+
 
 
 

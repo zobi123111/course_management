@@ -29,11 +29,11 @@ if ($user->is_admin == "1") {
 
         // Admin Verification Alerts
         if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
-            $messages[] = "📝 <strong>Licence 1</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+            $messages[] = "📝 <strong>UK Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
         }
 
         if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
-            $messages[] = "📝 <strong>Licence 2</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+            $messages[] = "📝 <strong>EASA Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
         }
 
         if ($u->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
@@ -41,20 +41,20 @@ if ($user->is_admin == "1") {
         }
 
         if ($u->medical_adminRequired == '1' && $userDoc?->medical_verified == "0" && !empty($userDoc?->medical_file)) {
-            $messages[] = "📝 <strong>Medical 1</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+            $messages[] = "📝 <strong>UK Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
         }
 
         if ($u->medical_adminRequired == '1' && $userDoc?->medical_verified_2 == "0" && !empty($userDoc?->medical_file_2)) {
-            $messages[] = "📝 <strong>Medical 2</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+            $messages[] = "📝 <strong>EASA Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
         }
 
         // Expiry Alerts
         $expiryStatuses = [
-            'Licence 1' => $userDoc?->licence_status,
-            'Licence 2' => $userDoc?->licence_2_status,
+            'UK Licence' => $userDoc?->licence_status,
+            'EASA Licence' => $userDoc?->licence_2_status,
             'Passport' => $userDoc?->passport_status,
-            'Medical 1' => $userDoc?->medical_status,
-            'Medical 2' => $userDoc?->medical_2_status,
+            'UK Medical' => $userDoc?->medical_status,
+            'EASA Medical' => $userDoc?->medical_2_status,
         ];
 
         foreach ($expiryStatuses as $doc => $status) {
@@ -89,11 +89,11 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
     $userDoc = $user->documents;
 
     if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
-        $messages[] = "📝 Your <strong>Licence 1</strong> is pending admin verification.";
+        $messages[] = "📝 Your <strong>UK Licence</strong> is pending admin verification.";
     }
 
     if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
-        $messages[] = "📝 Your <strong>Licence 2</strong> is pending admin verification.";
+        $messages[] = "📝 Your <strong>EASA Licence</strong> is pending admin verification.";
     }
 
     if ($user->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
@@ -101,19 +101,19 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
     }
 
     if ($user->medical_adminRequired == '1' && $userDoc?->medical_verified == "0" && !empty($userDoc?->medical_file)) {
-        $messages[] = "📝 Your <strong>Medical 1</strong> is pending admin verification.";
+        $messages[] = "📝 Your <strong>UK Medical</strong> is pending admin verification.";
     }
 
     if ($user->medical_adminRequired == '1' && $userDoc?->medical_verified_2 == "0" && !empty($userDoc?->medical_file_2)) {
-        $messages[] = "📝 Your <strong>Medical 2</strong> is pending admin verification.";
+        $messages[] = "📝 Your <strong>EASA Medical</strong> is pending admin verification.";
     }
 
     $expiryStatuses = [
-        'Licence 1' => $userDoc?->licence_status,
-        'Licence 2' => $userDoc?->licence_2_status,
+        'UK Licence' => $userDoc?->licence_status,
+        'EASA Licence' => $userDoc?->licence_2_status,
         'Passport' => $userDoc?->passport_status,
-        'Medical 1' => $userDoc?->medical_status,
-        'Medical 2' => $userDoc?->medical_2_status,
+        'UK Medical' => $userDoc?->medical_status,
+        'EASA Medical' => $userDoc?->medical_2_status,
     ];
 
     foreach ($expiryStatuses as $doc => $status) {
@@ -174,15 +174,17 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
     <thead>
         <tr>
             <th>Name</th>
-            <th>Licence 1 Status</th>
-            <th>Licence 2 Status</th>
-            <th>Medical 1 Status</th> 
-            <th>Medical 2 Status</th> 
+            <th>UK Licence Status</th>\
+            <th>Associated Ratings (UK)</th>
+            <th>EASA Licence Status</th>
+            <th>Associated Ratings (EASA)</th> 
+            <th>UK Medical Status</th> 
+            <th>EASA Medical Status</th> 
             <th>Passport Status</th> 
             <th>Action</th> 
         </tr>
     </thead>
-<tbody>
+<tbody> 
 @php
     function getTooltip($status, $type) {
         return match ($status) {
@@ -214,13 +216,106 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
                         $date = $doc->licence_expiry_date ? date('d/m/Y', strtotime($doc->licence_expiry_date)) : 'N/A';
                     }
-                    $tooltip = getTooltip($status, 'licence 1');
+                    $tooltip = getTooltip($status, 'UK License');
                 @endphp
                 <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
             @else
                 <span class="text-muted">Not Uploaded</span>
             @endif
+
+            {{-- Licence 1 Ratings --}}
+            @if(isset($user->ratings_by_license['license_1']) && $user->ratings_by_license['license_1']->count())
+                <div class="mt-2">
+                    @foreach($user->ratings_by_license['license_1'] as $ur)
+                        @php
+                            $r = $ur->rating;
+                            $expiry = $ur->expiry_date ? \Carbon\Carbon::parse($ur->expiry_date)->format('d/m/Y') : 'N/A';
+                            $status = $ur->expiry_status; // Uses accessor from model
+                            $color = match($status) {
+                                'Red' => 'danger',
+                                'Orange' => 'warning',
+                                'Amber' => 'info',
+                                'Blue' => 'primary',
+                                default => 'secondary'
+                            };
+                            $tooltip = "$r->name expires on $expiry";
+                        @endphp
+
+                        <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
+                            {{ $r->name }}
+                        </span>
+
+                        {{-- Nested (child) ratings --}}
+                        @if($r->children && $r->children->count())
+                            @foreach($r->children as $child)
+                                <span class="badge bg-light text-dark border ms-1" data-bs-toggle="tooltip" title="Child of {{ $r->name }} (inherits expiry)">
+                                    → {{ $child->name }}
+                                </span>
+                            @endforeach
+                        @endif
+                    @endforeach
+                </div>
+            @endif
         </td>
+
+        <td>
+            @if($user->ratings_by_license['licence_1']->count())
+                @foreach($user->ratings_by_license['licence_1'] as $ur)
+                    @php
+                        $r = $ur->rating;
+                        $expiry = $ur->expiry_date ? \Carbon\Carbon::parse($ur->expiry_date)->format('d/m/Y') : 'N/A';
+                        $status = $ur->expiry_status ?? 'Grey'; // Make sure your model has this accessor
+                        $color = match($status) {
+                            'Red' => 'danger',
+                            'Orange', 'Amber' => 'warning',
+                            'Yellow' => 'info',
+                            'Blue' => 'primary',
+                            default => 'secondary'
+                        };
+                        $tooltip = $r->name . ' expires on ' . $expiry;
+                    @endphp
+
+                    {{-- Parent badge --}}
+                    <div class="mb-2">
+                        <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
+                            {{ $r->name }} ({{ $expiry }})
+                        </span>
+
+                        {{-- Child ratings --}}
+                        @if($ur->associated_details && $ur->associated_details->count())
+                            <div class="mt-2">
+                                @foreach($ur->associated_details as $assoc)
+                                    @php
+                                        $assocData = $assoc->user_rating ?? null;
+                                        $assocExpiry = $assocData && $assocData->expiry_date
+                                            ? \Carbon\Carbon::parse($assocData->expiry_date)->format('d/m/Y')
+                                            : $expiry;
+
+                                        $assocStatus = $assocData->expiry_status ?? $status;
+                                        $assocColor = match($assocStatus) {
+                                            'Red' => 'danger',
+                                            'Orange', 'Amber' => 'warning',
+                                            'Yellow' => 'info',
+                                            'Blue' => 'primary',
+                                            default => 'light'
+                                        };
+
+                                        $tooltip = "{$assoc->name} expires on {$assocExpiry}";
+                                    @endphp
+
+                                    <span class="badge bg-{{ $assocColor }} text-dark ms-1" data-bs-toggle="tooltip" title="{{ $tooltip }}">
+                                        → {{ $assoc->name }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
+            @else
+                <span class="text-muted">None</span>
+            @endif
+        </td>
+
 
         {{-- Licence 2 --}}
         <td>
@@ -235,13 +330,74 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
                         $date = $doc->licence_expiry_date_2 ? date('d/m/Y', strtotime($doc->licence_expiry_date_2)) : 'N/A';
                     }
-                    $tooltip = getTooltip($status, 'licence 2');
+                    $tooltip = getTooltip($status, 'EASA Licence');
                 @endphp
                 <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
             @else
                 <span class="text-muted">Not Uploaded</span>
             @endif
         </td>
+
+        {{-- Associated Ratings (Licence 2) --}}
+        <td>
+            @if($user->ratings_by_license['licence_2']->count())
+                @foreach($user->ratings_by_license['licence_2'] as $ur)
+                    @php
+                        $r = $ur->rating;
+                        $parentExpiry = $ur->expiry_date ? \Carbon\Carbon::parse($ur->expiry_date)->format('d/m/Y') : 'N/A';
+                        $status = $ur->expiry_status ?? 'Grey';
+                        $color = match($status) {
+                            'Red' => 'danger',
+                            'Orange', 'Amber' => 'warning',
+                            'Yellow' => 'info',
+                            'Blue' => 'primary',
+                            default => 'secondary'
+                        };
+                        $tooltip = $r->name . ' expires on ' . $parentExpiry;
+                    @endphp
+
+                    {{-- Parent Rating --}}
+                    <div class="mb-2">
+                        <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
+                            {{ $r->name }} ({{ $parentExpiry }})
+                        </span>
+
+                        {{-- Associated/Child Ratings --}}
+                        @if($ur->associated_details && $ur->associated_details->count())
+                            <div class="mt-2">
+                                @foreach($ur->associated_details as $assoc)
+                                    @php
+                                        $assocData = $assoc->user_rating ?? null;
+                                        $childExpiry = $assocData && $assocData->expiry_date
+                                            ? \Carbon\Carbon::parse($assocData->expiry_date)->format('d/m/Y')
+                                            : $parentExpiry;
+
+                                        $childStatus = $assocData->expiry_status ?? $status;
+                                        $childColor = match($childStatus) {
+                                            'Red' => 'danger',
+                                            'Orange', 'Amber' => 'warning',
+                                            'Yellow' => 'info',
+                                            'Blue' => 'primary',
+                                            default => 'light'
+                                        };
+
+                                        $tooltip = "{$assoc->name} expires on {$childExpiry}";
+                                    @endphp
+
+                                    <span class="badge bg-{{ $childColor }} text-dark ms-1" data-bs-toggle="tooltip" title="{{ $tooltip }}">
+                                        → {{ $assoc->name }} ({{ $childExpiry }})
+                                    </span>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
+            @else
+                <span class="text-muted">None</span>
+            @endif
+        </td>
+
+
 
         {{-- Medical 1 --}}
         <td>

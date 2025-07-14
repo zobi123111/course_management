@@ -9,12 +9,14 @@ use App\Models\UserActivityLog;
 use App\Models\Rating;
 use App\Models\UserRating;
 use App\Models\UserDocument;
+use App\Models\OuRating;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\UserCreated;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
+use App\Models\ParentRating;
 
 
 class UserController extends Controller
@@ -27,10 +29,16 @@ class UserController extends Controller
         $is_owner = $authUser->is_owner;
         $is_admin = $authUser->is_admin;
     
-        $organizationUnits = OrganizationUnits::all();
+        $organizationUnits = OrganizationUnits::all(); 
         $roles = Role::all(); 
         $rating = Rating::where('status', 1)->get(); 
+       
 
+        $ou_id = auth()->user()->ou_id;
+        if ($ou_id != null) {
+            $rating = Rating::with(['ou_ratings.organization_unit'])->where('status', 1)->whereHas('ou_ratings')->get();
+        }
+          
         if ($request->ajax()) {
             $query = User::query()
                     ->leftJoin('roles', 'users.role', '=', 'roles.id')
@@ -107,7 +115,7 @@ class UserController extends Controller
                 })
                 ->rawColumns(['status', 'action'])
                 ->make(true);
-        }
+        } 
     
          return view('users.index', compact('roles', 'organizationUnits','rating'));
     }
@@ -175,8 +183,16 @@ class UserController extends Controller
         $ratings = $user->usrRatings->map(function ($userRating) {
             return $userRating->rating;
         });
+
+              $licence1Ratings = $user->usrRatings->filter(function ($userRating) {
+                return $userRating->linked_to === 'licence_1';
+            });
+
+            $licence2Ratings = $user->usrRatings->filter(function ($userRating) {
+                return $userRating->linked_to === 'licence_2';
+            });
     
-        return view('users.profile', compact('user', 'ratings'));
+        return view('users.profile', compact('user', 'ratings', 'licence1Ratings', 'licence2Ratings'));
     }
     
     public function profileUpdate(Request $request)
@@ -188,18 +204,27 @@ class UserController extends Controller
             if ($userToUpdate) {
                 $rules = [];
            
-                if ($userToUpdate->licence_required === 1) {    
-                    if ($request->filled('licence')) {
-                        $rules['licence'] = 'required';
-                        if(!$request->has('licence_expiry_date') || !$request->has('non_expiring_licence')){
-                            $rules['licence_expiry_date'] = 'nullable'; 
-                        }
-                        // Require a new file only if there's no existing file
-                        if (!$userToUpdate->licence_file) {
-                            $rules['licence_file'] = 'nullable|file|mimes:pdf,jpg,jpeg,png';
-                        } 
-                    }                                       
-                }
+              $licenceFileUploaded = $document?->licence_file_uploaded ?? false;
+
+          $licenceFileUploaded = false;
+
+if ($userToUpdate->licence_required == 1) {
+    if ($request->hasFile('licence_file')) {
+        if ($document && $document->licence_file) {
+            Storage::disk('public')->delete($document->licence_file);
+        }
+
+        $licenceFilePath = $request->file('licence_file')->store('licence_files', 'public');
+        $licenceFileUploaded = true;
+        $userToUpdate->update(['licence_verified' => 0]);
+    } else {
+        $licenceFilePath = $request->old_licence_file ?? $document?->licence_file;
+        $licenceFileUploaded = $document?->licence_file_uploaded ?? false;
+    }
+}
+
+
+
 
                 if ($request->hasFile('profile_image')) {
                     // Delete old image if it exists
@@ -332,7 +357,7 @@ class UserController extends Controller
                                                         ->first();
                 
                             if (empty($existingRating?->file_path)) {
-                                $rules["rating_file.$ratingId"] = 'required|file|mimes:pdf,jpg,jpeg,png|max:15360';
+                                $rules["rating_file.$ratingId"] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:15360';
                             } else {
                                 $rules["rating_file.$ratingId"] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:15360';
                             }
@@ -431,7 +456,7 @@ class UserController extends Controller
                 'custom_field_text' => $request->custom_field_text ?? $userToUpdate->custom_field_text
             ];
 
-            //dd($newData);
+            // dd($newData);
         
             $oldData = $userToUpdate->only(array_keys($newData));
             $changes = [];
@@ -446,7 +471,10 @@ class UserController extends Controller
                 }
             } 
 
-            $userToUpdate->update($newData);
+            \Log::info('Updating user with:', $newData);
+$userToUpdate->update($newData);
+\Log::info('User updated:', $userToUpdate->only(['licence_file', 'licence_file_uploaded']));
+
             if (!empty($changes)) {
                 UserActivityLog::create([
                     'user_id' => auth()->user()->id,
@@ -455,7 +483,15 @@ class UserController extends Controller
                 ]);
             }
             //dd($licenceFileUploaded_2);
-            $userToUpdate->documents()->updateOrCreate(
+            \Log::info('Updating documents with:', [
+    'licence_file' => $licenceFilePath,
+    'licence_file_uploaded' => $licenceFileUploaded,
+    'old_licence_file' => $request->old_licence_file ?? 'N/A',
+    'has new file' => $request->hasFile('licence_file') ? 'yes' : 'no',
+]);
+
+$userToUpdate->documents()->updateOrCreate(
+
             ['user_id' => $userToUpdate->id], // Unique identifying condition
 
             [   //Fields to update or set
@@ -463,13 +499,19 @@ class UserController extends Controller
                 'licence_file' => $licenceFilePath ?? null,
                 'licence_expiry_date' => $request->licence_expiry_date ?? null,
                 'licence_non_expiring' => $request->has('non_expiring_licence') ? 1 : 0,
-                'licence_file_uploaded' => $licenceFileUploaded ?? $document?->licence_file_uploaded,
+                'licence_file_uploaded' => $request->hasFile('licence_file')
+                ? true
+                : ($document?->licence_file_uploaded ?? false),
+
 
                 'licence_2' => $request->licence_2 ?? null,
                 'licence_file_2' => $licenceFilePath_2 ?? null,
                 'licence_expiry_date_2' => $request->licence_expiry_date_2 ?? null,
                 'licence_non_expiring_2' => $request->has('non_expiring_licence_2') ? 1 : 0,
-                'licence_file_uploaded_2' => $licenceFileUploaded_2 ?? $document?->licence_file_uploaded_2,    
+                'licence_file_uploaded_2' => $request->hasFile('licence_file_2')
+                ? true
+                : ($document?->licence_file_uploaded_2 ?? false),
+    
 
                 'passport' => $request->passport ?? null,
                 'passport_expiry_date' => $request->passport_expiry_date ?? null,
@@ -734,18 +776,47 @@ class UserController extends Controller
                 'medical_file_uploaded_2' => $medicalFileUploaded_2
             ]);
 
-            // Save ratings in 'user_ratings' table
-            if ($request->has('rating') && is_array($request->rating)) {
-                foreach ($request->rating as $ratingId) {
-                    UserRating::create([
-                        'user_id' => $store->id,
-                        'rating_id' => $ratingId,
-                        'issue_date' => null,     // you can set default/null or extend your form to collect this
-                        'expiry_date' => null,
-                        'file_path' => null,
-                    ]);
-                }
-            }
+              // ✅ Save general ratings (already present — leave untouched)
+    if ($request->has('rating') && is_array($request->rating)) {
+        foreach ($request->rating as $ratingId) {
+            UserRating::create([
+                'user_id'    => $store->id,
+                'rating_id'  => $ratingId,
+                'issue_date' => null,
+                'expiry_date'=> null,
+                'file_path'  => null,
+                'linked_to'  => 'general' // optional, if you want to differentiate
+            ]);
+        }
+    }
+
+    // ✅ NEW: Save Licence 1 Ratings
+    if ($request->has('licence_1_ratings') && is_array($request->licence_1_ratings)) {
+        foreach ($request->licence_1_ratings as $ratingId) {
+            UserRating::create([
+                'user_id'    => $store->id,
+                'rating_id'  => $ratingId,
+                'issue_date' => null,
+                'expiry_date'=> null,
+                'file_path'  => null,
+                'linked_to'  => 'licence_1'
+            ]);
+        }
+    }
+
+    // ✅ NEW: Save Licence 2 Ratings
+    if ($request->has('licence_2_ratings') && is_array($request->licence_2_ratings)) {
+        foreach ($request->licence_2_ratings as $ratingId) {
+            UserRating::create([
+                'user_id'    => $store->id,
+                'rating_id'  => $ratingId,
+                'issue_date' => null,
+                'expiry_date'=> null,
+                'file_path'  => null,
+                'linked_to'  => 'licence_2'
+            ]);
+        }
+    }
     
             // Generate password to send in the email
             $password = $request->password;
@@ -787,14 +858,14 @@ class UserController extends Controller
                         }
                     }
                 ],
-                'edit_rating' => $request->has('edit_rating_checkbox') ? 'required|array|min:1' : 'nullable',
+                'general_ratings' => $request->has('edit_rating_checkbox') ? 'required|array|min:1' : 'nullable',
             ], [
                 'edit_firstname.required' => 'The First Name is required',
                 'edit_lastname.required' => 'The Last Name is required',
                 'edit_email.required' => 'The Email is required',
                 'edit_email.email' => 'Please enter a valid Email',
                 'password' => 'The password and confirm password do not match.',
-                'edit_rating' => 'Rating is required',
+                'general_ratings' => 'Rating is required',
             ]);
 
             // Handle Image Upload
@@ -1038,31 +1109,25 @@ class UserController extends Controller
             
 
             // === Handle User Ratings (NEW) ===
-            if ($request->has('edit_rating_checkbox')) {
-                $selectedRatingIds = $request->input('edit_rating', []);
+            // === Handle User Ratings with Linked Flag ===
+                UserRating::where('user_id', $userToUpdate->id)->delete(); // Remove all existing ratings
 
-                // Fetch current ratings from DB
-                $existingRatings = UserRating::where('user_id', $userToUpdate->id)->pluck('rating_id')->toArray();
+                $ratingsData = [
+                    'licence_1' => $request->input('licence_1_ratings', []),
+                    'licence_2' => $request->input('licence_2_ratings', []),
+                    'general'   => $request->input('general_ratings', []),
+                ];
+               foreach ($ratingsData as $linkedTo => $ratingIds) {
+                    foreach ($ratingIds as $ratingId) {
+                        \Log::info("Saving rating {$ratingId} linked to {$linkedTo}");
 
-                // Determine ratings to add
-                $ratingsToAdd = array_diff($selectedRatingIds, $existingRatings);
-
-                // Determine ratings to remove
-                $ratingsToRemove = array_diff($existingRatings, $selectedRatingIds);
-
-                // Add new ratings
-                foreach ($ratingsToAdd as $ratingId) {
-                    UserRating::create([
-                        'user_id' => $userToUpdate->id,
-                        'rating_id' => $ratingId
-                    ]);
+                        UserRating::create([
+                            'user_id'   => $userToUpdate->id,
+                            'rating_id' => $ratingId,
+                            'linked_to' => $linkedTo,
+                        ]);
+                    }
                 }
-
-                // Remove unselected ratings
-                UserRating::where('user_id', $userToUpdate->id)
-                    ->whereIn('rating_id', $ratingsToRemove)
-                    ->delete();
-            }
 
             // Log Changes
             if (!empty($changes)) {
@@ -1078,16 +1143,27 @@ class UserController extends Controller
     }
 
 
-    public function getUserById(Request $request) 
+        public function getUserById(Request $request) 
     {
         $user = User::with('usrRatings', 'documents')->find(decode_id($request->id));
-        
+
         if (!$user) {
             return response()->json(['error' => 'User not found']);
         }
-    
-        return response()->json(['user' => $user]);
+
+        $userRatings = $user->usrRatings
+            ->groupBy('linked_to')
+            ->map(function ($items) {
+                return $items->pluck('rating_id')->values();
+            })
+            ->toArray(); 
+
+        return response()->json([
+            'user' => $user,
+            'user_ratings' => $userRatings
+        ]);
     }
+
     
 
     public function destroy(Request $request)
@@ -1290,76 +1366,355 @@ class UserController extends Controller
         ], 200);
     }
 
-    //Rating Methods
-    public function showRating()
-    {
-        $ratings = Rating::all();
-        return view('users.ratings.show', compact('ratings'));
-    } 
+public function showRating()
+{
+    $allRatings = Rating::all(); // All ratings (from ratings table)
+    $organizationUnits = OrganizationUnits::all(); // For UI context
 
-    public function saveRating(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|unique:ratings,name,NULL,id,deleted_at,NULL',
-            'status' => 'required|boolean',
+    // Group parent-child mappings from parent_rating table
+    $parentRelations = ParentRating::all()->groupBy('parent_id');
+
+    $ratingDropdownOptions = collect(); // To store formatted dropdown items
+    $usedIds = collect(); // To track already added children
+
+    // Build hierarchy from parent_rating
+    $this->buildFullHierarchy($parentRelations, $allRatings, null, 0, $ratingDropdownOptions, $usedIds);
+
+    // Add orphan ratings (those not in parent_rating table as children)
+    $remaining = $allRatings->whereNotIn('id', $usedIds);
+    foreach ($remaining as $rating) {
+        $ratingDropdownOptions->push((object)[
+            'id' => $rating->id,
+            'name' => e($rating->name),
+            'parent_id' => null,
+            'ou_id' => $rating->ou_id ?? null,
         ]);
-    
-        Rating::create($request->only('name', 'status'));
-    
-        Session::flash('message', 'Rating saved successfully');
-        return response()->json(['success' => true, 'msg'=> 'Rating saved successfully.']);
     }
 
-    public function getRating(Request $request)
-    {
-       $rating = Rating::find(decode_id($request->rating_id));
-       if($rating){
-            return response()->json(['success'=> true,'rating'=> $rating]);
-       }else{
-            return response()->json(['success'=> false,'msg'=> 'Rating not gound']);            
-       }
+    return view('users.ratings.show', [ 
+        'ratings' => $allRatings->groupBy('name'),
+        'ratingDropdownOptions' => $allRatings,
+        'organizationUnits' => $organizationUnits
+    ]);
+}
+
+
+
+private function buildFullHierarchy($relations, $allRatings, $parentId, $depth, &$result, &$usedIds)
+{
+    if (!isset($relations[$parentId])) {
+        return;
     }
 
-    public function updateRating(Request $request)
-    {
-        $request->validate([
-            'rating_id' => 'required|integer',
-            'name' => 'required|string|unique:ratings,name,' . $request->rating_id . ',id,deleted_at,NULL',
-            'status' => 'required|in:0,1',
+    foreach ($relations[$parentId] as $relation) {
+        $childRating = $allRatings->firstWhere('id', $relation->rating_id);
+        if (!$childRating) continue;
+
+        $indent = str_repeat('&nbsp;&nbsp;&nbsp;', $depth);
+        $arrow = $depth > 0 ? '↳ ' : '';
+        $name = is_object($childRating->name) ? ($childRating->name->en ?? '') : $childRating->name;
+
+        $result->push((object)[
+            'id' => $childRating->id,
+            'name' => $indent . $arrow . e($name),
+            'ou_id' => $childRating->ou_id ?? null,
         ]);
-    
-        $rating = Rating::find($request->rating_id);
-    
-        if ($rating) {
-            $rating->update([
-                'name' => $request->name,
-                'status' => $request->status,
-            ]);
-    
-            Session::flash('message', 'Rating updated successfully.');
-    
-            return response()->json([
-                'success' => true,
-                'msg' => 'Rating updated successfully.'
-            ]);
-        } else {
-            return response()->json([
-                'success' => false,
-                'msg' => 'Rating not found.'
+
+        $usedIds->push($childRating->id);
+
+        $this->buildFullHierarchy($relations, $allRatings, $childRating->id, $depth + 1, $result, $usedIds);
+    }
+}
+
+
+public function saveRating(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|unique:ratings,name,NULL,id,deleted_at,NULL',
+        'status' => 'required|boolean',
+        'kind_of_rating' => 'required|string|in:type_rating,class_rating,instrument_rating,instructor_rating,examiner_rating,others',
+    ]);
+
+    // Create new rating
+    $rating = Rating::create([
+        'name' => $request->name,
+        'status' => $request->status,
+        'kind_of_rating' => $request->kind_of_rating,
+        'is_fixed_wing' => $request->has('is_fixed_wing'),
+        'is_rotary' => $request->has('is_rotary'),
+        'is_instructor' => $request->has('is_instructor'),
+        'is_examiner' => $request->has('is_examiner'),
+        'ou_id' => NULL
+    ]);
+
+    // Save multiple parent relationships
+    $parentIds = $request->input('parent_id', []);
+    foreach ($parentIds as $parentId) {
+        if ($parentId) {
+            ParentRating::create([
+                'rating_id' => $rating->id,
+                'parent_id' => $parentId,
             ]);
         }
     }
 
-    public function deleteRating(Request $request)
-    {
-        $rating = Rating::findOrFail(decode_id($request->rating_id));        
-        if ($rating) {
-            $rating->delete();
-            return redirect()->route('users.rating')->with('message', 'Rating deleted successfully.');
+    Session::flash('message', 'Rating saved successfully');
+    return response()->json(['success' => true, 'msg' => 'Rating saved successfully.']);
+}
+
+public function getRating(Request $request)
+{
+    $mainRating = Rating::find(decode_id($request->rating_id));
+
+    if ($mainRating) {
+        // Get all ratings with same name (e.g. different versions)
+        $relatedRatings = Rating::where('name', $mainRating->name)->get();
+        $relatedIds = $relatedRatings->pluck('id')->toArray();
+
+        // Get selected parent IDs from parent_rating table (NOT from ratings table!)
+        $selectedParentIds = ParentRating::whereIn('rating_id', $relatedIds)
+                                    ->pluck('parent_id')->filter()->unique()->values()->all();
+
+        $allRatings = Rating::all();
+        $relations = \App\Models\ParentRating::all()->groupBy('parent_id');
+
+        $ratingDropdownOptions = collect();
+        $usedIds = collect();
+        $this->buildFullHierarchy($relations, $allRatings, null, 0, $ratingDropdownOptions, $usedIds);
+
+        // Add orphan ratings (not in parent_rating)
+        $remaining = $allRatings->whereNotIn('id', $usedIds);
+        foreach ($remaining as $rating) {
+            $ratingDropdownOptions->push((object)[
+                'id' => $rating->id,
+                'name' => e($rating->name),
+                'parent_id' => null,
+                'ou_id' => $rating->ou_id ?? null,
+            ]);
         }
-        return redirect()->route('users.rating')->with('error', 'Rating not found.');
+
+        return response()->json([
+            'success' => true,
+            'rating' => $mainRating,
+            'selected' => $selectedParentIds,
+            'dropdown' => $ratingDropdownOptions->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => strip_tags(html_entity_decode($item->name)),
+                ];
+            }),
+        ]);
+    } else {
+        return response()->json([
+            'success' => false,
+            'msg' => 'Rating not found',
+        ]);
+    }
+}
+
+
+   public function updateRating(Request $request)
+{
+    $request->validate([
+        'rating_id' => 'required|integer',
+        'name' => 'required|string|unique:ratings,name,' . $request->rating_id . ',id,deleted_at,NULL',
+        'status' => 'required|in:0,1',
+        'kind_of_rating' => 'required|string|in:type_rating,class_rating,instrument_rating,instructor_rating,examiner_rating,others',
+    ]);
+
+    $rating = Rating::find($request->rating_id);
+
+    if ($rating) {
+        // Update rating details
+        $rating->update([
+            'name' => $request->name,
+            'status' => $request->status,
+            'kind_of_rating' => $request->kind_of_rating,
+            'is_fixed_wing' => $request->has('is_fixed_wing'),
+            'is_rotary' => $request->has('is_rotary'),
+            'is_instructor' => $request->has('is_instructor'),
+            'is_examiner' => $request->has('is_examiner'),
+            'ou_id' => $request->ou_id ?? null,
+        ]);
+
+        // Delete old parent relations for this rating
+        ParentRating::where('rating_id', $rating->id)->delete();
+
+        // Save new parent relationships
+        $parentIds = $request->input('parent_id', []);
+        foreach ($parentIds as $parentId) {
+            if ($parentId) {
+                ParentRating::create([
+                    'rating_id' => $rating->id,
+                    'parent_id' => $parentId,
+                ]);
+            }
+        }
+
+        Session::flash('message', 'Rating updated successfully.');
+
+        return response()->json([
+            'success' => true,
+            'msg' => 'Rating updated successfully.'
+        ]);
+    } else {
+        return response()->json([
+            'success' => false,
+            'msg' => 'Rating not found.'
+        ]);
+    }
+}
+
+  public function deleteRating(Request $request)
+{
+    $rating = Rating::findOrFail(decode_id($request->rating_id));
+
+    if ($rating) {
+        // Soft delete all parent-child mappings involving this rating
+        ParentRating::where('rating_id', $rating->id)
+            ->orWhere('parent_id', $rating->id)
+            ->get()
+            ->each(function ($relation) {
+                $relation->delete(); // Uses soft delete
+            });
+
+        // Soft delete the rating
+        $rating->delete();
+
+        return redirect()->route('users.rating')->with('message', 'Rating and its hierarchy soft deleted successfully.');
+    }
+
+    return redirect()->route('users.rating')->with('error', 'Rating not found.');
+}
+
+public function getRatingsByOU(Request $request)
+{
+    $ouId = $request->ou_id;
+    $ratingId = decode_id($request->rating_id);
+    $selectedParents = is_array($request->selected_parents) ? array_map('intval', $request->selected_parents) : [];
+
+    $allRatings = Rating::query()
+        ->when($ouId, fn($q) => $q->where('ou_id', $ouId))
+        ->get();
+
+    $relations = ParentRating::all()->groupBy('parent_id');
+    $dropdownOptions = collect();
+    $usedIds = collect();
+
+    $this->buildFullHierarchy($relations, $allRatings, null, 0, $dropdownOptions, $usedIds);
+
+    // Add selected parents even if not part of current OU
+    $missing = Rating::whereIn('id', $selectedParents)->whereNotIn('id', $usedIds)->get();
+    foreach ($missing as $rating) {
+        $dropdownOptions->push((object)[
+            'id' => $rating->id,
+            'name' => '↳ ' . e($rating->name),
+            'ou_id' => $rating->ou_id
+        ]);
+    }
+
+    return response()->json([
+        'success' => true,
+        'selected' => array_map('strval', $selectedParents),
+        'dropdown' => $dropdownOptions->map(fn($item) => [
+            'id' => $item->id,
+            'name' => strip_tags(html_entity_decode($item->name)),
+        ]),
+    ]);
+}
+
+public function ou_rating()
+{
+    $allRatings = Rating::all(); // All ratings (from ratings table)
+    $organizationUnits = OrganizationUnits::all(); // For UI context
+
+    // Group parent-child mappings from parent_rating table
+    $parentRelations = ParentRating::all()->groupBy('parent_id');
+
+    $ratingDropdownOptions = collect(); // To store formatted dropdown items
+    $usedIds = collect(); // To track already added children
+
+    // Build hierarchy from parent_rating
+    $this->buildFullHierarchy($parentRelations, $allRatings, null, 0, $ratingDropdownOptions, $usedIds);
+
+     $ou_id = auth()->user()->ou_id;
+
+    // Get selected rating IDs for current OU
+    $selectedRatingIds = OuRating::where('ou_id', $ou_id)->pluck('rating_id')->toArray();
+
+    return view('users.ou_show_rating', [
+        'ratings' => $allRatings->groupBy('name'),
+        'ratingDropdownOptions' => $allRatings,
+        'organizationUnits' => $organizationUnits,
+        'selectedRatingIds' => $selectedRatingIds
+    ]);
+
+
+}
+
+public function select_rating(Request $request)
+{
+    $rating_id = decode_id($request->rating_id);
+    $ou_id     = auth()->user()->ou_id;
+
+    // Check if rating already exists for this OU
+    $exists = OuRating::where('rating_id', $rating_id)
+                      ->where('ou_id', $ou_id)
+                      ->exists();
+
+    if ($exists) {
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Rating already selected for this OU.'
+        ]);
+    }
+
+    // Save the new rating
+    $store_ou_rating = OuRating::create([
+        'rating_id' => $rating_id,
+        'ou_id'     => $ou_id
+    ]);
+
+    if ($store_ou_rating) {
+         Session::flash('message', 'Rating saved successfully');
+        return response()->json([
+            'success' => true,
+            'message' => 'Rating selected successfully.'
+        ]);
     }
     
+    return response()->json([
+        'success' => false,
+        'message' => 'Failed to select rating.'
+    ]);
+}
+
+public function deselect_rating(Request $request)
+{
+    $rating_id = decode_id($request->rating_id);
+    $ou_id = auth()->user()->ou_id;
+
+    $deleted = OuRating::where('rating_id', $rating_id)
+                       ->where('ou_id', $ou_id)
+                       ->delete();
+
+    if ($deleted) {
+         Session::flash('message', 'Rating removed successfully');
+        return response()->json([
+            'success' => true,
+            'message' => 'Rating deselected successfully.'
+        ]);
+    }
+    
+    return response()->json([
+        'success' => false,
+        'message' => 'Failed to deselect rating or it was not found.'
+    ]);
+}
+
+
+
     
 
 

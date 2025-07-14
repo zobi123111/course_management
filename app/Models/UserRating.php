@@ -19,6 +19,7 @@ class UserRating extends Model
         'expiry_date',
         'file_path',
         'admin_verified',
+        'linked_to'
     ];
 
 

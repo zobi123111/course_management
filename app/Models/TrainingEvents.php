@@ -19,6 +19,7 @@ class TrainingEvents extends Model
         'resource_id',
         'lesson_ids',
         'event_date',
+        'course_end_date',
         'start_time',
         'end_time',
         'departure_airfield',
@@ -85,9 +86,19 @@ class TrainingEvents extends Model
     }
 
     // In App\Models\TrainingEvents
+    
+    // public function eventLessons()
+    // {
+    //     return $this->hasMany(TrainingEventLessons::class, 'training_event_id', 'id');
+    // }
+
     public function eventLessons()
     {
-        return $this->hasMany(TrainingEventLessons::class, 'training_event_id', 'id');
+        return $this->hasMany(TrainingEventLessons::class, 'training_event_id', 'id')
+            ->join('course_lessons', 'training_event_lessons.lesson_id', '=', 'course_lessons.id') 
+            ->join('resources', 'training_event_lessons.resource_id', '=', 'resources.id')
+            ->orderBy('course_lessons.position')
+            ->select('training_event_lessons.*', 'resources.name as resource_name');
     }
 
     public function trainingFeedbacks()
@@ -107,7 +118,60 @@ class TrainingEvents extends Model
 
     public function getIsGradedAttribute()
     {
-    return $this->task_gradings_count > 0 && $this->competency_gradings_count > 0;
+        return $this->task_gradings_count > 0 && $this->competency_gradings_count > 0;
+    }
+
+    public function getCanEndCourseAttribute()
+    {
+        $studentId = $this->student_id;
+
+        // A. Check if all sub-lessons have grading
+        $allTasksGraded = $this->eventLessons->every(function ($eventLesson) use ($studentId) {
+            return $eventLesson->lesson->subLessons->every(function ($subLesson) use ($eventLesson, $studentId) {
+                return \App\Models\TaskGrading::where([
+                    'event_id'      => $eventLesson->training_event_id,
+                    'lesson_id'     => $eventLesson->lesson_id,
+                    'sub_lesson_id' => $subLesson->id,
+                    'user_id'       => $studentId,
+                ])->exists();
+            });
+        });
+
+        // B. Check competency grading if enabled for any lesson
+        $cbtaEnabled = $this->eventLessons->contains(function ($eventLesson) {
+            return $eventLesson->lesson?->enable_cbta;
+        });
+
+        $competencyOk = true;
+
+        if ($cbtaEnabled) {
+            $grading = \App\Models\CompetencyGrading::where([
+                'event_id' => $this->id,
+                'user_id'  => $studentId,
+            ])->first();
+
+            $competencyOk = $grading &&
+                $grading->kno_grade !== null &&
+                $grading->pro_grade !== null &&
+                $grading->com_grade !== null &&
+                $grading->fpa_grade !== null &&
+                $grading->fpm_grade !== null &&
+                $grading->ltw_grade !== null &&
+                $grading->psd_grade !== null &&
+                $grading->saw_grade !== null &&
+                $grading->wlm_grade !== null;
+        }
+
+        // C. Check overall assessment for one_event courses
+        $assessmentOk = true;
+
+        if ($this->course?->course_type === 'one_event') {
+            $assessmentOk = $this->overallAssessments()
+                ->where('user_id', $studentId)
+                ->exists();
+        }
+
+        return $allTasksGraded && $competencyOk && $assessmentOk && !$this->is_locked;
     }
 
 
