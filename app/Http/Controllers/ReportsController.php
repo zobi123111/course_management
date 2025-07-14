@@ -33,21 +33,33 @@ class ReportsController extends Controller
 
         foreach ($courses as $course) {
             $events = $course->trainingEvents;
-
-            // Only keep training events with a valid (non-deleted) student
             $validEvents = $events->filter(function ($event) {
                 return $event->student !== null;
             });
-
-            // Count only valid student IDs
             $enrolledStudentIds = $validEvents->pluck('student_id')->unique();
-            $completedStudentIds = $events
-                ->filter(fn($event) => !empty($event->course_end_date))
-                ->pluck('student_id')->unique();
+            $completedStudentIds = collect();
+            foreach ($validEvents as $event) {
+                $student = $event->student;
+                if (!$student) continue;
+                if (!empty($event->course_end_date)) {
+                    $completedStudentIds->push($student->id);
+                    continue;
+                }
+                $grades = TaskGrading::where('user_id', $student->id)
+                    ->when($event->id, fn($q) => $q->where('event_id', $event->id))
+                    ->pluck('task_grade')
+                    ->map(fn($g) => strtolower((string) $g));
+                $total = $grades->count();
+                $incomplete = $grades->filter(fn($g) => in_array($g, ['1', 'incomplete']))->count();
+                $further = $grades->filter(fn($g) => in_array($g, ['2', 'further training required']))->count();
+                if ($incomplete == 0 && $further == 0 && $total > 0) {
+                    $completedStudentIds->push($student->id);
+                }
+            }
 
             $course->students_enrolled = $enrolledStudentIds->count();
-            $course->students_completed = $completedStudentIds->count();
-            $course->students_active = $enrolledStudentIds->diff($completedStudentIds)->count();
+            $course->students_completed = $completedStudentIds->unique()->count(); // Updated
+            $course->students_active = $enrolledStudentIds->diff($completedStudentIds->unique())->count(); // Updated
         }
 
         $ous = $user->is_owner ? OrganizationUnits::select('id', 'org_unit_name')->get() : [];
