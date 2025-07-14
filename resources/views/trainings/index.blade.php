@@ -1021,9 +1021,6 @@ $(document).ready(function() {
                         <input type="text" name="lesson_data[${currentIndex}][instructor_license_number]" class="form-control" value="${instructor_license_number}" readonly>
                         <div id="lesson_data_${currentIndex}_instructor_license_number${errorSuffix}" class="text-danger error_e"></div>
                     </div>
-                    <div class="col-md-12 total-simulator-time-box" style="display:none;">
-                        <label class="form-label fw-bold">Total Simulator Time: <span class="simulator-total-time">00:00</span> hrs</label>
-                    </div>
                 </div>
             </div>
         `;
