@@ -31,7 +31,7 @@
         <hr>
 
 
-        <div class="section">
+            <div class="section">
             <strong>Date:</strong> {{ date('M d, Y', strtotime($eventLesson?->lesson_date)) }}<br>
             <strong>Student Name:</strong> {{ $event?->student?->fname }} {{ $event?->student?->lname }}<br>
             <strong>Instructor Name:</strong> {{ $eventLesson?->instructor?->fname }} {{ $eventLesson?->instructor?->lname }}<br>
@@ -39,11 +39,24 @@
             <strong>End Time:</strong> {{ date('h:i A', strtotime($eventLesson?->end_time)) }}<br>
             <strong>Total Lesson Time:</strong> {{ \Carbon\Carbon::parse($eventLesson?->end_time)->diffInMinutes(\Carbon\Carbon::parse($eventLesson?->start_time)) }} minutes<br>
             <strong>Departure Airfield:</strong> {{ $eventLesson?->departure_airfield ?? 'N/A' }}<br>
-            <strong>Destination Airfield:</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}
+            <strong>Destination Airfield:</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}<br>
+
+            <strong>Resource :</strong> {{ $eventLesson?->resource_name ?? 'N/A' }}<br>
+            @php
+                $resource = $eventLesson?->resource ?? $event?->resource;
+            @endphp
+            @if ($resource)
+                <strong>Aircraft:</strong> {{ $resource->type ?? $resource->class ?? 'N/A' }}<br>
+                <strong>Reg:</strong> {{ $resource->registration ?? 'N/A' }}<br>
+            @else
+                <strong>Aircraft:</strong> N/A<br>
+                <strong>Reg:</strong> N/A<br>
+            @endif
         </div>
 
         <div class="section">
             <h2>Tasks Completed</h2>
+            @if($event->taskGradings->isNotEmpty() && $event->taskGradings->contains('subLesson'))
             <table>
                 <thead>
                     <tr>
@@ -68,6 +81,9 @@
                     @endforeach
                 </tbody>
             </table>
+            @else
+                <p><strong>No Data Available</strong></p>
+            @endif
         </div>
 
         @if($event->competencyGradings->isNotEmpty())
