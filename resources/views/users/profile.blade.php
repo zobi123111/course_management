@@ -96,6 +96,19 @@
     .add_btn {
         width: 30% !important;
     }
+
+    .card-header {
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
+
+    .card-title {
+        margin-bottom: 0.5rem;
+    }
+
+    .list-group-item {
+        font-size: 1rem;
+    }
 </style>
 
 <div class="main_cont_outer">
@@ -261,14 +274,16 @@
                                         @endphp
                                         @if($hasLicence1)
                                         @foreach($licence1Ratings as $userRating)
+
                                         @if($userRating->linked_to !== 'licence_1')
                                         @continue
                                         @endif
+                                        
                                         @php $rating = $userRating->rating; @endphp
                                         <div class="row mt-3" style="margin-right: 5px;">
                                             <div class="col-12 border p-4 mb-4 rounded shadow-sm bg-white">
                                                 <div class="d-flex justify-content-between align-items-center">
-                                                    <h5 class="mb-0">{{ $rating->name }}</h5>
+                                                    <h5 class="mb-0">{{ $userRating['parent']['name'] }}</h5>
                                                     @if($userRating->admin_verified)
                                                     <span class="text-success ms-3">
                                                         <i class="bi bi-check-circle-fill"></i> Verified
@@ -278,7 +293,7 @@
 
                                                 {{-- Issue Date --}}
                                                 <label class="form-label mt-3" for="issue_date_{{ $rating->id }}">
-                                                    <strong>{{ $rating->name }} Issue Date</strong>
+                                                    <strong>{{$userRating['parent']['name']}} Issue Date</strong>
                                                 </label>
                                                 <input type="date"
                                                     name="issue_date[{{ $rating->id }}]"
@@ -289,7 +304,7 @@
 
                                                 {{-- Expiry Date --}}
                                                 <label class="form-label mt-3" for="expiry_date_{{ $rating->id }}">
-                                                    <strong>{{ $rating->name }} Expiry Date</strong>
+                                                    <strong>{{ $userRating['parent']['name'] }} Expiry Date</strong>
                                                     @php $status = $userRating->expiry_status; @endphp
                                                     @if($status === 'Red')
                                                     <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Expired</span>
@@ -310,7 +325,7 @@
 
                                                 {{-- File Upload --}}
                                                 <label class="form-label mt-3" for="rating_file_{{ $rating->id }}">
-                                                    <strong>{{ $rating->name }} File Upload</strong>
+                                                    <strong>{{ $userRating['parent']['name'] }} File Upload</strong>
                                                 </label>
                                                 <input type="file"
                                                     name="rating_file[{{ $rating->id }}]"
@@ -327,14 +342,16 @@
                                                     <i class="bi bi-file-earmark-text me-1"></i> View File
                                                 </a>
                                                 @endif
-
+                                                  {{ $userRating['rating']['name'] }}
                                                 @php
                                                 // Load all ratings keyed by ID
                                                 $allRatings = \App\Models\Rating::with('children')->get()->keyBy('id');
 
                                                 // Build a group of children by parent_id from the parent_rating table
-                                                $allGroupedByParent = \App\Models\ParentRating::all()
-                                                ->groupBy('parent_id');
+                                             
+                                                $allGroupedByParent = \App\Models\UserRating::with('rating')->get()
+                                                    ->groupBy('parent_id');
+
 
                                                 // Map user ratings by rating_id
                                                 $userRatingsMap = $user->usrRatings->keyBy('rating_id');
@@ -350,10 +367,9 @@
 
                                                 // Skip if this rating is itself a child
                                                 if ($rating->parent_id !== null) continue;
-
                                                 $childRatings = $allGroupedByParent[$rating->id] ?? collect();
-
                                                 @endphp
+                                              {{ $allGroupedByParent }}
 
                                                 @if($childRatings->isNotEmpty())
                                                 <h6 class="mt-4">Associated Ratings</h6>
@@ -478,6 +494,7 @@
 
                                         @php
                                         $userRatingsMap = $user->usrRatings->where('linked_to', 'licence_2')->keyBy('rating_id');
+                                       
 
                                         // Get IDs of selected ratings
                                         $selectedRatingIds = $userRatingsMap->keys();
@@ -487,8 +504,9 @@
 
                                         // Get all selected user ratings with loaded rating
                                         $licence2Ratings = $user->usrRatings->where('linked_to', 'licence_2')->load('rating');
+                                        
                                         @endphp
-
+                                     
                                         @if($licence2Ratings->isNotEmpty())
                                         <h4 class="mt-4">Ratings linked to EASA Licence</h4>
                                         <div class="row mt-3" style="margin-left: 5px;">
@@ -496,12 +514,13 @@
                                             @php
                                             $rating = $userRating->rating;
 
+
                                             // CASE 1: If parent is selected, show parent + all children
                                             if ($rating->parent_id === null) {
                                             $childRatings = $allChildRatings[$rating->id] ?? collect();
                                             $parentUserRating = $userRating;
                                             @endphp
-
+                                             {{ $rating }}
                                             {{-- Parent Rating Block --}}
                                             <div class="col-12 border p-4 mb-4 rounded shadow-sm bg-white">
                                                 <div class="d-flex justify-content-between align-items-center">
@@ -597,7 +616,7 @@
                                             <div class="col-md-6 mb-4">
                                                 <div class="card border p-3 shadow-sm h-100">
                                                     <div class="card-body">
-                                                        <h5 class="card-title">{{ $rating->name }}</h5>
+                                                        <h5 class="card-title">{{ $rating['parent']['name'] }}</h5>
 
                                                         <label class="form-label mt-2"><strong>Issue Date</strong></label>
                                                         <input type="date" name="issue_date[{{ $rating->id }}]" class="form-control"
@@ -1034,32 +1053,7 @@
 @section('js_scripts')
 
 <script>
-    // $('#add_second_licence_btn').on('click', function () {
-    //     $('#second_licence_section').toggle();
-    // });
-
-    // $('#add_second_medical_btn').on('click', function () {
-    //         const section = $('#edit_second_medical_section');
-    //         const isVisible = section.is(':visible');
-
-    //         section.toggle();
-
-    //         if (isVisible) {
-    //             $('#issued_by_2, #medical_class_2, #medical_issue_date_2, #medical_expiry_date_2, #medical_detail_2, #medical_file_2').val('');
-    //         }
-    //     });
-
     $(document).ready(function() {
-
-        // document.getElementById('add_second_licence_btn').addEventListener('click', function () {
-        //     var section = document.getElementById('second_licence_section');
-        //     section.style.display = section.style.display === 'none' ? 'block' : 'none';
-        // });
-
-        // $('#add_second_licence_btn').on('click', function () {
-        //     $('#second_licence_section').toggle();
-        // });
-
         function toggleFields() {
             const isNonExpiringChecked = $('#non_expiring_licence').prop('checked');
             const isNonExpiringChecked_2 = $('#non_expiring_licence_2').prop('checked');

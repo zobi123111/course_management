@@ -178,7 +178,7 @@ class UserController extends Controller
         $id = auth()->id();
 
         // Fetch the user along with their related ratings
-        $user = User::with('usrRatings.rating', 'documents')->findOrFail($id);
+        $user = User::with('usrRatings.parent', 'documents')->findOrFail($id);
         // dd($user);
         // Extract the related ratings from the user ratings
         $ratings = $user->usrRatings->map(function ($userRating) {
@@ -192,6 +192,42 @@ class UserController extends Controller
         $licence2Ratings = $user->usrRatings->filter(function ($userRating) {
             return $userRating->linked_to === 'licence_2';
         });
+
+      
+
+                $userRatingsLicence1 = UserRating::where('user_id', $id)
+                ->where('linked_to', 'licence_1')
+                ->with('rating') // Eager load child rating
+                ->get();
+
+// Step 2: Group by parent_id and extract only child rating names
+                $licence1_child = $userRatingsLicence1
+                    ->groupBy('parent_id')
+                    ->map(function ($group) {
+                        return [
+                            'parent_id' => $group[0]->parent_id,
+                            'children'  => $group->pluck('rating.name')->filter()->values()
+                        ];
+                    })->values();
+
+             
+
+
+        // $userRatingsLicence2 = UserRating::where('user_id', $id)
+        //                        ->where('linked_to', 'licence_2')
+        //                        ->get();
+
+        //   $licence2Ratings = $userRatingsLicence2
+        //                         ->groupBy('parent_id')
+        //                         ->map(function ($group) {
+        //                                 return [
+        //                                     'parent_id' => ($group[0]->parent_id),
+        //                                     'children'  => $group->pluck('rating_id')->filter()->values() 
+        //                                     ];
+        //                          })->values();
+
+
+      
 
         return view('users.profile', compact('user', 'ratings', 'licence1Ratings', 'licence2Ratings')); 
     }

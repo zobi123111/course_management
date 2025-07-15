@@ -17,7 +17,7 @@ class UserRating extends Model
         'rating_id',
         'parent_id',
         'issue_date',
-        'expiry_date',
+        'expiry_date', 
         'file_path',
         'admin_verified',
         'linked_to'
@@ -58,6 +58,11 @@ class UserRating extends Model
      * Get the rating details.
      */
     public function rating()
+    {
+        return $this->belongsTo(Rating::class);
+    }
+
+    public function parent()
     {
         return $this->belongsTo(Rating::class);
     }

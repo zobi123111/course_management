@@ -59,7 +59,7 @@ public function ou_ratings(): HasMany
      return $this->hasMany(OuRating::class);
 }
 
-public function childRatings()
+public function childRatings() 
 {
     return $this->hasManyThrough(
         Rating::class,
