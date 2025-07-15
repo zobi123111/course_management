@@ -350,6 +350,7 @@ class TrainingEventsController extends Controller
             'simulator_time' => $request->total_simulator_time ?? '00:00',
             'std_license_number' => $request->std_licence_number,
             'ou_id' => auth()->user()->is_owner ? $request->ou_id : auth()->user()->ou_id,
+            'entry_source' => $request->entry_source,
         ]);
 
         // Loop through lesson data
