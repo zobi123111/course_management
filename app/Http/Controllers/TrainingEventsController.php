@@ -1038,6 +1038,7 @@ class TrainingEventsController extends Controller
             'orgUnit:id,org_unit_name,org_logo',
             'instructor:id,fname,lname',
             'student:id,fname,lname',
+            'resource:id,name,type,class,registration',
             'eventLessons' => function ($query) use ($lesson_id) {
                 $query->where('lesson_id', $lesson_id);
             },
@@ -1054,6 +1055,7 @@ class TrainingEventsController extends Controller
                 $query->where('user_id', $userId);
             },
             'eventLessons.instructor:id,fname,lname',
+            'eventLessons.resource:id,id,name,type,class,registration',
         ])->findOrFail($event_id);
     
         $eventLesson = $event->eventLessons->first();
@@ -1064,15 +1066,14 @@ class TrainingEventsController extends Controller
     
         $lesson = $eventLesson->lesson;
     
-        $pdf = PDF::loadView('trainings.lesson-report', [
+        $pdf = PDF::loadView('trainings.lesson-report', [ 
             'event' => $event,
             'lesson' => $lesson,
             'eventLesson' => $eventLesson,
         ]);
     
         $filename = 'Lesson_Report_' . Str::slug($lesson->lesson_title) . '.pdf';
-    
-        return $pdf->download($filename);
+         return $pdf->download($filename); 
     }    
 
     public function uploadDocuments(Request $request, TrainingEvents $trainingEvent)

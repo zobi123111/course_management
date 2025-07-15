@@ -33,21 +33,33 @@ class ReportsController extends Controller
 
         foreach ($courses as $course) {
             $events = $course->trainingEvents;
-
-            // Only keep training events with a valid (non-deleted) student
             $validEvents = $events->filter(function ($event) {
                 return $event->student !== null;
             });
-
-            // Count only valid student IDs
             $enrolledStudentIds = $validEvents->pluck('student_id')->unique();
-            $completedStudentIds = $events
-                ->filter(fn($event) => !empty($event->course_end_date))
-                ->pluck('student_id')->unique();
+            $completedStudentIds = collect();
+            foreach ($validEvents as $event) {
+                $student = $event->student;
+                if (!$student) continue;
+                if (!empty($event->course_end_date)) {
+                    $completedStudentIds->push($student->id);
+                    continue;
+                }
+                $grades = TaskGrading::where('user_id', $student->id)
+                    ->when($event->id, fn($q) => $q->where('event_id', $event->id))
+                    ->pluck('task_grade')
+                    ->map(fn($g) => strtolower((string) $g));
+                $total = $grades->count();
+                $incomplete = $grades->filter(fn($g) => in_array($g, ['1', 'incomplete']))->count();
+                $further = $grades->filter(fn($g) => in_array($g, ['2', 'further training required']))->count();
+                if ($incomplete == 0 && $further == 0 && $total > 0) {
+                    $completedStudentIds->push($student->id);
+                }
+            }
 
             $course->students_enrolled = $enrolledStudentIds->count();
-            $course->students_completed = $completedStudentIds->count();
-            $course->students_active = $enrolledStudentIds->diff($completedStudentIds)->count();
+            $course->students_completed = $completedStudentIds->unique()->count(); // Updated
+            $course->students_active = $enrolledStudentIds->diff($completedStudentIds->unique())->count(); // Updated
         }
 
         $ous = $user->is_owner ? OrganizationUnits::select('id', 'org_unit_name')->get() : [];
@@ -136,18 +148,26 @@ class ReportsController extends Controller
                 'competent' => $grades->filter(fn($g) => in_array($g, ['3', '4', '5', 'competent']))->count(),
             ];
 
+            // Completion logic
+            $student->is_completed = false;
+            if ($student->course_end_date !== null) {
+                $student->is_completed = true;
+            } elseif ($student->progress['incomplete'] == 0 && $student->progress['further'] == 0 && $student->progress['total'] > 0) {
+                $student->is_completed = true;
+            }
+
             return $student;
         });
 
         // === Chart Data ===
         $chartData = [
             'enrolled'    => $students->count(),
-            'completed'   => $students->filter(fn($s) => !$s->is_archived && $s->course_end_date !== null)->count(),
+            'completed' => $students->filter(fn($s) => $s->is_completed)->count(),
             'active'      => $students->filter(fn($s) => !$s->is_archived && $s->course_end_date === null)->count(),
             'archived'    => $students->filter(fn($s) => $s->is_archived)->count(),
             'failing'     => $failingStudentIds->intersect($students->pluck('id'))->count(),
         ];
-
+        
         return view('reports.course_detail', compact('course', 'students', 'showArchived', 'showFailing', 'chartData'));
     }
 
@@ -196,7 +216,24 @@ class ReportsController extends Controller
 
         $chartData = [
             'enrolled'    => $students->count(),
-            'completed'   => $students->filter(fn($s) => !$s->is_archived && $s->course_end_date !== null)->count(),
+            'completed' => $students->filter(function ($s) {
+                // Consider completed if course_end_date exists OR all progress is competent
+                if ($s->course_end_date !== null) {
+                    return true;
+                }
+
+                // Fallback to check task_grading competency
+                $grades = TaskGrading::where('user_id', $s->id)
+                    ->when($s->event_id, fn($q) => $q->where('event_id', $s->event_id))
+                    ->pluck('task_grade')
+                    ->map(fn($grade) => strtolower((string) $grade));
+
+                $total = $grades->count();
+                $incomplete = $grades->filter(fn($g) => in_array($g, ['1', 'incomplete']))->count();
+                $further = $grades->filter(fn($g) => in_array($g, ['2', 'further training required']))->count();
+
+                return $total > 0 && $incomplete == 0 && $further == 0;
+            })->count(),
             'active'      => $students->filter(fn($s) => !$s->is_archived && $s->course_end_date === null)->count(),
             'archived'    => $students->filter(fn($s) => $s->is_archived)->count(),
             'failing'     => $failingStudentIds->intersect($students->pluck('id'))->count(),
