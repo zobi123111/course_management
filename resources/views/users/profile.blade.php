@@ -270,6 +270,7 @@ h2 {
                                                         @continue
                                                     @endif
                                                     @php $rating = $userRating->rating; @endphp
+                                                        @if($rating)
                                                         <div class="row mt-3" style="margin-right: 5px;">
                                                             <div class="col-12 border p-4 mb-4 rounded shadow-sm bg-white">
                                                                 <div class="d-flex justify-content-between align-items-center">
@@ -402,7 +403,8 @@ h2 {
                                                                         </div>
                                                                     @endif
                                                                 @endforeach
-                                                            </div>
+                                                        </div>
+                                                        @endif
                                                 @endforeach
                                             @endif
                                         </div>
