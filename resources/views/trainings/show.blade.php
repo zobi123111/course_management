@@ -437,6 +437,13 @@
                 <h4 class="mb-3 text-primary">
                     <i class="fas fa-calendar-alt"></i> Training Event Overview
                 </h4>
+                @if($trainingEvent->course?->duration_value)
+                    <div class="mb-3">
+                        <strong><i class="fas fa-hourglass-half"></i> Course Total Duration:</strong>
+                        <span class="badge bg-success text-white">{{ $trainingEvent->course->duration_value }} hours</span>
+                    </div>
+                @endif
+
                 @if($trainingEvent?->course?->course_type === 'one_event' && $trainingEvent->eventLessons->count())
                     @php
                         $eventLesson = $trainingEvent->eventLessons->first();
@@ -503,6 +510,34 @@
                             {{ $trainingEvent->std_license_number ?? 'N/A' }}
                         </div>
                     </div>
+
+                    @php
+                        $lessonType = $eventLesson?->lesson?->lesson_type ?? null;
+                    @endphp
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            @if($lessonType === 'groundschool')
+                                <strong><i class="fas fa-book-reader"></i> Ground School Time:</strong>
+                                <div>
+                                    <span>Duration: {{ $trainingEvent->course->groundschool_hours ?? 'N/A' }}</span> |
+                                    <span>Credited: {{ $eventLesson->hours_credited ?? '00:00' }}</span>
+                                </div>
+                            @elseif($lessonType === 'simulator')
+                                <strong><i class="fas fa-vr-cardboard"></i> Simulator Time:</strong>
+                                <div>
+                                    <span>Duration: {{ $trainingEvent->course->simulator_hours ?? 'N/A' }}</span> |
+                                    <span>Credited: {{ $eventLesson->hours_credited ?? '00:00' }}</span>
+                                </div>
+                            @elseif($lessonType === 'flight')
+                                <strong><i class="fas fa-plane"></i> Flight Time:</strong>
+                                <div>
+                                    <span>Credited: {{ $eventLesson->hours_credited ?? '00:00' }}</span>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
                 @else
                     {{-- MULTI-LESSON COURSE TYPE --}}
                     <div class="row mb-3">
@@ -531,6 +566,26 @@
                                                 </span>
                                             </li>
                                         @endif
+                                        @php
+                                            $lessonType = $lesson?->lesson?->lesson_type ?? null;
+                                            $groundschoolHours = $trainingEvent->course->groundschool_hours ?? null;
+                                            $simulatorHours = $trainingEvent->course->simulator_hours ?? null;
+                                        @endphp
+
+                                        <small class="text-muted d-block mt-1">
+                                            @if($lessonType === 'groundschool')
+                                                <i class="fas fa-book-reader"></i>
+                                                Ground School - Duration: {{ $groundschoolHours ?? 'N/A' }}, 
+                                                Credited: {{ $lesson->hours_credited ?? '00:00' }}
+                                            @elseif($lessonType === 'simulator')
+                                                <i class="fas fa-vr-cardboard"></i>
+                                                Simulator - Duration: {{ $simulatorHours ?? 'N/A' }}, 
+                                                Credited: {{ $lesson->hours_credited ?? '00:00' }}
+                                            @elseif($lessonType === 'flight')
+                                                <i class="fas fa-plane"></i>
+                                                Flight Time - Credited: {{ $lesson->hours_credited ?? '00:00' }}
+                                            @endif
+                                        </small>
                                     @endforeach
                                 </ul>
                             </div>
@@ -546,6 +601,7 @@
                             {{ $trainingEvent->std_license_number ?? 'N/A' }}
                         </div>
                     </div>
+
                 @endif
 
                 {{-- Deferred Items(fallback) --}}
@@ -1304,7 +1360,6 @@
         $("#submitDeferredItems").on("click", function(e) { 
             e.preventDefault();
             $(".loader").fadeIn();
-            alert('buegeqg'); return;
             $.ajax({
                 url: '{{ url("/training/submit_deferred_items") }}',
                 type: 'POST',
