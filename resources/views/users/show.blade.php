@@ -18,9 +18,13 @@
             <div class="row align-items-center mb-4">
                 <!-- Profile Picture -->
                 <div class="col-md-3 text-center mb-3 mb-md-0">
-                    <img src="{{ $user->image ? asset('storage/' . $user->image) : asset('/assets/img/default_profile.png') }}"
-                        class="rounded-circle img-thumbnail shadow" width="150" alt="Profile Picture">
+                    <div style="width: 150px; height: 150px; border-radius: 50%; overflow: hidden; background: #f0f0f0;">
+                        <img src="{{ $user->image ? asset('storage/' . $user->image) : asset('/assets/img/default_profile.png') }}"
+                            style="width: 100%; height: 100%; object-fit: contain;"
+                            alt="Profile Picture">
+                    </div>
                 </div>
+
 
                 <!-- User Info -->
                 <div class="col-md-9">
