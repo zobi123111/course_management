@@ -53,11 +53,25 @@ public function associatedParents()
         'parent_id'             // Foreign key for the parent
     );
 }
-
+ 
 public function ou_ratings(): HasMany
 {
      return $this->hasMany(OuRating::class);
 }
+
+public function childRatings()
+{
+    return $this->hasManyThrough(
+        Rating::class,
+        ParentRating::class,
+        'parent_id',    // Foreign key on parent_rating table
+        'id',           // Foreign key on ratings table
+        'id',           // Local key on ratings table
+        'rating_id'     // Local key on parent_rating table
+    );
+}
+
+
 
 
 

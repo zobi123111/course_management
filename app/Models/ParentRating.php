@@ -9,14 +9,14 @@ class ParentRating extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'parent_rating';
+    protected $table = 'parent_rating'; 
 
     protected $fillable = [
         'rating_id',
         'parent_id',
     ];
 
-    // Rating this parent link belongs to
+    // Rating this parent link belongs to 
     public function rating()
     {
         return $this->belongsTo(Rating::class, 'rating_id');
@@ -31,6 +31,14 @@ class ParentRating extends Model
 {
     return $this->belongsTo(Rating::class, 'rating_id');
 }
+
+
+
+public function children()
+{
+    return $this->hasMany(ParentRating::class, 'parent_id', 'rating_id')->with('rating');
+}
+
 
 }
 

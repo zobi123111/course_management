@@ -15,6 +15,7 @@ class UserRating extends Model
     protected $fillable = [
         'user_id',
         'rating_id',
+        'parent_id',
         'issue_date',
         'expiry_date',
         'file_path',
