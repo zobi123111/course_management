@@ -872,21 +872,23 @@ h2 {
                         @endif
  
                    @php
-    // Map rating_id => UserRating model
-    $userRatingsMap = $user->usrRatings->keyBy('rating_id');
+    // Only include UserRating records where rating_id is not null
+    $userRatingsMap = $user->usrRatings
+        ->filter(fn($r) => !is_null($r->rating_id))
+        ->keyBy('rating_id');
 
     // Filter only general ratings from the passed-in $ratings
     $hasGeneralRatings = $ratings->filter(function($rating) use ($userRatingsMap) {
+        if (!$rating || !isset($rating->id)) return false;
         $ur = $userRatingsMap[$rating->id] ?? null;
         return $ur && $ur->linked_to === 'general';
     });
-    
+
     // Group child ratings under their parent_id
     $groupedChildRatings = [];
     foreach ($user->usrRatings as $ur) {
-        $rating = $ur->rating;
-        if ($rating && $rating->parent_id) {
-            $groupedChildRatings[$rating->parent_id][] = $ur;
+        if ($ur->rating_id && $ur->rating && $ur->rating->parent_id) {
+            $groupedChildRatings[$ur->rating->parent_id][] = $ur;
         }
     }
 @endphp
