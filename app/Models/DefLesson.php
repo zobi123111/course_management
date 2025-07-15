@@ -23,6 +23,8 @@ class DefLesson extends Model
         'lesson_date',
         'start_time',
         'end_time',
+        'departure_airfield',
+        'destination_airfield',
         'created_by',
     ];
 

@@ -721,7 +721,7 @@ $(document).ready(function() {
 
     $('.edit-lesson-icon').click(function(e) {
         e.preventDefault();
-
+        $("#editLesson")[0].reset();
         $('.error_e').html('');
         var lessonId = $(this).data('lesson-id');
         $.ajax({

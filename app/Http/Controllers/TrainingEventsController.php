@@ -220,7 +220,7 @@ class TrainingEventsController extends Controller
 
     public function getCourseLessons(Request $request)
     {
-        $course = Courses::with(['courseLessons', 'resources'])->find($request->course_id);
+        $course = Courses::with(['courseLessons', 'resources','customTimes'])->find($request->course_id);
 
         if (!$course) {
             return response()->json([
@@ -231,8 +231,10 @@ class TrainingEventsController extends Controller
 
         return response()->json([   
             'success'   => true,
+            'course'   => $course,
             'lessons'   => $course->courseLessons,
             'resources' => $course->resources,
+            'custom_times' => $course->customTimes,
         ]);
     }
 
@@ -1151,7 +1153,7 @@ class TrainingEventsController extends Controller
 
     public function storeDeferredLessons(Request $request)
     {
-        // Validate the incoming request data
+        //Validate the incoming request data
         $validatedData = $request->validate([   
             'event_id'      => 'required|integer|exists:training_events,id',
             'lesson_title'  => 'required|string|max:255',
@@ -1163,6 +1165,8 @@ class TrainingEventsController extends Controller
             'resource_id'   => 'required|integer|exists:resources,id',
             'instructor_id' => 'required|integer|exists:users,id',
             'std_id'        => 'required|integer|exists:users,id',
+            'departure_airfield'   => 'nullable|string|max:4',
+            'destination_airfield' => 'nullable|string|max:4',
         ], [], [
             'item_ids'     => 'Tasks',
             'resource_id'  => 'Resource',
@@ -1183,13 +1187,15 @@ class TrainingEventsController extends Controller
         $defLesson = DefLesson::create([
             'event_id'      => $eventId,
             'user_id'       => $studentId,
-            'task_ids'      => $validatedData['item_ids'], // Optional if not needed
+            'task_ids'      => $validatedData['item_ids'], //Optional if not needed
             'instructor_id' => $validatedData['instructor_id'],
             'resource_id'   => $validatedData['resource_id'],
             'lesson_title'  => $validatedData['lesson_title'],
             'lesson_date'   => $validatedData['lesson_date'],
             'start_time'    => $validatedData['start_time'],
             'end_time'      => $validatedData['end_time'],
+            'departure_airfield'   => $validatedData['departure_airfield'] ?? null,
+            'destination_airfield' => $validatedData['destination_airfield'] ?? null,
             'created_by'    => $authId,
         ]);
 
@@ -1310,5 +1316,5 @@ class TrainingEventsController extends Controller
     }
 
 
-    
+
 }
