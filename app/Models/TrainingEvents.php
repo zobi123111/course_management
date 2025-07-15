@@ -29,7 +29,8 @@ class TrainingEvents extends Model
         'std_license_number',
         'is_locked',
         'student_acknowledged',
-        'student_acknowledgement_comments'
+        'student_acknowledgement_comments',
+        'entry_source'
     ];
 
     public function orgUnit()
