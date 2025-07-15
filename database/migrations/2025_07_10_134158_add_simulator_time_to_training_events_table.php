@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('training_events', function (Blueprint $table) {
-            $table->decimal('simulator_time', 5, 2)->nullable()->after('total_time');
+            $table->time('simulator_time')->nullable()->after('total_time');
         });
     }
 
