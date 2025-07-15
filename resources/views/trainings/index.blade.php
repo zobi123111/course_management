@@ -138,7 +138,15 @@
             <div class="modal-body">
             <form action="" id="trainingEventForm" method="POST" class="row g-3">
                 @csrf
-
+                <div class="col-md-12">
+                    <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" id="is_instructor_checkbox">
+                        <input type="hidden" name="entry_source" id="entry_source" value="">
+                        <label class="form-check-label" for="is_instructor_checkbox">
+                            Select Instructor Instead of Student
+                        </label>
+                    </div>
+                </div>
                 @if(auth()->user()->is_owner == 1)
                 <div class="col-md-6">
                     <label class="form-label">Select Org Unit<span class="text-danger">*</span></label>
@@ -153,11 +161,13 @@
                 @endif
                 <!-- Select User -->
                 <div class="col-md-6">
-                    <label class="form-label">Select Student<span class="text-danger">*</span></label>
+                    <label class="form-label">
+                        <span id="student_label">Select Student</span><span class="text-danger">*</span>
+                    </label>
                     <select class="form-select" name="student_id" id="select_user">
                         <option value="">Select Student</option>
                         @foreach($students as $val)
-                        <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
+                            <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
                         @endforeach
                     </select>
                     <div id="student_id_error" class="text-danger error_e"></div>
@@ -512,33 +522,41 @@ $(document).ready(function() {
             url: "{{ url('/training/get_ou_students_instructors_resources') }}/" + ou_id, // Append ou_id in URL
             type: "GET",
             dataType: "json",
-            success: function (response) {
-                // console.log(response.resources);
+           success: function (response) {
+                var isInstructorSelected = $('#is_instructor_checkbox').is(':checked');
+
                 // Store selected values before clearing
                 var selectedStudent = studentDropdown.data("selected-value") || [];
                 var selectedInstructor = instructorDropdown.data("selected-value") || [];
                 var selectedResource = resourceDropdown.data("selected-value") || [];
 
-                // Populate Students
-                var studentOptions = '<option value="">Select Student</option>';
-                if (response.students && response.students.length > 0) {
-                    $.each(response.students, function(index, student) {
-                        var selected = student.id == selectedStudent ? 'selected' : '';
-                        studentOptions += '<option value="' + student.id + '" ' + selected + '>' + student.fname + ' ' + student.lname + '</option>';
-                    });
+                // -- Handle dropdown based on checkbox state --
+                if (isInstructorSelected) {
+                    // Populate Instructors into #select_user
+                    var instructorOptions = '<option value="">Select Instructor</option>';
+                    if (response.instructors && response.instructors.length > 0) {
+                        instructorsdata = response.instructors;
+                        $.each(instructorsdata, function(index, instructor) {
+                            var selected = instructor.id == selectedInstructor ? 'selected' : '';
+                            instructorOptions += '<option value="' + instructor.id + '" ' + selected + '>' + instructor.fname + ' ' + instructor.lname + '</option>';
+                        });
+                    }
+                    studentDropdown.html(instructorOptions); // Replace with instructors
+                    $('#student_label').text('Select Instructor');
+                    $('#entry_source').val('instructor');
+                } else {
+                    // Populate Students into #select_user
+                    var studentOptions = '<option value="">Select Student</option>';
+                    if (response.students && response.students.length > 0) {
+                        $.each(response.students, function(index, student) {
+                            var selected = student.id == selectedStudent ? 'selected' : '';
+                            studentOptions += '<option value="' + student.id + '" ' + selected + '>' + student.fname + ' ' + student.lname + '</option>';
+                        });
+                    }
+                    studentDropdown.html(studentOptions); // Replace with students
+                    $('#student_label').text('Select Student');
+                    $('#entry_source').val('');
                 }
-                studentDropdown.html(studentOptions); // Update dropdown
-
-                // Populate Instructors
-                var instructorOptions = '<option value="">Select Instructor</option>';
-                if (response.instructors && response.instructors.length > 0) {
-                    instructorsdata = response.instructors;
-                    $.each(instructorsdata, function(index, instructor) {
-                        var selected = instructor.id == selectedInstructor ? 'selected' : '';
-                        instructorOptions += '<option value="' + instructor.id + '" ' + selected + '>' + instructor.fname + ' ' + instructor.lname + '</option>';
-                    });
-                }
-                instructorDropdown.html(instructorOptions); // Update dropdown
 
                 // Populate Resources
                 var resourceOptions = '<option value="">Select Resource</option>';
@@ -550,7 +568,7 @@ $(document).ready(function() {
                     });
                 }
                 resourceDropdown.html(resourceOptions); // Update dropdown
-        },
+            },
             error: function(xhr) {
                 console.error(xhr.responseText);
                 alert('Error fetching data. Please try again.');
@@ -1157,6 +1175,37 @@ $(document).ready(function() {
 
 });
 </script>
+<script>
+    const studentsdata = @json($students);       
+    $('#is_instructor_checkbox').on('change', function() {
+        let isChecked = $(this).is(':checked');
+        let dropdown = $('#select_user');
+        let label = $('#student_label');
 
+        if (isChecked) {
+            // Load instructors
+            dropdown.empty().append('<option value="">Select Instructor</option>');
+            $.each(instructorsdata, function(index, instructor) {
+                dropdown.append(`<option value="${instructor.id}">${instructor.fname} ${instructor.lname}</option>`);
+            });
+            label.text('Select Instructor');
+            $('#entry_source').val('instructor');
+        } else {
+            // Load students
+            dropdown.empty().append('<option value="">Select Student</option>');
+            $.each(studentsdata, function(index, student) {
+                dropdown.append(`<option value="${student.id}">${student.fname} ${student.lname}</option>`);
+            });
+            label.text('Select Student');
+            $('#entry_source').val('');
+        }
+});
+</script>
+<script>
+document.getElementById('is_instructor_checkbox').addEventListener('change', function () {
+    const entrySourceInput = document.getElementById('entry_source');
+    entrySourceInput.value = this.checked ? 'instructor' : '';
+});
+</script>
 @endsection
 
