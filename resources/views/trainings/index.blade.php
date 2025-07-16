@@ -651,7 +651,8 @@ $(document).ready(function() {
                     end_time: lesson.end_time || '',
                     departure_airfield: lesson.departure_airfield || '',
                     destination_airfield: lesson.destination_airfield || '',
-                    instructor_license_number: lesson.instructor_license_number || ''
+                    instructor_license_number: lesson.instructor_license_number || '',
+                    credited_time: lesson.custom_hours_credited || ''
                 };
             });
         }
@@ -663,14 +664,30 @@ $(document).ready(function() {
             success: function (response) {
                 lessonContainer.empty(); // Clear existing lesson boxes
 
-                if (response.success && response.lessons.length > 0) {
-                    let lessons = response.lessons;
-                    resourcesdata = response.resources; 
-                        response.lessons.forEach(function (lesson, idx) {
-                            let prefillData = isEditForm && lessonPrefillMap[lesson.id] ? lessonPrefillMap[lesson.id] : {};
-                            renderLessonBox(lesson, lessonContainer, prefillData, idx, mode);  // ✅ index passed
-                        });
-                } else {
+            if (response.success && response.lessons.length > 0) {
+                let lessons = response.lessons;
+                let course = response.course;
+                let customTimes = response.custom_times || [];
+                resourcesdata = response.resources;
+
+                lessons.forEach(function (lesson, idx) {
+                    // 🔁 If course has custom time tracking enabled
+                    if (course.enable_custom_time_tracking == 1) {
+                        // Match custom time by lesson_id
+                        let match = customTimes.find(ct => ct.id == lesson.custom_time_id);
+                        if (match) {
+                            lesson.custom_time = {
+                                name: match.name,
+                                id: match.id
+                            };
+                            lesson.enable_custom_time_tracking = 1;
+                        }
+                    }
+
+                    let prefillData = isEditForm && lessonPrefillMap[lesson.id] ? lessonPrefillMap[lesson.id] : {};
+                    renderLessonBox(lesson, lessonContainer, prefillData, idx, mode);
+                });
+            }else {
                     alert('No lessons found for the selected course.');
                 }
             },
@@ -732,7 +749,7 @@ $(document).ready(function() {
                     const selectedResource = event.resource_id;
                     const selectedCourse = event.course_id;
 
-                    // Set static values
+                    //Set static values
                     $('#edit_event_id').val(event.id);
                     $('#edit_std_licence_number').val(event.std_licence_number);
                     $('#edit_event_date').val(event.event_date);
@@ -760,7 +777,8 @@ $(document).ready(function() {
                         end_time: l.end_time || '',
                         departure_airfield: l.departure_airfield || '',
                         destination_airfield: l.destination_airfield || '',
-                        instructor_license_number: l.instructor_license_number || ''
+                        instructor_license_number: l.instructor_license_number || '',
+                        custom_hours_credited: l.custom_hours_credited || '',
                     }));
 
                     // Trigger the course change (will call renderLessonBox with prefill)
@@ -777,7 +795,6 @@ $(document).ready(function() {
             }
         });
     });
-
 
     $('#edit_select_lesson').on('change', function () {
         const selectedLessonIds = $(this).val() || []; // Get current selected values (array)
@@ -937,16 +954,18 @@ $(document).ready(function() {
         $('#edit_select_course').trigger('change');
     });
 
-
     let lessonIndex = 0;
 
     function renderLessonBox(lesson, container, prefillData = {}, index = null, mode) {
+
         const errorSuffix = mode === 'update' ? '_error_up' : '_error';
         const currentIndex = index !== null ? index : lessonIndex++;
         const isFirstLesson = currentIndex === 0;
         let lessonId = lesson.id;
         let lessonTitle = lesson.lesson_title;
         let lessonType = lesson.lesson_type || '';
+        let enableCustomTimeTracking = lesson.enable_custom_time_tracking == 1;
+        let customTime = lesson.custom_time || {};
 
         let {
             instructor_id = '',
@@ -956,7 +975,8 @@ $(document).ready(function() {
             end_time = '',
             departure_airfield = '',
             destination_airfield = '',
-            instructor_license_number = ''
+            instructor_license_number = '',
+            credited_time = ''
         } = prefillData;
 
         let isCurrentUserInstructor = currentUser.role === 'instructor';
@@ -1039,6 +1059,13 @@ $(document).ready(function() {
                         <input type="text" name="lesson_data[${currentIndex}][instructor_license_number]" class="form-control" value="${instructor_license_number}" readonly>
                         <div id="lesson_data_${currentIndex}_instructor_license_number${errorSuffix}" class="text-danger error_e"></div>
                     </div>
+                    ${enableCustomTimeTracking && customTime?.name ? `
+                    <div class="col-md-6">
+                        <label class="form-label">${customTime.name} (Credited Time)</label>
+                        <input type="number" name="lesson_data[${currentIndex}][credited_time]" class="form-control" value="${credited_time}" placeholder="Enter Hours credited">
+                        <div id="lesson_data_${currentIndex}_credited_time${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                ` : ''}
                 </div>
             </div>
         `;

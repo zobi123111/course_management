@@ -535,6 +535,21 @@
                                     <span>Credited: {{ $eventLesson->hours_credited ?? '00:00' }}</span>
                                 </div>
                             @endif
+                            {{-- Custom Time if available --}}
+                            @php
+                                $customTime = $eventLesson->lesson->customTime ?? null;
+                            @endphp
+
+                            @if($customTime)
+                                <div class="mt-2">
+                                    <strong><i class="fas fa-clock"></i> Custom Time:</strong>
+                                    <ul class="ps-3">
+                                        <li><strong>Name:</strong> {{ $customTime->name }}</li>
+                                        <li><strong>Allotted Hours:</strong> {{ $customTime->given_hours }}</li>
+                                        <li><strong>Credited Hours:</strong> {{ $eventLesson->custom_hours_credited ?? '00:00' }}</li>
+                                    </ul>
+                                </div>
+                            @endif
                         </div>
                     </div>
 
@@ -571,7 +586,6 @@
                                             $groundschoolHours = $trainingEvent->course->groundschool_hours ?? null;
                                             $simulatorHours = $trainingEvent->course->simulator_hours ?? null;
                                         @endphp
-
                                         <small class="text-muted d-block mt-1">
                                             @if($lessonType === 'groundschool')
                                                 <i class="fas fa-book-reader"></i>
@@ -586,6 +600,20 @@
                                                 Flight Time - Credited: {{ $lesson->hours_credited ?? '00:00' }}
                                             @endif
                                         </small>
+                                        @php
+                                            $customTime = $lesson->lesson->customTime ?? null;
+                                        @endphp
+
+                                        @if($customTime)
+                                            <small class="text-muted d-block mt-1">
+                                                <i class="fas fa-clock"></i> 
+                                                <strong>Custom Time:</strong> 
+                                                {{ $customTime->name }} – 
+                                                Allotted: {{ $customTime->hours }}, 
+                                                Credited: {{ $lesson->custom_hours_credited ?? '00:00' }}
+                                            </small>
+                                        @endif
+
                                     @endforeach
                                 </ul>
                             </div>
