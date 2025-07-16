@@ -174,7 +174,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
     <thead>
         <tr>
             <th>Name</th>
-            <th>UK Licence Status</th>\
+            <th>UK Licence Status</th>
             <th>Associated Ratings (UK)</th>
             <th>EASA Licence Status</th>
             <th>Associated Ratings (EASA)</th> 

@@ -33,4 +33,9 @@ class CourseLesson extends Model
         ->where('created_by', auth()->id());
     }
 
+    public function customTime()
+    {
+        return $this->belongsTo(CourseCustomTime::class, 'custom_time_id');
+    }
+
 }

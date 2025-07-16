@@ -294,6 +294,8 @@ class TrainingEventsController extends Controller
                 // 'lesson_data.0.departure_airfield' => 'required|string|size:4',
                 // 'lesson_data.0.destination_airfield' => 'required|string|size:4',
                 // 'lesson_data.0.instructor_license_number' => 'nullable|string',
+                // 'lesson_data.*.credited_time' => 'nullable|date_format:H:i',
+
             ], [], [
                 'event_date' => 'Course start date',
                 'lesson_data.0.instructor_id' => 'instructor',
@@ -403,6 +405,8 @@ class TrainingEventsController extends Controller
                 'destination_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($lesson['destination_airfield']),
                 'instructor_license_number' => $lesson['instructor_license_number'] ?? null,
                 'hours_credited' => gmdate("H:i", $creditMinutes * 60),
+                // 👇 Add this line to conditionally store credited hours
+                'custom_hours_credited' => !empty($lesson['credited_time']) ? $lesson['credited_time'] : null,
             ]);
         }
 
@@ -493,6 +497,7 @@ class TrainingEventsController extends Controller
                 // 'lesson_data.0.departure_airfield' => 'required|string|size:4',
                 // 'lesson_data.0.destination_airfield' => 'required|string|size:4',
                 // 'lesson_data.0.instructor_license_number' => 'nullable|string',
+                // 'lesson_data.*.credited_time' => 'nullable|date_format:H:i',
             ], [], [
                 'event_date' => 'Course start date',
                 'lesson_data.0.instructor_id' => 'instructor',
@@ -578,6 +583,12 @@ class TrainingEventsController extends Controller
                 }
             }
 
+            // Set hours_credited by time difference
+            $hoursCredited = gmdate("H:i", $creditMinutes * 60);
+
+            // Override if credited_time (custom time) is passed and not empty
+            $customHoursCredited = !empty($data['credited_time']) ? $data['credited_time'] : null;
+
             TrainingEventLessons::updateOrCreate(
                 [
                     'training_event_id' => $trainingEvent->id,
@@ -592,7 +603,8 @@ class TrainingEventsController extends Controller
                     'departure_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($data['departure_airfield']),
                     'destination_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($data['destination_airfield']),
                     'instructor_license_number' => $data['instructor_license_number'] ?? null,
-                    'hours_credited' => gmdate("H:i", $creditMinutes * 60),
+                    'hours_credited' => $hoursCredited,
+                    'custom_hours_credited' => $customHoursCredited,
                 ]
             );
         }
@@ -625,7 +637,8 @@ class TrainingEventsController extends Controller
             'instructor:id,fname,lname',
             'student:id,fname,lname',
             'resource:id,name',
-            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type',
+            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id',
+            'eventLessons.lesson.customTime:id,name,hours,course_id',
             'eventLessons.instructor:id,fname,lname',
             'eventLessons.resource:id,name',    
             'trainingFeedbacks.question', // Eager load the question relationship
@@ -634,6 +647,7 @@ class TrainingEventsController extends Controller
         if (!$trainingEvent) {
             return abort(404, 'Training Event not found');
         }
+        // dd($trainingEvent);
         //Filter lessons based on role
         if (hasUserRole($currentUser, 'Instructor') && empty($currentUser->is_admin)) {
             // Only show lessons assigned to this instructor
