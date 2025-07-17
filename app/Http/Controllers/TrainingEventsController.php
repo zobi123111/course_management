@@ -44,7 +44,7 @@ class TrainingEventsController extends Controller
             'firstLesson.instructor:id,fname,lname',
             'firstLesson.resource:id,name',            
             // for your getCanEndCourseAttribute()
-            'eventLessons',            // pull enable_cbta from course_lessons
+            'eventLessons',
             'eventLessons.lesson:id,enable_cbta',            // pull enable_cbta from course_lessons
             'eventLessons.lesson.subLessons:id,lesson_id,title', // pull sub-lessons from each lesson
             'overallAssessments',                              // for single-event overall check
@@ -173,7 +173,7 @@ class TrainingEventsController extends Controller
         }
         // Attach instructor lists to each training event
         $trainingEvents->each(function ($event) {
-            if (!$event->eventLessons) {
+            if (!$event->relationLoaded('eventLessons') || !($event->eventLessons instanceof \Illuminate\Support\Collection)) {
                 $event->lesson_instructors = collect();
                 $event->lesson_instructor_users = collect();
                 $event->last_lesson_instructor_id = null;
