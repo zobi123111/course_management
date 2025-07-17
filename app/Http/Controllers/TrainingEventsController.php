@@ -170,6 +170,26 @@ class TrainingEventsController extends Controller
                 ->get();
               
         }
+        // Attach instructor lists to each training event
+        $trainingEvents->each(function ($event) {
+            // Get unique instructor IDs from event lessons
+            $event->lesson_instructors = $event->eventLessons
+                ->pluck('instructor_id')
+                ->filter()
+                ->unique()
+                ->values();
+
+            // Load instructor users
+            $event->lesson_instructor_users = User::whereIn('id', $event->lesson_instructors)->get();
+
+            // Determine the last lesson instructor (by Id)
+            $lastLesson = $event->eventLessons->sortByDesc('id')->first();
+            $event->last_lesson_instructor_id = $lastLesson ? $lastLesson->instructor_id : null;
+
+            // Optional: preload the actual user object
+            $event->last_lesson_instructor = $event->lesson_instructor_users->firstWhere('id', $event->last_lesson_instructor_id);
+        });
+
         return view('trainings.index', compact('groups', 'courses', 'instructors', 'organizationUnits', 'trainingEvents', 'resources', 'students', 'trainingEvents_instructor'));
 
     }
