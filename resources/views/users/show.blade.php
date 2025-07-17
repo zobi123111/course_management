@@ -165,34 +165,35 @@
 
                                                 <!-- Child Ratings -->
                                                @if (!empty($group['children']))
-                                                    <hr>
-                                                    <h6>Child Ratings:</h6>
-                                                    <ul class="list-unstyled small">
-                                                        @foreach($group['children'] as $childRating)
-                                                            <li class="mb-2">
-                                                                <div class="d-flex align-items-start">
-                                                                    <i class="bi bi-chevron-right text-muted mt-1 me-2"></i>
-                                                                    <div>
-                                                                        <strong class="text-dark">{{ $childRating->rating->name ?? 'N/A' }}</strong>
-                                                                        <div class="ms-1 mt-1 small text-secondary">
-                                                                            <div>
-                                                                                <strong>Issue Date:</strong>
-                                                                                {{ $childRating->issue_date ?? 'N/A' }}
-                                                                            </div>
-                                                                            <div>
-                                                                                <strong>Expiry Date:</strong>
-                                                                                {{ $childRating->expiry_date ?? 'N/A' }}
-                                                                                @if($childRating->admin_verified)
-                                                                                    <i class="bi bi-check-circle-fill text-success ms-1" title="Verified"></i>
-                                                                                @endif
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </li>
-                                                        @endforeach
-                                                    </ul>
-                                                @endif
+                                    <hr>
+                                    <h6>Privileges:</h6>
+                                    <ul class="list-unstyled small">
+                                        @foreach($group['children'] as $childRating)
+                                            <li class="mb-2">
+                                                <div class="d-flex align-items-start">
+                                                    <i class="bi bi-chevron-right text-muted mt-1 me-2"></i>
+                                                    <div>
+                                                        <strong class="text-dark">{{ $childRating->rating->name ?? 'N/A' }}</strong>
+                                                        <div class="ms-1 mt-1 small text-secondary">
+                                                            <div>
+                                                                <strong>Issue Date:</strong>
+                                                                {{ $childRating->issue_date ?? 'N/A' }}
+                                                            </div>
+                                                            <div>
+                                                                <strong>Expiry Date:</strong>
+                                                                {{ $childRating->expiry_date ?? 'N/A' }}
+                                                                @if($childRating->admin_verified)
+                                                                    <i class="bi bi-check-circle-fill text-success ms-1" title="Verified"></i>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+
                                             </div>
                                         </div>
                                     @endforeach
@@ -218,12 +219,12 @@
                                             <label class="form-check-label" for="licence2_verify">{{ $document->licence_verified_2 ? 'Verified' : 'Mark as Verified' }}</label>
                                         </div>
                                     @endif
-
+ 
                                     @if($document->licence_verified_2)
                                         <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="licence_2">Invalidate</button>
                                     @endif
                                 </div>
-                                                    @if($user->usrRatings->where('linked_to', 'licence_2')->count())
+                         @if($user->usrRatings->where('linked_to', 'licence_2')->count())
                             <div class="row mt-3">
                                 <div class="col-md-12">
                                     <h6 class="text-secondary mb-3">
@@ -237,7 +238,7 @@
                                             <div class="card mb-3 me-3" style="width: 18rem;">
                                                 <div class="card-body">
                                                     <h6 class="card-title text-primary">{{ $parent->rating->name ?? 'N/A' }}</h6>
-                                                    <ul class="small mb-2">
+                                                    <ul class="list-unstyled small mb-2">
                                                         <li><strong>Issue Date:</strong> {{ $parent->issue_date ?? 'N/A' }}</li>
                                                         <li><strong>Expiry Date:</strong> {{ $parent->expiry_date ?? 'N/A' }}</li>
                                                     </ul>
@@ -266,7 +267,7 @@
                                                     {{-- Child Ratings --}}
                                                     @if(!empty($group['children']))
                                                         <hr>
-                                                        <h6>Child Ratings:</h6>
+                                                        <h6>Privileges:</h6>
                                                         <ul class="list-unstyled small">
                                                             @foreach($group['children'] as $childRating)
                                                                 <li class="mb-2">
