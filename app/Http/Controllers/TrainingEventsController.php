@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Group;
 use App\Models\Courses;
 use App\Models\CourseLesson;
+use App\Models\SubLesson;
 use App\Models\User;
 use App\Models\OrganizationUnits;
 use App\Models\TrainingEvents;
@@ -41,8 +42,7 @@ class TrainingEventsController extends Controller
             'instructor:id,fname,lname',
             'resource:id,name',
             'firstLesson.instructor:id,fname,lname',
-            'firstLesson.resource:id,name',
-            
+            'firstLesson.resource:id,name',            
             // for your getCanEndCourseAttribute()
             'eventLessons.lesson:id,enable_cbta',            // pull enable_cbta from course_lessons
             'eventLessons.lesson.subLessons:id,lesson_id,title', // pull sub-lessons from each lesson
@@ -170,8 +170,8 @@ class TrainingEventsController extends Controller
                 ->get();
               
         }
-
         return view('trainings.index', compact('groups', 'courses', 'instructors', 'organizationUnits', 'trainingEvents', 'resources', 'students', 'trainingEvents_instructor'));
+
     }
 
     public function getOrgStudentsInstructorsResources(Request $request,$ou_id)
@@ -654,7 +654,7 @@ class TrainingEventsController extends Controller
     {
         $currentUser = auth()->user();
         $trainingEvent = TrainingEvents::with([
-            'course:id,course_name,course_type,duration_value,groundschool_hours,simulator_hours',
+            'course:id,course_name,course_type,duration_value,duration_type,groundschool_hours,simulator_hours',
             'course.documents', // Eager load course documents
             'group:id,name,user_ids',
             'instructor:id,fname,lname',
@@ -822,7 +822,7 @@ class TrainingEventsController extends Controller
 
     public function createGrading(Request $request)
     {
-        // Validate the incoming data:
+        //Validate the incoming data:
         $request->validate([
             'event_id'             => 'required|integer|exists:training_events,id',
             'task_grade'           => 'nullable|array',
@@ -839,7 +839,6 @@ class TrainingEventsController extends Controller
             'comp_comments'        => 'nullable|array',
             'comp_comments.*.*'    => 'nullable|string|max:255',  // Optional comment validation
             // Ensure the student being graded is provided from the form:
-
             'tg_user_id'           => 'required|integer|exists:users,id',
             'cg_user_id'           => 'required|integer|exists:users,id',
         ]);
@@ -898,7 +897,21 @@ class TrainingEventsController extends Controller
                             }
                         }
                     }
-                    TrainingEventLessons::where('training_event_id', $event_id)->where('lesson_id', $lesson_id)->update(['is_locked' => 1]);
+
+                    $totalSubLessons = SubLesson::where('lesson_id', $lesson_id)->count();
+
+                    $gradedSubLessons = TaskGrading::where([
+                        'event_id'  => $event_id,
+                        'lesson_id' => $lesson_id,
+                        'user_id'   => $gradedStudentId,
+                    ])->count(); // No need for whereNotNull('task_grade')
+
+                    if ($totalSubLessons > 0 && $totalSubLessons == $gradedSubLessons) {
+                        TrainingEventLessons::where('training_event_id', $event_id)
+                            ->where('lesson_id', $lesson_id)
+                            ->update(['is_locked' => 1]);
+                    }
+
                 }
             }
 
@@ -974,6 +987,46 @@ class TrainingEventsController extends Controller
         Session::flash('message', 'Overall Assessment saved successfully.');
         return response()->json(['success' => true, 'message' => 'Overall Assessment saved successfully.']);
     }
+
+
+    public function updateCompGrade(Request $request)
+    {
+        $request->validate([
+            'event_id' => 'required|integer',
+            'lesson_id' => 'required|integer',
+            'user_id' => 'required|integer',
+            'code' => 'required|string',
+        ]);
+
+        $eventId = $request->event_id;
+        $lessonId = $request->lesson_id;
+        $userId = $request->user_id;
+        $code = $request->code;
+        $column = $code . '_grade';
+
+        // Check if the attribute is fillable or exists
+        if (!in_array($column, (new CompetencyGrading)->getFillable())) {
+            return response()->json(['error' => 'Invalid competency code.'], 400);
+        }
+
+        // Find the competency grading entry
+        $grading = CompetencyGrading::where('event_id', $eventId)
+            ->where('lesson_id', $lessonId)
+            ->where('user_id', $userId)
+            ->first();
+
+        if (!$grading) {
+            return response()->json(['error' => 'Competency grading not found.'], 404);
+        }
+
+        // Set the specified competency grade to null
+        $grading->$column = null;
+        $grading->save();
+
+        return response()->json(['success' => true, 'message' => 'Competency grade updated.']);
+    }
+
+
 
     public function getStudentGrading(Request $request, $event_id)
     {
@@ -1325,6 +1378,7 @@ class TrainingEventsController extends Controller
     {
         $request->validate([
             'course_end_date' => 'required|date|before_or_equal:today',
+            'recommended_by_instructor_id' => 'nullable|exists:users,id', // validate if provided
         ]);
 
         $id = decode_id($request->event_id);
@@ -1340,6 +1394,7 @@ class TrainingEventsController extends Controller
 
         $event->update([
             'course_end_date' => $request->course_end_date,
+            'recommended_by_instructor_id' => $request->recommended_by_instructor_id ?? null,
             'is_locked' => 1,
         ]);
 

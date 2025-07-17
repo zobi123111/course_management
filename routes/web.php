@@ -122,6 +122,7 @@ Route::group(['middleware' => ['auth']], function () {
     ->name('training.store_def_grading');
     Route::post('/training/end-course', [TrainingEventsController::class, 'endCourse'])->name('training.endCourse');
     Route::post('/training/unlock-lesson', [TrainingEventsController::class, 'unlockLesson'])->name('training.unlockLesson');
+    Route::post('/training/update-competency-grade', [TrainingEventsController::class, 'updateCompGrade'])->name('training.updateCompGrade');
 
 
 

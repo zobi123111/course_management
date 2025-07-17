@@ -103,7 +103,7 @@
                             <i class="fa fa-eye text-danger me-2"></i>
                             </a>            
                         @endif
-                    @else
+                    @else   
                         {{-- This event is already locked/ended --}}
                         <span class="badge bg-secondary" data-bs-toggle="tooltip"
                             title="This course has been ended and is locked from editing">
@@ -482,6 +482,18 @@
                         <label for="courseEndDate" class="form-label">Course End Date</label>
                         <input type="date" class="form-control" id="courseEndDate" name="course_end_date" value="{{ old('course_end_date', date('Y-m-d')) }}" required>
                     </div>
+                    <div class="mb-3">
+                    <label for="recommendedByInstructor" class="form-label">Select Recommendation Instructor</label>
+                    <select name="recommended_by_instructor_id" class="form-select">
+                        <option value="">-- Select Instructor --</option>
+                        @foreach($event->lesson_instructor_users as $instructor)
+                            <option value="{{ $instructor->id }}"
+                                {{ $event->last_lesson_instructor_id == $instructor->id ? 'selected' : '' }}>
+                                {{ $instructor->fname }} {{ $instructor->lname }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <div class="mb-3">
                     <input type="hidden" name="event_id" id="courseEndEventId">
                 </div>
                 <div class="modal-footer">
