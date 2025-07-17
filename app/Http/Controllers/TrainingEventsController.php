@@ -62,10 +62,17 @@ class TrainingEventsController extends Controller
                 $query->where('role_name', 'like', '%Student%');
             })->with('roles')->get();
             $trainingEvents = TrainingEvents::with($trainingEventsRelations)
-            ->withCount([
-                'taskGradings',
-                'competencyGradings'
-            ])->get();
+                            ->withCount([
+                                'taskGradings',
+                                'competencyGradings'
+                            ])->get();
+            $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations)
+                                        ->where('entry_source', "instructor")
+                                        ->withCount([
+                                            'taskGradings',
+                                            'competencyGradings'
+                                        ])->get();
+          
         } elseif (checkAllowedModule('training', 'training.index')->isNotEmpty() && empty($currentUser->is_admin)) {
             // Regular User: Get data within their organizational unit
             $resources = Resource::where('ou_id', $currentUser->ou_id)->get();
@@ -94,13 +101,28 @@ class TrainingEventsController extends Controller
                 ->with($trainingEventsRelations)
                 ->withCount(['taskGradings', 'competencyGradings']);
 
+            $trainingEvents_instructorQuery = TrainingEvents::where('ou_id', $currentUser->ou_id)
+                                        ->with($trainingEventsRelations)
+                                        ->withCount(['taskGradings', 'competencyGradings']);
+               
+
+
             if (hasUserRole($currentUser, 'Instructor')) {
                 // Get training event IDs where the current instructor is assigned to at least one lesson
                 $eventIds = TrainingEventLessons::where('instructor_id', $currentUser->id)
-                    ->pluck('training_event_id')
-                    ->unique();
+                           ->pluck('training_event_id')
+                           ->unique();
+                           
             
-                $trainingEvents = $trainingEventsQuery->whereIn('id', $eventIds)->get();
+                $trainingEvents = $trainingEvents_instructorQuery->whereIn('id', $eventIds)->get();
+                $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations)
+                                        ->where('entry_source', "instructor")
+                                        ->where('student_id', $currentUser->id)
+                                        ->withCount([
+                                            'taskGradings',
+                                            'competencyGradings'
+                                        ])->get();
+                
             } else {
                 $trainingEvents = $trainingEventsQuery
                     ->where('student_id', $currentUser->id)
@@ -141,9 +163,15 @@ class TrainingEventsController extends Controller
                 ->with($trainingEventsRelations)
                 ->withCount(['taskGradings', 'competencyGradings'])
                 ->get();
+            $trainingEvents_instructor = TrainingEvents::where('ou_id', $currentUser->ou_id)
+                ->where('entry_source', "instructor")
+                ->with($trainingEventsRelations)
+                ->withCount(['taskGradings', 'competencyGradings'])
+                ->get();
+              
         }
 
-        return view('trainings.index', compact('groups', 'courses', 'instructors', 'organizationUnits', 'trainingEvents', 'resources', 'students'));
+        return view('trainings.index', compact('groups', 'courses', 'instructors', 'organizationUnits', 'trainingEvents', 'resources', 'students', 'trainingEvents_instructor'));
     }
 
     public function getOrgStudentsInstructorsResources(Request $request,$ou_id)
@@ -220,7 +248,7 @@ class TrainingEventsController extends Controller
 
     public function getCourseLessons(Request $request)
     {
-        $course = Courses::with(['courseLessons', 'resources','customTimes'])->find($request->course_id);
+        $course = Courses::with(['courseLessons', 'resources'])->find($request->course_id);
 
         if (!$course) {
             return response()->json([
@@ -231,10 +259,8 @@ class TrainingEventsController extends Controller
 
         return response()->json([   
             'success'   => true,
-            'course'   => $course,
             'lessons'   => $course->courseLessons,
             'resources' => $course->resources,
-            'custom_times' => $course->customTimes,
         ]);
     }
 
@@ -294,8 +320,6 @@ class TrainingEventsController extends Controller
                 // 'lesson_data.0.departure_airfield' => 'required|string|size:4',
                 // 'lesson_data.0.destination_airfield' => 'required|string|size:4',
                 // 'lesson_data.0.instructor_license_number' => 'nullable|string',
-                // 'lesson_data.*.credited_time' => 'nullable|date_format:H:i',
-
             ], [], [
                 'event_date' => 'Course start date',
                 'lesson_data.0.instructor_id' => 'instructor',
@@ -358,7 +382,7 @@ class TrainingEventsController extends Controller
         ]);
 
         // Loop through lesson data
-        foreach ($request->lesson_data as $lesson) {
+        foreach ($request->lesson_data as $lesson) { 
             $lessonModel = \App\Models\CourseLesson::find($lesson['lesson_id']);
             $resourceModel = \App\Models\Resource::find($lesson['resource_id']);
 
@@ -405,8 +429,6 @@ class TrainingEventsController extends Controller
                 'destination_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($lesson['destination_airfield']),
                 'instructor_license_number' => $lesson['instructor_license_number'] ?? null,
                 'hours_credited' => gmdate("H:i", $creditMinutes * 60),
-                // 👇 Add this line to conditionally store credited hours
-                'custom_hours_credited' => !empty($lesson['credited_time']) ? $lesson['credited_time'] : null,
             ]);
         }
 
@@ -419,12 +441,21 @@ class TrainingEventsController extends Controller
         ], 201);
     }    
 
-    public function getTrainingEvent(Request $request)
+    public function getTrainingEvent(Request $request) 
     {   
         $trainingEvent = TrainingEvents::with('eventLessons.lesson')->findOrFail(decode_id($request->eventId));
+        $ou_id = $trainingEvent['ou_id'];
+        $instructors = User::where('ou_id', $ou_id)
+                        ->where(function ($query) {
+                            $query->whereNull('is_admin')->orWhere('is_admin', false);
+                        })
+                        ->whereHas('roles', function ($query) {
+                            $query->where('role_name', 'like', '%Instructor%');
+                        })->with('roles')->get();
+                    
         if($trainingEvent)
         {
-            return response()->json(['success'=> true,'trainingEvent'=> $trainingEvent]);
+            return response()->json(['success'=> true,'trainingEvent'=> $trainingEvent, 'instructors' => $instructors]);
         }else{
             return response()->json(['success'=> false, 'message' => 'Training event Not found']);
         }
@@ -497,7 +528,6 @@ class TrainingEventsController extends Controller
                 // 'lesson_data.0.departure_airfield' => 'required|string|size:4',
                 // 'lesson_data.0.destination_airfield' => 'required|string|size:4',
                 // 'lesson_data.0.instructor_license_number' => 'nullable|string',
-                // 'lesson_data.*.credited_time' => 'nullable|date_format:H:i',
             ], [], [
                 'event_date' => 'Course start date',
                 'lesson_data.0.instructor_id' => 'instructor',
@@ -583,12 +613,6 @@ class TrainingEventsController extends Controller
                 }
             }
 
-            // Set hours_credited by time difference
-            $hoursCredited = gmdate("H:i", $creditMinutes * 60);
-
-            // Override if credited_time (custom time) is passed and not empty
-            $customHoursCredited = !empty($data['credited_time']) ? $data['credited_time'] : null;
-
             TrainingEventLessons::updateOrCreate(
                 [
                     'training_event_id' => $trainingEvent->id,
@@ -603,8 +627,7 @@ class TrainingEventsController extends Controller
                     'departure_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($data['departure_airfield']),
                     'destination_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($data['destination_airfield']),
                     'instructor_license_number' => $data['instructor_license_number'] ?? null,
-                    'hours_credited' => $hoursCredited,
-                    'custom_hours_credited' => $customHoursCredited,
+                    'hours_credited' => gmdate("H:i", $creditMinutes * 60),
                 ]
             );
         }
@@ -637,8 +660,7 @@ class TrainingEventsController extends Controller
             'instructor:id,fname,lname',
             'student:id,fname,lname',
             'resource:id,name',
-            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id',
-            'eventLessons.lesson.customTime:id,name,hours,course_id',
+            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type',
             'eventLessons.instructor:id,fname,lname',
             'eventLessons.resource:id,name',    
             'trainingFeedbacks.question', // Eager load the question relationship
@@ -647,7 +669,6 @@ class TrainingEventsController extends Controller
         if (!$trainingEvent) {
             return abort(404, 'Training Event not found');
         }
-        // dd($trainingEvent);
         //Filter lessons based on role
         if (hasUserRole($currentUser, 'Instructor') && empty($currentUser->is_admin)) {
             // Only show lessons assigned to this instructor
@@ -1167,7 +1188,7 @@ class TrainingEventsController extends Controller
 
     public function storeDeferredLessons(Request $request)
     {
-        //Validate the incoming request data
+        // Validate the incoming request data
         $validatedData = $request->validate([   
             'event_id'      => 'required|integer|exists:training_events,id',
             'lesson_title'  => 'required|string|max:255',
@@ -1179,8 +1200,6 @@ class TrainingEventsController extends Controller
             'resource_id'   => 'required|integer|exists:resources,id',
             'instructor_id' => 'required|integer|exists:users,id',
             'std_id'        => 'required|integer|exists:users,id',
-            'departure_airfield'   => 'nullable|string|max:4',
-            'destination_airfield' => 'nullable|string|max:4',
         ], [], [
             'item_ids'     => 'Tasks',
             'resource_id'  => 'Resource',
@@ -1201,15 +1220,13 @@ class TrainingEventsController extends Controller
         $defLesson = DefLesson::create([
             'event_id'      => $eventId,
             'user_id'       => $studentId,
-            'task_ids'      => $validatedData['item_ids'], //Optional if not needed
+            'task_ids'      => $validatedData['item_ids'], // Optional if not needed
             'instructor_id' => $validatedData['instructor_id'],
             'resource_id'   => $validatedData['resource_id'],
             'lesson_title'  => $validatedData['lesson_title'],
             'lesson_date'   => $validatedData['lesson_date'],
             'start_time'    => $validatedData['start_time'],
             'end_time'      => $validatedData['end_time'],
-            'departure_airfield'   => $validatedData['departure_airfield'] ?? null,
-            'destination_airfield' => $validatedData['destination_airfield'] ?? null,
             'created_by'    => $authId,
         ]);
 
@@ -1330,5 +1347,5 @@ class TrainingEventsController extends Controller
     }
 
 
-
+    
 }
