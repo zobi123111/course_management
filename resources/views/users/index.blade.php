@@ -879,7 +879,7 @@
                     <button type="button" class="btn btn-danger btn-sm remove-rating-box" data-index="${index}">Remove</button>
                 </div>
 
-                <label class="form-label">Parent Rating</label>
+                <label class="form-label">Rating</label>
                 <select class="form-select parent-rating mb-2" name="licence_2_ratings[${index}][parent]" data-index="${index}" >
                     <option value="">Select Parent</option>
                     @foreach($rating as $parent)
@@ -887,7 +887,7 @@
                     @endforeach
                 </select>
 
-                <label class="form-label">Child Ratings</label>
+                <label class="form-label">Privileges</label>
                 <select class="form-select child-rating" name="licence_2_ratings[${index}][child][]" multiple data-index="${index}">
                     <!-- Populated via AJAX -->
                 </select>
@@ -920,7 +920,7 @@
                     <button type="button" class="btn btn-danger btn-sm remove-rating-box" data-index="${index}">Remove</button>
                 </div>
 
-                <label class="form-label">Parent Rating</label>
+                <label class="form-label">Rating</label>
                 <select class="form-select parent-rating mb-2" name="ratings[${index}][parent]" data-index="${index}" >
                     <option value="">Select Parent</option>
                     @foreach($rating as $parent)
@@ -928,7 +928,7 @@
                     @endforeach
                 </select>
 
-                <label class="form-label">Child Ratings</label>
+                <label class="form-label">Privileges</label>
                 <select class="form-select child-rating" name="ratings[${index}][child][]" multiple data-index="${index}">
                     <!-- Populated via AJAX -->
                 </select>
@@ -959,7 +959,7 @@
                     <button type="button" class="btn btn-danger btn-sm remove-rating-box" data-index="${index}">Remove</button>
                 </div>
 
-                <label class="form-label">Parent Rating</label>
+                <label class="form-label">Rating</label>
                 <select class="form-select parent-rating-easa mb-2" name="licence_2_ratings[${index}][parent]" data-index="${index}" >
                     <option value="">Select Parent</option>
                     @foreach($rating as $parent)
@@ -967,7 +967,7 @@
                     @endforeach
                 </select>
 
-                <label class="form-label">Child Ratings</label>
+                <label class="form-label">Privileges</label>
                 <select class="form-select child-rating-easa" name="licence_2_ratings[${index}][child][]" multiple data-index="${index}">
                     <!-- Populated via AJAX -->
                 </select>
@@ -1001,7 +1001,7 @@
                     <button type="button" class="btn btn-danger btn-sm remove-rating-box" data-index="${index}">Remove</button>
                 </div>
 
-                <label class="form-label">Parent Rating</label>
+                <label class="form-label">Rating</label>
                 <select class="form-select parent-rating mb-2" name="licence_1_ratings[${index}][parent]" data-index="${index}" >
                     <option value="">Select Parent</option>
                     @foreach($rating as $parent)
@@ -1009,7 +1009,7 @@
                     @endforeach
                 </select>
 
-                <label class="form-label">Child Ratings</label>
+                <label class="form-label">Privileges</label>
                 <select class="form-select child-rating" name="licence_1_ratings[${index}][child][]" multiple data-index="${index}">
                     <!-- Populated via AJAX -->
                 </select>
@@ -1416,7 +1416,7 @@
         $('#createUser').on('click', function() {
             $('.error_e').html('');
             $('.alert-danger').css('display', 'none');
-            $("#Create_user")[0].reset();
+            $("#Create_user")[0].reset(); 
 
             // Manually hide and reset all conditional sections
             $('#licence').hide().prop('required', false).val('');
@@ -1624,7 +1624,7 @@
                                 <button type="button" class="btn btn-danger btn-sm remove-rating-box" data-index="${index}">Remove</button>
                             </div>
 
-                            <label class="form-label">Parent Rating</label>
+                            <label class="form-label">Rating</label>
                             <select class="form-select parent-rating mb-2" name="licence_1_ratings[${index}][parent]" data-index="${index}">
                                 <option value="">Select Parent</option>
                                 @foreach($rating as $parent)
@@ -1632,7 +1632,7 @@
                                 @endforeach
                             </select>
 
-                            <label class="form-label">Child Ratings</label>
+                            <label class="form-label">Privileges</label>
                             <select class="form-select child-rating" name="licence_1_ratings[${index}][child][]" multiple data-index="${index}">
                                 <!-- Will be populated by AJAX -->
                             </select>
@@ -1683,7 +1683,7 @@
                                 <button type="button" class="btn btn-danger btn-sm remove-rating-box" data-index="${index}">Remove</button>
                             </div>
 
-                            <label class="form-label">Parent Rating</label>
+                            <label class="form-label">Rating</label>
                             <select class="form-select parent-rating mb-2" name="licence_2_ratings[${index}][parent]" data-index="${index}">
                                 <option value="">Select Parent</option>
                                 @foreach($rating as $parent)
@@ -1691,7 +1691,7 @@
                                 @endforeach
                             </select>
 
-                            <label class="form-label">Child Ratings</label>
+                            <label class="form-label">Privileges</label>
                             <select class="form-select child-rating" name="licence_2_ratings[${index}][child][]" multiple data-index="${index}">
                                 <!-- Will be populated by AJAX -->
                             </select>

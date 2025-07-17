@@ -273,7 +273,7 @@
                                 <!-- <div class="col-lg-6 col-md-12"> -->
                                     <h4>Ratings linked to UK Licence</h4>
                                     @foreach($grouped['licence_1'] as $parentId => $entry)
-                                        @php
+                                        @php 
                                             $parent = $entry['parent'];
                                             $children = $entry['children'] ?? [];
                                             $rating = $parent->rating;
@@ -305,7 +305,7 @@
 
                                                 {{-- Children Ratings --}}
                                                 @if(count($children))
-                                                    <h6 class="mt-4">Associated Ratings</h6>
+                                                    <h6 class="mt-4">Privileges</h6>
                                                     <div class="row">
                                                         @foreach($children as $childRating)
                                                             @php $child = $childRating->rating; @endphp
@@ -411,7 +411,7 @@
                                                     @endif
 
                                                     @if(count($children))
-                                                        <h6 class="mt-4">Associated Ratings</h6>
+                                                        <h6 class="mt-4">Privileges</h6>
                                                         <div class="row">
                                                             @foreach($children as $childRating)
                                                                 @php $child = $childRating->rating; @endphp
@@ -775,7 +775,7 @@
                                             {{-- Child Ratings --}}
                                             @if(count($childRatings) > 0)
                                             <hr>
-                                            <h6>Associated Ratings</h6>
+                                            <h6>Privileges</h6>
                                             <div class="row mt-3">
                                                 @foreach($childRatings as $childUserRating)
                                                 @php $child = $childUserRating->rating; @endphp

@@ -34,7 +34,7 @@ if ($user->is_admin == "1") {
 
         if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
             $messages[] = "📝 <strong>EASA Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
-        }
+        } 
 
         if ($u->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
             $messages[] = "📝 <strong>Passport</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
@@ -174,7 +174,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
     <thead>
         <tr>
             <th>Name</th>
-            <th>UK Licence Status</th>\
+            <th>UK Licence Status</th>
             <th>Associated Ratings (UK)</th>
             <th>EASA Licence Status</th>
             <th>Associated Ratings (EASA)</th> 
@@ -186,15 +186,20 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
     </thead>
 <tbody> 
 @php
-    function getTooltip($status, $type) {
+
+if (!function_exists('getTooltip')) {
+    function getTooltip($status, $type) { 
         return match ($status) {
-            'Red' => "This {$type} has expired.",
-            'Yellow' => "This {$type} will expire soon.",
-            'Green' => "This {$type} is valid.",
-            'Non-Expiring' => "This {$type} does not expire.",
+            'Red' => "This {type} has expired.",
+            'Yellow' => "This {type} will expire soon.",
+            'Green' => "This {type} is valid.",
+            'Non-Expiring' => "This {type} does not expire.",
             default => "Status unknown.",
         };
     }
+}
+
+
 @endphp
 
 @foreach($users as $user)
@@ -249,7 +254,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         @if($r->children && $r->children->count())
                             @foreach($r->children as $child)
                                 <span class="badge bg-light text-dark border ms-1" data-bs-toggle="tooltip" title="Child of {{ $r->name }} (inherits expiry)">
-                                    → {{ $child->name }}
+                                    → {{ $child->name ?? 'N/A' }}
                                 </span>
                             @endforeach
                         @endif
@@ -272,13 +277,17 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                             'Blue' => 'primary',
                             default => 'secondary'
                         };
+                        if ($r) {
                         $tooltip = $r->name . ' expires on ' . $expiry;
+                    } else {
+                        $tooltip = 'Rating not available';
+                    }
                     @endphp
 
                     {{-- Parent badge --}}
                     <div class="mb-2">
                         <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
-                            {{ $r->name }} ({{ $expiry }})
+                            {{ $r->name ?? '' }} ({{ $expiry }})
                         </span>
 
                         {{-- Child ratings --}}
