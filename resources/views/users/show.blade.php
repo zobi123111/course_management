@@ -17,7 +17,7 @@
             <!-- Header Section -->
             <div class="row align-items-center mb-4">
                 <!-- Profile Picture -->
-                <div class="col-md-3 text-center mb-3 mb-md-0">
+                <div class="col-md-2 text-center mb-3 mb-md-0">
                     <div style="width: 150px; height: 150px; border-radius: 50%; overflow: hidden; background: #f0f0f0;">
                         <img src="{{ $user->image ? asset('storage/' . $user->image) : asset('/assets/img/default_profile.png') }}"
                             style="width: 100%; height: 100%; object-fit: contain;"
@@ -27,7 +27,7 @@
 
 
                 <!-- User Info -->
-                <div class="col-md-9">
+                <div class="col-md-10">
                     <h3 class="fw-bold mb-2">{{ $user->firstname }} {{ $user->lastname }}</h3>
                     <p class="mb-1"><i class="bi bi-envelope-fill text-primary me-2"></i>{{ $user->email }}</p>
                     <p class="mb-1"><i class="bi bi-person-badge-fill text-success me-2"></i>Role: <strong>{{ $user->roles->role_name }}</strong></p>

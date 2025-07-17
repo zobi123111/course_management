@@ -29,9 +29,10 @@ class TrainingEvents extends Model
         'std_license_number',
         'is_locked',
         'student_acknowledged',
-        'student_acknowledgement_comments'
+        'student_acknowledgement_comments',
+        'entry_source'
     ];
-
+ 
     public function orgUnit()
     {
         return $this->belongsTo(OrganizationUnits::class, 'ou_id', 'id');
@@ -144,7 +145,7 @@ class TrainingEvents extends Model
         });
 
         $competencyOk = true;
-
+ 
         if ($cbtaEnabled) {
             $grading = \App\Models\CompetencyGrading::where([
                 'event_id' => $this->id,

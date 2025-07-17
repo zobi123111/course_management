@@ -535,6 +535,21 @@
                                     <span>Credited: {{ $eventLesson->hours_credited ?? '00:00' }}</span>
                                 </div>
                             @endif
+                            {{-- Custom Time if available --}}
+                            @php
+                                $customTime = $eventLesson->lesson->customTime ?? null;
+                            @endphp
+
+                            @if($customTime)
+                                <div class="mt-2">
+                                    <strong><i class="fas fa-clock"></i> Custom Time:</strong>
+                                    <ul class="ps-3">
+                                        <li><strong>Name:</strong> {{ $customTime->name }}</li>
+                                        <li><strong>Allotted Hours:</strong> {{ $customTime->given_hours }}</li>
+                                        <li><strong>Credited Hours:</strong> {{ $eventLesson->custom_hours_credited ?? '00:00' }}</li>
+                                    </ul>
+                                </div>
+                            @endif
                         </div>
                     </div>
 
@@ -571,7 +586,6 @@
                                             $groundschoolHours = $trainingEvent->course->groundschool_hours ?? null;
                                             $simulatorHours = $trainingEvent->course->simulator_hours ?? null;
                                         @endphp
-
                                         <small class="text-muted d-block mt-1">
                                             @if($lessonType === 'groundschool')
                                                 <i class="fas fa-book-reader"></i>
@@ -586,6 +600,20 @@
                                                 Flight Time - Credited: {{ $lesson->hours_credited ?? '00:00' }}
                                             @endif
                                         </small>
+                                        @php
+                                            $customTime = $lesson->lesson->customTime ?? null;
+                                        @endphp
+
+                                        @if($customTime)
+                                            <small class="text-muted d-block mt-1">
+                                                <i class="fas fa-clock"></i> 
+                                                <strong>Custom Time:</strong> 
+                                                {{ $customTime->name }} – 
+                                                Allotted: {{ $customTime->hours }}, 
+                                                Credited: {{ $lesson->custom_hours_credited ?? '00:00' }}
+                                            </small>
+                                        @endif
+
                                     @endforeach
                                 </ul>
                             </div>
@@ -657,13 +685,13 @@
                     </div>
                 @endif
 
-                {{-- Deferred Lesson Modal Start --}}
+                {{-- Deferred Lesson Modal Start --}}   
                 <div class="modal fade" id="addDeferredLessonModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
                     <div class="modal-dialog">
-                        <form action="" method="POST" id="deferredLessonForm">
+                        <form action="" method="POST" id="deferredLessonForm"> 
                             @csrf
-                            <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}" >
-                            <input type="hidden" name="std_id" value="{{ $trainingEvent->student_id }}" >
+                            <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
+                            <input type="hidden" name="std_id" value="{{ $trainingEvent->student_id }}">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title">Add Deferred Lesson</h5>
@@ -689,6 +717,16 @@
                                         <label class="form-label">End Time <span class="text-danger">*</span></label>
                                         <input type="time" name="end_time" class="form-control">
                                         <div id="end_time_error" class="text-danger error_e"></div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Destination Airfield</label>
+                                        <input type="text" name="destination_airfield" class="form-control" maxlength="4" value="">
+                                        <div id="destination_airfield" class="text-danger error_e"></div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Departure Airfield</label>
+                                        <input type="text" name="departure_airfield" class="form-control" maxlength="4" value="">
+                                        <div id="departure_airfield" class="text-danger error_e"></div>
                                     </div>
                                     <div class="mb-2">
                                         <label class="form-label">Instructor <span class="text-danger">*</span></label>
@@ -1078,6 +1116,8 @@
                                     <div><strong>Lesson Date:</strong> {{ $defLesson->lesson_date ? \Carbon\Carbon::parse($defLesson->lesson_date)->format('d/m/Y') : 'N/A' }}</div>
                                     <div><strong>Start Time:</strong> {{ $defLesson->start_time ? \Carbon\Carbon::parse($defLesson->start_time)->format('h:i A') : 'N/A' }}</div>
                                     <div><strong>End Time:</strong> {{ $defLesson->end_time ? \Carbon\Carbon::parse($defLesson->end_time)->format('h:i A') : 'N/A' }}</div>
+                                    <div><strong>Departure Airfield:</strong> {{ !empty($defLesson->departure_airfield) ? $defLesson->departure_airfield : 'N/A' }}</div>
+                                    <div><strong>Destination Airfield:</strong>{{ !empty($defLesson->destination_airfield) ? $defLesson->destination_airfield : 'N/A' }}</div>
                                 </div>
 
                                 <div id="def-lesson-{{ $defLesson->id }}" class="accordion-collapse collapse" data-bs-parent="#faq-group-2">

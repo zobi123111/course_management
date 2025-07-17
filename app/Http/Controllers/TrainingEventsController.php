@@ -62,10 +62,17 @@ class TrainingEventsController extends Controller
                 $query->where('role_name', 'like', '%Student%');
             })->with('roles')->get();
             $trainingEvents = TrainingEvents::with($trainingEventsRelations)
-            ->withCount([
-                'taskGradings',
-                'competencyGradings'
-            ])->get();
+                            ->withCount([
+                                'taskGradings',
+                                'competencyGradings'
+                            ])->get();
+            $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations)
+                                        ->where('entry_source', "instructor")
+                                        ->withCount([
+                                            'taskGradings',
+                                            'competencyGradings'
+                                        ])->get();
+          
         } elseif (checkAllowedModule('training', 'training.index')->isNotEmpty() && empty($currentUser->is_admin)) {
             // Regular User: Get data within their organizational unit
             $resources = Resource::where('ou_id', $currentUser->ou_id)->get();
@@ -94,13 +101,28 @@ class TrainingEventsController extends Controller
                 ->with($trainingEventsRelations)
                 ->withCount(['taskGradings', 'competencyGradings']);
 
+            $trainingEvents_instructorQuery = TrainingEvents::where('ou_id', $currentUser->ou_id)
+                                        ->with($trainingEventsRelations)
+                                        ->withCount(['taskGradings', 'competencyGradings']);
+               
+
+
             if (hasUserRole($currentUser, 'Instructor')) {
                 // Get training event IDs where the current instructor is assigned to at least one lesson
                 $eventIds = TrainingEventLessons::where('instructor_id', $currentUser->id)
-                    ->pluck('training_event_id')
-                    ->unique();
+                           ->pluck('training_event_id')
+                           ->unique();
+                           
             
-                $trainingEvents = $trainingEventsQuery->whereIn('id', $eventIds)->get();
+                $trainingEvents = $trainingEvents_instructorQuery->whereIn('id', $eventIds)->get();
+                $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations)
+                                        ->where('entry_source', "instructor")
+                                        ->where('student_id', $currentUser->id)
+                                        ->withCount([
+                                            'taskGradings',
+                                            'competencyGradings'
+                                        ])->get();
+                
             } else {
                 $trainingEvents = $trainingEventsQuery
                     ->where('student_id', $currentUser->id)
@@ -141,9 +163,15 @@ class TrainingEventsController extends Controller
                 ->with($trainingEventsRelations)
                 ->withCount(['taskGradings', 'competencyGradings'])
                 ->get();
+            $trainingEvents_instructor = TrainingEvents::where('ou_id', $currentUser->ou_id)
+                ->where('entry_source', "instructor")
+                ->with($trainingEventsRelations)
+                ->withCount(['taskGradings', 'competencyGradings'])
+                ->get();
+              
         }
 
-        return view('trainings.index', compact('groups', 'courses', 'instructors', 'organizationUnits', 'trainingEvents', 'resources', 'students'));
+        return view('trainings.index', compact('groups', 'courses', 'instructors', 'organizationUnits', 'trainingEvents', 'resources', 'students', 'trainingEvents_instructor'));
     }
 
     public function getOrgStudentsInstructorsResources(Request $request,$ou_id)
@@ -350,10 +378,11 @@ class TrainingEventsController extends Controller
             'simulator_time' => $request->total_simulator_time ?? '00:00',
             'std_license_number' => $request->std_licence_number,
             'ou_id' => auth()->user()->is_owner ? $request->ou_id : auth()->user()->ou_id,
+            'entry_source' => $request->entry_source,
         ]);
 
         // Loop through lesson data
-        foreach ($request->lesson_data as $lesson) {
+        foreach ($request->lesson_data as $lesson) { 
             $lessonModel = \App\Models\CourseLesson::find($lesson['lesson_id']);
             $resourceModel = \App\Models\Resource::find($lesson['resource_id']);
 
@@ -412,12 +441,21 @@ class TrainingEventsController extends Controller
         ], 201);
     }    
 
-    public function getTrainingEvent(Request $request)
+    public function getTrainingEvent(Request $request) 
     {   
         $trainingEvent = TrainingEvents::with('eventLessons.lesson')->findOrFail(decode_id($request->eventId));
+        $ou_id = $trainingEvent['ou_id'];
+        $instructors = User::where('ou_id', $ou_id)
+                        ->where(function ($query) {
+                            $query->whereNull('is_admin')->orWhere('is_admin', false);
+                        })
+                        ->whereHas('roles', function ($query) {
+                            $query->where('role_name', 'like', '%Instructor%');
+                        })->with('roles')->get();
+                    
         if($trainingEvent)
         {
-            return response()->json(['success'=> true,'trainingEvent'=> $trainingEvent]);
+            return response()->json(['success'=> true,'trainingEvent'=> $trainingEvent, 'instructors' => $instructors]);
         }else{
             return response()->json(['success'=> false, 'message' => 'Training event Not found']);
         }
