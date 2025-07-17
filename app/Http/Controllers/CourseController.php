@@ -12,7 +12,7 @@ use App\Models\Group;
 use App\Models\TrainingFeedbackQuestion;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Storage; 
 use App\Models\Resource;
 use App\Models\CourseResources;
 use App\Models\CourseDocuments;
