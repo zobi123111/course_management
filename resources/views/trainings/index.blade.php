@@ -24,7 +24,7 @@
     </div>
 @endif
 <br>
-
+ <h4>Student Training events</h4>
 <div class="card pt-4">
         <div class="card-body">
     <table class="table table-hover" id="trainingEventTable">
@@ -103,6 +103,111 @@
                             <i class="fa fa-eye text-danger me-2"></i>
                             </a>            
                         @endif
+                    @else
+                        {{-- This event is already locked/ended --}}
+                        <span class="badge bg-secondary" data-bs-toggle="tooltip"
+                            title="This course has been ended and is locked from editing">
+                            <i class="bi bi-lock-fill me-1"></i>Ended
+                        </span>
+                    @endif
+                @else                   
+                    @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
+                        <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
+                        <i class="fa fa-list text-danger me-2"></i>
+                        </a>
+                    @endif    
+                @endif
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
+</div>
+  <h4>Instructor  Training events</h4>
+<div class="card pt-4">
+        <div class="card-body">
+    <table class="table table-hover" id="trainingEventTable">
+        <thead>
+            <tr>
+                <th scope="col">Event</th>
+                <th scope="col">Student</th>
+                <th scope="col">Instructor</th>
+                <th scope="col">Resource</th>
+                <th scope="col">Event Date</th>
+                <th scope="col">Start Time</th>
+                <th scope="col">End Time</th>
+                @if(checkAllowedModule('training','training.show')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.grading-list')->isNotEmpty())
+                <th scope="col">Action</th>
+                @endif
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($trainingEvents_instructor as $event)
+                @php
+                    $lesson = $event->firstLesson;
+                @endphp 
+            <tr>
+                <td class="eventName">{{ $event->course?->course_name }}</td>
+                <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
+                <td>{{ $lesson?->instructor?->fname }} {{ $lesson?->instructor?->lname }}</td>
+                <td>{{ $lesson?->resource?->name }}</td>
+                <td>{{ $lesson?->lesson_date ? date('d-m-y', strtotime($lesson->lesson_date)) : '' }}</td>
+                <td>{{ $lesson?->start_time ? date('h:i A', strtotime($lesson->start_time)) : '' }}</td>
+                <td>{{ $lesson?->end_time ? date('h:i A', strtotime($lesson->end_time)) : '' }}</td>
+                <td>
+                @if(get_user_role(auth()->user()->role) == 'administrator')  
+                    @if(empty($event->is_locked))
+                        @if(checkAllowedModule('training','training.edit')->isNotEmpty()  && !$event->is_graded)
+                            <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                            data-event-id="{{ encode_id($event->id) }}"></i>
+                        @endif
+                        @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                            <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                            data-event-id="{{ encode_id($event->id) }}"></i>
+                        @endif
+                        @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                            <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                            <i class="fa fa-eye text-danger me-2"></i>
+                            </a>            
+                        @endif
+                        @if($event->can_end_course)
+                            {{-- Active “End Course” button/icon --}}
+                            <button
+                                class="btn btn-sm btn-flag-checkered end-course-btn"
+                                data-event-id="{{ encode_id($event->id) }}"
+                                title="End Course/Event"
+                            >
+                                <i class="fa fa-flag-checkered text-primary"></i>
+                            </button>
+                        @endif
+                    @else
+                        {{-- This event is already locked/ended --}}
+                        <span class="badge bg-secondary" data-bs-toggle="tooltip"
+                            title="This course has been ended and is locked from editing">
+                            <i class="bi bi-lock-fill me-1"></i>Ended
+                        </span>
+                        @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                            <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                            data-event-id="{{ encode_id($event->id) }}"></i>
+                        @endif
+                    @endif
+                @elseif(get_user_role(auth()->user()->role) == 'instructor')   
+                    @if(empty($event->is_locked))
+                        @if(checkAllowedModule('training','training.edit')->isNotEmpty()  && !$event->is_graded)
+                            <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                            data-event-id="{{ encode_id($event->id) }}"></i>
+                        @endif
+                        @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                            <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                            <i class="fa fa-eye text-danger me-2"></i>
+                            </a>            
+                        @endif
+                           @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
+                        <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
+                        <i class="fa fa-list text-danger me-2"></i>
+                        </a>
+                    @endif  
                     @else
                         {{-- This event is already locked/ended --}}
                         <span class="badge bg-secondary" data-bs-toggle="tooltip"
@@ -240,6 +345,15 @@
             <div class="modal-body">
             <form action="" id="editTrainingEventForm" method="POST" class="row g-3">
                 @csrf
+                <div class="col-12">
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="edit_is_instructor_checkbox">
+                        <input type="hidden" name="entry_source" id="edit_entry_source" value="">
+                        <label class="form-check-label" for="edit_is_instructor_checkbox">
+                            Select Instructor Instead of Student
+                        </label>
+                    </div>
+                </div>
                 <input type="hidden" name="event_id" id="edit_event_id">
                 @if(auth()->user()->is_owner == 1)
                     <div class="col-md-6">
@@ -254,7 +368,9 @@
                     </div>
                 @endif
                 <div class="col-md-6">
-                    <label class="form-label">Select Student<span class="text-danger">*</span></label>
+                    <label class="form-label">
+                        <span id="edit_student_label">Select Student</span><span class="text-danger">*</span>
+                    </label>
                     <select class="form-select" name="student_id" id="edit_select_user">
                         <option value="">Select Student</option>
                         @foreach($students as $val)
@@ -444,7 +560,7 @@ function initializeSelect2() {
 
 }
 
-$(document).ready(function() {
+$(document).ready(function() { 
     $('#groupTable').DataTable();
     initializeSelect2();
     
@@ -465,7 +581,7 @@ $(document).ready(function() {
         calculateTotalSimulatorTime();
     });
 
-    function calculateTotalTime(outputSelector = '#total_time') {
+    function calculateTotalTime(outputSelector = '#total_time') { 
         let totalMinutes = 0;
 
         $('.lesson-box').each(function () {
@@ -497,7 +613,7 @@ $(document).ready(function() {
                     endTime.add(1, 'day');
                 }
 
-                totalMinutes += endTime.diff(startTime, 'minutes');
+                totalMinutes += endTime.diff(startTime, 'minutes');console.log(totalMinutes);
             }
         });
 
@@ -509,7 +625,8 @@ $(document).ready(function() {
     }
 
     $(document).on('change', '#select_org_unit, #edit_ou_id', function() {      
-        var ou_id = $(this).val();
+        var ou_id = $(this).val(); 
+       
         // Determine which modal is being used
         var isEditModal = $(this).attr('id') === 'edit_ou_id';
 
@@ -523,20 +640,30 @@ $(document).ready(function() {
             type: "GET",
             dataType: "json",
            success: function (response) {
-                var isInstructorSelected = $('#is_instructor_checkbox').is(':checked');
+               // var isInstructorSelected = $('#is_instructor_checkbox').is(':checked');
+                var isInstructorSelected = isEditModal ? $('#edit_is_instructor_checkbox').is(':checked') : $('#is_instructor_checkbox').is(':checked');
+            
+
+               
 
                 // Store selected values before clearing
                 var selectedStudent = studentDropdown.data("selected-value") || [];
+             
                 var selectedInstructor = instructorDropdown.data("selected-value") || [];
+                    
                 var selectedResource = resourceDropdown.data("selected-value") || [];
+                 
 
                 // -- Handle dropdown based on checkbox state --
                 if (isInstructorSelected) {
                     // Populate Instructors into #select_user
                     var instructorOptions = '<option value="">Select Instructor</option>';
-                    if (response.instructors && response.instructors.length > 0) {
+                    if (response.instructors && response.instructors.length > 0) { 
                         instructorsdata = response.instructors;
+                       
+                     
                         $.each(instructorsdata, function(index, instructor) {
+                              
                             var selected = instructor.id == selectedInstructor ? 'selected' : '';
                             instructorOptions += '<option value="' + instructor.id + '" ' + selected + '>' + instructor.fname + ' ' + instructor.lname + '</option>';
                         });
@@ -595,6 +722,7 @@ $(document).ready(function() {
                 type: "GET",
                 success: function(response) {
                     if (response.success) {
+                        var instructorCheckbox = isEditModal ? $('#edit_is_instructor_checkbox') : $('#is_instructor_checkbox');
                         // Update license number if available
                         if (response.licence_number) {
                             licenceNumberField.val(response.licence_number);
@@ -602,7 +730,6 @@ $(document).ready(function() {
                             alert('Student License number not found!');
                             licenceNumberField.val('');
                         }
-
                         // Store the previously selected course (if available)
                         var selectedCourseId = courseDropdown.data("selected-value") || '';
 
@@ -634,7 +761,7 @@ $(document).ready(function() {
     });
 
     $(document).on('change', '#select_course, #edit_select_course', function () {
-        var courseId = $(this).val();
+        var courseId = $(this).val(); 
         var isEditForm = $(this).attr('id') === 'edit_select_course';
         var lessonContainer = isEditForm ? $('#editLessonDetailsContainer') : $('#lessonDetailsContainer');
         var mode = isEditForm ? 'update' : 'create'; 
@@ -651,8 +778,7 @@ $(document).ready(function() {
                     end_time: lesson.end_time || '',
                     departure_airfield: lesson.departure_airfield || '',
                     destination_airfield: lesson.destination_airfield || '',
-                    instructor_license_number: lesson.instructor_license_number || '',
-                    credited_time: lesson.custom_hours_credited || ''
+                    instructor_license_number: lesson.instructor_license_number || ''
                 };
             });
         }
@@ -664,30 +790,14 @@ $(document).ready(function() {
             success: function (response) {
                 lessonContainer.empty(); // Clear existing lesson boxes
 
-            if (response.success && response.lessons.length > 0) {
-                let lessons = response.lessons;
-                let course = response.course;
-                let customTimes = response.custom_times || [];
-                resourcesdata = response.resources;
-
-                lessons.forEach(function (lesson, idx) {
-                    // 🔁 If course has custom time tracking enabled
-                    if (course.enable_custom_time_tracking == 1) {
-                        // Match custom time by lesson_id
-                        let match = customTimes.find(ct => ct.id == lesson.custom_time_id);
-                        if (match) {
-                            lesson.custom_time = {
-                                name: match.name,
-                                id: match.id
-                            };
-                            lesson.enable_custom_time_tracking = 1;
-                        }
-                    }
-
-                    let prefillData = isEditForm && lessonPrefillMap[lesson.id] ? lessonPrefillMap[lesson.id] : {};
-                    renderLessonBox(lesson, lessonContainer, prefillData, idx, mode);
-                });
-            }else {
+                if (response.success && response.lessons.length > 0) {
+                    let lessons = response.lessons;
+                    resourcesdata = response.resources; 
+                        response.lessons.forEach(function (lesson, idx) {
+                            let prefillData = isEditForm && lessonPrefillMap[lesson.id] ? lessonPrefillMap[lesson.id] : {};
+                            renderLessonBox(lesson, lessonContainer, prefillData, idx, mode);  // ✅ index passed
+                        });
+                } else {
                     alert('No lessons found for the selected course.');
                 }
             },
@@ -740,26 +850,78 @@ $(document).ready(function() {
             data: { eventId: eventId },
             success: async function (response) {
                 if (response.success) {
+                 
                     const event = response.trainingEvent;
+                    console.log(event);
+                    
 
                     // Store values temporarily
                     const selectedOU = event.ou_id;
                     const selectedStudent = event.student_id;
-                    const selectedInstructor = event.instructor_id;
+                   
+                    const selectedInstructor = event.student_id;
                     const selectedResource = event.resource_id;
                     const selectedCourse = event.course_id;
+                  
 
-                    //Set static values
+                    // Set static values
                     $('#edit_event_id').val(event.id);
                     $('#edit_std_licence_number').val(event.std_licence_number);
                     $('#edit_event_date').val(event.event_date);
                     $('#edit_total_time').val(moment(event.total_time, 'HH:mm:ss').format('HH:mm'));
+                      if (event.entry_source === 'instructor') 
+                        {
+                         // $('#edit_is_instructor_checkbox').prop('checked', true);
+                          $('#edit_is_instructor_checkbox').trigger('click');
+                         
+                        
+                           $('#edit_ou_id').val(selectedOU).trigger('change'); 
 
-                    // Set OU and wait for dependent dropdowns
+
+                        }
+                    // if (event.entry_source === 'instructor') {
+                    //     $('#edit_is_instructor_checkbox').prop('checked', true);
+                    //     alert("sds");
+                    //     $('#edit_entry_source').val('instructor');
+                    //     $('#edit_student_label').text('Select Instructor');
+                    //    // $('#edit_is_instructor_checkbox').trigger('change');
+                  
+                    // var instructorOptions = '<option value="">Select Instructor</option>';
+                    // if (response.instructors && response.instructors.length > 0) { 
+                    //     instructorsdata = response.instructors;
+
+                    //     var studentDropdown = $('#edit_select_user');
+                    //      var studentLabel = $('#student_label');
+                    //      studentDropdown.empty();
+                        
+                    //     $.each(instructorsdata, function(index, instructor) {
+                    //         var selected = instructor.id == selectedInstructor ? 'selected' : '';
+                    //         instructorOptions += '<option value="' + instructor.id + '" ' + selected + '>' + instructor.fname + ' ' + instructor.lname + '</option>';
+                    //             studentDropdown.html(instructorOptions); 
+                    //             $('#student_label').text('Select Instructor');
+                    //             $('#entry_source').val('instructor');
+                          
+
+                    //     });
+                    //     Inject student options
+                    //      studentLabel.text('Select Student'); // Update label
+                    //      $('#entry_source').val('student'); 
+                    // }
+
+
+                    // } else {
+                    //     $('#edit_is_instructor_checkbox').prop('checked', false); 
+                    //     $('#edit_entry_source').val('');
+                    //     $('#edit_student_label').text('Select Student');
+                    // }
+
+                    // Set OU and wait for dependent dropdowns.
+                  
                     $('#edit_ou_id').val(selectedOU).trigger('change');
                     await new Promise(resolve => setTimeout(resolve, 500));
 
                     // Set dropdown values
+                    
                     $('#edit_select_user').val(selectedStudent).data("selected-value", selectedStudent);
                     $('#edit_select_instructor').val(selectedInstructor).data("selected-value", selectedInstructor);
                     $('#edit_select_resource').val(selectedResource).data("selected-value", selectedResource);
@@ -777,8 +939,7 @@ $(document).ready(function() {
                         end_time: l.end_time || '',
                         departure_airfield: l.departure_airfield || '',
                         destination_airfield: l.destination_airfield || '',
-                        instructor_license_number: l.instructor_license_number || '',
-                        custom_hours_credited: l.custom_hours_credited || '',
+                        instructor_license_number: l.instructor_license_number || ''
                     }));
 
                     // Trigger the course change (will call renderLessonBox with prefill)
@@ -795,6 +956,7 @@ $(document).ready(function() {
             }
         });
     });
+
 
     $('#edit_select_lesson').on('change', function () {
         const selectedLessonIds = $(this).val() || []; // Get current selected values (array)
@@ -945,28 +1107,28 @@ $(document).ready(function() {
 
     $('#editTrainingEventModal').on('shown.bs.modal', async function () {
         initializeSelect2();
-        $('#edit_ou_id').trigger('change');
+       // $('#edit_ou_id').trigger('change');
 
         await new Promise(resolve => setTimeout(resolve, 300));
-        $('#edit_select_user').trigger('change');
+        // $('#edit_select_user').trigger('change');
 
         await new Promise(resolve => setTimeout(resolve, 300));
-        $('#edit_select_course').trigger('change');
+        //$('#edit_select_course').trigger('change');
     });
+
 
     let lessonIndex = 0;
 
     function renderLessonBox(lesson, container, prefillData = {}, index = null, mode) {
-
         const errorSuffix = mode === 'update' ? '_error_up' : '_error';
         const currentIndex = index !== null ? index : lessonIndex++;
         const isFirstLesson = currentIndex === 0;
         let lessonId = lesson.id;
         let lessonTitle = lesson.lesson_title;
         let lessonType = lesson.lesson_type || '';
-        let enableCustomTimeTracking = lesson.enable_custom_time_tracking == 1;
-        let customTime = lesson.custom_time || {};
-
+        const isEditMode = mode === 'update';
+        const instructorCheckbox = isEditMode ? $('#edit_is_instructor_checkbox') : $('#is_instructor_checkbox');
+        const excludedInstructorId = instructorCheckbox.is(':checked') ? (isEditMode ? $('#edit_select_user').val() : $('#select_user').val()) : null;
         let {
             instructor_id = '',
             resource_id = '',
@@ -975,18 +1137,20 @@ $(document).ready(function() {
             end_time = '',
             departure_airfield = '',
             destination_airfield = '',
-            instructor_license_number = '',
-            credited_time = ''
+            instructor_license_number = ''
         } = prefillData;
 
         let isCurrentUserInstructor = currentUser.role === 'instructor';
-        let instructorOptions = instructorsdata.map(i => {
-            let selected = '', disabled = '';
-            if (isCurrentUserInstructor && i.id == currentUser.id) selected = 'selected';
-            else if (isCurrentUserInstructor) disabled = 'disabled';
-            else if (i.id == instructor_id) selected = 'selected';
-            return `<option value="${i.id}" ${selected} ${disabled}>${i.fname} ${i.lname}</option>`;
-        }).join('');
+       let instructorOptions = instructorsdata
+    .filter(i => i.id != excludedInstructorId) 
+    .map(i => {
+        let selected = '', disabled = '';
+        if (isCurrentUserInstructor && i.id == currentUser.id) selected = 'selected';
+        else if (isCurrentUserInstructor) disabled = 'disabled';
+        else if (i.id == instructor_id) selected = 'selected';
+        return `<option value="${i.id}" ${selected} ${disabled}>${i.fname} ${i.lname}</option>`;
+    }).join('');
+
 
         let resourceOptions = resourcesdata
             .filter(r => {
@@ -1059,13 +1223,6 @@ $(document).ready(function() {
                         <input type="text" name="lesson_data[${currentIndex}][instructor_license_number]" class="form-control" value="${instructor_license_number}" readonly>
                         <div id="lesson_data_${currentIndex}_instructor_license_number${errorSuffix}" class="text-danger error_e"></div>
                     </div>
-                    ${enableCustomTimeTracking && customTime?.name ? `
-                    <div class="col-md-6">
-                        <label class="form-label">${customTime.name} (Credited Time)</label>
-                        <input type="number" name="lesson_data[${currentIndex}][credited_time]" class="form-control" value="${credited_time}" placeholder="Enter Hours credited">
-                        <div id="lesson_data_${currentIndex}_credited_time${errorSuffix}" class="text-danger error_e"></div>
-                    </div>
-                ` : ''}
                 </div>
             </div>
         `;
@@ -1108,6 +1265,7 @@ $(document).ready(function() {
                 $departureBlock.show();
                 $destinationBlock.show();
                 $simTimeBox.hide();
+                
             }
         }
 
@@ -1149,7 +1307,7 @@ $(document).ready(function() {
     }
 
 
-    function calculateTotalSimulatorTime() {
+    function calculateTotalSimulatorTime() { alert("xcz");
         let totalMinutes = 0;
 
         $('.lesson-box[data-lesson-type="simulator"]').each(function () {
@@ -1172,6 +1330,7 @@ $(document).ready(function() {
         const hours = Math.floor(totalMinutes / 60);
         const minutes = totalMinutes % 60;
         const totalFormatted = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+        console.log("totalFormatted", totalFormatted);
 
         // Fill both fields if they exist
         $('#total_simulator_time').val(totalFormatted);
@@ -1233,6 +1392,33 @@ document.getElementById('is_instructor_checkbox').addEventListener('change', fun
     const entrySourceInput = document.getElementById('entry_source');
     entrySourceInput.value = this.checked ? 'instructor' : '';
 });
+$(document).on('change', '#edit_is_instructor_checkbox', function () { 
+    const isChecked = $(this).is(':checked');
+    const label = $('#edit_student_label');
+    const userDropdown = $('#edit_select_user');
+    const hiddenInput = $('#edit_entry_source');
+
+    label.text(isChecked ? 'Select Instructor' : 'Select Student');
+    hiddenInput.val(isChecked ? 'instructor' : '');
+    userDropdown.empty();
+    let userOptions = '<option value="">Select ' + (isChecked ? 'Instructor' : 'Student') + '</option>';
+    const dataList = isChecked ? instructorsdata : studentsdata;
+    
+    dataList.forEach(user => {
+        userOptions += `<option value="${user.id}">${user.fname} ${user.lname}</option>`;
+    });
+
+    userDropdown.html(userOptions);
+});
+function generateInstructorOptions(instructorsdata, selectedId = '', excludeId = '') {
+    let options = '<option value="">Select Instructor</option>';
+    instructorsdata.forEach(i => {
+        if (excludeId && i.id == excludeId) return; // ⛔ skip the excluded instructor
+        let selected = (i.id == selectedId) ? 'selected' : '';
+        options += `<option value="${i.id}" ${selected}>${i.fname} ${i.lname}</option>`;
+    });
+    return options;
+}
 </script>
 @endsection
 
