@@ -33,7 +33,7 @@ class TrainingEvents extends Model
         'student_acknowledgement_comments',
         'entry_source'
     ];
-
+ 
     public function orgUnit()
     {
         return $this->belongsTo(OrganizationUnits::class, 'ou_id', 'id');
@@ -146,7 +146,7 @@ class TrainingEvents extends Model
         });
 
         $competencyOk = true;
-
+ 
         if ($cbtaEnabled) {
             $grading = \App\Models\CompetencyGrading::where([
                 'event_id' => $this->id,

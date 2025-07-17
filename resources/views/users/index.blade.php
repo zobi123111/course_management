@@ -4,33 +4,32 @@
 @section('content')
 
 <style>
-.rating-stars {
-    display: flex;
-    cursor: pointer;
-    font-size: 30px;
-    color: gray;
-}
+    .rating-stars {
+        display: flex;
+        cursor: pointer;
+        font-size: 30px;
+        color: gray;
+    }
 
-.rating-stars .star {
-    padding: 5px;
-}
+    .rating-stars .star {
+        padding: 5px;
+    }
 
-.rating-stars .star.active {
-    color: gold;
-}
+    .rating-stars .star.active {
+        color: gold;
+    }
 
-.star {
-    font-size: 30px;
-    color: gray;
-    /* default color for unfilled stars */
-    cursor: pointer;
-}
+    .star {
+        font-size: 30px;
+        color: gray;
+        /* default color for unfilled stars */
+        cursor: pointer;
+    }
 
-.star.rated {
-    color: gold;
-    /* color for filled stars */
-}
-
+    .star.rated {
+        color: gold;
+        /* color for filled stars */
+    }
 </style>
 
 <div class="main_cont_outer">
@@ -46,10 +45,10 @@
             <a href="#" class="btn btn-primary me-2 create-button" id="createUser" data-toggle="modal"
                 data-target="#userModal">Create Users</a>
             @if(auth()->user()->is_owner == 1)
-                <a href="{{ route('users.rating') }}" class="btn btn-primary" id="addRating">View Rating</a> 
+            <a href="{{ route('users.rating') }}" class="btn btn-primary" id="addRating">View Rating</a>
             @endif
             @if(auth()->user()->ou_id != null)
-            <a href="{{ route('users.ou_rating') }}" class="btn btn-primary" id="addRating">View OU  Rating</a>
+            <a href="{{ route('users.ou_rating') }}" class="btn btn-primary" id="addRating">View OU Rating</a>
             @endif
         </div>
 
@@ -141,7 +140,7 @@
                             <select name="role_name" class="form-select" id="role">
                                 <option value="">Select role</option>
                                 @foreach($roles as $val)
-                                        <option value="{{ $val->id }}">{{ $val->role_name }}</option>
+                                <option value="{{ $val->id }}">{{ $val->role_name }}</option>
                                 @endforeach
                             </select>
                             <div id="role_name_error" class="text-danger error_e"></div>
@@ -153,12 +152,12 @@
                                 <option value="">Select roles</option>
                                 @foreach($roles as $val)
                                 <option value="{{ $val->id }}">{{ $val->role_name }}</option>
-                                @endforeach
-                            </select>
-                            <div id="extra_roles_error" class="text-danger error_e"></div>
-                        </div> --}}
-                        <!-- Licence -->
-                        <!-- <div class="col-md-6">
+                        @endforeach
+                        </select>
+                        <div id="extra_roles_error" class="text-danger error_e"></div>
+                    </div> --}}
+                    <!-- Licence -->
+                    <!-- <div class="col-md-6">
                             <label for="licence_checkbox" class="form-label">Licence</label>
                             <input type="checkbox" name="licence_checkbox" id="licence_checkbox" class="ms-2">
                             <label for="licence_verification_required" class="form-label ms-4">Admin Verification
@@ -172,272 +171,291 @@
                                 style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
                             <div id="licence_file_error" class="text-danger error_e"></div>
                         </div> -->
-                       <div class="col-md-6">
-    <label for="licence_checkbox" class="form-label">UK Licence</label>
-    <input type="checkbox" name="licence_checkbox" id="licence_checkbox" class="ms-2">
+                    <div class="col-md-6">
+                        <label for="licence_checkbox" class="form-label">UK Licence</label>
+                        <input type="checkbox" name="licence_checkbox" id="licence_checkbox" class="ms-2">
 
-    <label for="licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
-    <input type="checkbox" name="licence_verification_required" id="licence_verification_required" class="ms-2" value="1">
+                        <label for="licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
+                        <input type="checkbox" name="licence_verification_required" id="licence_verification_required" class="ms-2" value="1">
 
-    <input type="text" name="licence" id="licence" class="form-control mt-2" style="display: none;" placeholder="Enter UK Licence Number">
-    <div id="licence_error" class="text-danger error_e"></div>
+                        <input type="text" name="licence" id="licence" class="form-control mt-2" style="display: none;" placeholder="Enter UK Licence Number">
+                        <div id="licence_error" class="text-danger error_e"></div>
 
-    <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
-    <div id="licence_file_error" class="text-danger error_e"></div>
+                        <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                        <div id="licence_file_error" class="text-danger error_e"></div>
 
-    <!-- 👇 Ratings for Licence 1 -->
-    <div id="licence_rating_section" class="mt-3" style="display: none;">
+                        <!-- 👇 Ratings for Licence 1 -->
+                        <!-- <div id="licence_rating_section" class="mt-3" style="display: none;">
         <label class="form-label">Select Ratings for UK Licence</label>
+        <input type = "checkbox"  id="uk_licence"/>
+
         <select class="form-select rating-select" name="licence_1_ratings[]" id="licence_rating_value" multiple>
-            {{-- <option value="">Select Rating</option> --}}
             @foreach($rating as $val)
                 <option value="{{ $val->id }}">{{ $val->name }}</option>
             @endforeach
         </select>
         <div id="licence_rating_error" class="text-danger error_e"></div>
-    </div>
+    </div> -->
+                        <div id="licence_rating_section" class="mt-3">
+                            <label class="form-label">Select Ratings for UK Licence</label>
+                            <input type="checkbox" id="uk_licence" />
+                            <div id="rating_select_boxes_container" class="mt-2" style="display: none;">
+                                <!-- Select boxes will be appended here -->
+                            </div>
+                            <button type="button" id="add_rating_box" class="btn btn-primary mt-2" style="display: none;">Add Rating</button>
+                        </div>
 
-    <!-- Enable Licence 2 -->
-    <div class="mt-3" id="license_2" >
-        <label for="licence2_checkbox" class="form-label"> EASA Licence</label>
-        <input type="checkbox" name="licence_2_checkbox" id="licence_2_checkbox" value="1" class="ms-2">
 
-        <label for="licence_2_verification_required" class="form-label ms-4">Admin Verification required?</label>
-        <input type="checkbox" name="licence_2_verification_required" id="licence_2_verification_required" class="ms-2" value="1">
-    </div>
 
-    <!-- Second Licence Fields -->
-    <div id="second_licence_section" style="display: none;" class="mt-3">
-        <input type="text" name="licence_2" id="licence_2" class="form-control" placeholder="Enter EASA Licence Number">
-        <div id="licence_2_error" class="text-danger error_e"></div>
+                        <!-- Enable Licence 2 -->
+                        <div class="mt-3" id="license_2">
+                            <label for="licence2_checkbox" class="form-label"> EASA Licence</label>
+                            <input type="checkbox" name="licence_2_checkbox" id="licence_2_checkbox" value="1" class="ms-2">
 
-        <input type="file" name="licence_file_2" id="licence_file_2" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
-        <div id="licence_file_2_error" class="text-danger error_e"></div>
+                            <label for="licence_2_verification_required" class="form-label ms-4">Admin Verification required?</label>
+                            <input type="checkbox" name="licence_2_verification_required" id="licence_2_verification_required" class="ms-2" value="1">
+                        </div>
 
-        <!-- 👇 Ratings for Licence 2 -->
-        <div id="licence_2_rating_section" class="mt-3">
-            <label class="form-label">Select Ratings for EASA Licence</label>
+                        <!-- Second Licence Fields -->
+                        <div id="second_licence_section" style="display: none;" class="mt-3">
+                            <input type="text" name="licence_2" id="licence_2" class="form-control" placeholder="Enter EASA Licence Number">
+                            <div id="licence_2_error" class="text-danger error_e"></div>
+
+                            <input type="file" name="licence_file_2" id="licence_file_2" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
+                            <div id="licence_file_2_error" class="text-danger error_e"></div>
+
+                            <!-- 👇 Ratings for Licence 2 -->
+                            <div id="licence_2_rating_section" class="mt-3">
+                                <!-- <label class="form-label">Select Ratings for EASA Licence</label>
             <select class="form-select rating-select" name="licence_2_ratings[]" id="licence_2_rating_value" multiple>
                 {{-- <option value="">Select Rating</option> --}}
                 @foreach($rating as $val)
                     <option value="{{ $val->id }}">{{ $val->name }}</option>
                 @endforeach
             </select>
-            <div id="licence_2_rating_error" class="text-danger error_e"></div>
-        </div>
-    </div>
-</div>
+            <div id="licence_2_rating_error" class="text-danger error_e"></div> -->
+                                <div id="licence_2_rating_section" class="mt-3">
+                                    <label class="form-label">Select Ratings for EASA Licence</label>
+                                    <input type="checkbox" id="easa_licence" />
+                                    <div id="easa_select_boxes_container" class="mt-2" style="display: none;">
+                                        <!-- Select boxes will be appended here -->
+                                    </div>
+                                    <button type="button" id="easa_add_rating_box" class="btn btn-primary mt-2" style="display: none;">Add Rating</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
 
-                        <!--   // Medical  -->
-                        <div class="col-md-6">
-                            <label for="medical_checkbox" class="form-label">UK Medical</label>
-                            <input type="checkbox" name="medical_checkbox" id="medical_checkbox" class="ms-2" value="1">
-                            <label for="medical_verification_required" class="form-label ms-4">Admin Verification
-                                required?</label>
-                            <input type="checkbox" name="medical_verification_required"
-                                id="medical_verification_required" class="ms-2" value="1">
-                            <div class="medical_issued_div" style="display:none">
-                                <label for="extra_roles" class="form-label">Medical Issued By<span
+                    <!--   // Medical  -->
+                    <div class="col-md-6">
+                        <label for="medical_checkbox" class="form-label">UK Medical</label>
+                        <input type="checkbox" name="medical_checkbox" id="medical_checkbox" class="ms-2" value="1">
+                        <label for="medical_verification_required" class="form-label ms-4">Admin Verification
+                            required?</label>
+                        <input type="checkbox" name="medical_verification_required"
+                            id="medical_verification_required" class="ms-2" value="1">
+                        <div class="medical_issued_div" style="display:none">
+                            <label for="extra_roles" class="form-label">Medical Issued By<span
+                                    class="text-danger"></span></label>
+                            <select class="form-select " name="issued_by" id="issued_by">
+                                <option value="">Select Issued By</option>
+                                <option value="UKCAA">UK CAA</option>
+                                <option value="EASA">EASA</option>
+                                <option value="FAA">FAA</option>
+                            </select>
+
+                        </div>
+                        <div class="medical_class_div" style="display:none">
+                            <label for="extra_roles" class="form-label">Medical Class<span
+                                    class="text-danger"></span></label>
+                            <select class="form-select " name="medical_class" id="medical_class">
+                                <option value="">Select the Class</option>
+                                <option value="class1">Class 1</option>
+                                <option value="class2">Class 2</option>
+                            </select>
+                            <div id="medical_issue_date_div">
+                                <label for="extra_roles" class="form-label">Medical Issue Date<span
                                         class="text-danger"></span></label>
-                                <select class="form-select " name="issued_by" id="issued_by">
+                                <input type="date" name="medical_issue_date" id="medical_issue_date"
+                                    class="form-control" placeholder="Medical Issue Date">
+                            </div>
+                            <div id="medical_expiry_date_div">
+                                <label for="extra_roles" class="form-label">Medical Expiry Date<span
+                                        class="text-danger"></span></label>
+                                <input type="date" name="medical_expiry_date" id="medical_expiry_date"
+                                    class="form-control" placeholder="Medical Expiry Date">
+                            </div>
+                            <div id="medical_detail_div">
+                                <label for="extra_roles" class="form-label">Medical Detail <span
+                                        class="text-danger"></span></label>
+                                <!-- <input type="text" name="medical_detail" id="medical_detail" class="form-control"
+                                        placeholder="Enter the Detail"> -->
+                                <textarea name="medical_detail" id="medical_detail" class="form-control"
+                                    placeholder="Enter the Detail"></textarea>
+                            </div>
+                            <div id="medical_file_div">
+                                <label for="extra_roles" class="form-label">Medical Upload <span
+                                        class="text-danger"></span></label>
+                                <input type="file" name="medical_file" id="medical_file"
+                                    class="form-control" placeholder="Enter the Detail">
+                            </div>
+
+                            <button type="button" id="add_second_medical_btn" class="btn btn-secondary mt-3" style="display: none;">
+                                Second Medical
+                            </button>
+
+                        </div>
+                        <div class="mt-3" id="medical_2">
+                            <label for="medical_2_checkbox" class="form-label">EASA Medical</label>
+                            <input type="checkbox" name="medical_2_checkbox" id="medical_2_checkbox" class="ms-2" value="1">
+                            <label for="medical_2_verification_required" class="form-label ms-4">Admin Verification
+                                required?</label>
+                            <input type="checkbox" name="medical_2_verification_required"
+                                id="medical_2_verification_required" class="ms-2" value="1">
+                        </div>
+                        <div id="second_medical_section" class="mt-3" style="display: none;">
+                            <div class="medical_issued_div_2">
+                                <label for="issued_by_2" class="form-label">Medical Issued By</label>
+                                <select class="form-select" name="issued_by_2" id="issued_by_2">
                                     <option value="">Select Issued By</option>
                                     <option value="UKCAA">UK CAA</option>
                                     <option value="EASA">EASA</option>
                                     <option value="FAA">FAA</option>
                                 </select>
-
                             </div>
-                            <div class="medical_class_div" style="display:none">
-                                <label for="extra_roles" class="form-label">Medical Class<span
-                                        class="text-danger"></span></label>
-                                <select class="form-select " name="medical_class" id="medical_class">
+
+                            <div class="medical_class_div_2 mt-3">
+                                <label for="medical_class_2" class="form-label">Medical Class</label>
+                                <select class="form-select" name="medical_class_2" id="medical_class_2">
                                     <option value="">Select the Class</option>
                                     <option value="class1">Class 1</option>
                                     <option value="class2">Class 2</option>
                                 </select>
-                                <div id="medical_issue_date_div">
-                                    <label for="extra_roles" class="form-label">Medical Issue Date<span
-                                            class="text-danger"></span></label>
-                                    <input type="date" name="medical_issue_date" id="medical_issue_date"
-                                        class="form-control" placeholder="Medical Issue Date">
-                                </div>
-                                <div id="medical_expiry_date_div">
-                                    <label for="extra_roles" class="form-label">Medical Expiry Date<span
-                                            class="text-danger"></span></label>
-                                    <input type="date" name="medical_expiry_date" id="medical_expiry_date"
-                                        class="form-control" placeholder="Medical Expiry Date">
-                                </div>
-                                <div id="medical_detail_div">
-                                    <label for="extra_roles" class="form-label">Medical Detail <span
-                                            class="text-danger"></span></label>
-                                    <!-- <input type="text" name="medical_detail" id="medical_detail" class="form-control"
-                                        placeholder="Enter the Detail"> -->
-                                    <textarea name="medical_detail" id="medical_detail" class="form-control"
+                            </div>
+
+                            <div class="mt-3">
+                                <label for="medical_issue_date_2" class="form-label">Medical Issue Date</label>
+                                <input type="date" name="medical_issue_date_2" id="medical_issue_date_2" class="form-control">
+                            </div>
+
+                            <div class="mt-3">
+                                <label for="medical_expiry_date_2" class="form-label">Medical Expiry Date</label>
+                                <input type="date" name="medical_expiry_date_2" id="medical_expiry_date_2" class="form-control">
+                            </div>
+
+                            <div class="mt-3">
+                                <label for="medical_detail_2" class="form-label">Medical Detail</label>
+                                <textarea name="medical_detail_2" id="medical_detail_2" class="form-control"
                                     placeholder="Enter the Detail"></textarea>
-                                </div>
-                                <div id="medical_file_div">
-                                    <label for="extra_roles" class="form-label">Medical Upload <span
-                                            class="text-danger"></span></label>
-                                    <input type="file" name="medical_file" id="medical_file"
-                                        class="form-control" placeholder="Enter the Detail">
-                                </div>
-
-                                <button type="button" id="add_second_medical_btn" class="btn btn-secondary mt-3" style="display: none;">
-                                    Second Medical
-                                </button>
-                           
                             </div>
-                                 <div class="mt-3" id="medical_2" >
-                                    <label for="medical_2_checkbox" class="form-label">EASA Medical</label>
-                                    <input type="checkbox" name="medical_2_checkbox" id="medical_2_checkbox" class="ms-2" value="1">
-                                    <label for="medical_2_verification_required" class="form-label ms-4">Admin Verification
-                                        required?</label>
-                                    <input type="checkbox" name="medical_2_verification_required"
-                                        id="medical_2_verification_required" class="ms-2" value="1">
-                                </div>
-                            <div id="second_medical_section" class="mt-3" style="display: none;">
-                                <div class="medical_issued_div_2">
-                                    <label for="issued_by_2" class="form-label">Medical Issued By</label>
-                                    <select class="form-select" name="issued_by_2" id="issued_by_2">
-                                        <option value="">Select Issued By</option>
-                                        <option value="UKCAA">UK CAA</option>
-                                        <option value="EASA">EASA</option>
-                                        <option value="FAA">FAA</option>
-                                    </select>
-                                </div>
 
-                                <div class="medical_class_div_2 mt-3">
-                                    <label for="medical_class_2" class="form-label">Medical Class</label>
-                                    <select class="form-select" name="medical_class_2" id="medical_class_2">
-                                        <option value="">Select the Class</option>
-                                        <option value="class1">Class 1</option>
-                                        <option value="class2">Class 2</option>
-                                    </select>
-                                </div>
-
-                                <div class="mt-3">
-                                    <label for="medical_issue_date_2" class="form-label">Medical Issue Date</label>
-                                    <input type="date" name="medical_issue_date_2" id="medical_issue_date_2" class="form-control">
-                                </div>
-
-                                <div class="mt-3">
-                                    <label for="medical_expiry_date_2" class="form-label">Medical Expiry Date</label>
-                                    <input type="date" name="medical_expiry_date_2" id="medical_expiry_date_2" class="form-control">
-                                </div>
-
-                                <div class="mt-3">
-                                    <label for="medical_detail_2" class="form-label">Medical Detail</label>
-                                    <textarea name="medical_detail_2" id="medical_detail_2" class="form-control"
-                                        placeholder="Enter the Detail"></textarea>
-                                </div>
-
-                                <div class="mt-3">
-                                    <label for="medical_file_2" class="form-label">Medical Upload</label>
-                                    <input type="file" name="medical_file_2" id="medical_file_2" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
-                                </div>
+                            <div class="mt-3">
+                                <label for="medical_file_2" class="form-label">Medical Upload</label>
+                                <input type="file" name="medical_file_2" id="medical_file_2" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Passport -->
-                        <div class="col-md-6">
-                            <label for="passport_checkbox" class="form-label">Passport</label>
-                            <input type="checkbox" name="passport_checkbox" id="passport_checkbox" class="ms-2">
-                            <label for="passport_verification_required" class="form-label ms-4">Admin Verification
-                                required?</label>
-                            <input type="checkbox" name="passport_verification_required"
-                                id="passport_verification_required" class="ms-2" value="1">
-                            <input type="text" name="passport" id="passport" class="form-control" style="display: none;"
-                                placeholder="Enter Passport Number">
-                            <div id="passport_error" class="text-danger error_e"></div>
-                            <input type="file" name="passport_file" id="passport_file" class="form-control mt-3"
-                                style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
-                            <div id="passport_file_error" class="text-danger error_e"></div>
-                        </div>
+                    <!-- Passport -->
+                    <div class="col-md-6">
+                        <label for="passport_checkbox" class="form-label">Passport</label>
+                        <input type="checkbox" name="passport_checkbox" id="passport_checkbox" class="ms-2">
+                        <label for="passport_verification_required" class="form-label ms-4">Admin Verification
+                            required?</label>
+                        <input type="checkbox" name="passport_verification_required"
+                            id="passport_verification_required" class="ms-2" value="1">
+                        <input type="text" name="passport" id="passport" class="form-control" style="display: none;"
+                            placeholder="Enter Passport Number">
+                        <div id="passport_error" class="text-danger error_e"></div>
+                        <input type="file" name="passport_file" id="passport_file" class="form-control mt-3"
+                            style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                        <div id="passport_file_error" class="text-danger error_e"></div>
+                    </div>
 
-                        <!-- Rating/s (Stars) -->
-                        {{-- <div class="col-md-6">
+                    <!-- Rating/s (Stars) -->
+                    {{-- <div class="col-md-6">
                             <label for="rating_checkbox" class="form-label">Rating/s</label>
                             <input type="checkbox" name="rating_checkbox" id="rating_checkbox" class="ms-2">
                             <div id="ratings" style="display: none;">
                                 <select class="form-select rating-select" name="rating[]" aria-label="Default select example" multiple> --}}
-                                    {{-- <option value="">Select Rating</option> --}}
-                                    {{-- @foreach($rating as $val)
+                    {{-- <option value="">Select Rating</option> --}}
+                    {{-- @foreach($rating as $val)
                                     <option value="{{ $val->id }}">{{ $val->name }}</option>
-                                    @endforeach
-                                </select>
-                                <div id="rating_error" class="text-danger error_e"></div>
-                            </div>
-                        </div> --}}
+                    @endforeach
+                    </select>
+                    <div id="rating_error" class="text-danger error_e"></div>
+            </div>
+        </div> --}}
 
 
-                        <!-- Currency (Optional) -->
-                        <div class="col-md-6">
-                            <label for="currency" class="form-label">Currency</label>
-                            <input type="checkbox" name="currency_checkbox" id="currency_checkbox" class="ms-2">
-                            <input type="text" name="currency" id="currency" class="form-control" style="display: none;"
-                                placeholder="Enter Currency">
-                            <div id="currency_error" class="text-danger error_e"></div>
-                        </div>
+        <!-- Currency (Optional) -->
+        <div class="col-md-6">
+            <label for="currency" class="form-label">Currency</label>
+            <input type="checkbox" name="currency_checkbox" id="currency_checkbox" class="ms-2">
+            <input type="text" name="currency" id="currency" class="form-control" style="display: none;"
+                placeholder="Enter Currency">
+            <div id="currency_error" class="text-danger error_e"></div>
+        </div>
 
-                        <!-- Custom Field -->
-                        <div class="col-md-12">
-                            <label for="custom_field_checkbox" class="form-label">Custom Field</label>
-                            <input type="checkbox" name="custom_field_checkbox" id="custom_field_checkbox" class="ms-2" value="1">
-                            <label for="customField_verification_required" class="form-label ms-4">Admin Verification
-                                required?</label>
-                            <input type="checkbox" name="customField_verification_required"
-                                id="customField_verification_required" class="ms-2" value="1">
-                        </div>
-                        <div>
-                            <label for="customfield_filelabel" id="customfield_filelabel" class="form-label"
-                                style="display: none;">Date</label>
-                            <input type="checkbox" name="custom_date_checkbox" id="custom_date_checkbox" class="m-2"
-                                style="display: none;">
-                            <label for="customfield_textlabel" id="customfield_textlabel" class="form-label"
-                                style="display: none;">Text</label>
-                            <input type="checkbox" name="custom_text_checkbox" id="custom_text_checkbox" class="ms-2"
-                                style="display: none;">
-                            <div class="col-md-6">
-                                <input type="date" name="custom_field_date" id="custom_date" class="form-control mt-3"
-                                    style="display: none;">
-                                <input type="text" name="custom_field_text" id="custom_text" class="form-control mt-3"
-                                    placeholder="Enter the Text" style="display: none;">
-                            </div>
-                        </div>
-                        <div id="customfield_error" class="text-danger error_e"></div>
-
-                        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                        <div class="col-md-6">
-                            <label for="email" class="form-label">Select Org Unit<span
-                                    class="text-danger">*</span></label>
-                            <select class="form-select" name="ou_id" aria-label="Default select example">
-                                <option value="">Select Org Unit</option>
-                                @foreach($organizationUnits as $val)
-                                <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                                @endforeach
-                            </select>
-                            <div id="ou_id_error" class="text-danger error_e"></div>
-                        </div>
-                        @endif
-                        <div class="col-md-6">
-                            <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
-                            <select class="form-select" name="status" aria-label="Default select example">
-                                <option value="1" selected>Active</option>
-                                <option value="0">Inactive</option>
-                            </select>
-                            <div id="status_error" class="text-danger error_e"></div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
-                        <a href="#" type="button" id="saveuser" class="btn btn-primary sbt_btn">Save </a>
-                    </div>
-                    <div class="loader" style="display: none;"></div>
-                </form>
+        <!-- Custom Field -->
+        <div class="col-md-12">
+            <label for="custom_field_checkbox" class="form-label">Custom Field</label>
+            <input type="checkbox" name="custom_field_checkbox" id="custom_field_checkbox" class="ms-2" value="1">
+            <label for="customField_verification_required" class="form-label ms-4">Admin Verification
+                required?</label>
+            <input type="checkbox" name="customField_verification_required"
+                id="customField_verification_required" class="ms-2" value="1">
+        </div>
+        <div>
+            <label for="customfield_filelabel" id="customfield_filelabel" class="form-label"
+                style="display: none;">Date</label>
+            <input type="checkbox" name="custom_date_checkbox" id="custom_date_checkbox" class="m-2"
+                style="display: none;">
+            <label for="customfield_textlabel" id="customfield_textlabel" class="form-label"
+                style="display: none;">Text</label>
+            <input type="checkbox" name="custom_text_checkbox" id="custom_text_checkbox" class="ms-2"
+                style="display: none;">
+            <div class="col-md-6">
+                <input type="date" name="custom_field_date" id="custom_date" class="form-control mt-3"
+                    style="display: none;">
+                <input type="text" name="custom_field_text" id="custom_text" class="form-control mt-3"
+                    placeholder="Enter the Text" style="display: none;">
             </div>
         </div>
+        <div id="customfield_error" class="text-danger error_e"></div>
+
+        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+        <div class="col-md-6">
+            <label for="email" class="form-label">Select Org Unit<span
+                    class="text-danger">*</span></label>
+            <select class="form-select" name="ou_id" aria-label="Default select example">
+                <option value="">Select Org Unit</option>
+                @foreach($organizationUnits as $val)
+                <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                @endforeach
+            </select>
+            <div id="ou_id_error" class="text-danger error_e"></div>
+        </div>
+        @endif
+        <div class="col-md-6">
+            <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
+            <select class="form-select" name="status" aria-label="Default select example">
+                <option value="1" selected>Active</option>
+                <option value="0">Inactive</option>
+            </select>
+            <div id="status_error" class="text-danger error_e"></div>
+        </div>
     </div>
+    <div class="modal-footer">
+        <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
+        <a href="#" type="button" id="saveuser" class="btn btn-primary sbt_btn">Save </a>
+    </div>
+    <div class="loader" style="display: none;"></div>
+    </form>
+</div>
+</div>
+</div>
 </div>
 <!--End of create user-->
 
@@ -496,7 +514,7 @@
                             <select name="edit_role_name" class="form-select" id="edit_role">
                                 <option value="">Select role</option>
                                 @foreach($roles as $val)
-                                        <option value="{{ $val->id }}">{{ $val->role_name }}</option>
+                                <option value="{{ $val->id }}">{{ $val->role_name }}</option>
                                 @endforeach
                             </select>
                             <div id="edit_role_name_error_up" class="text-danger error_e"></div>
@@ -508,36 +526,36 @@
                                 <option value="">Select roles</option>
                                 @foreach($roles as $val)
                                 <option value="{{ $val->id }}">{{ $val->role_name }}</option>
-                                @endforeach
-                            </select>
-                            <div id="extra_roles_error_up" class="text-danger error_e"></div>
-                        </div> --}}
-                        <!-- Update Password Checkbox -->
-                        <div class="col-md-6">
-                            <label for="edit_update_password_checkbox" class="form-label">Password Change on next
-                                logon</label>
-                            <input type="checkbox" name="edit_update_password_checkbox"
-                                id="edit_update_password_checkbox">
-                            <input type="hidden" name="edit_update_password" id="edit_update_password" value="0">
-                        </div>
+                        @endforeach
+                        </select>
+                        <div id="extra_roles_error_up" class="text-danger error_e"></div>
+                    </div> --}}
+                    <!-- Update Password Checkbox -->
+                    <div class="col-md-6">
+                        <label for="edit_update_password_checkbox" class="form-label">Password Change on next
+                            logon</label>
+                        <input type="checkbox" name="edit_update_password_checkbox"
+                            id="edit_update_password_checkbox">
+                        <input type="hidden" name="edit_update_password" id="edit_update_password" value="0">
+                    </div>
 
 
-                        <!-- Licence -->
-                        <div class="col-md-6">
-                            <label for="edit_licence_checkbox" class="form-label">UK Licence</label>
-                            <input type="checkbox" name="edit_licence_checkbox" value="1" id="edit_licence_checkbox" class="ms-2">
+                    <!-- Licence -->
+                    <div class="col-md-6">
+                        <label for="edit_licence_checkbox" class="form-label">UK Licence</label>
+                        <input type="checkbox" name="edit_licence_checkbox" value="1" id="edit_licence_checkbox" class="ms-2">
 
-                            <label for="edit_licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
-                            <input type="checkbox" name="edit_licence_verification_required" id="edit_licence_verification_required" class="ms-2" value="1">
+                        <label for="edit_licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
+                        <input type="checkbox" name="edit_licence_verification_required" id="edit_licence_verification_required" class="ms-2" value="1">
 
-                            <input type="text" name="edit_licence" id="edit_licence" class="form-control" style="display: none;" placeholder="Enter UK Licence Number">
-                            <div id="edit_licence_error_up" class="text-danger error_e"></div>
-                            <input type="file" name="edit_licence_file" id="edit_licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
-                            <div id="edit_licence_file_error_up" class="text-danger error_e"></div>
-                            
-                                {{-- <label for="edit_licence_rating_checkbox" class="form-label">Select Ratings for UK Licence</label>
+                        <input type="text" name="edit_licence" id="edit_licence" class="form-control" style="display: none;" placeholder="Enter UK Licence Number">
+                        <div id="edit_licence_error_up" class="text-danger error_e"></div>
+                        <input type="file" name="edit_licence_file" id="edit_licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                        <div id="edit_licence_file_error_up" class="text-danger error_e"></div>
+
+                        {{-- <label for="edit_licence_rating_checkbox" class="form-label">Select Ratings for UK Licence</label>
                                 <input type="checkbox" name="edit_licence_rating_checkbox" id="edit_licence_rating_checkbox" class="ms-2"> --}}
-                                <div id="edit_licence_rating_section" class="mt-2" style="display: none;">
+                        <!-- <div id="edit_licence_rating_section" class="mt-2" style="display: none;">
                                     <select class="form-select rating-select" name="licence_1_ratings[]" id="edit_licence_rating_value" multiple>
                                         <option value="">Select Rating</option>
                                         @foreach($rating as $val)
@@ -545,162 +563,176 @@
                                         @endforeach
                                     </select>
                                     <div id="edit_licence_rating_error" class="text-danger error_e"></div>
-                                </div>
-                            <!-- <button type="button" id="edit_second_licence_btn" class="btn btn-secondary mt-3" style="display: none;">
-                                Second Licence
-                            </button> -->
-
-                            <div class="mt-3" id="edit_license2" >
-                                <label for="edit_licence_checkbox" class="form-label"> EASA Licence</label>
-                                <input type="checkbox" name="edit_licence_2_checkbox" value="1" id="edit_licence_2_checkbox" class="ms-2">
-
-                                <label for="edit_licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
-                                <input type="checkbox" name="edit_licence_2_verification_required" id="edit_licence_2_verification_required" class="ms-2" value="1">
+                                </div> -->
+                        <div id="edit_licence_rating_section" class="mt-3" style="display: none;">
+                            <label class="form-label">Select Ratings for UK Licence</label>
+                            <input type="checkbox" id="edit_uk_licence" />
+                            <div id="edit_rating_select_boxes_container" class="mt-2" style="display: none;">
+                                <!-- Select boxes will be appended here -->
                             </div>
+                            <button type="button" id="edit_add_rating_box" class="btn btn-primary mt-2" style="display: none;">Add Rating</button>
+                        </div>
 
-                            <!-- Second Licence Fields (initially hidden) -->
-                            <div id="edit_second_licence_section" style="display: none;" class="mt-3">
-                                <input type="text" name="edit_licence_2" id="edit_licence_2" class="form-control" placeholder="Enter EASA Licence Number">
-                                <div id="edit_licence_2_error" class="text-danger error_e"></div>
 
-                                <input type="file" name="edit_licence_file_2" id="edit_licence_file_2" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
-                                <div id="edit_licence_file_2_error" class="text-danger error_e"></div>
-                            </div>
-                            <div id="edit_licence_2_rating_section" class="mt-3">
-                                
-                                {{-- <label for="edit_licence_2_rating_value" class="form-label">Select Ratings for EASA Licence</label> --}}
-                                <select class="form-select rating-select" name="licence_2_ratings[]" id="edit_licence_2_ra ting_value" multiple>
+                        <div class="mt-3" id="edit_license2">
+                            <label for="edit_licence_checkbox" class="form-label"> EASA Licence</label>
+                            <input type="checkbox" name="edit_licence_2_checkbox" value="1" id="edit_licence_2_checkbox" class="ms-2">
+
+                            <label for="edit_licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
+                            <input type="checkbox" name="edit_licence_2_verification_required" id="edit_licence_2_verification_required" class="ms-2" value="1">
+                        </div>
+
+                        <!-- Second Licence Fields (initially hidden) -->
+                        <div id="edit_second_licence_section" style="display: none;" class="mt-3">
+                            <input type="text" name="edit_licence_2" id="edit_licence_2" class="form-control" placeholder="Enter EASA Licence Number">
+                            <div id="edit_licence_2_error" class="text-danger error_e"></div>
+
+                            <input type="file" name="edit_licence_file_2" id="edit_licence_file_2" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
+                            <div id="edit_licence_file_2_error" class="text-danger error_e"></div>
+                        </div>
+                        <div id="edit_licence_2_rating_section" class="mt-3">
+
+                            {{-- <label for="edit_licence_2_rating_value" class="form-label">Select Ratings for EASA Licence</label> --}}
+                            <!-- <select class="form-select rating-select" name="licence_2_ratings[]" id="edit_licence_2_ra ting_value" multiple>
                                     <option value="">Select Rating</option>
                                     @foreach($rating as $val)
                                         <option value="{{ $val->id }}">{{ $val->name }}</option>
                                     @endforeach
                                 </select>
-                                <div id="edit_licence_2_rating_error" class="text-danger error_e"></div>
+                                <div id="edit_licence_2_rating_error" class="text-danger error_e"></div> -->
+
+                            <label class="form-label">Select Ratings for EASA Licence</label>
+                            <input type="checkbox" id="licence_2_ratings" />
+                            <div id="licence_2_ratings_container" class="mt-2" style="display: none;">
+                                <!-- Select boxes will be appended here -->
                             </div>
+                            <button type="button" id="edit_licence_2_ratings" class="btn btn-primary mt-2" style="display: none;">Add Rating</button>
+
                         </div>
-                        <!--   // Medical  -->
-                        <div class="col-md-6">
-                            <label for="licence_checkbox" class="form-label">UK Medical</label>
-                            <input type="checkbox" name="editmedical_checkbox" id="editmedical_checkbox" class="ms-2"
-                                value="1">
-                            <label for="licence_verification_required" class="form-label ms-4">Admin Verification
-                                required?</label>
-                            <input type="checkbox" name="editmedical_verification_required"
-                                id="editmedical_verification_required" class="ms-2" value="1">
-                            <div class="editmedical_issued_div" style="display:none">
-                                <label for="extra_roles" class="form-label">Medical Issued By<span
+                    </div>
+                    <!--   // Medical  -->
+                    <div class="col-md-6">
+                        <label for="licence_checkbox" class="form-label">UK Medical</label>
+                        <input type="checkbox" name="editmedical_checkbox" id="editmedical_checkbox" class="ms-2"
+                            value="1">
+                        <label for="licence_verification_required" class="form-label ms-4">Admin Verification
+                            required?</label>
+                        <input type="checkbox" name="editmedical_verification_required"
+                            id="editmedical_verification_required" class="ms-2" value="1">
+                        <div class="editmedical_issued_div" style="display:none">
+                            <label for="extra_roles" class="form-label">Medical Issued By<span
+                                    class="text-danger"></span></label>
+                            <select class="form-select " name="editissued_by" id="editissued_by">
+                                <option value="">Select Issued By</option>
+                                <option value="UKCAA">UK CAA</option>
+                                <option value="EASA">EASA</option>
+                                <option value="FAA">FAA</option>
+                            </select>
+                        </div>
+                        <div class="editmedical_class_div" style="display:none">
+                            <label for="extra_roles" class="form-label">Medical Class<span
+                                    class="text-danger"></span></label>
+                            <select class="form-select " name="editmedical_class" id="editmedical_class">
+                                <option value="">Select the Class</option>
+                                <option value="class1">Class 1</option>
+                                <option value="class2">Class 2</option>
+                            </select>
+                            <div id="editmedical_issue_date_div">
+                                <label for="extra_roles" class="form-label">Medical Issue Date<span
                                         class="text-danger"></span></label>
-                                <select class="form-select " name="editissued_by" id="editissued_by">
-                                    <option value="">Select Issued By</option>
-                                    <option value="UKCAA">UK CAA</option>
-                                    <option value="EASA">EASA</option>
-                                    <option value="FAA">FAA</option>
-                                </select>
+                                <input type="date" name="editmedical_issue_date" id="editmedical_issue_date"
+                                    class="form-control" placeholder="Medical Issue Date">
                             </div>
-                            <div class="editmedical_class_div" style="display:none">
-                                <label for="extra_roles" class="form-label">Medical Class<span
+                            <div id="editmedical_expiry_date_div">
+                                <label for="extra_roles" class="form-label">Medical Expiry Date<span
                                         class="text-danger"></span></label>
-                                <select class="form-select " name="editmedical_class" id="editmedical_class">
-                                    <option value="">Select the Class</option>
-                                    <option value="class1">Class 1</option>
-                                    <option value="class2">Class 2</option>
-                                </select>
-                                <div id="editmedical_issue_date_div">
-                                    <label for="extra_roles" class="form-label">Medical Issue Date<span
-                                            class="text-danger"></span></label>
-                                    <input type="date" name="editmedical_issue_date" id="editmedical_issue_date"
-                                        class="form-control" placeholder="Medical Issue Date">
-                                </div>
-                                <div id="editmedical_expiry_date_div">
-                                    <label for="extra_roles" class="form-label">Medical Expiry Date<span
-                                            class="text-danger"></span></label>
-                                    <input type="date" name="editmedical_expiry_date" id="editmedical_expiry_date"
-                                        class="form-control" placeholder="Medical Expiry Date">
-                                </div>
-                                <div id="editmedical_detail_div">
-                                    <label for="extra_roles" class="form-label">Medical Detail <span
-                                            class="text-danger"></span></label>
-                                    <!-- <input type="text" name="editmedical_detail" id="editmedical_detail"
+                                <input type="date" name="editmedical_expiry_date" id="editmedical_expiry_date"
+                                    class="form-control" placeholder="Medical Expiry Date">
+                            </div>
+                            <div id="editmedical_detail_div">
+                                <label for="extra_roles" class="form-label">Medical Detail <span
+                                        class="text-danger"></span></label>
+                                <!-- <input type="text" name="editmedical_detail" id="editmedical_detail"
                                         class="form-control" placeholder="Enter the Detail"> -->
-                                    <textarea name="editmedical_detail" id="editmedical_detail" class="form-control" placeholder="Enter the Detail"></textarea> 
-                                </div>
-                                <div id="editmedical_detail_div">
-                                    <label for="extra_roles" class="form-label">Medical Upload <span
-                                            class="text-danger"></span></label>
-                                    <input type="file" name="editmedical_file" id="editmedical_file"
-                                        class="form-control" placeholder="Enter the Detail">
-                                </div>
-                                <!-- <button type="button" id="edit_second_medical_btn" class="btn btn-secondary mt-3">
+                                <textarea name="editmedical_detail" id="editmedical_detail" class="form-control" placeholder="Enter the Detail"></textarea>
+                            </div>
+                            <div id="editmedical_detail_div">
+                                <label for="extra_roles" class="form-label">Medical Upload <span
+                                        class="text-danger"></span></label>
+                                <input type="file" name="editmedical_file" id="editmedical_file"
+                                    class="form-control" placeholder="Enter the Detail">
+                            </div>
+                            <!-- <button type="button" id="edit_second_medical_btn" class="btn btn-secondary mt-3">
                                     Second Medical
                                 </button> -->
-                             
-                            </div>
-                               <div class="mt-3" id="edit_medical_2">
-                                    <label for="licence_checkbox" class="form-label">EASA Medical</label>
-                                    <input type="checkbox" name="edit_medical_2_checkbox" id="edit_medical_2_checkbox" class="ms-2" value="1">
-                                    <label for="licence_verification_required" class="form-label ms-4">Admin Verification
-                                        required?</label>
-                                    <input type="checkbox" name="edit_medical_2_verification_required"
-                                        id="edit_medical_2_verification_required" class="ms-2" value="1">
-                                </div>
 
-                            
-                            <!-- Second Medical Fields -->
-                            <div id="edit_second_medical_section" style="display: none;" class="mt-3">
+                        </div>
+                        <div class="mt-3" id="edit_medical_2">
+                            <label for="licence_checkbox" class="form-label">EASA Medical</label>
+                            <input type="checkbox" name="edit_medical_2_checkbox" id="edit_medical_2_checkbox" class="ms-2" value="1">
+                            <label for="licence_verification_required" class="form-label ms-4">Admin Verification
+                                required?</label>
+                            <input type="checkbox" name="edit_medical_2_verification_required"
+                                id="edit_medical_2_verification_required" class="ms-2" value="1">
+                        </div>
+
+
+                        <!-- Second Medical Fields -->
+                        <div id="edit_second_medical_section" style="display: none;" class="mt-3">
 
                             <!-- <div class="no-left-margin">
                                 <label for="licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
                                 <input type="checkbox" name="editmedical_verification_required_2" id="editmedical_verification_required_2" class="ms-2" value="1">
                             </div> -->
 
-                                <label class="form-label">EASA Medical Issued By</label>
-                                <select class="form-select" name="editissued_by_2" id="editissued_by_2">
-                                    <option value="">Select Issued By</option>
-                                    <option value="UKCAA">UK CAA</option>
-                                    <option value="EASA">EASA</option>
-                                    <option value="FAA">FAA</option>
-                                </select>
+                            <label class="form-label">EASA Medical Issued By</label>
+                            <select class="form-select" name="editissued_by_2" id="editissued_by_2">
+                                <option value="">Select Issued By</option>
+                                <option value="UKCAA">UK CAA</option>
+                                <option value="EASA">EASA</option>
+                                <option value="FAA">FAA</option>
+                            </select>
 
-                                <label class="form-label mt-2">EASA Medical Class</label>
-                                <select class="form-select" name="editmedical_class_2" id="editmedical_class_2">
-                                    <option value="">Select the Class</option>
-                                    <option value="class1">Class 1</option>
-                                    <option value="class2">Class 2</option>
-                                </select>
+                            <label class="form-label mt-2">EASA Medical Class</label>
+                            <select class="form-select" name="editmedical_class_2" id="editmedical_class_2">
+                                <option value="">Select the Class</option>
+                                <option value="class1">Class 1</option>
+                                <option value="class2">Class 2</option>
+                            </select>
 
-                                <label class="form-label mt-2">EASA Medical Issue Date</label>
-                                <input type="date" name="editmedical_issue_date_2" id="editmedical_issue_date_2" class="form-control">
+                            <label class="form-label mt-2">EASA Medical Issue Date</label>
+                            <input type="date" name="editmedical_issue_date_2" id="editmedical_issue_date_2" class="form-control">
 
-                                <label class="form-label mt-2">EASA Medical Expiry Date</label>
-                                <input type="date" name="editmedical_expiry_date_2" id="editmedical_expiry_date_2" class="form-control">
+                            <label class="form-label mt-2">EASA Medical Expiry Date</label>
+                            <input type="date" name="editmedical_expiry_date_2" id="editmedical_expiry_date_2" class="form-control">
 
-                                <label class="form-label mt-2">EASA Medical Detail</label>
-                                <textarea name="editmedical_detail_2" id="editmedical_detail_2" class="form-control" placeholder="Enter the Detail"></textarea>
+                            <label class="form-label mt-2">EASA Medical Detail</label>
+                            <textarea name="editmedical_detail_2" id="editmedical_detail_2" class="form-control" placeholder="Enter the Detail"></textarea>
 
-                                <label class="form-label mt-2">EASA Medical Upload</label>
-                                <input type="file" name="editmedical_file_2" id="editmedical_file_2" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
-                            </div>
+                            <label class="form-label mt-2">EASA Medical Upload</label>
+                            <input type="file" name="editmedical_file_2" id="editmedical_file_2" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
                         </div>
+                    </div>
 
-                        <!-- Passport -->
-                        <div class="col-md-6">
-                            <label for="edit_passport_checkbox" class="form-label">Passport</label>
-                            <input type="checkbox" name="edit_passport_checkbox" id="edit_passport_checkbox"
-                                class="ms-2">
-                            <label for="edit_passport_verification_required" class="form-label ms-4">Admin Verification
-                                required?</label>
-                            <input type="checkbox" name="edit_passport_verification_required"
-                                id="edit_passport_verification_required" class="ms-2" value="1">
-                            <input type="text" name="edit_passport" id="edit_passport" class="form-control"
-                                style="display: none;" placeholder="Enter Passport Number">
-                            <div id="edit_passport_error_up" class="text-danger error_e"></div>
-                            <input type="file" name="edit_passport_file" id="edit_passport_file"
-                                class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
-                            <div id="edit_passport_file_error_up" class="text-danger error_e"></div>
-                        </div>
+                    <!-- Passport -->
+                    <div class="col-md-6">
+                        <label for="edit_passport_checkbox" class="form-label">Passport</label>
+                        <input type="checkbox" name="edit_passport_checkbox" id="edit_passport_checkbox"
+                            class="ms-2">
+                        <label for="edit_passport_verification_required" class="form-label ms-4">Admin Verification
+                            required?</label>
+                        <input type="checkbox" name="edit_passport_verification_required"
+                            id="edit_passport_verification_required" class="ms-2" value="1">
+                        <input type="text" name="edit_passport" id="edit_passport" class="form-control"
+                            style="display: none;" placeholder="Enter Passport Number">
+                        <div id="edit_passport_error_up" class="text-danger error_e"></div>
+                        <input type="file" name="edit_passport_file" id="edit_passport_file"
+                            class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                        <div id="edit_passport_file_error_up" class="text-danger error_e"></div>
+                    </div>
 
-                        <!-- Rating/s (Stars) -->
-                        {{-- <div class="col-md-6">
+                    <!-- Rating/s (Stars) -->
+                    {{-- <div class="col-md-6">
                             <label for="edit_rating_checkbox" class="form-label">Rating/s</label>
                             <input type="checkbox" name="edit_rating_checkbox" id="edit_rating_checkbox" class="ms-2">
                             <div id="edit_ratings" style="display: none;">
@@ -708,84 +740,84 @@
                                     <option value="">Select Rating</option>
                                     @foreach($rating as $val)
                                     <option value="{{ $val->id }}">{{ $val->name }}</option>
-                                    @endforeach
-                                </select>
-                                <div id="edit_rating_error_up" class="text-danger error_e"></div>
-                            </div>
-                        </div> --}}
+                    @endforeach
+                    </select>
+                    <div id="edit_rating_error_up" class="text-danger error_e"></div>
+            </div>
+        </div> --}}
 
-                        <!-- Currency (Optional) -->
-                        <div class="col-md-6">
-                            <label for="edit_currency" class="form-label">Currency</label>
-                            <input type="checkbox" name="edit_currency_checkbox" id="edit_currency_checkbox"
-                                class="ms-2">
-                            <input type="text" name="edit_currency" id="edit_currency" class="form-control"
-                                style="display: none;" placeholder="Enter Currency">
-                            <div id="edit_currency_error_up" class="text-danger error_e"></div>
-                        </div>
+        <!-- Currency (Optional) -->
+        <div class="col-md-6">
+            <label for="edit_currency" class="form-label">Currency</label>
+            <input type="checkbox" name="edit_currency_checkbox" id="edit_currency_checkbox"
+                class="ms-2">
+            <input type="text" name="edit_currency" id="edit_currency" class="form-control"
+                style="display: none;" placeholder="Enter Currency">
+            <div id="edit_currency_error_up" class="text-danger error_e"></div>
+        </div>
 
-                        <!-- Custom Field -->
-                        <div class="col-md-12">
-                            <label for="custom_field_checkbox" class="form-label">Custom Field</label>
-                            <input type="checkbox" name="custom_field_checkbox" id="editcustom_field_checkbox"
-                                class="ms-2" value="1">
-                            <label for="customField_verification_required" class="form-label ms-4">Admin Verification
-                            required?</label>
-                            <input type="checkbox" name="edit_custom_field_verification_required"
-                                id="edit_custom_field_verification_required" class="ms-2" value="1">
-                        </div>
+        <!-- Custom Field -->
+        <div class="col-md-12">
+            <label for="custom_field_checkbox" class="form-label">Custom Field</label>
+            <input type="checkbox" name="custom_field_checkbox" id="editcustom_field_checkbox"
+                class="ms-2" value="1">
+            <label for="customField_verification_required" class="form-label ms-4">Admin Verification
+                required?</label>
+            <input type="checkbox" name="edit_custom_field_verification_required"
+                id="edit_custom_field_verification_required" class="ms-2" value="1">
+        </div>
 
-                        <div class="col-md-6">
-                            <label for="customfield_filelabel" id="editcustomfield_datelabel" class="form-label"
-                                style="display: none;">Date</label>
-                            <input type="checkbox" name="editcustom_date_checkbox" id="editcustom_date_checkbox"
-                                style="display: none;" class="ms-2">    
-                            <label for="customfield_textlabel" id="editcustomfield_textlabel" class="form-label"
-                                style="display: none;">Text</label>
-                            <input type="checkbox" name="editcustom_text_checkbox" id="editcustom_text_checkbox"
-                                class="ms-2" style="display: none;">
-                            <div class="col-md-6">
-                                <input type="date" name="editcustom_field_date" id="editcustom_date"
-                                    class="form-control mt-3" style="display: none;">
-                                <input type="text" name="editcustom_field_text" id="editcustom_text"
-                                    class="form-control mt-3" style="display: none;" placeholder="Enter the Text">
-                            </div>
-                        </div>
-                        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                        <div class="col-md-6">
-                            <label for="email" class="form-label">Select Org Unit<span
-                                    class="text-danger">*</span></label>
-                            <select class="form-select" name="ou_id" id="edit_ou_id"
-                                aria-label="Default select example">
-                                <option value="">Select Org Unit</option>
-                                @foreach($organizationUnits as $val)
-                                <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                                @endforeach
-                            </select>
-                            <div id="ou_id_error_up" class="text-danger error_e"></div>
-                        </div>
-                        @endif
-                        <div class="col-md-6">
-                            <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
-                            <select class="form-select" name="status" id="edit_status"
-                                aria-label="Default select example">
-                                <option value="1" selected>Active</option>
-                                <option value="0">Inactive</option>
-                            </select>
-                            <div id="status_error_up" class="text-danger error_e"></div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
-                        <a href="#" type="button" id="updateForm" class="btn btn-primary sbt_btn">Update</a>
-                    </div>
-
-                    <div class="loader" style="display: none;"></div>
-
-                </form>
+        <div class="col-md-6">
+            <label for="customfield_filelabel" id="editcustomfield_datelabel" class="form-label"
+                style="display: none;">Date</label>
+            <input type="checkbox" name="editcustom_date_checkbox" id="editcustom_date_checkbox"
+                style="display: none;" class="ms-2">
+            <label for="customfield_textlabel" id="editcustomfield_textlabel" class="form-label"
+                style="display: none;">Text</label>
+            <input type="checkbox" name="editcustom_text_checkbox" id="editcustom_text_checkbox"
+                class="ms-2" style="display: none;">
+            <div class="col-md-6">
+                <input type="date" name="editcustom_field_date" id="editcustom_date"
+                    class="form-control mt-3" style="display: none;">
+                <input type="text" name="editcustom_field_text" id="editcustom_text"
+                    class="form-control mt-3" style="display: none;" placeholder="Enter the Text">
             </div>
         </div>
+        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+        <div class="col-md-6">
+            <label for="email" class="form-label">Select Org Unit<span
+                    class="text-danger">*</span></label>
+            <select class="form-select" name="ou_id" id="edit_ou_id"
+                aria-label="Default select example">
+                <option value="">Select Org Unit</option>
+                @foreach($organizationUnits as $val)
+                <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                @endforeach
+            </select>
+            <div id="ou_id_error_up" class="text-danger error_e"></div>
+        </div>
+        @endif
+        <div class="col-md-6">
+            <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
+            <select class="form-select" name="status" id="edit_status"
+                aria-label="Default select example">
+                <option value="1" selected>Active</option>
+                <option value="0">Inactive</option>
+            </select>
+            <div id="status_error_up" class="text-danger error_e"></div>
+        </div>
     </div>
+    <div class="modal-footer">
+        <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
+        <a href="#" type="button" id="updateForm" class="btn btn-primary sbt_btn">Update</a>
+    </div>
+
+    <div class="loader" style="display: none;"></div>
+
+    </form>
+</div>
+</div>
+</div>
 </div>
 <!--End of Edit user-->
 
@@ -817,7 +849,244 @@
 @section('js_scripts')
 
 <script>
-    
+    let selectBoxIndex = 0;
+
+    $(document).ready(function() {
+
+        // //-----------------------------------------------------------
+        // Edit licence 2 
+        let licence2_selectBoxIndex = 0;
+        $('#licence_2_ratings').on('change', function() {
+            if ($(this).is(':checked')) {
+                $('#licence_2_ratings_container').show();
+                $('#edit_add_rating_box').show();
+                $('#licence_2_ratings_container').empty(); // reset
+                licence2_selectBoxIndex = 0;
+                $('#edit_licence_2_ratings').trigger('click'); // add one by default
+            } else {
+                $('#licence_2_ratings_container').empty().hide();
+                $('#edit_add_rating_box').hide();
+            }
+        });
+
+
+
+        $('#edit_licence_2_ratings').on('click', function() {
+            let index = licence2_selectBoxIndex++;
+            let selectBoxHtml = `
+            <div class="rating-select-group border p-3 mb-3 rounded" data-index="${index}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <button type="button" class="btn btn-danger btn-sm remove-rating-box" data-index="${index}">Remove</button>
+                </div>
+
+                <label class="form-label">Rating</label>
+                <select class="form-select parent-rating mb-2" name="licence_2_ratings[${index}][parent]" data-index="${index}" >
+                    <option value="">Select Parent</option>
+                    @foreach($rating as $parent)
+                        <option value="{{ $parent->id }}">{{ $parent->name }}</option>
+                    @endforeach
+                </select>
+
+                <label class="form-label">Privileges</label>
+                <select class="form-select child-rating" name="licence_2_ratings[${index}][child][]" multiple data-index="${index}">
+                    <!-- Populated via AJAX -->
+                </select>
+            </div>
+        `;
+            $('#licence_2_ratings_container').append(selectBoxHtml);
+        });
+
+
+
+        //---------------------------------------------------------------
+        $('#uk_licence').on('change', function() {
+            if ($(this).is(':checked')) {
+                $('#rating_select_boxes_container').show();
+                $('#add_rating_box').show();
+                $('#rating_select_boxes_container').empty(); // reset
+                selectBoxIndex = 0;
+                $('#add_rating_box').trigger('click'); // add one by default
+            } else {
+                $('#rating_select_boxes_container').empty().hide();
+                $('#add_rating_box').hide();
+            }
+        });
+
+        $('#add_rating_box').on('click', function() {
+            let index = selectBoxIndex++;
+            let selectBoxHtml = `
+            <div class="rating-select-group border p-3 mb-3 rounded" data-index="${index}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <button type="button" class="btn btn-danger btn-sm remove-rating-box" data-index="${index}">Remove</button>
+                </div>
+
+                <label class="form-label">Rating</label>
+                <select class="form-select parent-rating mb-2" name="ratings[${index}][parent]" data-index="${index}" >
+                    <option value="">Select Parent</option>
+                    @foreach($rating as $parent)
+                        <option value="{{ $parent->id }}">{{ $parent->name }}</option>
+                    @endforeach
+                </select>
+
+                <label class="form-label">Privileges</label>
+                <select class="form-select child-rating" name="ratings[${index}][child][]" multiple data-index="${index}">
+                    <!-- Populated via AJAX -->
+                </select>
+            </div>
+        `;
+            $('#rating_select_boxes_container').append(selectBoxHtml);
+        });
+
+        //-----------------------------------------------------------------------
+        let selectBoxIndexeasa = 0;
+        $('#easa_licence').on('change', function() {
+            if ($(this).is(':checked')) {
+                $('#easa_select_boxes_container').show();
+                $('#easa_add_rating_box').show();
+                $('#easa_select_boxes_container').empty(); // reset
+                selectBoxIndexeasa = 0;
+                $('#easa_add_rating_box').trigger('click'); // add one by default
+            } else {
+                $('#easa_select_boxes_container').empty().hide();
+                $('#easa_add_rating_box').hide();
+            }
+        });
+        $('#easa_add_rating_box').on('click', function() {
+            let index = selectBoxIndexeasa++;
+            let selectBoxHtml = `
+            <div class="rating-select-group border p-3 mb-3 rounded" data-index="${index}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <button type="button" class="btn btn-danger btn-sm remove-rating-box" data-index="${index}">Remove</button>
+                </div>
+
+                <label class="form-label">Rating</label>
+                <select class="form-select parent-rating-easa mb-2" name="licence_2_ratings[${index}][parent]" data-index="${index}" >
+                    <option value="">Select Parent</option>
+                    @foreach($rating as $parent)
+                        <option value="{{ $parent->id }}">{{ $parent->name }}</option>
+                    @endforeach
+                </select>
+
+                <label class="form-label">Privileges</label>
+                <select class="form-select child-rating-easa" name="licence_2_ratings[${index}][child][]" multiple data-index="${index}">
+                    <!-- Populated via AJAX -->
+                </select>
+            </div>
+        `;
+            $('#easa_select_boxes_container').append(selectBoxHtml);
+        });
+
+        //------------------------------------------------------------------------
+        // Edit form 
+        let edit_selectBoxIndex = 0;
+        $('#edit_uk_licence').on('change', function() {
+            if ($(this).is(':checked')) {
+                $('#edit_rating_select_boxes_container').show();
+                $('#edit_add_rating_box').show();
+                $('#edit_rating_select_boxes_container').empty(); // reset
+                edit_selectBoxIndex = 0;
+                $('#edit_add_rating_box').trigger('click'); // add one by default
+            } else {
+                $('#edit_rating_select_boxes_container').empty().hide();
+                $('#edit_add_rating_box').hide();
+            }
+        });
+
+
+        $('#edit_add_rating_box').on('click', function() {
+            let index = edit_selectBoxIndex++;
+            let selectBoxHtml = `
+            <div class="rating-select-group border p-3 mb-3 rounded" data-index="${index}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <button type="button" class="btn btn-danger btn-sm remove-rating-box" data-index="${index}">Remove</button>
+                </div>
+
+                <label class="form-label">Rating</label>
+                <select class="form-select parent-rating mb-2" name="licence_1_ratings[${index}][parent]" data-index="${index}" >
+                    <option value="">Select Parent</option>
+                    @foreach($rating as $parent)
+                        <option value="{{ $parent->id }}">{{ $parent->name }}</option>
+                    @endforeach
+                </select>
+
+                <label class="form-label">Privileges</label>
+                <select class="form-select child-rating" name="licence_1_ratings[${index}][child][]" multiple data-index="${index}">
+                    <!-- Populated via AJAX -->
+                </select>
+            </div>
+        `;
+            $('#edit_rating_select_boxes_container').append(selectBoxHtml);
+        });
+
+        //--------------------------------------------------------------------------
+
+        // Remove rating select box group
+        $(document).on('click', '.remove-rating-box', function() {
+            // let index = $(this).data('index');
+            // $(`.rating-select-group[data-index="${index}"]`).remove();
+            $(this).closest('.rating-select-group').remove();
+        });
+
+        // Handle parent select change (load child ratings)
+        $(document).on('change', '.parent-rating', function() {
+            // let parentId = $(this).val();
+            // let index = $(this).data('index');
+            // let $childSelect = $(`.child-rating[data-index="${index}"]`);
+
+
+            let $group = $(this).closest('.rating-select-group');
+            let $childSelect = $group.find('.child-rating');
+            let parentId = $(this).val();
+            $childSelect.empty();
+
+            if (parentId) {
+                $.ajax({
+                    url: "{{ url('get-child-ratings') }}",
+                    type: 'post',
+                    data: {
+                        parentId: parentId,
+                        "_token": "{{ csrf_token() }}"
+                    },
+                    success: function(response) {
+                        if (response.length > 0) {
+                            $.each(response, function(i, child) {
+                                $childSelect.append(`<option value="${child.id}">${child.name}</option>`);
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        // Handle parent select change (load child ratings)
+        $(document).on('change', '.parent-rating-easa', function() {
+            let parentId = $(this).val();
+            let index = $(this).data('index');
+            let $childSelect = $(`.child-rating-easa[data-index="${index}"]`);
+
+            $childSelect.empty();
+
+            if (parentId) {
+                $.ajax({
+                    url: "{{ url('get-child-ratings') }}",
+                    type: 'post',
+                    data: {
+                        parentId: parentId,
+                        "_token": "{{ csrf_token() }}"
+                    },
+                    success: function(response) {
+                        if (response.length > 0) {
+                            $.each(response, function(i, child) {
+                                $childSelect.append(`<option value="${child.id}">${child.name}</option>`);
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    });
+
+
     $(document).ready(function() {
 
         function initializeSelect2() {
@@ -833,7 +1102,7 @@
                 multiple: true,
                 dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible') // More specific
             });
-        }    
+        }
 
         initializeSelect2();
 
@@ -841,12 +1110,11 @@
             processing: true,
             serverSide: true,
             ajax: "{{ route('users.data') }}",
-            columns: [
-                { 
-                    data: 'image', 
-                    name: 'image', 
-                    orderable: false, 
-                    searchable: false, 
+            columns: [{
+                    data: 'image',
+                    name: 'image',
+                    orderable: false,
+                    searchable: false,
                     render: function(data) {
                         let baseUrl = "{{ url('storage') }}";
                         let defaultImage = "{{ asset('assets/img/default_profile.png') }}";
@@ -858,83 +1126,104 @@
                         }
                     }
                 },
-                { data: 'fname', name: 'fname' },
-                { data: 'lname', name: 'lname' },
-                { data: 'email', name: 'email' },
-                { data: 'position', name: 'position' },
-                @if(auth()->user()->is_owner == 1)
-                            { data: 'organization', name: 'organization' },
-                @endif
-                { data: 'status', name: 'status' },
-                { data: 'action', name: 'action', orderable: false, searchable: false }
-            ]   
+                {
+                    data: 'fname',
+                    name: 'fname'
+                },
+                {
+                    data: 'lname',
+                    name: 'lname'
+                },
+                {
+                    data: 'email',
+                    name: 'email'
+                },
+                {
+                    data: 'position',
+                    name: 'position'
+                },
+                @if(auth() -> user() -> is_owner == 1) {
+                    data: 'organization',
+                    name: 'organization'
+                },
+                @endif {
+                    data: 'status',
+                    name: 'status'
+                },
+                {
+                    data: 'action',
+                    name: 'action',
+                    orderable: false,
+                    searchable: false
+                }
+            ]
         });
 
-       $('#licence_checkbox').change(function () {
-    if (this.checked) {
-        $('#licence').show().prop('required', true);
-        $('#licence_file').show().prop('required', true);
-        // $('#license_2').show();
+        $('#licence_checkbox').change(function() {
+            if (this.checked) {
+                $('#licence').show().prop('required', true);
+                $('#licence_file').show().prop('required', true);
+                // $('#license_2').show();
 
-        // 👉 Show the ratings for Licence 1
-        $('#licence_rating_section').show();
-    } else {
-        $('#licence').hide().prop('required', false).val('');
-        $('#licence_file').hide().prop('required', false).val('');
-        $('#licence_error, #licence_file_error').hide();
-        $('#second_licence_section').hide();
-        // $('#license_2').hide();
+                // 👉 Show the ratings for Licence 1
+                $('#licence_rating_section').show();
+            } else {
+                $('#licence').hide().prop('required', false).val('');
+                $('#licence_file').hide().prop('required', false).val('');
+                $('#licence_error, #licence_file_error').hide();
+                $('#second_licence_section').hide();
+                // $('#license_2').hide();
 
-        // 👉 Hide the ratings for Licence 1
-        $('#licence_rating_section').hide();
-        $('#licence_rating_value').val(null).trigger('change'); // clear selection
-    }
-});
+                // 👉 Hide the ratings for Licence 1
+                $('#licence_rating_section').hide();
+                $('#licence_rating_value').val(null).trigger('change'); // clear selection
+            }
+        });
 
-$('#licence_2_checkbox').change(function () {
-    if (this.checked) {
-        $('#licence_2').show();
-        $('#licence_file_2').show();
-        $('#second_licence_section').show();
-        $('#licence_2').prop('required', true);
-        $('#licence_file_2').prop('required', true);
+        $('#licence_2_checkbox').change(function() {
+            if (this.checked) {
+                $('#licence_2').show();
+                $('#licence_file_2').show();
+                $('#second_licence_section').show();
+                $('#licence_2').prop('required', true);
+                $('#licence_file_2').prop('required', true);
 
-        // 👉 Show the ratings for Licence 2
-        $('#licence_2_rating_section').show();
-    } else {
-        $('#licence_2').prop('required', false).val('');
-        $('#licence_file_2').prop('required', false).val('');
+                // 👉 Show the ratings for Licence 2
+                $('#licence_2_rating_section').show();
+            } else {
+                $('#licence_2').prop('required', false).val('');
+                $('#licence_file_2').prop('required', false).val('');
 
-        // 👉 Hide the ratings for Licence 2
-        $('#licence_2').hide();
-        $('#licence_file_2').hide();
-        $('#licence_2_rating_section').hide();
-        $('#licence_2_rating_value').val(null).trigger('change'); // clear selection
-    }
-});
+                // 👉 Hide the ratings for Licence 2
+                $('#licence_2').hide();
+                $('#licence_file_2').hide();
+                $('#licence_2_rating_section').hide();
+                $('#licence_2_rating_value').val(null).trigger('change'); // clear selection
+            }
+        });
 
 
         // Custom field 
-        $('#custom_field_checkbox').change(function() { 
+        $('#custom_field_checkbox').change(function() {
             if (this.checked) {
-              
+
                 $('#customfield_filelabel').show();
                 $('#custom_date_checkbox').show();
                 $('#customfield_textlabel').show();
                 $('#custom_text_checkbox').show();
-            } else {  
+            } else {
                 $('#customfield_filelabel').hide();
                 $('#custom_date_checkbox').hide();
                 $('#customfield_textlabel').hide();
                 $('#custom_text_checkbox').hide();
-                $('#custom_text').hide(); 
-                $('#custom_date').hide(); 
+                $('#custom_text').hide();
+                $('#custom_date').hide();
                 $('#custom_date_checkbox').prop('checked', false);
                 $('#custom_text_checkbox').prop('checked', false);
                 $('#custom_text').val('');
             }
         });
-        $('#editcustom_field_checkbox').change(function() { 
+        $('#editcustom_field_checkbox').change(function() {
             if (this.checked) {
                 $('#editcustomfield_datelabel').show();
                 $('#editcustom_date_checkbox').show();
@@ -945,54 +1234,54 @@ $('#licence_2_checkbox').change(function () {
                 $('#editcustom_date_checkbox').hide();
                 $('#editcustomfield_textlabel').hide();
                 $('#editcustom_text_checkbox').hide();
-                $('#editcustom_text').hide(); 
-                $('#editcustom_date').hide(); 
+                $('#editcustom_text').hide();
+                $('#editcustom_date').hide();
                 $('#editcustom_date_checkbox').prop('checked', false);
                 $('#editcustom_text_checkbox').prop('checked', false);
-               // $('#editcustom_text').val('');
+                // $('#editcustom_text').val('');
             }
         });
 
         // Custom field file checkbox
         $('#custom_date_checkbox').change(function() {
             if (this.checked) {
-                $('#custom_text_checkbox').prop('checked', false); 
-                $('#custom_text').hide(); 
-                $('#custom_date').show(); 
+                $('#custom_text_checkbox').prop('checked', false);
+                $('#custom_text').hide();
+                $('#custom_date').show();
             } else {
-                $('#custom_date').hide(); 
+                $('#custom_date').hide();
             }
         });
         $('#editcustom_date_checkbox').change(function() {
             if (this.checked) {
-                $('#editcustom_text_checkbox').prop('checked', false); 
-                $('#editcustom_text').hide(); 
-                $('#editcustom_date').show(); 
-               // $('#editcustom_file_checkbox').val('');
+                $('#editcustom_text_checkbox').prop('checked', false);
+                $('#editcustom_text').hide();
+                $('#editcustom_date').show();
+                // $('#editcustom_file_checkbox').val('');
             } else {
-                $('#editcustom_date').hide(); 
+                $('#editcustom_date').hide();
             }
         });
 
         // Custom text checkbox
         $('#custom_text_checkbox').change(function() {
             if (this.checked) {
-                $('#custom_date_checkbox').prop('checked', false); 
-                $('#custom_date').hide(); 
-                $('#custom_text').show(); 
+                $('#custom_date_checkbox').prop('checked', false);
+                $('#custom_date').hide();
+                $('#custom_text').show();
             } else {
-                $('#custom_text').hide(); 
+                $('#custom_text').hide();
             }
         });
 
         $('#editcustom_text_checkbox').change(function() {
-            if (this.checked) { 
-                $('#editcustom_date_checkbox').prop('checked', false); 
-                $('#editcustom_date').hide(); 
-                $('#editcustom_text').show(); 
-               // $('#editcustom_file').val(''); 
-            } else { 
-                $('#editcustom_text').hide(); 
+            if (this.checked) {
+                $('#editcustom_date_checkbox').prop('checked', false);
+                $('#editcustom_date').hide();
+                $('#editcustom_text').show();
+                // $('#editcustom_file').val(''); 
+            } else {
+                $('#editcustom_text').hide();
             }
         });
 
@@ -1048,7 +1337,7 @@ $('#licence_2_checkbox').change(function () {
             }
         });
 
-        $('#medical_checkbox').change(function () {
+        $('#medical_checkbox').change(function() {
             if (this.checked) {
                 $('.medical_issued_div').show();
                 $('.medical_class_div').show();
@@ -1064,7 +1353,7 @@ $('#licence_2_checkbox').change(function () {
             }
         });
 
-        $('#medical_2_checkbox').change(function () {
+        $('#medical_2_checkbox').change(function() {
             if (this.checked) {
                 $('#second_medical_section').show();
             } else {
@@ -1087,7 +1376,7 @@ $('#licence_2_checkbox').change(function () {
         // });
 
         // Edit Medical Toggle
-        $('#editmedical_checkbox').change(function () {
+        $('#editmedical_checkbox').change(function() {
             if (this.checked) {
                 $('.editmedical_issued_div').show();
                 $('.editmedical_class_div').show();
@@ -1113,7 +1402,7 @@ $('#licence_2_checkbox').change(function () {
             }
         });
 
-        $('#edit_medical_2_checkbox').change(function () {
+        $('#edit_medical_2_checkbox').change(function() {
             if (this.checked) {
                 $('#edit_second_medical_section').show();
             } else {
@@ -1127,13 +1416,14 @@ $('#licence_2_checkbox').change(function () {
         $('#createUser').on('click', function() {
             $('.error_e').html('');
             $('.alert-danger').css('display', 'none');
-            $("#Create_user")[0].reset();
+            $("#Create_user")[0].reset(); 
 
             // Manually hide and reset all conditional sections
             $('#licence').hide().prop('required', false).val('');
             $('#licence_file').hide().prop('required', false).val('');
             $('#licence_error, #licence_file_error').hide();
             // $('#license_2').hide();
+            $('#licence_rating_section').hide();
             $('#licence_2_checkbox').prop('checked', false);
             $('#second_licence_section').hide();
             $('#licence_2').prop('required', false).val('');
@@ -1148,7 +1438,7 @@ $('#licence_2_checkbox').change(function () {
             $('#medical_verification_required').prop('checked', false);
             $('.medical_issued_div').hide();
             $('.medical_class_div').hide();
-             $('#medical_2').show();
+            $('#medical_2').show();
             $('#issued_by').val('');
             $('#medical_class').val('');
             $('#medical_issue_date').val('');
@@ -1166,50 +1456,52 @@ $('#licence_2_checkbox').change(function () {
             $('#medical_detail_2').val('');
             $('#medical_file_2').val('');
 
-            $('#userModal').modal('show');       
+            $('#userModal').modal('show');
         });
 
-             $('#saveuser').click(function(e) {
-                    e.preventDefault();
-                    // $('#loader').show();
-                    $(".loader").fadeIn();
-                    $('.error_e').html('');
-               
-                    var formData = new FormData($('#Create_user')[0]);
-                    $.ajax({
-                        url: '{{ url("/users/save") }}',
-                        type: 'POST',
-                        data: formData,
-                        processData: false, 
-                        contentType: false,
-                        success: function(response) {
-                            $(".loader").fadeOut("slow");
-                            $('#userModal').modal('hide');
-                            location.reload();
-                        },
-                        error: function(xhr, status, error) {
-                            // $('#loader').hide();
-                            $(".loader").fadeOut("slow");
-                            var errorMessage = JSON.parse(xhr.responseText);
-                            var validationErrors = errorMessage.errors;
-                            $.each(validationErrors, function(key, value) {
-                                var html1 = '<p>' + value + '</p>';
-                                $('#' + key + '_error').html(html1);
-                            });
-                        }
+        $('#saveuser').click(function(e) {
+            e.preventDefault();
+            // $('#loader').show();
+            $(".loader").fadeIn();
+            $('.error_e').html('');
+
+            var formData = new FormData($('#Create_user')[0]);
+            $.ajax({
+                url: '{{ url("/users/save") }}',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $(".loader").fadeOut("slow");
+                    // $('#userModal').modal('hide');
+                    // location.reload();
+                },
+                error: function(xhr, status, error) {
+                    // $('#loader').hide();
+                    $(".loader").fadeOut("slow");
+                    var errorMessage = JSON.parse(xhr.responseText);
+                    var validationErrors = errorMessage.errors;
+                    $.each(validationErrors, function(key, value) {
+                        var html1 = '<p>' + value + '</p>';
+                        $('#' + key + '_error').html(html1);
                     });
-                });
+                }
+            });
+        });
         //edit 
 
-            $('#edit_licence_checkbox').change(function () {
+        $('#edit_licence_checkbox').change(function() {
             if (this.checked) {
                 $('#edit_licence').show().prop('required', true);
                 $('#edit_licence_file').show().prop('required', true);
                 // $('#edit_license2').show();
                 $('#edit_licence_rating_section').show();
-                 if (!$('#edit_licence_rating_value').hasClass("select2-hidden-accessible")) {
-            $('#edit_licence_rating_value').select2({ width: '100%' });
-        }
+                if (!$('#edit_licence_rating_value').hasClass("select2-hidden-accessible")) {
+                    $('#edit_licence_rating_value').select2({
+                        width: '100%'
+                    });
+                }
             } else {
                 $('#edit_licence').hide().prop('required', false).val('');
                 $('#edit_licence_file').hide().prop('required', false).val('');
@@ -1221,7 +1513,7 @@ $('#licence_2_checkbox').change(function () {
             }
         });
 
-        $('#edit_licence_2_checkbox').change(function () {
+        $('#edit_licence_2_checkbox').change(function() {
             if (this.checked) {
                 $('#edit_second_licence_section').show();
                 $('#edit_licence_2').prop('required', true);
@@ -1303,7 +1595,7 @@ $('#licence_2_checkbox').change(function () {
                 url: "{{ url('users/edit') }}",
                 data: vdata,
                 success: function(response) {
-                    console.log(response.user);
+
                     $('input[name="edit_firstname"]').val(response.user.fname);
                     $('input[name="edit_lastname"]').val(response.user.lname);
                     $('input[name="edit_email"]').val(response.user.email);
@@ -1311,14 +1603,139 @@ $('#licence_2_checkbox').change(function () {
                     $('#edit_ou_id').val(response.user.ou_id);
                     $('#edit_status').val(response.user.status);
 
-                    
+
+                    if (response.licence1 == 1) {
+                        $('#edit_licence_rating_section').show();
+                        $('#edit_uk_licence').prop('checked', true);
+                        $('#edit_rating_select_boxes_container').show().empty();
+                        $('#edit_add_rating_box').show();
+
+
+                        let editSelectBoxIndex = 0;
+
+                        response.userRatings_licence_1.forEach(function(group) {
+                            let index = editSelectBoxIndex++;
+                            let parentId = group.parent_id;
+                            let childIds = group.children;
+
+                            let selectBoxHtml = `
+                        <div class="rating-select-group border p-3 mb-3 rounded" data-index="${index}">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <button type="button" class="btn btn-danger btn-sm remove-rating-box" data-index="${index}">Remove</button>
+                            </div>
+
+                            <label class="form-label">Rating</label>
+                            <select class="form-select parent-rating mb-2" name="licence_1_ratings[${index}][parent]" data-index="${index}">
+                                <option value="">Select Parent</option>
+                                @foreach($rating as $parent)
+                                    <option value="{{ $parent->id }}">{{ $parent->name }}</option>
+                                @endforeach
+                            </select>
+
+                            <label class="form-label">Privileges</label>
+                            <select class="form-select child-rating" name="licence_1_ratings[${index}][child][]" multiple data-index="${index}">
+                                <!-- Will be populated by AJAX -->
+                            </select>
+                        </div>
+                    `;
+
+                            $('#edit_rating_select_boxes_container').append(selectBoxHtml);
+
+                            // Set selected parent
+                            $(`select[name="licence_1_ratings[${index}][parent]"]`).val(parentId);
+
+                            // Load and set children
+                            $.ajax({
+                                type: 'POST',
+                                url: "{{ url('get-children-by-parent') }}",
+                                data: {
+                                    parent_id: parentId,
+                                    _token: "{{ csrf_token() }}"
+                                },
+                                success: function(res) {
+                                    const $childSelect = $(`select[name="licence_1_ratings[${index}][child][]"]`);
+                                    $childSelect.empty();
+                                    res.children.forEach(child => {
+                                        const selected = childIds.includes(child.id) ? 'selected' : '';
+                                        $childSelect.append(`<option value="${child.id}" ${selected}>${child.name}</option>`);
+                                    });
+                                }
+                            });
+                        });
+                    }
+
+                    if (response.licence2 == 1) {
+                        $('#edit_licence_2_rating_section').show();
+                        $('#licence_2_ratings').prop('checked', true);
+                        $('#licence_2_ratings_container').show().empty();
+                        $('#edit_licence_2_ratings').show();
+
+                        let edit_licenceSelectBoxIndex = 0;
+
+                        response.userRatings_licence_2.forEach(function(group) {
+                            let index = edit_licenceSelectBoxIndex++;
+                            let parentId = group.parent_id;
+                            let childIds = group.children;
+
+                            let selectBoxHtml = `
+                        <div class="rating-select-group border p-3 mb-3 rounded" data-index="${index}">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <button type="button" class="btn btn-danger btn-sm remove-rating-box" data-index="${index}">Remove</button>
+                            </div>
+
+                            <label class="form-label">Rating</label>
+                            <select class="form-select parent-rating mb-2" name="licence_2_ratings[${index}][parent]" data-index="${index}">
+                                <option value="">Select Parent</option>
+                                @foreach($rating as $parent)
+                                    <option value="{{ $parent->id }}">{{ $parent->name }}</option>
+                                @endforeach
+                            </select>
+
+                            <label class="form-label">Privileges</label>
+                            <select class="form-select child-rating" name="licence_2_ratings[${index}][child][]" multiple data-index="${index}">
+                                <!-- Will be populated by AJAX -->
+                            </select>
+                        </div>
+                    `;
+
+                            $('#licence_2_ratings_container').append(selectBoxHtml);
+
+                            // Set selected parent
+                            $(`select[name="licence_2_ratings[${index}][parent]"]`).val(parentId);
+
+                            // Load and set children
+                            $.ajax({
+                                type: 'POST',
+                                url: "{{ url('get-children-by-parent') }}",
+                                data: {
+                                    parent_id: parentId,
+                                    _token: "{{ csrf_token() }}"
+                                },
+                                success: function(res) {
+                                    const $childSelect = $(`select[name="licence_2_ratings[${index}][child][]"]`);
+                                    $childSelect.empty();
+                                    res.children.forEach(child => {
+                                        const selected = childIds.includes(child.id) ? 'selected' : '';
+                                        $childSelect.append(`<option value="${child.id}" ${selected}>${child.name}</option>`);
+                                    });
+                                }
+                            });
+                        });
+
+
+
+                    }
+
+
+
+
                     // Set extra roles
                     var extraRoles = response.user.extra_roles ? JSON.parse(response.user.extra_roles) : []; // Convert to array if needed
                     $('#edit_extra_roles option').prop('selected', false); // Reset selection
                     extraRoles.forEach(function(roleId) {
                         $('#edit_extra_roles option[value="' + roleId + '"]').prop('selected', true);
                     });
-                    
+
                     // Primary role
                     // const doc = response.user.documents[0];
                     // const doc = response.user.documents && response.user.documents.length > 0 ? response.user.documents : null;
@@ -1327,253 +1744,221 @@ $('#licence_2_checkbox').change(function () {
                     $('#edit_role option[value="' + userRoleId + '"]').attr('selected',
                         'selected');
 
-                        const document = response.user.documents ?? {};
+                    const document = response.user.documents ?? {};
 
-                        // if (response.user.licence_required) {
-                        //     console.log(response.user.documents);
 
-                        //     $('#edit_licence_checkbox').prop('checked', true);
-                        //     $('#edit_licence').show().prop('required', true);
-                        //     $('#edit_licence_file').show().prop('required', true);
-                        //     $('#edit_second_licence_btn').show()
+                    const ratings = response.user_ratings || {};
 
-                        //     if (document) {
-                        //         $('#edit_licence').val(document.licence);
-                        //     } else {
-                        //         $('#edit_licence').val('');
-                        //     }
-                        // } 
-                        // else{
-                        //     $('#edit_licence_checkbox').prop('checked', false);
-                        //     $('#edit_second_licence_btn').hide()
-                        // }     
-                        
-                        const ratings = response.user_ratings || {};
+                    // General Ratings
+                    if (ratings.general) {
+                        $('#edit_rating_checkbox').prop('checked', true);
+                        $('#edit_ratings').show();
+                        $('#edit_rating_value').val(ratings.general).trigger('change');
+                    } else {
+                        $('#edit_rating_checkbox').prop('checked', false);
+                        $('#edit_ratings').hide();
+                        $('#edit_rating_value').val([]).trigger('change');
+                    }
 
-// General Ratings
-if (ratings.general) {
-    $('#edit_rating_checkbox').prop('checked', true);
-    $('#edit_ratings').show();
-    $('#edit_rating_value').val(ratings.general).trigger('change');
-} else {
-    $('#edit_rating_checkbox').prop('checked', false);
-    $('#edit_ratings').hide();
-    $('#edit_rating_value').val([]).trigger('change');
-}
+                    // Licence 1 Ratings
+                    if (ratings.licence_1) {
+                        $('#edit_licence_rating_checkbox').prop('checked', true);
+                        $('#edit_licence_rating_section').show();
+                        $('#edit_licence_rating_value').val(ratings.licence_1).trigger('change');
+                    } else {
+                        $('#edit_licence_rating_checkbox').prop('checked', false);
+                        $('#edit_licence_rating_section').hide();
+                        $('#edit_licence_rating_value').val([]).trigger('change');
+                    }
 
-// Licence 1 Ratings
-if (ratings.licence_1) {
-    $('#edit_licence_rating_checkbox').prop('checked', true);
-    $('#edit_licence_rating_section').show();
-    $('#edit_licence_rating_value').val(ratings.licence_1).trigger('change');
-} else {
-    $('#edit_licence_rating_checkbox').prop('checked', false);
-    $('#edit_licence_rating_section').hide();
-    $('#edit_licence_rating_value').val([]).trigger('change');
-}
+                    // Licence 2 Ratings
+                    if (ratings.licence_2) {
+                        $('#edit_licence_2_rating_value').val(ratings.licence_2).trigger('change');
+                    } else {
+                        $('#edit_licence_2_rating_value').val([]).trigger('change');
+                    }
 
-// Licence 2 Ratings
-if (ratings.licence_2) {
-    $('#edit_licence_2_rating_value').val(ratings.licence_2).trigger('change');
-} else {
-    $('#edit_licence_2_rating_value').val([]).trigger('change');
-}
+                    if (response.user.licence_required) {
+                        $('#edit_licence_checkbox').prop('checked', true).trigger('change'); // ✅ trigger the .change() to apply all show logic
 
-                        if (response.user.licence_required) {
-                            $('#edit_licence_checkbox').prop('checked', true).trigger('change'); // ✅ trigger the .change() to apply all show logic
-
-                            if (document) {
-                                $('#edit_licence').val(document.licence);
-                            } else {
-                                $('#edit_licence').val('');
-                            }
+                        if (document) {
+                            $('#edit_licence').val(document.licence);
                         } else {
-                            $('#edit_licence_checkbox').prop('checked', false).trigger('change'); // ✅ this hides everything
+                            $('#edit_licence').val('');
                         }
-          
+                    } else {
+                        $('#edit_licence_checkbox').prop('checked', false).trigger('change'); // ✅ this hides everything
+                    }
 
-                        if (response.user.licence_2_required) {
-                            $('#edit_licence_2_checkbox').prop('checked', true).trigger('change');
-                            $('#edit_second_licence_section').show();
-                            if (document.licence_2) {
-                                $('#edit_licence_2').val(document.licence_2).prop('required', true);
-                                // $('#edit_licence_file_2').show().prop('required', true);
-                            } else {
-                                $('#edit_licence_2').val('').prop('required', true);
-                                // $('#edit_licence_file_2').show().prop('required', true);
-                            }
+
+                    if (response.user.licence_2_required) {
+                        $('#edit_licence_2_checkbox').prop('checked', true).trigger('change');
+                        $('#edit_second_licence_section').show();
+                        if (document.licence_2) {
+                            $('#edit_licence_2').val(document.licence_2).prop('required', true);
+                            // $('#edit_licence_file_2').show().prop('required', true);
                         } else {
-                            $('#edit_licence_2_checkbox').prop('checked', false).trigger('change'); // ✅ this hides everything
-                        }    
+                            $('#edit_licence_2').val('').prop('required', true);
+                            // $('#edit_licence_file_2').show().prop('required', true);
+                        }
+                    } else {
+                        $('#edit_licence_2_checkbox').prop('checked', false).trigger('change'); // ✅ this hides everything
+                    }
 
-                        if (response.user.password_flag == 1) {
-                            $('#edit_update_password_checkbox').prop('checked', true);
+                    if (response.user.password_flag == 1) {
+                        $('#edit_update_password_checkbox').prop('checked', true);
+                    } else {
+                        $('#edit_update_password_checkbox').prop('checked', false);
+                    }
+
+                    // Set passport checkbox and fields
+
+                    if (response.user.passport_required) {
+                        $('#edit_passport_checkbox').prop('checked', true);
+                        $('#edit_passport').val(document.passport).show().prop('required', true);
+                        $('#edit_passport_file').show().prop('required', true);
+                    } else {
+                        $('#edit_passport_checkbox').prop('checked', false);
+                        $('#edit_passport').hide().prop('required', false);
+                        $('#passport_file').hide().prop('required', false);
+
+                    }
+
+
+                    // Set currency checkbox and field
+                    if (response.user.currency_required) {
+                        $('#edit_currency_checkbox').prop('checked', true);
+                        $('#edit_currency').val(response.user.currency).show().prop('required', true);
+                    } else {
+                        $('#edit_currency_checkbox').prop('checked', false);
+                        $('#edit_currency').hide().prop('required', false);
+                    }
+                    if (response.user.custom_field_date || response.user.custom_field_text) {
+                        $('#editcustomfield_datelabel').show();
+                        $('#editcustom_date_checkbox').show();
+                        $('#editcustomfield_textlabel').show();
+                        $('#editcustom_text_checkbox').show();
+                        $('#editcustom_field_checkbox').prop('checked', true);
+                        if (response.user.custom_field_date) {
+                            $('#editcustom_date_checkbox').prop('checked', true);
+                            $('#editcustom_text').hide();
+                            $('#editcustom_date').show();
+                            $('#editcustom_date').val(response.user.custom_field_date);
+
                         } else {
-                            $('#edit_update_password_checkbox').prop('checked', false);                           
+                            $('#editcustom_text_checkbox').prop('checked', true);
+                            $('#editcustom_text').show();
+                            $('#editcustom_date').hide();
+                            $('#editcustom_text').val(response.user.custom_field_text);
                         }
-                        
-                        // Set passport checkbox and fields
 
-                        if (response.user.passport_required) {
-                            $('#edit_passport_checkbox').prop('checked', true);
-                            $('#edit_passport').val(document.passport).show().prop('required', true);
-                            $('#edit_passport_file').show().prop('required', true);
+                    }
+
+                    // if (response.user.medical == 1) {
+                    //     $('#editmedical_checkbox').prop('checked', true);
+                    //     $('.editmedical_issued_div').show();
+                    //     $('.editmedical_class_div').show();
+                    //     $('#editmedical_issue_date').val(document.medical_issuedate ?? '');
+                    //     $('#editmedical_expiry_date').val(document.medical_expirydate ?? '');
+                    //     $('#editmedical_detail').val(document.medical_restriction ?? '');
+
+                    //     let issuedBy = document.medical_issuedby?.trim() ?? '';
+                    //     let medicalClass = document.medical_class?.trim() ?? '';
+                    //     $('#editissued_by').val(issuedBy);
+                    //     $('#editmedical_class').val(medicalClass);
+                    // }
+                    if (response.user.medical == 1) {
+                        $('#editmedical_checkbox').prop('checked', true).trigger('change');
+
+                        $('#editmedical_issue_date').val(document.medical_issuedate ?? '');
+                        $('#editmedical_expiry_date').val(document.medical_expirydate ?? '');
+                        $('#editmedical_detail').val(document.medical_restriction ?? '');
+
+                        $('#editissued_by').val(document.medical_issuedby?.trim() ?? '');
+                        $('#editmedical_class').val(document.medical_class?.trim() ?? '');
+                    } else {
+                        $('#editmedical_checkbox').prop('checked', false).trigger('change');
+                    }
+
+
+                    if (response.user.licence_required) {
+                        $('#edit_licence_checkbox').prop('checked', true).trigger('change'); // ✅ trigger the .change() to apply all show logic
+
+                        if (document) {
+                            $('#edit_licence').val(document.licence);
                         } else {
-                            $('#edit_passport_checkbox').prop('checked', false);
-                            $('#edit_passport').hide().prop('required', false);
-                            $('#passport_file').hide().prop('required', false);
-                           
+                            $('#edit_licence').val('');
                         }
+                    } else {
+                        $('#edit_licence_checkbox').prop('checked', false).trigger('change'); // ✅ this hides everything
+                    }
 
-                        // if (response.user.rating_required && response.user.usr_ratings.length > 0) {
-                        //     $('#edit_rating_checkbox').prop('checked', true);
-                        //     $('#edit_ratings').show();
+                    if (response.user.medical_2_required == 1) {
+                        $('#edit_medical_2_checkbox').prop('checked', true).trigger('change');
+                        $('#editmedical_issue_date_2').val(document.medical_issuedate_2 ?? '');
+                        $('#editmedical_expiry_date_2').val(document.medical_expirydate_2 ?? '');
+                        $('#editmedical_detail_2').val(document.medical_restriction_2 ?? '');
 
-                        //     // Extract rating IDs and set them as selected
-                        //     let selectedRatingIds = response.user.usr_ratings.map(r => r.rating_id);
-                        //     $('#edit_rating_value').val(selectedRatingIds).trigger('change');
+                        let issuedBy2 = document.medical_issuedby_2?.trim() ?? '';
+                        let medicalClass2 = document.medical_class_2?.trim() ?? '';
+                        $('#editissued_by_2').val(issuedBy2);
+                        $('#editmedical_class_2').val(medicalClass2);
+                    } else {
+                        $('#edit_medical_2_checkbox').prop('checked', false).trigger('change');
+                        $('#editmedical_issue_date_2').val('');
+                        $('#editmedical_expiry_date_2').val('');
+                        $('#editmedical_detail_2').val('');
+                        $('#editissued_by_2').val('');
+                        $('#editmedical_class_2').val('');
+                    }
+                    if (response.user.medical_adminRequired == 1) {
+                        $('#editmedical_verification_required').prop('checked', true);
+                    }
+                    if (response.user.medical_2_adminRequired == 1) {
+                        $('#edit_medical_2_verification_required').prop('checked', true);
 
-                        // } else {
-                        //     $('#edit_rating_checkbox').prop('checked', false);
-                        //     $('#edit_ratings').hide();
-                        //     $('#edit_rating_value').val([]).trigger('change');
-                        // }
+                    }
+                    if (response.user.medical_2_required) {
+                        $('#edit_second_medical_section').show();
+                    } else {
+                        $('#edit_second_medical_section').hide();
+                    }
 
+                    if (response.user.licence_2_required) {
+                        $('#edit_second_licence_section').show();
+                    } else {
+                        $('#edit_second_licence_section').hide();
+                    }
+                    if (response.user.licence_admin_verification_required == 1) {
+                        $('#edit_licence_verification_required').prop('checked', true);
+                    }
+                    if (response.user.licence_2_admin_verification_required == 1) {
+                        $('#edit_licence_2_verification_required').prop('checked', true);
+                    }
+                    if (response.user.passport_admin_verification_required == 1) {
+                        $('#edit_passport_verification_required').prop('checked', true);
 
-                        // Set currency checkbox and field
-                        if (response.user.currency_required) {
-                            $('#edit_currency_checkbox').prop('checked', true);
-                            $('#edit_currency').val(response.user.currency).show().prop('required', true);
-                        } else {
-                            $('#edit_currency_checkbox').prop('checked', false);
-                            $('#edit_currency').hide().prop('required', false);
-                        }
-                        if(response.user.custom_field_date || response.user.custom_field_text){
-                               $('#editcustomfield_datelabel').show();
-                                $('#editcustom_date_checkbox').show();
-                                $('#editcustomfield_textlabel').show();
-                                $('#editcustom_text_checkbox').show();
-                            $('#editcustom_field_checkbox').prop('checked', true);
-                            if(response.user.custom_field_date){
-                                   $('#editcustom_date_checkbox').prop('checked', true); 
-                                    $('#editcustom_text').hide(); 
-                                    $('#editcustom_date').show(); 
-                                    $('#editcustom_date').val(response.user.custom_field_date);
+                    }
+                    if (response.user.custom_field_required == 1) {
+                        $('#editcustom_field_checkbox').prop('checked', true);
 
-                            }else{
-                                $('#editcustom_text_checkbox').prop('checked', true); 
-                                    $('#editcustom_text').show(); 
-                                    $('#editcustom_date').hide(); 
-                                    $('#editcustom_text').val(response.user.custom_field_text);
-                            }
-                           
-                        }
-                       
-                        // if (response.user.medical == 1) {
-                        //     $('#editmedical_checkbox').prop('checked', true);
-                        //     $('.editmedical_issued_div').show();
-                        //     $('.editmedical_class_div').show();
-                        //     $('#editmedical_issue_date').val(document.medical_issuedate ?? '');
-                        //     $('#editmedical_expiry_date').val(document.medical_expirydate ?? '');
-                        //     $('#editmedical_detail').val(document.medical_restriction ?? '');
+                    }
+                    if (response.user.custom_field_admin_verification_required == 1) {
+                        $('#edit_custom_field_verification_required').prop('checked', true);
 
-                        //     let issuedBy = document.medical_issuedby?.trim() ?? '';
-                        //     let medicalClass = document.medical_class?.trim() ?? '';
-                        //     $('#editissued_by').val(issuedBy);
-                        //     $('#editmedical_class').val(medicalClass);
-                        // }
-                        if (response.user.medical == 1) {
-                            $('#editmedical_checkbox').prop('checked', true).trigger('change');
+                    }
 
-                            $('#editmedical_issue_date').val(document.medical_issuedate ?? '');
-                            $('#editmedical_expiry_date').val(document.medical_expirydate ?? '');
-                            $('#editmedical_detail').val(document.medical_restriction ?? '');
+                    // Set custom field checkbox and fields
+                    if (response.user.custom_field_name && response.user.custom_field_value) {
+                        $('#edit_custom_field_checkbox').prop('checked', true);
+                        $('#edit_custom_field_name').val(response.user.custom_field_name).show().prop('required', true);
+                        $('#edit_custom_field_value').val(response.user.custom_field_value).show().prop('required', true);
+                    } else {
+                        $('#edit_custom_field_checkbox').prop('checked', false);
+                        $('#edit_custom_field_name').hide().prop('required', false);
+                        $('#edit_custom_field_value').hide().prop('required', false);
 
-                            $('#editissued_by').val(document.medical_issuedby?.trim() ?? '');
-                            $('#editmedical_class').val(document.medical_class?.trim() ?? '');
-                        } else {
-                            $('#editmedical_checkbox').prop('checked', false).trigger('change');
-                        }
-
-
-                         if (response.user.licence_required) {
-                            $('#edit_licence_checkbox').prop('checked', true).trigger('change'); // ✅ trigger the .change() to apply all show logic
-
-                            if (document) {
-                                $('#edit_licence').val(document.licence);
-                            } else {
-                                $('#edit_licence').val('');
-                            }
-                        } else {
-                            $('#edit_licence_checkbox').prop('checked', false).trigger('change'); // ✅ this hides everything
-                        }
-
-                        if (response.user.medical_2_required == 1) {
-                                $('#edit_medical_2_checkbox').prop('checked', true).trigger('change');
-                                $('#editmedical_issue_date_2').val(document.medical_issuedate_2 ?? '');
-                                $('#editmedical_expiry_date_2').val(document.medical_expirydate_2 ?? '');
-                                $('#editmedical_detail_2').val(document.medical_restriction_2 ?? '');
-
-                                let issuedBy2 = document.medical_issuedby_2?.trim() ?? '';
-                                let medicalClass2 = document.medical_class_2?.trim() ?? '';
-                                $('#editissued_by_2').val(issuedBy2);
-                                $('#editmedical_class_2').val(medicalClass2);                                
-                            }else{
-                                $('#edit_medical_2_checkbox').prop('checked', false).trigger('change');
-                                $('#editmedical_issue_date_2').val('');
-                                $('#editmedical_expiry_date_2').val('');
-                                $('#editmedical_detail_2').val('');
-                                $('#editissued_by_2').val('');
-                                $('#editmedical_class_2').val('');
-                            }
-                        if(response.user.medical_adminRequired==1){
-                            $('#editmedical_verification_required').prop('checked', true);                            
-                        }
-                        if(response.user.medical_2_adminRequired==1){
-                            $('#edit_medical_2_verification_required').prop('checked', true);
-                            
-                        }
-                        if (response.user.medical_2_required) {
-                            $('#edit_second_medical_section').show();
-                        } else {
-                            $('#edit_second_medical_section').hide();
-                        }
-
-                        if (response.user.licence_2_required) {
-                            $('#edit_second_licence_section').show();
-                        } else {
-                            $('#edit_second_licence_section').hide();
-                        }
-                        if(response.user.licence_admin_verification_required==1){
-                            $('#edit_licence_verification_required').prop('checked', true);                            
-                        }
-                        if(response.user.licence_2_admin_verification_required==1){
-                            $('#edit_licence_2_verification_required').prop('checked', true);                            
-                        }
-                        if(response.user.passport_admin_verification_required==1){
-                            $('#edit_passport_verification_required').prop('checked', true);
-                            
-                        }
-                        if(response.user.custom_field_required==1){
-                            $('#editcustom_field_checkbox').prop('checked', true);
-                            
-                        }
-                        if(response.user.custom_field_admin_verification_required==1){
-                            $('#edit_custom_field_verification_required').prop('checked', true);
-                            
-                        }
-
-                        // Set custom field checkbox and fields
-                        if (response.user.custom_field_name && response.user.custom_field_value) {
-                            $('#edit_custom_field_checkbox').prop('checked', true);
-                            $('#edit_custom_field_name').val(response.user.custom_field_name).show().prop('required', true);
-                            $('#edit_custom_field_value').val(response.user.custom_field_value).show().prop('required', true);
-                        } else {
-                            $('#edit_custom_field_checkbox').prop('checked', false);
-                            $('#edit_custom_field_name').hide().prop('required', false);
-                            $('#edit_custom_field_value').hide().prop('required', false);
-                                      
-                        }
+                    }
 
                     $('#editUserDataModal').modal('show');
                     // initializeSelect2();
@@ -1599,7 +1984,7 @@ if (ratings.licence_2) {
         $(document).on('click', '#updateForm', function(e) {
             e.preventDefault();
             var formData = new FormData($('#editUserForm')[0]);
-            
+
             $(".loader").fadeIn('fast');
             $.ajax({
                 type: 'post',
@@ -1652,7 +2037,7 @@ if (ratings.licence_2) {
         $('#userModal, #editUserDataModal').on('shown.bs.modal', function() {
             initializeSelect2();
 
-             // Reposition Select2 on scroll
+            // Reposition Select2 on scroll
             // $(this).find('.modal-body').on('scroll', function () {
             //     $('.rating-select').each(function () {
             //         if ($(this).data('select2')) {
@@ -1667,65 +2052,67 @@ if (ratings.licence_2) {
         }, 2000);
 
     });
-    $(document).ready(function () {
-    // Initialize select2
-    $('#edit_licence_rating_value').select2({
-        width: '100%',
-        placeholder: "Select Rating",
-        allowClear: true
-    });
+    $(document).ready(function() {
+        // Initialize select2
+        $('#edit_licence_rating_value').select2({
+            width: '100%',
+            placeholder: "Select Rating",
+            allowClear: true
+        });
 
-    // Toggle display based on checkbox
-    $('#edit_licence_rating_checkbox').on('change', function () {
-        if ($(this).is(':checked')) {
-            $('#edit_licence_rating_section').slideDown();
+        // Toggle display based on checkbox
+        $('#edit_licence_rating_checkbox').on('change', function() {
+            if ($(this).is(':checked')) {
+                $('#edit_licence_rating_section').slideDown();
+            } else {
+                $('#edit_licence_rating_section').slideUp();
+                $('#edit_licence_rating_value').val(null).trigger('change'); // Clear selection
+            }
+        });
+    });
+    $(document).ready(function() {
+        $('#edit_rating_value').select2({
+            width: '100%',
+            placeholder: "Select Rating",
+            allowClear: true
+        });
+    });
+    if (response.user_ratings?.licence_1?.length > 0) {
+        $('#edit_licence_checkbox').prop('checked', true).trigger('change');
+        setTimeout(function() {
+            $('#edit_licence_rating_value').val(response.user_ratings.licence_1).trigger('change');
+        }, 300);
+    }
+
+
+
+    if (response.user_ratings?.licence_2?.length > 0) {
+        $('#edit_licence_2_checkbox').prop('checked', true).trigger('change');
+        $('#edit_licence_2_rating_value').val(response.user_ratings.licence_2).trigger('change');
+    }
+    $('#licence_checkbox').change(function() {
+        if (this.checked) {
+            $('#licence').show();
+            $('#licence_file').show();
+            $('#licence_rating_section').show();
         } else {
-            $('#edit_licence_rating_section').slideUp();
-            $('#edit_licence_rating_value').val(null).trigger('change'); // Clear selection
+            $('#licence').hide();
+            $('#licence_file').hide();
+            $('#licence_rating_section').hide();
         }
     });
-});
-$(document).ready(function () {
-    $('#edit_rating_value').select2({
-        width: '100%',
-        placeholder: "Select Rating",
-        allowClear: true
+
+    $('#licence_2_checkbox').change(function() {
+        if (this.checked) {
+            $('#second_licence_section').show();
+            $('#licence_2_rating_section').show();
+        } else {
+            $('#second_licence_section').hide();
+            $('#licence_2_rating_section').hide();
+        }
     });
-});
-if (response.user_ratings?.licence_1?.length > 0) {
-    $('#edit_licence_checkbox').prop('checked', true).trigger('change');
-    setTimeout(function () {
-        $('#edit_licence_rating_value').val(response.user_ratings.licence_1).trigger('change');
-    }, 300);
-}
 
-
-
-if (response.user_ratings?.licence_2?.length > 0) {
-    $('#edit_licence_2_checkbox').prop('checked', true).trigger('change');
-    $('#edit_licence_2_rating_value').val(response.user_ratings.licence_2).trigger('change');
-}
-$('#licence_checkbox').change(function () {
-    if (this.checked) {
-        $('#licence').show();
-        $('#licence_file').show();
-        $('#licence_rating_section').show();
-    } else {
-        $('#licence').hide();
-        $('#licence_file').hide();
-        $('#licence_rating_section').hide();
-    }
-});
-
-$('#licence_2_checkbox').change(function () {
-    if (this.checked) {
-        $('#second_licence_section').show();
-        $('#licence_2_rating_section').show();
-    } else {
-        $('#second_licence_section').hide();
-        $('#licence_2_rating_section').hide();
-    }
-});
+    //------------------------------------
 </script>
 
 
