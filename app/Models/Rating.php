@@ -27,12 +27,10 @@ class Rating extends Model
 {
     return $this->belongsToMany(Rating::class, 'parent_rating', 'rating_id', 'parent_id');
 }
-
 public function children()
 {
-    return $this->belongsToMany(Rating::class, 'parent_rating', 'parent_id', 'rating_id');
+    return $this->hasMany(\App\Models\ParentRating::class, 'parent_id');
 }
-// app/Models/Rating.php
 
 public function associatedChildren()
 {
@@ -70,13 +68,15 @@ public function childRatings()
         'rating_id'     // Local key on parent_rating table
     );
 }
+public function parentLinks()
+{
+    return $this->hasMany(ParentRating::class, 'parent_id');
+}
 
-
-
-
-
-
-
+public function childLinks()
+{
+    return $this->hasMany(ParentRating::class, 'rating_id');
+}
 
 
 }
