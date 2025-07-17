@@ -19,6 +19,7 @@ class TrainingEventLessons extends Model
         'start_time',
         'end_time',
         'hours_credited',
+        'custom_hours_credited',
         'departure_airfield',
         'destination_airfield',
         'instructor_license_number',

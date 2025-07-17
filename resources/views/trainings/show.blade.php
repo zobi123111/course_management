@@ -437,10 +437,22 @@
                 <h4 class="mb-3 text-primary">
                     <i class="fas fa-calendar-alt"></i> Training Event Overview
                 </h4>
-                @if($trainingEvent->course?->duration_value)
+                @if($trainingEvent->course?->duration_value && $trainingEvent->course?->duration_type)
                     <div class="mb-3">
                         <strong><i class="fas fa-hourglass-half"></i> Course Total Duration:</strong>
-                        <span class="badge bg-success text-white">{{ $trainingEvent->course->duration_value }} hours</span>
+                        @php
+                            $value = $trainingEvent->course->duration_value;
+                            $type = $trainingEvent->course->duration_type;
+
+                            if ($type === 'hours') {
+                                $label = $value == 1 ? 'hour' : 'hours';
+                            } elseif ($type === 'events') {
+                                $label = $value == 1 ? 'event' : 'events';
+                            } else {
+                                $label = '';
+                            }
+                        @endphp
+                        <span class="badge bg-success text-white">{{ $value }} {{ $label }}</span>
                     </div>
                 @endif
 
@@ -512,6 +524,7 @@
                     </div>
 
                     @php
+                    
                         $lessonType = $eventLesson?->lesson?->lesson_type ?? null;
                     @endphp
 
@@ -552,7 +565,6 @@
                             @endif
                         </div>
                     </div>
-
                 @else
                     {{-- MULTI-LESSON COURSE TYPE --}}
                     <div class="row mb-3">
@@ -629,7 +641,6 @@
                             {{ $trainingEvent->std_license_number ?? 'N/A' }}
                         </div>
                     </div>
-
                 @endif
 
                 {{-- Deferred Items(fallback) --}}
@@ -943,9 +954,9 @@
                                                                                 <tr>
                                                                                     <td>
                                                                                         <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
-                                                                                            <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
+                                                                                            <input type="radio" class="deselectable-radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
                                                                                             <span class="custom-radio incomplete">Incomplete</span>
-                                                                                        </label>                                                                    
+                                                                                        </label>                                                                        
                                                                                     </td>
                                                                                     <td>
                                                                                         <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
@@ -1063,9 +1074,9 @@
                                                                     @endphp
                                                                     <td>
                                                                         <label class="radio-label">
-                                                                            <input type="radio"
+                                                                            <input type="radio" class="scale-radio"
                                                                                 name="comp_grade[{{ $lesson->id }}][{{ $code }}]"
-                                                                                value="{{ $i }}"
+                                                                                value="{{ $i }}" data-event-id="{{ $trainingEvent->id }}" data-lesson-id="{{ $lesson->id }}" data-user-id="{{ $student->id }}" data-code="{{ $code }}" data-color-class="{{ $colorClass }}"
                                                                                 {{ $selectedCompGrade == $i ? 'checked' : '' }}>
                                                                             <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
                                                                         </label>
@@ -1243,6 +1254,67 @@
 <script>
     $(document).ready(function() {
 
+    $('.scale-radio').on('click', function () {
+        const name = $(this).attr('name');
+        const wasChecked = $(this).data('waschecked');
+        const event_id = $(this).data('event-id');
+        const lesson_id = $(this).data('lesson-id');
+        const user_id = $(this).data('user-id');
+        const code = $(this).data('code');
+
+        if (wasChecked) {
+            // Uncheck and remove color class
+            $(this).prop('checked', false).data('waschecked', false);
+
+              $.ajax({
+                url: '/training/update-competency-grade', // Replace with your actual route
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    event_id: event_id,
+                    lesson_id: lesson_id,
+                    user_id: user_id,
+                    code: code,
+                },
+                success: function (response) {
+                    console.log('Grade updated:', response);
+                },
+                error: function (xhr) {
+                    alert('Failed to update grade.');
+                    console.error(xhr.responseText);
+                }
+            });
+
+        } else {
+            // Deselect others, then mark this as checked
+            $('input[name="' + name + '"]').each(function () {
+                $(this).data('waschecked', false);
+            });
+            $(this).data('waschecked', true);
+        }
+
+        // updateRadioStyles(name);
+    });
+
+    function updateRadioStyles(groupName) {
+        $('input[name="' + groupName + '"]').each(function () {
+            const span = $(this).siblings('.custom-radio');
+            const colorClass = $(this).data('color-class');
+
+            // Remove all color classes first
+            span.removeClass('incomplete ftr competent active-selected');
+
+            if ($(this).is(':checked')) {
+                span.addClass(colorClass).addClass('active-selected');
+            }
+        });
+    }
+
+    // Initial color update for already checked radios
+    $('.scale-radio:checked').each(function () {
+        const name = $(this).attr('name');
+        updateRadioStyles(name);
+    });
         $('#addDeferredLesson').on('click', function() {
             $('.error_e').html('');
             $("#deferredLessonForm")[0].reset();

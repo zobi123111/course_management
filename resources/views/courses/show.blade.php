@@ -447,7 +447,7 @@
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="enable_cbta" name="enable_cbta">
                             <label class="form-check-label" for="enable_cbta">
-                                Enbale CBTA
+                                Enable CBTA
                             </label>
                         </div>
                     </div>
@@ -553,7 +553,7 @@
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="edit_enable_cbta" name="edit_enable_cbta">
                             <label class="form-check-label" for="edit_enable_cbta">
-                                Enbale CBTA
+                                Enable CBTA
                             </label>
                         </div>
                     </div>
