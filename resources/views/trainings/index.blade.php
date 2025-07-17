@@ -486,12 +486,14 @@
                     <label for="recommendedByInstructor" class="form-label">Select Recommendation Instructor</label>
                     <select name="recommended_by_instructor_id" class="form-select">
                         <option value="">-- Select Instructor --</option>
-                        @foreach($event->lesson_instructor_users as $instructor)
-                            <option value="{{ $instructor->id }}"
-                                {{ $event->last_lesson_instructor_id == $instructor->id ? 'selected' : '' }}>
-                                {{ $instructor->fname }} {{ $instructor->lname }}
-                            </option>
-                        @endforeach
+                        @if(!empty($event->lesson_instructor_users) && is_iterable($event->lesson_instructor_users))
+                            @foreach($event->lesson_instructor_users as $instructor)
+                                <option value="{{ $instructor->id }}"
+                                    {{ $event->last_lesson_instructor_id == $instructor->id ? 'selected' : '' }}>
+                                    {{ $instructor->fname }} {{ $instructor->lname }}
+                                </option>
+                            @endforeach
+                        @endif
                     </select>
                     <div class="mb-3">
                     <input type="hidden" name="event_id" id="courseEndEventId">
