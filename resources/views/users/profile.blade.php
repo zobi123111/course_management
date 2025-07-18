@@ -267,180 +267,261 @@
                                             </a>
                                         </div>
                                         @endif
-                                <div class="row mt-4">
-                            {{-- Licence 1 (UK) Section --}}
-                            @if(isset($grouped['licence_1']) && count($grouped['licence_1']))
-                                <!-- <div class="col-lg-6 col-md-12"> -->
-                                    <h4>Ratings linked to UK Licence</h4>
-                                    @foreach($grouped['licence_1'] as $parentId => $entry)
-                                        @php 
+                                        <div class="row mt-4">
+                                            {{-- Licence 1 (UK) Section --}}
+                                            @if(isset($grouped['licence_1']) && count($grouped['licence_1']))
+                                            <!-- <div class="col-lg-6 col-md-12"> -->
+                                            <h4>Ratings linked to UK Licence</h4>
+                                            @foreach($grouped['licence_1'] as $parentId => $entry)
+                                            @php $i = $loop->index; @endphp
+                                            @php
                                             $parent = $entry['parent'];
                                             $children = $entry['children'] ?? [];
                                             $rating = $parent->rating;
+                                            @endphp
+
+                                            <?php
+                                                // echo $entry['children'][0]['user_id'] . "<br>";
+                                                // echo $entry['children'][0]['rating_id'] . "<br>";
+                                                // echo $entry['children'][0]['parent_id'] . "<br>";
+                                                // echo $entry['children'][0]['linked_to'] . "<br>";
+                                                // echo $entry['children'][0]['issue_date'] . "<br>";
+                                                // echo $entry['children'][0]['expiry_date'] . "<br>";
+                                            ?>
+                                            <div class="card shadow-sm border rounded mb-4">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">{{ $rating->name ?? 'Unknown Parent' }}</h5>
+                                                    <div class="row">
+
+
+
+                                                        <div class="col-md-6">
+                                                            <label class="form-label mt-2"><strong>Issue Date</strong></label>
+                                                            <!-- <input type="date" name="issue_date[{{ $rating->id }}][{{ $entry['children'][0]['parent_id']}}]" class="form-control"
+                                                                value="{{ old("issue_date.$rating->id", $parent->issue_date) }}"> -->
+                                                            <input type="hidden" name="issue_date[{{ $i }}][id]" value="{{ $rating->id }}">
+
+                                                            <!-- parentid -->
+                                                            <input type="hidden" name="issue_date[{{ $i }}][parentid]" value="{{ $entry['children'][0]['parent_id'] }}">
+
+                                                            <!-- actual date -->
+                                                            <input type="date" name="issue_date[{{ $i }}][issue_date]" class="form-control"
+                                                                value="{{ $entry['children'][0]['issue_date'] ?? '' }}">
+                                                            <!-- // user id  -->
+                                                            <input type="hidden" name="issue_date[{{ $i }}][user_id]" class="form-control"
+                                                                value="{{ $entry['children'][0]['user_id'] }}">
+                                                             <!-- // Linked to -->
+                                                            <input type="hidden" name="issue_date[{{ $i }}][linked_to]" class="form-control"
+                                                                value="{{ $entry['children'][0]['linked_to'] }}">
+                                                        </div>
+
+
+
+                                                        <div class="col-md-6">
+                                                            <label class="form-label mt-2"><strong>Expiry Date</strong></label>
+                                                            <!-- <input type="date" name="expiry_date[{{ $rating->id }}]" class="form-control"
+                                                                value="{{ old("expiry_date.$rating->id", $parent->expiry_date) }}"> -->
+
+                                                            <input type="hidden" name="expiry_date[{{ $i }}][id]" value="{{ $rating->id }}">
+
+                                                            <!-- parentid -->
+                                                            <input type="hidden" name="expiry_date[{{ $i }}][parentid]" value="{{ $entry['children'][0]['parent_id'] }}">
+
+                                                            <!-- actual date -->
+                                                            <input type="date" name="expiry_date[{{ $i }}][expiry_date]" class="form-control"
+                                                                value="{{ $entry['children'][0]['expiry_date'] ?? '' }}">
+                                                            <!-- // user id  -->
+                                                            <input type="hidden" name="expiry_date[{{ $i }}][user_id]" class="form-control"
+                                                                value="{{ $entry['children'][0]['user_id'] }}">
+                                                             <!-- // Linked to -->
+                                                            <input type="hidden" name="expiry_date[{{ $i }}][linked_to]" class="form-control"
+                                                                value="{{ $entry['children'][0]['linked_to'] }}">
+                                                        </div>
+                                                    </div>
+                                                    <label class="form-label mt-3"><strong>Upload File</strong></label>
+                                                    <input type="file" name="rating_file[{{ $rating->id }}]" class="form-control">
+
+                                                    @if($parent->file_path)
+                                                    <a href="{{ asset('storage/' . $parent->file_path) }}" target="_blank"
+                                                        class="btn btn-outline-primary btn-sm mt-2">
+                                                        <i class="bi bi-file-earmark-text me-1"></i> View File
+                                                    </a>
+                                                    @endif
+
+                                                    {{-- Children Ratings --}}
+                                                    @if(count($children))
+                                                    <h6 class="mt-4">Privileges</h6>
+                                                    <div class="row">
+                                                        @foreach($children as $childRating)
+                                                        @php $child = $childRating->rating; @endphp
+                                                        <div class="col-md-6 mb-3">
+                                                            <div class="card h-100 border shadow-sm">
+                                                                <div class="card-body">
+                                                                    <h6 class="card-title">{{ $child->name ?? 'Unknown Child' }}</h6>
+                                                                    <p class="card-text small">
+                                                                        Issue Date: {{ $childRating->issue_date ?? 'N/A' }}<br>
+                                                                        Expiry Date: {{ $childRating->expiry_date ?? 'N/A' }}
+                                                                    </p>
+                                                                    @if($childRating->file_path)
+                                                                    <a href="{{ asset('storage/' . $childRating->file_path) }}" target="_blank"
+                                                                        class="btn btn-sm btn-outline-primary">
+                                                                        <i class="bi bi-file-earmark-text me-1"></i> View File
+                                                                    </a>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        @endforeach
+                                                    </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            @endforeach
+                                            <!-- </div> -->
+                                            @endif
+
+
+                                        </div>
+                                        @endif
+                                    </div>
+                                    {{-- Licence 2 (EASA) Section --}}
+                                    @if ($user->licence_2_required == 1)
+                                    <div class="col-lg-6 col-md-12" id="second_licence_section">
+                                        {{-- Licence Fields --}}
+                                        <label class="form-label"><strong>EASA Licence <span class="text-danger">*</span>
+                                                @if($document?->licence_2_invalidate == 1)
+                                                <span class="text-danger">(Re-upload required)</span>
+                                                @endif
+                                            </strong>
+                                            @if ($document?->licence_verified_2 == 1)
+                                            <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
+                                            @endif
+                                        </label>
+
+                                        <input type="text" name="licence_2" id="licence_2" value="{{ $document?->licence_2 ?? '' }}" class="form-control" placeholder="Enter EASA Licence Number">
+                                        <div class="text-danger error_e" id="licence_error_up"></div>
+
+                                        <label class="form-label mt-3"><strong>Expiry Date <span class="text-danger">*</span></strong></label>
+                                        <input type="date" name="licence_expiry_date_2" id="licence_expiry_date_2" value="{{ $document?->licence_expiry_date_2 ?? '' }}" class="form-control mb-2">
+
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="non_expiring_licence_2" name="non_expiring_licence_2" value="1" {{ $document?->licence_non_expiring_2 ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="non_expiring_licence_2"><strong>Non-Expiring Licence</strong></label>
+                                        </div>
+
+                                        <input type="file" name="licence_file_2" id="licence_file_2" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
+                                        <input type="hidden" name="old_licence_file_2" value="{{ $document?->licence_file_2 }}">
+                                        <div class="text-danger error_e" id="licence_file_2_error_up"></div>
+
+                                        @if ($document?->licence_file_2)
+                                        <a href="{{ asset('storage/' . $document->licence_file_2) }}" target="_blank"
+                                            class="btn btn-outline-primary btn-sm mt-3 d-flex align-items-center" style="width: fit-content;">
+                                            <i class="bi bi-file-earmark-text me-1"></i> View Licence
+                                        </a>
+                                        @endif
+
+                                        {{-- Ratings --}}
+                                        @if(isset($grouped['licence_2']) && count($grouped['licence_2']))
+                                        <h4 class="mt-2">Ratings linked to EASA Licence</h4>
+                                        @foreach($grouped['licence_2'] as $parentId => $entry)
+                                         @php $j = $loop->index; @endphp
+                                        @php
+                                        $parent = $entry['parent'];
+                                        $children = $entry['children'] ?? [];
+                                        $rating = $parent->rating;
                                         @endphp
+                                        <?php
+                                            //echo $entry['children'][0]['user_id'] . "<br>";
+                                            // echo $entry['children'][0]['rating_id'] . "<br>";
+                                            // echo $entry['children'][0]['parent_id'] . "<br>";
+                                            // echo $entry['children'][0]['linked_to'] . "<br>";
+                                        ?>
                                         <div class="card shadow-sm border rounded mb-4">
                                             <div class="card-body">
                                                 <h5 class="card-title">{{ $rating->name ?? 'Unknown Parent' }}</h5>
                                                 <div class="row">
                                                     <div class="col-md-6">
                                                         <label class="form-label mt-2"><strong>Issue Date</strong></label>
-                                                        <input type="date" name="issue_date[{{ $rating->id }}]" class="form-control"
-                                                            value="{{ old("issue_date.$rating->id", $parent->issue_date) }}">
+                                                        <!-- <input type="date" name="issue_date[{{ $rating->id }}]" class="form-control"
+                                                            value="{{ old("issue_date.$rating->id", $parent->issue_date) }}"> -->
+
+                                                               <input type="hidden" name="issue_date_licence2[{{ $j }}][id]" value="{{ $rating->id }}">
+
+                                                            <!-- parentid -->
+                                                            <input type="hidden" name="issue_date_licence2[{{ $j }}][parentid]" value="{{ $entry['children'][0]['parent_id'] }}">
+
+                                                            <!-- actual date -->
+                                                            <input type="date" name="issue_date_licence2[{{ $j }}][issue_date]" class="form-control"
+                                                                value="{{ $entry['children'][0]['issue_date'] ?? '' }}">
+                                                            <!-- // user id  -->
+                                                            <input type="hidden" name="issue_date_licence2[{{ $j }}][user_id]" class="form-control"
+                                                                value="{{ $entry['children'][0]['user_id'] }}">
+                                                             <!-- // Linked to -->
+                                                            <input type="hidden" name="issue_date_licence2[{{ $j }}][linked_to]" class="form-control"
+                                                                value="{{ $entry['children'][0]['linked_to'] }}">
                                                     </div>
                                                     <div class="col-md-6">
                                                         <label class="form-label mt-2"><strong>Expiry Date</strong></label>
-                                                        <input type="date" name="expiry_date[{{ $rating->id }}]" class="form-control"
-                                                            value="{{ old("expiry_date.$rating->id", $parent->expiry_date) }}">
+                                                        <!-- <input type="date" name="expiry_date[{{ $rating->id }}]" class="form-control"
+                                                            value="{{ old("expiry_date.$rating->id", $parent->expiry_date) }}"> -->
+                                                             <input type="hidden" name="expiry_date_licence2[{{ $j }}][id]" value="{{ $rating->id }}">
+
+                                                            <!-- parentid -->
+                                                            <input type="hidden" name="expiry_date_licence2[{{ $j }}][parentid]" value="{{ $entry['children'][0]['parent_id'] }}">
+
+                                                            <!-- actual date -->
+                                                            <input type="date" name="expiry_date_licence2[{{ $j }}][expiry_date]" class="form-control"
+                                                                value="{{ old("expiry_date.$j.date", $rating->expiry_date) }}">
+                                                            <!-- // user id  -->
+                                                            <input type="hidden" name="expiry_date_licence2[{{ $j }}][user_id]" class="form-control"
+                                                                value="{{ $entry['children'][0]['user_id'] }}">
+                                                             <!-- // Linked to -->
+                                                            <input type="hidden" name="expiry_date_licence2[{{ $j }}][linked_to]" class="form-control"
+                                                                value="{{ $entry['children'][0]['linked_to'] }}">
                                                     </div>
                                                 </div>
+
                                                 <label class="form-label mt-3"><strong>Upload File</strong></label>
                                                 <input type="file" name="rating_file[{{ $rating->id }}]" class="form-control">
 
                                                 @if($parent->file_path)
-                                                    <a href="{{ asset('storage/' . $parent->file_path) }}" target="_blank"
+                                                <a href="{{ asset('storage/' . $parent->file_path) }}" target="_blank"
                                                     class="btn btn-outline-primary btn-sm mt-2">
-                                                        <i class="bi bi-file-earmark-text me-1"></i> View File
-                                                    </a>
+                                                    <i class="bi bi-file-earmark-text me-1"></i> View File
+                                                </a>
                                                 @endif
 
-                                                {{-- Children Ratings --}}
                                                 @if(count($children))
-                                                    <h6 class="mt-4">Privileges</h6>
-                                                    <div class="row">
-                                                        @foreach($children as $childRating)
-                                                            @php $child = $childRating->rating; @endphp
-                                                            <div class="col-md-6 mb-3">
-                                                                <div class="card h-100 border shadow-sm">
-                                                                    <div class="card-body">
-                                                                        <h6 class="card-title">{{ $child->name ?? 'Unknown Child' }}</h6>
-                                                                        <p class="card-text small">
-                                                                            Issue Date: {{ $childRating->issue_date ?? 'N/A' }}<br>
-                                                                            Expiry Date: {{ $childRating->expiry_date ?? 'N/A' }}
-                                                                        </p>
-                                                                        @if($childRating->file_path)
-                                                                            <a href="{{ asset('storage/' . $childRating->file_path) }}" target="_blank"
-                                                                            class="btn btn-sm btn-outline-primary">
-                                                                                <i class="bi bi-file-earmark-text me-1"></i> View File
-                                                                            </a>
-                                                                        @endif
-                                                                    </div>
-                                                                </div>
+                                                <h6 class="mt-4">Privileges</h6>
+                                                <div class="row">
+                                                    @foreach($children as $childRating)
+                                                    @php $child = $childRating->rating; @endphp
+                                                    <div class="col-md-6 mb-3">
+                                                        <div class="card h-100 border shadow-sm">
+                                                            <div class="card-body">
+                                                                <h6 class="card-title">{{ $child->name ?? 'Unknown Child' }}</h6>
+                                                                <p class="card-text small">
+                                                                    Issue Date: {{ $childRating->issue_date ?? 'N/A' }}<br>
+                                                                    Expiry Date: {{ $childRating->expiry_date ?? 'N/A' }}
+                                                                </p>
+                                                                @if($childRating->file_path)
+                                                                <a href="{{ asset('storage/' . $childRating->file_path) }}" target="_blank"
+                                                                    class="btn btn-sm btn-outline-primary">
+                                                                    <i class="bi bi-file-earmark-text me-1"></i> View File
+                                                                </a>
+                                                                @endif
                                                             </div>
-                                                        @endforeach
+                                                        </div>
                                                     </div>
+                                                    @endforeach
+                                                </div>
                                                 @endif
                                             </div>
                                         </div>
-                                    @endforeach
-                                <!-- </div> -->
-                            @endif
-
-
-                                    </div>
-                                    @endif
-                            </div>
-                                                        {{-- Licence 2 (EASA) Section --}}
-                            @if ($user->licence_2_required == 1)
-                                <div class="col-lg-6 col-md-12" id="second_licence_section">
-                                    {{-- Licence Fields --}}
-                                    <label class="form-label"><strong>EASA Licence <span class="text-danger">*</span>
-                                        @if($document?->licence_2_invalidate == 1)
-                                            <span class="text-danger">(Re-upload required)</span>
-                                        @endif
-                                    </strong>
-                                        @if ($document?->licence_verified_2 == 1)
-                                            <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
-                                        @endif
-                                    </label>
-
-                                    <input type="text" name="licence_2" id="licence_2" value="{{ $document?->licence_2 ?? '' }}" class="form-control" placeholder="Enter EASA Licence Number">
-                                    <div class="text-danger error_e" id="licence_error_up"></div>
-
-                                    <label class="form-label mt-3"><strong>Expiry Date <span class="text-danger">*</span></strong></label>
-                                    <input type="date" name="licence_expiry_date_2" id="licence_expiry_date_2" value="{{ $document?->licence_expiry_date_2 ?? '' }}" class="form-control mb-2">
-
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="non_expiring_licence_2" name="non_expiring_licence_2" value="1" {{ $document?->licence_non_expiring_2 ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="non_expiring_licence_2"><strong>Non-Expiring Licence</strong></label>
-                                    </div>
-
-                                    <input type="file" name="licence_file_2" id="licence_file_2" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
-                                    <input type="hidden" name="old_licence_file_2" value="{{ $document?->licence_file_2 }}">
-                                    <div class="text-danger error_e" id="licence_file_2_error_up"></div>
-
-                                    @if ($document?->licence_file_2)
-                                        <a href="{{ asset('storage/' . $document->licence_file_2) }}" target="_blank"
-                                        class="btn btn-outline-primary btn-sm mt-3 d-flex align-items-center" style="width: fit-content;">
-                                            <i class="bi bi-file-earmark-text me-1"></i> View Licence
-                                        </a>
-                                    @endif
-
-                                    {{-- Ratings --}}
-                                    @if(isset($grouped['licence_2']) && count($grouped['licence_2']))
-                                        <h4 class="mt-2">Ratings linked to EASA Licence</h4>
-                                        @foreach($grouped['licence_2'] as $parentId => $entry)
-                                            @php
-                                                $parent = $entry['parent'];
-                                                $children = $entry['children'] ?? [];
-                                                $rating = $parent->rating;
-                                            @endphp
-                                            <div class="card shadow-sm border rounded mb-4">
-                                                <div class="card-body">
-                                                    <h5 class="card-title">{{ $rating->name ?? 'Unknown Parent' }}</h5>
-                                                    <div class="row">
-                                                        <div class="col-md-6">
-                                                            <label class="form-label mt-2"><strong>Issue Date</strong></label>
-                                                            <input type="date" name="issue_date[{{ $rating->id }}]" class="form-control"
-                                                                value="{{ old("issue_date.$rating->id", $parent->issue_date) }}">
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <label class="form-label mt-2"><strong>Expiry Date</strong></label>
-                                                            <input type="date" name="expiry_date[{{ $rating->id }}]" class="form-control"
-                                                                value="{{ old("expiry_date.$rating->id", $parent->expiry_date) }}">
-                                                        </div>
-                                                    </div>
-
-                                                    <label class="form-label mt-3"><strong>Upload File</strong></label>
-                                                    <input type="file" name="rating_file[{{ $rating->id }}]" class="form-control">
-
-                                                    @if($parent->file_path)
-                                                        <a href="{{ asset('storage/' . $parent->file_path) }}" target="_blank"
-                                                        class="btn btn-outline-primary btn-sm mt-2">
-                                                            <i class="bi bi-file-earmark-text me-1"></i> View File
-                                                        </a>
-                                                    @endif
-
-                                                    @if(count($children))
-                                                        <h6 class="mt-4">Privileges</h6>
-                                                        <div class="row">
-                                                            @foreach($children as $childRating)
-                                                                @php $child = $childRating->rating; @endphp
-                                                                <div class="col-md-6 mb-3">
-                                                                    <div class="card h-100 border shadow-sm">
-                                                                        <div class="card-body">
-                                                                            <h6 class="card-title">{{ $child->name ?? 'Unknown Child' }}</h6>
-                                                                            <p class="card-text small">
-                                                                                Issue Date: {{ $childRating->issue_date ?? 'N/A' }}<br>
-                                                                                Expiry Date: {{ $childRating->expiry_date ?? 'N/A' }}
-                                                                            </p>
-                                                                            @if($childRating->file_path)
-                                                                                <a href="{{ asset('storage/' . $childRating->file_path) }}" target="_blank"
-                                                                                class="btn btn-sm btn-outline-primary">
-                                                                                    <i class="bi bi-file-earmark-text me-1"></i> View File
-                                                                                </a>
-                                                                            @endif
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            @endforeach
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            </div>
                                         @endforeach
+                                        @endif
+                                    </div>
                                     @endif
-                                </div>
-                            @endif
 
                                     <!-- Passport -->
                                     @if ($user->passport_required == 1)
@@ -683,7 +764,7 @@
                                     $userRatingsMap = $user->usrRatings->keyBy('rating_id');
 
                                     // Filter only general ratings from the passed-in $ratings
-                                   $hasGeneralRatings = collect($ratings)->filter(function($rating) use ($userRatingsMap) {
+                                    $hasGeneralRatings = collect($ratings)->filter(function($rating) use ($userRatingsMap) {
                                     $ur = $userRatingsMap[$rating->id] ?? null;
                                     return $ur && $ur->linked_to === 'general';
                                     });
@@ -899,7 +980,7 @@
             $(".loader").fadeIn('fast');
             $.ajax({
                 type: 'post',
-                url: "/users/profile/update",
+                url: "/users/profile/update", 
                 data: formData,
                 processData: false,
                 contentType: false,
