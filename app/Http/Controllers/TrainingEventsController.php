@@ -104,9 +104,7 @@ class TrainingEventsController extends Controller
 
             $trainingEvents_instructorQuery = TrainingEvents::where('ou_id', $currentUser->ou_id)
                                         ->with($trainingEventsRelations)
-                                        ->withCount(['taskGradings', 'competencyGradings']);
-               
-
+                                        ->withCount(['taskGradings', 'competencyGradings']);               
 
             if (hasUserRole($currentUser, 'Instructor')) {
                 // Get training event IDs where the current instructor is assigned to at least one lesson
@@ -137,6 +135,7 @@ class TrainingEventsController extends Controller
                         });
                     })
                     ->get();
+                $trainingEvents_instructor = [];
             }
         } else {
             // Default Case: Users with limited access within their organization
@@ -1245,27 +1244,49 @@ class TrainingEventsController extends Controller
         return redirect()->back()->with('success', 'Documents uploaded successfully.');
     }
 
+
     public function generateCertificate($event)
     {
-        //dd($event);
-        $eventId = decode_id($event); // your custom decode helper
-        $event = TrainingEvents::findOrFail($eventId);
-        $userDtl = User::where('ou_id', $event->ou_id)->where('is_admin', 1)->first();
+        $eventId = decode_id($event); // decode the ID
+        $event = TrainingEvents::with('eventLessons')->findOrFail($eventId);
         $student = $event->student;
         $course = $event->course;
         $firstLesson = $event->firstLesson;
-        
-        //dd($event);
+
+        // Calculate Hours of Groundschool (sum of hours_credited where lesson type is groundschool)
+        $hoursOfGroundschoolMinutes = $event->eventLessons
+            ->filter(function ($lesson) {
+                return $lesson->lesson_type === 'groundschool';
+            })
+            ->sum(function ($lesson) {
+                // safely convert hours_credited string to minutes
+                $time = $lesson->hours_credited ?? '00:00:00';
+                [$hours, $minutes, $seconds] = array_pad(explode(':', $time), 3, 0);
+                return ($hours * 60) + $minutes; // ignore seconds for simplicity
+            });
+
+        // Convert to "Xhrs Ymins"
+        $hoursOfGroundschool = floor($hoursOfGroundschoolMinutes / 60) . 'hrs ' . ($hoursOfGroundschoolMinutes % 60) . 'mins';
+
+        // Hours, Flight and Simulator (from TrainingEvents table)
+        $flightTime = $event->total_time ?? 0; // e.g., "10:00"
+        $simulatorTime = $event->simulator_time ?? 0; // e.g., "2.00"
+
         $pdf = PDF::loadView('trainings.course-completion-certificate', [
-            'event' => $event,  
+            'event' => $event,
             'student' => $student,
             'course' => $course,
             'firstLesson' => $firstLesson,
+            'hoursOfGroundschool' => $hoursOfGroundschool,
+            'flightTime' => $flightTime,
+            'simulatorTime' => $simulatorTime,
         ]);
+
         $filename = 'Certificate_' . Str::slug($student->fname . ' ' . $student->lname) . '.pdf';
 
         return $pdf->download($filename);
     }
+
 
     public function storeDeferredLessons(Request $request)
     {
@@ -1329,7 +1350,7 @@ class TrainingEventsController extends Controller
     }    
     
     public function storeDefGrading(Request $request)
-    {
+    { 
          $request->validate([
             'event_id' => 'required|integer|exists:training_events,id',
             'task_grade_def' => 'required|array',
