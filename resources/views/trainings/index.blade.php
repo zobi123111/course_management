@@ -872,9 +872,10 @@ $(document).ready(function() {
                       if (event.entry_source === 'instructor') 
                         {
                          // $('#edit_is_instructor_checkbox').prop('checked', true);
-                          $('#edit_is_instructor_checkbox').trigger('click');
+                         // $('#edit_is_instructor_checkbox').trigger('click');
+                         $('#edit_is_instructor_checkbox').prop('checked', true).trigger('change');
                          
-                        
+    
                            $('#edit_ou_id').val(selectedOU).trigger('change'); 
 
 

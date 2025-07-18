@@ -247,7 +247,7 @@ if (!function_exists('getTooltip')) {
                         @endphp
 
                         <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
-                            {{ $r->name }}
+                            {{ $r->name ?? '' }}
                         </span>
 
                         {{-- Nested (child) ratings --}}
@@ -368,7 +368,7 @@ if (!function_exists('getTooltip')) {
                     {{-- Parent Rating --}}
                     <div class="mb-2">
                         <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
-                            {{ $r->name }} ({{ $parentExpiry }})
+                            {{ $r->name ?? '' }} ({{ $parentExpiry }})
                         </span>
 
                         {{-- Associated/Child Ratings --}}

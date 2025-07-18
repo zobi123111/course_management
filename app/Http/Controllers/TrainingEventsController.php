@@ -136,6 +136,7 @@ class TrainingEventsController extends Controller
                         });
                     })
                     ->get();
+                $trainingEvents_instructor = [];
             }
         } else {
             // Default Case: Users with limited access within their organization
