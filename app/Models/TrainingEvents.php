@@ -64,6 +64,11 @@ class TrainingEvents extends Model
         return $this->belongsTo(User::class, 'student_id', 'id'); // Fixed foreign key
     }
 
+    public function recommendedInstructor()
+    {
+        return $this->belongsTo(User::class, 'recommended_by_instructor_id');
+    }
+
         /**
      * Relationship with TaskGrading
      */
@@ -101,7 +106,7 @@ class TrainingEvents extends Model
             ->join('course_lessons', 'training_event_lessons.lesson_id', '=', 'course_lessons.id') 
             ->join('resources', 'training_event_lessons.resource_id', '=', 'resources.id')
             ->orderBy('course_lessons.position')
-            ->select('training_event_lessons.*', 'resources.name as resource_name');
+            ->select('training_event_lessons.*', 'resources.name as resource_name', 'course_lessons.lesson_type');
     }
 
     public function trainingFeedbacks()

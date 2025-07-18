@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <title>Course Completion Certificate</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
-    
-
-
 @media print {
   .footer-contact,
   .footer-logo {
@@ -72,7 +69,7 @@
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Rating:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">{{ $student->usrRatings->first()?->rating?->name ?? 'N/A' }}</td>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Hours of groundschool:</th>
-          <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">(48hrs TK + pre-flight and post-flight briefings)</td>
+          <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">{{ $hoursOfGroundschool ?? 'N/A' }}</td>
         </tr>
         <tr>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Training device/s:</th>
@@ -88,13 +85,17 @@
         </tr>
         <tr>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Hours, flight:</th>
-          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">10hrs 00mins</td>
+          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">{{ $flightTime ?? 'N/A' }}</td>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Hours, simulator:</th>
-          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">2.00 (OTD)</td>
+          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">{{ $simulatorTime ? "$simulatorTime (OTD)" : '' }}</td>
         </tr>
         <tr style="background-color: #f8f9fa;">
           <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Recommended for LST by:</th>
-          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">{{ $event->instructor->fname ?? '' }} {{ $event->instructor->lname ?? '' }}</td>
+          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">@if ($recommendedBy)
+            {{ $recommendedBy->fname }} {{ $recommendedBy->lname }}
+        @else
+            &nbsp;
+        @endif</td>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Licence No:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">{{ $student->documents->licence ?? 'N/A' }}</td>
         </tr>
