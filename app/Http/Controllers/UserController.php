@@ -34,10 +34,11 @@ class UserController extends Controller
         $rating = Rating::where('status', 1)->get(); 
        
 
-        $ou_id = auth()->user()->ou_id;
-        if ($ou_id != null) {
-            $rating = Rating::with(['ou_ratings.organization_unit'])->where('status', 1)->whereHas('ou_ratings')->get();
-        }
+        $ou_id = auth()->user()->ou_id; 
+        //  if ($ou_id != null) {
+        //     $rating = Rating::with(['ou_ratings.organization_unit'])->where('status', 1)->whereHas('ou_ratings')->get();
+        //       dd($rating);
+        //  }
           
         if ($request->ajax()) {
             $query = User::query()

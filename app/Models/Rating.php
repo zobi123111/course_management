@@ -56,7 +56,7 @@ public function associatedParents()
 
 public function ou_ratings(): HasMany
 {
-     return $this->hasMany(OuRating::class);
+     return $this->hasMany(OuRating::class); 
 }
 
 
