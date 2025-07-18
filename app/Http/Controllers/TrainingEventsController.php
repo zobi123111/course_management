@@ -500,11 +500,11 @@ class TrainingEventsController extends Controller
                 $lessonData[$key]['end_time'] = date('H:i', strtotime($lesson['end_time']));
             }
         }
-        $request->merge(['lesson_data' => $lessonData]);
+        $request->merge(['lesson_data' => $lessonData]); 
     
         // Validate request
         $request->validate([
-            'event_id' => 'required|exists:training_events,id',
+            'event_id' => 'required|exists:training_events,id', 
             'student_id' => 'required|exists:users,id',
             'course_id' => 'required|exists:courses,id',
             'event_date' => 'required|date_format:Y-m-d',

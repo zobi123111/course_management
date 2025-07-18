@@ -154,19 +154,22 @@
                                         @php
                                             $parent = $group['parent'];
                                         @endphp
+                                       
+                                  
+                                      
                                         <div class="card mb-3">
                                             <div class="card-body">
                                                 <h6 class="card-title text-primary">{{ $parent->rating->name }}</h6>
                                                 <!-- Parent info -->
                                                 <ul>
-                                                    <li><strong>Issue Date:</strong> {{ $parent->issue_date ?? 'N/A' }}</li>
-                                                    <li><strong>Expiry Date:</strong> {{ $parent->expiry_date ?? 'N/A' }}</li>
+                                                    <li><strong>Issue Date:</strong> {{ $group['children'][0]['issue_date'] ?? 'N/A' }}</li>
+                                                    <li><strong>Expiry Date:</strong> {{ $group['children'][0]['expiry_date'] ?? 'N/A' }}</li>
                                                 </ul>
 
                                                 <!-- Child Ratings -->
                                                @if (!empty($group['children']))
                                     <hr>
-                                    <h6>Privileges:</h6>
+                                    <h6>Privileges:</h6> 
                                     <ul class="list-unstyled small">
                                         @foreach($group['children'] as $childRating)
                                             <li class="mb-2">
@@ -235,12 +238,13 @@
                                             @php
                                                 $parent = $group['parent'];
                                             @endphp
+                                        
                                             <div class="card mb-3 me-3" style="width: 18rem;">
                                                 <div class="card-body">
                                                     <h6 class="card-title text-primary">{{ $parent->rating->name ?? 'N/A' }}</h6>
                                                     <ul class="list-unstyled small mb-2">
-                                                        <li><strong>Issue Date:</strong> {{ $parent->issue_date ?? 'N/A' }}</li>
-                                                        <li><strong>Expiry Date:</strong> {{ $parent->expiry_date ?? 'N/A' }}</li>
+                                                        <li><strong>Issue Date:</strong> {{ $group['children'][0]['issue_date'] ?? 'N/A' }}</li>
+                                                        <li><strong>Expiry Date:</strong> {{ $group['children'][0]['issue_date'] ?? 'N/A' }}</li>
                                                     </ul>
 
                                                     @if($parent->file_path)
