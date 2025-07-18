@@ -57,7 +57,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     Route::get('change-password', [LoginController::class, 'showChangePasswordForm'])->name('change-password');
     Route::post('change-password', [LoginController::class, 'changePassword'])->name('update-password');
-    Route::get('/users/profile', [UserController::class, 'profile'])->name('user.profile');
+    Route::get('/users/profile', [UserController::class, 'profile'])->name('user.profile'); 
   
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index'); 
     Route::post('/settings', [SettingController::class, 'store'])->name('settings.store');
@@ -122,6 +122,7 @@ Route::group(['middleware' => ['auth']], function () {
     ->name('training.store_def_grading');
     Route::post('/training/end-course', [TrainingEventsController::class, 'endCourse'])->name('training.endCourse');
     Route::post('/training/unlock-lesson', [TrainingEventsController::class, 'unlockLesson'])->name('training.unlockLesson');
+    Route::post('/training/update-competency-grade', [TrainingEventsController::class, 'updateCompGrade'])->name('training.updateCompGrade');
 
 
 
@@ -163,6 +164,8 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
     Route::post('/users/verify', [UserController::class, 'docsVerify'])->name('user.verify');
     Route::post('/users/invalidate-document', [UserController::class, 'invalidateDocument'])->name('user.invalidateDocument');
+     Route::post('/get-child-ratings', [UserController::class, 'get_child_ratings']);
+     Route::post('/get-children-by-parent', [UserController::class, 'getChildren']);
 
 
     
