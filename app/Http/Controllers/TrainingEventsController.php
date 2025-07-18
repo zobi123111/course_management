@@ -1248,7 +1248,7 @@ class TrainingEventsController extends Controller
     public function generateCertificate($event)
     {
         $eventId = decode_id($event); // decode the ID
-        $event = TrainingEvents::with('eventLessons')->findOrFail($eventId);
+        $event = TrainingEvents::with('eventLessons','recommendedInstructor')->findOrFail($eventId);
         $student = $event->student;
         $course = $event->course;
         $firstLesson = $event->firstLesson;
@@ -1280,6 +1280,7 @@ class TrainingEventsController extends Controller
             'hoursOfGroundschool' => $hoursOfGroundschool,
             'flightTime' => $flightTime,
             'simulatorTime' => $simulatorTime,
+            'recommendedBy' => $event->recommendedInstructor,
         ]);
 
         $filename = 'Certificate_' . Str::slug($student->fname . ' ' . $student->lname) . '.pdf';

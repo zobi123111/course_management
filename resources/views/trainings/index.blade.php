@@ -1321,7 +1321,7 @@ $(document).ready(function() {
     }
 
 
-    function calculateTotalSimulatorTime() { alert("xcz");
+    function calculateTotalSimulatorTime() { 
         let totalMinutes = 0;
 
         $('.lesson-box[data-lesson-type="simulator"]').each(function () {

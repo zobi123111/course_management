@@ -64,6 +64,11 @@ class TrainingEvents extends Model
         return $this->belongsTo(User::class, 'student_id', 'id'); // Fixed foreign key
     }
 
+    public function recommendedInstructor()
+    {
+        return $this->belongsTo(User::class, 'recommended_by_instructor_id');
+    }
+
         /**
      * Relationship with TaskGrading
      */
