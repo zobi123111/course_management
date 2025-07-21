@@ -270,33 +270,50 @@ if (!function_exists('getTooltip')) {
 
         <td>
    <?php
+ 
         $groupedEASA = [];
          // dump($ratingsByLicence);
         if (isset($ratingsByLicence['licence_1'])) {
+            //   print_r($ratingsByLicence['licence_1']);
             foreach ($ratingsByLicence['licence_1'] as $ratings) { 
-                $child_id = $ratings->rating_id;
+               $child_id = $ratings->rating_id ; 
                 $parent_id = $ratings->parent_id;
+                // echo "parent $parent_id  child $child_id <br>";
 
-                if ($parent_id === null && $ratings->rating) {
+                if ($parent_id === null && $ratings->rating) { 
+                    
                     $groupedEASA[$child_id] = [
                         'parent' => $ratings->rating->name,
                         'children' => [],
                     ];
-                } elseif ($ratings->rating) {
+                   
+
+                } elseif ($ratings->rating) { 
                     $parentRating = $ratings->parentRating;
                     $childRating = $ratings->rating;
 
-                    if (!isset($groupedEASA[$parent_id])) {
+                    if (!isset($groupedEASA[$parent_id])) { 
+                  
                         $groupedEASA[$parent_id] = [
-                            'parent' => $parentRating?->name ?? 'Unknown Parent',
+                            'parent' => $parentRating?->name ?? '',
                             'children' => [],
                         ];
+                        
                     }
 
                     $groupedEASA[$parent_id]['children'][] = $childRating->name;
+                }else {
+                   $parentRating = $ratings->parentRating;
+                    $groupedEASA[$parent_id] = [
+                        'parent' => $parentRating?->name ?? '',
+                        'children' => [],  // No children here
+                    ];
                 }
             }
         }
+
+
+        
    ?>
 
     @foreach ($groupedEASA as $entry)

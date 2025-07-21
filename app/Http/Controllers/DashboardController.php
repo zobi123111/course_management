@@ -128,21 +128,7 @@ class DashboardController extends Controller
         $readDocuments = countAcknowledgedDocuments($documents, $user);
         $unreadDocuments = $totalDocuments - $readDocuments;
     
- 
- 
-        // $users = User::where('ou_id', $ou_id)
-        //         ->whereNull('is_admin')
-        //         ->with([
-        //             'documents',
-        //             'usrRatings' => function ($query) {
-        //                 $query->where('linked_to', 'licence_1')
-        //                     ->with([
-        //                         'rating.associatedChildren',
-        //                         'parentRating'
-        //                     ]);
-        //             }
-        //         ])
-        //         ->get();
+
         $users = User::where('ou_id', $ou_id)
                     ->whereNull('is_admin')
                     ->with([
@@ -156,33 +142,10 @@ class DashboardController extends Controller
                         }
                     ])
                     ->get();
-
-
-$users2 = User::where('ou_id', $ou_id)
-            ->whereNull('is_admin')
-            ->with([
-                'documents',
-                'usrRatings' => function ($query) {
-                    $query->where('linked_to', 'licence_2')
-                        ->with([
-                            'rating.associatedChildren',
-                            'parentRating'
-                        ]);
-                }
-            ])
-            ->get();
-            //dd($users2);
-           
-            
-
-
-
-
-
-
+                    
         return view('dashboard.index', compact(
             'user_count', 'course_count', 'group_count', 'folder_count',
-            'totalDocuments', 'readDocuments', 'unreadDocuments', 'requestCount', 'users', 'users2'
+            'totalDocuments', 'readDocuments', 'unreadDocuments', 'requestCount', 'users'
         ));
     }
     

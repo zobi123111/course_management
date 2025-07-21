@@ -1396,7 +1396,16 @@ foreach ($rawUserRatings as $rating) {
 
             // === Handle User Ratings (NEW) ===
             // === Handle User Ratings with Linked Flag ===
-            UserRating::where('user_id', $userToUpdate->id)->delete(); // Remove all existing ratings
+          
+
+
+
+  
+
+
+
+
+
 
             $ratingsData = [
                 'licence_1' => $request->input('licence_1_ratings', []),
@@ -1414,25 +1423,47 @@ foreach ($rawUserRatings as $rating) {
                     if ($parentId) {
                         if (is_array($childIds) && count($childIds)) {
                             foreach ($childIds as $childId) {
+                            $licence1_dates = UserRating::where('user_id', $userToUpdate->id)
+                                                    ->where('linked_to', 'licence_1')
+                                                    ->where('rating_id', $childId)
+                                                    ->first();
+
+                            $issue_date_licence1 = $licence1_dates->issue_date ?? NULL;
+                            $expiry_date_licence1 = $licence1_dates->expiry_date ?? NULL;
+                                UserRating::where('user_id', $userToUpdate->id)
+                                            ->where('rating_id', $childId)
+                                            ->where('linked_to', 'licence_1')
+                                            ->delete(); 
 
                                 UserRating::create([
                                     'user_id'     => $request->edit_form_id,
                                     'rating_id'   => $childId,
                                     'parent_id'   => $parentId,
-                                    'issue_date'  => null,
-                                    'expiry_date' => null,
+                                    'issue_date'  => $issue_date_licence1,
+                                    'expiry_date' => $expiry_date_licence1,
                                     'file_path'   => null,
                                     'linked_to'   => 'licence_1',
                                 ]);
                             }
                         } else {
-                            // Optional: Save just the parent with rating_id = null
+                            $licence1_dates = UserRating::where('user_id', $userToUpdate->id)
+                                                    ->where('linked_to', 'licence_1')
+                                                    ->where('rating_id', $childId)
+                                                    ->first();
+
+                            $issue_date_licence1 = $licence1_dates->issue_date ?? NULL;
+                            $expiry_date_licence1 = $licence1_dates->expiry_date ?? NULL;
+                                UserRating::where('user_id', $userToUpdate->id)
+                                            ->where('rating_id', $childId)
+                                            ->where('linked_to', 'licence_1')
+                                            ->delete(); 
+                      
                             UserRating::create([
                                 'user_id'     => $request->edit_form_id,
                                 'rating_id'   => null,
                                 'parent_id'   => $parentId,
-                                'issue_date'  => null,
-                                'expiry_date' => null,
+                                'issue_date'  => $issue_date_licence1,
+                                'expiry_date' => $expiry_date_licence1,
                                 'file_path'   => null,
                                 'linked_to'   => 'licence_1',
                             ]);
@@ -1440,6 +1471,22 @@ foreach ($rawUserRatings as $rating) {
                     }
                 }
             }
+
+            if(empty($request->licence_1_ratings)) {
+                    UserRating::where('user_id', $userToUpdate->id)            
+                                ->where('linked_to', 'licence_1')
+                                 ->delete(); 
+
+            }
+
+           
+            if(empty($request->licence_2_ratings)) {
+                    UserRating::where('user_id', $userToUpdate->id)            
+                                ->where('linked_to', 'licence_2')
+                                 ->delete(); 
+
+            }
+           
 
              if ($request->has('licence_2_ratings') && is_array($request->licence_2_ratings)) {
                      foreach ($request->licence_2_ratings as $ratingGroup) { 
@@ -1449,25 +1496,48 @@ foreach ($rawUserRatings as $rating) {
                     if ($parentId) {
                         if (is_array($childIds) && count($childIds)) {
                             foreach ($childIds as $childId) {
+                                   $licence2_dates = UserRating::where('user_id', $userToUpdate->id)
+                                                    ->where('linked_to', 'licence_2')
+                                                    ->where('rating_id', $childId)
+                                                    ->first();
+
+                                    $issue_date_licence2 = $licence2_dates->issue_date ?? NULL;
+                                    $expiry_date_licence2 = $licence2_dates->expiry_date ?? NULL;
+                                    UserRating::where('user_id', $userToUpdate->id)
+                                                    ->where('rating_id', $childId)
+                                                    ->where('linked_to', 'licence_2')
+                                                    ->delete(); 
 
                                 UserRating::create([
                                     'user_id'     => $request->edit_form_id,
                                     'rating_id'   => $childId,
                                     'parent_id'   => $parentId,
-                                    'issue_date'  => null,
-                                    'expiry_date' => null,
+                                    'issue_date'  => $issue_date_licence2,
+                                    'expiry_date' => $expiry_date_licence2,
                                     'file_path'   => null,
                                     'linked_to'   => 'licence_2',
                                 ]);
                             }
                         } else {
                             // Optional: Save just the parent with rating_id = null
+
+                                $licence2_dates = UserRating::where('user_id', $userToUpdate->id)
+                                                    ->where('linked_to', 'licence_2')
+                                                    ->where('rating_id', $childId)
+                                                    ->first();
+
+                                $issue_date_licence2 = $licence2_dates->issue_date ?? NULL;
+                                $expiry_date_licence2 = $licence2_dates->expiry_date ?? NULL;
+                                UserRating::where('user_id', $userToUpdate->id)
+                                                    ->where('rating_id', $childId)
+                                                    ->where('linked_to', 'licence_2')
+                                                    ->delete(); 
                             UserRating::create([
                                 'user_id'     => $request->edit_form_id,
                                 'rating_id'   => null,
                                 'parent_id'   => $parentId,
-                                'issue_date'  => null,
-                                'expiry_date' => null,
+                                'issue_date'  => $issue_date_licence2,
+                                'expiry_date' => $expiry_date_licence2,
                                 'file_path'   => null,
                                 'linked_to'   => 'licence_2',
                             ]);
@@ -1475,17 +1545,7 @@ foreach ($rawUserRatings as $rating) {
                     }
                 }
              }
-            //    foreach ($ratingsData as $linkedTo => $ratingIds) {
-            //         foreach ($ratingIds as $ratingId) {
-            //             \Log::info("Saving rating {$ratingId} linked to {$linkedTo}");
 
-            //             UserRating::create([
-            //                 'user_id'   => $userToUpdate->id,
-            //                 'rating_id' => $ratingId,
-            //                 'linked_to' => $linkedTo,
-            //             ]);
-            //         }
-            //     }
 
             // Log Changes
             if (!empty($changes)) {
