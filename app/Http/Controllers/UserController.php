@@ -195,11 +195,13 @@ foreach ($rawUserRatings as $rating) {
     } else {
         // Rating is a child
         $parentId = $rating->parent_id;
+      
 
         // Ensure group for this parent under this linked_to exists
         if (!isset($grouped[$linkedTo][$parentId])) {
             $grouped[$linkedTo][$parentId] = [];
         }
+        
 
         // Add child
         $grouped[$linkedTo][$parentId]['children'][] = $rating;
@@ -207,7 +209,7 @@ foreach ($rawUserRatings as $rating) {
         // If parent not already added from user_ratings, fetch from ratings table
         if (!isset($grouped[$linkedTo][$parentId]['parent'])) {
             $parentRatingModel = \App\Models\Rating::find($parentId);
-            if ($parentRatingModel) {
+            if ($parentRatingModel) { 
                 // Wrap it in a fake UserRating instance (so your view works the same way)
                 $fakeParent = new \App\Models\UserRating([
                     'rating_id' => $parentRatingModel->id,
@@ -226,8 +228,9 @@ foreach ($rawUserRatings as $rating) {
     //  dd($grouped);
         // Fix: Treat parent-only entries (rating_id is NULL, parent_id is set)
         $userRatings = $rawUserRatings->filter(function ($ur) {
-            return $ur->rating_id !== null || $ur->parent_id !== null;
+           return $ur->rating_id !== null;
         });
+       // dd($userRatings);
 
         // Normalize all ratings: if rating_id is null but parent_id exists, we use parent_id as rating_id
         foreach ($userRatings as $ur) {
@@ -284,6 +287,7 @@ foreach ($rawUserRatings as $rating) {
 
         // Ratings list (not used in your view, but kept if needed)
         $ratings = $userRatings->pluck('rating');
+       // dd($grouped);
 
         return view('users.profile', compact(
             'user',

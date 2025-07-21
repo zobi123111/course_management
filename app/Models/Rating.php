@@ -35,20 +35,23 @@ public function children()
 public function associatedChildren()
 {
     return $this->belongsToMany(
-        Rating::class,          // Related model (self-reference)
-        'parent_rating',        // Pivot table name
-        'parent_id',            // Foreign key on the pivot table for THIS model
-        'rating_id'             // Foreign key for the associated (child) ratings
+        Rating::class,
+        'user_ratings',
+        'parent_id',  
+        'rating_id'   
     );
 }
 
+
+
+// ✅ From child to parent (this model is the child)
 public function associatedParents()
 {
     return $this->belongsToMany(
         Rating::class,
         'parent_rating',
-        'rating_id',            // Foreign key on the pivot for THIS model
-        'parent_id'             // Foreign key for the parent
+        'rating_id',   
+        'parent_id'  
     );
 }
  

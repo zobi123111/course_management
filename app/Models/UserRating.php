@@ -9,7 +9,7 @@ use Carbon\Carbon;
 class UserRating extends Model
 {
     use HasFactory;
-
+ 
     protected $table = 'user_ratings';
 
     protected $fillable = [
@@ -23,8 +23,13 @@ class UserRating extends Model
         'linked_to'
     ];
 
+    public function parentRating()
+{
+    return $this->belongsTo(Rating::class, 'parent_id');
+}
 
-    public function getExpiryStatusAttribute()
+
+    public function getExpiryStatusAttribute() 
     {
         if (!$this->expiry_date) return 'N/A';
 
@@ -35,7 +40,7 @@ class UserRating extends Model
             return 'Red'; 
         }
 
-        if ($expiryDate->diffInDays($now) <= 30) {
+        if ($expiryDate->diffInDays($now) <= 30) { 
             return 'Orange';
         }
 
@@ -57,14 +62,14 @@ class UserRating extends Model
     /**
      * Get the rating details.
      */
-    public function rating()
+      public function rating() 
     {
-        return $this->belongsTo(Rating::class);
+        return $this->belongsTo(Rating::class, 'rating_id');
     }
 
-    public function parent()
+      public function parent()
     {
-        return $this->belongsTo(Rating::class);
+        return $this->belongsTo(Rating::class, 'parent_id');
     }
 
 }

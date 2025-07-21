@@ -281,16 +281,16 @@
                                             @endphp
 
                                             <?php
-                                                // echo $entry['children'][0]['user_id'] . "<br>";
-                                                // echo $entry['children'][0]['rating_id'] . "<br>";
-                                                // echo $entry['children'][0]['parent_id'] . "<br>";
-                                                // echo $entry['children'][0]['linked_to'] . "<br>";
-                                                // echo $entry['children'][0]['issue_date'] . "<br>";
-                                                // echo $entry['children'][0]['expiry_date'] . "<br>";
+                                            // echo $entry['children'][0]['user_id'] . "<br>";
+                                            // echo $entry['children'][0]['rating_id'] . "<br>";
+                                            // echo $entry['children'][0]['parent_id'] . "<br>";
+                                            // echo $entry['children'][0]['linked_to'] . "<br>";
+                                            // echo $entry['children'][0]['issue_date'] . "<br>";
+                                            // echo $entry['children'][0]['expiry_date'] . "<br>";
                                             ?>
                                             <div class="card shadow-sm border rounded mb-4">
                                                 <div class="card-body">
-                                                    <h5 class="card-title">{{ $rating->name ?? 'Unknown Parent' }}</h5>
+                                                    <h5 class="card-title">{{ $rating->name ?? ' ' }}</h5>
                                                     <div class="row">
 
 
@@ -310,7 +310,7 @@
                                                             <!-- // user id  -->
                                                             <input type="hidden" name="issue_date[{{ $i }}][user_id]" class="form-control"
                                                                 value="{{ $entry['children'][0]['user_id'] }}">
-                                                             <!-- // Linked to -->
+                                                            <!-- // Linked to -->
                                                             <input type="hidden" name="issue_date[{{ $i }}][linked_to]" class="form-control"
                                                                 value="{{ $entry['children'][0]['linked_to'] }}">
                                                         </div>
@@ -333,7 +333,7 @@
                                                             <!-- // user id  -->
                                                             <input type="hidden" name="expiry_date[{{ $i }}][user_id]" class="form-control"
                                                                 value="{{ $entry['children'][0]['user_id'] }}">
-                                                             <!-- // Linked to -->
+                                                            <!-- // Linked to -->
                                                             <input type="hidden" name="expiry_date[{{ $i }}][linked_to]" class="form-control"
                                                                 value="{{ $entry['children'][0]['linked_to'] }}">
                                                         </div>
@@ -349,6 +349,7 @@
                                                     @endif
 
                                                     {{-- Children Ratings --}}
+                                                  
                                                     @if(count($children))
                                                     <h6 class="mt-4">Privileges</h6>
                                                     <div class="row">
@@ -357,7 +358,7 @@
                                                         <div class="col-md-6 mb-3">
                                                             <div class="card h-100 border shadow-sm">
                                                                 <div class="card-body">
-                                                                    <h6 class="card-title">{{ $child->name ?? 'Unknown Child' }}</h6>
+                                                                    <h6 class="card-title">{{ $child->name ?? '' }}</h6>
                                                                     <p class="card-text small">
                                                                         Issue Date: {{ $childRating->issue_date ?? 'N/A' }}<br>
                                                                         Expiry Date: {{ $childRating->expiry_date ?? 'N/A' }}
@@ -424,60 +425,73 @@
                                         @if(isset($grouped['licence_2']) && count($grouped['licence_2']))
                                         <h4 class="mt-2">Ratings linked to EASA Licence</h4>
                                         @foreach($grouped['licence_2'] as $parentId => $entry)
-                                         @php $j = $loop->index; @endphp
+                                        @php $j = $loop->index; @endphp
                                         @php
                                         $parent = $entry['parent'];
                                         $children = $entry['children'] ?? [];
+
                                         $rating = $parent->rating;
+                                        $children = $entry['children'] ?? [];
+
+                                           $hasValidChildren = collect($children)->contains(function ($child) {
+                                                return !is_null($child->rating_id);
+                                            });
+
+                                            if (!$hasValidChildren) {
+                                                $children = [];
+                                            }
                                         @endphp
-                                        <?php
-                                            //echo $entry['children'][0]['user_id'] . "<br>";
-                                            // echo $entry['children'][0]['rating_id'] . "<br>";
-                                            // echo $entry['children'][0]['parent_id'] . "<br>";
-                                            // echo $entry['children'][0]['linked_to'] . "<br>";
+                                      
+                                     
+                                    
+                                        <?php 
+                                        //echo $entry['children'][0]['user_id'] . "<br>";
+                                        // echo $entry['children'][0]['rating_id'] . "<br>";
+                                        // echo $entry['children'][0]['parent_id'] . "<br>";
+                                        // echo $entry['children'][0]['linked_to'] . "<br>";
                                         ?>
                                         <div class="card shadow-sm border rounded mb-4">
                                             <div class="card-body">
-                                                <h5 class="card-title">{{ $rating->name ?? 'Unknown Parent' }}</h5>
+                                                <h5 class="card-title">{{ $rating->name ?? '' }}</h5>
                                                 <div class="row">
                                                     <div class="col-md-6">
                                                         <label class="form-label mt-2"><strong>Issue Date</strong></label>
                                                         <!-- <input type="date" name="issue_date[{{ $rating->id }}]" class="form-control"
                                                             value="{{ old("issue_date.$rating->id", $parent->issue_date) }}"> -->
 
-                                                               <input type="hidden" name="issue_date_licence2[{{ $j }}][id]" value="{{ $rating->id }}">
+                                                        <input type="hidden" name="issue_date_licence2[{{ $j }}][id]" value="{{ $rating->id }}">
 
-                                                            <!-- parentid -->
-                                                            <input type="hidden" name="issue_date_licence2[{{ $j }}][parentid]" value="{{ $entry['children'][0]['parent_id'] }}">
+                                                        <!-- parentid -->
+                                                        <input type="hidden" name="issue_date_licence2[{{ $j }}][parentid]" value="{{ $entry['children'][0]['parent_id'] }}">
 
-                                                            <!-- actual date -->
-                                                            <input type="date" name="issue_date_licence2[{{ $j }}][issue_date]" class="form-control"
-                                                                value="{{ $entry['children'][0]['issue_date'] ?? '' }}">
-                                                            <!-- // user id  -->
-                                                            <input type="hidden" name="issue_date_licence2[{{ $j }}][user_id]" class="form-control"
-                                                                value="{{ $entry['children'][0]['user_id'] }}">
-                                                             <!-- // Linked to -->
-                                                            <input type="hidden" name="issue_date_licence2[{{ $j }}][linked_to]" class="form-control"
-                                                                value="{{ $entry['children'][0]['linked_to'] }}">
+                                                        <!-- actual date -->
+                                                        <input type="date" name="issue_date_licence2[{{ $j }}][issue_date]" class="form-control"
+                                                            value="{{ $entry['children'][0]['issue_date'] ?? '' }}">
+                                                        <!-- // user id  -->
+                                                        <input type="hidden" name="issue_date_licence2[{{ $j }}][user_id]" class="form-control"
+                                                            value="{{ $entry['children'][0]['user_id'] }}">
+                                                        <!-- // Linked to -->
+                                                        <input type="hidden" name="issue_date_licence2[{{ $j }}][linked_to]" class="form-control"
+                                                            value="{{ $entry['children'][0]['linked_to'] }}">
                                                     </div>
                                                     <div class="col-md-6">
                                                         <label class="form-label mt-2"><strong>Expiry Date</strong></label>
                                                         <!-- <input type="date" name="expiry_date[{{ $rating->id }}]" class="form-control"
                                                             value="{{ old("expiry_date.$rating->id", $parent->expiry_date) }}"> -->
-                                                             <input type="hidden" name="expiry_date_licence2[{{ $j }}][id]" value="{{ $rating->id }}">
+                                                        <input type="hidden" name="expiry_date_licence2[{{ $j }}][id]" value="{{ $rating->id }}">
 
-                                                            <!-- parentid -->
-                                                            <input type="hidden" name="expiry_date_licence2[{{ $j }}][parentid]" value="{{ $entry['children'][0]['parent_id'] }}">
+                                                        <!-- parentid -->
+                                                        <input type="hidden" name="expiry_date_licence2[{{ $j }}][parentid]" value="{{ $entry['children'][0]['parent_id'] }}">
 
-                                                            <!-- actual date -->
-                                                            <input type="date" name="expiry_date_licence2[{{ $j }}][expiry_date]" class="form-control"
-                                                                value="{{ old("expiry_date.$j.date", $rating->expiry_date) }}">
-                                                            <!-- // user id  -->
-                                                            <input type="hidden" name="expiry_date_licence2[{{ $j }}][user_id]" class="form-control"
-                                                                value="{{ $entry['children'][0]['user_id'] }}">
-                                                             <!-- // Linked to -->
-                                                            <input type="hidden" name="expiry_date_licence2[{{ $j }}][linked_to]" class="form-control"
-                                                                value="{{ $entry['children'][0]['linked_to'] }}">
+                                                        <!-- actual date -->
+                                                        <input type="date" name="expiry_date_licence2[{{ $j }}][expiry_date]" class="form-control"
+                                                            value="{{ old("expiry_date.$j.date", $rating->expiry_date) }}">
+                                                        <!-- // user id  -->
+                                                        <input type="hidden" name="expiry_date_licence2[{{ $j }}][user_id]" class="form-control"
+                                                            value="{{ $entry['children'][0]['user_id'] }}">
+                                                        <!-- // Linked to -->
+                                                        <input type="hidden" name="expiry_date_licence2[{{ $j }}][linked_to]" class="form-control"
+                                                            value="{{ $entry['children'][0]['linked_to'] }}">
                                                     </div>
                                                 </div>
 
@@ -490,16 +504,16 @@
                                                     <i class="bi bi-file-earmark-text me-1"></i> View File
                                                 </a>
                                                 @endif
-
+                                              
                                                 @if(count($children))
                                                 <h6 class="mt-4">Privileges</h6>
                                                 <div class="row">
-                                                    @foreach($children as $childRating)
-                                                    @php $child = $childRating->rating; @endphp
+                                                    @foreach($children as $childRating) 
+                                                    @php $child = $childRating->rating; @endphp 
                                                     <div class="col-md-6 mb-3">
                                                         <div class="card h-100 border shadow-sm">
                                                             <div class="card-body">
-                                                                <h6 class="card-title">{{ $child->name ?? 'Unknown Child' }}</h6>
+                                                                <h6 class="card-title">{{ $child->name ?? ' ' }}</h6>
                                                                 <p class="card-text small">
                                                                     Issue Date: {{ $childRating->issue_date ?? 'N/A' }}<br>
                                                                     Expiry Date: {{ $childRating->expiry_date ?? 'N/A' }}
@@ -980,7 +994,7 @@
             $(".loader").fadeIn('fast');
             $.ajax({
                 type: 'post',
-                url: "/users/profile/update", 
+                url: "/users/profile/update",
                 data: formData,
                 processData: false,
                 contentType: false,
