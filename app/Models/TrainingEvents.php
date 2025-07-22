@@ -124,9 +124,26 @@ class TrainingEvents extends Model
         return $this->hasMany(TrainingEventDocument::class, 'training_event_id');
     }
 
+    // public function getIsGradedAttribute()
+    // {
+    //     return $this->task_gradings_count > 0 || $this->competency_gradings_count > 0;
+    // }
+
     public function getIsGradedAttribute()
     {
-        return $this->task_gradings_count > 0 && $this->competency_gradings_count > 0;
+        // Check if any lesson in this event has CBTA enabled
+        $cbtaEnabled = $this->eventLessons->contains(function ($eventLesson) {
+            return $eventLesson->lesson?->enable_cbta;
+        });
+
+        $hasTaskGrading = $this->task_gradings_count > 0;
+        $hasCompetencyGrading = $this->competency_gradings_count > 0;
+
+        if ($cbtaEnabled) {
+            return $hasTaskGrading && $hasCompetencyGrading;
+        }
+
+        return $hasTaskGrading;
     }
 
     public function getCanEndCourseAttribute()

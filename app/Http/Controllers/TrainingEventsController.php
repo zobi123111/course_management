@@ -792,10 +792,13 @@ class TrainingEventsController extends Controller
             ->get();
         $deferredTaskIds = collect($getFirstdeftTasks)->pluck('sub_lesson_id')->toArray();
 
-        // dd($deferredTaskIds);
-        $deferredLessons = DefLessonTask::with(['user', 'defLesson.instructor', 'defLesson.resource', 'task'])
-            ->where('event_id', $trainingEvent->id)
-            ->get();
+        // $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource'])
+        // ->where('event_id', $trainingEvent->id)
+        // ->get();
+        $defLessonTasks = DefLessonTask::with(['user', 'defLesson.instructor', 'defLesson.instructor.documents', 'defLesson.resource', 'task'])
+        ->where('event_id', $trainingEvent->id)
+        ->get();
+        // dd($deferredLessons);
 
         $deferredLessonsTasks = DefLessonTask::with([
                 'user', 
@@ -841,7 +844,7 @@ class TrainingEventsController extends Controller
             'resources',
             'instructors',
             'defTasks',
-            'deferredLessons',
+            'defLessonTasks',
             'deferredTaskIds',
             'gradedDefTasksMap'
         ));
@@ -930,8 +933,11 @@ class TrainingEventsController extends Controller
                     $gradedSubLessons = TaskGrading::where([
                         'event_id'  => $event_id,
                         'lesson_id' => $lesson_id,
-                        'user_id'   => $gradedStudentId,
-                    ])->count(); // No need for whereNotNull('task_grade')
+                        'user_id'   => $gradedStudentId,    
+                    ])
+                    ->whereNotNull('task_grade')
+                    ->where('task_grade', '!=', '')
+                    ->count(); 
 
                     if ($totalSubLessons > 0 && $totalSubLessons == $gradedSubLessons) {
                         TrainingEventLessons::where('training_event_id', $event_id)
@@ -1303,6 +1309,8 @@ class TrainingEventsController extends Controller
             'resource_id'   => 'required|integer|exists:resources,id',
             'instructor_id' => 'required|integer|exists:users,id',
             'std_id'        => 'required|integer|exists:users,id',
+            'departure_airfield'   => 'nullable|string|max:4',
+            'destination_airfield' => 'nullable|string|max:4',
         ], [], [
             'item_ids'     => 'Tasks',
             'resource_id'  => 'Resource',
@@ -1330,6 +1338,8 @@ class TrainingEventsController extends Controller
             'lesson_date'   => $validatedData['lesson_date'],
             'start_time'    => $validatedData['start_time'],
             'end_time'      => $validatedData['end_time'],
+            'departure_airfield'   => $validatedData['departure_airfield'],
+            'destination_airfield' => $validatedData['destination_airfield'],
             'created_by'    => $authId,
         ]);
 
