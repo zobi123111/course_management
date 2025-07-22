@@ -277,7 +277,14 @@
                                             @php
                                             $parent = $entry['parent'];
                                             $children = $entry['children'] ?? [];
-                                            $rating = $parent->rating;
+                                            $rating = $parent->rating; 
+                                             $hasValidChildren = collect($children)->contains(function ($child) {
+                                               return !is_null($child->rating_id);
+                                               });
+
+                                               if (!$hasValidChildren) {
+                                                $children = [];
+                                             }
                                             @endphp
 
                                             <?php
@@ -485,7 +492,7 @@
 
                                                         <!-- actual date -->
                                                         <input type="date" name="expiry_date_licence2[{{ $j }}][expiry_date]" class="form-control"
-                                                            value="{{ old("expiry_date.$j.date", $rating->expiry_date) }}">
+                                                            value="{{ $entry['children'][0]['expiry_date'] ?? '' }}">
                                                         <!-- // user id  -->
                                                         <input type="hidden" name="expiry_date_licence2[{{ $j }}][user_id]" class="form-control"
                                                             value="{{ $entry['children'][0]['user_id'] }}">
@@ -518,7 +525,7 @@
                                                                     Issue Date: {{ $childRating->issue_date ?? 'N/A' }}<br>
                                                                     Expiry Date: {{ $childRating->expiry_date ?? 'N/A' }}
                                                                 </p>
-                                                                @if($childRating->file_path)
+                                                                @if($childRating->file_path) 
                                                                 <a href="{{ asset('storage/' . $childRating->file_path) }}" target="_blank"
                                                                     class="btn btn-sm btn-outline-primary">
                                                                     <i class="bi bi-file-earmark-text me-1"></i> View File
