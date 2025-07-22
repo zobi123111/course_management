@@ -321,6 +321,9 @@
                                                             <input type="hidden" name="issue_date[{{ $i }}][linked_to]" class="form-control"
                                                                 value="{{ $entry['children'][0]['linked_to'] }}">
                                                         </div>
+                                                      
+                                                     
+                                                       
 
 
 
@@ -345,14 +348,33 @@
                                                                 value="{{ $entry['children'][0]['linked_to'] }}">
                                                         </div>
                                                     </div>
-                                                    <label class="form-label mt-3"><strong>Upload File</strong></label>
-                                                    <input type="file" name="rating_file[{{ $rating->id }}]" class="form-control">
+                                                    <label class="form-label mt-3"><strong>Upload File55</strong></label>
+
+                                                    <input type="hidden" name="rating_file[{{ $i }}][parentid]" value="{{ $entry['children'][0]['parent_id'] }}" class="form-control">
+                                                    <input type="hidden" name="rating_file[{{ $i }}][user_id]" value="{{ $entry['children'][0]['user_id'] ?? '' }}" class="form-control">
+
+                                                     <input type="hidden" name="rating_file[{{ $i }}][linked_to]" value="{{ $entry['children'][0]['linked_to'] ?? '' }}" class="form-control">
+                                                 
+                                                    <input type="file" name="rating_file[{{ $i }}][upload]"  class="form-control">
+                                                    <div class="licence1_file">
+                                                           @if(!empty($entry['children'][0]['file_path']))
+                                                        <a  href="{{ asset('storage/' . $entry['children'][0]['file_path']) }}" target="_blank"
+                                                        class="btn btn-sm btn-outline-primary">
+                                                            <i class="bi bi-file-earmark-text me-1"></i> View File
+                                                        </a>
+                                                    @endif
+
+                                                   </div>
+
+                                                   
+
 
                                                     @if($parent->file_path)
                                                     <a href="{{ asset('storage/' . $parent->file_path) }}" target="_blank"
                                                         class="btn btn-outline-primary btn-sm mt-2">
                                                         <i class="bi bi-file-earmark-text me-1"></i> View File
                                                     </a>
+                                                    
                                                     @endif
 
                                                     {{-- Children Ratings --}}
@@ -371,10 +393,10 @@
                                                                         Expiry Date: {{ $childRating->expiry_date ?? 'N/A' }}
                                                                     </p>
                                                                     @if($childRating->file_path)
-                                                                    <a href="{{ asset('storage/' . $childRating->file_path) }}" target="_blank"
+                                                                    <!-- <a href="{{ asset('storage/' . $childRating->file_path) }}" target="_blank"
                                                                         class="btn btn-sm btn-outline-primary">
                                                                         <i class="bi bi-file-earmark-text me-1"></i> View File
-                                                                    </a>
+                                                                    </a> -->
                                                                     @endif
                                                                 </div>
                                                             </div>
@@ -503,7 +525,25 @@
                                                 </div>
 
                                                 <label class="form-label mt-3"><strong>Upload File</strong></label>
-                                                <input type="file" name="rating_file[{{ $rating->id }}]" class="form-control">
+                                                <!-- <input type="file" name="rating_file[{{ $rating->id }}]" class="form-control"> -->
+                                                   <input type="hidden" name="rating_file_licence2[{{ $j }}][parentid]" value="{{ $entry['children'][0]['parent_id'] }}" class="form-control">
+                                                    <input type="hidden" name="rating_file_licence2[{{ $j }}][user_id]" value="{{ $entry['children'][0]['user_id'] ?? '' }}" class="form-control">
+
+                                                     <input type="hidden" name="rating_file_licence2[{{ $j }}][linked_to]" value="{{ $entry['children'][0]['linked_to'] ?? '' }}" class="form-control">
+                                                 
+                                                    <input type="file" name="rating_file_licence2[{{ $j }}][upload2]"  class="form-control">
+
+                                                    <div class="licence2_file">
+                                                          @if(!empty($entry['children'][0]['file_path']))
+                                                                <a href="{{ asset('storage/' . $entry['children'][0]['file_path']) }}" target="_blank"
+                                                                class="btn btn-sm btn-outline-primary">
+                                                                    <i class="bi bi-file-earmark-text me-1"></i> View File
+                                                                </a>
+                                                            @endif
+
+                                                    </div>
+                                                  
+
 
                                                 @if($parent->file_path)
                                                 <a href="{{ asset('storage/' . $parent->file_path) }}" target="_blank"
@@ -526,10 +566,10 @@
                                                                     Expiry Date: {{ $childRating->expiry_date ?? 'N/A' }}
                                                                 </p>
                                                                 @if($childRating->file_path) 
-                                                                <a href="{{ asset('storage/' . $childRating->file_path) }}" target="_blank"
+                                                                <!-- <a href="{{ asset('storage/' . $childRating->file_path) }}" target="_blank"
                                                                     class="btn btn-sm btn-outline-primary">
                                                                     <i class="bi bi-file-earmark-text me-1"></i> View File
-                                                                </a>
+                                                                </a> -->
                                                                 @endif
                                                             </div>
                                                         </div>
