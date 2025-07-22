@@ -277,7 +277,14 @@
                                             @php
                                             $parent = $entry['parent'];
                                             $children = $entry['children'] ?? [];
-                                            $rating = $parent->rating;
+                                            $rating = $parent->rating; 
+                                             $hasValidChildren = collect($children)->contains(function ($child) {
+                                               return !is_null($child->rating_id);
+                                               });
+
+                                               if (!$hasValidChildren) {
+                                                $children = [];
+                                             }
                                             @endphp
 
                                             <?php
