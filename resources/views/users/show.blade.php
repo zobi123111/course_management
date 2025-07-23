@@ -136,10 +136,6 @@
                                         $parent = $group['parent'];
                                         @endphp
 
-
-
-
-
                                         <div class="card mb-3">
                                             <div class="card-body">
                                                 <h6 class="card-title text-primary">{{ $parent->rating->name }}</h6>
@@ -154,6 +150,16 @@
                                                     <i class="bi bi-file-earmark-text me-1"></i> View File
                                                 </a>
                                                 @endif
+                                                <?php
+                                                    $hasValidChildren = collect($group['children'])->contains(function ($child) {
+                                                        return !is_null($child->rating_id);
+                                                    });
+    
+    
+                                                    if (!$hasValidChildren) {
+                                                        $group['children'] = [];
+                                                    }
+                                                ?>
 
                                                 <!-- Child Ratings -->
                                                 @if (!empty($group['children']))
@@ -428,7 +434,7 @@
                             </h5>
                             <div class="p-3 border rounded bg-light">
                                 {{ $user->organization->org_unit_name ?? 'N/A' }}
-                            </div>
+                            </div> 
                         </div>
                     </div>
 
