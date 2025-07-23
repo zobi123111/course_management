@@ -169,7 +169,7 @@ class TrainingEventsController extends Controller
                 ->withCount(['taskGradings', 'competencyGradings'])
                 ->get();
               
-        }
+        } 
         // Attach instructor lists to each training event
         $trainingEvents->each(function ($event) {
             if (!$event->relationLoaded('eventLessons') || !($event->eventLessons instanceof \Illuminate\Support\Collection)) {

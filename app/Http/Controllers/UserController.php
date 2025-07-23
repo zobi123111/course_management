@@ -1803,10 +1803,21 @@ foreach ($ratingFile2Inputs as $index => $info) {
        
 
         // Parent IDs
+        // $parentIdsLicence1 = $licence1Ratings
+        //                     ->pluck('rating.parent_id')
+        //                     ->merge($licence1Ratings->pluck('rating_id')->filter(fn($id) => is_null(optional($userRatings->firstWhere('rating_id', $id))->rating->parent_id)))
+        //                     ->unique()->values();
         $parentIdsLicence1 = $licence1Ratings
+                            ->filter(fn($item) => $item->rating) // filter out items where rating is null
                             ->pluck('rating.parent_id')
-                            ->merge($licence1Ratings->pluck('rating_id')->filter(fn($id) => is_null(optional($userRatings->firstWhere('rating_id', $id))->rating->parent_id)))
-                            ->unique()->values();
+                            ->merge(
+                                $licence1Ratings
+                                    ->pluck('rating_id')
+                                    ->filter(fn($id) => is_null(optional($userRatings->firstWhere('rating_id', $id))->rating?->parent_id))
+                            )
+                            ->unique()
+                            ->values();
+
 
       $parentIdsLicence2 = $licence2Ratings
                         ->pluck('rating.parent_id')
