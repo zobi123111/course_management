@@ -691,7 +691,7 @@
                                 $lessonType = $eventLesson?->lesson?->lesson_type ?? null;
                                 $credited = strtotime("1970-01-01 {$eventLesson?->hours_credited}") ?: 0;
                                 $customCredited = strtotime("1970-01-01 {$eventLesson?->custom_hours_credited}") ?: 0;
-                                $customTime = $eventLesson?->lesson?->customTime;
+                                $customTime = $eventLesson?->lesson?->customTime ?? null;
                                 $totals = [
                                     'groundschool' => ['duration' => 0, 'credited' => 0],
                                     'simulator' => ['duration' => 0, 'credited' => 0],
@@ -723,6 +723,7 @@
                                         $totals['deferred'] += $duration;
                                     }
                                 }
+
                             @endphp
 
                             @if($totals['groundschool']['duration'] || $totals['groundschool']['credited'])

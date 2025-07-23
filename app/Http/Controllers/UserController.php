@@ -39,7 +39,7 @@ class UserController extends Controller
         if ($ou_id != null) {
             $rating = Rating::with(['ou_ratings.organization_unit'])->where('status', 1)->whereHas('ou_ratings')->get();
         }
-
+          
         if ($request->ajax()) {
             $query = User::query()
                 ->leftJoin('roles', 'users.role', '=', 'roles.id')
@@ -114,7 +114,7 @@ class UserController extends Controller
 
                     return $viewBtn . ' ' . $editBtn . ' ' . $delete;
                 })
-                ->rawColumns(['status', 'action'])
+                ->rawColumns(['status', 'action']) 
                 ->make(true);
         }
 
@@ -1745,6 +1745,7 @@ foreach ($ratingFile2Inputs as $index => $info) {
 
                 if (!isset($grouped[$linkedTo][$parentId]['parent'])) {
                     $parentRatingModel = \App\Models\Rating::find($parentId);
+                    // dump($parentRatingModel->id);
                     if ($parentRatingModel) {
                         $fakeParent = new \App\Models\UserRating([
                             'rating_id'    => $parentRatingModel->id,
@@ -1768,12 +1769,16 @@ foreach ($ratingFile2Inputs as $index => $info) {
             return $ur->rating_id !== null || $ur->parent_id !== null;
         });
 
-        foreach ($userRatings as $ur) {
-            if ($ur->rating_id === null && $ur->parent_id !== null) {
-                $ur->rating_id = $ur->parent_id;
-                $ur->rating = $ur->parent;
+            foreach ($userRatings as $ur) {
+                if ($ur->rating_id === null && $ur->parent_id !== null) {
+                    $ur->derived_rating_id = $ur->parent_id;
+                    $ur->derived_rating = $ur->parent;
+                } else {
+                    $ur->derived_rating_id = $ur->rating_id;
+                    $ur->derived_rating = $ur->rating;
+                }
             }
-        }
+       
 
         // Licence 1 ratings
         $licence1Ratings = $userRatings->filter(function ($ur) use ($userRatings) {
@@ -1781,6 +1786,8 @@ foreach ($ratingFile2Inputs as $index => $info) {
             $parent = $userRatings->firstWhere('rating_id', $ur->parent_id);
             return $parent && $parent->linked_to === 'licence_1';
         })->values();
+         
+
 
         // Licence 2 ratings
         $licence2Ratings = $userRatings->filter(function ($ur) use ($userRatings) {
@@ -1788,21 +1795,42 @@ foreach ($ratingFile2Inputs as $index => $info) {
             $parent = $userRatings->firstWhere('rating_id', $ur->parent_id);
             return $parent && $parent->linked_to === 'licence_2';
         })->values();
+         
 
         // Selected IDs
         $selectedIdsLicence1 = $licence1Ratings->pluck('rating_id')->unique();
         $selectedIdsLicence2 = $licence2Ratings->pluck('rating_id')->unique();
+       
 
         // Parent IDs
+        // $parentIdsLicence1 = $licence1Ratings
+        //                     ->pluck('rating.parent_id')
+        //                     ->merge($licence1Ratings->pluck('rating_id')->filter(fn($id) => is_null(optional($userRatings->firstWhere('rating_id', $id))->rating->parent_id)))
+        //                     ->unique()->values();
         $parentIdsLicence1 = $licence1Ratings
-            ->pluck('rating.parent_id')
-            ->merge($licence1Ratings->pluck('rating_id')->filter(fn($id) => is_null(optional($userRatings->firstWhere('rating_id', $id))->rating->parent_id)))
-            ->unique()->values();
+                            ->filter(fn($item) => $item->rating) // filter out items where rating is null
+                            ->pluck('rating.parent_id')
+                            ->merge(
+                                $licence1Ratings
+                                    ->pluck('rating_id')
+                                    ->filter(fn($id) => is_null(optional($userRatings->firstWhere('rating_id', $id))->rating?->parent_id))
+                            )
+                            ->unique()
+                            ->values();
 
-        $parentIdsLicence2 = $licence2Ratings
-            ->pluck('rating.parent_id')
-            ->merge($licence2Ratings->pluck('rating_id')->filter(fn($id) => is_null(optional($userRatings->firstWhere('rating_id', $id))->rating->parent_id)))
-            ->unique()->values();
+
+      $parentIdsLicence2 = $licence2Ratings
+                        ->pluck('rating.parent_id')
+                        ->merge(
+                            $licence2Ratings->pluck('rating_id')
+                                ->filter(function ($id) use ($userRatings) {
+                                    $ur = $userRatings->firstWhere('rating_id', $id);
+                                    return is_null(optional($ur?->rating)->parent_id);
+                                })
+                        )
+                        ->unique()
+                        ->values();
+
 
         // Missing parent ratings
         $existingUserRatingIds = $userRatings->pluck('rating_id')->filter();
@@ -1820,8 +1848,9 @@ foreach ($ratingFile2Inputs as $index => $info) {
 
         // Role names from JSON
         $extraRoles = Role::whereIn('id', json_decode($user->extra_roles ?? '[]'))->pluck('role_name')->toArray();
+        
 
-        return view('users.show', compact(
+        return view('users.show', compact( 
             'user',
             'extraRoles',
             'licence1Ratings',

@@ -169,7 +169,7 @@ class TrainingEventsController extends Controller
                 ->withCount(['taskGradings', 'competencyGradings'])
                 ->get();
               
-        }
+        } 
         // Attach instructor lists to each training event
         $trainingEvents->each(function ($event) {
             if (!$event->relationLoaded('eventLessons') || !($event->eventLessons instanceof \Illuminate\Support\Collection)) {
@@ -687,9 +687,9 @@ class TrainingEventsController extends Controller
             'instructor:id,fname,lname',
             'student:id,fname,lname',
             'resource:id,name',
-            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type',
+            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id',
             'eventLessons.instructor:id,fname,lname',
-            'eventLessons.resource:id,name',    
+            'eventLessons.resource:id,name',
             'trainingFeedbacks.question', // Eager load the question relationship
             'documents' // Eager load the training event documents
         ])->find(decode_id($event_id));

@@ -124,12 +124,7 @@ class TrainingEvents extends Model
         return $this->hasMany(TrainingEventDocument::class, 'training_event_id');
     }
 
-    // public function getIsGradedAttribute()
-    // {
-    //     return $this->task_gradings_count > 0 || $this->competency_gradings_count > 0;
-    // }
-
-    public function getIsGradedAttribute()
+    public function getIsGradedAttribute() 
     {
         // Check if any lesson in this event has CBTA enabled
         $cbtaEnabled = $this->eventLessons->contains(function ($eventLesson) {
@@ -151,16 +146,32 @@ class TrainingEvents extends Model
         $studentId = $this->student_id;
 
         // A. Check if all sub-lessons have grading
+        // $allTasksGraded = $this->eventLessons->every(function ($eventLesson) use ($studentId) {
+        //     return $eventLesson->lesson->subLessons->every(function ($subLesson) use ($eventLesson, $studentId) {
+        //         return \App\Models\TaskGrading::where([
+        //             'event_id'      => $eventLesson->training_event_id,
+        //             'lesson_id'     => $eventLesson->lesson_id,
+        //             'sub_lesson_id' => $subLesson->id,
+        //             'user_id'       => $studentId,
+        //         ])->exists();
+        //     });
+        // });
         $allTasksGraded = $this->eventLessons->every(function ($eventLesson) use ($studentId) {
-            return $eventLesson->lesson->subLessons->every(function ($subLesson) use ($eventLesson, $studentId) {
-                return \App\Models\TaskGrading::where([
-                    'event_id'      => $eventLesson->training_event_id,
-                    'lesson_id'     => $eventLesson->lesson_id,
-                    'sub_lesson_id' => $subLesson->id,
-                    'user_id'       => $studentId,
-                ])->exists();
-            });
-        });
+                        // If lesson is null, consider tasks not graded
+                        if (!$eventLesson->lesson) {
+                            return false;
+                        }
+
+                        return $eventLesson->lesson->subLessons->every(function ($subLesson) use ($eventLesson, $studentId) {
+                            return \App\Models\TaskGrading::where([
+                                'event_id'      => $eventLesson->training_event_id,
+                                'lesson_id'     => $eventLesson->lesson_id,
+                                'sub_lesson_id' => $subLesson->id,
+                                'user_id'       => $studentId,
+                            ])->exists();
+                        });
+                    });
+
 
         // B. Check competency grading if enabled for any lesson
         $cbtaEnabled = $this->eventLessons->contains(function ($eventLesson) {
