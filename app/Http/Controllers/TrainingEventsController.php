@@ -790,11 +790,13 @@ class TrainingEventsController extends Controller
         $getFirstdeftTasks = TaskGrading::where('event_id', $trainingEvent->id)
             ->whereIn('task_grade', ['Incomplete', 'Further training required'])
             ->get();
+            
         $deferredTaskIds = collect($getFirstdeftTasks)->pluck('sub_lesson_id')->toArray();
 
-        // $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource'])
-        // ->where('event_id', $trainingEvent->id)
-        // ->get();
+        $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource'])
+        ->where('event_id', $trainingEvent->id)
+        ->get();
+
         $defLessonTasks = DefLessonTask::with(['user', 'defLesson.instructor', 'defLesson.instructor.documents', 'defLesson.resource', 'task'])
         ->where('event_id', $trainingEvent->id)
         ->get();
@@ -844,6 +846,7 @@ class TrainingEventsController extends Controller
             'resources',
             'instructors',
             'defTasks',
+            'deferredLessons',
             'defLessonTasks',
             'deferredTaskIds',
             'gradedDefTasksMap'
