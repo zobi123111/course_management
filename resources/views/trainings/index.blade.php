@@ -17,7 +17,7 @@
 </div>
 @endif
 
-@if(checkAllowedModule('training','training.store')->isNotEmpty())
+@if(checkAllowedModule('training','training.store')->isNotEmpty()) 
     <div class="create_btn">
         <button class="btn btn-primary create-button" id="createTrainingEvent" data-toggle="modal"
             data-target="#createTrainingEventModal">Create Training Event</button>
@@ -1322,6 +1322,7 @@ $(document).ready(function() {
     }
 
 
+    function calculateTotalSimulatorTime() {  
     function calculateTotalSimulatorTime() { 
         let totalMinutes = 0;
 

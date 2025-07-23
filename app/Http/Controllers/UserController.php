@@ -39,7 +39,7 @@ class UserController extends Controller
         if ($ou_id != null) {
             $rating = Rating::with(['ou_ratings.organization_unit'])->where('status', 1)->whereHas('ou_ratings')->get();
         }
-
+          
         if ($request->ajax()) {
             $query = User::query()
                 ->leftJoin('roles', 'users.role', '=', 'roles.id')
