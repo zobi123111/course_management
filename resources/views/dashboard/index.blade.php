@@ -26,6 +26,7 @@ $user = Auth::user();
 if ($user->is_admin == "1") {
     foreach ($users as $u) {
         $userDoc = $u->documents; 
+        
 
         // Admin Verification Alerts
         if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
@@ -206,7 +207,11 @@ if (!function_exists('getTooltip')) {
     <tr>
         <td>{{ $user->fname }} {{ $user->lname }}</td>
 
-        @php $doc = $user->documents;  @endphp
+        @php
+         $doc = $user->documents;
+         $ratingsByLicence = $user->usrRatings->groupBy('linked_to');
+        
+        @endphp
 
         {{-- Licence 1 --}}
         <td>
@@ -242,12 +247,12 @@ if (!function_exists('getTooltip')) {
                                 'Amber' => 'info',
                                 'Blue' => 'primary',
                                 default => 'secondary'
-                            };
+                            }; 
                             $tooltip = "$r->name expires on $expiry";
                         @endphp
 
                         <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
-                            {{ $r->name }}
+                            {{ $r->name ?? '' }}
                         </span>
 
                         {{-- Nested (child) ratings --}}
@@ -264,66 +269,68 @@ if (!function_exists('getTooltip')) {
         </td>
 
         <td>
-            @if($user->ratings_by_license['licence_1']->count())
-                @foreach($user->ratings_by_license['licence_1'] as $ur)
-                    @php
-                        $r = $ur->rating;
-                        $expiry = $ur->expiry_date ? \Carbon\Carbon::parse($ur->expiry_date)->format('d/m/Y') : 'N/A';
-                        $status = $ur->expiry_status ?? 'Grey'; // Make sure your model has this accessor
-                        $color = match($status) {
-                            'Red' => 'danger',
-                            'Orange', 'Amber' => 'warning',
-                            'Yellow' => 'info',
-                            'Blue' => 'primary',
-                            default => 'secondary'
-                        };
-                        if ($r) {
-                        $tooltip = $r->name . ' expires on ' . $expiry;
-                    } else {
-                        $tooltip = 'Rating not available';
+   <?php
+ 
+        $groupedEASA = [];
+         // dump($ratingsByLicence);
+        if (isset($ratingsByLicence['licence_1'])) {
+            //   print_r($ratingsByLicence['licence_1']);
+            foreach ($ratingsByLicence['licence_1'] as $ratings) { 
+               $child_id = $ratings->rating_id ; 
+                $parent_id = $ratings->parent_id;
+                // echo "parent $parent_id  child $child_id <br>";
+
+                if ($parent_id === null && $ratings->rating) { 
+                    
+                    $groupedEASA[$child_id] = [
+                        'parent' => $ratings->rating->name,
+                        'children' => [],
+                    ];
+                   
+
+                } elseif ($ratings->rating) { 
+                    $parentRating = $ratings->parentRating;
+                    $childRating = $ratings->rating;
+
+                    if (!isset($groupedEASA[$parent_id])) { 
+                  
+                        $groupedEASA[$parent_id] = [
+                            'parent' => $parentRating?->name ?? '',
+                            'children' => [],
+                        ];
+                        
                     }
-                    @endphp
 
-                    {{-- Parent badge --}}
-                    <div class="mb-2">
-                        <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
-                            {{ $r->name ?? '' }} ({{ $expiry }})
-                        </span>
+                    $groupedEASA[$parent_id]['children'][] = $childRating->name;
+                }else {
+                   $parentRating = $ratings->parentRating;
+                    $groupedEASA[$parent_id] = [
+                        'parent' => $parentRating?->name ?? '',
+                        'children' => [],  // No children here
+                    ];
+                }
+            }
+        }
 
-                        {{-- Child ratings --}}
-                        @if($ur->associated_details && $ur->associated_details->count())
-                            <div class="mt-2">
-                                @foreach($ur->associated_details as $assoc)
-                                    @php
-                                        $assocData = $assoc->user_rating ?? null;
-                                        $assocExpiry = $assocData && $assocData->expiry_date
-                                            ? \Carbon\Carbon::parse($assocData->expiry_date)->format('d/m/Y')
-                                            : $expiry;
 
-                                        $assocStatus = $assocData->expiry_status ?? $status;
-                                        $assocColor = match($assocStatus) {
-                                            'Red' => 'danger',
-                                            'Orange', 'Amber' => 'warning',
-                                            'Yellow' => 'info',
-                                            'Blue' => 'primary',
-                                            default => 'light'
-                                        };
+        
+   ?>
 
-                                        $tooltip = "{$assoc->name} expires on {$assocExpiry}";
-                                    @endphp
-
-                                    <span class="badge bg-{{ $assocColor }} text-dark ms-1" data-bs-toggle="tooltip" title="{{ $tooltip }}">
-                                        → {{ $assoc->name }}
-                                    </span>
-                                @endforeach
-                            </div>
-                        @endif
-                    </div>
+    @foreach ($groupedEASA as $entry)
+        <strong>{{ $entry['parent'] }}</strong><br>
+        @if (!empty($entry['children']))
+            <ul style="margin-left: 15px;">
+                @foreach ($entry['children'] as $child)
+                    <li>{{ $child }}</li>
                 @endforeach
-            @else
-                <span class="text-muted">None</span>
-            @endif
-        </td>
+            </ul>
+        @endif
+        <br>
+    @endforeach
+</td>
+
+
+
 
 
         {{-- Licence 2 --}}
@@ -348,63 +355,52 @@ if (!function_exists('getTooltip')) {
         </td>
 
         {{-- Associated Ratings (Licence 2) --}}
-        <td>
-            @if($user->ratings_by_license['licence_2']->count())
-                @foreach($user->ratings_by_license['licence_2'] as $ur)
-                    @php
-                        $r = $ur->rating;
-                        $parentExpiry = $ur->expiry_date ? \Carbon\Carbon::parse($ur->expiry_date)->format('d/m/Y') : 'N/A';
-                        $status = $ur->expiry_status ?? 'Grey';
-                        $color = match($status) {
-                            'Red' => 'danger',
-                            'Orange', 'Amber' => 'warning',
-                            'Yellow' => 'info',
-                            'Blue' => 'primary',
-                            default => 'secondary'
-                        };
-                        $tooltip = $r->name . ' expires on ' . $parentExpiry;
-                    @endphp
+<td>
+    @php
+        $groupedEASA = [];
 
-                    {{-- Parent Rating --}}
-                    <div class="mb-2">
-                        <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
-                            {{ $r->name }} ({{ $parentExpiry }})
-                        </span>
+        if (isset($ratingsByLicence['licence_2'])) {
+            foreach ($ratingsByLicence['licence_2'] as $ratings) {
+                $child_id = $ratings->rating_id;
+                $parent_id = $ratings->parent_id;
 
-                        {{-- Associated/Child Ratings --}}
-                        @if($ur->associated_details && $ur->associated_details->count())
-                            <div class="mt-2">
-                                @foreach($ur->associated_details as $assoc)
-                                    @php
-                                        $assocData = $assoc->user_rating ?? null;
-                                        $childExpiry = $assocData && $assocData->expiry_date
-                                            ? \Carbon\Carbon::parse($assocData->expiry_date)->format('d/m/Y')
-                                            : $parentExpiry;
+                if ($parent_id === null && $ratings->rating) {
+                    $groupedEASA[$child_id] = [
+                        'parent' => $ratings->rating->name,
+                        'children' => [],
+                    ];
+                } elseif ($ratings->rating) {
+                    $parentRating = $ratings->parentRating;
+                    $childRating = $ratings->rating;
 
-                                        $childStatus = $assocData->expiry_status ?? $status;
-                                        $childColor = match($childStatus) {
-                                            'Red' => 'danger',
-                                            'Orange', 'Amber' => 'warning',
-                                            'Yellow' => 'info',
-                                            'Blue' => 'primary',
-                                            default => 'light'
-                                        };
+                    if (!isset($groupedEASA[$parent_id])) {
+                        $groupedEASA[$parent_id] = [
+                            'parent' => $parentRating?->name ?? 'Unknown Parent',
+                            'children' => [],
+                        ];
+                    }
 
-                                        $tooltip = "{$assoc->name} expires on {$childExpiry}";
-                                    @endphp
+                    $groupedEASA[$parent_id]['children'][] = $childRating->name;
+                }
+            }
+        }
+    @endphp
 
-                                    <span class="badge bg-{{ $childColor }} text-dark ms-1" data-bs-toggle="tooltip" title="{{ $tooltip }}">
-                                        → {{ $assoc->name }} ({{ $childExpiry }})
-                                    </span>
-                                @endforeach
-                            </div>
-                        @endif
-                    </div>
+    @foreach ($groupedEASA as $entry)
+        <strong>{{ $entry['parent'] }}</strong><br>
+        @if (!empty($entry['children']))
+            <ul style="margin-left: 15px;">
+                @foreach ($entry['children'] as $child)
+                    <li>{{ $child }}</li>
                 @endforeach
-            @else
-                <span class="text-muted">None</span>
-            @endif
-        </td>
+            </ul>
+        @endif
+        <br>
+    @endforeach
+</td>
+
+
+
 
 
 

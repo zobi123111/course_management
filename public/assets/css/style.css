@@ -1524,3 +1524,12 @@ display: flex;
 .expiry .fas.fa-exclamation-triangle:before{
   color: #dc3545 !important;
 }
+
+.licence1_file {
+    margin-top: 18px;
+    width: 135px;
+}
+.licence2_file {
+    margin-top: 18px;
+    width: 135px;
+}

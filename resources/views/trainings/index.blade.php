@@ -886,9 +886,10 @@ $(document).ready(function() {
                       if (event.entry_source === 'instructor') 
                         {
                          // $('#edit_is_instructor_checkbox').prop('checked', true);
-                          $('#edit_is_instructor_checkbox').trigger('click');
+                         // $('#edit_is_instructor_checkbox').trigger('click');
+                         $('#edit_is_instructor_checkbox').prop('checked', true).trigger('change');
                          
-                        
+    
                            $('#edit_ou_id').val(selectedOU).trigger('change'); 
 
 
@@ -1322,6 +1323,7 @@ $(document).ready(function() {
 
 
     function calculateTotalSimulatorTime() {  
+    function calculateTotalSimulatorTime() { 
         let totalMinutes = 0;
 
         $('.lesson-box[data-lesson-type="simulator"]').each(function () {

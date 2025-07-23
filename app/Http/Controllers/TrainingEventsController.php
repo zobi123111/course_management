@@ -104,9 +104,7 @@ class TrainingEventsController extends Controller
 
             $trainingEvents_instructorQuery = TrainingEvents::where('ou_id', $currentUser->ou_id)
                                         ->with($trainingEventsRelations)
-                                        ->withCount(['taskGradings', 'competencyGradings']);
-               
-
+                                        ->withCount(['taskGradings', 'competencyGradings']);               
 
             if (hasUserRole($currentUser, 'Instructor')) {
                 // Get training event IDs where the current instructor is assigned to at least one lesson
@@ -137,6 +135,7 @@ class TrainingEventsController extends Controller
                         });
                     })
                     ->get();
+                $trainingEvents_instructor = [];
             }
         } else {
             // Default Case: Users with limited access within their organization
@@ -501,11 +500,11 @@ class TrainingEventsController extends Controller
                 $lessonData[$key]['end_time'] = date('H:i', strtotime($lesson['end_time']));
             }
         }
-        $request->merge(['lesson_data' => $lessonData]);
+        $request->merge(['lesson_data' => $lessonData]); 
     
         // Validate request
         $request->validate([
-            'event_id' => 'required|exists:training_events,id',
+            'event_id' => 'required|exists:training_events,id', 
             'student_id' => 'required|exists:users,id',
             'course_id' => 'required|exists:courses,id',
             'event_date' => 'required|date_format:Y-m-d',
@@ -793,10 +792,13 @@ class TrainingEventsController extends Controller
             ->get();
         $deferredTaskIds = collect($getFirstdeftTasks)->pluck('sub_lesson_id')->toArray();
 
-        // dd($deferredTaskIds);
-        $deferredLessons = DefLessonTask::with(['user', 'defLesson.instructor', 'defLesson.resource', 'task'])
-            ->where('event_id', $trainingEvent->id)
-            ->get();
+        // $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource'])
+        // ->where('event_id', $trainingEvent->id)
+        // ->get();
+        $defLessonTasks = DefLessonTask::with(['user', 'defLesson.instructor', 'defLesson.instructor.documents', 'defLesson.resource', 'task'])
+        ->where('event_id', $trainingEvent->id)
+        ->get();
+        // dd($deferredLessons);
 
         $deferredLessonsTasks = DefLessonTask::with([
                 'user', 
@@ -842,7 +844,7 @@ class TrainingEventsController extends Controller
             'resources',
             'instructors',
             'defTasks',
-            'deferredLessons',
+            'defLessonTasks',
             'deferredTaskIds',
             'gradedDefTasksMap'
         ));
@@ -931,8 +933,11 @@ class TrainingEventsController extends Controller
                     $gradedSubLessons = TaskGrading::where([
                         'event_id'  => $event_id,
                         'lesson_id' => $lesson_id,
-                        'user_id'   => $gradedStudentId,
-                    ])->count(); // No need for whereNotNull('task_grade')
+                        'user_id'   => $gradedStudentId,    
+                    ])
+                    ->whereNotNull('task_grade')
+                    ->where('task_grade', '!=', '')
+                    ->count(); 
 
                     if ($totalSubLessons > 0 && $totalSubLessons == $gradedSubLessons) {
                         TrainingEventLessons::where('training_event_id', $event_id)
@@ -1245,27 +1250,50 @@ class TrainingEventsController extends Controller
         return redirect()->back()->with('success', 'Documents uploaded successfully.');
     }
 
+
     public function generateCertificate($event)
     {
-        //dd($event);
-        $eventId = decode_id($event); // your custom decode helper
-        $event = TrainingEvents::findOrFail($eventId);
-        $userDtl = User::where('ou_id', $event->ou_id)->where('is_admin', 1)->first();
+        $eventId = decode_id($event); // decode the ID
+        $event = TrainingEvents::with('eventLessons','recommendedInstructor')->findOrFail($eventId);
         $student = $event->student;
         $course = $event->course;
         $firstLesson = $event->firstLesson;
-        
-        //dd($event);
+
+        // Calculate Hours of Groundschool (sum of hours_credited where lesson type is groundschool)
+        $hoursOfGroundschoolMinutes = $event->eventLessons
+            ->filter(function ($lesson) {
+                return $lesson->lesson_type === 'groundschool';
+            })
+            ->sum(function ($lesson) {
+                // safely convert hours_credited string to minutes
+                $time = $lesson->hours_credited ?? '00:00:00';
+                [$hours, $minutes, $seconds] = array_pad(explode(':', $time), 3, 0);
+                return ($hours * 60) + $minutes; // ignore seconds for simplicity
+            });
+
+        // Convert to "Xhrs Ymins"
+        $hoursOfGroundschool = floor($hoursOfGroundschoolMinutes / 60) . 'hrs ' . ($hoursOfGroundschoolMinutes % 60) . 'mins';
+
+        // Hours, Flight and Simulator (from TrainingEvents table)
+        $flightTime = $event->total_time ?? 0; // e.g., "10:00"
+        $simulatorTime = $event->simulator_time ?? 0; // e.g., "2.00"
+
         $pdf = PDF::loadView('trainings.course-completion-certificate', [
-            'event' => $event,  
+            'event' => $event,
             'student' => $student,
             'course' => $course,
             'firstLesson' => $firstLesson,
+            'hoursOfGroundschool' => $hoursOfGroundschool,
+            'flightTime' => $flightTime,
+            'simulatorTime' => $simulatorTime,
+            'recommendedBy' => $event->recommendedInstructor,
         ]);
+
         $filename = 'Certificate_' . Str::slug($student->fname . ' ' . $student->lname) . '.pdf';
 
         return $pdf->download($filename);
     }
+
 
     public function storeDeferredLessons(Request $request)
     {
@@ -1281,6 +1309,8 @@ class TrainingEventsController extends Controller
             'resource_id'   => 'required|integer|exists:resources,id',
             'instructor_id' => 'required|integer|exists:users,id',
             'std_id'        => 'required|integer|exists:users,id',
+            'departure_airfield'   => 'nullable|string|max:4',
+            'destination_airfield' => 'nullable|string|max:4',
         ], [], [
             'item_ids'     => 'Tasks',
             'resource_id'  => 'Resource',
@@ -1308,6 +1338,8 @@ class TrainingEventsController extends Controller
             'lesson_date'   => $validatedData['lesson_date'],
             'start_time'    => $validatedData['start_time'],
             'end_time'      => $validatedData['end_time'],
+            'departure_airfield'   => $validatedData['departure_airfield'],
+            'destination_airfield' => $validatedData['destination_airfield'],
             'created_by'    => $authId,
         ]);
 
@@ -1329,7 +1361,7 @@ class TrainingEventsController extends Controller
     }    
     
     public function storeDefGrading(Request $request)
-    {
+    { 
          $request->validate([
             'event_id' => 'required|integer|exists:training_events,id',
             'task_grade_def' => 'required|array',

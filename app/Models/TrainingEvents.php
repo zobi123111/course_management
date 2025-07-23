@@ -64,6 +64,11 @@ class TrainingEvents extends Model
         return $this->belongsTo(User::class, 'student_id', 'id'); // Fixed foreign key
     }
 
+    public function recommendedInstructor()
+    {
+        return $this->belongsTo(User::class, 'recommended_by_instructor_id');
+    }
+
         /**
      * Relationship with TaskGrading
      */
@@ -101,7 +106,7 @@ class TrainingEvents extends Model
             ->join('course_lessons', 'training_event_lessons.lesson_id', '=', 'course_lessons.id') 
             ->join('resources', 'training_event_lessons.resource_id', '=', 'resources.id')
             ->orderBy('course_lessons.position')
-            ->select('training_event_lessons.*', 'resources.name as resource_name');
+            ->select('training_event_lessons.*', 'resources.name as resource_name', 'course_lessons.lesson_type');
     }
 
     public function trainingFeedbacks()
@@ -119,9 +124,26 @@ class TrainingEvents extends Model
         return $this->hasMany(TrainingEventDocument::class, 'training_event_id');
     }
 
+    // public function getIsGradedAttribute()
+    // {
+    //     return $this->task_gradings_count > 0 || $this->competency_gradings_count > 0;
+    // }
+
     public function getIsGradedAttribute()
     {
-        return $this->task_gradings_count > 0 && $this->competency_gradings_count > 0;
+        // Check if any lesson in this event has CBTA enabled
+        $cbtaEnabled = $this->eventLessons->contains(function ($eventLesson) {
+            return $eventLesson->lesson?->enable_cbta;
+        });
+
+        $hasTaskGrading = $this->task_gradings_count > 0;
+        $hasCompetencyGrading = $this->competency_gradings_count > 0;
+
+        if ($cbtaEnabled) {
+            return $hasTaskGrading && $hasCompetencyGrading;
+        }
+
+        return $hasTaskGrading;
     }
 
     public function getCanEndCourseAttribute()
