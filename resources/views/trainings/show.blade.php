@@ -673,7 +673,7 @@
                                 $lessonType = $eventLesson?->lesson?->lesson_type ?? null;
                                 $credited = $eventLesson?->hours_credited ?? '00:00';
                                 $customCredited = $eventLesson?->custom_hours_credited ?? '00:00';
-                                $customTime = $eventLesson?->lesson?->customTime;
+                                $customTime = $eventLesson?->lesson?->customTime ?? null;
                             @endphp
 
                             @if($lessonType)
