@@ -245,4 +245,29 @@ class ReportsController extends Controller
         ]);
     }
 
+    public function getStudentReports()
+    {
+        $user = auth()->user();
+        $ou_id = $user->ou_id;
+        $userId = $user->id;
+
+        $users = User::where('ou_id', $ou_id)
+            ->whereNull('is_admin')
+            ->with([
+                'documents',
+                'usrRatings' => function ($query) {
+                    $query->whereIn('linked_to', ['licence_1', 'licence_2'])
+                        ->with([
+                            'rating.associatedChildren',
+                            'parentRating'
+                        ]);
+                }
+            ])
+            ->get();
+
+            // dd($users);
+
+        return view('reports.student-report', compact('users'));
+    }
+
 }
