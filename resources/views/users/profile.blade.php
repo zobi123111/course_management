@@ -119,6 +119,8 @@
     </div>
     @endif
     <div id="update_success_msg"></div>
+     
+   
     <div class="card pt-4">
         <div class="card-body">
             <div class="container-fluid">
@@ -126,6 +128,7 @@
                     <h2 class="mb-5">User Profile</h2>
                     <form id="userProfileForm" enctype="multipart/form-data">
                         @csrf
+                        <div class="loader" style="display:none;"></div>
                         <div class="row">
                             <!-- First Name -->
                             <div class="form-group col-sm-6">
@@ -524,7 +527,7 @@
                                                     </div>
                                                 </div>
 
-                                                <label class="form-label mt-3"><strong>Upload File</strong></label>
+                                                <label class="form-label mt-3"><strong>Upload File</strong></label> 
                                                 <!-- <input type="file" name="rating_file[{{ $rating->id }}]" class="form-control"> -->
                                                    <input type="hidden" name="rating_file_licence2[{{ $j }}][parentid]" value="{{ $entry['children'][0]['parent_id'] }}" class="form-control">
                                                     <input type="hidden" name="rating_file_licence2[{{ $j }}][user_id]" value="{{ $entry['children'][0]['user_id'] ?? '' }}" class="form-control">
@@ -849,7 +852,7 @@
                             <button type="submit" id="updateForm" style="width: auto !important; "
                                 class="btn btn-primary mt-3">Save Changes</button>
                         </div>
-
+                       
                     </form>
                 </div>
             </div>
@@ -908,11 +911,12 @@
         $('#licence_expiry_date').on('input', toggleFields);
         $('#licence_expiry_date_2').on('input', toggleFields);
 
-        $(document).on('click', '#updateForm', function(e) {
+        $(document).on('click', '#updateForm', function(e) { 
             e.preventDefault();
-            var formData = new FormData($('#userProfileForm')[0]);
-
+            var formData = new FormData($('#userProfileForm')[0]); 
+           
             $(".loader").fadeIn('fast');
+
             $.ajax({
                 type: 'post',
                 url: "/users/profile/update",
@@ -921,7 +925,7 @@
                 contentType: false,
                 success: function(response) {
                     console.log(response.message);
-                    $(".loader").fadeOut('slow');
+                    // $(".loader").fadeOut('slow');
 
                     $('#editUserDataModal').modal('hide');
                     $('#update_success_msg').html(`
@@ -939,11 +943,11 @@
                     setTimeout(function() {
                         location.reload();
                     }, 1000);
-                    // location.reload();
+                    
                 },
                 error: function(xhr, status, error) {
 
-                    $(".loader").fadeOut("slow");
+                  //  $(".loader").fadeOut("slow");
 
                     var errorMessage = JSON.parse(xhr.responseText);
                     var validationErrors = errorMessage.errors;

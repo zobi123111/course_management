@@ -935,6 +935,13 @@
             </div>
         `;
             $('#rating_select_boxes_container').append(selectBoxHtml);
+              $(`.child-rating[data-index="${index}"]`).select2({
+                        placeholder: 'Select the Privilages',
+                        allowClear: true,
+                        width: '100%',
+                        dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible')
+                    });
+                    $(`.child-rating[data-index="${index}"]`).prop('disabled', true);
         });
 
         //-----------------------------------------------------------------------
@@ -974,6 +981,13 @@
             </div>
         `;
             $('#easa_select_boxes_container').append(selectBoxHtml);
+              $(`.child-rating-easa[data-index="${index}"]`).select2({
+                        placeholder: 'Select the Privilages',
+                        allowClear: true,
+                        width: '100%',
+                        dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible')
+                    });
+            $(`.child-rating-easa[data-index="${index}"]`).prop('disabled', true);
         });
 
         //------------------------------------------------------------------------
@@ -1016,6 +1030,14 @@
             </div>
         `;
             $('#edit_rating_select_boxes_container').append(selectBoxHtml);
+
+                $(`.child-rating[data-index="${index}"]`).select2({
+                        placeholder: 'Select the Privileges',
+                        allowClear: true,
+                        width: '100%',
+                        dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible')
+                });
+
         });
 
         //--------------------------------------------------------------------------
@@ -1028,35 +1050,81 @@
         });
 
         // Handle parent select change (load child ratings)
-        $(document).on('change', '.parent-rating', function() {
-            // let parentId = $(this).val();
-            // let index = $(this).data('index');
-            // let $childSelect = $(`.child-rating[data-index="${index}"]`);
+$(document).on('change', '.parent-rating', function () {
+    let $group = $(this).closest('.rating-select-group');
+    let $childSelect = $group.find('.child-rating');
+    let parentId = $(this).val();
+
+    if (!parentId) return;
+
+    // Check previously loaded parentId
+    const previousLoadedParentId = $childSelect.data('loadedParentId');
+
+    // Only clear child if previously loaded with a different parent
+    if (previousLoadedParentId && previousLoadedParentId != parentId) {
+        if ($childSelect.hasClass("select2-hidden-accessible")) {
+            $childSelect.select2('destroy');
+        }
+        $childSelect.empty();
+    }
+
+    $.ajax({
+        url: "{{ url('get-child-ratings') }}",
+        type: 'post',
+        data: {
+            parentId: parentId,
+            "_token": "{{ csrf_token() }}"
+        },
+    success: function (response) {
+    if (response.length > 0) {
+        if (!$childSelect.data('loaded') || previousLoadedParentId != parentId) {
+            $.each(response, function (i, child) {
+                $childSelect.append(`<option value="${child.id}">${child.name}</option>`);
+            });
+        }
+    }
+
+    $childSelect.prop('disabled', false);
+
+    $childSelect.select2({
+        placeholder: 'Select the Privileges',
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible')
+    });
+
+    // Mark as loaded with this parent
+    $childSelect.data('loaded', true);
+    $childSelect.data('loadedParentId', parentId);
+
+    // ✅ If this was triggered from select2:opening, reopen dropdown
+    if ($childSelect.data('forceOpenAfterLoad')) {
+        $childSelect.select2('open');
+        $childSelect.removeData('forceOpenAfterLoad');
+    }
+}
+    });
+});
 
 
-            let $group = $(this).closest('.rating-select-group');
-            let $childSelect = $group.find('.child-rating');
-            let parentId = $(this).val();
-            $childSelect.empty();
+// ✅ 2. When child is clicked (opened), trigger parent change only if not loaded
+$(document).on('select2:opening', '.child-rating', function (e) { 
+    let $childSelect = $(this);
 
-            if (parentId) {
-                $.ajax({
-                    url: "{{ url('get-child-ratings') }}",
-                    type: 'post',
-                    data: {
-                        parentId: parentId,
-                        "_token": "{{ csrf_token() }}"
-                    },
-                    success: function(response) {
-                        if (response.length > 0) {
-                            $.each(response, function(i, child) {
-                                $childSelect.append(`<option value="${child.id}">${child.name}</option>`);
-                            });
-                        }
-                    }
-                });
-            }
-        });
+    if (!$childSelect.data('loaded')) {
+        e.preventDefault(); // prevent dropdown opening
+
+        let $group = $childSelect.closest('.rating-select-group');
+        let $parentSelect = $group.find('.parent-rating');
+
+        // Set flag to force dropdown open after AJAX load
+        $childSelect.data('forceOpenAfterLoad', true);
+
+        // Trigger parent change to load children
+        $parentSelect.trigger('change');
+    }
+});
+
 
         // Handle parent select change (load child ratings)
         $(document).on('change', '.parent-rating-easa', function() {
@@ -1080,6 +1148,15 @@
                                 $childSelect.append(`<option value="${child.id}">${child.name}</option>`);
                             });
                         }
+              $childSelect.prop('disabled', false);
+
+                // Reinitialize select2
+                $childSelect.select2({
+                    placeholder: 'Select the Privileges',
+                    allowClear: true,
+                    width: '100%',
+                    dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible')
+                });
                     }
                 });
             }
@@ -1090,18 +1167,19 @@
     $(document).ready(function() {
 
         function initializeSelect2() {
-            $('.rating-select').select2({
-                allowClear: true,
-                placeholder: 'Select the Rating',
-                multiple: true,
-                dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible') // More specific
-            });
+            // $('.rating-select').select2({
+            //     allowClear: true,
+            //     placeholder: 'Select the Rating',
+            //     multiple: true,
+            //     dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible') // More specific
+            // });
             $('.extra_roles').select2({
                 allowClear: true,
                 placeholder: 'Select the roles',
                 multiple: true,
                 dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible') // More specific
             });
+
         }
 
         initializeSelect2();
@@ -1416,7 +1494,7 @@
         $('#createUser').on('click', function() {
             $('.error_e').html('');
             $('.alert-danger').css('display', 'none');
-            $("#Create_user")[0].reset(); 
+            $("#Create_user")[0].reset();
 
             // Manually hide and reset all conditional sections
             $('#licence').hide().prop('required', false).val('');
@@ -1474,8 +1552,8 @@
                 contentType: false,
                 success: function(response) {
                     $(".loader").fadeOut("slow");
-                    // $('#userModal').modal('hide');
-                    // location.reload();
+                    $('#userModal').modal('hide');
+                    location.reload();
                 },
                 error: function(xhr, status, error) {
                     // $('#loader').hide();
@@ -1636,13 +1714,18 @@
                             <select class="form-select child-rating" name="licence_1_ratings[${index}][child][]" multiple data-index="${index}">
                                 <!-- Will be populated by AJAX -->
                             </select>
-                        </div>
-                    `;
+                        </div>`;
 
                             $('#edit_rating_select_boxes_container').append(selectBoxHtml);
 
                             // Set selected parent
-                            $(`select[name="licence_1_ratings[${index}][parent]"]`).val(parentId);
+                             $(`select[name="licence_1_ratings[${index}][parent]"]`).val(parentId);
+                            $(`.child-rating[data-index="${index}"]`).select2({
+                                placeholder: 'Select the Privileges',
+                                allowClear: true,
+                                width: '100%',
+                                dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible')
+                            });
 
                             // Load and set children
                             $.ajax({
@@ -1702,6 +1785,13 @@
 
                             // Set selected parent
                             $(`select[name="licence_2_ratings[${index}][parent]"]`).val(parentId);
+                                 $(`select[name="licence_2_ratings[${index}][parent]"]`).val(parentId);
+                            $(`.child-rating[data-index="${index}"]`).select2({
+                                placeholder: 'Select the Privileges',
+                                allowClear: true,
+                                width: '100%',
+                                dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible')
+                            });
 
                             // Load and set children
                             $.ajax({
@@ -1854,19 +1944,7 @@
 
                     }
 
-                    // if (response.user.medical == 1) {
-                    //     $('#editmedical_checkbox').prop('checked', true);
-                    //     $('.editmedical_issued_div').show();
-                    //     $('.editmedical_class_div').show();
-                    //     $('#editmedical_issue_date').val(document.medical_issuedate ?? '');
-                    //     $('#editmedical_expiry_date').val(document.medical_expirydate ?? '');
-                    //     $('#editmedical_detail').val(document.medical_restriction ?? '');
 
-                    //     let issuedBy = document.medical_issuedby?.trim() ?? '';
-                    //     let medicalClass = document.medical_class?.trim() ?? '';
-                    //     $('#editissued_by').val(issuedBy);
-                    //     $('#editmedical_class').val(medicalClass);
-                    // }
                     if (response.user.medical == 1) {
                         $('#editmedical_checkbox').prop('checked', true).trigger('change');
 

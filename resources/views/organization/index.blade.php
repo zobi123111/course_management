@@ -391,8 +391,8 @@ $(document).ready(function() {
             contentType: false,
             success: function(response) { 
                 $(".loader").fadeOut("slow");
-                $('#orgUnitModal').modal('hide');
-                location.reload();
+               $('#orgUnitModal').modal('hide');
+               location.reload();
             },
             error: function(xhr, status, error) {
                 $(".loader").fadeOut("slow");

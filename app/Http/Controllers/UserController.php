@@ -1040,7 +1040,8 @@ foreach ($ratingFile2Inputs as $index => $info) {
             // }
 
             // if ($request->has('ratings') && is_array($request->ratings)) {
-            foreach ($request->ratings as $ratingGroup) {
+            if(!empty($request->ratings)){
+                 foreach ($request->ratings as $ratingGroup) {
                 $parentId = $ratingGroup['parent'] ?? null;
                 $childIds = $ratingGroup['child'] ?? [];
                 // dd($childIds);
@@ -1082,6 +1083,9 @@ foreach ($ratingFile2Inputs as $index => $info) {
                     }
                 }
             }
+
+            }
+           
 
             // }
 
@@ -1224,7 +1228,7 @@ foreach ($ratingFile2Inputs as $index => $info) {
 
 
 
-            $medicalFileUploaded = $UserDocument?->medical_file_uploaded ?? false;
+            $medicalFileUploaded = $UserDocument?->medical_file_uploaded ?? false; 
             $medicalFileUploaded_2 = $UserDocument?->medical_file_uploaded_2 ?? false;
             $licenceFileUploaded = $UserDocument?->licence_file_uploaded ?? false;
             $licenceFileUploaded_2 = $UserDocument?->licence_file_uploaded_2 ?? false;
@@ -1427,9 +1431,9 @@ foreach ($ratingFile2Inputs as $index => $info) {
                 'general'   => $request->input('general_ratings', []),
             ];
             // ✅ NEW: Save Licence 2 Ratings
-       if ($request->has('licence_1_ratings') && is_array($request->licence_1_ratings)) {
-    $newParentIds = [];      // Track all parent_ids submitted
-    $newRatingIds = [];      // Track all rating_ids (child or null) submitted
+if ($request->has('licence_1_ratings') && is_array($request->licence_1_ratings)) {
+    $newParentIds = [];
+    $newRatingIds = [];
 
     foreach ($request->licence_1_ratings as $ratingGroup) {
         $parentId = $ratingGroup['parent'] ?? null;
@@ -1438,30 +1442,27 @@ foreach ($ratingFile2Inputs as $index => $info) {
         if ($parentId) {
             $newParentIds[] = $parentId;
 
-            $existingParent = UserRating::where('user_id', $userToUpdate->id)
+            // Get all entries for this parent
+            $existingRatings = UserRating::where('user_id', $userToUpdate->id)
                 ->where('linked_to', 'licence_1')
                 ->where('parent_id', $parentId)
-                ->first();
+                ->get();
 
-            $issue_date_licence1 = $existingParent->issue_date ?? null;
-            $expiry_date_licence1 = $existingParent->expiry_date ?? null;
-
-            if (!$existingParent) {
-                $issue_date_licence1 = null;
-                $expiry_date_licence1 = null;
-            }
+            $issue_date_licence1 = optional($existingRatings->first())->issue_date;
+            $expiry_date_licence1 = optional($existingRatings->first())->expiry_date;
 
             if (is_array($childIds) && count($childIds)) {
+                // Add each selected child
                 foreach ($childIds as $childId) {
                     $newRatingIds[] = $childId;
 
-                    // Delete old child record
+                    // Delete old child entry
                     UserRating::where('user_id', $userToUpdate->id)
                         ->where('rating_id', $childId)
                         ->where('linked_to', 'licence_1')
                         ->delete();
 
-                    // Create new child with parent reference
+                    // Insert new child entry
                     UserRating::create([
                         'user_id'     => $request->edit_form_id,
                         'rating_id'   => $childId,
@@ -1472,18 +1473,33 @@ foreach ($ratingFile2Inputs as $index => $info) {
                         'linked_to'   => 'licence_1',
                     ]);
                 }
-            } else {
-                // Only parent selected without child
-                $newRatingIds[] = null;
 
-                // Delete old parent-only record
+                // Remove parent-only record if exists
                 UserRating::where('user_id', $userToUpdate->id)
                     ->where('linked_to', 'licence_1')
-                    ->whereNull('rating_id')
                     ->where('parent_id', $parentId)
+                    ->whereNull('rating_id')
                     ->delete();
 
-                // Create parent-only entry
+            } else {
+                // No children — parent-only entry
+                $newRatingIds[] = null;
+
+                // Delete all child entries under this parent
+                UserRating::where('user_id', $userToUpdate->id)
+                    ->where('linked_to', 'licence_1')
+                    ->where('parent_id', $parentId)
+                    ->whereNotNull('rating_id')
+                    ->delete();
+
+                // Delete old parent-only entry (if any)
+                UserRating::where('user_id', $userToUpdate->id)
+                    ->where('linked_to', 'licence_1')
+                    ->where('parent_id', $parentId)
+                    ->whereNull('rating_id')
+                    ->delete();
+
+                // Create new parent-only entry
                 UserRating::create([
                     'user_id'     => $request->edit_form_id,
                     'rating_id'   => null,
@@ -1497,17 +1513,19 @@ foreach ($ratingFile2Inputs as $index => $info) {
         }
     }
 
-    // Clean up orphaned records — only delete ratings not in the new data
+    // Delete any ratings not in current submission
     UserRating::where('user_id', $userToUpdate->id)
         ->where('linked_to', 'licence_1')
         ->where(function ($query) use ($newParentIds, $newRatingIds) {
             $query->whereNotIn('parent_id', $newParentIds)
                 ->orWhere(function ($q) use ($newRatingIds) {
-                    $q->whereNotIn('rating_id', $newRatingIds);
+                    $q->whereNotIn('rating_id', $newRatingIds)
+                      ->whereNotNull('rating_id'); // protect parent-only entries
                 });
         })
         ->delete();
 }
+
 
 
 
@@ -1530,81 +1548,93 @@ foreach ($ratingFile2Inputs as $index => $info) {
     $newRatingIdsLicence2 = [];
 
     foreach ($request->licence_2_ratings as $ratingGroup) {
+        
         $parentId = $ratingGroup['parent'] ?? null;
         $childIds = $ratingGroup['child'] ?? [];
 
-        if ($parentId) {
-            $newParentIdsLicence2[] = $parentId;
+if ($parentId) {
+    $newParentIdsLicence2[] = $parentId;
 
-            // Check if this parent already exists in licence_2
-            $existingParent = UserRating::where('user_id', $userToUpdate->id)
+    // Fetch all existing entries for this parent
+    $existingRatings = UserRating::where('user_id', $userToUpdate->id)
+        ->where('linked_to', 'licence_2')
+        ->where('parent_id', $parentId)
+        ->get();
+
+    $issue_date_licence2 = optional($existingRatings->first())->issue_date;
+    $expiry_date_licence2 = optional($existingRatings->first())->expiry_date;
+
+    if (is_array($childIds) && count($childIds)) {
+        // Handle children
+        foreach ($childIds as $childId) {
+            $newRatingIdsLicence2[] = $childId;
+
+            UserRating::where('user_id', $userToUpdate->id)
+                ->where('rating_id', $childId)
                 ->where('linked_to', 'licence_2')
-                ->where('parent_id', $parentId)
-                ->first();
+                ->delete();
 
-            $issue_date_licence2 = $existingParent->issue_date ?? null;
-            $expiry_date_licence2 = $existingParent->expiry_date ?? null;
-
-            if (!$existingParent) {
-                $issue_date_licence2 = null;
-                $expiry_date_licence2 = null;
-            }
-
-            if (is_array($childIds) && count($childIds)) {
-                foreach ($childIds as $childId) {
-                    $newRatingIdsLicence2[] = $childId;
-
-                    // Delete old child entry
-                    UserRating::where('user_id', $userToUpdate->id)
-                        ->where('rating_id', $childId)
-                        ->where('linked_to', 'licence_2')
-                        ->delete();
-
-                    // Insert new child entry
-                    UserRating::create([
-                        'user_id'     => $request->edit_form_id,
-                        'rating_id'   => $childId,
-                        'parent_id'   => $parentId,
-                        'issue_date'  => $issue_date_licence2,
-                        'expiry_date' => $expiry_date_licence2,
-                        'file_path'   => null,
-                        'linked_to'   => 'licence_2',
-                    ]);
-                }
-            } else {
-                // No child selected — only parent
-                $newRatingIdsLicence2[] = null;
-
-                // Delete old parent-only entry
-                UserRating::where('user_id', $userToUpdate->id)
-                    ->where('linked_to', 'licence_2')
-                    ->whereNull('rating_id')
-                    ->where('parent_id', $parentId)
-                    ->delete();
-
-                // Insert new parent-only entry
-                UserRating::create([
-                    'user_id'     => $request->edit_form_id,
-                    'rating_id'   => null,
-                    'parent_id'   => $parentId,
-                    'issue_date'  => $issue_date_licence2,
-                    'expiry_date' => $expiry_date_licence2,
-                    'file_path'   => null,
-                    'linked_to'   => 'licence_2',
-                ]);
-            }
+            UserRating::create([
+                'user_id'     => $request->edit_form_id,
+                'rating_id'   => $childId,
+                'parent_id'   => $parentId,
+                'issue_date'  => $issue_date_licence2,
+                'expiry_date' => $expiry_date_licence2,
+                'file_path'   => null,
+                'linked_to'   => 'licence_2',
+            ]);
         }
+
+        // Delete parent-only entry if any
+        UserRating::where('user_id', $userToUpdate->id)
+            ->where('linked_to', 'licence_2')
+            ->where('parent_id', $parentId)
+            ->whereNull('rating_id')
+            ->delete();
+
+    } else {
+        // Children were removed – now insert parent-only entry
+        $newRatingIdsLicence2[] = null;
+
+        // Delete all old children under this parent
+        UserRating::where('user_id', $userToUpdate->id)
+            ->where('linked_to', 'licence_2')
+            ->where('parent_id', $parentId)
+            ->whereNotNull('rating_id')
+            ->delete();
+
+        // Delete existing parent-only entry first
+        UserRating::where('user_id', $userToUpdate->id)
+            ->where('linked_to', 'licence_2')
+            ->where('parent_id', $parentId)
+            ->whereNull('rating_id')
+            ->delete();
+
+        // Insert new parent-only entry
+        UserRating::create([
+            'user_id'     => $request->edit_form_id,
+            'rating_id'   => null,
+            'parent_id'   => $parentId,
+            'issue_date'  => $issue_date_licence2,
+            'expiry_date' => $expiry_date_licence2,
+            'file_path'   => null,
+            'linked_to'   => 'licence_2',
+        ]);
     }
+}
+
+    }
+    
 
     // Delete any existing ratings not present in the current input
     UserRating::where('user_id', $userToUpdate->id)
-        ->where('linked_to', 'licence_2')
-        ->where(function ($query) use ($newParentIdsLicence2, $newRatingIdsLicence2) {
-            $query->whereNotIn('parent_id', $newParentIdsLicence2)
-                ->orWhere(function ($q) use ($newRatingIdsLicence2) {
-                    $q->whereNotIn('rating_id', $newRatingIdsLicence2);
-                });
-        })
+                ->where('linked_to', 'licence_2')
+                ->where(function ($query) use ($newParentIdsLicence2, $newRatingIdsLicence2) {
+                    $query->whereNotIn('parent_id', $newParentIdsLicence2)
+                        ->orWhere(function ($q) use ($newRatingIdsLicence2) {
+                            $q->whereNotIn('rating_id', $newRatingIdsLicence2);
+                        });
+                })
         ->delete();
 }
 
