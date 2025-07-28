@@ -281,6 +281,9 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/reports/course/{hashedId}', [ReportsController::class, 'showCourse'])->name('reports.course');
     Route::post('/students/archive', [ReportsController::class, 'updateStudentArchiveStatus'])->name('students.archive.ajax');
 
+    // Student specific reporting section Routes
+    Route::get('/user-reporting', [ReportsController::class, 'getStudentReports'])->name('user.reporting');
+
 });
 
     
