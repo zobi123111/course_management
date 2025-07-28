@@ -151,14 +151,14 @@
                                                 </a>
                                                 @endif
                                                 <?php
-                                                    $hasValidChildren = collect($group['children'])->contains(function ($child) {
-                                                        return !is_null($child->rating_id);
-                                                    });
-    
-    
-                                                    if (!$hasValidChildren) {
-                                                        $group['children'] = [];
-                                                    }
+                                                $hasValidChildren = collect($group['children'])->contains(function ($child) {
+                                                    return !is_null($child->rating_id);
+                                                });
+
+
+                                                if (!$hasValidChildren) {
+                                                    $group['children'] = [];
+                                                }
                                                 ?>
 
                                                 <!-- Child Ratings -->
@@ -434,7 +434,7 @@
                             </h5>
                             <div class="p-3 border rounded bg-light">
                                 {{ $user->organization->org_unit_name ?? 'N/A' }}
-                            </div> 
+                            </div>
                         </div>
                     </div>
 
@@ -449,7 +449,6 @@
                 </div>
             </div>
         </div>
-
     </div>
     @endsection
 
