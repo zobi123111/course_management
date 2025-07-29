@@ -403,10 +403,12 @@
 </style>
 
 @php
-    function formatSeconds($seconds) {
-        $hours = floor($seconds / 3600);
-        $minutes = floor(($seconds % 3600) / 60);
-        return sprintf("%02d:%02d", $hours, $minutes);
+    if (!function_exists('formatSeconds')) {
+        function formatSeconds($seconds) {
+            $hours = floor($seconds / 3600);
+            $minutes = floor(($seconds % 3600) / 60);
+            return sprintf("%02d:%02d", $hours, $minutes);
+        }
     }
 @endphp
 
@@ -435,7 +437,7 @@
             </li>
             @if($trainingEvent?->course?->course_type === 'one_event' && $student)
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="student-tab-{{ $student->id }}" data-bs-toggle="tab" data-bs-target="#student-{{ $student->id }}" type="button" role="tab" aria-controls="student-{{ $student->id }}" aria-selected="false">
+                    <button class="nav-link" id="student-tab-{{ $student->id ?? ''}}" data-bs-toggle="tab" data-bs-target="#student-{{ $student->id ?? '' }}" type="button" role="tab" aria-controls="student-{{ $student->id ?? '' }}" aria-selected="false">
                         {{ $student->fname }} {{ $student->lname }}
                     </button>
                 </li>
@@ -499,6 +501,7 @@
             @else
                 @php
                     $lessons = $trainingEvent->eventLessons;    
+                    
                 @endphp
             @endif
 
@@ -1088,12 +1091,27 @@
                         @csrf
                         <input type="hidden" name="event_id" id="event_id" value="{{ $trainingEvent->id }}">
                             <div class="accordion accordion-flush" id="faq-group-2">
+                       
                                 @foreach($eventLessons as $eventLesson)
                                 @php
+                                   
                                     $lesson = $eventLesson->lesson;
                                     $isLocked = $eventLesson->is_locked == 1;
                                 @endphp
-                                    <div class="accordion-item">
+
+                             <?php
+                                    if($lesson->lesson_type == "groundschool"){
+                                        $duration = $trainingEvent->course->groundschool_hours ?? 0;
+                                    } elseif($lesson->lesson_type == "simulator"){
+                                        $duration = $trainingEvent->course->simulator_hours ?? 0;
+                                    } else {
+                                        $duration = 0;
+                                    }
+
+                                    $formattedDuration = number_format($duration, 2);
+                                    $hourLabel = ($formattedDuration == 1.00) ? 'hour' : 'hours';
+                                ?>
+                                                                    <div class="accordion-item">
                                         <input type="hidden" name="tg_lesson_id[]" value="{{ $eventLesson->id }}">
                                                  <h2 class="accordion-header">
                                                     <button class="accordion-button {{ $isLocked ? 'collapsed' : '' }}"
@@ -1104,7 +1122,8 @@
                                                         aria-controls="lesson-{{ $eventLesson->id }}"
                                                         style="{{ $isLocked ? 'cursor: not-allowed; background-color: #f8f9fa;' : '' }}">
                                                         
-                                                        {{ $lesson->lesson_title ?? 'Untitled Lesson' }}
+                                                        {{ $lesson->lesson_title ?? 'Untitled Lesson' }} (Duration: {{ number_format($duration, 2) }} hrs)
+
 
                                                         @if($isLocked)
                                                             @if(auth()->user()?->is_admin==1)
@@ -1154,7 +1173,7 @@
                                                                 $isDeferred = in_array($sublesson->id, $deferredTaskIds);
                                                             @endphp
                                                                 <div class="main-tabledesign">
-                                                                    <input type="hidden" name="tg_user_id" value="{{ $student->id }}">
+                                                                    <input type="hidden" name="tg_user_id" value="{{ $student->id ?? '' }}">
                                                                     <h5>{{ $student->fname }} {{ $student->lname }}</h5>
                                                                     <table>
                                                                         <tbody>
@@ -1210,7 +1229,7 @@
                                                                             @endif
                                                                         </tbody>
                                                                     </table>
-                                                                    <span class="custom-radio competent task_grade_{{ $lesson->id }}_{{ $sublesson->id }}_{{ $student->id }}"></span>                                                                    
+                                                                    <span class="custom-radio competent task_grade_{{ $lesson->id }}_{{ $sublesson->id }}_{{ $student->id ?? '' }}"></span>                                                                    
                                                                 </div>                                                        
                                                             </div>
                                                         </div>
@@ -1272,7 +1291,7 @@
                                                 </div>
                                                 <div class="table-container">
                                                     <div class="main-tabledesign">
-                                                        <input type="hidden" name="cg_user_id" value="{{ $student->id }}">
+                                                        <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
                                                         <table>
                                                             <tbody>
                                                                 <tr>
@@ -1284,7 +1303,7 @@
                                                                         <label class="radio-label">
                                                                             <input type="radio" class="scale-radio"
                                                                                 name="comp_grade[{{ $lesson->id }}][{{ $code }}]"
-                                                                                value="{{ $i }}" data-event-id="{{ $trainingEvent->id }}" data-lesson-id="{{ $lesson->id }}" data-user-id="{{ $student->id }}" data-code="{{ $code }}" data-color-class="{{ $colorClass }}"
+                                                                                value="{{ $i }}" data-event-id="{{ $trainingEvent->id }}" data-lesson-id="{{ $lesson->id }}" data-user-id="{{ $student->id ?? '' }}" data-code="{{ $code }}" data-color-class="{{ $colorClass }}"
                                                                                 {{ $selectedCompGrade == $i ? 'checked' : '' }}>
                                                                             <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
                                                                         </label>
@@ -1293,7 +1312,7 @@
                                                                 </tr>
                                                             </tbody>
                                                         </table>
-                                                        <span class="custom-radio competent comp_grade_{{ $lesson->id }}_{{ $student->id }}"></span>
+                                                        <span class="custom-radio competent comp_grade_{{ $lesson->id }}_{{ $student->id ?? '' }}"></span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1410,11 +1429,11 @@
                     @endif
                 </div>
             </div>
-            <div class="tab-pane fade" id="student-{{ $student->id }}" role="tabpanel" aria-labelledby="student-tab-{{ $student->id }}">
-                <form method="POST" class="overallAssessmentForm" data-user-id="{{ $student->id }}">
+            <div class="tab-pane fade" id="student-{{ $student->id ?? '' }}" role="tabpanel" aria-labelledby="student-tab-{{ $student->id ?? '' }}">
+                <form method="POST" class="overallAssessmentForm" data-user-id="{{ $student->id ?? '' }}">
                     @csrf
                     <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
-                    <input type="hidden" name="user_id" value="{{ $student->id }}">
+                    <input type="hidden" name="user_id" value="{{ $student->id ?? '' }}">
                     <div class="assessment-wrapper">
                         <h2>Overall assessment</h2>
                         <div class="row mb-3">
@@ -1426,19 +1445,19 @@
                                             <tr>
                                                 <td>
                                                     <label class="radio-label">
-                                                        <input type="radio" name="user_result_{{ $student->id }}" value="Competent" {{ isset($overallAssessments) && isset($overallAssessments->result) && $overallAssessments->result == 'Competent' ? 'checked' : '' }} >
+                                                        <input type="radio" name="user_result_{{ $student->id ?? '' }}" value="Competent" {{ isset($overallAssessments) && isset($overallAssessments->result) && $overallAssessments->result == 'Competent' ? 'checked' : '' }} >
                                                         <span class="custom-radio competent">Competent</span>
                                                     </label>                                                                    
                                                 </td>
                                                 <td>
                                                     <label class="radio-label">
-                                                        <input type="radio" name="user_result_{{ $student->id }}" value="Further training required" {{ isset($overallAssessments) && isset($overallAssessments->result) && $overallAssessments->result == 'Further training required' ? 'checked' : '' }}>
+                                                        <input type="radio" name="user_result_{{ $student->id ?? '' }}" value="Further training required" {{ isset($overallAssessments) && isset($overallAssessments->result) && $overallAssessments->result == 'Further training required' ? 'checked' : '' }}>
                                                         <span class="custom-radio ftr">Further training required</span>
                                                     </label>
                                                 </td>
                                                 <td>
                                                     <label class="radio-label">
-                                                        <input type="radio" name="user_result_{{ $student->id }}" value="Incomplete" {{ isset($overallAssessments) && isset($overallAssessments->result) && $overallAssessments->result == 'Incomplete' ? 'checked' : '' }}>
+                                                        <input type="radio" name="user_result_{{ $student->id ?? ''}}" value="Incomplete" {{ isset($overallAssessments) && isset($overallAssessments->result) && $overallAssessments->result == 'Incomplete' ? 'checked' : '' }}>
                                                         <span class="custom-radio incomplete">Incomplete</span>
                                                     </label>
                                                 </td>                                                                 
@@ -1452,7 +1471,7 @@
                         <div class="row mb-3 remark-section">
                             <label class="col-sm-2 col-form-label">Remark</label>
                             <div class="col-sm-10">
-                                <textarea class="form-control remark" name="remark_{{ $student->id }}" style="height: 100px" placeholder="Enter your remarks here...">{{ $overallAssessments->remarks ?? '' }}</textarea>
+                                <textarea class="form-control remark" name="remark_{{ $student->id ?? '' }}" style="height: 100px" placeholder="Enter your remarks here...">{{ $overallAssessments->remarks ?? '' }}</textarea>
                             </div>
                         </div>
 

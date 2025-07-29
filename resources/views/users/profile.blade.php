@@ -351,7 +351,7 @@
                                                                 value="{{ $entry['children'][0]['linked_to'] }}">
                                                         </div>
                                                     </div>
-                                                    <label class="form-label mt-3"><strong>Upload File55</strong></label>
+                                                    <label class="form-label mt-3"><strong>Upload File</strong></label>
 
                                                     <input type="hidden" name="rating_file[{{ $i }}][parentid]" value="{{ $entry['children'][0]['parent_id'] }}" class="form-control">
                                                     <input type="hidden" name="rating_file[{{ $i }}][user_id]" value="{{ $entry['children'][0]['user_id'] ?? '' }}" class="form-control">
