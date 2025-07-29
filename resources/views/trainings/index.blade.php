@@ -1322,7 +1322,6 @@ $(document).ready(function() {
     }
 
 
-    function calculateTotalSimulatorTime() {  
     function calculateTotalSimulatorTime() { 
         let totalMinutes = 0;
 
@@ -1376,6 +1375,7 @@ $(document).ready(function() {
     }, 2000);
 
 });
+
 </script>
 <script>
     const studentsdata = @json($students);       

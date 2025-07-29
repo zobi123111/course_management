@@ -171,7 +171,7 @@ class TrainingEventsController extends Controller
               
         } 
         // Attach instructor lists to each training event
-        $trainingEvents->each(function ($event) {
+        $trainingEvents->each(function ($event) { 
             if (!$event->relationLoaded('eventLessons') || !($event->eventLessons instanceof \Illuminate\Support\Collection)) {
                 $event->lesson_instructors = collect();
                 $event->lesson_instructor_users = collect();
@@ -693,35 +693,52 @@ class TrainingEventsController extends Controller
             'trainingFeedbacks.question', // Eager load the question relationship
             'documents' // Eager load the training event documents
         ])->find(decode_id($event_id));
+      
+
+
         if (!$trainingEvent) {
             return abort(404, 'Training Event not found');
         }
         //Filter lessons based on role
-        if (hasUserRole($currentUser, 'Instructor') && empty($currentUser->is_admin)) {
+        if (hasUserRole($currentUser, 'Instructor') && empty($currentUser->is_admin)) { 
             // Only show lessons assigned to this instructor
             $eventLessons = $trainingEvent->eventLessons->filter(function ($lesson) use ($currentUser) {
                 return $lesson->instructor_id == $currentUser->id;
             })->values();
-        } else {
+        } else { 
+             
             //Admins and others with access can view all lessons
             $eventLessons = $trainingEvent->eventLessons;
+            // dd($trainingEvent);
+           
         }
         //dd($eventLessons);
         $student = $trainingEvent->student;
         $lessonIds = $eventLessons->pluck('lesson_id')->filter()->unique();
+        
         //Get task gradings (sublesson grades and comments)
-        $taskGrades = TaskGrading::where('user_id', $student->id)
+        if(!empty($student)){
+            $taskGrades = TaskGrading::where('user_id', $student->id)
             ->where('event_id', $trainingEvent->id)
             ->whereIn('lesson_id', $lessonIds)
             ->get()
             ->keyBy(fn($item) => $item->lesson_id . '_' . $item->sub_lesson_id);
-    
-        //Get competency grades (competency area grades and comments)
-        $competencyGrades = CompetencyGrading::where('user_id', $student->id)
+
+     //Get competency grades (competency area grades and comments)
+         $competencyGrades = CompetencyGrading::where('user_id', $student->id)
             ->where('event_id', $trainingEvent->id)
             ->whereIn('lesson_id', $lessonIds)
             ->get()
             ->groupBy('lesson_id');
+
+        }
+        else{
+                $taskGrades = collect(); // instead of ''
+                $competencyGrades = collect(); // instead of ''
+        }
+        
+    
+     
 
         //Optional: Also pass overall assessments if you need them
         $overallAssessments = OverallAssessment::where('event_id', $trainingEvent->id)
@@ -833,7 +850,8 @@ class TrainingEventsController extends Controller
 
         $course = Courses::with('resources')->find($trainingEvent->course_id);
         $resources = $course ? $course->resources : collect(); // avoids null access
-        // dd($deferredLessons);
+        //dd($trainingEvent);
+        //dd($eventLessons);
         return view('trainings.show', compact(
             'trainingEvent', 
             'student', 

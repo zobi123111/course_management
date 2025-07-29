@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('organization_units', function (Blueprint $table) {
             $table->id();
             $table->string('org_unit_name');
-            $table->text('description');
+            $table->text('description')->nullable()->change();
             $table->boolean('status')->default(1);
             $table->timestamps();
         });

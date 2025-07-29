@@ -127,7 +127,7 @@ class OrganizationController extends Controller
 
     public function saveOrgUnit(Request $request)
     {
-    
+        
         $rules = [
             'org_unit_name' => 'required|unique:organization_units,org_unit_name,NULL,id,deleted_at,NULL',
             'description' => 'required',
@@ -167,18 +167,14 @@ class OrganizationController extends Controller
                 // Store only the file name if needed
                 $logo_name[] = $fileName;
             }
-            
 
-            $orgUnit = OrganizationUnits::create([
+     
+            $orgUnit = OrganizationUnits::create([ 
                 'org_unit_name' => $request->org_unit_name,
-                'description' => $request->description,
+                'description' => $request->description ?? null,
                 'status' => $request->status,
                 'org_logo' => $logo_name[0] ?? null
             ]);
-          
-
-  
-           
     
             // Step 2: Store the user data only if email is provided
             if($orgUnit){                

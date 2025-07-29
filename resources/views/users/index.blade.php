@@ -184,18 +184,6 @@
                         <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
                         <div id="licence_file_error" class="text-danger error_e"></div>
 
-                        <!-- 👇 Ratings for Licence 1 -->
-                        <!-- <div id="licence_rating_section" class="mt-3" style="display: none;">
-        <label class="form-label">Select Ratings for UK Licence</label>
-        <input type = "checkbox"  id="uk_licence"/>
-
-        <select class="form-select rating-select" name="licence_1_ratings[]" id="licence_rating_value" multiple>
-            @foreach($rating as $val)
-                <option value="{{ $val->id }}">{{ $val->name }}</option>
-            @endforeach
-        </select>
-        <div id="licence_rating_error" class="text-danger error_e"></div>
-    </div> -->
                         <div id="licence_rating_section" class="mt-3">
                             <label class="form-label">Select Ratings for UK Licence</label>
                             <input type="checkbox" id="uk_licence" />
@@ -226,14 +214,6 @@
 
                             <!-- 👇 Ratings for Licence 2 -->
                             <div id="licence_2_rating_section" class="mt-3">
-                                <!-- <label class="form-label">Select Ratings for EASA Licence</label>
-            <select class="form-select rating-select" name="licence_2_ratings[]" id="licence_2_rating_value" multiple>
-                {{-- <option value="">Select Rating</option> --}}
-                @foreach($rating as $val)
-                    <option value="{{ $val->id }}">{{ $val->name }}</option>
-                @endforeach
-            </select>
-            <div id="licence_2_rating_error" class="text-danger error_e"></div> -->
                                 <div id="licence_2_rating_section" class="mt-3">
                                     <label class="form-label">Select Ratings for EASA Licence</label>
                                     <input type="checkbox" id="easa_licence" />
@@ -553,19 +533,10 @@
                         <input type="file" name="edit_licence_file" id="edit_licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
                         <div id="edit_licence_file_error_up" class="text-danger error_e"></div>
 
-                        {{-- <label for="edit_licence_rating_checkbox" class="form-label">Select Ratings for UK Licence</label>
-                                <input type="checkbox" name="edit_licence_rating_checkbox" id="edit_licence_rating_checkbox" class="ms-2"> --}}
-                        <!-- <div id="edit_licence_rating_section" class="mt-2" style="display: none;">
-                                    <select class="form-select rating-select" name="licence_1_ratings[]" id="edit_licence_rating_value" multiple>
-                                        <option value="">Select Rating</option>
-                                        @foreach($rating as $val)
-                                            <option value="{{ $val->id }}">{{ $val->name }}</option>
-                                        @endforeach
-                                    </select>
-                                    <div id="edit_licence_rating_error" class="text-danger error_e"></div>
-                                </div> -->
+              
+                  
                         <div id="edit_licence_rating_section" class="mt-3" style="display: none;">
-                            <label class="form-label">Select Ratings for UK Licence</label>
+                            <label class="form-label">Select Ratings for UK Licence33</label>
                             <input type="checkbox" id="edit_uk_licence" />
                             <div id="edit_rating_select_boxes_container" class="mt-2" style="display: none;">
                                 <!-- Select boxes will be appended here -->
@@ -592,21 +563,13 @@
                         </div>
                         <div id="edit_licence_2_rating_section" class="mt-3">
 
-                            {{-- <label for="edit_licence_2_rating_value" class="form-label">Select Ratings for EASA Licence</label> --}}
-                            <!-- <select class="form-select rating-select" name="licence_2_ratings[]" id="edit_licence_2_ra ting_value" multiple>
-                                    <option value="">Select Rating</option>
-                                    @foreach($rating as $val)
-                                        <option value="{{ $val->id }}">{{ $val->name }}</option>
-                                    @endforeach
-                                </select>
-                                <div id="edit_licence_2_rating_error" class="text-danger error_e"></div> -->
-
                             <label class="form-label">Select Ratings for EASA Licence</label>
                             <input type="checkbox" id="licence_2_ratings" />
                             <div id="licence_2_ratings_container" class="mt-2" style="display: none;">
                                 <!-- Select boxes will be appended here -->
                             </div>
                             <button type="button" id="edit_licence_2_ratings" class="btn btn-primary mt-2" style="display: none;">Add Rating</button>
+                          
 
                         </div>
                     </div>
@@ -731,20 +694,7 @@
                         <div id="edit_passport_file_error_up" class="text-danger error_e"></div>
                     </div>
 
-                    <!-- Rating/s (Stars) -->
-                    {{-- <div class="col-md-6">
-                            <label for="edit_rating_checkbox" class="form-label">Rating/s</label>
-                            <input type="checkbox" name="edit_rating_checkbox" id="edit_rating_checkbox" class="ms-2">
-                            <div id="edit_ratings" style="display: none;">
-                                <select class="form-select rating-select" name="general_ratings[]" id="edit_rating_value" aria-label="Default select example" multiple>
-                                    <option value="">Select Rating</option>
-                                    @foreach($rating as $val)
-                                    <option value="{{ $val->id }}">{{ $val->name }}</option>
-                    @endforeach
-                    </select>
-                    <div id="edit_rating_error_up" class="text-danger error_e"></div>
-            </div>
-        </div> --}}
+   
 
         <!-- Currency (Optional) -->
         <div class="col-md-6">
@@ -891,6 +841,19 @@
                 <select class="form-select child-rating" name="licence_2_ratings[${index}][child][]" multiple data-index="${index}">
                     <!-- Populated via AJAX -->
                 </select>
+
+                <div class="col-md-6">
+                    <label class="form-label mt-2"><strong>Issue Date</strong></label> 
+                    <input type="date" name="issue_date[${index}][child][]" class="form-control"  value="">
+                 </div>
+                <div class="col-md-6">
+                    <label class="form-label mt-2"><strong>Expiry Date</strong></label>
+                    <input type="date" name="expiry_date[${index}][child][]" class="form-control" value="">
+                 </div>
+                 <div class="col-md-6">
+                    <label class="form-label mt-3"><strong>Upload File</strong></label>
+                    <input type="file" name="rating_file[${index}][child][]"  class="form-control">
+                 </div>
             </div>
         `;
             $('#licence_2_ratings_container').append(selectBoxHtml);
@@ -932,9 +895,29 @@
                 <select class="form-select child-rating" name="ratings[${index}][child][]" multiple data-index="${index}">
                     <!-- Populated via AJAX -->
                 </select>
+                <div class="col-md-6">
+                    <label class="form-label mt-2"><strong>Issue Date</strong></label>
+                    <input type="date" name="issue_date[${index}][child][]" class="form-control"  value="">
+                 </div>
+                <div class="col-md-6">
+                    <label class="form-label mt-2"><strong>Expiry Date</strong></label>
+                    <input type="date" name="expiry_date[${index}][child][]" class="form-control" value="">
+                 </div>
+                 <div class="col-md-6">
+                    <label class="form-label mt-3"><strong>Upload File</strong></label>
+                    <input type="file" name="licence_file_one[${index}][child][]"  class="form-control">
+                 </div>
+
             </div>
         `;
             $('#rating_select_boxes_container').append(selectBoxHtml);
+            $(`.child-rating[data-index="${index}"]`).select2({
+                placeholder: 'Select the Privilages',
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible')
+            });
+            $(`.child-rating[data-index="${index}"]`).prop('disabled', true);
         });
 
         //-----------------------------------------------------------------------
@@ -971,9 +954,28 @@
                 <select class="form-select child-rating-easa" name="licence_2_ratings[${index}][child][]" multiple data-index="${index}">
                     <!-- Populated via AJAX -->
                 </select>
+                    <div class="col-md-6">
+                    <label class="form-label mt-2"><strong>Issue Date</strong></label>
+                    <input type="date" name="issue_date_2_licence[${index}][child][]" class="form-control"  value="">
+                 </div>
+                <div class="col-md-6">
+                    <label class="form-label mt-2"><strong>Expiry Date</strong></label>
+                    <input type="date" name="expiry_date_2_licence[${index}][child][]" class="form-control" value="">
+                 </div>
+                 <div class="col-md-6">
+                    <label class="form-label mt-3"><strong>Upload File</strong></label>
+                    <input type="file" name="licence_file_two[${index}][child][]"  class="form-control">
+                 </div>
             </div>
         `;
             $('#easa_select_boxes_container').append(selectBoxHtml);
+            $(`.child-rating-easa[data-index="${index}"]`).select2({
+                placeholder: 'Select the Privilages',
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible')
+            });
+            $(`.child-rating-easa[data-index="${index}"]`).prop('disabled', true);
         });
 
         //------------------------------------------------------------------------
@@ -1013,9 +1015,30 @@
                 <select class="form-select child-rating" name="licence_1_ratings[${index}][child][]" multiple data-index="${index}">
                     <!-- Populated via AJAX -->
                 </select>
+                <div class="col-md-6">
+                    <label class="form-label mt-2"><strong>Issue Date</strong></label>
+                    <input type="date" name="issue_date[${index}][child][]" class="form-control"  value="">
+                 </div>
+                <div class="col-md-6">
+                    <label class="form-label mt-2"><strong>Expiry Date</strong></label>
+                    <input type="date" name="expiry_date[${index}][child][]" class="form-control" value="">
+                 </div>
+                 <div class="col-md-6">
+                    <label class="form-label mt-3"><strong>Upload File</strong></label>
+                    <input type="file" name="rating_file[${index}][child][]"  class="form-control">
+                 </div>
+                
             </div>
         `;
             $('#edit_rating_select_boxes_container').append(selectBoxHtml);
+
+            $(`.child-rating[data-index="${index}"]`).select2({
+                placeholder: 'Select the Privileges',
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible')
+            });
+
         });
 
         //--------------------------------------------------------------------------
@@ -1029,34 +1052,80 @@
 
         // Handle parent select change (load child ratings)
         $(document).on('change', '.parent-rating', function() {
-            // let parentId = $(this).val();
-            // let index = $(this).data('index');
-            // let $childSelect = $(`.child-rating[data-index="${index}"]`);
-
-
             let $group = $(this).closest('.rating-select-group');
             let $childSelect = $group.find('.child-rating');
             let parentId = $(this).val();
-            $childSelect.empty();
 
-            if (parentId) {
-                $.ajax({
-                    url: "{{ url('get-child-ratings') }}",
-                    type: 'post',
-                    data: {
-                        parentId: parentId,
-                        "_token": "{{ csrf_token() }}"
-                    },
-                    success: function(response) {
-                        if (response.length > 0) {
+            if (!parentId) return;
+
+            // Check previously loaded parentId
+            const previousLoadedParentId = $childSelect.data('loadedParentId');
+
+            // Only clear child if previously loaded with a different parent
+            if (previousLoadedParentId && previousLoadedParentId != parentId) {
+                if ($childSelect.hasClass("select2-hidden-accessible")) {
+                    $childSelect.select2('destroy');
+                }
+                $childSelect.empty();
+            }
+
+            $.ajax({
+                url: "{{ url('get-child-ratings') }}",
+                type: 'post',
+                data: {
+                    parentId: parentId,
+                    "_token": "{{ csrf_token() }}"
+                },
+                success: function(response) {
+                    if (response.length > 0) {
+                        if (!$childSelect.data('loaded') || previousLoadedParentId != parentId) {
                             $.each(response, function(i, child) {
                                 $childSelect.append(`<option value="${child.id}">${child.name}</option>`);
                             });
                         }
                     }
-                });
+
+                    $childSelect.prop('disabled', false);
+
+                    $childSelect.select2({
+                        placeholder: 'Select the Privileges',
+                        allowClear: true,
+                        width: '100%',
+                        dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible')
+                    });
+
+                    // Mark as loaded with this parent
+                    $childSelect.data('loaded', true);
+                    $childSelect.data('loadedParentId', parentId);
+
+                    // ✅ If this was triggered from select2:opening, reopen dropdown
+                    if ($childSelect.data('forceOpenAfterLoad')) {
+                        $childSelect.select2('open');
+                        $childSelect.removeData('forceOpenAfterLoad');
+                    }
+                }
+            });
+        });
+
+
+        // ✅ 2. When child is clicked (opened), trigger parent change only if not loaded
+        $(document).on('select2:opening', '.child-rating', function(e) {
+            let $childSelect = $(this);
+
+            if (!$childSelect.data('loaded')) {
+                e.preventDefault(); // prevent dropdown opening
+
+                let $group = $childSelect.closest('.rating-select-group');
+                let $parentSelect = $group.find('.parent-rating');
+
+                // Set flag to force dropdown open after AJAX load
+                $childSelect.data('forceOpenAfterLoad', true);
+
+                // Trigger parent change to load children
+                $parentSelect.trigger('change');
             }
         });
+
 
         // Handle parent select change (load child ratings)
         $(document).on('change', '.parent-rating-easa', function() {
@@ -1080,6 +1149,15 @@
                                 $childSelect.append(`<option value="${child.id}">${child.name}</option>`);
                             });
                         }
+                        $childSelect.prop('disabled', false);
+
+                        // Reinitialize select2
+                        $childSelect.select2({
+                            placeholder: 'Select the Privileges',
+                            allowClear: true,
+                            width: '100%',
+                            dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible')
+                        });
                     }
                 });
             }
@@ -1090,18 +1168,19 @@
     $(document).ready(function() {
 
         function initializeSelect2() {
-            $('.rating-select').select2({
-                allowClear: true,
-                placeholder: 'Select the Rating',
-                multiple: true,
-                dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible') // More specific
-            });
+            // $('.rating-select').select2({
+            //     allowClear: true,
+            //     placeholder: 'Select the Rating',
+            //     multiple: true,
+            //     dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible') // More specific
+            // });
             $('.extra_roles').select2({
                 allowClear: true,
                 placeholder: 'Select the roles',
                 multiple: true,
                 dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible') // More specific
             });
+
         }
 
         initializeSelect2();
@@ -1416,7 +1495,7 @@
         $('#createUser').on('click', function() {
             $('.error_e').html('');
             $('.alert-danger').css('display', 'none');
-            $("#Create_user")[0].reset(); 
+            $("#Create_user")[0].reset();
 
             // Manually hide and reset all conditional sections
             $('#licence').hide().prop('required', false).val('');
@@ -1474,8 +1553,8 @@
                 contentType: false,
                 success: function(response) {
                     $(".loader").fadeOut("slow");
-                    // $('#userModal').modal('hide');
-                    // location.reload();
+                  //  $('#userModal').modal('hide');
+                   // location.reload();
                 },
                 error: function(xhr, status, error) {
                     // $('#loader').hide();
@@ -1617,6 +1696,11 @@
                             let index = editSelectBoxIndex++;
                             let parentId = group.parent_id;
                             let childIds = group.children;
+                            let issueDate = group.issue_date || '';
+                            let expiryDate = group.expire_date || '';
+                            let filePath = group.file_path || '';
+                            let fileUrl = filePath ? `{{ asset('storage/') }}/${filePath}` : '';
+                           
 
                             let selectBoxHtml = `
                         <div class="rating-select-group border p-3 mb-3 rounded" data-index="${index}">
@@ -1636,13 +1720,38 @@
                             <select class="form-select child-rating" name="licence_1_ratings[${index}][child][]" multiple data-index="${index}">
                                 <!-- Will be populated by AJAX -->
                             </select>
-                        </div>
-                    `;
+                               <div class="col-md-6">
+                                    <label class="form-label mt-2"><strong>Issue Date</strong></label>
+                                    <input type="date" name="licence_1_ratings[${index}][issue_date]" class="form-control" value="${issueDate}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label mt-2"><strong>Expiry Date</strong></label>
+                                    <input type="date" name="licence_1_ratings[${index}][expiry_date]" class="form-control" value="${expiryDate}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label mt-3"><strong>Upload File</strong></label>
+                                   
+                                   <input type="file" name="licence_1_ratings[${index}][rating_file]" class="form-control">
+
+
+
+                                </div>
+                                <div class="col-md-6 mt-2">
+                                    ${filePath ? `<a href="${fileUrl}" target="_blank" class="btn btn-sm btn-outline-primary">View Uploaded File</a>` : ''}
+                                </div>
+                             
+                        </div>`;
 
                             $('#edit_rating_select_boxes_container').append(selectBoxHtml);
 
                             // Set selected parent
                             $(`select[name="licence_1_ratings[${index}][parent]"]`).val(parentId);
+                            $(`.child-rating[data-index="${index}"]`).select2({
+                                placeholder: 'Select the Privileges',
+                                allowClear: true,
+                                width: '100%',
+                                dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible')
+                            });
 
                             // Load and set children
                             $.ajax({
@@ -1676,6 +1785,10 @@
                             let index = edit_licenceSelectBoxIndex++;
                             let parentId = group.parent_id;
                             let childIds = group.children;
+                            let issueDate = group.issue_date || ''; console.log(issueDate);
+                            let expiryDate = group.expire_date || '';
+                            let filePath = group.file_path || '';
+                            let fileUrl = filePath ? `{{ asset('storage/') }}/${filePath}` : '';
 
                             let selectBoxHtml = `
                         <div class="rating-select-group border p-3 mb-3 rounded" data-index="${index}">
@@ -1695,6 +1808,21 @@
                             <select class="form-select child-rating" name="licence_2_ratings[${index}][child][]" multiple data-index="${index}">
                                 <!-- Will be populated by AJAX -->
                             </select>
+                                <div class="col-md-6">
+                                    <label class="form-label mt-2"><strong>Issue Date</strong></label>
+                                    <input type="date" name="licence_2_ratings[${index}][issue_date_licence2]" class="form-control" value="${issueDate}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label mt-2"><strong>Expiry Date</strong></label>
+                                    <input type="date" name="licence_2_ratings[${index}][expiry_date_licence2]" class="form-control" value="${expiryDate}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label mt-3"><strong>Upload File</strong></label>
+                                    <input type="file" name="rating_file_licence2"  class="form-control">
+                                </div>
+                                <div class="col-md-6 mt-2">
+                                    ${filePath ? `<a href="${fileUrl}" target="_blank" class="btn btn-sm btn-outline-primary">View Uploaded File</a>` : ''}
+                                </div>
                         </div>
                     `;
 
@@ -1702,6 +1830,13 @@
 
                             // Set selected parent
                             $(`select[name="licence_2_ratings[${index}][parent]"]`).val(parentId);
+                            $(`select[name="licence_2_ratings[${index}][parent]"]`).val(parentId);
+                            $(`.child-rating[data-index="${index}"]`).select2({
+                                placeholder: 'Select the Privileges',
+                                allowClear: true,
+                                width: '100%',
+                                dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible')
+                            });
 
                             // Load and set children
                             $.ajax({
@@ -1854,19 +1989,7 @@
 
                     }
 
-                    // if (response.user.medical == 1) {
-                    //     $('#editmedical_checkbox').prop('checked', true);
-                    //     $('.editmedical_issued_div').show();
-                    //     $('.editmedical_class_div').show();
-                    //     $('#editmedical_issue_date').val(document.medical_issuedate ?? '');
-                    //     $('#editmedical_expiry_date').val(document.medical_expirydate ?? '');
-                    //     $('#editmedical_detail').val(document.medical_restriction ?? '');
 
-                    //     let issuedBy = document.medical_issuedby?.trim() ?? '';
-                    //     let medicalClass = document.medical_class?.trim() ?? '';
-                    //     $('#editissued_by').val(issuedBy);
-                    //     $('#editmedical_class').val(medicalClass);
-                    // }
                     if (response.user.medical == 1) {
                         $('#editmedical_checkbox').prop('checked', true).trigger('change');
 
@@ -1995,18 +2118,18 @@
                 success: function(response) {
                     $(".loader").fadeOut('slow');
 
-                    $('#editUserDataModal').modal('hide');
-                    $('#update_success_msg').html(`
-                    <div class="alert alert-success fade show" role="alert">
-                        <i class="bi bi-check-circle me-1"></i>
-                        ${response.message}
-                    </div>
-                    `).stop(true, true).fadeIn();
-                    $('#user_table').DataTable().ajax.reload(null, false);
-                    setTimeout(function() {
-                        $('#update_success_msg').fadeOut('slow');
+                  //  $('#editUserDataModal').modal('hide');
+                    // $('#update_success_msg').html(`
+                    // <div class="alert alert-success fade show" role="alert">
+                    //     <i class="bi bi-check-circle me-1"></i>
+                    //     ${response.message}
+                    // </div>
+                    // `).stop(true, true).fadeIn();
+                    // $('#user_table').DataTable().ajax.reload(null, false);
+                    // setTimeout(function() {
+                    //     $('#update_success_msg').fadeOut('slow');
 
-                    }, 5000);
+                    // }, 5000);
                 },
                 error: function(xhr, status, error) {
                     $(".loader").fadeOut("slow");
