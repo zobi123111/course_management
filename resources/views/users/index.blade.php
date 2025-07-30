@@ -30,6 +30,9 @@
         color: gold;
         /* color for filled stars */
     }
+
+
+
 </style>
 
 <div class="main_cont_outer">
@@ -800,12 +803,8 @@
 
 <script>
     let selectBoxIndex = 0;
-
     $(document).ready(function() {
-
-        // //-----------------------------------------------------------
         // Edit licence 2 
-     
         $('#licence_2_ratings').on('change', function() {
             if ($(this).is(':checked')) {
                 $('#licence_2_ratings_container').show();
@@ -1046,8 +1045,6 @@
 
         // Remove rating select box group
         $(document).on('click', '.remove-rating-box', function() {
-            // let index = $(this).data('index');
-            // $(`.rating-select-group[data-index="${index}"]`).remove();
             $(this).closest('.rating-select-group').remove();
         });
 
@@ -1169,12 +1166,7 @@
     $(document).ready(function() {
 
         function initializeSelect2() {
-            // $('.rating-select').select2({
-            //     allowClear: true,
-            //     placeholder: 'Select the Rating',
-            //     multiple: true,
-            //     dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible') // More specific
-            // });
+        
             $('.extra_roles').select2({
                 allowClear: true,
                 placeholder: 'Select the roles',
@@ -1444,17 +1436,6 @@
             }
         });
 
-        // $('#add_second_medical_btn').on('click', function () {
-        //     $('#second_medical_section').toggle();
-
-        //     const isVisible = $('#second_medical_section').is(':visible');
-        //     $('#issued_by_2, #medical_class_2, #medical_issue_date_2, #medical_expiry_date_2, #medical_detail_2, #medical_file_2').prop('required', isVisible);
-
-        //     if (!isVisible) {
-        //         $('#issued_by_2, #medical_class_2, #medical_issue_date_2, #medical_expiry_date_2, #medical_detail_2, #medical_file_2').val('');
-        //     }
-        // });
-
         // Edit Medical Toggle
         $('#editmedical_checkbox').change(function() {
             if (this.checked) {
@@ -1675,7 +1656,6 @@
                 url: "{{ url('users/edit') }}",
                 data: vdata,
                 success: function(response) {
-
                     $('input[name="edit_firstname"]').val(response.user.fname);
                     $('input[name="edit_lastname"]').val(response.user.lname);
                     $('input[name="edit_email"]').val(response.user.email);
@@ -1694,7 +1674,6 @@
                         // let editSelectBoxIndex = 0;
                        edit_selectBoxIndex = response.userRatings_licence_1.length || 0;
                        response.userRatings_licence_1.forEach(function (group, i) {
-                        // response.userRatings_licence_1.forEach(function(group) {
                             let index = i;
                             let parentId = group.parent_id;
                             let childIds = group.children;
@@ -1775,6 +1754,7 @@
                                         const selected = childIds.includes(child.id) ? 'selected' : '';
                                         $childSelect.append(`<option value="${child.id}" ${selected}>${child.name}</option>`);
                                     });
+                                    
                                 }
                             });
                         });
@@ -1793,7 +1773,7 @@
                             let index = i;
                             let parentId = group.parent_id;
                             let childIds = group.children;
-                            let issueDate = group.issue_date || ''; console.log(issueDate);
+                            let issueDate = group.issue_date || ''; 
                             let expiryDate = group.expire_date || '';
                             let filePath = group.file_path || '';
                             let fileUrl = filePath ? `{{ asset('storage/') }}/${filePath}` : '';
@@ -1864,13 +1844,7 @@
                                 }
                             });
                         });
-
-
-
                     }
-
-
-
 
                     // Set extra roles
                     var extraRoles = response.user.extra_roles ? JSON.parse(response.user.extra_roles) : []; // Convert to array if needed
@@ -1879,9 +1853,7 @@
                         $('#edit_extra_roles option[value="' + roleId + '"]').prop('selected', true);
                     });
 
-                    // Primary role
-                    // const doc = response.user.documents[0];
-                    // const doc = response.user.documents && response.user.documents.length > 0 ? response.user.documents : null;
+                   
                     var userRoleId = response.user.role;
                     $('#role_id option').removeAttr('selected');
                     $('#edit_role option[value="' + userRoleId + '"]').attr('selected',
@@ -2092,7 +2064,7 @@
                     }
 
                     $('#editUserDataModal').modal('show');
-                    // initializeSelect2();
+                    
                 },
                 error: function(xhr, status, error) {
                     console.error(xhr.responseText);
@@ -2126,18 +2098,18 @@
                 success: function(response) {
                     $(".loader").fadeOut('slow');
 
-                   $('#editUserDataModal').modal('hide');
-                    $('#update_success_msg').html(`
-                    <div class="alert alert-success fade show" role="alert">
-                        <i class="bi bi-check-circle me-1"></i>
-                        ${response.message}
-                    </div>
-                    `).stop(true, true).fadeIn();
-                    $('#user_table').DataTable().ajax.reload(null, false);
-                    setTimeout(function() {
-                        $('#update_success_msg').fadeOut('slow');
+                       $('#editUserDataModal').modal('hide');
+                        $('#update_success_msg').html(`
+                        <div class="alert alert-success fade show" role="alert">
+                            <i class="bi bi-check-circle me-1"></i>
+                            ${response.message}
+                        </div>
+                        `).stop(true, true).fadeIn();
+                        $('#user_table').DataTable().ajax.reload(null, false);
+                        setTimeout(function() {
+                            $('#update_success_msg').fadeOut('slow');
 
-                    }, 5000);
+                        }, 5000);
                 },
                 error: function(xhr, status, error) {
                     $(".loader").fadeOut("slow");
@@ -2166,16 +2138,7 @@
 
         // Ensure Select2 works when modal is shown
         $('#userModal, #editUserDataModal').on('shown.bs.modal', function() {
-            initializeSelect2();
-
-            // Reposition Select2 on scroll
-            // $(this).find('.modal-body').on('scroll', function () {
-            //     $('.rating-select').each(function () {
-            //         if ($(this).data('select2')) {
-            //             $(this).data('select2').dropdown._positionDropdown();
-            //         }
-            //     });
-            // });
+           // initializeSelect2();
         });
 
         setTimeout(function() {
