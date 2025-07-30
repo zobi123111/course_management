@@ -704,7 +704,11 @@
                                 ];
 
                                 if ($lessonType === 'groundschool') {
-                                    $totals['groundschool']['duration'] = $trainingEvent->course->groundschool_hours ?? 0;
+                                    $groundschoolLessons = $trainingEvent->eventLessons->filter(function ($lesson) {
+                                        return $lesson->lesson?->lesson_type === 'groundschool';
+                                    });
+                                    $totals['groundschool']['duration'] = ($trainingEvent->course->groundschool_hours ?? 0) * $groundschoolLessons->count();
+
                                     $totals['groundschool']['credited'] = $credited;
                                 } elseif ($lessonType === 'simulator') {
                                     $totals['simulator']['duration'] = $trainingEvent->course->simulator_hours ?? 0;
@@ -776,6 +780,10 @@
                                     'custom' => [],
                                     'deferred' => 0,
                                 ];
+                                $groundschoolLessons = $trainingEvent->eventLessons->filter(function ($lesson) {
+                                    return $lesson->lesson?->lesson_type === 'groundschool';
+                                });
+                                $totals['groundschool']['duration'] = ($trainingEvent->course->groundschool_hours ?? 0) * $groundschoolLessons->count();
                             @endphp
 
                             @foreach($trainingEvent->eventLessons as $lesson)
@@ -783,7 +791,6 @@
                                     $type = $lesson->lesson?->lesson_type ?? '';
                                     $credited = strtotime("1970-01-01 {$lesson->hours_credited}") ?: 0;
                                     if ($type === 'groundschool') {
-                                        $totals['groundschool']['duration'] = $trainingEvent->course->groundschool_hours ?? 0;
                                         $totals['groundschool']['credited'] += $credited;
                                     } elseif ($type === 'simulator') {
                                         $totals['simulator']['duration'] = $trainingEvent->course->simulator_hours ?? 0;
@@ -814,7 +821,7 @@
                             @if($totals['groundschool']['duration'] || $totals['groundschool']['credited'])
                                 <p>
                                     <strong>Ground School:</strong>
-                                    Duration: {{ $totals['groundschool']['duration'] ?? 'N/A' }} |
+                                    Duration: {{ number_format($totals['groundschool']['duration'], 2) ?? 'N/A' }} |
                                     Credited: {{ formatSeconds($totals['groundschool']['credited']) }}
                                 </p>
                             @endif

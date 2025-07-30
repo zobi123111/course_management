@@ -43,7 +43,7 @@
 
         {{-- Courses List --}}
         <div class="row" id="course_list">
-            @forelse ($courses as $course)
+            @forelse ($courses as $course)             
                 <div class="col-md-4 mb-4 course-card" data-ou="{{ $course->ou_id }}">
                     <a href="{{ route('reports.course', encode_id($course->id)) }}" class="text-decoration-none text-dark">
                         <div class="card shadow-sm border h-100 card-hover">

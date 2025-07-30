@@ -1355,17 +1355,38 @@ $(document).ready(function() {
     
 
    // Open Course End Modal
-    $(document).on('click', '.end-course-btn', function() {
-        // Set current date in YYYY-MM-DD format
-        const today = new Date().toISOString().split('T')[0];
+$(document).on('click', '.end-course-btn', function () {
+    const eventId = $(this).data('event-id');
+    const today = new Date().toISOString().split('T')[0];
 
-        // Set the input values
-        $('#endCourseModal').modal('show');
-        $('#courseEndEventId').val($(this).data('event-id'));
-        $('#courseEndDate').val(today); // Reset to today's date
-        // Clear any validation error messages
-        $('#modalErrorContainer').html('');
+    // Open modal and set fields
+    $('#endCourseModal').modal('show');
+    $('#courseEndEventId').val(eventId);
+    $('#courseEndDate').val(today);
+    $('#modalErrorContainer').html('');
+    
+    const $instructorSelect = $('select[name="recommended_by_instructor_id"]');
+    $instructorSelect.html('<option value="">Loading...</option>');
+
+    // Fetch instructor list
+    $.ajax({
+        url: `/training/get-recom-instructors/${eventId}`,
+        method: 'GET',
+        success: function (response) {
+            $instructorSelect.empty().append('<option value="">-- Select Instructor --</option>');
+            response.instructors.forEach(instructor => {
+                const selected = instructor.id == response.last_instructor_id ? 'selected' : '';
+                $instructorSelect.append(
+                    `<option value="${instructor.id}" ${selected}>${instructor.fname} ${instructor.lname}</option>`
+                );
+            });
+        },
+        error: function () {
+            $instructorSelect.html('<option value="">Failed to load instructors</option>');
+        }
     });
+});
+
 
 
 
@@ -1426,6 +1447,7 @@ $(document).on('change', '#edit_is_instructor_checkbox', function () {
 
     userDropdown.html(userOptions);
 });
+
 function generateInstructorOptions(instructorsdata, selectedId = '', excludeId = '') {
     let options = '<option value="">Select Instructor</option>';
     instructorsdata.forEach(i => {
