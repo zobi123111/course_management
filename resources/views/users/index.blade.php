@@ -536,7 +536,7 @@
               
                   
                         <div id="edit_licence_rating_section" class="mt-3" style="display: none;">
-                            <label class="form-label">Select Ratings for UK Licence33</label>
+                            <label class="form-label">Select Ratings for UK Licence</label>
                             <input type="checkbox" id="edit_uk_licence" />
                             <div id="edit_rating_select_boxes_container" class="mt-2" style="display: none;">
                                 <!-- Select boxes will be appended here -->
@@ -805,13 +805,13 @@
 
         // //-----------------------------------------------------------
         // Edit licence 2 
-        let licence2_selectBoxIndex = 0;
+     
         $('#licence_2_ratings').on('change', function() {
             if ($(this).is(':checked')) {
                 $('#licence_2_ratings_container').show();
                 $('#edit_add_rating_box').show();
                 $('#licence_2_ratings_container').empty(); // reset
-                licence2_selectBoxIndex = 0;
+               
                 $('#edit_licence_2_ratings').trigger('click'); // add one by default
             } else {
                 $('#licence_2_ratings_container').empty().hide();
@@ -844,15 +844,16 @@
 
                 <div class="col-md-6">
                     <label class="form-label mt-2"><strong>Issue Date</strong></label> 
-                    <input type="date" name="issue_date[${index}][child][]" class="form-control"  value="">
+                    <input type="date" name="issue_date_licence2[${index}][child][]"  class="form-control"  value="">
                  </div>
                 <div class="col-md-6">
                     <label class="form-label mt-2"><strong>Expiry Date</strong></label>
-                    <input type="date" name="expiry_date[${index}][child][]" class="form-control" value="">
+                    <input type="date" name="expiry_date_licence2[${index}][child][]" class="form-control" value="">
                  </div>
                  <div class="col-md-6">
                     <label class="form-label mt-3"><strong>Upload File</strong></label>
-                    <input type="file" name="rating_file[${index}][child][]"  class="form-control">
+                  
+                    <input type="file" name="rating_file_licence2[${index}][child][]" class="form-control">
                  </div>
             </div>
         `;
@@ -980,13 +981,13 @@
 
         //------------------------------------------------------------------------
         // Edit form 
-        let edit_selectBoxIndex = 0;
+      
         $('#edit_uk_licence').on('change', function() {
             if ($(this).is(':checked')) {
                 $('#edit_rating_select_boxes_container').show();
                 $('#edit_add_rating_box').show();
                 $('#edit_rating_select_boxes_container').empty(); // reset
-                edit_selectBoxIndex = 0;
+               
                 $('#edit_add_rating_box').trigger('click'); // add one by default
             } else {
                 $('#edit_rating_select_boxes_container').empty().hide();
@@ -995,7 +996,7 @@
         });
 
 
-        $('#edit_add_rating_box').on('click', function() {
+        $('#edit_add_rating_box').on('click', function() { 
             let index = edit_selectBoxIndex++;
             let selectBoxHtml = `
             <div class="rating-select-group border p-3 mb-3 rounded" data-index="${index}">
@@ -1690,10 +1691,11 @@
                         $('#edit_add_rating_box').show();
 
 
-                        let editSelectBoxIndex = 0;
-
-                        response.userRatings_licence_1.forEach(function(group) {
-                            let index = editSelectBoxIndex++;
+                        // let editSelectBoxIndex = 0;
+                       edit_selectBoxIndex = response.userRatings_licence_1.length || 0;
+                       response.userRatings_licence_1.forEach(function (group, i) {
+                        // response.userRatings_licence_1.forEach(function(group) {
+                            let index = i;
                             let parentId = group.parent_id;
                             let childIds = group.children;
                             let issueDate = group.issue_date || '';
@@ -1709,7 +1711,8 @@
                             </div>
 
                             <label class="form-label">Rating</label>
-                            <select class="form-select parent-rating mb-2" name="licence_1_ratings[${index}][parent]" data-index="${index}">
+                            <select class="form-select parent-rating mb-2" name="licence_1_ratings[${index}][parent]" data-index="${index}"  
+                            >
                                 <option value="">Select Parent</option>
                                 @foreach($rating as $parent)
                                     <option value="{{ $parent->id }}">{{ $parent->name }}</option>
@@ -1717,21 +1720,25 @@
                             </select>
 
                             <label class="form-label">Privileges</label>
-                            <select class="form-select child-rating" name="licence_1_ratings[${index}][child][]" multiple data-index="${index}">
+                            <select class="form-select child-rating"  name="licence_1_ratings[${index}][child][]" multiple data-index="${index}">
                                 <!-- Will be populated by AJAX -->
                             </select>
                                <div class="col-md-6">
                                     <label class="form-label mt-2"><strong>Issue Date</strong></label>
-                                    <input type="date" name="licence_1_ratings[${index}][issue_date]" class="form-control" value="${issueDate}">
+                                
+                                     <input type="date" name="issue_date[${index}][child][]" class="form-control"  value="${issueDate}">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label mt-2"><strong>Expiry Date</strong></label>
-                                    <input type="date" name="licence_1_ratings[${index}][expiry_date]" class="form-control" value="${expiryDate}">
+                                 
+                                     <input type="date"  name="expiry_date[${index}][child][]" class="form-control" value="${expiryDate}">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label mt-3"><strong>Upload File</strong></label>
                                    
-                                   <input type="file" name="licence_1_ratings[${index}][rating_file]" class="form-control">
+                                  
+                               
+                                   <input type="file" name="rating_file[${index}][child][]" class="form-control">
 
 
 
@@ -1779,10 +1786,11 @@
                         $('#licence_2_ratings_container').show().empty();
                         $('#edit_licence_2_ratings').show();
 
-                        let edit_licenceSelectBoxIndex = 0;
+                        
 
-                        response.userRatings_licence_2.forEach(function(group) {
-                            let index = edit_licenceSelectBoxIndex++;
+                      licence2_selectBoxIndex = response.userRatings_licence_2.length || 0;
+                        response.userRatings_licence_2.forEach(function(group, i) {
+                            let index = i;
                             let parentId = group.parent_id;
                             let childIds = group.children;
                             let issueDate = group.issue_date || ''; console.log(issueDate);
@@ -1798,7 +1806,7 @@
 
                             <label class="form-label">Rating</label>
                             <select class="form-select parent-rating mb-2" name="licence_2_ratings[${index}][parent]" data-index="${index}">
-                                <option value="">Select Parent</option>
+                                <option value="">Select Parent</option> 
                                 @foreach($rating as $parent)
                                     <option value="{{ $parent->id }}">{{ $parent->name }}</option>
                                 @endforeach
@@ -1810,15 +1818,15 @@
                             </select>
                                 <div class="col-md-6">
                                     <label class="form-label mt-2"><strong>Issue Date</strong></label>
-                                    <input type="date" name="licence_2_ratings[${index}][issue_date_licence2]" class="form-control" value="${issueDate}">
+                                    <input type="date" name="issue_date_licence2[${index}][child][]" class="form-control" value="${issueDate}">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label mt-2"><strong>Expiry Date</strong></label>
-                                    <input type="date" name="licence_2_ratings[${index}][expiry_date_licence2]" class="form-control" value="${expiryDate}">
+                                    <input type="date" name="expiry_date_licence2[${index}][child][]" class="form-control" class="form-control" value="${expiryDate}">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label mt-3"><strong>Upload File</strong></label>
-                                    <input type="file" name="rating_file_licence2"  class="form-control">
+                                    <input type="file" name="rating_file_licence2[${index}][child][]"  class="form-control">
                                 </div>
                                 <div class="col-md-6 mt-2">
                                     ${filePath ? `<a href="${fileUrl}" target="_blank" class="btn btn-sm btn-outline-primary">View Uploaded File</a>` : ''}
@@ -2118,18 +2126,18 @@
                 success: function(response) {
                     $(".loader").fadeOut('slow');
 
-                  //  $('#editUserDataModal').modal('hide');
-                    // $('#update_success_msg').html(`
-                    // <div class="alert alert-success fade show" role="alert">
-                    //     <i class="bi bi-check-circle me-1"></i>
-                    //     ${response.message}
-                    // </div>
-                    // `).stop(true, true).fadeIn();
-                    // $('#user_table').DataTable().ajax.reload(null, false);
-                    // setTimeout(function() {
-                    //     $('#update_success_msg').fadeOut('slow');
+                   $('#editUserDataModal').modal('hide');
+                    $('#update_success_msg').html(`
+                    <div class="alert alert-success fade show" role="alert">
+                        <i class="bi bi-check-circle me-1"></i>
+                        ${response.message}
+                    </div>
+                    `).stop(true, true).fadeIn();
+                    $('#user_table').DataTable().ajax.reload(null, false);
+                    setTimeout(function() {
+                        $('#update_success_msg').fadeOut('slow');
 
-                    // }, 5000);
+                    }, 5000);
                 },
                 error: function(xhr, status, error) {
                     $(".loader").fadeOut("slow");
