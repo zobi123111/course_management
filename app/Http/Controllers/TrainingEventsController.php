@@ -1482,6 +1482,26 @@ class TrainingEventsController extends Controller
         return redirect()->route('training.index')->with('message', 'Course has been ended and locked.');
     }
 
+    public function getEventInstructors($id)
+    {
+        $event = TrainingEvents::with('eventLessons')->findOrFail(decode_id($id)); 
+        $instructorIds = $event->eventLessons
+            ->pluck('instructor_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $instructors = User::whereIn('id', $instructorIds)->get();
+
+        $lastLesson = $event->eventLessons->sortByDesc('id')->first();
+        $lastInstructorId = $lastLesson?->instructor_id;
+
+        return response()->json([
+            'instructors' => $instructors,
+            'last_instructor_id' => $lastInstructorId,
+        ]);
+    }
+
 
     
 }

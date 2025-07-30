@@ -212,8 +212,16 @@
                             <input type="file" name="licence_file_2" id="licence_file_2" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
                             <div id="licence_file_2_error" class="text-danger error_e"></div>
 
-                            <!-- 👇 Ratings for Licence 2 -->
+                            <!-- Ratings for Licence 2 -->
                             <div id="licence_2_rating_section" class="mt-3">
+                                <!-- <label class="form-label">Select Ratings for EASA Licence</label>
+            <select class="form-select rating-select" name="licence_2_ratings[]" id="licence_2_rating_value" multiple>
+                {{-- <option value="">Select Rating</option> --}}
+                @foreach($rating as $val)
+                    <option value="{{ $val->id }}">{{ $val->name }}</option>
+                @endforeach
+            </select>
+            <div id="licence_2_rating_error" class="text-danger error_e"></div> -->
                                 <div id="licence_2_rating_section" class="mt-3">
                                     <label class="form-label">Select Ratings for EASA Licence</label>
                                     <input type="checkbox" id="easa_licence" />
@@ -225,9 +233,7 @@
                             </div>
                         </div>
                     </div>
-
-
-                    <!--   // Medical  -->
+                    <!--  // Medical  -->
                     <div class="col-md-6">
                         <label for="medical_checkbox" class="form-label">UK Medical</label>
                         <input type="checkbox" name="medical_checkbox" id="medical_checkbox" class="ms-2" value="1">

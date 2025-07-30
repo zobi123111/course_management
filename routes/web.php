@@ -123,6 +123,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/training/end-course', [TrainingEventsController::class, 'endCourse'])->name('training.endCourse');
     Route::post('/training/unlock-lesson', [TrainingEventsController::class, 'unlockLesson'])->name('training.unlockLesson');
     Route::post('/training/update-competency-grade', [TrainingEventsController::class, 'updateCompGrade'])->name('training.updateCompGrade');
+    Route::get('/training/get-recom-instructors/{id}', [TrainingEventsController::class, 'getEventInstructors'])->name('training.getRecommendedInstructors');
+
 
 
 
