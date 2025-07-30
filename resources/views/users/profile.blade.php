@@ -289,8 +289,9 @@
                                                 $children = [];
                                              }
                                             @endphp
-
+                                              <!--   -->
                                             <?php
+                                           // print_r($children);
                                             // echo $entry['children'][0]['user_id'] . "<br>";
                                             // echo $entry['children'][0]['rating_id'] . "<br>";
                                             // echo $entry['children'][0]['parent_id'] . "<br>";
@@ -302,13 +303,9 @@
                                                 <div class="card-body">
                                                     <h5 class="card-title">{{ $rating->name ?? ' ' }}</h5>
                                                     <div class="row">
-
-
-
                                                         <div class="col-md-6">
                                                             <label class="form-label mt-2"><strong>Issue Date</strong></label>
-                                                            <!-- <input type="date" name="issue_date[{{ $rating->id }}][{{ $entry['children'][0]['parent_id']}}]" class="form-control"
-                                                                value="{{ old("issue_date.$rating->id", $parent->issue_date) }}"> -->
+                                                        
                                                             <input type="hidden" name="issue_date[{{ $i }}][id]" value="{{ $rating->id }}">
 
                                                             <!-- parentid -->
@@ -327,7 +324,6 @@
                                                       
                                                      
                                                        
-
 
 
                                                         <div class="col-md-6">
@@ -383,6 +379,25 @@
                                                     {{-- Children Ratings --}}
                                                   
                                                     @if(count($children))
+                                                       @php
+                                                        // Get first non-empty issue and expiry date from any child
+                                                        $firstIssueDate = null;
+                                                        $firstExpiryDate = null;
+
+                                                        foreach ($children as $childRating) {
+                                                            if (!$firstIssueDate && !empty($childRating->issue_date)) {
+                                                                $firstIssueDate = $childRating->issue_date;
+                                                            }
+                                                            if (!$firstExpiryDate && !empty($childRating->expiry_date)) {
+                                                                $firstExpiryDate = $childRating->expiry_date;
+                                                            }
+                                                            if ($firstIssueDate && $firstExpiryDate) break;
+                                                        }
+
+                                                        // Fallback if still null
+                                                        $firstIssueDate = $firstIssueDate ?? 'N/A';
+                                                        $firstExpiryDate = $firstExpiryDate ?? 'N/A';
+                                                    @endphp
                                                     <h6 class="mt-4">Privileges</h6>
                                                     <div class="row">
                                                         @foreach($children as $childRating)
@@ -392,15 +407,10 @@
                                                                 <div class="card-body">
                                                                     <h6 class="card-title">{{ $child->name ?? '' }}</h6>
                                                                     <p class="card-text small">
-                                                                        Issue Date: {{ $childRating->issue_date ?? 'N/A' }}<br>
-                                                                        Expiry Date: {{ $childRating->expiry_date ?? 'N/A' }}
+                                                                        Issue Date: {{ $firstIssueDate ?? 'N/A' }}<br>
+                                                                        Expiry Date: {{ $firstExpiryDate ?? 'N/A' }}
                                                                     </p>
-                                                                    @if($childRating->file_path)
-                                                                    <!-- <a href="{{ asset('storage/' . $childRating->file_path) }}" target="_blank"
-                                                                        class="btn btn-sm btn-outline-primary">
-                                                                        <i class="bi bi-file-earmark-text me-1"></i> View File
-                                                                    </a> -->
-                                                                    @endif
+                                                                
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -556,6 +566,25 @@
                                                 @endif
                                               
                                                 @if(count($children))
+                                                          @php
+                                                        // Get first non-empty issue and expiry date from any child
+                                                        $firstIssueDate = null;
+                                                        $firstExpiryDate = null;
+
+                                                        foreach ($children as $childRating) {
+                                                            if (!$firstIssueDate && !empty($childRating->issue_date)) {
+                                                                $firstIssueDate = $childRating->issue_date;
+                                                            }
+                                                            if (!$firstExpiryDate && !empty($childRating->expiry_date)) {
+                                                                $firstExpiryDate = $childRating->expiry_date;
+                                                            }
+                                                            if ($firstIssueDate && $firstExpiryDate) break;
+                                                        }
+
+                                                        // Fallback if still null
+                                                        $firstIssueDate = $firstIssueDate ?? 'N/A';
+                                                        $firstExpiryDate = $firstExpiryDate ?? 'N/A';
+                                                    @endphp
                                                 <h6 class="mt-4">Privileges</h6>
                                                 <div class="row">
                                                     @foreach($children as $childRating) 
@@ -565,8 +594,8 @@
                                                             <div class="card-body">
                                                                 <h6 class="card-title">{{ $child->name ?? ' ' }}</h6>
                                                                 <p class="card-text small">
-                                                                    Issue Date: {{ $childRating->issue_date ?? 'N/A' }}<br>
-                                                                    Expiry Date: {{ $childRating->expiry_date ?? 'N/A' }}
+                                                                    Issue Date: {{ $firstIssueDate ?? 'N/A' }}<br>
+                                                                    Expiry Date: {{ $firstExpiryDate ?? 'N/A' }}
                                                                 </p>
                                                                 @if($childRating->file_path) 
                                                                 <!-- <a href="{{ asset('storage/' . $childRating->file_path) }}" target="_blank"
