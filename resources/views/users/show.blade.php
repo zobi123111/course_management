@@ -280,16 +280,32 @@
                                                 </div>
                                                 @endif
 
-                                                <?php
-                                                // print_r($group['children'][0]->rating_id);
-                                                $hasValidChildren = collect($group['children'])->contains(function ($child) {
-                                                    return !is_null($child->rating_id);
-                                                });
+                                               <?php
+                                                    $children = collect($group['children']);
 
+                                                    // Get first child with valid issue and expiry date
+                                                    $referenceChild = $children->first(function ($child) {
+                                                        return !empty($child->issue_date) && !empty($child->expiry_date);
+                                                    });
 
-                                                if (!$hasValidChildren) {
-                                                    $group['children'] = [];
-                                                }
+                                                    // If valid dates exist, assign to all children
+                                                    if ($referenceChild) {
+                                                        foreach ($children as $child) {
+                                                            $child->issue_date = $referenceChild->issue_date;
+                                                            $child->expiry_date = $referenceChild->expiry_date;
+                                                        }
+                                                    }
+
+                                                    // Remove children if no rating_id exists in any
+                                                    $hasValidChildren = $children->contains(function ($child) {
+                                                        return !is_null($child->rating_id);
+                                                    });
+
+                                                    if (!$hasValidChildren) {
+                                                        $group['children'] = [];
+                                                    } else {
+                                                        $group['children'] = $children;
+                                                    }
                                                 ?>
 
                                                 {{-- Child Ratings --}}
