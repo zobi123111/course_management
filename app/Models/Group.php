@@ -41,4 +41,8 @@ class Group extends Model
     {
         return $this->belongsToMany(Document::class, 'document_group');
     }
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class, 'group_resource', 'resource_id', 'group_id');
+    }
 }
