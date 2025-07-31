@@ -137,6 +137,15 @@
                         <div id="Hours_Remaining_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
+                        <label for="groups" class="form-label">Select Groups</label>
+                        <select class="form-select groups-select" name="group_ids[]" multiple="multiple">
+                            @foreach($groups as $group)
+                            <option value="{{ $group->id }}">{{ $group->name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="group_ids_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" value="1" id="enable_doc_upload" name="enable_doc_upload">
                         <label class="form-check-label" for="enable_doc_upload">
@@ -175,12 +184,12 @@
 <!--End of resource  Unit-->
 
 <!-- Edit resource  Unit-->
-<div class="modal fade" id="editOrgUnitModal" tabindex="-1" role="dialog" aria-labelledby="editOrgUnitModalLabel"
+<div class="modal fade" id="editResourceModel" tabindex="-1" role="dialog" aria-labelledby="editResourceModelLabel"
     aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false" enctype="multipart/form-data">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editOrgUnitModalLabel">Edit Resource Unit</h5>
+                <h5 class="modal-title" id="editResourceModelLabel">Edit Resource Unit</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -265,6 +274,15 @@
                         <div id="edit_Hours_Remaining_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
+                        <label for="groups" class="form-label">Select Groups</label>
+                        <select class="form-select groups-select" name="group_ids[]" id="edit_group_ids" multiple="multiple">
+                            @foreach($groups as $group)
+                            <option value="{{ $group->id }}">{{ $group->name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="edit_group_ids_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
                         <div class="form-check">
                         <input class="form-check-input" type="checkbox" value="1" id="edit_enable_doc_upload" name="enable_doc_upload">
                             <label class="form-check-label" for="edit_enable_doc_upload">
@@ -333,6 +351,16 @@
 
 @section('js_scripts')
 <script>
+
+    // function initializeSelect2(modal) {
+    //     modal.find('.groups-select').select2({
+    //         allowClear: true,
+    //         placeholder: 'Select the Groups',
+    //         multiple: true,
+    //         dropdownParent: modal // ensures dropdown stays within the current modal
+    //     });
+    // }
+
     $('#resourceTable').DataTable({
         processing: true, 
         serverSide: true,
@@ -355,11 +383,21 @@
         ]
     });
 
-    $("#create_resource").on('click', function() { 
+    $("#create_resource").on('click', function () {
         $(".error_e").html('');
         $("#createResourceForm")[0].reset();
-        $("#createResourceModel").modal('show'); 
-    })
+        $("#createResourceModel").modal('show');
+
+        $('#createResourceModel').one('shown.bs.modal', function () {
+            $('.groups-select').select2({
+                allowClear: true,
+                placeholder: 'Select the Group',
+                width: '100%', // Add this for better display
+                dropdownParent: $('#createResourceModel .modal-content:visible') // This is crucial for modals
+            });
+        });
+    });
+
 
         // Toggle Instructor Documents section
     $("#enable_doc_upload").change(function () {
@@ -673,9 +711,15 @@
                         }, 0);
                         $('#edit_resource_documents_items').append(resourceDocumentHtml);
                     }
+
+                    if (response.group_ids && response.group_ids.length > 0) {
+                        $('#edit_group_ids').val(response.group_ids).trigger('change');
+                    } else {
+                        $('#edit_group_ids').val([]).trigger('change');
+                    }
                 }
            
-                $('#editOrgUnitModal').modal('show');
+                $('#editResourceModel').modal('show');
             },
             error: function(xhr, status, error) {
                 console.error(xhr.responseText);
@@ -742,7 +786,7 @@
             processData: false,
             contentType: false,
             success: function(response) {
-                $('#editOrgUnitModal').modal('hide');
+                $('#editResourceModel').modal('hide');
                 location.reload();
             },
             error: function(xhr, status, error) {
@@ -767,6 +811,15 @@
         $('#append_name').html(resource_name);
         $('#resource_id').val(resourceId);
        
+    });
+
+    $('#editResourceModel').on('shown.bs.modal', function () {
+        $('.groups-select').select2({
+            allowClear: true,
+            placeholder: 'Select the Group',
+            width: '100%', // Add this for better display
+            dropdownParent: $('#editResourceModel .modal-content:visible') // This is crucial for modals
+        });
     });
 
     setTimeout(function() { 

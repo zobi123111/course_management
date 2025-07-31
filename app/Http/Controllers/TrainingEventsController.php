@@ -994,7 +994,7 @@ class TrainingEventsController extends Controller
                             'event_id'  => $event_id,
                             'lesson_id' => $lesson_id,
                             'user_id'   => $gradedStudentIdForComp,
-                        ],
+                        ], 
                         $compData
                     );
                 }
@@ -1037,7 +1037,7 @@ class TrainingEventsController extends Controller
             ]
         );
 
-        TrainingEvents::where('id', $request->event_id)->where('is_locked', '!=', 1)->update(['is_locked' => 1]);
+        // TrainingEvents::where('id', $request->event_id)->where('is_locked', '!=', 1)->update(['is_locked' => 1]);
         Session::flash('message', 'Overall Assessment saved successfully.');
         return response()->json(['success' => true, 'message' => 'Overall Assessment saved successfully.']);
     }

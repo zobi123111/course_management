@@ -36,6 +36,11 @@ class Resource extends Model
     {
         return $this->hasMany(ResourceDocument::class);
     }
+
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class, 'group_resource', 'resource_id', 'group_id');
+    }
 }
 
 
