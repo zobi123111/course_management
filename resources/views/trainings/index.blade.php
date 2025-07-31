@@ -627,7 +627,7 @@ $(document).ready(function() {
                     endTime.add(1, 'day');
                 }
 
-                totalMinutes += endTime.diff(startTime, 'minutes');console.log(totalMinutes);
+                totalMinutes += endTime.diff(startTime, 'minutes');
             }
         });
 
@@ -782,8 +782,8 @@ $(document).ready(function() {
 
         // For edit mode, map saved lessons by lesson_id for quick lookup
         var lessonPrefillMap = {};
-        if (isEditForm && typeof existingEventLessons !== 'undefined') {
-            existingEventLessons.forEach(lesson => {
+        if (isEditForm && typeof existingEventLessons !== 'undefined') { 
+            existingEventLessons.forEach(lesson => { 
                 lessonPrefillMap[lesson.lesson_id] = {
                     instructor_id: lesson.instructor_id || '',
                     resource_id: lesson.resource_id || '',
@@ -792,7 +792,9 @@ $(document).ready(function() {
                     end_time: lesson.end_time || '',
                     departure_airfield: lesson.departure_airfield || '',
                     destination_airfield: lesson.destination_airfield || '',
-                    instructor_license_number: lesson.instructor_license_number || ''
+                    instructor_license_number: lesson.instructor_license_number || '',
+                    hours_credited: lesson.hours_credited || '',
+
                 };
             });
         }
@@ -809,7 +811,7 @@ $(document).ready(function() {
                     resourcesdata = response.resources; 
                         response.lessons.forEach(function (lesson, idx) {
                             let prefillData = isEditForm && lessonPrefillMap[lesson.id] ? lessonPrefillMap[lesson.id] : {};
-                            renderLessonBox(lesson, lessonContainer, prefillData, idx, mode);  // ✅ index passed
+                            renderLessonBox(lesson, lessonContainer, prefillData, idx, mode);  
                         });
                 } else {
                     alert('No lessons found for the selected course.');
@@ -864,11 +866,7 @@ $(document).ready(function() {
             data: { eventId: eventId },
             success: async function (response) {
                 if (response.success) {
-                 
                     const event = response.trainingEvent;
-                    console.log(event);
-                    
-
                     // Store values temporarily
                     const selectedOU = event.ou_id;
                     const selectedStudent = event.student_id;
@@ -945,19 +943,28 @@ $(document).ready(function() {
                     $('#edit_select_course').val(selectedCourse).data("selected-value", selectedCourse);
 
                     // ✅ Global map of existing lessons for prefill
-                    window.existingEventLessons = (event.event_lessons || []).map(l => ({
-                        lesson_id: l.lesson_id,
-                        instructor_id: l.instructor_id || '',
-                        resource_id: l.resource_id || '',
-                        lesson_date: l.lesson_date || '',
-                        start_time: l.start_time || '',
-                        end_time: l.end_time || '',
-                        departure_airfield: l.departure_airfield || '',
-                        destination_airfield: l.destination_airfield || '',
-                        instructor_license_number: l.instructor_license_number || ''
-                    }));
+                   
+              window.existingEventLessons = (event.event_lessons || []).map(l => {
+                        //   console.log('Mapping lesson:', l.resource_name);
+                        //   if(l.resource_name != "groundschool"){
+                        //     l.hours_credited = '';
+                        //   }
+                        return {
+                            lesson_id: l.lesson_id,
+                            instructor_id: l.instructor_id || '',
+                            resource_id: l.resource_id || '',
+                            lesson_date: l.lesson_date || '',
+                            start_time: l.start_time || '',
+                            end_time: l.end_time || '',
+                            departure_airfield: l.departure_airfield || '',
+                            destination_airfield: l.destination_airfield || '',
+                            instructor_license_number: l.instructor_license_number || '',
+                            hours_credited: l.hours_credited || '',
+                        };
+                    });
 
-                    // Trigger the course change (will call renderLessonBox with prefill)
+
+                
                     $('#edit_select_course').trigger('change');
 
                     $('#editTrainingEventModal').modal('show');
@@ -1134,7 +1141,7 @@ $(document).ready(function() {
 
     let lessonIndex = 0;
 
-    function renderLessonBox(lesson, container, prefillData = {}, index = null, mode) {
+    function renderLessonBox(lesson, container, prefillData = {}, index = null, mode) { 
         const errorSuffix = mode === 'update' ? '_error_up' : '_error';
         const currentIndex = index !== null ? index : lessonIndex++;
         const isFirstLesson = currentIndex === 0;
@@ -1152,7 +1159,8 @@ $(document).ready(function() {
             end_time = '',
             departure_airfield = '',
             destination_airfield = '',
-            instructor_license_number = ''
+            instructor_license_number = '',
+            hours_credited = ''
         } = prefillData;
 
         let isCurrentUserInstructor = currentUser.role === 'instructor';
@@ -1223,6 +1231,11 @@ $(document).ready(function() {
                         <input type="time" name="lesson_data[${currentIndex}][end_time]" class="form-control lesson-end-time" value="${end_time}" data-lesson-id="${currentIndex}">
                         <div id="lesson_data_${currentIndex}_end_time${errorSuffix}" class="text-danger error_e"></div>
                     </div>
+                     <div class="col-md-4 homestudy_default_time">
+                        <label class="form-label">Home Study Time${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
+                        <input type="time" name="lesson_data[${currentIndex}][homestudy_time]" id="homestudy_time" class="form-control lesson-end-time" value="${hours_credited}" data-lesson-id="${currentIndex}">
+                        <div id="lesson_data_${currentIndex}_end_time${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
                     <div class="col-md-6 departure-block">
                         <label class="form-label">Departure Airfield</label>
                         <input type="text" name="lesson_data[${currentIndex}][departure_airfield]" class="form-control" maxlength="4" value="${departure_airfield}">
@@ -1251,8 +1264,10 @@ $(document).ready(function() {
         const $departureBlock = $box.find('.departure-block');
         const $destinationBlock = $box.find('.destination-block');
         const $simTimeBox = $box.find('.total-simulator-time-box');
-
-        function toggleFields(resourceName) {
+        const $homestudy_time = $box.find('.homestudy_default_time');
+        
+        function toggleFields(resourceName) { 
+                
             if (lessonType === 'groundschool') {
                 if (resourceName === 'Classroom') {
                     $startBlock.show();
@@ -1260,12 +1275,16 @@ $(document).ready(function() {
                     $departureBlock.hide();
                     $destinationBlock.hide();
                     $simTimeBox.hide();
+                    $homestudy_time.hide();
+                    $('#homestudy_time').val('');
                 } else if (resourceName === 'Homestudy') {
                     $startBlock.hide();
                     $endBlock.hide();
                     $departureBlock.hide();
                     $destinationBlock.hide();
                     $simTimeBox.hide();
+                    $homestudy_time.show();
+                   
                 }
             } else if (lessonType === 'simulator') {
                 $startBlock.show();
@@ -1273,6 +1292,8 @@ $(document).ready(function() {
                 $departureBlock.show();
                 $destinationBlock.show();
                 $simTimeBox.show();
+                $homestudy_time.hide();
+                $('#homestudy_time').val('');
                 calculateTotalSimulatorTime();
             } else {
                 $startBlock.show();
@@ -1280,6 +1301,8 @@ $(document).ready(function() {
                 $departureBlock.show();
                 $destinationBlock.show();
                 $simTimeBox.hide();
+                $homestudy_time.hide();
+                $('#homestudy_time').val();
                 
             }
         }
@@ -1345,7 +1368,7 @@ $(document).ready(function() {
         const hours = Math.floor(totalMinutes / 60);
         const minutes = totalMinutes % 60;
         const totalFormatted = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-        console.log("totalFormatted", totalFormatted);
+        
 
         // Fill both fields if they exist
         $('#total_simulator_time').val(totalFormatted);
