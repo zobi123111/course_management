@@ -90,7 +90,7 @@
 </div>
 
 <!-- Create User -->
-<div class="modal fade" id="userModal" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false"
+<div class="modal fade" id="userModal"  role="dialog" data-bs-backdrop="static" data-bs-keyboard="false"
     aria-labelledby="userModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
