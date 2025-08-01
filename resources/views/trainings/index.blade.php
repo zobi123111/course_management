@@ -949,6 +949,13 @@ $(document).ready(function() {
                         //   if(l.resource_name != "groundschool"){
                         //     l.hours_credited = '';
                         //   }
+                         let hoursCredited = '';
+                         //console.log(l.hours_credited);
+                        if (l.hours_credited) {
+                            const parts = l.hours_credited.split(':');
+                            hoursCredited = parseInt(parts[0], 10); // convert "12:00:00" → 12
+                            console.log(hoursCredited);
+                        }
                         return {
                             lesson_id: l.lesson_id,
                             instructor_id: l.instructor_id || '',
@@ -959,14 +966,11 @@ $(document).ready(function() {
                             departure_airfield: l.departure_airfield || '',
                             destination_airfield: l.destination_airfield || '',
                             instructor_license_number: l.instructor_license_number || '',
-                            hours_credited: l.hours_credited || '',
+                            hours_credited: hoursCredited || '',
                         };
-                    });
+                    }); 
 
-
-                
                     $('#edit_select_course').trigger('change');
-
                     $('#editTrainingEventModal').modal('show');
                 } else {
                     console.error("Error: Invalid response format");
@@ -1162,6 +1166,7 @@ $(document).ready(function() {
             instructor_license_number = '',
             hours_credited = ''
         } = prefillData;
+        
 
         let isCurrentUserInstructor = currentUser.role === 'instructor';
        let instructorOptions = instructorsdata
@@ -1233,7 +1238,7 @@ $(document).ready(function() {
                     </div>
                      <div class="col-md-4 homestudy_default_time">
                         <label class="form-label">Home Study Time${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
-                        <input type="time" name="lesson_data[${currentIndex}][homestudy_time]" id="homestudy_time" class="form-control lesson-end-time" value="${hours_credited}" data-lesson-id="${currentIndex}">
+                        <input type="text" name="lesson_data[${currentIndex}][homestudy_time]" id="homestudy_time" class="form-control lesson-end-time" value="${hours_credited}" data-lesson-id="${currentIndex}">
                         <div id="lesson_data_${currentIndex}_end_time${errorSuffix}" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-6 departure-block">
@@ -1276,7 +1281,7 @@ $(document).ready(function() {
                     $destinationBlock.hide();
                     $simTimeBox.hide();
                     $homestudy_time.hide();
-                    $('#homestudy_time').val('');
+                  //  $('#homestudy_time').val('');
                 } else if (resourceName === 'Homestudy') {
                     $startBlock.hide();
                     $endBlock.hide();
@@ -1302,7 +1307,7 @@ $(document).ready(function() {
                 $destinationBlock.show();
                 $simTimeBox.hide();
                 $homestudy_time.hide();
-                $('#homestudy_time').val();
+                $('#homestudy_time').val('');
                 
             }
         }
