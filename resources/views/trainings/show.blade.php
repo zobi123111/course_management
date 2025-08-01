@@ -492,19 +492,19 @@
                         </div>
                     </div>
                 </div>
-
+             <!-- <pre> -->
             @if($trainingEvent?->course?->course_type === 'one_event' && $trainingEvent->eventLessons->count())
                 @php
                     $eventLesson = $trainingEvent->eventLessons->first();
                     $lessons = collect([$eventLesson]);
+                    print_r($trainingEvent->eventLessons->count());
                 @endphp
             @else
                 @php
                     $lessons = $trainingEvent->eventLessons;    
-                    
                 @endphp
             @endif
-
+         
             @if($lessons && $lessons->count())
                 @foreach($lessons as $lesson)
                     <div class="row mb-3 p-3 border rounded bg-light">
@@ -687,8 +687,10 @@
                                 <span class="badge bg-success text-white">{{ $value }} {{ $label }}</span>
                             </p>
                         @endif
+                       
 
                         {{-- Time Tracking --}}
+                   
                         @if($trainingEvent?->course?->course_type === 'one_event')
                             @php
                                 $lessonType = $eventLesson?->lesson?->lesson_type ?? null;
@@ -716,6 +718,7 @@
                                 } elseif ($lessonType === 'flight') {
                                     $totals['flight']['credited'] = $credited;
                                 }
+                              
 
                                 if ($customTime) {
                                     $totals['custom'][$customTime->name]['allotted'] = $customTime->given_hours;
@@ -732,6 +735,8 @@
                                 }
 
                             @endphp
+                         
+                           
 
                             @if($totals['groundschool']['duration'] || $totals['groundschool']['credited'])
                                 <p>
@@ -748,7 +753,7 @@
                                     Credited: {{ formatSeconds($totals['simulator']['credited']) }}
                                 </p>
                             @endif
-
+                          
                             <p>
                                 <strong>Flight:</strong>
                                 Credited: {{ formatSeconds($totals['flight']['credited']) }}
@@ -833,7 +838,7 @@
                                     Credited: {{ formatSeconds($totals['simulator']['credited']) }}
                                 </p>
                             @endif
-
+                                    
                             <p>
                                 <strong>Flight:</strong>
                                 Credited: {{ formatSeconds($totals['flight']['credited']) }}

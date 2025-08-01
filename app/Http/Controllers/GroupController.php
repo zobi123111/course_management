@@ -158,11 +158,11 @@ class GroupController extends Controller
 
     public function getOrgroup(Request $request)
     {
-        $org_group = Group::where('ou_id', $request->ou_id)->get();
+        $org_group    = Group::where('ou_id', $request->ou_id)->get();
         $org_resource = Resource::where('ou_id', $request->ou_id)->get();
-
+        $ato_num = OrganizationUnits::where('id', $request->ou_id)->get();
             if($org_group){
-                return response()->json(['org_group' => $org_group, 'org_resource' => $org_resource]);
+                return response()->json(['org_group' => $org_group, 'org_resource' => $org_resource, 'ato_num' => $ato_num]);
             }else{
                 return response()->json(['error'=> 'No group Found']);
             }
