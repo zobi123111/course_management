@@ -567,7 +567,7 @@
                         @elseif($lessonType === 'simulator')
                             <div class="col-md-2 mt-2">
                                 <strong><i class="fas fa-hourglass-half"></i> Duration:</strong><br>
-                                {{ $trainingEvent->course->simulator_hours ?? 'N/A' }}
+                                {{ $trainingEvent->course->simulator_hours ?? 'N/A' }} 
                             </div>
                         @endif
 
@@ -777,7 +777,9 @@
                                     'deferred' => 0,
                                 ];
                             @endphp
-
+                             <?php 
+                             // dump($trainingEvent);
+                             ?>
                             @foreach($trainingEvent->eventLessons as $lesson)
                                 @php
                                     $type = $lesson->lesson?->lesson_type ?? '';

@@ -490,6 +490,7 @@ class TrainingEventsController extends Controller
 
     public function updateTrainingEvent(Request $request)
     {
+      
         // Convert nested lesson times to H:i format
         $lessonData = $request->input('lesson_data', []);
         foreach ($lessonData as $key => $lesson) {
@@ -621,13 +622,23 @@ class TrainingEventsController extends Controller
             $resourceName = $resourceModel?->name;
             $start = $data['start_time'] ?? null;
             $end = $data['end_time'] ?? null;
+         
 
             $creditMinutes = 0;
             if ($lessonType === 'groundschool' && $resourceName === 'Homestudy') {
-                $creditMinutes = 480;
-                $start = '00:00';
-                $end = '08:00';
-            } elseif ($start && $end) {
+                $creditMinutes = $data['homestudy_time'] ?? 0 ;
+                if (is_numeric($creditMinutes)){
+                    $creditMinutes *= 60;
+                }else{
+                    $creditMinutes  = 0;
+                }
+               // dd($creditMinutes);
+                // $creditMinutes = 480;
+                 $start = '00:00';
+                 $end = '00:00';
+            }
+       
+             elseif ($start && $end) {
                 try {
                     $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
                     $endTime = \Carbon\Carbon::createFromFormat('H:i', $end);
@@ -635,10 +646,12 @@ class TrainingEventsController extends Controller
                         $endTime->addDay();
                     }
                     $creditMinutes = $startTime->diffInMinutes($endTime);
+                  
                 } catch (\Exception $e) {
                     $creditMinutes = 0;
                 }
             }
+          //  dump($creditMinutes);
 
             TrainingEventLessons::updateOrCreate(
                 [
