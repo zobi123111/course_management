@@ -783,11 +783,9 @@
                                 $groundschoolLessons = $trainingEvent->eventLessons->filter(function ($lesson) {
                                     return $lesson->lesson?->lesson_type === 'groundschool';
                                 });
-                                $totals['groundschool']['duration'] = ($trainingEvent->course->groundschool_hours ?? 0) * $groundschoolLessons->count();
+                                $totals['groundschool']['duration'] = ($trainingEvent->course->groundschool_hours ?? 0) ;
                             @endphp
-                             <?php 
-                             // dump($trainingEvent);
-                             ?>
+                          
                             @foreach($trainingEvent->eventLessons as $lesson)
                                 @php
                                     $type = $lesson->lesson?->lesson_type ?? '';
