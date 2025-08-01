@@ -164,6 +164,18 @@
                         <div id="org_unit_name_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
+                        <label for="UKATO" class="form-label">UK ATO NUMBER<span
+                                class="text-danger">*</span></label>
+                        <input type="text" name="uk_ato_num" class="form-control">
+                        <div id="uk_ato_num_error" class="text-danger error_e"></div>
+                    </div>
+                        <div class="form-group">
+                        <label for="EASAATO" class="form-label">EASA ATO NUMBER<span
+                                class="text-danger">*</span></label>
+                        <input type="text" name="easa_ato_num" class="form-control">
+                        <div id="easa_ato_num_error" class="text-danger error_e"></div>
+                    </div>
+                    <div class="form-group">
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="description" rows="3"></textarea>
                         <div id="description_error" class="text-danger error_e"></div>
@@ -237,6 +249,18 @@
                         <input type="text" name="org_unit_name" class="form-control">
                         <input type="hidden" name="org_unit_id" class="form-control">
                         <div id="org_unit_name_error_up" class="text-danger error_e"></div>
+                    </div>
+                       <div class="form-group">
+                        <label for="UKATO" class="form-label">UK ATO NUMBER<span
+                                class="text-danger">*</span></label>
+                        <input type="text" name="uk_ato_number" id="uk_ato_number" class="form-control">
+                        <div id="uk_ato_number_error_up" class="text-danger error_e"></div>
+                    </div>
+                        <div class="form-group">
+                        <label for="EASAATO" class="form-label">EASA ATO NUMBER<span
+                                class="text-danger">*</span></label>
+                        <input type="text" name="easa_ato_number" id="easa_ato_number" class="form-control">
+                        <div id="easa_ato_number_error_up" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
@@ -354,15 +378,6 @@ $(document).ready(function() {
             { data: 'description', name: 'description' },
             { data: 'status', name: 'status' },
             { data: 'users_count', name: 'users_count' },
-            // { 
-            //     data: 'id', 
-            //     name: 'permission', 
-            //     orderable: false, 
-            //     searchable: false,
-            //     render: function(data, type, row) {
-            //         return `<a href="#" class="get_org_permission btn btn-primary">Permission</a>`;
-            //     }
-            // },
             { data: 'permission', name: 'permission', orderable: false, searchable: false },
             @if(checkAllowedModule('orgunit','orgunit.edit')->isNotEmpty())
             { data: 'edit', name: 'edit', orderable: false, searchable: false },
@@ -382,7 +397,7 @@ $(document).ready(function() {
     $("#submitOrgUnit").on("click", function(e) {
         e.preventDefault();
         $(".loader").fadeIn();
-        var formData = new FormData($('#orgUnit')[0]);
+        var formData = new FormData($('#orgUnit')[0]); 
         $.ajax({
             url: '{{ url("/orgunit/save") }}', 
             type: 'POST',
@@ -432,6 +447,8 @@ $(document).ready(function() {
                         $('#org_logo_preview').attr('src', imagePath).show();
                         $('#org_logo_filename').text('Current File: ' + fileName);
                         $('#existing_org_logo').val(fileName);
+                        $('#uk_ato_number').val(response.organizationUnit.uk_ato_number || '');
+                        $('#easa_ato_number').val(response.organizationUnit.easa_ato_number || '');
                     }
 
                     // Show selected file name when a new file is chosen

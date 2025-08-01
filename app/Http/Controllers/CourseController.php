@@ -66,9 +66,6 @@ class CourseController extends Controller
         $userId = Auth::user()->id;
         $ouId = Auth::user()->ou_id;
         $role = Auth::user()->role;
-
-
-    
         if (checkAllowedModule('courses', 'course.index')->isNotEmpty() && Auth()->user()->is_owner == 1) {
             // dd("if working");
             // $courses = Courses::all();
@@ -78,7 +75,7 @@ class CourseController extends Controller
         } 
         elseif(checkAllowedModule('courses', 'course.index')->isNotEmpty() && Auth()->user()->is_admin ==  0)
         {
-           // dd("else if working");
+         
             $groups = Group::all();
             $resource  = Resource::all();
 
@@ -102,7 +99,6 @@ class CourseController extends Controller
         }
         else 
         {
-       //  dd("asds");
             if ($role == 1 && empty($ouId)) {
                 $courses = Courses::all();
             } else {
@@ -113,7 +109,6 @@ class CourseController extends Controller
         }
     
         $organizationUnits = OrganizationUnits::all();
-        
     
         return view('courses.index', compact('courses', 'organizationUnits', 'groups', 'resource'));
     }

@@ -11,7 +11,7 @@ class OrganizationUnits extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    protected $fillable = ['org_unit_name','descirption','status', 'org_logo'];
+    protected $fillable = ['org_unit_name','descirption','status', 'org_logo', 'uk_ato_number', 'easa_ato_number'];
 
 
     public function users(){

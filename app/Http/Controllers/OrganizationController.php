@@ -127,12 +127,14 @@ class OrganizationController extends Controller
 
     public function saveOrgUnit(Request $request)
     {
-        
+        //dd($request->all());
         $rules = [
             'org_unit_name' => 'required|unique:organization_units,org_unit_name,NULL,id,deleted_at,NULL',
             'description' => 'required',
             'status' => 'required',
             'organization_logo' => 'required|mimes:jpeg,png,jpg,gif,svg|max:25600',
+            'uk_ato_num' => 'required',
+            'easa_ato_num' => 'required'
 
         ];
        //  dd($request->organization_logo);
@@ -141,13 +143,16 @@ class OrganizationController extends Controller
                 'firstname' => 'required',
                 'lastname' => 'required',
                 'email' => 'required|email|max:255|unique:users,email,NULL,id,deleted_at,NULL',
-                'password' => 'required|min:6|confirmed',
+                'password' => 'required|min:6|confirmed'
+                
             ]);
         }
     
         $request->validate($rules, [
             'description.required' => 'Description field is required',
             'status.required' => 'Status field is required',
+            'uk_ato_num.required' => 'The UK ATO number field is required',
+            'easa_ato_num.required' => 'The EASA ATO number field is required',
         ]);
     
         // DB::beginTransaction();
@@ -173,7 +178,9 @@ class OrganizationController extends Controller
                 'org_unit_name' => $request->org_unit_name,
                 'description' => $request->description ?? null,
                 'status' => $request->status,
-                'org_logo' => $logo_name[0] ?? null
+                'org_logo' => $logo_name[0] ?? null,
+                'uk_ato_number'    => $request->uk_ato_num ?? null,
+                'easa_ato_number'  => $request->easa_ato_num ?? null,
             ]);
     
             // Step 2: Store the user data only if email is provided
@@ -247,12 +254,13 @@ class OrganizationController extends Controller
 
     public function updateOrgUnit(Request $request)
     {
-     
         $rules = [
             'org_unit_name' => 'required|unique:organization_units,org_unit_name,' . $request->org_unit_id . ',id,deleted_at,NULL',
             'description' => 'required',
             'status' => 'required',
-           'org_logo' => 'nullable|mimes:jpeg,png,jpg,gif,svg|max:25600' 
+           'org_logo' => 'nullable|mimes:jpeg,png,jpg,gif,svg|max:25600',
+           'uk_ato_number'   => 'required',
+           'easa_ato_number'  =>'required'
         ];
       $logo_name = [];
         if ($request->hasFile('org_logo')) {
@@ -290,6 +298,8 @@ class OrganizationController extends Controller
             'edit_firstname.required' => 'The Firstname field is required',
             'edit_lastname.required' => 'The Lastname field is required',
             'edit_email.required' => 'The Email field is required',
+            'uk_ato_number.required' => 'The UK ATO number is required',
+            'easa_ato_number.required' => 'The EASA ATO number is required'
         ]);
 
         DB::beginTransaction();
@@ -301,7 +311,9 @@ class OrganizationController extends Controller
                 'org_unit_name' => $request->org_unit_name,
                 'description' => $request->description,
                 'status' => $request->status,
-               'org_logo' => $logo_name[0] ?? $request->existing_org_logo
+               'org_logo' => $logo_name[0] ?? $request->existing_org_logo,
+               'uk_ato_number'   => $request->uk_ato_number,
+              'easa_ato_number'  => $request->easa_ato_number
             ]);
 
             // Step 2: Update existing user

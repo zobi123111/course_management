@@ -190,7 +190,7 @@
     </div>
 </div>
 
-<!-- Create Courses-->
+<!-- Create Courses--> 
 <div class="modal fade" id="createCourseModal" tabindex="-1" role="dialog" aria-labelledby="courseModalLabel"
     aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog" role="document">
@@ -205,8 +205,7 @@
                     @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                     <div class="form-group">
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                        <select class="form-select" name="ou_id" aria-label="Default select example"
-                            id="select_org_unit">
+                        <select class="form-select" name="ou_id" aria-label="Default select example" id="select_org_unit">
                             <option value="">Select Org Unit</option>
                             @foreach($organizationUnits as $val)
                             <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
@@ -214,7 +213,15 @@
                         </select>
                         <div id="ou_id_error" class="text-danger error_e"></div>
                     </div>
-                    @endif
+                   
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select ATO Number<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ato_number" aria-label="Default select example" id="select_ato_number">
+                         
+                        </select>
+                        <div id="ou_id_error" class="text-danger error_e"></div>
+                    </div>
+                     @endif
                     <div class="form-group">
                         <label for="firstname" class="form-label">Course Name<span class="text-danger">*</span></label>
                         <input type="text" name="course_name" class="form-control">
@@ -1349,10 +1356,11 @@ function generateDocumentsContainerHtml(instructor_documents, index) {
 
 
 
-$(document).on("change", "#select_org_unit", function() {
+$(document).on("change", "#select_org_unit", function() { 
     var ou_id = $(this).val();
     var $groupSelect = $(".groups-select");
     var $resourceSelect = $(".resources-select");
+    var $ato_numSelect = $("#select_ato_number");
 
 
     $.ajax({
@@ -1363,7 +1371,7 @@ $(document).on("change", "#select_org_unit", function() {
         },
         dataType: "json", // Ensures response is treated as JSON
         success: function(response) {
-
+                
             if (response.org_group && Array.isArray(response.org_group)) {
                 var options = "<option value=''>Select Group </option>";
 
@@ -1385,9 +1393,34 @@ $(document).on("change", "#select_org_unit", function() {
                 });
                 $resourceSelect.html(resource);
                 $resourceSelect.trigger("change");
-            } else {
-                console.error("Invalid response format:", response);
+            } 
+          if (response.ato_num && response.ato_num.length > 0) {
+            var ato_number = "<option value=''>Select ATO Number</option>";
+            var hasData = false;
+
+            $.each(response.ato_num, function(index, value) {
+               if (value.uk_ato_number) {
+                    ato_number += "<option value='uk'>UK ATO Number - " + value.uk_ato_number + "</option>";
+                    hasData = true;
+                }
+                if (value.easa_ato_number) {
+                    ato_number += "<option value='easa'>EASA ATO Number - " + value.easa_ato_number + "</option>";
+                    hasData = true;
+                }
+            });
+
+            if (!hasData) {
+                ato_number += "<option disabled>No ATO number found</option>";
             }
+
+            $ato_numSelect.html(ato_number);
+        } else {
+            $ato_numSelect.html("<option disabled>No ATO number found</option>");
+        }
+
+
+            
+          
         },
         error: function(xhr, status, error) {
             console.error(xhr.responseText);
