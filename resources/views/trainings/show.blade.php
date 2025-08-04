@@ -497,7 +497,7 @@
                 @php
                     $eventLesson = $trainingEvent->eventLessons->first();
                     $lessons = collect([$eventLesson]);
-                    print_r($trainingEvent->eventLessons->count());
+                  
                 @endphp
             @else
                 @php
@@ -505,7 +505,7 @@
                 @endphp
             @endif
          
-            @if($lessons && $lessons->count())
+            @if($lessons && $lessons->count()) 
                 @foreach($lessons as $lesson)
                     <div class="row mb-3 p-3 border rounded bg-light">
                         <div class="col-md-12">
