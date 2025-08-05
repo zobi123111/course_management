@@ -136,13 +136,13 @@ class DashboardController extends Controller
                         'usrRatings' => function ($query) {
                             $query->whereIn('linked_to', ['licence_1', 'licence_2'])
                                 ->with([
-                                    'rating.associatedChildren',
+                                    'parentRating.associatedChildren',  
                                     'parentRating'
                                 ]);
                         }
                     ])
                     ->get();
-                    
+      //  dd($users);
         return view('dashboard.index', compact(
             'user_count', 'course_count', 'group_count', 'folder_count',
             'totalDocuments', 'readDocuments', 'unreadDocuments', 'requestCount', 'users'

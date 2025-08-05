@@ -20,13 +20,14 @@ class UserRating extends Model
         'expiry_date', 
         'file_path',
         'admin_verified',
-        'linked_to'
+        'linked_to',
+        'verify_rating'
     ];
 
     public function parentRating()
-{
-    return $this->belongsTo(Rating::class, 'parent_id');
-}
+    {
+        return $this->belongsTo(Rating::class, 'parent_id');
+    }
 
 
     public function getExpiryStatusAttribute() 
@@ -67,9 +68,14 @@ class UserRating extends Model
         return $this->belongsTo(Rating::class, 'rating_id');
     }
 
+    //  public function parentrating() 
+    // {
+    //     return $this->belongsTo(Rating::class, 'parent_id');
+    // }
+
       public function parent()
     {
-        return $this->belongsTo(Rating::class, 'parent_id');
+        return $this->belongsTo(Rating::class, 'parent_id'); 
     }
 
 }

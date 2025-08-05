@@ -32,14 +32,9 @@ public function children()
     return $this->hasMany(\App\Models\ParentRating::class, 'parent_id');
 }
 
-public function associatedChildren()
+public function associatedChildren() 
 {
-    return $this->belongsToMany(
-        Rating::class,
-        'user_ratings',
-        'parent_id',  
-        'rating_id'   
-    );
+    return $this->belongsToMany(Rating::class,'user_ratings','parent_id', 'rating_id');
 }
 
 
@@ -73,7 +68,7 @@ public function childRatings()
 }
 public function parentLinks()
 {
-    return $this->hasMany(ParentRating::class, 'parent_id');
+    return $this->hasMany(ParentRating::class, 'parent_id'); 
 }
 
 public function childLinks()

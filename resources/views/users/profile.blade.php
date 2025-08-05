@@ -289,19 +289,11 @@
                                                 $children = [];
                                              }
                                             @endphp
-                                              <!--   -->
-                                            <?php
-                                           // print_r($children);
-                                            // echo $entry['children'][0]['user_id'] . "<br>";
-                                            // echo $entry['children'][0]['rating_id'] . "<br>";
-                                            // echo $entry['children'][0]['parent_id'] . "<br>";
-                                            // echo $entry['children'][0]['linked_to'] . "<br>";
-                                            // echo $entry['children'][0]['issue_date'] . "<br>";
-                                            // echo $entry['children'][0]['expiry_date'] . "<br>";
-                                            ?>
+                                         
                                             <div class="card shadow-sm border rounded mb-4">
                                                 <div class="card-body">
                                                     <h5 class="card-title">{{ $rating->name ?? ' ' }}</h5>
+                                                    <h3>Verification</h3>
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <label class="form-label mt-2"><strong>Issue Date</strong></label>

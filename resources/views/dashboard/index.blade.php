@@ -16,16 +16,16 @@ $subTitle = "Welcome to Admin Dashboard";
 
 @extends('layout.app')
 @section('content')
-
 @php
 
 $messages = [];
 $user = Auth::user();
 
 // Check for Admin
-if ($user->is_admin == "1") {
+if ($user->is_admin == "1") { 
     foreach ($users as $u) {
         $userDoc = $u->documents; 
+      
         
 
         // Admin Verification Alerts
@@ -65,10 +65,11 @@ if ($user->is_admin == "1") {
                 $messages[] = "⚠️ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
             }
         }
-
+        
         // User Ratings (untouched)
         foreach ($u->usrRatings as $userRating) {
-            $ratingName = $userRating->rating?->name ?? 'Unknown Rating';
+           
+            $ratingName = $userRating->parentRating->name ?? '';
 
             if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
                 $messages[] = "📝 <strong>{$ratingName}</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
@@ -124,10 +125,12 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
             $messages[] = "⚠️ Your <strong>{$doc}</strong> will expire in <strong>less than 90 days</strong>.";
         }
     }
+  
 
     // User Ratings (untouched)
     foreach ($user->usrRatings as $userRating) {
-        $ratingName = $userRating->rating?->name ?? 'Unknown Rating';
+      
+        $ratingName = $userRating->parentRating->name ?? '';
 
         if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
             $messages[] = "📝 Your <strong>{$ratingName}</strong> is pending admin verification.";
@@ -272,7 +275,7 @@ if (!function_exists('getTooltip')) {
    <?php
  
         $groupedEASA = [];
-         // dump($ratingsByLicence);
+        
         if (isset($ratingsByLicence['licence_1'])) {
             //   print_r($ratingsByLicence['licence_1']);
             foreach ($ratingsByLicence['licence_1'] as $ratings) { 

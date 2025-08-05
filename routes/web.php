@@ -161,13 +161,16 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     // Route::get('/users/profile', [UserController::class, 'profile'])->name('user.profile');
     // Route::post('/users/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update');
     Route::post('/users/save', [UserController::class, 'save_user'])->name('user.store');
-    Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.get');
+    Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.get'); 
     Route::post('/users/update', [UserController::class, 'update'])->name('user.update');
     Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
     Route::post('/users/verify', [UserController::class, 'docsVerify'])->name('user.verify');
+    Route::post('/users/verify_rating', [UserController::class, 'verify_rating'])->name('user.verify_rating');
+
     Route::post('/users/invalidate-document', [UserController::class, 'invalidateDocument'])->name('user.invalidateDocument');
      Route::post('/get-child-ratings', [UserController::class, 'get_child_ratings']);
      Route::post('/get-children-by-parent', [UserController::class, 'getChildren']);
+     Route::post('/users/invalidateRating', [UserController::class, 'invalidateRating'])->name('user.invalidateRating');
 
 
     
