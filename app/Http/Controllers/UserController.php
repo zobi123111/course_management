@@ -1383,170 +1383,7 @@ class UserController extends Controller
                 'general'   => $request->input('general_ratings', []),
             ];
             // ✅ NEW: Save Licence 2 Ratings
-            // dd($request->licence_1_ratings);
-            // if ($request->has('licence_1_ratings') && is_array($request->licence_1_ratings)) {
-            //     // dd($request->licence_1_ratings);
-            //     $newParentIds = [];
-            //     $newRatingIds = [];
-
-            //     foreach ($request->licence_1_ratings as $index => $ratingGroup) {
-
-            //         $parentId = $ratingGroup['parent'] ?? null;
-            //         $childIds = $ratingGroup['child'] ?? [];
-
-
-            //         $issue_date_final = $request->input("issue_date.$index.child", []);
-            //         $expiry_date_final = $request->input("expiry_date.$index.child", []);
-            //         $allFiles  = $request->file("rating_file.$index.child") ?? null;
-
-
-            //         if ($parentId) {
-            //             $newParentIds[] = $parentId;
-
-            //             // Check if this parent already exists in DB for this user
-            //             $existingRatings = UserRating::where('user_id', $userToUpdate->id)
-            //                 ->where('linked_to', 'licence_1')
-            //                 ->where('parent_id', $parentId)
-            //                 ->get();
-
-            //             $isExistingParent = $existingRatings->isNotEmpty();
-            //             $existingParentRating = $existingRatings->first();
-
-            //             // Use DB fallback if form dates are missing
-            //             if (!$issue_date_final && $isExistingParent) {
-            //                 $issue_date_final = optional($existingParentRating)->issue_date;
-            //             }
-
-            //             if (!$expiry_date_final && $isExistingParent) {
-            //                 $expiry_date_final = optional($existingParentRating)->expiry_date;
-            //             }
-
-            //             if (is_array($childIds) && count($childIds)) {
-            //                 foreach ($childIds as $childIndex => $childId) {
-            //                     $newRatingIds[] = $childId;
-            //                     $issue_date_final = $issue_date_final[$childIndex] ?? null;
-            //                     $expiry_date_final = $expiry_date_final[$childIndex] ?? null;
-            //                     if (!$issue_date_final) {
-            //                         $existingChild = $existingRatings->where('rating_id', $childId)->first();
-            //                         $issue_date_final = optional($existingChild)->issue_date;
-            //                     }
-
-            //                     if (!$expiry_date_final) {
-            //                         $existingChild = $existingRatings->where('rating_id', $childId)->first();
-            //                         //dump($existingChild);
-            //                         $expiry_date_final = optional($existingChild)->expiry_date;
-            //                     }
-
-            //                     // Remove existing entry
-            //                     UserRating::where('user_id', $userToUpdate->id)
-            //                         ->where('rating_id', $childId)
-            //                         ->where('linked_to', 'licence_1')
-            //                         ->delete();
-
-            //                     $filePath = null;
-
-            //                     // Handle file upload per child
-            //                     if (is_array($allFiles) && array_key_exists($childIndex, $allFiles)) {
-            //                         $file = $allFiles[$childIndex];
-            //                         if ($file && $file->isValid()) {
-            //                             $filename = time() . '_' . $file->getClientOriginalName();
-            //                             $filePath = $file->storeAs('rating_files', $filename, 'public');
-            //                         }
-            //                     }
-
-            //                     if (!$filePath) {
-            //                         $existingChild = $existingRatings->where('rating_id', $childId)->first();
-            //                         $filePath = optional($existingChild)->file_path;
-            //                     }
-            //                     //  dump($expiry_date_final);
-            //                     $data = array(
-            //                         'user_id'     => $request->edit_form_id,
-            //                         'rating_id'   => $childId,
-            //                         'parent_id'   => $parentId,
-            //                         'issue_date'  => $issue_date_final,
-            //                         'expiry_date' => $expiry_date_final,
-            //                         'file_path'   => $filePath,
-            //                         'linked_to'   => 'licence_1',
-            //                     );
-
-            //                     // Create new child entry
-            //                     UserRating::create([
-            //                         'user_id'     => $request->edit_form_id,
-            //                         'rating_id'   => $childId,
-            //                         'parent_id'   => $parentId,
-            //                         'issue_date'  => $issue_date_final,
-            //                         'expiry_date' => $expiry_date_final,
-            //                         'file_path'   => $filePath,
-            //                         'linked_to'   => 'licence_1',
-            //                     ]);
-            //                 }
-
-            //                 // Clean up parent-only entry if children exist
-            //                 UserRating::where('user_id', $userToUpdate->id)
-            //                     ->where('linked_to', 'licence_1')
-            //                     ->where('parent_id', $parentId)
-            //                     ->whereNull('rating_id')
-            //                     ->delete();
-
-            //             } else {
-
-            //                 $issue_date_final = $issue_date_final[0] ?? null;
-            //                 $expiry_date_final = $expiry_date_final[0] ?? null;
-            //                 // No child selected – save parent-only entry
-            //                 $filePath = null;
-            //                 $file = $request->file("rating_file.$index.child.0") ?? null;
-
-            //                 if ($file && $file->isValid()) {
-            //                     $filename = time() . '_' . $file->getClientOriginalName();
-            //                     $filePath = $file->storeAs('rating_files', $filename, 'public');
-            //                 }
-            //                 if (!$filePath && $isExistingParent) {
-            //                     $filePath = optional($existingParentRating)->file_path;
-            //                 }
-
-
-            //                 $newRatingIds[] = null;
-
-            //                 // Remove existing child entries
-            //                 UserRating::where('user_id', $userToUpdate->id)
-            //                     ->where('linked_to', 'licence_1')
-            //                     ->where('parent_id', $parentId)
-            //                     ->whereNotNull('rating_id')
-            //                     ->delete();
-
-            //                 // Remove old parent-only
-            //                 UserRating::where('user_id', $userToUpdate->id)
-            //                     ->where('linked_to', 'licence_1')
-            //                     ->where('parent_id', $parentId)
-            //                     ->whereNull('rating_id')
-            //                     ->delete();
-
-            //                 // Save new parent-only entry
-            //                 UserRating::create([
-            //                     'user_id'     => $request->edit_form_id,
-            //                     'rating_id'   => null,
-            //                     'parent_id'   => $parentId,
-            //                     'issue_date'  => $issue_date_final,
-            //                     'expiry_date' => $expiry_date_final,
-            //                     'file_path'   => $filePath,
-            //                     'linked_to'   => 'licence_1',
-            //                 ]);
-            //             }
-            //         }
-            //     }
-
-            //     // Cleanup: Delete removed ratings
-            //     UserRating::where('user_id', $userToUpdate->id)
-            //         ->where('linked_to', 'licence_1')
-            //         ->where(function ($query) use ($newParentIds, $newRatingIds) {
-            //             $query->whereNotIn('parent_id', $newParentIds)
-            //                 ->orWhere(function ($q) use ($newRatingIds) {
-            //                     $q->whereNotIn('rating_id', $newRatingIds)
-            //                         ->whereNotNull('rating_id'); // preserve parent-only
-            //                 });
-            //         })
-            //         ->delete();
-            // }
+        
             if ($request->has('licence_1_ratings') && is_array($request->licence_1_ratings)) {
 
                 $newParentIds = [];
@@ -1566,9 +1403,9 @@ class UserController extends Controller
 
                         // Check if this parent already exists in DB for this user
                         $existingRatings = UserRating::where('user_id', $userToUpdate->id)
-                            ->where('linked_to', 'licence_1')
-                            ->where('parent_id', $parentId)
-                            ->get();
+                                            ->where('linked_to', 'licence_1')
+                                            ->where('parent_id', $parentId)
+                                            ->get();
 
                         $isExistingParent = $existingRatings->isNotEmpty();
                         $existingParentRating = $existingRatings->first();
@@ -1588,7 +1425,7 @@ class UserController extends Controller
                                 $expiryDate = $expiry_date_final[$childIndex] ?? null;
 
                                 if (!$issueDate) {
-                                    $existingChild = $existingRatings->where('rating_id', $childId)->first();
+                                    $existingChild = $existingRatings->where('rating_id', $childId)->first();dump($existingChild);
                                     $issueDate = optional($existingChild)->issue_date;
                                 }
 
@@ -1596,6 +1433,7 @@ class UserController extends Controller
                                     $existingChild = $existingRatings->where('rating_id', $childId)->first();
                                     $expiryDate = optional($existingChild)->expiry_date;
                                 }
+                               
 
                                 // Remove existing entry
                                 UserRating::where('user_id', $userToUpdate->id)
@@ -1624,6 +1462,8 @@ class UserController extends Controller
                                     'parent_id' => $parentId,
                                     'rating_id' => $childId,
                                 ];
+                               
+                            
 
                                 // Save
                                 UserRating::create([
@@ -1634,6 +1474,7 @@ class UserController extends Controller
                                     'expiry_date' => $expiryDate,
                                     'file_path'   => $filePath,
                                     'linked_to'   => 'licence_1',
+                                    
                                 ]);
                             }
 
@@ -1679,6 +1520,7 @@ class UserController extends Controller
                                 ->where('parent_id', $parentId)
                                 ->whereNull('rating_id')
                                 ->delete();
+                         
 
                             // Save parent-only
                             UserRating::create([
@@ -1689,6 +1531,7 @@ class UserController extends Controller
                                 'expiry_date' => $expiryDate,
                                 'file_path'   => $filePath,
                                 'linked_to'   => 'licence_1',
+                                
                             ]);
                         }
                     }
@@ -1726,159 +1569,159 @@ class UserController extends Controller
             }
 
             if ($request->has('licence_2_ratings') && is_array($request->licence_2_ratings)) {
-    $validCombinationsLicence2 = [];
+                $validCombinationsLicence2 = [];
 
-    foreach ($request->licence_2_ratings as $index => $ratingGroup) {
-        $parentId_licence2 = $ratingGroup['parent'] ?? null;
-        $childIds = $ratingGroup['child'] ?? [];
+                foreach ($request->licence_2_ratings as $index => $ratingGroup) {
+                    $parentId_licence2 = $ratingGroup['parent'] ?? null;
+                    $childIds = $ratingGroup['child'] ?? [];
 
-        $issue_date_final_licence2 = $request->input("issue_date_licence2.$index.child", []);
-        $expiry_date_final_licence2 = $request->input("expiry_date_licence2.$index.child", []);
-        $allFiles = $request->file("rating_file_licence2.$index.child") ?? null;
+                    $issue_date_final_licence2 = $request->input("issue_date_licence2.$index.child", []);
+                    $expiry_date_final_licence2 = $request->input("expiry_date_licence2.$index.child", []);
+                    $allFiles = $request->file("rating_file_licence2.$index.child") ?? null;
 
-        if ($parentId_licence2) {
-            // Fetch existing ratings for this parent
-            $existingRatings = UserRating::where('user_id', $userToUpdate->id)
-                ->where('linked_to', 'licence_2')
-                ->where('parent_id', $parentId_licence2)
-                ->get();
+                    if ($parentId_licence2) {
+                        // Fetch existing ratings for this parent
+                        $existingRatings = UserRating::where('user_id', $userToUpdate->id)
+                            ->where('linked_to', 'licence_2')
+                            ->where('parent_id', $parentId_licence2)
+                            ->get();
 
-            $isExistingParent = $existingRatings->isNotEmpty();
-            $existingParentRating = $existingRatings->first();
+                        $isExistingParent = $existingRatings->isNotEmpty();
+                        $existingParentRating = $existingRatings->first();
 
-            if (!$issue_date_final_licence2 && $isExistingParent) {
-                $issue_date_final_licence2 = optional($existingParentRating)->issue_date;
-            }
+                        if (!$issue_date_final_licence2 && $isExistingParent) {
+                            $issue_date_final_licence2 = optional($existingParentRating)->issue_date;
+                        }
 
-            if (!$expiry_date_final_licence2 && $isExistingParent) {
-                $expiry_date_final_licence2 = optional($existingParentRating)->expiry_date;
-            }
+                        if (!$expiry_date_final_licence2 && $isExistingParent) {
+                            $expiry_date_final_licence2 = optional($existingParentRating)->expiry_date;
+                        }
 
-            if (is_array($childIds) && count($childIds)) {
-                foreach ($childIds as $childIndex => $childId) {
-                    $issueDate = $issue_date_final_licence2[$childIndex] ?? null;
-                    $expiryDate = $expiry_date_final_licence2[$childIndex] ?? null;
+                        if (is_array($childIds) && count($childIds)) {
+                            foreach ($childIds as $childIndex => $childId) {
+                                $issueDate = $issue_date_final_licence2[$childIndex] ?? null;
+                                $expiryDate = $expiry_date_final_licence2[$childIndex] ?? null;
 
-                    if (!$issueDate) {
-                        $existingChild = $existingRatings->where('rating_id', $childId)->first();
-                        $issueDate = optional($existingChild)->issue_date;
-                    }
+                                if (!$issueDate) {
+                                    $existingChild = $existingRatings->where('rating_id', $childId)->first();
+                                    $issueDate = optional($existingChild)->issue_date;
+                                }
 
-                    if (!$expiryDate) {
-                        $existingChild = $existingRatings->where('rating_id', $childId)->first();
-                        $expiryDate = optional($existingChild)->expiry_date;
-                    }
+                                if (!$expiryDate) {
+                                    $existingChild = $existingRatings->where('rating_id', $childId)->first();
+                                    $expiryDate = optional($existingChild)->expiry_date;
+                                }
 
-                    // Delete existing entry for this pair
-                    UserRating::where('user_id', $userToUpdate->id)
-                        ->where('rating_id', $childId)
-                        ->where('linked_to', 'licence_2')
-                        ->where('parent_id', $parentId_licence2)
-                        ->delete();
+                                // Delete existing entry for this pair
+                                UserRating::where('user_id', $userToUpdate->id)
+                                    ->where('rating_id', $childId)
+                                    ->where('linked_to', 'licence_2')
+                                    ->where('parent_id', $parentId_licence2)
+                                    ->delete();
 
-                    $filePath = null;
-                    if (is_array($allFiles) && array_key_exists($childIndex, $allFiles)) {
-                        $file = $allFiles[$childIndex];
-                        if ($file && $file->isValid()) {
-                            $filename = time() . '_' . $file->getClientOriginalName();
-                            $filePath = $file->storeAs('rating_files', $filename, 'public');
+                                $filePath = null;
+                                if (is_array($allFiles) && array_key_exists($childIndex, $allFiles)) {
+                                    $file = $allFiles[$childIndex];
+                                    if ($file && $file->isValid()) {
+                                        $filename = time() . '_' . $file->getClientOriginalName();
+                                        $filePath = $file->storeAs('rating_files', $filename, 'public');
+                                    }
+                                }
+
+                                if (!$filePath) {
+                                    $existingChild = $existingRatings->where('rating_id', $childId)->first();
+                                    $filePath = optional($existingChild)->file_path;
+                                }
+
+                                // Track valid combination
+                                $validCombinationsLicence2[] = [
+                                    'parent_id' => $parentId_licence2,
+                                    'rating_id' => $childId,
+                                ];
+
+                                UserRating::create([
+                                    'user_id'     => $request->edit_form_id,
+                                    'rating_id'   => $childId,
+                                    'parent_id'   => $parentId_licence2,
+                                    'issue_date'  => $issueDate,
+                                    'expiry_date' => $expiryDate,
+                                    'file_path'   => $filePath,
+                                    'linked_to'   => 'licence_2',
+                                ]);
+                            }
+
+                            // Delete parent-only entry if children exist
+                            UserRating::where('user_id', $userToUpdate->id)
+                                ->where('linked_to', 'licence_2')
+                                ->where('parent_id', $parentId_licence2)
+                                ->whereNull('rating_id')
+                                ->delete();
+                        } else {
+                            // Save parent-only
+                            $issueDate = $issue_date_final_licence2[0] ?? null;
+                            $expiryDate = $expiry_date_final_licence2[0] ?? null;
+
+                            $filePath = null;
+                            $file = $request->file("rating_file_licence2.$index.child.0") ?? null;
+
+                            if ($file && $file->isValid()) {
+                                $filename = time() . '_' . $file->getClientOriginalName();
+                                $filePath = $file->storeAs('rating_files', $filename, 'public');
+                            }
+
+                            if (!$filePath && $isExistingParent) {
+                                $filePath = optional($existingParentRating)->file_path;
+                            }
+
+                            // Track parent-only combination
+                            $validCombinationsLicence2[] = [
+                                'parent_id' => $parentId_licence2,
+                                'rating_id' => null,
+                            ];
+
+                            // Delete any old children
+                            UserRating::where('user_id', $userToUpdate->id)
+                                ->where('linked_to', 'licence_2')
+                                ->where('parent_id', $parentId_licence2)
+                                ->whereNotNull('rating_id')
+                                ->delete();
+
+                            // Delete existing parent-only
+                            UserRating::where('user_id', $userToUpdate->id)
+                                ->where('linked_to', 'licence_2')
+                                ->where('parent_id', $parentId_licence2)
+                                ->whereNull('rating_id')
+                                ->delete();
+
+                            UserRating::create([
+                                'user_id'     => $request->edit_form_id,
+                                'rating_id'   => null,
+                                'parent_id'   => $parentId_licence2,
+                                'issue_date'  => $issueDate,
+                                'expiry_date' => $expiryDate,
+                                'file_path'   => $filePath,
+                                'linked_to'   => 'licence_2',
+                            ]);
                         }
                     }
+                }
 
-                    if (!$filePath) {
-                        $existingChild = $existingRatings->where('rating_id', $childId)->first();
-                        $filePath = optional($existingChild)->file_path;
+                // ✅ Final Cleanup for licence_2
+                $existingEntriesLicence2 = UserRating::where('user_id', $userToUpdate->id)
+                    ->where('linked_to', 'licence_2')
+                    ->get();
+
+                foreach ($existingEntriesLicence2 as $entry) {
+                    $stillExists = collect($validCombinationsLicence2)->contains(function ($combo) use ($entry) {
+                        return $combo['parent_id'] == $entry->parent_id &&
+                            ($combo['rating_id'] ?? null) == $entry->rating_id;
+                    });
+
+                    if (!$stillExists) {
+                        $entry->delete();
                     }
-
-                    // Track valid combination
-                    $validCombinationsLicence2[] = [
-                        'parent_id' => $parentId_licence2,
-                        'rating_id' => $childId,
-                    ];
-
-                    UserRating::create([
-                        'user_id'     => $request->edit_form_id,
-                        'rating_id'   => $childId,
-                        'parent_id'   => $parentId_licence2,
-                        'issue_date'  => $issueDate,
-                        'expiry_date' => $expiryDate,
-                        'file_path'   => $filePath,
-                        'linked_to'   => 'licence_2',
-                    ]);
                 }
-
-                // Delete parent-only entry if children exist
-                UserRating::where('user_id', $userToUpdate->id)
-                    ->where('linked_to', 'licence_2')
-                    ->where('parent_id', $parentId_licence2)
-                    ->whereNull('rating_id')
-                    ->delete();
-            } else {
-                // Save parent-only
-                $issueDate = $issue_date_final_licence2[0] ?? null;
-                $expiryDate = $expiry_date_final_licence2[0] ?? null;
-
-                $filePath = null;
-                $file = $request->file("rating_file_licence2.$index.child.0") ?? null;
-
-                if ($file && $file->isValid()) {
-                    $filename = time() . '_' . $file->getClientOriginalName();
-                    $filePath = $file->storeAs('rating_files', $filename, 'public');
-                }
-
-                if (!$filePath && $isExistingParent) {
-                    $filePath = optional($existingParentRating)->file_path;
-                }
-
-                // Track parent-only combination
-                $validCombinationsLicence2[] = [
-                    'parent_id' => $parentId_licence2,
-                    'rating_id' => null,
-                ];
-
-                // Delete any old children
-                UserRating::where('user_id', $userToUpdate->id)
-                    ->where('linked_to', 'licence_2')
-                    ->where('parent_id', $parentId_licence2)
-                    ->whereNotNull('rating_id')
-                    ->delete();
-
-                // Delete existing parent-only
-                UserRating::where('user_id', $userToUpdate->id)
-                    ->where('linked_to', 'licence_2')
-                    ->where('parent_id', $parentId_licence2)
-                    ->whereNull('rating_id')
-                    ->delete();
-
-                UserRating::create([
-                    'user_id'     => $request->edit_form_id,
-                    'rating_id'   => null,
-                    'parent_id'   => $parentId_licence2,
-                    'issue_date'  => $issueDate,
-                    'expiry_date' => $expiryDate,
-                    'file_path'   => $filePath,
-                    'linked_to'   => 'licence_2',
-                ]);
             }
-        }
-    }
-
-    // ✅ Final Cleanup for licence_2
-    $existingEntriesLicence2 = UserRating::where('user_id', $userToUpdate->id)
-        ->where('linked_to', 'licence_2')
-        ->get();
-
-    foreach ($existingEntriesLicence2 as $entry) {
-        $stillExists = collect($validCombinationsLicence2)->contains(function ($combo) use ($entry) {
-            return $combo['parent_id'] == $entry->parent_id &&
-                   ($combo['rating_id'] ?? null) == $entry->rating_id;
-        });
-
-        if (!$stillExists) {
-            $entry->delete();
-        }
-    }
-}
 
 
 
@@ -2093,8 +1936,8 @@ class UserController extends Controller
             ->toArray();
 
         $userRatingsLicence1 = UserRating::where('user_id', decode_id($request->id))
-                                ->where('linked_to', 'licence_1')
-                                ->get();
+            ->where('linked_to', 'licence_1')
+            ->get();
 
         $userRatingsLicence1Grouped = $userRatingsLicence1
             ->groupBy('parent_id')
@@ -2322,196 +2165,196 @@ class UserController extends Controller
     //         'grouped'
     //     ));
     // }
- public function showUser(Request $request, $user_id)
-{
-    $user = User::with([
-        'roles',
-        'organization',
-        'usrRatings.rating',
-        'usrRatings.parent',
-        'documents'
-    ])->find(decode_id($user_id));
+    public function showUser(Request $request, $user_id)
+    {
+        $user = User::with([
+            'roles',
+            'organization',
+            'usrRatings.rating',
+            'usrRatings.parent',
+            'documents'
+        ])->find(decode_id($user_id));
 
-    if (!$user) {
-        return redirect()->back()->with('error', 'User not found.');
-    }
+        if (!$user) {
+            return redirect()->back()->with('error', 'User not found.');
+        }
 
-    $rawUserRatings = $user->usrRatings;
+        $rawUserRatings = $user->usrRatings;
 
-    $grouped = [];
+        $grouped = [];
 
-    foreach ($rawUserRatings as $rating) {
-        $linkedTo = $rating->linked_to ?? 'unlinked';
+        foreach ($rawUserRatings as $rating) {
+            $linkedTo = $rating->linked_to ?? 'unlinked';
 
-        if (is_null($rating->parent_id)) {
-            // Rating is a parent
-            $grouped[$linkedTo][$rating->rating_id]['parent'] = $rating;
-        } else {
-            // Rating is a child
-            $parentId = $rating->parent_id;
-            if (!isset($grouped[$linkedTo][$parentId])) {
-                $grouped[$linkedTo][$parentId] = [];
-            }
+            if (is_null($rating->parent_id)) {
+                // Rating is a parent
+                $grouped[$linkedTo][$rating->rating_id]['parent'] = $rating;
+            } else {
+                // Rating is a child
+                $parentId = $rating->parent_id;
+                if (!isset($grouped[$linkedTo][$parentId])) {
+                    $grouped[$linkedTo][$parentId] = [];
+                }
 
-            $grouped[$linkedTo][$parentId]['children'][] = $rating;
+                $grouped[$linkedTo][$parentId]['children'][] = $rating;
 
-            if (!isset($grouped[$linkedTo][$parentId]['parent'])) {
-                $parentRatingModel = \App\Models\Rating::find($parentId);
+                if (!isset($grouped[$linkedTo][$parentId]['parent'])) {
+                    $parentRatingModel = \App\Models\Rating::find($parentId);
 
-                if ($parentRatingModel) {
-                    $fakeParent = new \App\Models\UserRating([
-                        'rating_id'     => $parentRatingModel->id,
-                        'parent_id'     => null,
-                        'linked_to'     => $linkedTo,
-                        'issue_date'    => null,
-                        'expiry_date'   => null,
-                        'file_path'     => null,
-                        'admin_verified' => 0,
-                    ]);
-                    $fakeParent->setRelation('rating', $parentRatingModel);
-                    $grouped[$linkedTo][$parentId]['parent'] = $fakeParent;
+                    if ($parentRatingModel) {
+                        $fakeParent = new \App\Models\UserRating([
+                            'rating_id'     => $parentRatingModel->id,
+                            'parent_id'     => null,
+                            'linked_to'     => $linkedTo,
+                            'issue_date'    => null,
+                            'expiry_date'   => null,
+                            'file_path'     => null,
+                            'admin_verified' => 0,
+                        ]);
+                        $fakeParent->setRelation('rating', $parentRatingModel);
+                        $grouped[$linkedTo][$parentId]['parent'] = $fakeParent;
+                    }
                 }
             }
         }
-    }
 
-    // ✅ Define custom priority for sorting
-    $getRatingPriority = function ($rating) {
-        if (!$rating || !$rating->rating) return 999;
-        $r = $rating->rating;
+        // ✅ Define custom priority for sorting
+        $getRatingPriority = function ($rating) {
+            if (!$rating || !$rating->rating) return 999;
+            $r = $rating->rating;
 
-        if ($r->is_fixed_wing) return 1;
-        if ($r->is_rotary) return 2;
-        if ($r->is_instructor) return 3;
-        if ($r->is_examiner) return 4;
+            if ($r->is_fixed_wing) return 1;
+            if ($r->is_rotary) return 2;
+            if ($r->is_instructor) return 3;
+            if ($r->is_examiner) return 4;
 
-        return 999;
-    };
+            return 999;
+        };
 
-    // ✅ Sort parents and children
-    foreach ($grouped as $linkedTo => &$ratingsByParent) {
-        // Sort parents by priority, then name
-        uksort($ratingsByParent, function ($a, $b) use ($ratingsByParent, $getRatingPriority) {
-            $priorityA = $getRatingPriority($ratingsByParent[$a]['parent']);
-            $priorityB = $getRatingPriority($ratingsByParent[$b]['parent']);
+        // ✅ Sort parents and children
+        foreach ($grouped as $linkedTo => &$ratingsByParent) {
+            // Sort parents by priority, then name
+            uksort($ratingsByParent, function ($a, $b) use ($ratingsByParent, $getRatingPriority) {
+                $priorityA = $getRatingPriority($ratingsByParent[$a]['parent']);
+                $priorityB = $getRatingPriority($ratingsByParent[$b]['parent']);
 
-            if ($priorityA === $priorityB) {
-                $nameA = $ratingsByParent[$a]['parent']->rating->name ?? '';
-                $nameB = $ratingsByParent[$b]['parent']->rating->name ?? '';
-                return strcasecmp($nameA, $nameB);
+                if ($priorityA === $priorityB) {
+                    $nameA = $ratingsByParent[$a]['parent']->rating->name ?? '';
+                    $nameB = $ratingsByParent[$b]['parent']->rating->name ?? '';
+                    return strcasecmp($nameA, $nameB);
+                }
+
+                return $priorityA <=> $priorityB;
+            });
+
+            // Sort children under each parent
+            foreach ($ratingsByParent as &$ratingGroup) {
+                if (isset($ratingGroup['children'])) {
+                    usort($ratingGroup['children'], function ($a, $b) use ($getRatingPriority) {
+                        $priorityA = $getRatingPriority($a);
+                        $priorityB = $getRatingPriority($b);
+
+                        if ($priorityA === $priorityB) {
+                            $nameA = $a->rating->name ?? '';
+                            $nameB = $b->rating->name ?? '';
+                            return strcasecmp($nameA, $nameB);
+                        }
+
+                        return $priorityA <=> $priorityB;
+                    });
+                }
             }
+        }
+        unset($ratingsByParent);
+        unset($ratingGroup);
 
-            return $priorityA <=> $priorityB;
+        // Filter usable ratings
+        $userRatings = $rawUserRatings->filter(function ($ur) {
+            return $ur->rating_id !== null || $ur->parent_id !== null;
         });
 
-        // Sort children under each parent
-        foreach ($ratingsByParent as &$ratingGroup) {
-            if (isset($ratingGroup['children'])) {
-                usort($ratingGroup['children'], function ($a, $b) use ($getRatingPriority) {
-                    $priorityA = $getRatingPriority($a);
-                    $priorityB = $getRatingPriority($b);
-
-                    if ($priorityA === $priorityB) {
-                        $nameA = $a->rating->name ?? '';
-                        $nameB = $b->rating->name ?? '';
-                        return strcasecmp($nameA, $nameB);
-                    }
-
-                    return $priorityA <=> $priorityB;
-                });
+        foreach ($userRatings as $ur) {
+            if ($ur->rating_id === null && $ur->parent_id !== null) {
+                $ur->derived_rating_id = $ur->parent_id;
+                $ur->derived_rating = $ur->parent;
+            } else {
+                $ur->derived_rating_id = $ur->rating_id;
+                $ur->derived_rating = $ur->rating;
             }
         }
+
+        // Licence 1 ratings
+        $licence1Ratings = $userRatings->filter(function ($ur) use ($userRatings) {
+            if ($ur->linked_to === 'licence_1') return true;
+            $parent = $userRatings->firstWhere('rating_id', $ur->parent_id);
+            return $parent && $parent->linked_to === 'licence_1';
+        })->values();
+
+        // Licence 2 ratings
+        $licence2Ratings = $userRatings->filter(function ($ur) use ($userRatings) {
+            if ($ur->linked_to === 'licence_2') return true;
+            $parent = $userRatings->firstWhere('rating_id', $ur->parent_id);
+            return $parent && $parent->linked_to === 'licence_2';
+        })->values();
+
+        // Selected IDs
+        $selectedIdsLicence1 = $licence1Ratings->pluck('rating_id')->unique();
+        $selectedIdsLicence2 = $licence2Ratings->pluck('rating_id')->unique();
+
+        // Parent IDs
+        $parentIdsLicence1 = $licence1Ratings
+            ->filter(fn($item) => $item->rating)
+            ->pluck('rating.parent_id')
+            ->merge(
+                $licence1Ratings->pluck('rating_id')->filter(fn($id) => is_null(optional($userRatings->firstWhere('rating_id', $id))->rating?->parent_id))
+            )
+            ->unique()
+            ->values();
+
+        $parentIdsLicence2 = $licence2Ratings
+            ->pluck('rating.parent_id')
+            ->merge(
+                $licence2Ratings->pluck('rating_id')->filter(function ($id) use ($userRatings) {
+                    $ur = $userRatings->firstWhere('rating_id', $id);
+                    return is_null(optional($ur?->rating)->parent_id);
+                })
+            )
+            ->unique()
+            ->values();
+
+        // Missing parent ratings
+        $existingUserRatingIds = $userRatings->pluck('rating_id')->filter();
+        $missingParentIdsLicence1 = $parentIdsLicence1->diff($existingUserRatingIds);
+        $missingParentIdsLicence2 = $parentIdsLicence2->diff($existingUserRatingIds);
+
+        $missingParentRatingsLicence1 = Rating::whereIn('id', $missingParentIdsLicence1)->get();
+        $missingParentRatingsLicence2 = Rating::whereIn('id', $missingParentIdsLicence2)->get();
+
+        // Child groupings
+        $childRatingsGrouped = ParentRating::with('child')->get()->groupBy('parent_id');
+
+        // Quick access map
+        $userRatingsMap = $userRatings->keyBy('rating_id');
+
+        // Extra roles
+        $extraRoles = Role::whereIn('id', json_decode($user->extra_roles ?? '[]'))->pluck('role_name')->toArray();
+
+        return view('users.show', compact(
+            'user',
+            'extraRoles',
+            'licence1Ratings',
+            'licence2Ratings',
+            'selectedIdsLicence1',
+            'selectedIdsLicence2',
+            'childRatingsGrouped',
+            'userRatingsMap',
+            'parentIdsLicence1',
+            'parentIdsLicence2',
+            'missingParentRatingsLicence1',
+            'missingParentRatingsLicence2',
+            'grouped'
+        ));
     }
-    unset($ratingsByParent);
-    unset($ratingGroup);
-
-    // Filter usable ratings
-    $userRatings = $rawUserRatings->filter(function ($ur) {
-        return $ur->rating_id !== null || $ur->parent_id !== null;
-    });
-
-    foreach ($userRatings as $ur) {
-        if ($ur->rating_id === null && $ur->parent_id !== null) {
-            $ur->derived_rating_id = $ur->parent_id;
-            $ur->derived_rating = $ur->parent;
-        } else {
-            $ur->derived_rating_id = $ur->rating_id;
-            $ur->derived_rating = $ur->rating;
-        }
-    }
-
-    // Licence 1 ratings
-    $licence1Ratings = $userRatings->filter(function ($ur) use ($userRatings) {
-        if ($ur->linked_to === 'licence_1') return true;
-        $parent = $userRatings->firstWhere('rating_id', $ur->parent_id);
-        return $parent && $parent->linked_to === 'licence_1';
-    })->values();
-
-    // Licence 2 ratings
-    $licence2Ratings = $userRatings->filter(function ($ur) use ($userRatings) {
-        if ($ur->linked_to === 'licence_2') return true;
-        $parent = $userRatings->firstWhere('rating_id', $ur->parent_id);
-        return $parent && $parent->linked_to === 'licence_2';
-    })->values();
-
-    // Selected IDs
-    $selectedIdsLicence1 = $licence1Ratings->pluck('rating_id')->unique();
-    $selectedIdsLicence2 = $licence2Ratings->pluck('rating_id')->unique();
-
-    // Parent IDs
-    $parentIdsLicence1 = $licence1Ratings
-        ->filter(fn($item) => $item->rating)
-        ->pluck('rating.parent_id')
-        ->merge(
-            $licence1Ratings->pluck('rating_id')->filter(fn($id) => is_null(optional($userRatings->firstWhere('rating_id', $id))->rating?->parent_id))
-        )
-        ->unique()
-        ->values();
-
-    $parentIdsLicence2 = $licence2Ratings
-        ->pluck('rating.parent_id')
-        ->merge(
-            $licence2Ratings->pluck('rating_id')->filter(function ($id) use ($userRatings) {
-                $ur = $userRatings->firstWhere('rating_id', $id);
-                return is_null(optional($ur?->rating)->parent_id);
-            })
-        )
-        ->unique()
-        ->values();
-
-    // Missing parent ratings
-    $existingUserRatingIds = $userRatings->pluck('rating_id')->filter();
-    $missingParentIdsLicence1 = $parentIdsLicence1->diff($existingUserRatingIds);
-    $missingParentIdsLicence2 = $parentIdsLicence2->diff($existingUserRatingIds);
-
-    $missingParentRatingsLicence1 = Rating::whereIn('id', $missingParentIdsLicence1)->get();
-    $missingParentRatingsLicence2 = Rating::whereIn('id', $missingParentIdsLicence2)->get();
-
-    // Child groupings
-    $childRatingsGrouped = ParentRating::with('child')->get()->groupBy('parent_id');
-
-    // Quick access map
-    $userRatingsMap = $userRatings->keyBy('rating_id');
-
-    // Extra roles
-    $extraRoles = Role::whereIn('id', json_decode($user->extra_roles ?? '[]'))->pluck('role_name')->toArray();
-
-    return view('users.show', compact(
-        'user',
-        'extraRoles',
-        'licence1Ratings',
-        'licence2Ratings',
-        'selectedIdsLicence1',
-        'selectedIdsLicence2',
-        'childRatingsGrouped',
-        'userRatingsMap',
-        'parentIdsLicence1',
-        'parentIdsLicence2',
-        'missingParentRatingsLicence1',
-        'missingParentRatingsLicence2',
-        'grouped'
-    ));
-}
 
 
 
@@ -3027,37 +2870,34 @@ class UserController extends Controller
 
     public function verify_rating(Request $request)
     {
-       $user_id = $request->userid;
-       $parent_id = $request->parent_id;
-       $linkedto = $request->linkedto;
-       $verified = $request->verified;
-       $verify = array(
-             "verify_rating" =>  $verified
-       );
-       
+        $user_id = $request->userid;
+        $parent_id = $request->parent_id;
+        $linkedto = $request->linkedto;
+        $verified = $request->verified;
+        $verify = array(
+            "admin_verified" =>  $verified
+        );
 
-      $verified =  UserRating::where('user_id', $user_id)->where('parent_id' , $parent_id)->where('linked_to', $linkedto)->update($verify);
-      if($verified)
-      {
-         return response()->json(['success' => 'User rating verification updated successfully.']);
-      }
+
+        $verified =  UserRating::where('user_id', $user_id)->where('parent_id', $parent_id)->where('linked_to', $linkedto)->update($verify);
+        if ($verified) {
+            return response()->json(['success' => 'User rating verification updated successfully.']);
+        }
     }
 
     public function invalidateRating(Request $request)
     {
-        
-       $userid = $request->userid;
-       $parent_id = $request->parent_id;
-       $linkedto = $request->linkedto;
+
+        $userid = $request->userid;
+        $parent_id = $request->parent_id;
+        $linkedto = $request->linkedto;
 
         $verify = array(
-             "verify_rating" =>  0
-       );
-       $verified =  UserRating::where('user_id', $userid)->where('parent_id' , $parent_id)->where('linked_to', $linkedto)->update($verify);
-      if($verified)
-      {
-         return response()->json(['success' => 'User rating Invalidated successfully.']);
-      }
-      
+            "admin_verified" =>  0
+        );
+        $verified =  UserRating::where('user_id', $userid)->where('parent_id', $parent_id)->where('linked_to', $linkedto)->update($verify);
+        if ($verified) {
+            return response()->json(['success' => 'User rating Invalidated successfully.']);
+        }
     }
 }

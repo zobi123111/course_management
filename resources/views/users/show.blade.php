@@ -143,8 +143,8 @@
                                                 <!-- Parent info -->
                                             <div class="form-check form-switch mb-0">
                                                 <input class="form-check-input verify-rating" type="checkbox" id="rating_verify" data-linkedTo="{{ $group['children'][0]['linked_to'] }}" data-userId = "{{  $group['children'][0]['user_id'] }}" data-parent_id ="{{ $group['children'][0]['parent_id'] }}"
-                                                 {{ $group['children'][0]['verify_rating'] ? 'checked disabled' : '' }}  >
-                                                @if($group['children'][0]['verify_rating'] == 1)
+                                                 {{ $group['children'][0]['admin_verified'] ? 'checked disabled' : '' }}  >
+                                                @if($group['children'][0]['admin_verified'] == 1)
                                                     <button class="btn btn-danger btn-sm invalidate-rating" data-linkedTo="{{ $group['children'][0]['linked_to'] }}" 
                                                         data-userId = "{{  $group['children'][0]['user_id'] }}" data-parent_id ="{{ $group['children'][0]['parent_id'] }}">
                                                         Invalidate
@@ -268,8 +268,8 @@
                                                 <h6 class="card-title text-primary">{{ $parent->rating->name ?? 'N/A' }}</h6>
                                                      <div class="form-check form-switch mb-0">
                                                 <input class="form-check-input verify-rating" type="checkbox" id="rating_verify" data-linkedTo="{{ $group['children'][0]['linked_to'] }}" data-userId = "{{  $group['children'][0]['user_id'] }}" data-parent_id ="{{ $group['children'][0]['parent_id'] }}"
-                                                 {{ $group['children'][0]['verify_rating'] ? 'checked disabled' : '' }}  >
-                                                @if($group['children'][0]['verify_rating'] == 1)
+                                                 {{ $group['children'][0]['admin_verified'] ? 'checked disabled' : '' }}  >
+                                                @if($group['children'][0]['admin_verified'] == 1)
                                                     <button class="btn btn-danger btn-sm invalidate-rating" data-linkedTo="{{ $group['children'][0]['linked_to'] }}" 
                                                         data-userId = "{{  $group['children'][0]['user_id'] }}" data-parent_id ="{{ $group['children'][0]['parent_id'] }}">
                                                         Invalidate
@@ -279,7 +279,7 @@
                                             </div>
                                                 <ul class="list-unstyled small mb-2">
                                                     <li><strong>Issue Date:</strong> {{ $group['children'][0]['issue_date'] ?? 'N/A' }}</li>
-                                                    <li><strong>Expiry Date:</strong> {{ $group['children'][0]['issue_date'] ?? 'N/A' }}</li>
+                                                    <li><strong>Expiry Date:</strong> {{ $group['children'][0]['expiry_date'] ?? 'N/A' }}</li>
                                                 </ul>
 
                                                 @if(!empty($group['children'][0]['file_path']))
