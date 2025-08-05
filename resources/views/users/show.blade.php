@@ -130,16 +130,28 @@
                                     <h6 class="text-secondary mb-3">
                                         <i class="bi bi-star-fill text-warning me-2"></i>Ratings Linked to UK Licence
                                     </h6>
+                             
                                     <div class="d-flex flex-wrap">
                                         @foreach($grouped['licence_1'] ?? [] as $group)
                                         @php
-                                        $parent = $group['parent'];
+                                        $parent = $group['parent']; 
                                         @endphp
 
                                         <div class="card mb-3">
                                             <div class="card-body">
                                                 <h6 class="card-title text-primary">{{ $parent->rating->name }}</h6>
                                                 <!-- Parent info -->
+                                            <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input verify-rating" type="checkbox" id="rating_verify" data-linkedTo="{{ $group['children'][0]['linked_to'] }}" data-userId = "{{  $group['children'][0]['user_id'] }}" data-parent_id ="{{ $group['children'][0]['parent_id'] }}"
+                                                 {{ $group['children'][0]['verify_rating'] ? 'checked disabled' : '' }}  >
+                                                @if($group['children'][0]['verify_rating'] == 1)
+                                                    <button class="btn btn-danger btn-sm invalidate-rating" data-linkedTo="{{ $group['children'][0]['linked_to'] }}" 
+                                                        data-userId = "{{  $group['children'][0]['user_id'] }}" data-parent_id ="{{ $group['children'][0]['parent_id'] }}">
+                                                        Invalidate
+                                                    </button>
+                                                @endif
+                                               
+                                            </div>
                                                 <ul>
                                                     <li><strong>Issue Date:</strong> {{ $group['children'][0]['issue_date'] ?? 'N/A' }}</li>
                                                     <li><strong>Expiry Date:</strong> {{ $group['children'][0]['expiry_date'] ?? 'N/A' }}</li>
@@ -254,6 +266,17 @@
                                         <div class="card mb-3 me-3" style="width: 18rem;">
                                             <div class="card-body">
                                                 <h6 class="card-title text-primary">{{ $parent->rating->name ?? 'N/A' }}</h6>
+                                                     <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input verify-rating" type="checkbox" id="rating_verify" data-linkedTo="{{ $group['children'][0]['linked_to'] }}" data-userId = "{{  $group['children'][0]['user_id'] }}" data-parent_id ="{{ $group['children'][0]['parent_id'] }}"
+                                                 {{ $group['children'][0]['verify_rating'] ? 'checked disabled' : '' }}  >
+                                                @if($group['children'][0]['verify_rating'] == 1)
+                                                    <button class="btn btn-danger btn-sm invalidate-rating" data-linkedTo="{{ $group['children'][0]['linked_to'] }}" 
+                                                        data-userId = "{{  $group['children'][0]['user_id'] }}" data-parent_id ="{{ $group['children'][0]['parent_id'] }}">
+                                                        Invalidate
+                                                    </button>
+                                                @endif
+                                               
+                                            </div>
                                                 <ul class="list-unstyled small mb-2">
                                                     <li><strong>Issue Date:</strong> {{ $group['children'][0]['issue_date'] ?? 'N/A' }}</li>
                                                     <li><strong>Expiry Date:</strong> {{ $group['children'][0]['issue_date'] ?? 'N/A' }}</li>
@@ -295,7 +318,7 @@
                                                             $child->expiry_date = $referenceChild->expiry_date;
                                                         }
                                                     }
-
+ 
                                                     // Remove children if no rating_id exists in any
                                                     $hasValidChildren = $children->contains(function ($child) {
                                                         return !is_null($child->rating_id);
@@ -532,6 +555,36 @@
                 });
             });
 
+              $(".verify-rating").on('change', function() {
+                var linkedto   = $(this).data("linkedto");
+                var userid     = $(this).data("userid");
+                var parent_id  = $(this).data("parent_id"); // Example: passport or licence
+                var isChecked  = $(this).prop("checked") ? 1 : 0;
+             
+                $.ajax({
+                    url: '{{ url("/users/verify_rating") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        linkedto: linkedto,
+                        userid: userid,
+                        parent_id: parent_id,
+                        verified: isChecked
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.success);
+                            location.reload();
+                        } else {
+                            alert("Something went wrong!");
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        
+                    }
+                });
+            });
+
         })
 
 
@@ -553,6 +606,36 @@
                     success: function(response) {
                         if (response.success) {
                             alert(response.message);
+                            location.reload();
+                        } else {
+                            alert('Failed to invalidate.');
+                        }
+                    },
+                    error: function() {
+                        alert('An error occurred while processing the request.');
+                    }
+                });
+            });
+
+                $('.invalidate-rating').on('click', function() {
+                if (!confirm('Are you sure you want to invalidate this rating ?')) return;
+
+                const linkedto = $(this).data('linkedto');
+                const userid = $(this).data('userid');
+                const parent_id = $(this).data('parent_id');
+
+                $.ajax({
+                    url: `{{ route('user.invalidateRating') }}`,
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        linkedto: linkedto,
+                        userid: userid,
+                           parent_id: parent_id
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.success);
                             location.reload();
                         } else {
                             alert('Failed to invalidate.');
