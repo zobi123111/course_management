@@ -68,14 +68,21 @@ if ($user->is_admin == "1") {
         
         // User Ratings (untouched)
         foreach ($u->usrRatings as $userRating) {
-           
-            $ratingName = $userRating->parentRating->name ?? '';
+           if($userRating->linked_to == "licence_1")
+            {
+                $linked_to  = "UK";
+            }
+            if($userRating->linked_to == "licence_2"){
+                $linked_to  = "EASA";
+            }
+            $ratingName = $linked_to.' '. "Rating" . ' ' .$userRating->parentRating->name  ?? ''; 
 
             if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
                 $messages[] = "📝 <strong>{$ratingName}</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
             }
 
             $status = $userRating->expiry_status;
+          
             if ($status === 'Red') {
                 $messages[] = "❌ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
             } elseif ($status === 'Yellow') {
