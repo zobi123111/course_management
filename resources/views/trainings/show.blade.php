@@ -483,10 +483,11 @@
                                     {{ $trainingEvent->student->fname ?? '' }} {{ $trainingEvent->student->lname ?? '' }}
                                 </p>
                             </div>
+                            <?php // dump($trainingEvent); ?>
                             <div class="col-md-6">
                                 <h6 class="text-muted mb-1"><i class="fas fa-id-card me-1"></i>License Number</h6>
                                 <p class="mb-0 fw-semibold">
-                                    {{ $trainingEvent->std_license_number ?? 'N/A' }}
+                                    {{$trainingEvent->student->licence ?? '' }}
                                 </p>
                             </div>
                         </div>
@@ -1111,7 +1112,8 @@
                                     $isLocked = $eventLesson->is_locked == 1;
                                 @endphp
 
-                             <?php
+
+                             <?php 
                                     if($lesson->lesson_type == "groundschool"){
                                         $duration = $trainingEvent->course->groundschool_hours ?? 0;
                                     } elseif($lesson->lesson_type == "simulator"){
@@ -1123,7 +1125,7 @@
                                     $formattedDuration = number_format($duration, 2);
                                     $hourLabel = ($formattedDuration == 1.00) ? 'hour' : 'hours';
                                 ?>
-                                                                    <div class="accordion-item">
+                                    <div class="accordion-item">
                                         <input type="hidden" name="tg_lesson_id[]" value="{{ $eventLesson->id }}">
                                                  <h2 class="accordion-header">
                                                     <button class="accordion-button {{ $isLocked ? 'collapsed' : '' }}"
@@ -1138,6 +1140,7 @@
 
 
                                                         @if($isLocked)
+                                                    
                                                             @if(auth()->user()?->is_admin==1)
                                                                 <button type="button"
                                                                         class="btn btn-sm btn-outline-secondary ms-2 unlock-lesson-btn"
@@ -1147,9 +1150,10 @@
                                                                         title="Unlock this event to enable grading edits.">
                                                                     <i class="bi bi-lock-fill"></i>
                                                                 </button>
-                                                            @else
+                                                            @else 
+                                                           
                                                                 <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
-                                                                    <i class="bi bi-lock-fill"></i>
+                                                                    <i class="bi bi-lock-fill " data-training-event-leeson="{{ $eventLesson->id }}"></i>
                                                                 </span>
                                                             @endif
                                                         @endif
@@ -1788,6 +1792,26 @@
         setTimeout(function() {
             $('#successMessage').fadeOut('slow');
         }, 2000);
+
+    $(document).on('click', '.unlock-event-icon', function () {
+        let eventId = $(this).data('training-event-leeson'); 
+
+        if (confirm('Are you sure you want to unlock this training event?')) {
+            $.ajax({
+                url: '/grading/unlock/' + eventId,
+                type: 'POST',
+                data: {"_token": "{{ csrf_token() }}"},
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Unlock failed:', xhr.responseText);
+                }
+            });
+        }
+    });
 
     });
 </script>
