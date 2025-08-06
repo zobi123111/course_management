@@ -118,7 +118,7 @@ class TrainingEvents extends Model
     {
         return $this->hasOne(TrainingEventLessons::class, 'training_event_id')->orderBy('id');
     }
-
+ 
     public function documents()
     {
         return $this->hasMany(TrainingEventDocument::class, 'training_event_id');

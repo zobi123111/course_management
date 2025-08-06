@@ -471,6 +471,7 @@ class TrainingEventsController extends Controller
     public function getTrainingEvent(Request $request) 
     {   
         $trainingEvent = TrainingEvents::with('eventLessons.lesson')->findOrFail(decode_id($request->eventId));
+      //  dd($trainingEvent);
         $ou_id = $trainingEvent['ou_id'];
         $instructors = User::where('ou_id', $ou_id)
                         ->where(function ($query) {
@@ -698,7 +699,7 @@ class TrainingEventsController extends Controller
             'course.documents', // Eager load course documents
             'group:id,name,user_ids',
             'instructor:id,fname,lname',
-            'student:id,fname,lname',
+            'student:id,fname,lname,licence',
             'resource:id,name',
             'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id',
             'eventLessons.instructor:id,fname,lname',
@@ -706,6 +707,8 @@ class TrainingEventsController extends Controller
             'trainingFeedbacks.question', // Eager load the question relationship
             'documents' // Eager load the training event documents
         ])->find(decode_id($event_id));
+
+       // dd($trainingEvent);
       
 
 
@@ -884,7 +887,7 @@ class TrainingEventsController extends Controller
         ));
     }
 
-    public function createGrading(Request $request)
+    public function createGrading(Request $request) 
     {
         //Validate the incoming data:
         $request->validate([
@@ -1154,9 +1157,18 @@ class TrainingEventsController extends Controller
         return view('trainings.grading-list', compact('event','defLessonGrading'));    
     }
     
+    // public function unlockEventGarding(Request $request, $event_id)
+    // {
+    //     $updateTrainingEvent = TrainingEvents::where('id', decode_id($event_id))->update(['is_locked' => 0]);
+    //     if($updateTrainingEvent){
+    //         Session::flash('message', 'Grading is unlocked for editing.');
+    //         return response()->json(['success' => true, 'message' => 'Grading is unlocked for editing.']);
+    //     }
+    // }
+
     public function unlockEventGarding(Request $request, $event_id)
     {
-        $updateTrainingEvent = TrainingEvents::where('id', decode_id($event_id))->update(['is_locked' => 0]);
+        $updateTrainingEvent = TrainingEventLessons::where('id', ($event_id))->update(['is_locked' => 0]);
         if($updateTrainingEvent){
             Session::flash('message', 'Grading is unlocked for editing.');
             return response()->json(['success' => true, 'message' => 'Grading is unlocked for editing.']);

@@ -1425,7 +1425,7 @@ class UserController extends Controller
                                 $expiryDate = $expiry_date_final[$childIndex] ?? null;
 
                                 if (!$issueDate) {
-                                    $existingChild = $existingRatings->where('rating_id', $childId)->first();dump($existingChild);
+                                    $existingChild = $existingRatings->where('rating_id', $childId)->first();
                                     $issueDate = optional($existingChild)->issue_date;
                                 }
 
@@ -1457,6 +1457,11 @@ class UserController extends Controller
                                     $filePath = optional($existingChild)->file_path;
                                 }
 
+                                $existingverified = $existingRatings->where('parent_id', $parentId)->where('user_id', $userToUpdate->id)->first();
+                                $admin_verified = $existingverified->admin_verified ?? 0;
+
+                               
+
                                 // Track combination
                                 $validCombinations[] = [
                                     'parent_id' => $parentId,
@@ -1474,6 +1479,7 @@ class UserController extends Controller
                                     'expiry_date' => $expiryDate,
                                     'file_path'   => $filePath,
                                     'linked_to'   => 'licence_1',
+                                    'admin_verified' => $admin_verified
                                     
                                 ]);
                             }
@@ -1500,6 +1506,8 @@ class UserController extends Controller
                             if (!$filePath && $isExistingParent) {
                                 $filePath = optional($existingParentRating)->file_path;
                             }
+                             $admin_verified = $existingParentRating->admin_verified ?? 0;
+                            //dump($admin_verified);
 
                             // Track combination for parent-only (rating_id = null)
                             $validCombinations[] = [
@@ -1523,7 +1531,7 @@ class UserController extends Controller
                          
 
                             // Save parent-only
-                            UserRating::create([
+                            UserRating::create([ 
                                 'user_id'     => $request->edit_form_id,
                                 'rating_id'   => null,
                                 'parent_id'   => $parentId,
@@ -1531,6 +1539,7 @@ class UserController extends Controller
                                 'expiry_date' => $expiryDate,
                                 'file_path'   => $filePath,
                                 'linked_to'   => 'licence_1',
+                                'admin_verified' => $admin_verified
                                 
                             ]);
                         }
@@ -1633,6 +1642,9 @@ class UserController extends Controller
                                     $filePath = optional($existingChild)->file_path;
                                 }
 
+                               $existingverified = $existingRatings->where('parent_id', $parentId_licence2)->where('user_id', $userToUpdate->id)->first();
+                               $admin_verified = $existingverified->admin_verified ?? 0;
+
                                 // Track valid combination
                                 $validCombinationsLicence2[] = [
                                     'parent_id' => $parentId_licence2,
@@ -1647,6 +1659,7 @@ class UserController extends Controller
                                     'expiry_date' => $expiryDate,
                                     'file_path'   => $filePath,
                                     'linked_to'   => 'licence_2',
+                                    'admin_verified' => $admin_verified
                                 ]);
                             }
 
@@ -1672,6 +1685,7 @@ class UserController extends Controller
                             if (!$filePath && $isExistingParent) {
                                 $filePath = optional($existingParentRating)->file_path;
                             }
+                            $admin_verified = $existingParentRating->admin_verified ?? 0;
 
                             // Track parent-only combination
                             $validCombinationsLicence2[] = [
@@ -1701,6 +1715,7 @@ class UserController extends Controller
                                 'expiry_date' => $expiryDate,
                                 'file_path'   => $filePath,
                                 'linked_to'   => 'licence_2',
+                                'admin_verified' => $admin_verified
                             ]);
                         }
                     }

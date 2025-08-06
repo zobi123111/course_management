@@ -139,7 +139,8 @@
 
                                         <div class="card mb-3">
                                             <div class="card-body">
-                                                <h6 class="card-title text-primary">{{ $parent->rating->name }}</h6>
+                                                <h6 class="card-title text-primary">{{ $parent->rating->name }}</h6>  
+                                             
                                                 <!-- Parent info -->
                                             <div class="form-check form-switch mb-0">
                                                 <input class="form-check-input verify-rating" type="checkbox" id="rating_verify" data-linkedTo="{{ $group['children'][0]['linked_to'] }}" data-userId = "{{  $group['children'][0]['user_id'] }}" data-parent_id ="{{ $group['children'][0]['parent_id'] }}"
@@ -265,7 +266,7 @@
 
                                         <div class="card mb-3 me-3" style="width: 18rem;">
                                             <div class="card-body">
-                                                <h6 class="card-title text-primary">{{ $parent->rating->name ?? 'N/A' }}</h6>
+                                                <h6 class="card-title text-primary">{{ $parent->rating->name ?? 'N/A' }}</h6> 
                                                      <div class="form-check form-switch mb-0">
                                                 <input class="form-check-input verify-rating" type="checkbox" id="rating_verify" data-linkedTo="{{ $group['children'][0]['linked_to'] }}" data-userId = "{{  $group['children'][0]['user_id'] }}" data-parent_id ="{{ $group['children'][0]['parent_id'] }}"
                                                  {{ $group['children'][0]['admin_verified'] ? 'checked disabled' : '' }}  >
@@ -375,28 +376,30 @@
 
                     <!-- Medical Details -->
                     <div class="col-md-12 mb-4">
-                        <h5 class="text-muted mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>UK Medical Details</h5>
+                        <h5 class="text-muted mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>UK Medical Details</h5> 
                         @if($document && $document->medical && !empty($document->medical_issuedby) && !empty($document->medical_class) && !empty($document->medical_issuedate))
                         <div class="d-flex flex-wrap align-items-center gap-3">
                             <p class="mb-0"><strong>Issued By:</strong> {{ $document->medical_issuedby }}</p>
                             <p class="mb-0"><strong>Class:</strong> {{ $document->medical_class }}</p>
                             <p class="mb-0"><strong>Issue Date:</strong> {{ $document->medical_issuedate }}</p>
                             <p class="mb-0"><strong>Expiry Date:</strong> {{ $document->medical_expirydate }}</p>
+                             
+                                @if($user->medical_adminRequired == 1 && $document->medical_file || $document->medical_file == null)
+                                @if($document->medical_file != null)
+                                <a href="{{ Storage::url($document->medical_file) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
+                                @endif
 
-                            @if($user->medical_adminRequired == 1 && $document->medical_file)
-                            <a href="{{ Storage::url($document->medical_file) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input verify-toggle" type="checkbox" id="medical_verify"
+                                        data-user-id="{{ encode_id($user->id) }}" data-type="medical"
+                                        {{ $document->medical_verified ? 'checked disabled' : '' }}>
+                                    <label class="form-check-label" for="medical_verify">{{ $document->medical_verified ? 'Verified' : 'Mark as Verified' }}</label>
+                                </div>
+                                @endif
 
-                            <div class="form-check form-switch mb-0">
-                                <input class="form-check-input verify-toggle" type="checkbox" id="medical_verify"
-                                    data-user-id="{{ encode_id($user->id) }}" data-type="medical"
-                                    {{ $document->medical_verified ? 'checked disabled' : '' }}>
-                                <label class="form-check-label" for="medical_verify">{{ $document->medical_verified ? 'Verified' : 'Mark as Verified' }}</label>
-                            </div>
-                            @endif
-
-                            @if($document->medical_verified)
-                            <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="medical">Invalidate</button>
-                            @endif
+                                @if($document->medical_verified)
+                                <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="medical">Invalidate</button>
+                                @endif
                         </div>
                         @else
                         <p class="text-muted">No medical details available.</p>
