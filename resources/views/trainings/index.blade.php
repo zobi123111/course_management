@@ -640,8 +640,6 @@ $(document).ready(function() {
 
     $(document).on('change', '#select_org_unit, #edit_ou_id', function() {      
         var ou_id = $(this).val(); 
-       
-        // Determine which modal is being used
         var isEditModal = $(this).attr('id') === 'edit_ou_id';
 
         // Select correct dropdowns based on the modal
@@ -732,9 +730,9 @@ $(document).ready(function() {
         var ou_id = ouDropdown.length ? ouDropdown.val() : '{{ auth()->user()->ou_id }}';
         if (userId) {
             $.ajax({
-                url: "{{ url('/training/get_licence_number_and_courses') }}/" + userId + '/' + ou_id,
+                url: "{{ url('/training/get_licence_number_and_courses') }}/" + userId + '/' + ou_id, 
                 type: "GET",
-                success: function(response) {
+                success: function(response) { console.log(response);
                     if (response.success) {
                         var instructorCheckbox = isEditModal ? $('#edit_is_instructor_checkbox') : $('#is_instructor_checkbox');
                         // Update license number if available
@@ -774,7 +772,7 @@ $(document).ready(function() {
         }
     });
 
-    $(document).on('change', '#select_course, #edit_select_course', function () {
+    $(document).on('change', '#select_course, #edit_select_course', function () { 
         var courseId = $(this).val(); 
         var isEditForm = $(this).attr('id') === 'edit_select_course';
         var lessonContainer = isEditForm ? $('#editLessonDetailsContainer') : $('#lessonDetailsContainer');
@@ -798,12 +796,14 @@ $(document).ready(function() {
                 };
             });
         }
-
+            
+       var selectedStudentId = $('#select_user').val();
+   
         $.ajax({
             url: '{{ url("/training/get_course_lessons") }}',
-            type: 'GET',
-            data: { course_id: courseId },
-            success: function (response) {
+            type: 'GET', 
+            data: { course_id: courseId , selectedStudentId:selectedStudentId},
+            success: function (response) { console.log(response);
                 lessonContainer.empty(); // Clear existing lesson boxes
 
                 if (response.success && response.lessons.length > 0) {
@@ -813,8 +813,17 @@ $(document).ready(function() {
                             let prefillData = isEditForm && lessonPrefillMap[lesson.id] ? lessonPrefillMap[lesson.id] : {};
                             renderLessonBox(lesson, lessonContainer, prefillData, idx, mode);  
                         });
-                } else {
+                } 
+                else {
                     alert('No lessons found for the selected course.');
+                }
+                 if (response.licence && response.licence.number) { 
+                    $('#std_licence_number').empty();
+                    $('#std_licence_number').val(response.licence.number);
+                   
+                }
+                else{
+
                 }
             },
             error: function (xhr) {

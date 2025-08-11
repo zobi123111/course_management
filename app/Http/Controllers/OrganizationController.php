@@ -133,8 +133,8 @@ class OrganizationController extends Controller
             'description' => 'required',
             'status' => 'required',
             'organization_logo' => 'required|mimes:jpeg,png,jpg,gif,svg|max:25600',
-            'uk_ato_num' => 'required',
-            'easa_ato_num' => 'required'
+            // 'uk_ato_num' => 'required',
+            // 'easa_ato_num' => 'required'
 
         ];
        //  dd($request->organization_logo);
@@ -151,8 +151,8 @@ class OrganizationController extends Controller
         $request->validate($rules, [
             'description.required' => 'Description field is required',
             'status.required' => 'Status field is required',
-            'uk_ato_num.required' => 'The UK ATO number field is required',
-            'easa_ato_num.required' => 'The EASA ATO number field is required',
+            // 'uk_ato_num.required' => 'The UK ATO number field is required',
+            // 'easa_ato_num.required' => 'The EASA ATO number field is required',
         ]);
     
         // DB::beginTransaction();
@@ -254,13 +254,14 @@ class OrganizationController extends Controller
 
     public function updateOrgUnit(Request $request)
     {
+      //  dd($request->all());
         $rules = [
             'org_unit_name' => 'required|unique:organization_units,org_unit_name,' . $request->org_unit_id . ',id,deleted_at,NULL',
             'description' => 'required',
             'status' => 'required',
            'org_logo' => 'nullable|mimes:jpeg,png,jpg,gif,svg|max:25600',
-           'uk_ato_number'   => 'required',
-           'easa_ato_number'  =>'required'
+        //    'uk_ato_number'   => 'required',
+        //    'easa_ato_number'  =>'required'
         ];
       $logo_name = [];
         if ($request->hasFile('org_logo')) {
@@ -284,7 +285,7 @@ class OrganizationController extends Controller
         if(!$request->filled('user_id') && ($request->filled('edit_email') || $request->filled('edit_firstname') || $request->filled('edit_lastname') || $request->filled('password'))){
             $rules = array_merge($rules, [
                 'edit_firstname' => 'required',
-                'edit_lastname' => 'required',
+                'edit_lastname' => 'required', 
                 'edit_email' => 'required|email|unique:users,email,' . $request->user_id.',id,deleted_at,NULL',
                 'password' => 'required|min:6|confirmed',
             ]);
@@ -298,11 +299,12 @@ class OrganizationController extends Controller
             'edit_firstname.required' => 'The Firstname field is required',
             'edit_lastname.required' => 'The Lastname field is required',
             'edit_email.required' => 'The Email field is required',
-            'uk_ato_number.required' => 'The UK ATO number is required',
-            'easa_ato_number.required' => 'The EASA ATO number is required'
+            // 'uk_ato_number.required' => 'The UK ATO number is required',
+            // 'easa_ato_number.required' => 'The EASA ATO number is required'
         ]);
 
         DB::beginTransaction();
+      
 
         try {
             // Step 1: Update Organizational Unit
@@ -317,7 +319,7 @@ class OrganizationController extends Controller
             ]);
 
             // Step 2: Update existing user
-            if ($request->filled('user_id') && $request->filled('edit_email')) {
+            if ($request->filled('user_id') && $request->filled('edit_email')) { 
                 $user = User::findOrFail($request->user_id);
                 $user->update([
                     'fname' => $request->edit_firstname,
@@ -348,7 +350,7 @@ class OrganizationController extends Controller
             // Success
             Session::flash('message', 'Organizational Unit updated successfully' . ($request->filled('edit_email') ? ' with user' : ''));
             return response()->json(['success' => 'Organizational unit updated successfully' . ($request->filled('edit_email') ? ' with user' : '')]);
-        } catch (\Exception $e) {
+        } catch (\Exception $e) { 
             DB::rollBack();
 
             // Log error

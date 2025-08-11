@@ -483,13 +483,59 @@
                                     {{ $trainingEvent->student->fname ?? '' }} {{ $trainingEvent->student->lname ?? '' }}
                                 </p>
                             </div>
-                            <?php // dump($trainingEvent); ?>
-                            <div class="col-md-6">
-                                <h6 class="text-muted mb-1"><i class="fas fa-id-card me-1"></i>License Number</h6>
-                                <p class="mb-0 fw-semibold">
-                                    {{$trainingEvent->student->licence ?? '' }}
-                                </p>
-                            </div>
+                    <?php 
+                        $atoNum = strtolower($trainingEvent->course->ato_num);
+
+                        $isUK = str_contains($atoNum, 'uk');
+                        $isEASA = str_contains($atoNum, 'easa'); 
+
+                        $ukLicence = trim($trainingEvent->studentDocument->licence);
+                        $easaLicence = trim($trainingEvent->studentDocument->licence_2);
+
+                        // Determine label based only on atoNum
+                        if ($isUK && !$isEASA) {
+                            $label = "License Number (UK)";
+                            $student_licence = !empty($ukLicence) ? $ukLicence : 'N/A';
+
+                        } elseif ($isEASA && !$isUK) {
+                            $label = "License Number (EASA)";
+                            $student_licence = !empty($easaLicence) ? $easaLicence : 'N/A';
+
+                        } elseif ($isUK && $isEASA) {
+                            if (empty($ukLicence) && empty($easaLicence)) {
+                                // Generic case, but no data — fallback to general label
+                                $label = "License";
+                                $student_licence = "N/A";
+                            } else {
+                                $label = "License Number (Generic)";
+                                $student_licence = implode(', ', array_filter([$ukLicence, $easaLicence]));
+                            }
+
+                        } else {
+                            // Neither UK nor EASA in ATO number
+                            if (empty($ukLicence) && empty($easaLicence)) {
+                                $label = "License";
+                                $student_licence = "N/A";
+                            } else {
+                                $label = "License Number (Generic)";
+                                $student_licence = implode(', ', array_filter([$ukLicence, $easaLicence]));
+                            }
+                        }
+                        ?>
+
+
+
+
+
+
+<div class="col-md-6">
+    <h6 class="text-muted mb-1">
+        <i class="fas fa-id-card me-1"></i><?= $label ?>
+    </h6>
+    <p class="mb-0 fw-semibold"><?= $student_licence ?></p>
+</div>
+
+                          
                         </div>
                     </div>
                 </div>
@@ -1141,7 +1187,7 @@
 
                                                         @if($isLocked)
                                                     
-                                                            @if(auth()->user()?->is_admin==1)
+                                                            @if(auth()->user()?->is_admin==1) 
                                                                 <button type="button"
                                                                         class="btn btn-sm btn-outline-secondary ms-2 unlock-lesson-btn"
                                                                         data-event-id="{{ $eventLesson->training_event_id }}"

@@ -214,13 +214,13 @@
                         <div id="ou_id_error" class="text-danger error_e"></div>
                     </div>
                    
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label for="email" class="form-label">Select ATO Number<span class="text-danger">*</span></label>
                         <select class="form-select" name="ato_number" aria-label="Default select example" id="select_ato_number">
                          
                         </select>
                         <div id="ou_id_error" class="text-danger error_e"></div>
-                    </div>
+                    </div> -->
                      @endif
                     <div class="form-group">
                         <label for="firstname" class="form-label">Course Name<span class="text-danger">*</span></label>
@@ -423,6 +423,13 @@
                         </select>
                         <div id="ou_id_error" class="text-danger error_e"></div>
                     </div>
+                     <!-- <div class="form-group">
+                        <label for="email" class="form-label">Select ATO Number<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ato_number" aria-label="Default select example" id="edit_select_ato_number">
+                         
+                        </select>
+                        <div id="ato_num_error_up" class="text-danger error_e"></div>
+                    </div> -->
                     @endif
                     <div class="form-group">
                         <label for="firstname" class="form-label">Course Name<span class="text-danger">*</span></label>
@@ -744,7 +751,7 @@ $(document).ready(function() {
         var formData = new FormData($('#courses')[0]);
 
         $.ajax({
-            url: '{{ url("/course/create") }}',
+            url: '{{ url("/course/create") }}', 
             type: 'POST',
             data: formData,
             processData: false,
@@ -771,6 +778,7 @@ $(document).ready(function() {
         e.preventDefault();
         $('.error_e').html('');
         var courseId = $(this).data('course-id');
+        var $ato_numSelect = $("#edit_select_ato_number");
 
         $.ajax({
             url: "{{ url('/course/edit') }}",
@@ -778,7 +786,7 @@ $(document).ready(function() {
             data: {
                 id: courseId
             },
-            success: function(response) {
+            success: function(response) { 
                 // Populate course data
                 $('input[name="course_name"]').val(response.course.course_name);
                 $('input[name="course_id"]').val(response.course.id);
@@ -790,9 +798,10 @@ $(document).ready(function() {
                 $('#edit_status').val(response.course.status);
                 $('#edit_select_org_unit').val(response.course.ou_id);
 
+              
                 // Populate Resources
                 if (response.resources) {
-                    var $resourcesSelect = $('.resources-select');
+                    var $resourcesSelect = $('.resources-select'); 
                     $resourcesSelect.empty();
                     response.resources.forEach(function(resource) {
                         var isSelected = response.courseResources.some(cr => cr
@@ -801,9 +810,32 @@ $(document).ready(function() {
                             `<option value="${resource.id}" ${isSelected ? 'selected' : ''}>${resource.name}</option>`
                         );
                     });
-                    $resourcesSelect.val(response.courseResources.map(cr => cr
-                        .resources_id)).trigger('change');
+                    $resourcesSelect.val(response.courseResources.map(cr => cr.resources_id)).trigger('change');
                 }
+
+                //  if (response.ato_num && response.ato_num.length > 0) {
+                //      var ato_number = "<option value=''>Select ATO Number</option>"; 
+                //        ato_number += "<option value='generic'>Generic</option>"; 
+                //     var hasData = false;
+
+                //     $.each(response.ato_num, function(index, value) {
+                //     if (value.uk_ato_number) {
+                //             ato_number += "<option value='uk-"+value.uk_ato_number+"'>UK ATO Number - " + value.uk_ato_number + "</option>";
+                //             hasData = true;
+                //         }
+                //         if (value.easa_ato_number) {
+                //             ato_number += "<option value='easa-"+value.easa_ato_number+"'>EASA ATO Number - " + value.easa_ato_number + "</option>";
+                //             hasData = true;
+                //         }
+                //     });
+
+                //     if (!hasData) {
+                //         ato_number += "<option disabled>No ATO number found</option>";
+                //     }
+
+                //     $ato_numSelect.html(ato_number);
+                // }
+                  $('#edit_select_ato_number').val(response.course.ato_num);
 
                 // Fetch and Populate Groups Based on OU
                 $.ajax({
@@ -1394,33 +1426,28 @@ $(document).on("change", "#select_org_unit", function() {
                 $resourceSelect.html(resource);
                 $resourceSelect.trigger("change");
             } 
-          if (response.ato_num && response.ato_num.length > 0) {
-            var ato_number = "<option value=''>Select ATO Number</option>";
-            var hasData = false;
+            // if (response.ato_num && response.ato_num.length > 0) {
+            //     var ato_number = "<option value=''>Select ATO Number</option>"; 
+            //     ato_number += "<option value='generic'>Generic</option>"; 
+            //     var hasData = false;
 
-            $.each(response.ato_num, function(index, value) {
-               if (value.uk_ato_number) {
-                    ato_number += "<option value='uk'>UK ATO Number - " + value.uk_ato_number + "</option>";
-                    hasData = true;
-                }
-                if (value.easa_ato_number) {
-                    ato_number += "<option value='easa'>EASA ATO Number - " + value.easa_ato_number + "</option>";
-                    hasData = true;
-                }
-            });
+            //     $.each(response.ato_num, function(index, value) {
+            //         if (value.uk_ato_number) {
+            //             ato_number += "<option value='uk-" + value.uk_ato_number + "'>UK ATO Number - " + value.uk_ato_number + "</option>";
+            //             hasData = true;
+            //         }
+            //         if (value.easa_ato_number) {
+            //             ato_number += "<option value='easa-" + value.easa_ato_number + "'>EASA ATO Number - " + value.easa_ato_number + "</option>";
+            //             hasData = true;
+            //         }
+            //     });
 
-            if (!hasData) {
-                ato_number += "<option disabled>No ATO number found</option>";
-            }
+            //     if (!hasData) {
+            //         ato_number += "<option disabled>No ATO number found</option>";
+            //     }
 
-            $ato_numSelect.html(ato_number);
-        } else {
-            $ato_numSelect.html("<option disabled>No ATO number found</option>");
-        }
-
-
-            
-          
+            //     $ato_numSelect.html(ato_number);
+            // } 
         },
         error: function(xhr, status, error) {
             console.error(xhr.responseText);
@@ -1431,11 +1458,13 @@ $(document).on("change", "#select_org_unit", function() {
 
 // Edit ou   
 
-$('#edit_select_org_unit').on('change', function() {
+$('#edit_select_org_unit').on('change', function() { 
     var ou_id = $(this).val();
     var $groupSelect = $(".groups-select");
     var $resourceSelect = $(".resources-select");
     $groupSelect.empty().append("<option value=''>Select Group</option>").trigger("change");
+    var $ato_numSelect = $("#edit_select_ato_number");
+
     $.ajax({
         url: "/group/get_ou_group/",
         type: "GET",
@@ -1462,7 +1491,32 @@ $('#edit_select_org_unit').on('change', function() {
                 });
                 $resourceSelect.html(options);
                 $resourceSelect.trigger("change");
-            } else {
+            } 
+
+        //         if (response.ato_num && response.ato_num.length > 0) {
+        //             var ato_number = "<option value=''>Select ATO Number</option>"; 
+        //             var hasData = false;
+
+        //             $.each(response.ato_num, function(index, value) {
+        //             if (value.uk_ato_number) {
+        //                     ato_number += "<option value='uk-"+value.uk_ato_number+"'>UK ATO Number - " + value.uk_ato_number + "</option>";
+        //                     hasData = true;
+        //                 }
+        //                 if (value.easa_ato_number) {
+        //                     ato_number += "<option value='easa-"+value.easa_ato_number+"'>EASA ATO Number - " + value.easa_ato_number + "</option>";
+        //                     hasData = true;
+        //                 }
+        //             });
+
+        //             if (!hasData) {
+        //                 ato_number += "<option disabled>No ATO number found</option>";
+        //             }
+
+        //             $ato_numSelect.html(ato_number);
+        // }
+     
+            
+            else {
                 console.error("Invalid response format:", response);
             }
         },

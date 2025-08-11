@@ -110,7 +110,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/training/get_licence_number_and_courses/{user_id}/{ou_id}', [TrainingEventsController::class, 'getStudentLicenseNumberAndCourses'])->name('training.get_licence_number_and_courses');
     Route::post('/grading/acknowledge', [TrainingEventsController::class, 'acknowledgeGarding'])->name('grading.acknowledge');
     Route::get('/training/get_instructor_license_no/{instructor_id}', [TrainingEventsController::class, 'getInstructorLicenseNumber'])->name('training.get_instructor_license_no');
-    Route::get('/lesson-report/download/{event_id}/{lesson_id}', [TrainingEventsController::class, 'downloadLessonReport'])
+    Route::get('/lesson-report/download/{event_id}/{lesson_id}/{userID}', [TrainingEventsController::class, 'downloadLessonReport'])
     ->name('lesson.report.download');
     Route::post('/training/{trainingEvent}/upload-documents', [TrainingEventsController::class, 'uploadDocuments'])
     ->name('training.upload-documents');
@@ -184,7 +184,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     
     //Courses 
     Route::get('/courses', [CourseController::class, 'index'])->name('course.index');
-    Route::post('/course/create', [CourseController::class, 'createCourse'])->name('course.store');
+    Route::post('/course/create', [CourseController::class, 'createCourse'])->name('course.store'); 
     Route::get('/course/edit', [CourseController::class, 'getCourse'])->name('course.edit');
     Route::post('/course/update', [CourseController::class, 'updateCourse'])->name('course.update');
     Route::post('/course/delete', [CourseController::class, 'deleteCourse'])->name('course.delete'); 
@@ -252,7 +252,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/training/overall_assessment', [TrainingEventsController::class, 'storeOverallAssessment'])->name('training.overall_assessment');
     // Route::get('/grading', [TrainingEventsController::class, 'getStudentGrading'])->name('grading.list');
     Route::get('/training/grading-list/{event_id}', [TrainingEventsController::class, 'getStudentGrading'])->name('training.grading-list');
-    Route::post('/grading/unlock/{event_id}', [TrainingEventsController::class, 'unlockEventGarding'])->name('grading.unlock');
+    Route::post('/grading/unlock/{event_id}', [TrainingEventsController::class, 'unlockEventGarding'])->name('grading.unlock'); 
 
     // Course Template
     Route::get('/course-template', [CourseTemplateController::class, 'index'])->name('course-template.index');
