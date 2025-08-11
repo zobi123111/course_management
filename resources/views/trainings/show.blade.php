@@ -489,8 +489,17 @@
                         $isUK = str_contains($atoNum, 'uk');
                         $isEASA = str_contains($atoNum, 'easa'); 
 
-                        $ukLicence = trim($trainingEvent->studentDocument->licence);
-                        $easaLicence = trim($trainingEvent->studentDocument->licence_2);
+                        $ukLicence = '';
+                        $easaLicence = '';
+                       if(isset($trainingEvent->studentDocument->licence)){
+                             $ukLicence = trim($trainingEvent->studentDocument->licence);
+                       }
+
+                        if(isset($trainingEvent->studentDocument->licence_2)){
+                            $easaLicence = trim($trainingEvent->studentDocument->licence_2);
+                       }
+                        
+                       
 
                         // Determine label based only on atoNum
                         if ($isUK && !$isEASA) {
@@ -505,7 +514,7 @@
                             if (empty($ukLicence) && empty($easaLicence)) {
                                 // Generic case, but no data — fallback to general label
                                 $label = "License";
-                                $student_licence = "N/A";
+                                $student_licence = "N/A"; 
                             } else {
                                 $label = "License Number (Generic)";
                                 $student_licence = implode(', ', array_filter([$ukLicence, $easaLicence]));
