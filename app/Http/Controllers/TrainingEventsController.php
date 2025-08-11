@@ -19,6 +19,8 @@ use App\Models\OverallAssessment;
 use App\Models\DefTask;
 use App\Models\DefLesson;
 use App\Models\DefLessonTask;
+use App\Models\UserDocument;
+
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -275,7 +277,38 @@ class TrainingEventsController extends Controller
 
     public function getCourseLessons(Request $request)
     {
-        $course = Courses::with(['courseLessons', 'resources'])->find($request->course_id);
+        $student_id = $request->selectedStudentId;
+
+         $course = Courses::with(['courseLessons', 'resources'])->find($request->course_id);
+        
+       $get_licence = UserDocument::where('user_id', $student_id) ->select('licence', 'licence_2')->first();
+
+        $uk_licence = $get_licence->licence ?? null;
+        $easa_licence = $get_licence->licence_2 ?? null;
+     $ato_num = strtolower($course->ato_num); 
+
+        if (str_contains($ato_num, 'uk')) {
+            $licence_type = [
+                'flag' => 'uk',
+                'number' => $uk_licence,
+            ];
+        } 
+        if (str_contains($ato_num, 'easa')) {
+                  $licence_type = [
+                'flag' => 'easa',
+                'number' => $easa_licence,
+            ];
+        }
+        else {
+             $licence_type = [
+                'flag' => 'generic',
+                'number' => $uk_licence,
+            ];
+           
+        }
+
+       
+        
 
         if (!$course) {
             return response()->json([
@@ -288,6 +321,7 @@ class TrainingEventsController extends Controller
             'success'   => true,
             'lessons'   => $course->courseLessons,
             'resources' => $course->resources,
+            'licence'   => $licence_type,
         ]);
     }
 
@@ -652,7 +686,7 @@ class TrainingEventsController extends Controller
                     $creditMinutes = 0;
                 }
             }
-          //  dump($creditMinutes);
+       
 
             TrainingEventLessons::updateOrCreate(
                 [
@@ -694,8 +728,8 @@ class TrainingEventsController extends Controller
     public function showTrainingEvent(Request $request, $event_id)
     {
         $currentUser = auth()->user();
-        $trainingEvent = TrainingEvents::with([
-            'course:id,course_name,course_type,duration_value,duration_type,groundschool_hours,simulator_hours',
+        $trainingEvent = TrainingEvents::with([ 
+            'course:id,course_name,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num',
             'course.documents', // Eager load course documents
             'group:id,name,user_ids',
             'instructor:id,fname,lname',
@@ -705,11 +739,9 @@ class TrainingEventsController extends Controller
             'eventLessons.instructor:id,fname,lname',
             'eventLessons.resource:id,name',
             'trainingFeedbacks.question', // Eager load the question relationship
-            'documents' // Eager load the training event documents
+            'documents',
+            'studentDocument'
         ])->find(decode_id($event_id));
-
-       // dd($trainingEvent);
-      
 
 
         if (!$trainingEvent) {
@@ -865,26 +897,9 @@ class TrainingEventsController extends Controller
         }
 
         $course = Courses::with('resources')->find($trainingEvent->course_id);
-        $resources = $course ? $course->resources : collect(); // avoids null access
-        //dd($trainingEvent);
-        //dd($eventLessons);
-        return view('trainings.show', compact(
-            'trainingEvent', 
-            'student', 
-            'overallAssessments', 
-            'eventLessons',
-            'taskGrades',
-            'competencyGrades',
-            'trainingFeedbacks',
-            'isGradingCompleted',
-            'resources',
-            'instructors',
-            'defTasks',
-            'deferredLessons',
-            'defLessonTasks',
-            'deferredTaskIds',
-            'gradedDefTasksMap'
-        ));
+        $resources = $course ? $course->resources : collect(); 
+        
+        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons','taskGrades', 'competencyGrades','trainingFeedbacks','isGradingCompleted','resources','instructors','defTasks','deferredLessons','defLessonTasks','deferredTaskIds','gradedDefTasksMap'));
     }
 
     public function createGrading(Request $request) 
@@ -1141,20 +1156,15 @@ class TrainingEventsController extends Controller
         $defLessonGrading = DefLessonTask::with(['task', 'defLesson'])
             ->where('event_id', $event->id)
             ->where('user_id', auth()->id())
-            // ->whereNotNull('task_grade') // Only show newly graded items
             ->get()
             ->groupBy('def_lesson_id');
 
             if ($event) {
-            // return redirect()->route('training.index')->with('message', 'Grading not found for this event.');
             $event->student_feedback_submitted = $event->trainingFeedbacks()->where('user_id', auth()->user()->id)->exists();    
             // abort(404, 'Training Event not found.');
             }    
-        
-        // dd($event->student_feedback_submitted);
-        // dd($event->course->enable_feedback);
-    
-        return view('trainings.grading-list', compact('event','defLessonGrading'));    
+     
+        return view('trainings.grading-list', compact('event','defLessonGrading'));     
     }
     
     // public function unlockEventGarding(Request $request, $event_id)
@@ -1197,10 +1207,10 @@ class TrainingEventsController extends Controller
         return response()->json(['success' => false, 'message' => 'Acknowledgment failed'], 500);
     }
     
-    public function downloadLessonReport($event_id, $lesson_id)
+    public function downloadLessonReport($event_id, $lesson_id, $userID)
     {
-        $userId = auth()->id();
-    
+        $userId = $userID;
+        // dd($lesson_id);
         $event = TrainingEvents::with([
             'course:id,course_name',
             'orgUnit:id,org_unit_name,org_logo',
@@ -1212,7 +1222,7 @@ class TrainingEventsController extends Controller
             },
             'taskGradings' => function ($query) use ($userId, $lesson_id) {
                 $query->where('user_id', $userId)
-                      ->where('lesson_id', $lesson_id)
+                       ->where('lesson_id', $lesson_id)
                       ->with('subLesson:id,title,grade_type');
             },
             'competencyGradings' => function ($query) use ($userId, $lesson_id) {
@@ -1225,6 +1235,9 @@ class TrainingEventsController extends Controller
             'eventLessons.instructor:id,fname,lname',
             'eventLessons.resource:id,id,name,type,class,registration',
         ])->findOrFail($event_id);
+
+
+       // dd($event);
     
         $eventLesson = $event->eventLessons->first();
     
@@ -1233,6 +1246,7 @@ class TrainingEventsController extends Controller
         }
     
         $lesson = $eventLesson->lesson;
+      //  return view('trainings.lesson-report', compact('event', 'lesson', 'eventLesson'));
     
         $pdf = PDF::loadView('trainings.lesson-report', [ 
             'event' => $event,

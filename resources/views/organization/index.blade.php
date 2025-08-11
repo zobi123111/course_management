@@ -163,18 +163,16 @@
                         <input type="text" name="org_unit_name" class="form-control">
                         <div id="org_unit_name_error" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
-                        <label for="UKATO" class="form-label">UK ATO NUMBER<span
-                                class="text-danger">*</span></label>
+                    <!-- <div class="form-group">
+                        <label for="UKATO" class="form-label">UK ATO NUMBER</label>
                         <input type="text" name="uk_ato_num" class="form-control">
                         <div id="uk_ato_num_error" class="text-danger error_e"></div>
                     </div>
                         <div class="form-group">
-                        <label for="EASAATO" class="form-label">EASA ATO NUMBER<span
-                                class="text-danger">*</span></label>
+                        <label for="EASAATO" class="form-label">EASA ATO NUMBER</label>
                         <input type="text" name="easa_ato_num" class="form-control">
                         <div id="easa_ato_num_error" class="text-danger error_e"></div>
-                    </div>
+                    </div> -->
                     <div class="form-group">
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="description" rows="3"></textarea>
@@ -250,18 +248,16 @@
                         <input type="hidden" name="org_unit_id" class="form-control">
                         <div id="org_unit_name_error_up" class="text-danger error_e"></div>
                     </div>
-                       <div class="form-group">
-                        <label for="UKATO" class="form-label">UK ATO NUMBER<span
-                                class="text-danger">*</span></label>
+                    <!-- <div class="form-group">
+                        <label for="UKATO" class="form-label">UK ATO NUMBER</label>
                         <input type="text" name="uk_ato_number" id="uk_ato_number" class="form-control">
                         <div id="uk_ato_number_error_up" class="text-danger error_e"></div>
                     </div>
-                        <div class="form-group">
-                        <label for="EASAATO" class="form-label">EASA ATO NUMBER<span
-                                class="text-danger">*</span></label>
+                    <div class="form-group">
+                        <label for="EASAATO" class="form-label">EASA ATO NUMBER</label>
                         <input type="text" name="easa_ato_number" id="easa_ato_number" class="form-control">
                         <div id="easa_ato_number_error_up" class="text-danger error_e"></div>
-                    </div>
+                    </div> -->
                     <div class="form-group">
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="description" id="edit_description" rows="3"></textarea>

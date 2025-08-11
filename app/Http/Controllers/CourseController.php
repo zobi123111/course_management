@@ -122,7 +122,6 @@ class CourseController extends Controller
     public function createCourse(Request $request)
     {
 
-        // dd($request->all());
         if (!$request->enable_feedback) {
             $request->merge(['feedback_questions' => null]);
         }
@@ -258,12 +257,15 @@ class CourseController extends Controller
         $allGroups = Group::all();
         $courseResources = CourseResources::where('courses_id', decode_id($request->id))->get();
         $resources = Resource::where('ou_id', $ou_id)->get();
+
+         $ato_num = OrganizationUnits::where('id', $ou_id)->get();
         
         return response()->json([
             'course' => $course,
             'allGroups' => $allGroups,
             'courseResources' => $courseResources,
-            'resources' => $resources
+            'resources' => $resources,
+            'ato_num' => $ato_num
         ]);
     }
 
@@ -278,7 +280,7 @@ class CourseController extends Controller
 
     // Update course
     public function updateCourse(Request $request)
-    {
+    { 
         $request->validate([
             'course_name' => 'required',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
@@ -344,6 +346,7 @@ class CourseController extends Controller
             'groundschool_hours' => $request->groundschool_hours,
             'enable_simulator_time' => (int) $request->input('enable_simulator_time', 0),
             'simulator_hours' => $request->simulator_hours,
+            'ato_num' => $request->ato_number ?? null
         ]);
     
         // Update groups and resources relationships

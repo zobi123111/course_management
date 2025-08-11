@@ -64,6 +64,11 @@ class TrainingEvents extends Model
         return $this->belongsTo(User::class, 'student_id', 'id'); // Fixed foreign key
     }
 
+    public function studentDocument()
+    {
+        return $this->hasOne(UserDocument::class, 'user_id', 'student_id');
+    }
+
     public function recommendedInstructor()
     {
         return $this->belongsTo(User::class, 'recommended_by_instructor_id');
@@ -123,6 +128,7 @@ class TrainingEvents extends Model
     {
         return $this->hasMany(TrainingEventDocument::class, 'training_event_id');
     }
+
 
     public function getIsGradedAttribute() 
     {

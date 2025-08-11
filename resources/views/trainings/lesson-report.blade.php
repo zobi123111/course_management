@@ -39,7 +39,7 @@
             <strong>End Time:</strong> {{ date('h:i A', strtotime($eventLesson?->end_time)) }}<br>
             <strong>Total Lesson Time:</strong> {{ \Carbon\Carbon::parse($eventLesson?->end_time)->diffInMinutes(\Carbon\Carbon::parse($eventLesson?->start_time)) }} minutes<br>
             <strong>Departure Airfield:</strong> {{ $eventLesson?->departure_airfield ?? 'N/A' }}<br>
-            <strong>Destination Airfield:</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}<br>
+            <strong>Destination Airfield:</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}<br> 
 
             <strong>Resource :</strong> {{ $eventLesson?->resource_name ?? 'N/A' }}<br>
             @php
@@ -55,8 +55,8 @@
         </div>
 
         <div class="section">
-            <h2>Tasks Completed</h2>
-            @if($event->taskGradings->isNotEmpty() && $event->taskGradings->contains('subLesson'))
+            <h2>Tasks Completed</h2>    
+            @if($event->taskGradings->isNotEmpty() && $event->taskGradings->pluck('subLesson')->filter()->isNotEmpty())
             <table>
                 <thead>
                     <tr>
@@ -67,6 +67,7 @@
                 </thead>
                 <tbody>
                     @foreach($event->taskGradings as $task)
+                  
                         <tr>
                             <td>{{ $task->subLesson->title ?? 'N/A' }}</td>
                             <td>
@@ -99,6 +100,7 @@
                     </thead>
                     <tbody>
                         @foreach($event->competencyGradings as $competency)
+                          
                             @foreach(['kno','pro','com','fpa','fpm','ltw','psd','saw','wlm'] as $comp)
                                 <tr>
                                     <td>{{ strtoupper($comp) }}</td>
