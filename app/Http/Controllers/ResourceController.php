@@ -21,16 +21,45 @@ class ResourceController extends Controller
     {
         $organizationUnits = OrganizationUnits::all();
         $ou_id = auth()->user()->ou_id;
+      
         if (checkAllowedModule('courses', 'course.index')->isNotEmpty() && Auth()->user()->is_owner == 1) {
             $groups = Group::all();  
         }else{
             $groups = Group::where('ou_id', $ou_id)->get();            
         }
+        
         if ($request->ajax()) {
             if (auth()->user()->is_owner == 1) {
                 $query = Resource::with('orgUnit');
-            } else {
-                $query = Resource::with('orgUnit')->where('ou_id', $ou_id);
+            } 
+             elseif(Auth()->user()->is_admin == 1){
+                $query = Resource::with('orgUnit')->where('ou_id', $ou_id);  
+             }
+            
+            
+            else { 
+                // $query = Resource::with('orgUnit')->where('ou_id', $ou_id);  
+                $currentUser = auth()->user();
+                $userId = $currentUser->id;
+               // dd($userId);
+                    $groups = Group::all();
+
+                    $filteredGroups = $groups->filter(function ($group) use ($userId) {
+                        $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);   
+                                 
+                        return in_array($userId, $userIds);
+                    });
+                    
+                    $groupIds = $filteredGroups->pluck('id')->toArray();
+                  
+                   
+                   $query = Resource::with('orgUnit')
+                            ->join('group_resource', 'resources.id', '=', 'group_resource.resource_id')
+                            ->whereIn('group_resource.group_id', $groupIds)
+                            ->where('resources.ou_id', $ou_id)
+                            ->select('resources.*') // keep only resource columns so Eloquent hydrates models
+                            ->distinct();
+ 
             }
 
             // Store unfiltered count before search
@@ -106,7 +135,7 @@ class ResourceController extends Controller
                 'data' => $data,
             ]);
         } else {
-            return view('resource.index', compact('organizationUnits','groups'));
+            return view('resource.index', compact('organizationUnits','groups')); 
         }
     }
 

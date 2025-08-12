@@ -260,7 +260,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/course-template/store', [CourseTemplateController::class, 'saveCourseTemplate'])->name('course-template.store');
 
     // Resources Routes
-    Route::get('/resource', [ResourceController::class, 'resource_list'])->name('resource.index');
+    Route::get('/resource', [ResourceController::class, 'resource_list'])->name('resource.index'); 
     Route::post('/resource/save', [ResourceController::class, 'save'])->name('save.index');
     Route::get('/resource/edit', [ResourceController::class, 'edit'])->name('edit.index');
     Route::post('/resourse/update', [ResourceController::class, 'update'])->name('update.index'); 
