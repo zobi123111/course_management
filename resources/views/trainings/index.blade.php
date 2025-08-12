@@ -870,7 +870,7 @@ $(document).ready(function() {
         $('.error_e').html('');
         var eventId = $(this).data('event-id');
         $.ajax({
-            url: "{{ url('/training/edit') }}",
+            url: "{{ url('/training/edit') }}", 
             type: 'GET',
             data: { eventId: eventId },
             success: async function (response) {
@@ -884,10 +884,10 @@ $(document).ready(function() {
                     const selectedResource = event.resource_id;
                     const selectedCourse = event.course_id;
                   
-
+                     
                     // Set static values
                     $('#edit_event_id').val(event.id);
-                    $('#edit_std_licence_number').val(event.std_licence_number);
+                    $('#edit_std_licence_number').val(response.licence_number);
                     $('#edit_event_date').val(event.event_date);
                     $('#edit_total_time').val(moment(event.total_time, 'HH:mm:ss').format('HH:mm'));
                       if (event.entry_source === 'instructor') 

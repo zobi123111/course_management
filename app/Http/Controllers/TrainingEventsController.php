@@ -234,7 +234,7 @@ class TrainingEventsController extends Controller
 
     public function getStudentLicenseNumberAndCourses(Request $request,$user_id,$ou_id)
     {
-        $user = User::with('documents')->find($user_id);
+        $user = User::with('documents')->find($user_id); 
         $groups = Group::where('ou_id', $ou_id)
         ->whereJsonContains('user_ids', strval($user_id)) // Ensure user_id is a string
         ->pluck('id'); // Get only the group IDs
@@ -504,8 +504,57 @@ class TrainingEventsController extends Controller
 
     public function getTrainingEvent(Request $request) 
     {   
-        $trainingEvent = TrainingEvents::with('eventLessons.lesson')->findOrFail(decode_id($request->eventId));
-      //  dd($trainingEvent);
+       
+        $trainingEvent = TrainingEvents::with('eventLessons.lesson','course:id,course_name,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num')->findOrFail(decode_id($request->eventId));
+       $atoNum = strtolower($trainingEvent->course->ato_num);
+    
+                $isUK   = str_contains($atoNum, 'uk');
+                $isEASA = str_contains($atoNum, 'easa');
+
+                $ukLicence   = isset($trainingEvent->studentDocument->licence) 
+                            ? trim($trainingEvent->studentDocument->licence) : '';
+                $easaLicence = isset($trainingEvent->studentDocument->licence_2) 
+                            ? trim($trainingEvent->studentDocument->licence_2) : '';
+
+                // Helper to pick the first available licence or N/A
+                $getLicence = function() use ($ukLicence, $easaLicence) {
+                    return !empty($ukLicence) ? $ukLicence 
+                        : (!empty($easaLicence) ? $easaLicence : '');
+                };
+
+                if ($isUK && !$isEASA) {
+                    $label = "License Number (UK)";
+                    $student_licence = $getLicence();
+
+                } elseif ($isEASA && !$isUK) {
+                    $label = "License Number (EASA)";
+                    $student_licence = $getLicence();
+
+                } elseif ($isUK && $isEASA) {
+                    if (empty($ukLicence) && empty($easaLicence)) {
+                        $label = "License";
+                        $student_licence = $getLicence();
+                    } else {
+                        $label = "License Number (Generic)";
+                        $student_licence = implode(', ', array_filter([$ukLicence, $easaLicence]));
+                    }
+
+                } else {
+                    if (empty($ukLicence) && empty($easaLicence)) {
+                        $label = "License";
+                        $student_licence = $getLicence();
+                    } else {
+                        $label = "License Number (Generic)";
+                        $student_licence = implode(', ', array_filter([$ukLicence, $easaLicence]));
+                    }
+                }
+              
+
+
+
+
+        $user_id =  $trainingEvent->student_id;
+        $user = User::with('documents')->find($user_id); 
         $ou_id = $trainingEvent['ou_id'];
         $instructors = User::where('ou_id', $ou_id)
                         ->where(function ($query) {
@@ -517,7 +566,7 @@ class TrainingEventsController extends Controller
                     
         if($trainingEvent)
         {
-            return response()->json(['success'=> true,'trainingEvent'=> $trainingEvent, 'instructors' => $instructors]);
+            return response()->json(['success'=> true,'trainingEvent'=> $trainingEvent, 'instructors' => $instructors,'licence_number' => $student_licence]);
         }else{
             return response()->json(['success'=> false, 'message' => 'Training event Not found']);
         }
@@ -742,6 +791,7 @@ class TrainingEventsController extends Controller
             'documents',
             'studentDocument'
         ])->find(decode_id($event_id));
+      
 
 
         if (!$trainingEvent) {
@@ -896,7 +946,7 @@ class TrainingEventsController extends Controller
             })->with('roles')->get();
         }
 
-        $course = Courses::with('resources')->find($trainingEvent->course_id);
+        $course = Courses::with('resources')->find($trainingEvent->course_id); 
         $resources = $course ? $course->resources : collect(); 
         
         return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons','taskGrades', 'competencyGrades','trainingFeedbacks','isGradingCompleted','resources','instructors','defTasks','deferredLessons','defLessonTasks','deferredTaskIds','gradedDefTasksMap'));
