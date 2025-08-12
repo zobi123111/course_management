@@ -214,13 +214,13 @@
                         <div id="ou_id_error" class="text-danger error_e"></div>
                     </div>
                    
-                    <!-- <div class="form-group">
+                    <div class="form-group">
                         <label for="email" class="form-label">Select ATO Number<span class="text-danger">*</span></label>
                         <select class="form-select" name="ato_number" aria-label="Default select example" id="select_ato_number">
                          
                         </select>
                         <div id="ou_id_error" class="text-danger error_e"></div>
-                    </div> -->
+                    </div>
                      @endif
                     <div class="form-group">
                         <label for="firstname" class="form-label">Course Name<span class="text-danger">*</span></label>
@@ -423,13 +423,13 @@
                         </select>
                         <div id="ou_id_error" class="text-danger error_e"></div>
                     </div>
-                     <!-- <div class="form-group">
+                     <div class="form-group">
                         <label for="email" class="form-label">Select ATO Number<span class="text-danger">*</span></label>
                         <select class="form-select" name="ato_number" aria-label="Default select example" id="edit_select_ato_number">
                          
                         </select>
                         <div id="ato_num_error_up" class="text-danger error_e"></div>
-                    </div> -->
+                    </div>
                     @endif
                     <div class="form-group">
                         <label for="firstname" class="form-label">Course Name<span class="text-danger">*</span></label>
@@ -813,28 +813,28 @@ $(document).ready(function() {
                     $resourcesSelect.val(response.courseResources.map(cr => cr.resources_id)).trigger('change');
                 }
 
-                //  if (response.ato_num && response.ato_num.length > 0) {
-                //      var ato_number = "<option value=''>Select ATO Number</option>"; 
-                //        ato_number += "<option value='generic'>Generic</option>"; 
-                //     var hasData = false;
+                 if (response.ato_num && response.ato_num.length > 0) {
+                     var ato_number = "<option value=''>Select ATO Number</option>"; 
+                       ato_number += "<option value='generic'>Generic</option>"; 
+                    var hasData = false;
 
-                //     $.each(response.ato_num, function(index, value) {
-                //     if (value.uk_ato_number) {
-                //             ato_number += "<option value='uk-"+value.uk_ato_number+"'>UK ATO Number - " + value.uk_ato_number + "</option>";
-                //             hasData = true;
-                //         }
-                //         if (value.easa_ato_number) {
-                //             ato_number += "<option value='easa-"+value.easa_ato_number+"'>EASA ATO Number - " + value.easa_ato_number + "</option>";
-                //             hasData = true;
-                //         }
-                //     });
+                    $.each(response.ato_num, function(index, value) {
+                    if (value.uk_ato_number) {
+                            ato_number += "<option value='uk-"+value.uk_ato_number+"'>UK ATO Number - " + value.uk_ato_number + "</option>";
+                            hasData = true;
+                        }
+                        if (value.easa_ato_number) {
+                            ato_number += "<option value='easa-"+value.easa_ato_number+"'>EASA ATO Number - " + value.easa_ato_number + "</option>";
+                            hasData = true;
+                        }
+                    });
 
-                //     if (!hasData) {
-                //         ato_number += "<option disabled>No ATO number found</option>";
-                //     }
+                    if (!hasData) {
+                        ato_number += "<option disabled>No ATO number found</option>";
+                    }
 
-                //     $ato_numSelect.html(ato_number);
-                // }
+                    $ato_numSelect.html(ato_number);
+                }
                   $('#edit_select_ato_number').val(response.course.ato_num);
 
                 // Fetch and Populate Groups Based on OU
@@ -1426,28 +1426,28 @@ $(document).on("change", "#select_org_unit", function() {
                 $resourceSelect.html(resource);
                 $resourceSelect.trigger("change");
             } 
-            // if (response.ato_num && response.ato_num.length > 0) {
-            //     var ato_number = "<option value=''>Select ATO Number</option>"; 
-            //     ato_number += "<option value='generic'>Generic</option>"; 
-            //     var hasData = false;
+            if (response.ato_num && response.ato_num.length > 0) {
+                var ato_number = "<option value=''>Select ATO Number</option>"; 
+                ato_number += "<option value='generic'>Generic</option>"; 
+                var hasData = false;
 
-            //     $.each(response.ato_num, function(index, value) {
-            //         if (value.uk_ato_number) {
-            //             ato_number += "<option value='uk-" + value.uk_ato_number + "'>UK ATO Number - " + value.uk_ato_number + "</option>";
-            //             hasData = true;
-            //         }
-            //         if (value.easa_ato_number) {
-            //             ato_number += "<option value='easa-" + value.easa_ato_number + "'>EASA ATO Number - " + value.easa_ato_number + "</option>";
-            //             hasData = true;
-            //         }
-            //     });
+                $.each(response.ato_num, function(index, value) {
+                    if (value.uk_ato_number) {
+                        ato_number += "<option value='uk-" + value.uk_ato_number + "'>UK ATO Number - " + value.uk_ato_number + "</option>";
+                        hasData = true;
+                    }
+                    if (value.easa_ato_number) {
+                        ato_number += "<option value='easa-" + value.easa_ato_number + "'>EASA ATO Number - " + value.easa_ato_number + "</option>";
+                        hasData = true;
+                    }
+                });
 
-            //     if (!hasData) {
-            //         ato_number += "<option disabled>No ATO number found</option>";
-            //     }
+                if (!hasData) {
+                    ato_number += "<option disabled>No ATO number found</option>";
+                }
 
-            //     $ato_numSelect.html(ato_number);
-            // } 
+                $ato_numSelect.html(ato_number);
+            } 
         },
         error: function(xhr, status, error) {
             console.error(xhr.responseText);
@@ -1493,27 +1493,27 @@ $('#edit_select_org_unit').on('change', function() {
                 $resourceSelect.trigger("change");
             } 
 
-        //         if (response.ato_num && response.ato_num.length > 0) {
-        //             var ato_number = "<option value=''>Select ATO Number</option>"; 
-        //             var hasData = false;
+                 if (response.ato_num && response.ato_num.length > 0) {
+                    var ato_number = "<option value=''>Select ATO Number</option>"; 
+                 var hasData = false;
 
-        //             $.each(response.ato_num, function(index, value) {
-        //             if (value.uk_ato_number) {
-        //                     ato_number += "<option value='uk-"+value.uk_ato_number+"'>UK ATO Number - " + value.uk_ato_number + "</option>";
-        //                     hasData = true;
-        //                 }
-        //                 if (value.easa_ato_number) {
-        //                     ato_number += "<option value='easa-"+value.easa_ato_number+"'>EASA ATO Number - " + value.easa_ato_number + "</option>";
-        //                     hasData = true;
-        //                 }
-        //             });
+                     $.each(response.ato_num, function(index, value) {
+                     if (value.uk_ato_number) {
+                             ato_number += "<option value='uk-"+value.uk_ato_number+"'>UK ATO Number - " + value.uk_ato_number + "</option>";
+                             hasData = true;
+                         }
+                         if (value.easa_ato_number) {
+                             ato_number += "<option value='easa-"+value.easa_ato_number+"'>EASA ATO Number - " + value.easa_ato_number + "</option>";
+                             hasData = true;
+                         }
+                     });
 
-        //             if (!hasData) {
-        //                 ato_number += "<option disabled>No ATO number found</option>";
-        //             }
+                     if (!hasData) {
+                         ato_number += "<option disabled>No ATO number found</option>";
+                     }
 
-        //             $ato_numSelect.html(ato_number);
-        // }
+                     $ato_numSelect.html(ato_number);
+         }
      
             
             else {
