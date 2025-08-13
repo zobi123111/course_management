@@ -316,13 +316,16 @@
                         </div>
                     </div>
                     <hr>
+                   
                     @if($event->eventLessons->isNotEmpty())
                         <div class="mb-4">
                             <h5 class="text-primary">
                                 <i class="bi bi-file-earmark-pdf me-2"></i>Download Lesson Reports
+                                
                             </h5>                        
                             <ul class="list-group shadow-sm">
-                                @foreach($event->eventLessons as $eventLesson)                              
+                                @foreach($event->eventLessons as $eventLesson) 
+                                                          
                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                         <span>
                                             <i class="bi bi-book me-1"></i>{{ $eventLesson->lesson->lesson_title ?? 'N/A' }}
@@ -331,6 +334,31 @@
                                         class="btn btn-outline-secondary btn-sm">
                                             <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
                                         </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                    <!-- // Deferred lesson -->
+                 @if($event->defLessonTasks->isNotEmpty())
+                  
+                        <div class="mb-4">
+                            <h5 class="text-primary">
+                                <i class="bi bi-file-earmark-pdf me-2"></i>Download Deffered Lesson Reports
+                                
+                            </h5>                        
+                            <ul class="list-group shadow-sm">
+                                @foreach($event->defLessonTasks as $eventLesson)      
+                                             
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <i class="bi bi-book me-1"></i>{{ $eventLesson->lesson_title ?? 'N/A' }}
+                                        </span>
+                                    <a href="{{ route('lesson.deffered.report.download', ['event_id' => $event->id, 'lesson_id' => $eventLesson->def_lesson_id, 'userID' => $event->student_id]) }}"
+                                        class="btn btn-outline-secondary btn-sm">
+                                            <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
+                                    </a>
+                                      
                                     </li>
                                 @endforeach
                             </ul>

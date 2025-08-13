@@ -217,5 +217,27 @@ class TrainingEvents extends Model
     }
 
 
+        public function defLessonTasks()
+        {
+            return $this->hasMany(DefLessonTask::class, 'event_id', 'id');
+        }
+
+        // public function getAllTaskGradingsAttribute()
+        // {
+        //     return $this->taskGradings->merge($this->defLessonTasks);
+        // }
+
+         public function defLessons()
+        {
+            return $this->hasMany(DefLesson::class, 'event_id', 'id');
+        }
+
+        public function  def_lesson_tasks()
+        {
+            return $this->hasMany(DefLessonTask::class, 'task_id', 'id');
+        }
+
+
+
 
 }

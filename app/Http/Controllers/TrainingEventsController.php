@@ -947,7 +947,7 @@ class TrainingEventsController extends Controller
         }
 
         $course = Courses::with('resources')->find($trainingEvent->course_id); 
-        $resources = $course ? $course->resources : collect(); 
+        $resources = $course ? $course->resources : collect();  
         
         return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons','taskGrades', 'competencyGrades','trainingFeedbacks','isGradingCompleted','resources','instructors','defTasks','deferredLessons','defLessonTasks','deferredTaskIds','gradedDefTasksMap'));
     }
@@ -1171,32 +1171,78 @@ class TrainingEventsController extends Controller
         $ouId = $trainingEvent->ou_id;
         $userId = $trainingEvent->student_id;
     
-        $event = TrainingEvents::where('ou_id', $ouId)
-            ->where('id', decode_id($event_id))
-            ->whereHas('taskGradings', function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            })
-            ->with([
-                'taskGradings' => function ($query) use ($userId) {
-                    $query->where('user_id', $userId)
-                        ->with('lesson:id,lesson_title,grade_type') // Load only lesson_name
-                        ->with('subLesson:id,title'); // Load only sub_lesson_name
-                },
-                'competencyGradings' => function ($query) use ($userId) {
-                    $query->where('user_id', $userId);
-                },
-                'overallAssessments' => function ($query) use ($userId) {
-                    $query->where('user_id', $userId);
-                },
-                'course:id,course_name,enable_feedback', // Load only course name
-                'group:id,name', // Load only group name
-                'instructor:id,fname,lname', // Load only instructor name
-                'documents:id,training_event_id,course_document_id,file_path', // make sure these fields exist
-                'documents.courseDocument:id,document_name', // 🆕 Add this to load document name from course_documents
-            ])
-            ->first(); // Use first() to get a single event
+        // $event = TrainingEvents::where('ou_id', $ouId)
+        //     ->where('id', decode_id($event_id))
+        //     ->whereHas('taskGradings', function ($query) use ($userId) {
+        //         $query->where('user_id', $userId);
+        //     })
+       
+        //     ->with([
+        //         'taskGradings' => function ($query) use ($userId) {
+        //             $query->where('user_id', $userId)
+        //                 ->with('lesson:id,lesson_title,grade_type') // Load only lesson_name
+        //                 ->with('subLesson:id,title'); // Load only sub_lesson_name
+        //         },
+        //         'competencyGradings' => function ($query) use ($userId) {
+        //             $query->where('user_id', $userId);
+        //         },
+        //         'overallAssessments' => function ($query) use ($userId) {
+        //             $query->where('user_id', $userId);
+        //         },
+        //         'course:id,course_name,enable_feedback', // Load only course name
+        //         'group:id,name', // Load only group name
+        //         'instructor:id,fname,lname', // Load only instructor name
+        //         'documents:id,training_event_id,course_document_id,file_path', // make sure these fields exist
+        //         'documents.courseDocument:id,document_name', // 🆕 Add this to load document name from course_documents
+        //     ])
+        //     ->first();
 
-            // ✅ Check if event exists
+
+   $event = TrainingEvents::where('ou_id', $ouId)
+                ->where('id', decode_id($event_id))
+                ->where(function ($query) use ($userId) {
+                    $query->whereHas('taskGradings', function ($q) use ($userId) {
+                        $q->where('user_id', $userId);
+                    })
+                    ->orWhereHas('defLessonTasks', function ($q) use ($userId) {
+                        $q->where('user_id', $userId);
+                    });
+                })
+                ->with([
+                    'taskGradings' => function ($query) use ($userId) {
+                        $query->where('user_id', $userId)
+                            ->with('lesson:id,lesson_title,grade_type')
+                            ->with('subLesson:id,title');
+                    },
+                'defLessonTasks' => function ($query) use ($userId) {
+                                $query->join('def_lessons', 'def_lesson_tasks.def_lesson_id', '=', 'def_lessons.id')
+                                    ->select('def_lesson_tasks.*', 'def_lessons.lesson_title')
+                                    ->where('def_lesson_tasks.user_id', $userId)
+                                    ->whereIn('def_lesson_tasks.id', function($sub) use ($userId) {
+                                        $sub->select(\DB::raw('MIN(id)'))
+                                            ->from('def_lesson_tasks')
+                                            ->where('user_id', $userId)
+                                            ->groupBy('def_lesson_id');
+                                    });
+                            },
+
+                    'competencyGradings' => function ($query) use ($userId) {
+                        $query->where('user_id', $userId);
+                    },
+                    'overallAssessments' => function ($query) use ($userId) {
+                        $query->where('user_id', $userId);
+                    },
+                    'course:id,course_name,enable_feedback',
+                    'group:id,name',
+                    'instructor:id,fname,lname',
+                    'documents:id,training_event_id,course_document_id,file_path',
+                    'documents.courseDocument:id,document_name',
+                ])
+                ->first();
+                // dd($event);
+
+      
+            
             if (!$event) {
                 return redirect()
                     ->route('training.index')
@@ -1211,9 +1257,10 @@ class TrainingEventsController extends Controller
 
             if ($event) {
             $event->student_feedback_submitted = $event->trainingFeedbacks()->where('user_id', auth()->user()->id)->exists();    
-            // abort(404, 'Training Event not found.');
+            // abort(404, 'Training Event not found.'); 
             }    
-     
+          
+        
         return view('trainings.grading-list', compact('event','defLessonGrading'));     
     }
     
@@ -1256,9 +1303,57 @@ class TrainingEventsController extends Controller
     
         return response()->json(['success' => false, 'message' => 'Acknowledgment failed'], 500);
     }
+ public function downloadDefferedLessonReport($event_id, $lesson_id, $userID)
+    {
+        $userId = $userID;
+
+        // Fetch Training Event with related Def Lessons and Def Lesson Tasks
+        $event = TrainingEvents::with([
+        'course:id,course_name',
+        'orgUnit:id,org_unit_name,org_logo',
+        'instructor:id,fname,lname',
+        'student:id,fname,lname',
+        'resource:id,name,type,class,registration',
+        'defLessons' => function ($query) use ($lesson_id) {
+            $query->where('id', $lesson_id)
+                ->with([
+                    'instructor:id,fname,lname',
+                    'resource:id,name,type,class,registration'
+                ]);
+        },
+        'defLessonTasks' => function ($query) use ($userId, $lesson_id) {
+            $query->where('user_id', $userId)
+                ->where('def_lesson_id', $lesson_id)
+                ->with('task:id,title,grade_type,description');
+        },
+    ])->findOrFail($event_id);
+           
+
+        $defLesson = $event->defLessons->first();
+        $eventLesson = $event->defLessons->first();
+            if (!$eventLesson) {
+                abort(404, 'Lesson not found for this training event.');
+            }
+        if (!$defLesson) {
+            abort(404, 'Deferred lesson not found for this training event.');
+        }
+        $tasks = $event->defLessonTasks;
+        //  return view('trainings.deferred-lesson-report', compact('event', 'eventLesson', 'tasks'));
+        // Pass to PDF view
+    
+            $pdf = PDF::loadView('trainings.deferred-lesson-report', [ 
+                'event' => $event,
+                'eventLesson' => $eventLesson,
+                'tasks' => $tasks,
+            ]);
+
+        $filename = 'Deferred_Lesson_Report_' . Str::slug($defLesson->lesson_title) . '.pdf';
+        return $pdf->download($filename);
+}
+
     
     public function downloadLessonReport($event_id, $lesson_id, $userID)
-    {
+    { 
         $userId = $userID;
         // dd($lesson_id);
         $event = TrainingEvents::with([
@@ -1285,17 +1380,15 @@ class TrainingEventsController extends Controller
             'eventLessons.instructor:id,fname,lname',
             'eventLessons.resource:id,id,name,type,class,registration',
         ])->findOrFail($event_id);
-
-
-       // dd($event);
     
         $eventLesson = $event->eventLessons->first();
+        
     
         if (!$eventLesson) {
             abort(404, 'Lesson not found for this training event.');
         }
-    
-        $lesson = $eventLesson->lesson;
+
+        $lesson = $eventLesson->lesson; 
       //  return view('trainings.lesson-report', compact('event', 'lesson', 'eventLesson'));
     
         $pdf = PDF::loadView('trainings.lesson-report', [ 
@@ -1471,7 +1564,7 @@ class TrainingEventsController extends Controller
     }    
     
     public function storeDefGrading(Request $request)
-    { 
+    {  
          $request->validate([
             'event_id' => 'required|integer|exists:training_events,id',
             'task_grade_def' => 'required|array',
@@ -1482,6 +1575,7 @@ class TrainingEventsController extends Controller
 
         $event_id = $request->input('event_id');
         $user_id = $request->input('tg_user_id');
+      
 
         foreach ($request->input('task_grade_def') as $task_id => $task_grade) {
             $task_comment = $request->input("task_comment_def.$task_id", null);
@@ -1497,7 +1591,7 @@ class TrainingEventsController extends Controller
                 $defTask = DefLessonTask::find($task_id);
 
                 if ($defTask) {
-                    DefTask::firstOrCreate(
+                    DefTask::firstOrCreate( 
                         [
                             'event_id' => $event_id,
                             'user_id'  => $defTask->user_id,

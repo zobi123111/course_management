@@ -1245,7 +1245,7 @@
                                                             @endphp
                                                                 <div class="main-tabledesign">
                                                                     <input type="hidden" name="tg_user_id" value="{{ $student->id ?? '' }}">
-                                                                    <h5>{{ $student->fname }} {{ $student->lname }}</h5>
+                                                                    <h5>{{ $student->fname ?? '' }} {{ $student->lname ?? '' }}</h5>
                                                                     <table>
                                                                         <tbody>
                                                                             @if($sublesson->grade_type == 'pass_fail')
@@ -1306,7 +1306,7 @@
                                                         </div>
                                                         <!-- Toggleable Comment Box -->
                                                         <div class="collapse mt-2" id="comment-box-{{ $sublesson->id }}">
-                                                            <textarea  name="task_comments[{{ $lesson->id }}][{{ $sublesson->id }}]" rows="3" class="form-control" placeholder="Add your remarks or feedback here..." @if($isDeferred) readonly title="Deferred: You cannot edit this comment." @endif>{{ old("task_comments.$lesson->id.$sublesson->id.$student->id", $selectedComment) }}</textarea>
+                                                            <textarea  name="task_comments[{{ $lesson->id ?? '' }}][{{ $sublesson->id ?? '' }}]" rows="3" class="form-control" placeholder="Add your remarks or feedback here..." @if($isDeferred) readonly title="Deferred: You cannot edit this comment." @endif>{{ old("task_comments.$lesson->id.$sublesson->id.$student->id", $selectedComment) }}</textarea>
                                                         </div>
                                                     @endforeach 
                                                 @else($lesson->subLessons->isEmpty())
