@@ -1171,8 +1171,8 @@
                                     $minutes = (int) $minutes;
 
                                     $hours_credited = $minutes > 0 
-                                        ? "{$hours}h {$minutes}m" 
-                                        : "{$hours}h";
+                                        ? "{$hours}hrs {$minutes}min" 
+                                        : "{$hours}hrs";
                                 
                                     $lesson = $eventLesson->lesson;
                                     $isLocked = $eventLesson->is_locked == 1;
