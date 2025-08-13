@@ -87,36 +87,14 @@
             @endif
         </div>
 
-        @if($event->competencyGradings->isNotEmpty())
-            <div class="section">
-                <h2>Competencies</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Competency</th>
-                            <th>Grade</th>
-                            <th>Comment</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($event->competencyGradings as $competency)
-                          
-                            @foreach(['kno','pro','com','fpa','fpm','ltw','psd','saw','wlm'] as $comp)
-                                <tr>
-                                    <td>{{ strtoupper($comp) }}</td>
-                                    <td>{{ $competency[$comp.'_grade'] ?? 'N/A' }}</td>
-                                    <td>{{ $competency[$comp.'_comment'] ?? '-' }}</td>
-                                </tr>
-                            @endforeach
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @endif
+      
 
 
         <div class="section">
-            <h2>Lesson Summary</h2>
+            @if(!empty($event->overallAssessments) && count($event->overallAssessments) > 0)
+                        <h2>Lesson Summary</h2>
+            @endif
+            
             @foreach($event->overallAssessments as $assessment)
                 <p><strong>Result:</strong> {{ $assessment->result }}</p>
                 <p><strong>Remarks:</strong> {{ $assessment->remarks ?? 'No remarks' }}</p>
