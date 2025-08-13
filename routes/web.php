@@ -112,6 +112,10 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/training/get_instructor_license_no/{instructor_id}', [TrainingEventsController::class, 'getInstructorLicenseNumber'])->name('training.get_instructor_license_no');
     Route::get('/lesson-report/download/{event_id}/{lesson_id}/{userID}', [TrainingEventsController::class, 'downloadLessonReport'])
     ->name('lesson.report.download');
+
+        Route::get('/deffered-lesson-report/download/{event_id}/{lesson_id}/{userID}', [TrainingEventsController::class, 'downloadDefferedLessonReport'])
+    ->name('lesson.deffered.report.download');
+
     Route::post('/training/{trainingEvent}/upload-documents', [TrainingEventsController::class, 'uploadDocuments'])
     ->name('training.upload-documents');
     Route::get('/training/certificate/{event}', [TrainingEventsController::class, 'generateCertificate'])
@@ -247,7 +251,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/training/update', [TrainingEventsController::class, 'updateTrainingEvent'])->name('training.update');
     Route::post('/training/delete', [TrainingEventsController::class, 'deleteTrainingEvent'])->name('training.delete');
     // Route::get('/training/get_ou_groups_and_instructors/', [TrainingEventsController::class, 'getOrgGroupsAndInstructors'])->name('training.get_ou_groups_and_instructors');
-    Route::get('/training/show/{event_id}', [TrainingEventsController::class, 'showTrainingEvent'])->name('training.show');
+    Route::get('/training/show/{event_id}', [TrainingEventsController::class, 'showTrainingEvent'])->name('training.show'); 
     Route::post('/training/store_grading', [TrainingEventsController::class, 'createGrading'])->name('training.store_grading');
     Route::post('/training/overall_assessment', [TrainingEventsController::class, 'storeOverallAssessment'])->name('training.overall_assessment');
     // Route::get('/grading', [TrainingEventsController::class, 'getStudentGrading'])->name('grading.list');
