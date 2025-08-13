@@ -1163,6 +1163,16 @@
                                 @foreach($eventLessons as $eventLesson)
                                 <?php
                                     $hours_credited = $eventLesson->hours_credited;
+                                  $hours_credited = "08:02:00"; // example
+
+                                     list($hours, $minutes, $seconds) = explode(':', $eventLesson->hours_credited);
+
+                                    $hours = (int) $hours;
+                                    $minutes = (int) $minutes;
+
+                                    $hours_credited = $minutes > 0 
+                                        ? "{$hours}h {$minutes}m" 
+                                        : "{$hours}h";
                                 
                                     $lesson = $eventLesson->lesson;
                                     $isLocked = $eventLesson->is_locked == 1;
@@ -1172,11 +1182,12 @@
                              <?php  
                                     if($lesson->lesson_type == "groundschool"){
                                         $duration = $trainingEvent->course->groundschool_hours ?? 0;
-                                       
+                                      
                                        
                                      
                                     } elseif($lesson->lesson_type == "simulator"){  
                                         $duration = $trainingEvent->course->simulator_hours ?? 0;
+                                       
                                       
                                         
                                     } else {
@@ -1200,7 +1211,7 @@
                                                         aria-controls="lesson-{{ $eventLesson->id }}"
                                                         style="{{ $isLocked ? 'cursor: not-allowed; background-color: #f8f9fa;' : '' }}">
                                                         
-                                                        {{ $lesson->lesson_title ?? 'Untitled Lesson' }} (Duration: {{ number_format($duration, 2) }} hrs / {{ $hours_credited }})
+                                                        {{ $lesson->lesson_title ?? 'Untitled Lesson' }} (Duration: {{ $hours_credited }} /  {{ number_format($duration, 2) }} hrs)
 
 
                                                         @if($isLocked)
