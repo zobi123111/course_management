@@ -1161,21 +1161,30 @@
                             <div class="accordion accordion-flush" id="faq-group-2">
                        
                                 @foreach($eventLessons as $eventLesson)
-                                @php
-                                   
+                                <?php
+                                    $hours_credited = $eventLesson->hours_credited;
+                                
                                     $lesson = $eventLesson->lesson;
                                     $isLocked = $eventLesson->is_locked == 1;
-                                @endphp
+                                 ?>
 
 
-                             <?php 
+                             <?php  
                                     if($lesson->lesson_type == "groundschool"){
                                         $duration = $trainingEvent->course->groundschool_hours ?? 0;
-                                    } elseif($lesson->lesson_type == "simulator"){
+                                       
+                                       
+                                     
+                                    } elseif($lesson->lesson_type == "simulator"){  
                                         $duration = $trainingEvent->course->simulator_hours ?? 0;
+                                      
+                                        
                                     } else {
                                         $duration = 0;
+                                      
+                                        
                                     }
+                                 
 
                                     $formattedDuration = number_format($duration, 2);
                                     $hourLabel = ($formattedDuration == 1.00) ? 'hour' : 'hours';
@@ -1191,7 +1200,7 @@
                                                         aria-controls="lesson-{{ $eventLesson->id }}"
                                                         style="{{ $isLocked ? 'cursor: not-allowed; background-color: #f8f9fa;' : '' }}">
                                                         
-                                                        {{ $lesson->lesson_title ?? 'Untitled Lesson' }} (Duration: {{ number_format($duration, 2) }} hrs)
+                                                        {{ $lesson->lesson_title ?? 'Untitled Lesson' }} (Duration: {{ number_format($duration, 2) }} hrs / {{ $hours_credited }})
 
 
                                                         @if($isLocked)
@@ -1451,7 +1460,7 @@
                                                 </div>
                                                 <div class="table-container">
                                                     <div class="main-tabledesign"> 
-                                                        <h5>{{ $task->user->fname }} {{ $task->user->lname }}</h5>
+                                                        <h5>{{ $task->user->fname }} {{ $task->user->lname }}</h5> 
                                                         @php
                                                             $selectedGrade = $task->task_grade;
                                                             $selectedComment = $task->task_comment;
