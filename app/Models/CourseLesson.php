@@ -38,4 +38,9 @@ class CourseLesson extends Model
         return $this->belongsTo(CourseCustomTime::class, 'custom_time_id');
     }
 
+    public function courseLesson()
+    {
+        return $this->belongsTo(CourseLesson::class, 'lesson_id');
+    }
+
 }

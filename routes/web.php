@@ -187,7 +187,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
 
     
     //Courses 
-    Route::get('/courses', [CourseController::class, 'index'])->name('course.index');
+    Route::get('/courses', [CourseController::class, 'index'])->name('course.index'); 
     Route::post('/course/create', [CourseController::class, 'createCourse'])->name('course.store'); 
     Route::get('/course/edit', [CourseController::class, 'getCourse'])->name('course.edit');
     Route::post('/course/update', [CourseController::class, 'updateCourse'])->name('course.update');
@@ -245,7 +245,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     // Route::get('/test', [CourseController::class, 'test'])->name('test.test');
 
     //Training Event Route
-    Route::get('/training', [TrainingEventsController::class, 'index'])->name('training.index');
+    Route::get('/training', [TrainingEventsController::class, 'index'])->name('training.index'); 
     Route::post('/training/create', [TrainingEventsController::class, 'createTrainingEvent'])->name('training.store');
     Route::get('/training/edit', [TrainingEventsController::class, 'getTrainingEvent'])->name('training.edit');
     Route::post('/training/update', [TrainingEventsController::class, 'updateTrainingEvent'])->name('training.update');

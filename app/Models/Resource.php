@@ -17,7 +17,7 @@ class Resource extends Model
         'enable_doc_upload' => 'boolean',
     ];
 
-    public function courseResources()
+    public function courseResources() 
     {
         return $this->hasMany(CourseResources::class, 'resources_id');
     }

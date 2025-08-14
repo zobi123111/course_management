@@ -11,13 +11,14 @@ class DefLessonTask extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $table = 'def_lesson_tasks';
+    protected $table = 'def_lesson_tasks'; 
 
     protected $fillable = [
         'def_lesson_id',
         'event_id',
         'user_id',         // student_id
-        'task_id',         // refers to task_grading or sub_lesson_id
+        'task_id',  
+        'hours_credited',
         'task_grade',
         'task_comment',
         'created_by',
@@ -50,6 +51,17 @@ class DefLessonTask extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function subddddLesson()
+    {
+        return $this->hasOne(SubLesson::class, 'id', 'task_id');
+    }
+
+    // In SubLesson.php
+    public function courseLesson()
+    {
+        return $this->belongsTo(CourseLesson::class, 'lesson_id');
     }
 
 
