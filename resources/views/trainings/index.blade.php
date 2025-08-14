@@ -42,8 +42,9 @@
                 @endif
             </tr>
         </thead>
-        <tbody>
+        <tbody> <?php dump($trainingEvents[0]); ?>
             @foreach($trainingEvents as $event)
+           
                 @php
                     $lesson = $event->firstLesson;
                 @endphp 
@@ -58,7 +59,8 @@
                 <td>
                 @if(get_user_role(auth()->user()->role) == 'administrator')  
                     @if(empty($event->is_locked))
-                        @if(checkAllowedModule('training','training.edit')->isNotEmpty()  && !$event->is_graded)
+                     
+                        @if(checkAllowedModule('training','training.edit')->isNotEmpty())
                             <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
                             data-event-id="{{ encode_id($event->id) }}"></i>
                         @endif
@@ -94,7 +96,8 @@
                     @endif
                 @elseif(get_user_role(auth()->user()->role) == 'instructor')   
                     @if(empty($event->is_locked))
-                        @if(checkAllowedModule('training','training.edit')->isNotEmpty()  && !$event->is_graded)
+                     
+                       @if(checkAllowedModule('training','training.edit')->isNotEmpty())
                             <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
                             data-event-id="{{ encode_id($event->id) }}"></i>
                         @endif
@@ -158,7 +161,8 @@
                 <td>
                 @if(get_user_role(auth()->user()->role) == 'administrator')  
                     @if(empty($event->is_locked))
-                        @if(checkAllowedModule('training','training.edit')->isNotEmpty()  && !$event->is_graded)
+                 
+                        @if(checkAllowedModule('training','training.edit')->isNotEmpty())
                             <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
                             data-event-id="{{ encode_id($event->id) }}"></i>
                         @endif
@@ -194,7 +198,8 @@
                     @endif
                 @elseif(get_user_role(auth()->user()->role) == 'instructor')   
                     @if(empty($event->is_locked))
-                        @if(checkAllowedModule('training','training.edit')->isNotEmpty()  && !$event->is_graded)
+                      
+                        @if(checkAllowedModule('training','training.edit')->isNotEmpty())
                             <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
                             data-event-id="{{ encode_id($event->id) }}"></i>
                         @endif
@@ -886,7 +891,7 @@ $(document).ready(function() {
                   
                      
                     // Set static values
-                    $('#edit_event_id').val(event.id);
+                    $('#edit_event_id').val(event.id); 
                     $('#edit_std_licence_number').val(response.licence_number);
                     $('#edit_event_date').val(event.event_date);
                     $('#edit_total_time').val(moment(event.total_time, 'HH:mm:ss').format('HH:mm'));
