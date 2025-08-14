@@ -651,6 +651,7 @@
                 <strong><i class="fas fa-exclamation-circle"></i> Deferred Lessons:</strong>
                 
                 @foreach($deferredLessons as $def)
+              
                     @php
                         $start = strtotime($def->start_time);
                         $end = strtotime($def->end_time);
@@ -672,10 +673,7 @@
                             <span class="text-primary">{{ $def->lesson_title ?? 'Untitled' }}</span>
                         </div>
 
-                        <div class="col-md-2 mt-2">
-                            <strong><i class="fas fa-calendar-day"></i>Lesson Date:</strong><br>
-                            {{ date('d-m-Y', strtotime($lesson->lesson_date)) }}
-                        </div>
+                       
 
                         <div class="col-md-2 mt-2">
                             <strong><i class="fas fa-chalkboard-teacher"></i> Instructor:</strong>
@@ -690,6 +688,11 @@
                         <div class="col-md-2 mt-2">
                             <strong><i class="fas fa-toolbox"></i> Resource:</strong><br>
                             {{ $def->resource->name ?? 'N/A' }}
+                        </div>
+
+                         <div class="col-md-2 mt-2">
+                            <strong><i class="fas fa-calendar-day"></i> Date:</strong><br>
+                            {{ date('d-m-Y', strtotime($lesson->lesson_date)) }}
                         </div>
 
                         <div class="col-md-2 mt-2">
@@ -710,6 +713,15 @@
                         <div class="col-md-2 mt-2">
                             <strong><i class="fas fa-plane-arrival"></i> Destination:</strong><br>
                             {{ strtoupper($def->destination_airfield) ?? 'N/A' }}
+                        </div>
+                        <div class="col-md-2 mt-2">
+                            <strong><i class="fas fa-clock"></i> Lesson Type:</strong><br>
+                            {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
+                           
+                        </div>
+                           <div class="col-md-2 mt-2">
+                            <strong><i class="fas fa-hourglass-half"></i> Credited Hours:</strong><br>
+                              {{ $def->defLesson->hours_credited ?? '00:00' }}
                         </div>
                     </div>
                 @endforeach
@@ -793,8 +805,9 @@
                             @endphp
                          
                            
-
+                     
                             @if($totals['groundschool']['duration'] || $totals['groundschool']['credited'])
+                       
                                 <p>
                                     <strong>Ground School:</strong>
                                     Duration: {{ $totals['groundschool']['duration'] ?? 'N/A' }} |
@@ -833,7 +846,7 @@
                             @endif
 
                         @else
-                            @php
+                            <?php
                                 $totals = [
                                     'groundschool' => ['duration' => 0, 'credited' => 0],
                                     'simulator' => ['duration' => 0, 'credited' => 0],
@@ -845,10 +858,10 @@
                                     return $lesson->lesson?->lesson_type === 'groundschool';
                                 });
                                 $totals['groundschool']['duration'] = ($trainingEvent->course->groundschool_hours ?? 0) ;
-                            @endphp
+                             ?>
                           
                             @foreach($trainingEvent->eventLessons as $lesson)
-                                @php
+                                <?php 
                                     $type = $lesson->lesson?->lesson_type ?? '';
                                     $credited = strtotime("1970-01-01 {$lesson->hours_credited}") ?: 0;
                                     if ($type === 'groundschool') {
@@ -865,19 +878,32 @@
                                         $totals['custom'][$custom->name]['allotted'] = $custom->hours;
                                         $totals['custom'][$custom->name]['credited'] = ($totals['custom'][$custom->name]['credited'] ?? 0) + strtotime("1970-01-01 {$lesson->custom_hours_credited}");
                                     }
-                                @endphp
+                               ?>
                             @endforeach
 
                             @if(isset($deferredLessons) && $deferredLessons->isNotEmpty())
                                 @foreach($deferredLessons as $defLesson)
-                                    @php
+                                <?php $lessonType = $defLesson?->deftasks?->subddddLesson?->courseLesson?->lesson_type;
+                               
+                                ?>
+                                     <?php 
                                         $start = strtotime($defLesson->start_time);
                                         $end = strtotime($defLesson->end_time);
                                         $duration = max(0, $end - $start);
                                         $totals['deferred'] += $duration;
-                                    @endphp
+
+                                           if ($lessonType === 'flight') {
+                                                    $totals['flight']['credited'] += $credited;
+                                                    $totals['deferred'] += $duration;
+                                                } elseif ($lessonType === 'groundschool') {
+                                                   $totals['flight']['credited'] += $credited;
+                                                } elseif ($lessonType === 'simulator') {
+                                                    $totals['flight']['credited'] += $credited;
+                                                }
+                                     ?>
                                 @endforeach
                             @endif
+                        
 
                             @if($totals['groundschool']['duration'] || $totals['groundschool']['credited'])
                                 <p>
@@ -897,6 +923,7 @@
                                     
                             <p>
                                 <strong>Flight:</strong>
+                         
                                 Credited: {{ formatSeconds($totals['flight']['credited']) }}
                             </p>
 
@@ -909,12 +936,13 @@
                                     </p>
                                 @endforeach
                             @endif
+                         
 
                             @if($totals['deferred'] > 0)
-                                <p>
+                                <!-- <p>
                                     <strong>Deferred Lessons:</strong>
                                     Credited: {{ formatSeconds($totals['deferred']) }}
-                                </p>
+                                </p> -->
                             @endif
 
                         @endif

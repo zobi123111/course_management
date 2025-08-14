@@ -168,7 +168,7 @@ class TrainingEventsController extends Controller
             $trainingEvents_instructor = TrainingEvents::where('ou_id', $currentUser->ou_id)
                 ->where('entry_source', "instructor")
                 ->with($trainingEventsRelations)
-                ->withCount(['taskGradings', 'competencyGradings'])
+                ->withCount(['taskGradings', 'competencyGradings']) 
                 ->get();
               
         } 
@@ -198,10 +198,11 @@ class TrainingEventsController extends Controller
             // Optional: preload the actual user object
             $event->last_lesson_instructor = $event->lesson_instructor_users->firstWhere('id', $event->last_lesson_instructor_id);
         });
-
+  
+        
         return view('trainings.index', compact('groups', 'courses', 'instructors', 'organizationUnits', 'trainingEvents', 'resources', 'students', 'trainingEvents_instructor'));
 
-    }
+    } 
 
     public function getOrgStudentsInstructorsResources(Request $request,$ou_id)
     {
@@ -327,6 +328,7 @@ class TrainingEventsController extends Controller
 
     public function createTrainingEvent(Request $request)   
     {   
+       
         //Validate base fields
         $request->validate([
             'student_id' => 'required|exists:users,id',
@@ -774,7 +776,7 @@ class TrainingEventsController extends Controller
         }        
     }
 
-    public function showTrainingEvent(Request $request, $event_id)
+    public function showTrainingEvent(Request $request, $event_id) 
     {
         $currentUser = auth()->user();
         $trainingEvent = TrainingEvents::with([ 
@@ -906,11 +908,12 @@ class TrainingEventsController extends Controller
             ->whereIn('task_grade', ['Incomplete', 'Further training required'])
             ->get();
             
-        $deferredTaskIds = collect($getFirstdeftTasks)->pluck('sub_lesson_id')->toArray();
+        $deferredTaskIds = collect($getFirstdeftTasks)->pluck('sub_lesson_id')->toArray(); 
 
-        $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource'])
-        ->where('event_id', $trainingEvent->id)
-        ->get();
+        $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource','defLesson', 'deftasks.subddddLesson.courseLesson'])
+                            ->where('event_id', $trainingEvent->id)
+                            ->get();
+
 
         $defLessonTasks = DefLessonTask::with(['user', 'defLesson.instructor', 'defLesson.instructor.documents', 'defLesson.resource', 'task'])
         ->where('event_id', $trainingEvent->id)
@@ -946,7 +949,7 @@ class TrainingEventsController extends Controller
             })->with('roles')->get();
         }
 
-        $course = Courses::with('resources')->find($trainingEvent->course_id); 
+        $course = Courses::with('resources')->find($trainingEvent->course_id);  
         $resources = $course ? $course->resources : collect();  
         
         return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons','taskGrades', 'competencyGrades','trainingFeedbacks','isGradingCompleted','resources','instructors','defTasks','deferredLessons','defLessonTasks','deferredTaskIds','gradedDefTasksMap'));
@@ -1548,11 +1551,41 @@ class TrainingEventsController extends Controller
 
         // Step 3: Create def_lesson_tasks entries
         foreach ($validatedData['item_ids'] as $index => $taskId) {
+   
+            $get_lesson_id = SubLesson::where('id', $taskId)->value('lesson_id');
+           
+           $lessonType  =  CourseLesson::where('id', $get_lesson_id)->value('lesson_type');
+
+         $start = $validatedData['start_time'] ?? null;
+         $end = $validatedData['end_time'] ?? null;
+            $creditMinutes = 0;
+                  if ($lessonType === 'groundschool' && $validatedData['resource_id'] == 3) {
+                // Fixed 8 hours for Homestudy
+                $creditMinutes = 480;
+                $start = '00:00';
+                $end = '08:00';
+
+            } elseif ($start && $end) {
+                // For all other lessons (including simulator and classroom)
+                try {
+                    $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
+                    $endTime = \Carbon\Carbon::createFromFormat('H:i', $end);
+
+                    if ($endTime->lessThan($startTime)) {
+                        $endTime->addDay(); // Handles overnight sessions
+                    }
+
+                    $creditMinutes = $startTime->diffInMinutes($endTime);
+                } catch (\Exception $e) {
+                    $creditMinutes = 0; // fallback in case of invalid time format
+                }
+            }
             DefLessonTask::create([
                 'def_lesson_id' => $defLesson->id,
                 'event_id'      => $eventId,
                 'user_id'       => $studentId,
                 'task_id'       => $taskId,
+                'hours_credited' => gmdate("H:i", $creditMinutes * 60),
                 'created_by'    => $authId,
             ]);
         }

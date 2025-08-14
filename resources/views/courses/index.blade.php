@@ -214,7 +214,7 @@
                         <div id="ou_id_error" class="text-danger error_e"></div>
                     </div>
                    
-                    <div class="form-group">
+                    <div class="form-group"> 
                         <label for="email" class="form-label">Select ATO Number<span class="text-danger">*</span></label>
                         <select class="form-select" name="ato_number" aria-label="Default select example" id="select_ato_number">
                          
@@ -222,6 +222,16 @@
                         <div id="ou_id_error" class="text-danger error_e"></div>
                     </div>
                      @endif
+                      @if(auth()->user()->role == 1 && auth()->user()->is_admin==1)
+                         <div class="form-group"> 
+                        <label for="email" class="form-label">Select ATO Number<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ato_number" aria-label="Default select example" id="select_ato_number">
+                         
+                        </select>
+                        <div id="ou_id_error" class="text-danger error_e"></div>
+                    </div>
+
+                      @endif
                     <div class="form-group">
                         <label for="firstname" class="form-label">Course Name<span class="text-danger">*</span></label>
                         <input type="text" name="course_name" class="form-control">
@@ -431,6 +441,17 @@
                         <div id="ato_num_error_up" class="text-danger error_e"></div>
                     </div>
                     @endif
+                      @if(auth()->user()->role == 1 && auth()->user()->is_admin == 1)
+                    <div class="form-group">
+                        <label for="email" class="form-label">Select ATO Number<span class="text-danger">*</span></label>
+                        <select class="form-select" name="ato_number" aria-label="Default select example" id="edit_select_ato_number">
+                         
+                        </select>
+                        <div id="ato_num_error_up" class="text-danger error_e"></div>
+                    </div>
+
+                      @endif
+
                     <div class="form-group">
                         <label for="firstname" class="form-label">Course Name<span class="text-danger">*</span></label>
                         <input type="text" name="course_name" class="form-control">
@@ -728,6 +749,7 @@ function initializeSelect2() {
 $(document).ready(function() {
     $('#courseTable').DataTable();
     initializeSelect2();
+
     $("#createCourse").on('click', function() {
         $(".error_e").html('');
         $("#courses")[0].reset();
@@ -742,6 +764,48 @@ $(document).ready(function() {
         $('#createCourseModal').on('shown.bs.modal', function() {
             initializeSelect2();
         });
+       //--------------------------------------------------------------
+      var ou_id = "{{ Auth::user()->ou_id }}"; 
+      var $ato_numSelect = $("#select_ato_number");
+     
+   $.ajax({
+        url: "/group/get_ou_group/",
+        type: "GET",
+        data: {
+            'ou_id': ou_id
+        },
+        dataType: "json", // Ensures response is treated as JSON
+        success: function(response) {
+            if (response.ato_num && response.ato_num.length > 0) {
+                var ato_number = "<option value=''>Select ATO Number</option>"; 
+                ato_number += "<option value='generic'>Generic</option>"; 
+                var hasData = false;
+
+                $.each(response.ato_num, function(index, value) {
+                    if (value.uk_ato_number) {
+                        ato_number += "<option value='uk-" + value.uk_ato_number + "'>UK ATO Number - " + value.uk_ato_number + "</option>";
+                        hasData = true;
+                    }
+                    if (value.easa_ato_number) {
+                        ato_number += "<option value='easa-" + value.easa_ato_number + "'>EASA ATO Number - " + value.easa_ato_number + "</option>";
+                        hasData = true;
+                    }
+                });
+
+                if (!hasData) {
+                    ato_number += "<option disabled>No ATO number found</option>";
+                }
+
+                $ato_numSelect.html(ato_number);
+            } 
+        },
+        error: function(xhr, status, error) {
+            console.error(xhr.responseText);
+        }
+    });
+
+       //-----------------------------------------------------------------
+
     });
 
     $("#submitCourse").on("click", function(e) {
@@ -1393,6 +1457,7 @@ $(document).on("change", "#select_org_unit", function() {
     var $groupSelect = $(".groups-select");
     var $resourceSelect = $(".resources-select");
     var $ato_numSelect = $("#select_ato_number");
+     $ato_numSelect.empty().trigger("change");
 
 
     $.ajax({

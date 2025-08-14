@@ -25,7 +25,13 @@ class SubLesson extends Model
     ];
 
 
+ 
     public function lesson()    
+    {
+        return $this->belongsTo(CourseLesson::class, 'lesson_id');
+    }
+
+    public function courseLesson()
     {
         return $this->belongsTo(CourseLesson::class, 'lesson_id');
     }

@@ -74,5 +74,15 @@ class DefLesson extends Model
         return SubLesson::whereIn('id', $this->task_id)->get();
     }
 
+    public function defLesson()
+    {
+        return $this->hasOne(DefLessonTask::class, 'def_lesson_id');
+    }
+
+    public function deftasks()
+    {
+        return $this->hasOne(DefLessonTask::class, 'def_lesson_id');
+    }
+
 
 }
