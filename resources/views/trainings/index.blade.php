@@ -42,7 +42,7 @@
                 @endif
             </tr>
         </thead>
-        <tbody> <?php dump($trainingEvents[0]); ?>
+        <tbody> 
             @foreach($trainingEvents as $event)
            
                 @php
