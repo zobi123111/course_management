@@ -53,12 +53,22 @@
                 $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                 $imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
                 $pdfTypes = ['pdf'];
+                $isIOS = preg_match('/iPad|iPhone|iPod/', request()->header('User-Agent'));
             @endphp
 
             @if(in_array($extension, $imageTypes))
                 <img src="{{ $file }}" alt="Document Image" class="img-fluid rounded shadow">
             @elseif(in_array($extension, $pdfTypes))
-                <iframe src="{{ $file }}" width="100%" height="600px" class="border rounded shadow"></iframe>
+                   @if($isIOS)
+                    <a href="{{ $file }}" target="_blank" class="btn btn-primary">
+                        <i class="fa fa-file-pdf"></i> View PDF
+                    </a>
+                    <a href="{{ $file }}" download class="btn btn-success ms-2">
+                        <i class="fa fa-download"></i> Download
+                    </a>
+                @else
+                    <iframe src="{{ $file }}" width="100%" height="600px" class="border rounded shadow"></iframe>
+                @endif
             @else
                 <p class="text-muted">No preview available.</p>
                 <a href="{{ $file }}" class="btn btn-outline-secondary" download>
@@ -98,33 +108,7 @@
 
 @section('js_scripts')
 
-<!-- <script>
-    $(document).ready(function() {
 
-        $('#acknowledged').on('change', function() {
-            if ($(this).is(':checked')) {
-                $.ajax({
-                    url: "{{ route('document.acknowledge') }}", // Update with your route
-                    type: "POST",
-                    data: $('#docAcknowledgeForm').serialize(),
-                    dataType: "json",
-                    success: function(response) {
-                        if (response.success) {
-                            alert(response.success);
-                            // $('#acknowledged').prop('disabled', true); // Disable checkbox after acknowledgment
-                        } else {
-                            alert(response.error);
-                        }
-                    },
-                    error: function(xhr) {
-                        alert("An error occurred while updating acknowledgment.");
-                        console.error(xhr.responseText);
-                    }
-                });
-            }
-        });
-    });
-</script> -->
 
 
 <script>
