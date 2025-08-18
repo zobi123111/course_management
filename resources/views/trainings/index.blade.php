@@ -538,14 +538,15 @@ const currentUser = {
 };
 
 // Delegate change event to dynamically added instructor selects
-$(document).on('change', 'select[name^="lesson_data"][name$="[instructor_id]"]', function () {
+$(document).on('change', 'select[name^="lesson_data"][name$="[instructor_id]"]', function () { 
     let instructorId = $(this).val();
     let lessonBox = $(this).closest('.lesson-box');
     let licenseInput = lessonBox.find('input[name^="lesson_data"][name$="[instructor_license_number]"]');
+    let selectedCourseId = $('#edit_select_course').val() || $('#select_course').val();
 
     if (instructorId) {
         $.ajax({
-            url: "{{ url('/training/get_instructor_license_no') }}/" + instructorId,
+            url: "{{ url('/training/get_instructor_license_no') }}/" + instructorId + "/"+ selectedCourseId,
             type: 'GET',
             success: function (response) {
                 if (response.success) {
@@ -675,7 +676,7 @@ $(document).ready(function() {
                 if (isInstructorSelected) {
                     // Populate Instructors into #select_user
                     var instructorOptions = '<option value="">Select Instructor</option>';
-                    if (response.instructors && response.instructors.length > 0) { 
+                    if (response.instructors && response.instructors.length > 0) {  
                         instructorsdata = response.instructors;
                        
                      
@@ -733,11 +734,12 @@ $(document).ready(function() {
 
         // Get the selected Organization Unit ID (OU ID)
         var ou_id = ouDropdown.length ? ouDropdown.val() : '{{ auth()->user()->ou_id }}';
+      
         if (userId) {
             $.ajax({
                 url: "{{ url('/training/get_licence_number_and_courses') }}/" + userId + '/' + ou_id, 
                 type: "GET",
-                success: function(response) { console.log(response);
+                success: function(response) { 
                     if (response.success) {
                         var instructorCheckbox = isEditModal ? $('#edit_is_instructor_checkbox') : $('#is_instructor_checkbox');
                         // Update license number if available
@@ -802,18 +804,22 @@ $(document).ready(function() {
             });
         }
             
-       var selectedStudentId = $('#select_user').val();
+  
+        let selectedStudentId = $('#select_user').val() || $('#edit_select_user').val();
+
    
         $.ajax({
             url: '{{ url("/training/get_course_lessons") }}',
             type: 'GET', 
             data: { course_id: courseId , selectedStudentId:selectedStudentId},
-            success: function (response) { console.log(response);
+            success: function (response) {
                 lessonContainer.empty(); // Clear existing lesson boxes
 
                 if (response.success && response.lessons.length > 0) {
                     let lessons = response.lessons;
                     resourcesdata = response.resources; 
+                   instructorsdata = response.instructors;
+                    
                         response.lessons.forEach(function (lesson, idx) {
                             let prefillData = isEditForm && lessonPrefillMap[lesson.id] ? lessonPrefillMap[lesson.id] : {};
                             renderLessonBox(lesson, lessonContainer, prefillData, idx, mode);  
@@ -846,7 +852,7 @@ $(document).ready(function() {
             data: $("#trainingEventForm").serialize(),
             success: function(response) {
                 if(response.success){
-                    $('#createTrainingEventModal').modal('hide');
+                    $('#createTrainingEventModal').modal('hide'); 
                     location.reload();
                 }else{
                     alert(response.message);
@@ -906,41 +912,7 @@ $(document).ready(function() {
 
 
                         }
-                    // if (event.entry_source === 'instructor') {
-                    //     $('#edit_is_instructor_checkbox').prop('checked', true);
-                    //     alert("sds");
-                    //     $('#edit_entry_source').val('instructor');
-                    //     $('#edit_student_label').text('Select Instructor');
-                    //    // $('#edit_is_instructor_checkbox').trigger('change');
-                  
-                    // var instructorOptions = '<option value="">Select Instructor</option>';
-                    // if (response.instructors && response.instructors.length > 0) { 
-                    //     instructorsdata = response.instructors;
-
-                    //     var studentDropdown = $('#edit_select_user');
-                    //      var studentLabel = $('#student_label');
-                    //      studentDropdown.empty();
-                        
-                    //     $.each(instructorsdata, function(index, instructor) {
-                    //         var selected = instructor.id == selectedInstructor ? 'selected' : '';
-                    //         instructorOptions += '<option value="' + instructor.id + '" ' + selected + '>' + instructor.fname + ' ' + instructor.lname + '</option>';
-                    //             studentDropdown.html(instructorOptions); 
-                    //             $('#student_label').text('Select Instructor');
-                    //             $('#entry_source').val('instructor');
-                          
-
-                    //     });
-                    //     Inject student options
-                    //      studentLabel.text('Select Student'); // Update label
-                    //      $('#entry_source').val('student'); 
-                    // }
-
-
-                    // } else {
-                    //     $('#edit_is_instructor_checkbox').prop('checked', false); 
-                    //     $('#edit_entry_source').val('');
-                    //     $('#edit_student_label').text('Select Student');
-                    // }
+                 
 
                     // Set OU and wait for dependent dropdowns.
                   
@@ -948,27 +920,61 @@ $(document).ready(function() {
                     await new Promise(resolve => setTimeout(resolve, 500));
 
                     // Set dropdown values
-                    
+               
                     $('#edit_select_user').val(selectedStudent).data("selected-value", selectedStudent);
                     $('#edit_select_instructor').val(selectedInstructor).data("selected-value", selectedInstructor);
                     $('#edit_select_resource').val(selectedResource).data("selected-value", selectedResource);
-
                     await new Promise(resolve => setTimeout(resolve, 500));
+                //----------------------------------------------------------------------
+                 
+
+                 var userId = selectedStudent;
+                 var ouDropdown = $('#edit_ou_id').length ? $('#edit_ou_id') : $('#select_org_unit');
+                  var ou_id = ouDropdown.length ? ouDropdown.val() : '{{ auth()->user()->ou_id }}';
+            
+                     var courseDropdown = $('#edit_select_course').length ? $('#edit_select_course') : $('#select_course');
+             
+                      $.ajax({
+                            url: "{{ url('/training/get_licence_number_and_courses') }}/" + userId + '/' + ou_id, 
+                            type: "GET",
+                            success: function(response) { 
+                                if (response.success) {
+                                    var courseOptions = '<option value="">Select Course</option>'; // Default option
+                                    if (response.courses && response.courses.length > 0) {
+                                       
+                                      $.each(response.courses, function(index, course) {
+                                            var selected = (course.id == selectedCourse) ? 'selected="selected"' : '';
+                                            courseOptions += '<option value="' + course.id + '" ' + selected + '>' + course.course_name + '</option>';
+                                        });
+                                    } else {
+                                        alert('No courses found!'); // Notify user
+                                    }
+                                    courseDropdown.html(courseOptions); // Update dropdown
+                                } else {
+                                    courseDropdown.html('<option value="">Select Course</option>'); // Clear courses
+                                }
+                            },
+                            error: function(xhr) {
+                                console.error(xhr.responseText);
+                            }
+                        });
+
+                //-----------------------------------------------------------------------
                     $('#edit_select_course').val(selectedCourse).data("selected-value", selectedCourse);
 
                     // ✅ Global map of existing lessons for prefill
                    
               window.existingEventLessons = (event.event_lessons || []).map(l => {
-                        //   console.log('Mapping lesson:', l.resource_name);
+                      
                         //   if(l.resource_name != "groundschool"){
                         //     l.hours_credited = '';
                         //   }
                          let hoursCredited = '';
-                         //console.log(l.hours_credited);
+                        
                         if (l.hours_credited) {
                             const parts = l.hours_credited.split(':');
                             hoursCredited = parseInt(parts[0], 10); // convert "12:00:00" → 12
-                            console.log(hoursCredited);
+                            
                         }
                         return {
                             lesson_id: l.lesson_id,
@@ -1275,6 +1281,7 @@ $(document).ready(function() {
         `;
 
         container.append(lessonBox);
+       
 
         const $box = container.find(`.lesson-box[data-lesson-id="${currentIndex}"]`);
         const $resourceSelect = $box.find('.resource-selector');
@@ -1284,6 +1291,7 @@ $(document).ready(function() {
         const $destinationBlock = $box.find('.destination-block');
         const $simTimeBox = $box.find('.total-simulator-time-box');
         const $homestudy_time = $box.find('.homestudy_default_time');
+
         
         function toggleFields(resourceName) { 
                 
@@ -1344,22 +1352,25 @@ $(document).ready(function() {
 
         if (isCurrentUserInstructor) {
             const $licenseInput = $box.find(`input[name="lesson_data[${currentIndex}][instructor_license_number]"]`);
-            $.ajax({
-                url: `/training/get_instructor_license_no/${currentUser.id}`,
-                type: 'GET',
-                success: function (response) {
-                    if (response.success) {
-                        $licenseInput.val(response.instructor_licence_number || '');
-                    } else {
-                        $licenseInput.val('');
-                        alert("Instructor not found.");
-                    }
-                },
-                error: function () {
-                    $licenseInput.val('');
-                    alert("Error fetching license number.");
-                }
-            });
+            let selectedCourseName = $('#edit_select_course option:selected').text();
+            alert(selectedCourseId);
+          
+            // $.ajax({
+            //     url: `/training/get_instructor_license_no/${currentUser.id}/${selectedCourseId}`,
+            //     type: 'GET',
+            //     success: function (response) {
+            //         if (response.success) {
+            //             $licenseInput.val(response.instructor_licence_number || '');
+            //         } else {
+            //             $licenseInput.val('');
+            //             alert("Instructor not found.");
+            //         }
+            //     },
+            //     error: function () {
+            //         $licenseInput.val('');
+            //         alert("Error fetching license number.");
+            //     }
+            // });
         }
     }
 

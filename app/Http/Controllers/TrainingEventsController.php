@@ -31,7 +31,7 @@ use Illuminate\Support\Str;
 
 
 class TrainingEventsController extends Controller
-{ 
+{
     public function index()
     {
         $currentUser = auth()->user();
@@ -44,7 +44,7 @@ class TrainingEventsController extends Controller
             'instructor:id,fname,lname',
             'resource:id,name',
             'firstLesson.instructor:id,fname,lname',
-            'firstLesson.resource:id,name',            
+            'firstLesson.resource:id,name',
             // for your getCanEndCourseAttribute()
             'eventLessons',
             'eventLessons.lesson:id,enable_cbta',            // pull enable_cbta from course_lessons
@@ -58,24 +58,26 @@ class TrainingEventsController extends Controller
             // $courses = Courses::all();
             $courses = Courses::orderBy('position')->get();
             $groups = Group::all();
+
             $instructors = User::whereHas('roles', function ($query) {
                 $query->where('role_name', 'like', '%Instructor%');
             })->with('roles')->get();
+
+
             $students = User::whereHas('roles', function ($query) {
                 $query->where('role_name', 'like', '%Student%');
             })->with('roles')->get();
             $trainingEvents = TrainingEvents::with($trainingEventsRelations)
-                            ->withCount([
-                                'taskGradings',
-                                'competencyGradings'
-                            ])->get();
+                ->withCount([
+                    'taskGradings',
+                    'competencyGradings'
+                ])->get();
             $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations)
-                                        ->where('entry_source', "instructor")
-                                        ->withCount([
-                                            'taskGradings',
-                                            'competencyGradings'
-                                        ])->get();
-          
+                ->where('entry_source', "instructor")
+                ->withCount([
+                    'taskGradings',
+                    'competencyGradings'
+                ])->get();
         } elseif (checkAllowedModule('training', 'training.index')->isNotEmpty() && empty($currentUser->is_admin)) {
             // Regular User: Get data within their organizational unit
             $resources = Resource::where('ou_id', $currentUser->ou_id)->get();
@@ -91,6 +93,7 @@ class TrainingEventsController extends Controller
                     $query->where('role_name', 'like', '%Instructor%');
                 })->with('roles')->get();
 
+
             $students = User::where('ou_id', $currentUser->ou_id)
                 ->where(function ($query) {
                     $query->whereNull('is_admin')->orWhere('is_admin', false);
@@ -105,25 +108,24 @@ class TrainingEventsController extends Controller
                 ->withCount(['taskGradings', 'competencyGradings']);
 
             $trainingEvents_instructorQuery = TrainingEvents::where('ou_id', $currentUser->ou_id)
-                                        ->with($trainingEventsRelations)
-                                        ->withCount(['taskGradings', 'competencyGradings']);               
+                ->with($trainingEventsRelations)
+                ->withCount(['taskGradings', 'competencyGradings']);
 
             if (hasUserRole($currentUser, 'Instructor')) {
                 // Get training event IDs where the current instructor is assigned to at least one lesson
                 $eventIds = TrainingEventLessons::where('instructor_id', $currentUser->id)
-                           ->pluck('training_event_id')
-                           ->unique();
-                           
-            
+                    ->pluck('training_event_id')
+                    ->unique();
+
+
                 $trainingEvents = $trainingEvents_instructorQuery->whereIn('id', $eventIds)->get();
                 $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations)
-                                        ->where('entry_source', "instructor")
-                                        ->where('student_id', $currentUser->id)
-                                        ->withCount([
-                                            'taskGradings',
-                                            'competencyGradings'
-                                        ])->get();
-                
+                    ->where('entry_source', "instructor")
+                    ->where('student_id', $currentUser->id)
+                    ->withCount([
+                        'taskGradings',
+                        'competencyGradings'
+                    ])->get();
             } else {
                 $trainingEvents = $trainingEventsQuery
                     ->where('student_id', $currentUser->id)
@@ -153,7 +155,9 @@ class TrainingEventsController extends Controller
                     $query->where('role_name', 'like', '%Instructor%');
                 })->with('roles')->get();
 
-            $students = User::where('ou_id', $currentUser->ou_id)   
+
+
+            $students = User::where('ou_id', $currentUser->ou_id)
                 ->where(function ($query) {
                     $query->whereNull('is_admin')->orWhere('is_admin', false);
                 })
@@ -168,12 +172,11 @@ class TrainingEventsController extends Controller
             $trainingEvents_instructor = TrainingEvents::where('ou_id', $currentUser->ou_id)
                 ->where('entry_source', "instructor")
                 ->with($trainingEventsRelations)
-                ->withCount(['taskGradings', 'competencyGradings']) 
+                ->withCount(['taskGradings', 'competencyGradings'])
                 ->get();
-              
-        } 
+        }
         // Attach instructor lists to each training event
-        $trainingEvents->each(function ($event) { 
+        $trainingEvents->each(function ($event) {
             if (!$event->relationLoaded('eventLessons') || !($event->eventLessons instanceof \Illuminate\Support\Collection)) {
                 $event->lesson_instructors = collect();
                 $event->lesson_instructor_users = collect();
@@ -198,30 +201,29 @@ class TrainingEventsController extends Controller
             // Optional: preload the actual user object
             $event->last_lesson_instructor = $event->lesson_instructor_users->firstWhere('id', $event->last_lesson_instructor_id);
         });
-  
-        
+
+
         return view('trainings.index', compact('groups', 'courses', 'instructors', 'organizationUnits', 'trainingEvents', 'resources', 'students', 'trainingEvents_instructor'));
+    }
 
-    } 
-
-    public function getOrgStudentsInstructorsResources(Request $request,$ou_id)
+    public function getOrgStudentsInstructorsResources(Request $request, $ou_id)
     {
         // $ou_id = ($ou_id)? $ou_id: auth()->user()->ou_id;
         $students = User::where('ou_id', $ou_id)
-        ->where(function ($query) {
-            $query->whereNull('is_admin')->orWhere('is_admin', false);
-        })
-        ->whereHas('roles', function ($query) {
-            $query->where('role_name', 'like', '%Student%');
-        })->with('roles')->get();
+            ->where(function ($query) {
+                $query->whereNull('is_admin')->orWhere('is_admin', false);
+            })
+            ->whereHas('roles', function ($query) {
+                $query->where('role_name', 'like', '%Student%');
+            })->with('roles')->get();
 
         $instructors = User::where('ou_id', $ou_id)
-                ->where(function ($query) {
-                    $query->whereNull('is_admin')->orWhere('is_admin', false);
-                })
-                ->whereHas('roles', function ($query) {
-                    $query->where('role_name', 'like', '%Instructor%');
-                })->with('roles')->get();
+            ->where(function ($query) {
+                $query->whereNull('is_admin')->orWhere('is_admin', false);
+            })
+            ->whereHas('roles', function ($query) {
+                $query->where('role_name', 'like', '%Instructor%');
+            })->with('roles')->get();
 
         $resources = Resource::where('ou_id', $ou_id)->get();
 
@@ -233,18 +235,18 @@ class TrainingEventsController extends Controller
         }
     }
 
-    public function getStudentLicenseNumberAndCourses(Request $request,$user_id,$ou_id)
+    public function getStudentLicenseNumberAndCourses(Request $request, $user_id, $ou_id)
     {
-        $user = User::with('documents')->find($user_id); 
+        $user = User::with('documents')->find($user_id);
         $groups = Group::where('ou_id', $ou_id)
-        ->whereJsonContains('user_ids', strval($user_id)) // Ensure user_id is a string
-        ->pluck('id'); // Get only the group IDs
-        
+            ->whereJsonContains('user_ids', strval($user_id)) // Ensure user_id is a string
+            ->pluck('id'); // Get only the group IDs
+
         $courses = Courses::with('groups') // Load only the groups relationship
-        ->whereHas('groups', function ($query) use ($groups) {
-            $query->whereIn('groups.id', $groups);
-        })
-        ->get();        
+            ->whereHas('groups', function ($query) use ($groups) {
+                $query->whereIn('groups.id', $groups);
+            })
+            ->get();
         if ($user) {
             return response()->json(['success' => true, 'licence_number' => $user->licence ?: $user->licence_2, 'courses' => $courses]);
         } else {
@@ -252,17 +254,31 @@ class TrainingEventsController extends Controller
         }
     }
 
-    public function getInstructorLicenseNumber(Request $request, $instructor_id)
+    public function getInstructorLicenseNumber(Request $request, $instructor_id, $selectedCourseId)
     {
-        $instructor = User::with('documents')->find($instructor_id);   
-    
+        $instructor = User::with('documents')->find($instructor_id);
+        $course = Courses::with(['courseLessons', 'resources'])->find($selectedCourseId);
+        $ato_num = strtolower($course->ato_num);
+         if (str_contains($ato_num, 'uk')) {
+             $licence = $instructor->licence;
+           
+        }
+        elseif (str_contains($ato_num, 'easa')) {
+          $licence = $instructor->licence_2;
+        
+       }
+       else {
+              $licence = $instructor->licence ?: $instructor->licence_2;
+             
+       }
+
         if ($instructor) {
             return response()->json([
                 'success' => true,
-                'instructor_licence_number' => $instructor->licence ?: $instructor->licence_2
+                'instructor_licence_number' => $licence
             ]);
         }
-    
+
         return response()->json(['success' => false], 404);
     }
 
@@ -280,36 +296,73 @@ class TrainingEventsController extends Controller
     {
         $student_id = $request->selectedStudentId;
 
-         $course = Courses::with(['courseLessons', 'resources'])->find($request->course_id);
-        
-       $get_licence = UserDocument::where('user_id', $student_id) ->select('licence', 'licence_2')->first();
+        $course = Courses::with(['courseLessons', 'resources'])->find($request->course_id);
+
+
+        $get_licence = UserDocument::where('user_id', $student_id)->select('licence', 'licence_2')->first();
 
         $uk_licence = $get_licence->licence ?? null;
         $easa_licence = $get_licence->licence_2 ?? null;
-     $ato_num = strtolower($course->ato_num); 
+        $ato_num = strtolower($course->ato_num);
 
         if (str_contains($ato_num, 'uk')) {
+            $instructors = User::with(['documents', 'roles'])
+                ->whereHas('documents', function ($query) {
+                    $query->whereNotNull('licence')->where('licence', '!=', '');
+                })
+                ->whereHas('roles', function ($query) {
+                    $query->where('role_name', 'like', '%Instructor%');
+                })
+                ->get();
+
+            // attach licence number
+            $instructors->each(function ($inst) {
+                $inst->instructor_license_number = $inst->documents->licence ?? '';
+            });
+
             $licence_type = [
                 'flag' => 'uk',
                 'number' => $uk_licence,
             ];
-        } 
-        if (str_contains($ato_num, 'easa')) {
-                  $licence_type = [
+        } elseif (str_contains($ato_num, 'easa')) {
+            $instructors = User::with(['documents', 'roles'])
+                ->whereHas('documents', function ($query) {
+                    $query->whereNotNull('licence_2')->where('licence_2', '!=', '');
+                })
+                ->whereHas('roles', function ($query) {
+                    $query->where('role_name', 'like', '%Instructor%');
+                })
+                ->get();
+
+            $instructors->each(function ($inst) {
+                $inst->instructor_license_number = $inst->documents->licence_2 ?? '';
+            });
+
+            $licence_type = [
                 'flag' => 'easa',
                 'number' => $easa_licence,
             ];
-        }
-        else {
-             $licence_type = [
-                'flag' => 'generic',
-                'number' => $uk_licence,
-            ];
-           
-        }
+        }else {
+            $instructors = User::with(['documents', 'roles'])
+                ->whereHas('roles', function ($query) {
+                    $query->where('role_name', 'like', '%Instructor%');
+                })->get();
 
-       
-        
+            $instructors->each(function ($inst) {
+                if (!empty($inst->documents->licence)) {
+                    $inst->instructor_license_number = $inst->documents->licence;
+                } elseif (!empty($inst->documents->licence_2)) {
+                    $inst->instructor_license_number = $inst->documents->licence_2;
+                } else {
+                    $inst->instructor_license_number = '';
+                }
+            });
+
+            $licence_type = [
+                'flag' => 'generic',
+                'number' => !empty($uk_licence) ? $uk_licence : $easa_licence,
+            ];
+        }
 
         if (!$course) {
             return response()->json([
@@ -318,17 +371,18 @@ class TrainingEventsController extends Controller
             ]);
         }
 
-        return response()->json([   
-            'success'   => true,
-            'lessons'   => $course->courseLessons,
-            'resources' => $course->resources,
-            'licence'   => $licence_type,
+        return response()->json([
+            'success'     => true,
+            'lessons'     => $course->courseLessons,
+            'resources'   => $course->resources,
+            'licence'     => $licence_type,
+            'instructors' => $instructors
         ]);
     }
 
-    public function createTrainingEvent(Request $request)   
-    {   
-       
+    public function createTrainingEvent(Request $request)
+    {
+
         //Validate base fields
         $request->validate([
             'student_id' => 'required|exists:users,id',
@@ -347,54 +401,54 @@ class TrainingEventsController extends Controller
                 }
             ],
             'lesson_data' => 'required|array|min:1',
-                // Validate ONLY the first lesson (index 0)
-                // 'lesson_data.0.lesson_id' => 'required|exists:course_lessons,id',
-                // 'lesson_data.0.instructor_id' => 'required|exists:users,id',
-                // 'lesson_data.0.resource_id' => 'required|exists:resources,id',
-                // 'lesson_data.0.lesson_date' => 'required|date_format:Y-m-d',
-                // 'lesson_data.*.start_time' => [
-                //         'nullable',
-                //         'date_format:H:i',
-                //     ],
-                // 'lesson_data.*.end_time' => [
-                //         'nullable',
-                //         'date_format:H:i',
-                //         function ($attribute, $value, $fail) use ($request) {
-                //             preg_match('/lesson_data\.(\d+)\.end_time/', $attribute, $matches);
-                //             if (!isset($matches[1])) return;
+            // Validate ONLY the first lesson (index 0)
+            // 'lesson_data.0.lesson_id' => 'required|exists:course_lessons,id',
+            // 'lesson_data.0.instructor_id' => 'required|exists:users,id',
+            // 'lesson_data.0.resource_id' => 'required|exists:resources,id',
+            // 'lesson_data.0.lesson_date' => 'required|date_format:Y-m-d',
+            // 'lesson_data.*.start_time' => [
+            //         'nullable',
+            //         'date_format:H:i',
+            //     ],
+            // 'lesson_data.*.end_time' => [
+            //         'nullable',
+            //         'date_format:H:i',
+            //         function ($attribute, $value, $fail) use ($request) {
+            //             preg_match('/lesson_data\.(\d+)\.end_time/', $attribute, $matches);
+            //             if (!isset($matches[1])) return;
 
-                //             $index = (int) $matches[1];
-                //             $startTime = $request->input("lesson_data.$index.start_time");
+            //             $index = (int) $matches[1];
+            //             $startTime = $request->input("lesson_data.$index.start_time");
 
-                //             if ($index === 0) {
-                //                 if (empty($startTime) || empty($value)) {
-                //                     return $fail("Start time and end time are required for the first lesson.");
-                //                 }
-                //             }
+            //             if ($index === 0) {
+            //                 if (empty($startTime) || empty($value)) {
+            //                     return $fail("Start time and end time are required for the first lesson.");
+            //                 }
+            //             }
 
-                //             // Validate only if both times exist
-                //             if (!empty($startTime) && !empty($value)) {
-                //                 if (strtotime($value) <= strtotime($startTime)) {
-                //                     $fail("End time must be after start time.");
-                //                 }
-                //             }
-                //         },
-                //     ],
-                // 'lesson_data.0.departure_airfield' => 'required|string|size:4',
-                // 'lesson_data.0.destination_airfield' => 'required|string|size:4',
-                // 'lesson_data.0.instructor_license_number' => 'nullable|string',
-            ], [], [
-                'event_date' => 'Course start date',
-                'lesson_data.0.instructor_id' => 'instructor',
-                'lesson_data.0.resource_id' => 'resource',
-                'lesson_data.0.lesson_date' => 'lesson date',
-                'lesson_data.0.start_time' => 'start time',
-                'lesson_data.0.end_time' => 'end time',
-                'lesson_data.0.departure_airfield' => 'departure airfield',
-                'lesson_data.0.destination_airfield' => 'destination airfield',
-                'lesson_data.0.instructor_license_number' => 'instructor license number',
+            //             // Validate only if both times exist
+            //             if (!empty($startTime) && !empty($value)) {
+            //                 if (strtotime($value) <= strtotime($startTime)) {
+            //                     $fail("End time must be after start time.");
+            //                 }
+            //             }
+            //         },
+            //     ],
+            // 'lesson_data.0.departure_airfield' => 'required|string|size:4',
+            // 'lesson_data.0.destination_airfield' => 'required|string|size:4',
+            // 'lesson_data.0.instructor_license_number' => 'nullable|string',
+        ], [], [
+            'event_date' => 'Course start date',
+            'lesson_data.0.instructor_id' => 'instructor',
+            'lesson_data.0.resource_id' => 'resource',
+            'lesson_data.0.lesson_date' => 'lesson date',
+            'lesson_data.0.start_time' => 'start time',
+            'lesson_data.0.end_time' => 'end time',
+            'lesson_data.0.departure_airfield' => 'departure airfield',
+            'lesson_data.0.destination_airfield' => 'destination airfield',
+            'lesson_data.0.instructor_license_number' => 'instructor license number',
         ]);
-        
+
         $lesson_ids = collect($request->lesson_data)->pluck('lesson_id')->toArray();
 
 
@@ -414,7 +468,6 @@ class TrainingEventsController extends Controller
                 $match = $existingLessons->firstWhere(function ($existingLesson) use ($newLesson) {
                     return $existingLesson->lesson_id == $newLesson['lesson_id']
                         && $existingLesson->lesson_date == $newLesson['lesson_date'];
-                        
                 });
 
                 if (!$match) {
@@ -445,7 +498,7 @@ class TrainingEventsController extends Controller
         ]);
 
         // Loop through lesson data
-        foreach ($request->lesson_data as $lesson) { 
+        foreach ($request->lesson_data as $lesson) {
             $lessonModel = \App\Models\CourseLesson::find($lesson['lesson_id']);
             $resourceModel = \App\Models\Resource::find($lesson['resource_id']);
 
@@ -463,7 +516,6 @@ class TrainingEventsController extends Controller
                 $creditMinutes = 480;
                 $start = '00:00';
                 $end = '08:00';
-
             } elseif ($start && $end) {
                 // For all other lessons (including simulator and classroom)
                 try {
@@ -502,81 +554,77 @@ class TrainingEventsController extends Controller
             'message' => 'Training event created successfully',
             'trainingEvent' => $trainingEvent
         ], 201);
-    }    
+    }
 
-    public function getTrainingEvent(Request $request) 
-    {   
-       
-        $trainingEvent = TrainingEvents::with('eventLessons.lesson','course:id,course_name,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num')->findOrFail(decode_id($request->eventId));
-       $atoNum = strtolower($trainingEvent->course->ato_num);
-    
-                $isUK   = str_contains($atoNum, 'uk');
-                $isEASA = str_contains($atoNum, 'easa');
+    public function getTrainingEvent(Request $request)
+    {
 
-                $ukLicence   = isset($trainingEvent->studentDocument->licence) 
-                            ? trim($trainingEvent->studentDocument->licence) : '';
-                $easaLicence = isset($trainingEvent->studentDocument->licence_2) 
-                            ? trim($trainingEvent->studentDocument->licence_2) : '';
+        $trainingEvent = TrainingEvents::with('eventLessons.lesson', 'course:id,course_name,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num')->findOrFail(decode_id($request->eventId));
+        $atoNum = strtolower($trainingEvent->course->ato_num);
 
-                // Helper to pick the first available licence or N/A
-                $getLicence = function() use ($ukLicence, $easaLicence) {
-                    return !empty($ukLicence) ? $ukLicence 
-                        : (!empty($easaLicence) ? $easaLicence : '');
-                };
+        $isUK   = str_contains($atoNum, 'uk');
+        $isEASA = str_contains($atoNum, 'easa');
 
-                if ($isUK && !$isEASA) {
-                    $label = "License Number (UK)";
-                    $student_licence = $getLicence();
+        $ukLicence   = isset($trainingEvent->studentDocument->licence)
+            ? trim($trainingEvent->studentDocument->licence) : '';
+        $easaLicence = isset($trainingEvent->studentDocument->licence_2)
+            ? trim($trainingEvent->studentDocument->licence_2) : '';
 
-                } elseif ($isEASA && !$isUK) {
-                    $label = "License Number (EASA)";
-                    $student_licence = $getLicence();
+        // Helper to pick the first available licence or N/A
+        $getLicence = function () use ($ukLicence, $easaLicence) {
+            return !empty($ukLicence) ? $ukLicence
+                : (!empty($easaLicence) ? $easaLicence : '');
+        };
 
-                } elseif ($isUK && $isEASA) {
-                    if (empty($ukLicence) && empty($easaLicence)) {
-                        $label = "License";
-                        $student_licence = $getLicence();
-                    } else {
-                        $label = "License Number (Generic)";
-                        $student_licence = implode(', ', array_filter([$ukLicence, $easaLicence]));
-                    }
+        if ($isUK && !$isEASA) {
+            $label = "License Number (UK)";
+            $student_licence = $getLicence();
+        } elseif ($isEASA && !$isUK) {
+            $label = "License Number (EASA)";
+            $student_licence = $getLicence();
+        } elseif ($isUK && $isEASA) {
+            if (empty($ukLicence) && empty($easaLicence)) {
+                $label = "License";
+                $student_licence = $getLicence();
+            } else {
+                $label = "License Number (Generic)";
+                $student_licence = implode(', ', array_filter([$ukLicence, $easaLicence]));
+            }
+        } else {
+            if (empty($ukLicence) && empty($easaLicence)) {
+                $label = "License";
+                $student_licence = $getLicence();
+            } else {
+                $label = "License Number (Generic)";
+                $student_licence = implode(', ', array_filter([$ukLicence, $easaLicence]));
+            }
+        }
 
-                } else {
-                    if (empty($ukLicence) && empty($easaLicence)) {
-                        $label = "License";
-                        $student_licence = $getLicence();
-                    } else {
-                        $label = "License Number (Generic)";
-                        $student_licence = implode(', ', array_filter([$ukLicence, $easaLicence]));
-                    }
-                }
-              
 
 
 
 
         $user_id =  $trainingEvent->student_id;
-        $user = User::with('documents')->find($user_id); 
+        $user = User::with('documents')->find($user_id);
         $ou_id = $trainingEvent['ou_id'];
         $instructors = User::where('ou_id', $ou_id)
-                        ->where(function ($query) {
-                            $query->whereNull('is_admin')->orWhere('is_admin', false);
-                        })
-                        ->whereHas('roles', function ($query) {
-                            $query->where('role_name', 'like', '%Instructor%');
-                        })->with('roles')->get();
-                    
-        if($trainingEvent)
-        {
-            return response()->json(['success'=> true,'trainingEvent'=> $trainingEvent, 'instructors' => $instructors,'licence_number' => $student_licence]);
-        }else{
-            return response()->json(['success'=> false, 'message' => 'Training event Not found']);
+            ->where(function ($query) {
+                $query->whereNull('is_admin')->orWhere('is_admin', false);
+            })
+            ->whereHas('roles', function ($query) {
+                $query->where('role_name', 'like', '%Instructor%');
+            })->with('roles')->get();
+
+        if ($trainingEvent) {
+            return response()->json(['success' => true, 'trainingEvent' => $trainingEvent, 'instructors' => $instructors, 'licence_number' => $student_licence]);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Training event Not found']);
         }
     }
 
     public function updateTrainingEvent(Request $request)
     {
-      
+
         // Convert nested lesson times to H:i format
         $lessonData = $request->input('lesson_data', []);
         foreach ($lessonData as $key => $lesson) {
@@ -587,11 +635,11 @@ class TrainingEventsController extends Controller
                 $lessonData[$key]['end_time'] = date('H:i', strtotime($lesson['end_time']));
             }
         }
-        $request->merge(['lesson_data' => $lessonData]); 
-    
+        $request->merge(['lesson_data' => $lessonData]);
+
         // Validate request
         $request->validate([
-            'event_id' => 'required|exists:training_events,id', 
+            'event_id' => 'required|exists:training_events,id',
             'student_id' => 'required|exists:users,id',
             'course_id' => 'required|exists:courses,id',
             'event_date' => 'required|date_format:Y-m-d',
@@ -606,52 +654,52 @@ class TrainingEventsController extends Controller
                 }
             ],
             'lesson_data' => 'required|array|min:1',
-                // Validate ONLY the first lesson (index 0)
-                // 'lesson_data.0.lesson_id' => 'required|exists:course_lessons,id',
-                // 'lesson_data.0.instructor_id' => 'required|exists:users,id',
-                // 'lesson_data.0.resource_id' => 'required|exists:resources,id',
-                // 'lesson_data.0.lesson_date' => 'required|date_format:Y-m-d',
-                // 'lesson_data.*.start_time' => [
-                //         'nullable',
-                //         'date_format:H:i',
-                //     ],
-                // 'lesson_data.*.end_time' => [
-                //         'nullable',
-                //         'date_format:H:i',
-                //         function ($attribute, $value, $fail) use ($request) {
-                //             preg_match('/lesson_data\.(\d+)\.end_time/', $attribute, $matches);
-                //             if (!isset($matches[1])) return;
+            // Validate ONLY the first lesson (index 0)
+            // 'lesson_data.0.lesson_id' => 'required|exists:course_lessons,id',
+            // 'lesson_data.0.instructor_id' => 'required|exists:users,id',
+            // 'lesson_data.0.resource_id' => 'required|exists:resources,id',
+            // 'lesson_data.0.lesson_date' => 'required|date_format:Y-m-d',
+            // 'lesson_data.*.start_time' => [
+            //         'nullable',
+            //         'date_format:H:i',
+            //     ],
+            // 'lesson_data.*.end_time' => [
+            //         'nullable',
+            //         'date_format:H:i',
+            //         function ($attribute, $value, $fail) use ($request) {
+            //             preg_match('/lesson_data\.(\d+)\.end_time/', $attribute, $matches);
+            //             if (!isset($matches[1])) return;
 
-                //             $index = (int) $matches[1];
-                //             $startTime = $request->input("lesson_data.$index.start_time");
+            //             $index = (int) $matches[1];
+            //             $startTime = $request->input("lesson_data.$index.start_time");
 
-                //             if ($index === 0) {
-                //                 if (empty($startTime) || empty($value)) {
-                //                     return $fail("Start time and end time are required for the first lesson.");
-                //                 }
-                //             }
+            //             if ($index === 0) {
+            //                 if (empty($startTime) || empty($value)) {
+            //                     return $fail("Start time and end time are required for the first lesson.");
+            //                 }
+            //             }
 
-                //             // Validate only if both times exist
-                //             if (!empty($startTime) && !empty($value)) {
-                //                 if (strtotime($value) <= strtotime($startTime)) {
-                //                     $fail("End time must be after start time.");
-                //                 }
-                //             }
-                //         },
-                //     ],
-                // 'lesson_data.0.departure_airfield' => 'required|string|size:4',
-                // 'lesson_data.0.destination_airfield' => 'required|string|size:4',
-                // 'lesson_data.0.instructor_license_number' => 'nullable|string',
-            ], [], [
-                'event_date' => 'Course start date',
-                'lesson_data.0.instructor_id' => 'instructor',
-                'lesson_data.0.resource_id' => 'resource',
-                'lesson_data.0.lesson_date' => 'lesson date',
-                'lesson_data.0.start_time' => 'start time',
-                'lesson_data.0.end_time' => 'end time',
-                'lesson_data.0.departure_airfield' => 'departure airfield',
-                'lesson_data.0.destination_airfield' => 'destination airfield',
-                'lesson_data.0.instructor_license_number' => 'instructor license number',
+            //             // Validate only if both times exist
+            //             if (!empty($startTime) && !empty($value)) {
+            //                 if (strtotime($value) <= strtotime($startTime)) {
+            //                     $fail("End time must be after start time.");
+            //                 }
+            //             }
+            //         },
+            //     ],
+            // 'lesson_data.0.departure_airfield' => 'required|string|size:4',
+            // 'lesson_data.0.destination_airfield' => 'required|string|size:4',
+            // 'lesson_data.0.instructor_license_number' => 'nullable|string',
+        ], [], [
+            'event_date' => 'Course start date',
+            'lesson_data.0.instructor_id' => 'instructor',
+            'lesson_data.0.resource_id' => 'resource',
+            'lesson_data.0.lesson_date' => 'lesson date',
+            'lesson_data.0.start_time' => 'start time',
+            'lesson_data.0.end_time' => 'end time',
+            'lesson_data.0.departure_airfield' => 'departure airfield',
+            'lesson_data.0.destination_airfield' => 'destination airfield',
+            'lesson_data.0.instructor_license_number' => 'instructor license number',
         ]);
 
         // Check for duplicate training events (same student, course, and lesson dates)
@@ -663,10 +711,10 @@ class TrainingEventsController extends Controller
         $incomingLessonDates = collect($lessonData)->pluck('lesson_date')->toArray();
 
         $duplicateFound = TrainingEventLessons::whereHas('trainingEvent', function ($query) use ($studentId, $courseId, $eventId) {
-                $query->where('student_id', $studentId)
-                    ->where('course_id', $courseId)
-                    ->where('id', '!=', $eventId); // exclude current event
-            })
+            $query->where('student_id', $studentId)
+                ->where('course_id', $courseId)
+                ->where('id', '!=', $eventId); // exclude current event
+        })
             ->whereIn('lesson_date', $incomingLessonDates)
             ->exists();
 
@@ -677,7 +725,7 @@ class TrainingEventsController extends Controller
             ]);
         }
 
-    
+
         // Update Training Event
         $trainingEvent = TrainingEvents::findOrFail($request->event_id);
         $trainingEvent->update([
@@ -690,15 +738,15 @@ class TrainingEventsController extends Controller
             'simulator_time' => $request->total_simulator_time ?? '00:00',
             'std_license_number' => $request->std_licence_number ?? null,
         ]);
-    
+
         // Get all lesson_ids from the request
         $incomingLessonIds = collect($lessonData)->pluck('lesson_id')->toArray();
-    
+
         // Delete removed lessons
         TrainingEventLessons::where('training_event_id', $trainingEvent->id)
             ->whereNotIn('lesson_id', $incomingLessonIds)
             ->delete();
-    
+
         // Re-insert/update lessons
         foreach ($lessonData as $data) {
             $lessonModel = \App\Models\CourseLesson::find($data['lesson_id']);
@@ -708,23 +756,21 @@ class TrainingEventsController extends Controller
             $resourceName = $resourceModel?->name;
             $start = $data['start_time'] ?? null;
             $end = $data['end_time'] ?? null;
-         
+
 
             $creditMinutes = 0;
             if ($lessonType === 'groundschool' && $resourceName === 'Homestudy') {
-                $creditMinutes = $data['homestudy_time'] ?? 0 ;
-                if (is_numeric($creditMinutes)){
+                $creditMinutes = $data['homestudy_time'] ?? 0;
+                if (is_numeric($creditMinutes)) {
                     $creditMinutes *= 60;
-                }else{
+                } else {
                     $creditMinutes  = 0;
                 }
-               // dd($creditMinutes);
+                // dd($creditMinutes);
                 // $creditMinutes = 480;
-                 $start = '00:00';
-                 $end = '00:00';
-            }
-       
-             elseif ($start && $end) {
+                $start = '00:00';
+                $end = '00:00';
+            } elseif ($start && $end) {
                 try {
                     $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
                     $endTime = \Carbon\Carbon::createFromFormat('H:i', $end);
@@ -732,12 +778,11 @@ class TrainingEventsController extends Controller
                         $endTime->addDay();
                     }
                     $creditMinutes = $startTime->diffInMinutes($endTime);
-                  
                 } catch (\Exception $e) {
                     $creditMinutes = 0;
                 }
             }
-       
+
 
             TrainingEventLessons::updateOrCreate(
                 [
@@ -757,29 +802,29 @@ class TrainingEventsController extends Controller
                 ]
             );
         }
-    
+
         Session::flash('message', 'Training event updated successfully.');
-    
+
         return response()->json([
             'success' => true,
             'message' => 'Training event updated successfully',
             'trainingEvent' => $trainingEvent->load('eventLessons'),
         ]);
     }
-    
+
     public function deleteTrainingEvent(Request $request)
     {
         $trainingEvents = TrainingEvents::findOrFail(decode_id($request->event_id));
         if ($trainingEvents) {
             $trainingEvents->delete();
             return redirect()->route('training.index')->with('message', 'Training event deleted successfully');
-        }        
+        }
     }
 
-    public function showTrainingEvent(Request $request, $event_id) 
+    public function showTrainingEvent(Request $request, $event_id)
     {
         $currentUser = auth()->user();
-        $trainingEvent = TrainingEvents::with([ 
+        $trainingEvent = TrainingEvents::with([
             'course:id,course_name,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num',
             'course.documents', // Eager load course documents
             'group:id,name,user_ids',
@@ -793,52 +838,50 @@ class TrainingEventsController extends Controller
             'documents',
             'studentDocument'
         ])->find(decode_id($event_id));
-      
+
 
 
         if (!$trainingEvent) {
             return abort(404, 'Training Event not found');
         }
         //Filter lessons based on role
-        if (hasUserRole($currentUser, 'Instructor') && empty($currentUser->is_admin)) { 
+        if (hasUserRole($currentUser, 'Instructor') && empty($currentUser->is_admin)) {
             // Only show lessons assigned to this instructor
             $eventLessons = $trainingEvent->eventLessons->filter(function ($lesson) use ($currentUser) {
                 return $lesson->instructor_id == $currentUser->id;
             })->values();
-        } else { 
-             
+        } else {
+
             //Admins and others with access can view all lessons
             $eventLessons = $trainingEvent->eventLessons;
             // dd($trainingEvent);
-           
+
         }
         //dd($eventLessons);
         $student = $trainingEvent->student;
         $lessonIds = $eventLessons->pluck('lesson_id')->filter()->unique();
-        
+
         //Get task gradings (sublesson grades and comments)
-        if(!empty($student)){
+        if (!empty($student)) {
             $taskGrades = TaskGrading::where('user_id', $student->id)
-            ->where('event_id', $trainingEvent->id)
-            ->whereIn('lesson_id', $lessonIds)
-            ->get()
-            ->keyBy(fn($item) => $item->lesson_id . '_' . $item->sub_lesson_id);
+                ->where('event_id', $trainingEvent->id)
+                ->whereIn('lesson_id', $lessonIds)
+                ->get()
+                ->keyBy(fn($item) => $item->lesson_id . '_' . $item->sub_lesson_id);
 
-     //Get competency grades (competency area grades and comments)
-         $competencyGrades = CompetencyGrading::where('user_id', $student->id)
-            ->where('event_id', $trainingEvent->id)
-            ->whereIn('lesson_id', $lessonIds)
-            ->get()
-            ->groupBy('lesson_id');
+            //Get competency grades (competency area grades and comments)
+            $competencyGrades = CompetencyGrading::where('user_id', $student->id)
+                ->where('event_id', $trainingEvent->id)
+                ->whereIn('lesson_id', $lessonIds)
+                ->get()
+                ->groupBy('lesson_id');
+        } else {
+            $taskGrades = collect(); // instead of ''
+            $competencyGrades = collect(); // instead of ''
+        }
 
-        }
-        else{
-                $taskGrades = collect(); // instead of ''
-                $competencyGrades = collect(); // instead of ''
-        }
-        
-    
-     
+
+
 
         //Optional: Also pass overall assessments if you need them
         $overallAssessments = OverallAssessment::where('event_id', $trainingEvent->id)
@@ -907,55 +950,55 @@ class TrainingEventsController extends Controller
         $getFirstdeftTasks = TaskGrading::where('event_id', $trainingEvent->id)
             ->whereIn('task_grade', ['Incomplete', 'Further training required'])
             ->get();
-            
-        $deferredTaskIds = collect($getFirstdeftTasks)->pluck('sub_lesson_id')->toArray(); 
 
-        $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource','defLesson', 'deftasks.subddddLesson.courseLesson'])
-                            ->where('event_id', $trainingEvent->id)
-                            ->get();
+        $deferredTaskIds = collect($getFirstdeftTasks)->pluck('sub_lesson_id')->toArray();
+
+        $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson'])
+            ->where('event_id', $trainingEvent->id)
+            ->get();
 
 
         $defLessonTasks = DefLessonTask::with(['user', 'defLesson.instructor', 'defLesson.instructor.documents', 'defLesson.resource', 'task'])
-        ->where('event_id', $trainingEvent->id)
-        ->get();
+            ->where('event_id', $trainingEvent->id)
+            ->get();
         // dd($deferredLessons);
 
         $deferredLessonsTasks = DefLessonTask::with([
-                'user', 
-                'defLesson.instructor', 
-                'defLesson.resource', 
-                'task'
-            ])
+            'user',
+            'defLesson.instructor',
+            'defLesson.resource',
+            'task'
+        ])
             ->where('event_id', $trainingEvent->id)
             ->where('task_grade', '!=', 'Competent') // Excludes 'Competent' grades
             ->whereNotNull('task_grade')             // Ensures only graded tasks are included
             ->get();
         $gradedDefTasksMap = $deferredLessonsTasks->mapWithKeys(function ($item) {
-            return [ $item->def_lesson_id . '_' . $item->task_id => true ];
-        });     
+            return [$item->def_lesson_id . '_' . $item->task_id => true];
+        });
         // dd($gradedDefTaskIds);           
         if ($currentUser->is_owner == 1) {
             // Super Admin: Get all data
             $instructors = User::whereHas('roles', function ($query) {
                 $query->where('role_name', 'like', '%Instructor%');
             })->with('roles')->get();
-        }else {
+        } else {
             $instructors = User::where('ou_id', $currentUser->ou_id)
-            ->where(function ($query) {
-                $query->whereNull('is_admin')->orWhere('is_admin', false);
-            })
-            ->whereHas('roles', function ($query) {
-                $query->where('role_name', 'like', '%Instructor%');
-            })->with('roles')->get();
+                ->where(function ($query) {
+                    $query->whereNull('is_admin')->orWhere('is_admin', false);
+                })
+                ->whereHas('roles', function ($query) {
+                    $query->where('role_name', 'like', '%Instructor%');
+                })->with('roles')->get();
         }
 
-        $course = Courses::with('resources')->find($trainingEvent->course_id);  
-        $resources = $course ? $course->resources : collect();  
-        
-        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons','taskGrades', 'competencyGrades','trainingFeedbacks','isGradingCompleted','resources','instructors','defTasks','deferredLessons','defLessonTasks','deferredTaskIds','gradedDefTasksMap'));
+        $course = Courses::with('resources')->find($trainingEvent->course_id);
+        $resources = $course ? $course->resources : collect();
+
+        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap'));
     }
 
-    public function createGrading(Request $request) 
+    public function createGrading(Request $request)
     {
         //Validate the incoming data:
         $request->validate([
@@ -977,10 +1020,10 @@ class TrainingEventsController extends Controller
             'tg_user_id'           => 'required|integer|exists:users,id',
             'cg_user_id'           => 'required|integer|exists:users,id',
         ]);
-    
+
         // Begin the database transaction
         DB::beginTransaction();
-        
+
         try {
             $event_id = $request->input('event_id');
             //Get the student ID being graded from the hidden fields:
@@ -989,7 +1032,7 @@ class TrainingEventsController extends Controller
 
             //Clear previous deferred items (optional: prevent duplicates)
             //DeferredItem::where('event_id', $event_id)->where('created_by', $evaluatorId)->delete();
-            
+
             // Store or update Task Grading (for sublessons):
             if ($request->has('task_grade')) {
                 foreach ($request->input('task_grade') as $lesson_id => $subLessons) {
@@ -1008,8 +1051,8 @@ class TrainingEventsController extends Controller
                                 'created_by'    => auth()->user()->id,
                             ]
                         );
-                    
-                        if (strtolower($task_grade) == 'incomplete' || strtolower($task_grade) == 'further training required') {    
+
+                        if (strtolower($task_grade) == 'incomplete' || strtolower($task_grade) == 'further training required') {
                             // Check if task already exists in def_lesson_tasks
                             $alreadyDeferred = DefLessonTask::where([
                                 'event_id' => $event_id,
@@ -1038,47 +1081,46 @@ class TrainingEventsController extends Controller
                     $gradedSubLessons = TaskGrading::where([
                         'event_id'  => $event_id,
                         'lesson_id' => $lesson_id,
-                        'user_id'   => $gradedStudentId,    
+                        'user_id'   => $gradedStudentId,
                     ])
-                    ->whereNotNull('task_grade')
-                    ->where('task_grade', '!=', '')
-                    ->count(); 
+                        ->whereNotNull('task_grade')
+                        ->where('task_grade', '!=', '')
+                        ->count();
 
                     if ($totalSubLessons > 0 && $totalSubLessons == $gradedSubLessons) {
                         TrainingEventLessons::where('training_event_id', $event_id)
                             ->where('lesson_id', $lesson_id)
                             ->update(['is_locked' => 1]);
                     }
-
                 }
             }
 
             // Store or update Competency Grading (lesson-level):
             if ($request->has('comp_grade')) {
                 foreach ($request->input('comp_grade') as $lesson_id => $competencyGrades) {
-                    $compData = [   
+                    $compData = [
                         'event_id'  => $event_id,
                         'lesson_id' => $lesson_id,
                         'user_id'   => $gradedStudentIdForComp, // Use student ID from hidden input
-                        'created_by'=> auth()->user()->id,
+                        'created_by' => auth()->user()->id,
                     ];
-        
+
                     // Map each competency grade and comment to its respective database columns.
                     foreach ($competencyGrades as $code => $grade) {
                         // Build column names based on competency code (e.g. KNO becomes kno_grade, kno_comment)
                         $gradeColumn   = strtolower($code) . '_grade';
                         $commentColumn = strtolower($code) . '_comment';
-                        
+
                         $compData[$gradeColumn] = $grade;
                         $compData[$commentColumn] = $request->input("comp_comments.$lesson_id.$code", null);
                     }
-        
+
                     CompetencyGrading::updateOrCreate(
                         [
                             'event_id'  => $event_id,
                             'lesson_id' => $lesson_id,
                             'user_id'   => $gradedStudentIdForComp,
-                        ], 
+                        ],
                         $compData
                     );
                 }
@@ -1090,13 +1132,12 @@ class TrainingEventsController extends Controller
 
             Session::flash('message', 'Student grading updated successfully.');
             return response()->json(['success' => true, 'message' => 'Student grading updated successfully.']);
-        
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
-    
+
     public function storeOverallAssessment(Request $request)
     {
         // Validate request
@@ -1112,12 +1153,12 @@ class TrainingEventsController extends Controller
             [
                 'event_id' => $request->event_id,
                 'user_id' => $request->user_id,
-                
+
             ],
             [
                 'result' => $request->result,
                 'remarks' => $request->remarks,
-                'created_by'=>auth()->user()->id,
+                'created_by' => auth()->user()->id,
             ]
         );
 
@@ -1173,13 +1214,13 @@ class TrainingEventsController extends Controller
 
         $ouId = $trainingEvent->ou_id;
         $userId = $trainingEvent->student_id;
-    
+
         // $event = TrainingEvents::where('ou_id', $ouId)
         //     ->where('id', decode_id($event_id))
         //     ->whereHas('taskGradings', function ($query) use ($userId) {
         //         $query->where('user_id', $userId);
         //     })
-       
+
         //     ->with([
         //         'taskGradings' => function ($query) use ($userId) {
         //             $query->where('user_id', $userId)
@@ -1201,56 +1242,56 @@ class TrainingEventsController extends Controller
         //     ->first();
 
 
-   $event = TrainingEvents::where('ou_id', $ouId)
-                ->where('id', decode_id($event_id))
-                ->where(function ($query) use ($userId) {
-                    $query->whereHas('taskGradings', function ($q) use ($userId) {
-                        $q->where('user_id', $userId);
-                    })
+        $event = TrainingEvents::where('ou_id', $ouId)
+            ->where('id', decode_id($event_id))
+            ->where(function ($query) use ($userId) {
+                $query->whereHas('taskGradings', function ($q) use ($userId) {
+                    $q->where('user_id', $userId);
+                })
                     ->orWhereHas('defLessonTasks', function ($q) use ($userId) {
                         $q->where('user_id', $userId);
                     });
-                })
-                ->with([
-                    'taskGradings' => function ($query) use ($userId) {
-                        $query->where('user_id', $userId)
-                            ->with('lesson:id,lesson_title,grade_type')
-                            ->with('subLesson:id,title');
-                    },
+            })
+            ->with([
+                'taskGradings' => function ($query) use ($userId) {
+                    $query->where('user_id', $userId)
+                        ->with('lesson:id,lesson_title,grade_type')
+                        ->with('subLesson:id,title');
+                },
                 'defLessonTasks' => function ($query) use ($userId) {
-                                $query->join('def_lessons', 'def_lesson_tasks.def_lesson_id', '=', 'def_lessons.id')
-                                    ->select('def_lesson_tasks.*', 'def_lessons.lesson_title')
-                                    ->where('def_lesson_tasks.user_id', $userId)
-                                    ->whereIn('def_lesson_tasks.id', function($sub) use ($userId) {
-                                        $sub->select(\DB::raw('MIN(id)'))
-                                            ->from('def_lesson_tasks')
-                                            ->where('user_id', $userId)
-                                            ->groupBy('def_lesson_id');
-                                    });
-                            },
+                    $query->join('def_lessons', 'def_lesson_tasks.def_lesson_id', '=', 'def_lessons.id')
+                        ->select('def_lesson_tasks.*', 'def_lessons.lesson_title')
+                        ->where('def_lesson_tasks.user_id', $userId)
+                        ->whereIn('def_lesson_tasks.id', function ($sub) use ($userId) {
+                            $sub->select(\DB::raw('MIN(id)'))
+                                ->from('def_lesson_tasks')
+                                ->where('user_id', $userId)
+                                ->groupBy('def_lesson_id');
+                        });
+                },
 
-                    'competencyGradings' => function ($query) use ($userId) {
-                        $query->where('user_id', $userId);
-                    },
-                    'overallAssessments' => function ($query) use ($userId) {
-                        $query->where('user_id', $userId);
-                    },
-                    'course:id,course_name,enable_feedback',
-                    'group:id,name',
-                    'instructor:id,fname,lname',
-                    'documents:id,training_event_id,course_document_id,file_path',
-                    'documents.courseDocument:id,document_name',
-                ])
-                ->first();
-                // dd($event);
+                'competencyGradings' => function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                },
+                'overallAssessments' => function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                },
+                'course:id,course_name,enable_feedback',
+                'group:id,name',
+                'instructor:id,fname,lname',
+                'documents:id,training_event_id,course_document_id,file_path',
+                'documents.courseDocument:id,document_name',
+            ])
+            ->first();
+        // dd($event);
 
-      
-            
-            if (!$event) {
-                return redirect()
-                    ->route('training.index')
-                    ->with('error', 'Training event or grading not found.');
-            }    
+
+
+        if (!$event) {
+            return redirect()
+                ->route('training.index')
+                ->with('error', 'Training event or grading not found.');
+        }
 
         $defLessonGrading = DefLessonTask::with(['task', 'defLesson'])
             ->where('event_id', $event->id)
@@ -1258,15 +1299,15 @@ class TrainingEventsController extends Controller
             ->get()
             ->groupBy('def_lesson_id');
 
-            if ($event) {
-            $event->student_feedback_submitted = $event->trainingFeedbacks()->where('user_id', auth()->user()->id)->exists();    
+        if ($event) {
+            $event->student_feedback_submitted = $event->trainingFeedbacks()->where('user_id', auth()->user()->id)->exists();
             // abort(404, 'Training Event not found.'); 
-            }    
-          
-        
-        return view('trainings.grading-list', compact('event','defLessonGrading'));     
+        }
+
+
+        return view('trainings.grading-list', compact('event', 'defLessonGrading'));
     }
-    
+
     // public function unlockEventGarding(Request $request, $event_id)
     // {
     //     $updateTrainingEvent = TrainingEvents::where('id', decode_id($event_id))->update(['is_locked' => 0]);
@@ -1279,7 +1320,7 @@ class TrainingEventsController extends Controller
     public function unlockEventGarding(Request $request, $event_id)
     {
         $updateTrainingEvent = TrainingEventLessons::where('id', ($event_id))->update(['is_locked' => 0]);
-        if($updateTrainingEvent){
+        if ($updateTrainingEvent) {
             Session::flash('message', 'Grading is unlocked for editing.');
             return response()->json(['success' => true, 'message' => 'Grading is unlocked for editing.']);
         }
@@ -1291,72 +1332,72 @@ class TrainingEventsController extends Controller
         $request->validate([
             'ack_comment' => 'nullable|string|max:1000',
         ]);
-    
+
         $eventId = decode_id($request->eventId);
-    
+
         $updated = TrainingEvents::where('id', $eventId)->update([
             'student_acknowledged' => 1,
             'student_acknowledgement_comments' => $request->ack_comment,
         ]);
-    
+
         if ($updated) {
             Session::flash('message', 'Acknowledgment recorded');
             return response()->json(['success' => true, 'message' => 'Acknowledgment recorded']);
         }
-    
+
         return response()->json(['success' => false, 'message' => 'Acknowledgment failed'], 500);
     }
- public function downloadDefferedLessonReport($event_id, $lesson_id, $userID)
+    public function downloadDefferedLessonReport($event_id, $lesson_id, $userID)
     {
         $userId = $userID;
 
         // Fetch Training Event with related Def Lessons and Def Lesson Tasks
         $event = TrainingEvents::with([
-        'course:id,course_name',
-        'orgUnit:id,org_unit_name,org_logo',
-        'instructor:id,fname,lname',
-        'student:id,fname,lname',
-        'resource:id,name,type,class,registration',
-        'defLessons' => function ($query) use ($lesson_id) {
-            $query->where('id', $lesson_id)
-                ->with([
-                    'instructor:id,fname,lname',
-                    'resource:id,name,type,class,registration'
-                ]);
-        },
-        'defLessonTasks' => function ($query) use ($userId, $lesson_id) {
-            $query->where('user_id', $userId)
-                ->where('def_lesson_id', $lesson_id)
-                ->with('task:id,title,grade_type,description');
-        },
-    ])->findOrFail($event_id);
-           
+            'course:id,course_name',
+            'orgUnit:id,org_unit_name,org_logo',
+            'instructor:id,fname,lname',
+            'student:id,fname,lname',
+            'resource:id,name,type,class,registration',
+            'defLessons' => function ($query) use ($lesson_id) {
+                $query->where('id', $lesson_id)
+                    ->with([
+                        'instructor:id,fname,lname',
+                        'resource:id,name,type,class,registration'
+                    ]);
+            },
+            'defLessonTasks' => function ($query) use ($userId, $lesson_id) {
+                $query->where('user_id', $userId)
+                    ->where('def_lesson_id', $lesson_id)
+                    ->with('task:id,title,grade_type,description');
+            },
+        ])->findOrFail($event_id);
+
 
         $defLesson = $event->defLessons->first();
         $eventLesson = $event->defLessons->first();
-            if (!$eventLesson) {
-                abort(404, 'Lesson not found for this training event.');
-            }
+        if (!$eventLesson) {
+            abort(404, 'Lesson not found for this training event.');
+        }
         if (!$defLesson) {
             abort(404, 'Deferred lesson not found for this training event.');
         }
         $tasks = $event->defLessonTasks;
         //  return view('trainings.deferred-lesson-report', compact('event', 'eventLesson', 'tasks'));
         // Pass to PDF view
-    
-            $pdf = PDF::loadView('trainings.deferred-lesson-report', [ 
-                'event' => $event,
-                'eventLesson' => $eventLesson,
-                'tasks' => $tasks,
-            ]);
+
+        $pdf = PDF::loadView('trainings.deferred-lesson-report', [
+            'event' => $event,
+            'eventLesson' => $eventLesson,
+            'tasks' => $tasks,
+        ]);
 
         $filename = 'Deferred_Lesson_Report_' . Str::slug($defLesson->lesson_title) . '.pdf';
         return $pdf->download($filename);
-}
+    }
 
-    
+
     public function downloadLessonReport($event_id, $lesson_id, $userID)
-    { 
+    {
         $userId = $userID;
         // dd($lesson_id);
         $event = TrainingEvents::with([
@@ -1370,12 +1411,12 @@ class TrainingEventsController extends Controller
             },
             'taskGradings' => function ($query) use ($userId, $lesson_id) {
                 $query->where('user_id', $userId)
-                       ->where('lesson_id', $lesson_id)
-                      ->with('subLesson:id,title,grade_type');
+                    ->where('lesson_id', $lesson_id)
+                    ->with('subLesson:id,title,grade_type');
             },
             'competencyGradings' => function ($query) use ($userId, $lesson_id) {
                 $query->where('user_id', $userId)
-                      ->where('lesson_id', $lesson_id);
+                    ->where('lesson_id', $lesson_id);
             },
             'overallAssessments' => function ($query) use ($userId) {
                 $query->where('user_id', $userId);
@@ -1383,26 +1424,26 @@ class TrainingEventsController extends Controller
             'eventLessons.instructor:id,fname,lname',
             'eventLessons.resource:id,id,name,type,class,registration',
         ])->findOrFail($event_id);
-    
+
         $eventLesson = $event->eventLessons->first();
-        
-    
+
+
         if (!$eventLesson) {
             abort(404, 'Lesson not found for this training event.');
         }
 
-        $lesson = $eventLesson->lesson; 
-      //  return view('trainings.lesson-report', compact('event', 'lesson', 'eventLesson'));
-    
-        $pdf = PDF::loadView('trainings.lesson-report', [ 
+        $lesson = $eventLesson->lesson;
+        //  return view('trainings.lesson-report', compact('event', 'lesson', 'eventLesson'));
+
+        $pdf = PDF::loadView('trainings.lesson-report', [
             'event' => $event,
             'lesson' => $lesson,
             'eventLesson' => $eventLesson,
         ]);
-    
+
         $filename = 'Lesson_Report_' . Str::slug($lesson->lesson_title) . '.pdf';
-         return $pdf->download($filename); 
-    }    
+        return $pdf->download($filename);
+    }
 
     public function uploadDocuments(Request $request, TrainingEvents $trainingEvent)
     {
@@ -1413,7 +1454,7 @@ class TrainingEventsController extends Controller
         ], [], [
             'training_event_documents.*' => 'Training Event Document'
         ]);
-        
+
         // Loop through the uploaded files
         foreach ($request->file('training_event_documents', []) as $courseDocId => $file) {
             // If file exists in the form input
@@ -1460,7 +1501,7 @@ class TrainingEventsController extends Controller
     public function generateCertificate($event)
     {
         $eventId = decode_id($event); // decode the ID
-        $event = TrainingEvents::with('eventLessons','recommendedInstructor')->findOrFail($eventId);
+        $event = TrainingEvents::with('eventLessons', 'recommendedInstructor')->findOrFail($eventId);
         $student = $event->student;
         $course = $event->course;
         $firstLesson = $event->firstLesson;
@@ -1504,7 +1545,7 @@ class TrainingEventsController extends Controller
     public function storeDeferredLessons(Request $request)
     {
         // Validate the incoming request data
-        $validatedData = $request->validate([   
+        $validatedData = $request->validate([
             'event_id'      => 'required|integer|exists:training_events,id',
             'lesson_title'  => 'required|string|max:255',
             'item_ids'      => 'required|array',
@@ -1520,7 +1561,7 @@ class TrainingEventsController extends Controller
         ], [], [
             'item_ids'     => 'Tasks',
             'resource_id'  => 'Resource',
-            'instructor_id'=> 'Instructor'
+            'instructor_id' => 'Instructor'
         ]);
 
         $eventId = $validatedData['event_id'];
@@ -1551,20 +1592,19 @@ class TrainingEventsController extends Controller
 
         // Step 3: Create def_lesson_tasks entries
         foreach ($validatedData['item_ids'] as $index => $taskId) {
-   
-            $get_lesson_id = SubLesson::where('id', $taskId)->value('lesson_id');
-           
-           $lessonType  =  CourseLesson::where('id', $get_lesson_id)->value('lesson_type');
 
-         $start = $validatedData['start_time'] ?? null;
-         $end = $validatedData['end_time'] ?? null;
+            $get_lesson_id = SubLesson::where('id', $taskId)->value('lesson_id');
+
+            $lessonType  =  CourseLesson::where('id', $get_lesson_id)->value('lesson_type');
+
+            $start = $validatedData['start_time'] ?? null;
+            $end = $validatedData['end_time'] ?? null;
             $creditMinutes = 0;
-                  if ($lessonType === 'groundschool' && $validatedData['resource_id'] == 3) {
+            if ($lessonType === 'groundschool' && $validatedData['resource_id'] == 3) {
                 // Fixed 8 hours for Homestudy
                 $creditMinutes = 480;
                 $start = '00:00';
                 $end = '08:00';
-
             } elseif ($start && $end) {
                 // For all other lessons (including simulator and classroom)
                 try {
@@ -1594,11 +1634,11 @@ class TrainingEventsController extends Controller
             'success' => true,
             'message' => 'Deferred lesson and tasks stored successfully.'
         ], 201);
-    }    
-    
+    }
+
     public function storeDefGrading(Request $request)
-    {  
-         $request->validate([
+    {
+        $request->validate([
             'event_id' => 'required|integer|exists:training_events,id',
             'task_grade_def' => 'required|array',
             'task_grade_def.*' => 'required|string|in:Competent,Incomplete,Further training required',
@@ -1608,7 +1648,7 @@ class TrainingEventsController extends Controller
 
         $event_id = $request->input('event_id');
         $user_id = $request->input('tg_user_id');
-      
+
 
         foreach ($request->input('task_grade_def') as $task_id => $task_grade) {
             $task_comment = $request->input("task_comment_def.$task_id", null);
@@ -1624,7 +1664,7 @@ class TrainingEventsController extends Controller
                 $defTask = DefLessonTask::find($task_id);
 
                 if ($defTask) {
-                    DefTask::firstOrCreate( 
+                    DefTask::firstOrCreate(
                         [
                             'event_id' => $event_id,
                             'user_id'  => $defTask->user_id,
@@ -1649,7 +1689,7 @@ class TrainingEventsController extends Controller
     public function unlockLesson(Request $request)
     {
         $user = auth()->user();
-        if ($user->is_admin!=1) {
+        if ($user->is_admin != 1) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -1700,7 +1740,7 @@ class TrainingEventsController extends Controller
 
     public function getEventInstructors($id)
     {
-        $event = TrainingEvents::with('eventLessons')->findOrFail(decode_id($id)); 
+        $event = TrainingEvents::with('eventLessons')->findOrFail(decode_id($id));
         $instructorIds = $event->eventLessons
             ->pluck('instructor_id')
             ->filter()
@@ -1717,7 +1757,4 @@ class TrainingEventsController extends Controller
             'last_instructor_id' => $lastInstructorId,
         ]);
     }
-
-
-    
 }
