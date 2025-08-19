@@ -49,4 +49,9 @@ class TrainingEventLessons extends Model
     {
         return $this->belongsTo(Resource::class, 'resource_id');
     }
+
+    public function instructorDocuments()
+    {
+        return $this->hasMany(UserDocument::class, 'user_id', 'instructor_id');
+    }
 }

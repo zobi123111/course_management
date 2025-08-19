@@ -1,8 +1,24 @@
-
 @section('title', 'Document Details')
 @section('sub-title', 'Document Details')
 @extends('layout.app')
 @section('content')
+
+<style>
+/* Default: hide both */
+.pdf-mobile, .pdf-desktop {
+    display: none;
+}
+
+/* Show mobile view up to 1024px */
+@media (max-width: 1024px) {
+    .pdf-mobile { display: block; }
+}
+
+/* Show desktop view above 1024px */
+@media (min-width: 1025px) {
+    .pdf-desktop { display: block; }
+}
+</style>
 
 <div class="card shadow-sm mb-4">
     <div class="card-header bg-primary text-white">
@@ -47,52 +63,61 @@
         <hr class="my-4">
 
         {{-- File Preview --}}
-        <div class="text-center">
-            @php
-                $file = asset('storage/' . $document->document_file);
-                $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-                $imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
-                $pdfTypes = ['pdf'];
-                $isIOS = preg_match('/iPad|iPhone|iPod/', request()->header('User-Agent'));
-            @endphp
+                  <div class="text-center">
+    @php
+        $file = asset('storage/' . $document->document_file);
+        $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        $imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
+        $pdfTypes = ['pdf'];
+    @endphp
 
-            @if(in_array($extension, $imageTypes))
-                <img src="{{ $file }}" alt="Document Image" class="img-fluid rounded shadow">
-            @elseif(in_array($extension, $pdfTypes))
-                   @if($isIOS)
-                    <a href="{{ $file }}" target="_blank" class="btn btn-primary">
-                        <i class="fa fa-file-pdf"></i> View PDF
-                    </a>
-                    <a href="{{ $file }}" download class="btn btn-success ms-2">
-                        <i class="fa fa-download"></i> Download
-                    </a>
-                @else
-                    <iframe src="{{ $file }}" width="100%" height="600px" class="border rounded shadow"></iframe>
-                @endif
-            @else
-                <p class="text-muted">No preview available.</p>
-                <a href="{{ $file }}" class="btn btn-outline-secondary" download>
-                    <i class="fa fa-download"></i> Download File
+    @if(in_array($extension, $imageTypes))
+        <img src="{{ $file }}" alt="Document Image" class="img-fluid rounded shadow">
+    @elseif(in_array($extension, $pdfTypes))
+        {{-- PDF Preview --}}
+        <div class="pdf-preview">
+            {{-- Mobile + Tablet (≤ 1024px) --}}
+            <div class="pdf-mobile">
+                <a href="{{ $file }}" target="_blank" class="btn btn-primary mb-2">
+                    <i class="fa fa-file-pdf"></i> View Full PDF
                 </a>
-            @endif
+                <a href="{{ $file }}" download class="btn btn-success ms-2">
+                    <i class="fa fa-download"></i> Download
+                </a>
+            </div>
+
+            {{-- Desktop (> 1024px) --}}
+            <div class="pdf-desktop">
+                <iframe src="{{ $file }}" width="100%" height="600px" class="border rounded shadow"></iframe>
+            </div>
         </div>
+    @else
+        <p class="text-muted">No preview available.</p>
+        <a href="{{ $file }}" class="btn btn-outline-secondary" download>
+            <i class="fa fa-download"></i> Download File
+        </a>
+    @endif
+</div>
+
+
+
 
         {{-- Acknowledgement Checkbox --}}
         @if(empty(auth()->user()->is_admin) && empty(auth()->user()->is_owner))
-            <form method="POST" id="docAcknowledgeForm" class="mt-4">
-                @csrf
-                <input type="hidden" name="document_id" value="{{ $document->id }}">
-                @php
-                    $acknowledgedByUsers = json_decode($document->acknowledge_by ?? '[]', true);
-                @endphp
-                <div class="mt-3 text-center">
-                    <input type="checkbox" class="form-check-input" id="acknowledged" name="acknowledged" value="1"
-                        {{ in_array(auth()->user()->id, $acknowledgedByUsers) ? 'checked' : '' }}>
-                    <label class="form-check-label" for="acknowledged">
-                        I have read and acknowledged this document
-                    </label>
-                </div>
-            </form>
+        <form method="POST" id="docAcknowledgeForm" class="mt-4">
+            @csrf
+            <input type="hidden" name="document_id" value="{{ $document->id }}">
+            @php
+            $acknowledgedByUsers = json_decode($document->acknowledge_by ?? '[]', true);
+            @endphp
+            <div class="mt-3 text-center">
+                <input type="checkbox" class="form-check-input" id="acknowledged" name="acknowledged" value="1"
+                    {{ in_array(auth()->user()->id, $acknowledgedByUsers) ? 'checked' : '' }}>
+                <label class="form-check-label" for="acknowledged">
+                    I have read and acknowledged this document
+                </label>
+            </div>
+        </form>
         @endif
 
         <div class="text-center mt-4">
