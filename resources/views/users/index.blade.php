@@ -1866,7 +1866,7 @@
                     $('#edit_role option[value="' + userRoleId + '"]').attr('selected',
                         'selected');
 
-                    const document = response.user.documents ?? {};
+                    const userdocument = response.user.documents ?? {};
 
 
                     const ratings = response.user_ratings || {};
@@ -1903,8 +1903,8 @@
                     if (response.user.licence_required) {
                         $('#edit_licence_checkbox').prop('checked', true).trigger('change'); // ✅ trigger the .change() to apply all show logic
 
-                        if (document) {
-                            $('#edit_licence').val(document.licence);
+                        if (userdocument) {
+                            $('#edit_licence').val(userdocument.licence);
                         } else {
                             $('#edit_licence').val('');
                         }
@@ -1916,7 +1916,7 @@
                     if (response.user.licence_2_required) {
                         $('#edit_licence_2_checkbox').prop('checked', true).trigger('change');
                         $('#edit_second_licence_section').show();
-                        if (document.licence_2) {
+                        if (userdocument.licence_2) {
                             console.log(response.user.documents.licence_2);
                             $('#edit_licence_2').val(response.user.documents.licence_2).prop('required', true);
                             // $('#edit_licence_file_2').show().prop('required', true);
@@ -1938,7 +1938,7 @@
 
                     if (response.user.passport_required) {
                         $('#edit_passport_checkbox').prop('checked', true);
-                        $('#edit_passport').val(document.passport).show().prop('required', true);
+                        $('#edit_passport').val(userdocument.passport).show().prop('required', true);
                         $('#edit_passport_file').show().prop('required', true);
                     } else {
                         $('#edit_passport_checkbox').prop('checked', false);
@@ -1981,12 +1981,12 @@
                     if (response.user.medical == 1) {
                         $('#editmedical_checkbox').prop('checked', true).trigger('change');
 
-                        $('#editmedical_issue_date').val(document.medical_issuedate ?? '');
-                        $('#editmedical_expiry_date').val(document.medical_expirydate ?? '');
-                        $('#editmedical_detail').val(document.medical_restriction ?? '');
+                        $('#editmedical_issue_date').val(userdocument.medical_issuedate ?? '');
+                        $('#editmedical_expiry_date').val(userdocument.medical_expirydate ?? '');
+                        $('#editmedical_detail').val(userdocument.medical_restriction ?? '');
 
-                        $('#editissued_by').val(document.medical_issuedby?.trim() ?? '');
-                        $('#editmedical_class').val(document.medical_class?.trim() ?? '');
+                        $('#editissued_by').val(userdocument.medical_issuedby?.trim() ?? '');
+                        $('#editmedical_class').val(userdocument.medical_class?.trim() ?? '');
                     } else {
                         $('#editmedical_checkbox').prop('checked', false).trigger('change');
                     }
@@ -1995,8 +1995,8 @@
                     if (response.user.licence_required) {
                         $('#edit_licence_checkbox').prop('checked', true).trigger('change'); // ✅ trigger the .change() to apply all show logic
 
-                        if (document) {
-                            $('#edit_licence').val(document.licence);
+                        if (userdocument) {
+                            $('#edit_licence').val(userdocument.licence);
                         } else {
                             $('#edit_licence').val('');
                         }
@@ -2006,12 +2006,12 @@
 
                     if (response.user.medical_2_required == 1) {
                         $('#edit_medical_2_checkbox').prop('checked', true).trigger('change');
-                        $('#editmedical_issue_date_2').val(document.medical_issuedate_2 ?? '');
-                        $('#editmedical_expiry_date_2').val(document.medical_expirydate_2 ?? '');
-                        $('#editmedical_detail_2').val(document.medical_restriction_2 ?? '');
+                        $('#editmedical_issue_date_2').val(userdocument.medical_issuedate_2 ?? '');
+                        $('#editmedical_expiry_date_2').val(userdocument.medical_expirydate_2 ?? '');
+                        $('#editmedical_detail_2').val(userdocument.medical_restriction_2 ?? '');
 
-                        let issuedBy2 = document.medical_issuedby_2?.trim() ?? '';
-                        let medicalClass2 = document.medical_class_2?.trim() ?? '';
+                        let issuedBy2 = userdocument.medical_issuedby_2?.trim() ?? '';
+                        let medicalClass2 = userdocument.medical_class_2?.trim() ?? '';
                         $('#editissued_by_2').val(issuedBy2);
                         $('#editmedical_class_2').val(medicalClass2);
                     } else {
