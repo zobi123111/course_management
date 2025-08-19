@@ -889,7 +889,11 @@ $(document).ready(function() {
                     const event = response.trainingEvent;
                   
                    let ato_num = event.course.ato_num;
-                   let [prefix, value] = ato_num.split('-', 2);
+                   let prefix = "", value = "";
+                     if (ato_num) {
+                            [prefix, value] = ato_num.split('-', 2);
+                        }
+                 
                 
                     // Store values temporarily
                     const selectedOU = event.ou_id;
