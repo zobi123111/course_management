@@ -887,6 +887,10 @@ $(document).ready(function() {
             success: async function (response) {
                 if (response.success) {
                     const event = response.trainingEvent;
+                  
+                   let ato_num = event.course.ato_num;
+                   let [prefix, value] = ato_num.split('-', 2);
+                
                     // Store values temporarily
                     const selectedOU = event.ou_id;
                     const selectedStudent = event.student_id;
@@ -902,7 +906,7 @@ $(document).ready(function() {
                     $('#edit_event_date').val(event.event_date);
                     $('#edit_total_time').val(moment(event.total_time, 'HH:mm:ss').format('HH:mm'));
                       if (event.entry_source === 'instructor') 
-                        {
+                        { 
                          // $('#edit_is_instructor_checkbox').prop('checked', true);
                          // $('#edit_is_instructor_checkbox').trigger('click');
                          $('#edit_is_instructor_checkbox').prop('checked', true).trigger('change');
@@ -928,49 +932,64 @@ $(document).ready(function() {
                 //----------------------------------------------------------------------
                  
 
-                 var userId = selectedStudent;
-                 var ouDropdown = $('#edit_ou_id').length ? $('#edit_ou_id') : $('#select_org_unit');
-                  var ou_id = ouDropdown.length ? ouDropdown.val() : '{{ auth()->user()->ou_id }}';
+                //  var userId = selectedStudent;
+                //  var ouDropdown = $('#edit_ou_id').length ? $('#edit_ou_id') : $('#select_org_unit');
+                //   var ou_id = ouDropdown.length ? ouDropdown.val() : '{{ auth()->user()->ou_id }}';
             
-                     var courseDropdown = $('#edit_select_course').length ? $('#edit_select_course') : $('#select_course');
+                //      var courseDropdown = $('#edit_select_course').length ? $('#edit_select_course') : $('#select_course');
              
-                      $.ajax({
-                            url: "{{ url('/training/get_licence_number_and_courses') }}/" + userId + '/' + ou_id, 
-                            type: "GET",
-                            success: function(response) { 
-                                if (response.success) {
-                                    var courseOptions = '<option value="">Select Course</option>'; // Default option
-                                    if (response.courses && response.courses.length > 0) {
+                    //   $.ajax({
+                    //         url: "{{ url('/training/get_licence_number_and_courses') }}/" + userId + '/' + ou_id, 
+                    //         type: "GET",
+                    //         success: function(response) { 
+                    //             if (response.success) {
+                    //                 var courseOptions = '<option value="">Select Course</option>'; // Default option
+                    //                 if (response.courses && response.courses.length > 0) {
                                        
-                                      $.each(response.courses, function(index, course) {
-                                            var selected = (course.id == selectedCourse) ? 'selected="selected"' : '';
-                                            courseOptions += '<option value="' + course.id + '" ' + selected + '>' + course.course_name + '</option>';
-                                        });
-                                    } else {
-                                        alert('No courses found!'); // Notify user
-                                    }
-                                    courseDropdown.html(courseOptions); // Update dropdown
-                                } else {
-                                    courseDropdown.html('<option value="">Select Course</option>'); // Clear courses
-                                }
-                            },
-                            error: function(xhr) {
-                                console.error(xhr.responseText);
-                            }
-                        });
+                    //                   $.each(response.courses, function(index, course) {
+                    //                         var selected = (course.id == selectedCourse) ? 'selected="selected"' : '';
+                    //                         courseOptions += '<option value="' + course.id + '" ' + selected + '>' + course.course_name + '</option>';
+                    //                     });
+                    //                 } else {
+                    //                     alert('No courses found!'); // Notify user
+                    //                 }
+                    //                 courseDropdown.html(courseOptions); // Update dropdown
+                    //             } else {
+                    //                 courseDropdown.html('<option value="">Select Course</option>'); // Clear courses
+                    //             }
+                    //         },
+                    //         error: function(xhr) {
+                    //             console.error(xhr.responseText);
+                    //         }
+                    //     });
 
                 //-----------------------------------------------------------------------
                     $('#edit_select_course').val(selectedCourse).data("selected-value", selectedCourse);
 
                     // ✅ Global map of existing lessons for prefill
                    
-              window.existingEventLessons = (event.event_lessons || []).map(l => {
-                      
-                        //   if(l.resource_name != "groundschool"){
-                        //     l.hours_credited = '';
-                        //   }
-                         let hoursCredited = '';
+              window.existingEventLessons = (event.event_lessons || []).map(l => { 
+                           let licenceValue = '';
+
+                        if (l.instructor_documents && l.instructor_documents.length > 0) {
+                            if (prefix === "uk") {
+                                licenceValue = l.instructor_documents[0].licence;
+                            } 
+                            else if (prefix === "easa") {
+                                licenceValue = l.instructor_documents[0].licence_2;
+                            }
+                            else{
+                                 if (l.instructor_documents[0].licence) {
+                                        licenceValue = l.instructor_documents[0].licence;
+                                    } else {
+                                        licenceValue = l.instructor_documents[0].licence_2;
+                                    }
+                            }
+                        }
+                    
                         
+                     
+                         let hoursCredited = '';
                         if (l.hours_credited) {
                             const parts = l.hours_credited.split(':');
                             hoursCredited = parseInt(parts[0], 10); // convert "12:00:00" → 12
@@ -985,7 +1004,7 @@ $(document).ready(function() {
                             end_time: l.end_time || '',
                             departure_airfield: l.departure_airfield || '',
                             destination_airfield: l.destination_airfield || '',
-                            instructor_license_number: l.instructor_license_number || '',
+                            instructor_license_number: licenceValue || '',
                             hours_credited: hoursCredited || '',
                         };
                     }); 
@@ -1148,7 +1167,7 @@ $(document).ready(function() {
                 }
             });
         }
-    });
+    }); 
 
 
     $('#editTrainingEventModal').on('shown.bs.modal', async function () {
@@ -1186,7 +1205,7 @@ $(document).ready(function() {
             instructor_license_number = '',
             hours_credited = ''
         } = prefillData;
-        
+         
 
         let isCurrentUserInstructor = currentUser.role === 'instructor';
        let instructorOptions = instructorsdata

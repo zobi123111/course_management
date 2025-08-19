@@ -256,19 +256,24 @@ class TrainingEventsController extends Controller
 
     public function getInstructorLicenseNumber(Request $request, $instructor_id, $selectedCourseId)
     {
+       
         $instructor = User::with('documents')->find($instructor_id);
+       
         $course = Courses::with(['courseLessons', 'resources'])->find($selectedCourseId);
         $ato_num = strtolower($course->ato_num);
+    
          if (str_contains($ato_num, 'uk')) {
              $licence = $instructor->licence;
            
         }
-        elseif (str_contains($ato_num, 'easa')) {
-          $licence = $instructor->licence_2;
+        elseif (str_contains($ato_num, 'easa')) { 
+          $licence = $instructor->documents->licence_2;
+        
         
        }
        else {
-              $licence = $instructor->licence ?: $instructor->licence_2;
+             // $licence = $instructor->licence ?: $instructor->documents->licence_2;
+              $licence = $instructor->licence ?: ($instructor->documents?->licence_2 ?? null);
              
        }
 
@@ -560,7 +565,9 @@ class TrainingEventsController extends Controller
     {
 
         $trainingEvent = TrainingEvents::with('eventLessons.lesson', 'course:id,course_name,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num')->findOrFail(decode_id($request->eventId));
-        $atoNum = strtolower($trainingEvent->course->ato_num);
+      
+
+        $atoNum = strtolower($trainingEvent->course->ato_num);  
 
         $isUK   = str_contains($atoNum, 'uk');
         $isEASA = str_contains($atoNum, 'easa');
@@ -614,7 +621,7 @@ class TrainingEventsController extends Controller
             ->whereHas('roles', function ($query) {
                 $query->where('role_name', 'like', '%Instructor%');
             })->with('roles')->get();
-
+    
         if ($trainingEvent) {
             return response()->json(['success' => true, 'trainingEvent' => $trainingEvent, 'instructors' => $instructors, 'licence_number' => $student_licence]);
         } else {
@@ -784,6 +791,7 @@ class TrainingEventsController extends Controller
             }
 
 
+
             TrainingEventLessons::updateOrCreate(
                 [
                     'training_event_id' => $trainingEvent->id,
@@ -791,7 +799,7 @@ class TrainingEventsController extends Controller
                 ],
                 [
                     'instructor_id' => $data['instructor_id'],
-                    'resource_id' => $data['resource_id'],
+                    'resource_id' => $data['resource_id'] ?? Null,
                     'lesson_date' => $data['lesson_date'],
                     'start_time' => $start,
                     'end_time' => $end,
