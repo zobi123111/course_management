@@ -1722,6 +1722,7 @@
                                     <label class="form-label mt-3"><strong>Upload File</strong></label>
                                    
                                   
+
                                
                                    <input type="file" name="rating_file[${index}][child][]" class="form-control">
 
@@ -1916,7 +1917,7 @@
                         $('#edit_licence_2_checkbox').prop('checked', true).trigger('change');
                         $('#edit_second_licence_section').show();
                         if (document.licence_2) {
-                            $('#edit_licence_2').val(document.licence_2).prop('required', true);
+                            $('#edit_licence_2').val(response.user.documents.licence_2).prop('required', true);
                             // $('#edit_licence_file_2').show().prop('required', true);
                         } else {
                             $('#edit_licence_2').val('').prop('required', true);
@@ -2177,19 +2178,19 @@
             allowClear: true
         });
     });
-    if (response.user_ratings?.licence_1?.length > 0) {
-        $('#edit_licence_checkbox').prop('checked', true).trigger('change');
-        setTimeout(function() {
-            $('#edit_licence_rating_value').val(response.user_ratings.licence_1).trigger('change');
-        }, 300);
-    }
+    // if (response.user_ratings?.licence_1?.length > 0) {
+    //     $('#edit_licence_checkbox').prop('checked', true).trigger('change');
+    //     setTimeout(function() {
+    //         $('#edit_licence_rating_value').val(response.user_ratings.licence_1).trigger('change');
+    //     }, 300);
+    // }
 
 
 
-    if (response.user_ratings?.licence_2?.length > 0) {
-        $('#edit_licence_2_checkbox').prop('checked', true).trigger('change');
-        $('#edit_licence_2_rating_value').val(response.user_ratings.licence_2).trigger('change');
-    }
+    // if (response.user_ratings?.licence_2?.length > 0) {
+    //     $('#edit_licence_2_checkbox').prop('checked', true).trigger('change');
+    //     $('#edit_licence_2_rating_value').val(response.user_ratings.licence_2).trigger('change');
+    // }
     $('#licence_checkbox').change(function() {
         if (this.checked) {
             $('#licence').show();
