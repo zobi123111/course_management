@@ -1917,6 +1917,7 @@
                         $('#edit_licence_2_checkbox').prop('checked', true).trigger('change');
                         $('#edit_second_licence_section').show();
                         if (document.licence_2) {
+                            console.log(response.user.documents.licence_2);
                             $('#edit_licence_2').val(response.user.documents.licence_2).prop('required', true);
                             // $('#edit_licence_file_2').show().prop('required', true);
                         } else {
