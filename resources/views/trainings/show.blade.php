@@ -195,7 +195,7 @@
     } */
 
     /* value-specific styles for task grading */
-    .radio-label input:checked + .custom-radio.incomplete {
+    .radio-label input:checked + .custom-radio.incomplete { 
         background-color:  #FFFF00; /* Yellow */
         color: black;
         font-weight: bold;
@@ -563,6 +563,7 @@
          
             @if($lessons && $lessons->count()) 
                 @foreach($lessons as $lesson)
+                    
                     <div class="row mb-3 p-3 border rounded bg-light">
                         <div class="col-md-12">
                             <strong><i class="fas fa-book"></i> Lesson Name:</strong>
@@ -651,7 +652,7 @@
                 <strong><i class="fas fa-exclamation-circle"></i> Deferred Lessons:</strong>
                 
                 @foreach($deferredLessons as $def)
-              
+               
                     @php
                         $start = strtotime($def->start_time);
                         $end = strtotime($def->end_time);
@@ -1036,16 +1037,17 @@
                                         <input type="time" name="end_time" class="form-control">
                                         <div id="end_time_error" class="text-danger error_e"></div>
                                     </div>
+                                      <div class="mb-2">
+                                        <label class="form-label">Departure Airfield</label>
+                                        <input type="text" name="departure_airfield" class="form-control" maxlength="4" value="">
+                                        <div id="departure_airfield" class="text-danger error_e"></div>
+                                    </div>
                                     <div class="mb-2">
                                         <label class="form-label">Destination Airfield</label>
                                         <input type="text" name="destination_airfield" class="form-control" maxlength="4" value="">
                                         <div id="destination_airfield" class="text-danger error_e"></div>
                                     </div>
-                                    <div class="mb-2">
-                                        <label class="form-label">Departure Airfield</label>
-                                        <input type="text" name="departure_airfield" class="form-control" maxlength="4" value="">
-                                        <div id="departure_airfield" class="text-danger error_e"></div>
-                                    </div>
+                                  
                                     <div class="mb-2">
                                         <label class="form-label">Instructor <span class="text-danger">*</span></label>
                                             <select class="form-select" name="instructor_id" id="instructor">
@@ -1899,7 +1901,7 @@
     $(document).on('click', '.unlock-event-icon', function () {
         let eventId = $(this).data('training-event-leeson'); 
 
-        if (confirm('Are you sure you want to unlock this training event?')) {
+        if (confirm('Are you sure you want to unlock this training event?')) { 
             $.ajax({
                 url: '/grading/unlock/' + eventId,
                 type: 'POST',
