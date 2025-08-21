@@ -587,7 +587,10 @@
 
                         <div class="col-md-2 mt-2">
                             <strong><i class="fas fa-calendar-day"></i> Date:</strong><br>
-                            {{ date('d-m-Y', strtotime($lesson->lesson_date)) }}
+                           
+                             @if(!empty($lesson->lesson_date))
+                                        {{ date('d-m-Y', strtotime($lesson->lesson_date)) }}
+                                    @endif
                         </div>
 
                         <div class="col-md-2 mt-2">
