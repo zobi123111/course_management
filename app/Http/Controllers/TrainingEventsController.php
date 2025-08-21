@@ -1765,4 +1765,33 @@ class TrainingEventsController extends Controller
             'last_instructor_id' => $lastInstructorId,
         ]);
     }
+
+    public function unlocked_trainingEvent(Request $request)
+    {
+        if (auth()->user()->is_admin == 1) {
+            $training_id = $request->training_id;
+
+            $unlocked = TrainingEvents::where('id', $training_id)
+                ->update(['is_locked' => 0]);
+
+            if ($unlocked) {
+                Session::flash('message', 'Training Unlocked successfully.');
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Training unlocked successfully.'
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Unable to unlock training.'
+                ]);
+            }
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'You do not have permission to unlock this training.'
+        ], 403);
+    }
+
 }

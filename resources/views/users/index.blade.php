@@ -379,13 +379,13 @@
 
 
         <!-- Currency (Optional) -->
-        <div class="col-md-6">
+        <!-- <div class="col-md-6">
             <label for="currency" class="form-label">Currency</label>
             <input type="checkbox" name="currency_checkbox" id="currency_checkbox" class="ms-2">
             <input type="text" name="currency" id="currency" class="form-control" style="display: none;"
                 placeholder="Enter Currency">
             <div id="currency_error" class="text-danger error_e"></div>
-        </div>
+        </div> -->
 
         <!-- Custom Field -->
         <div class="col-md-12">
@@ -706,14 +706,14 @@
    
 
         <!-- Currency (Optional) -->
-        <div class="col-md-6">
+        <!-- <div class="col-md-6">
             <label for="edit_currency" class="form-label">Currency</label>
             <input type="checkbox" name="edit_currency_checkbox" id="edit_currency_checkbox"
                 class="ms-2">
             <input type="text" name="edit_currency" id="edit_currency" class="form-control"
                 style="display: none;" placeholder="Enter Currency">
             <div id="edit_currency_error_up" class="text-danger error_e"></div>
-        </div>
+        </div> -->
 
         <!-- Custom Field -->
         <div class="col-md-12">
@@ -1541,8 +1541,8 @@
                 contentType: false,
                 success: function(response) {
                     $(".loader").fadeOut("slow");
-                  //  $('#userModal').modal('hide');
-                   // location.reload();
+                    $('#userModal').modal('hide');
+                    location.reload();
                 },
                 error: function(xhr, status, error) {
                     // $('#loader').hide();

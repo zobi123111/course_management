@@ -159,18 +159,6 @@ class TrainingEvents extends Model
     public function getCanEndCourseAttribute()
     {
         $studentId = $this->student_id;
-
-        // A. Check if all sub-lessons have grading
-        // $allTasksGraded = $this->eventLessons->every(function ($eventLesson) use ($studentId) {
-        //     return $eventLesson->lesson->subLessons->every(function ($subLesson) use ($eventLesson, $studentId) {
-        //         return \App\Models\TaskGrading::where([
-        //             'event_id'      => $eventLesson->training_event_id,
-        //             'lesson_id'     => $eventLesson->lesson_id,
-        //             'sub_lesson_id' => $subLesson->id,
-        //             'user_id'       => $studentId,
-        //         ])->exists();
-        //     });
-        // });
         $allTasksGraded = $this->eventLessons->every(function ($eventLesson) use ($studentId) {
                         // If lesson is null, consider tasks not graded
                         if (!$eventLesson->lesson) {
@@ -221,7 +209,7 @@ class TrainingEvents extends Model
                 ->where('user_id', $studentId)
                 ->exists();
         }
-
+      
         return $allTasksGraded && $competencyOk && $assessmentOk && !$this->is_locked;
     }
 

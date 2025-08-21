@@ -547,9 +547,9 @@ class UserController extends Controller
                 $medicalFilePath_2 = $request->old_medical_file_2;
             }
 
-            if ($userToUpdate->currency_required == 1 && !$userToUpdate->currency) {
-                $rules['currency'] = 'required|string';
-            }
+            // if ($userToUpdate->currency_required == 1 && !$userToUpdate->currency) {
+            //     $rules['currency'] = 'required|string';
+            // }
 
             if ($userToUpdate->rating_required == 1 && $request->filled('issue_date')) {
                 foreach ($request->input('issue_date') as $ratingId => $issueDate) {
@@ -619,11 +619,11 @@ class UserController extends Controller
             $passportFilePath = $document->passport_file;
         }
 
-        if ($userToUpdate->currency_required == 1) {
-            $request->validate([
-                'currency' => 'required|string',
-            ]);
-        }
+        // if ($userToUpdate->currency_required == 1) {
+        //     $request->validate([
+        //         'currency' => 'required|string',
+        //     ]);
+        // }
         if ($userToUpdate->custom_field_required == 1) {
             if ($request->has('custom_date_checkbox')) {
                 $request->validate([
@@ -860,9 +860,9 @@ class UserController extends Controller
             $rating_required = 1;
         }
 
-        if ($request->has('currency_checkbox') && $request->currency_checkbox) {
-            $currency_required = 1;
-        }
+        // if ($request->has('currency_checkbox') && $request->currency_checkbox) {
+        //     $currency_required = 1;
+        // }
         $medical_checkbox              = null;
         $medical_verification_required = null;
         $medical_issued_by             = null;
@@ -947,7 +947,7 @@ class UserController extends Controller
             "passport_admin_verification_required"       => $request->passport_verification_required ?? 0,
             "rating_required"     => $rating_required,
             "rating" => $request->has('rating') ? json_encode($request->rating) : null,
-            "currency_required"   => $currency_required,
+             "currency_required"   => $currency_required,
             "currency"            => $request->currency ?? null,
             "custom_field_name"   => $request->custom_field_name ?? null,
             "custom_field_value"  => $request->custom_field_value ?? null,
@@ -1337,7 +1337,7 @@ class UserController extends Controller
 
             // Update User
             $store =  $userToUpdate->update($newData);
-
+ 
             UserDocument::updateOrCreate(
                 ['user_id' => $userToUpdate->id], // Search criteria
                 [

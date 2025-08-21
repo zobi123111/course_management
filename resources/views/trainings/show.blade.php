@@ -582,7 +582,7 @@
 
                         <div class="col-md-2 mt-2">
                             <strong><i class="fas fa-toolbox"></i> Resource:</strong><br>
-                            {{ optional($lesson->resource)->name ?? 'N/A' }}
+                            {{ optional($lesson->resource)->name ?? 'N/A' }} 
                         </div>
 
                         <div class="col-md-2 mt-2">
@@ -593,15 +593,35 @@
                                     @endif
                         </div>
 
-                        <div class="col-md-2 mt-2">
+                        <!-- <div class="col-md-2 mt-2">
                             <strong><i class="fas fa-clock"></i> Start:</strong><br>
                             {{ date('h:i A', strtotime($lesson->start_time)) }}
+                        </div> -->
+                        <div class="col-md-2 mt-2">
+                            <strong><i class="fas fa-clock"></i> Start:</strong><br>
+                            @if(!empty($lesson->start_time) && $lesson->start_time !== '00:00:00')
+                                {{ date('h:i A', strtotime($lesson->start_time)) }}
+                            @elseif($lesson->start_time === '00:00:00')
+                                {{ $lesson->start_time }}
+                            @else
+                                -
+                            @endif
+                        </div>
+                          <div class="col-md-2 mt-2">
+                            <strong><i class="fas fa-clock"></i> End:</strong><br>
+                            @if(!empty($lesson->end_time) && $lesson->end_time !== '00:00:00')
+                                {{ date('h:i A', strtotime($lesson->end_time)) }}
+                            @elseif($lesson->end_time === '00:00:00')
+                                {{ $lesson->end_time }}
+                            @else
+                                -
+                            @endif
                         </div>
 
-                        <div class="col-md-2 mt-2">
+                        <!-- <div class="col-md-2 mt-2">
                             <strong><i class="fas fa-clock"></i> End:</strong><br>
                             {{ date('h:i A', strtotime($lesson->end_time)) }}
-                        </div>
+                        </div> -->
 
                         <div class="col-md-2 mt-2">
                             <strong><i class="fas fa-plane-departure"></i> Departure:</strong><br>
