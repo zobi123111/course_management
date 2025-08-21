@@ -111,7 +111,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/grading/acknowledge', [TrainingEventsController::class, 'acknowledgeGarding'])->name('grading.acknowledge');
     Route::get('/training/get_instructor_license_no/{instructor_id}/{selectedCourseId}', [TrainingEventsController::class, 'getInstructorLicenseNumber'])->name('training.get_instructor_license_no');
     Route::get('/lesson-report/download/{event_id}/{lesson_id}/{userID}', [TrainingEventsController::class, 'downloadLessonReport'])
-    ->name('lesson.report.download');
+    ->name('lesson.report.download'); 
 
         Route::get('/deffered-lesson-report/download/{event_id}/{lesson_id}/{userID}', [TrainingEventsController::class, 'downloadDefferedLessonReport'])
     ->name('lesson.deffered.report.download');
@@ -128,6 +128,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/training/unlock-lesson', [TrainingEventsController::class, 'unlockLesson'])->name('training.unlockLesson');
     Route::post('/training/update-competency-grade', [TrainingEventsController::class, 'updateCompGrade'])->name('training.updateCompGrade');
     Route::get('/training/get-recom-instructors/{id}', [TrainingEventsController::class, 'getEventInstructors'])->name('training.getRecommendedInstructors');
+
+    Route::post('/training/unlocked', [TrainingEventsController::class, 'unlocked_trainingEvent'])->name('training.unlocked');
 
 
 

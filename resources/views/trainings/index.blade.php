@@ -73,19 +73,17 @@
                             <i class="fa fa-eye text-danger me-2"></i>
                             </a>            
                         @endif
+                         <?php // dump($event->can_end_course); ?>
                         @if($event->can_end_course)
                             {{-- Active “End Course” button/icon --}}
-                            <button
-                                class="btn btn-sm btn-flag-checkered end-course-btn"
-                                data-event-id="{{ encode_id($event->id) }}"
-                                title="End Course/Event"
-                            >
+                            <button class="btn btn-sm btn-flag-checkered end-course-btn" data-event-id="{{ encode_id($event->id) }}"
+                                title="End Course/Event" >
                                 <i class="fa fa-flag-checkered text-primary"></i>
                             </button>
                         @endif
                     @else
                         {{-- This event is already locked/ended --}}
-                        <span class="badge bg-secondary" data-bs-toggle="tooltip"
+                        <span class="badge bg-secondary unlocked" data-bs-toggle="tooltip" data-id = "{{ $event->id}}"
                             title="This course has been ended and is locked from editing">
                             <i class="bi bi-lock-fill me-1"></i>Ended
                         </span>
@@ -1533,6 +1531,34 @@ function generateInstructorOptions(instructorsdata, selectedId = '', excludeId =
     });
     return options;
 }
+
+$(document).on("click", ".unlocked", function () {
+    var training_event_id = $(this).data("id");
+
+    if (confirm("Are you sure you want to unlock this training event?")) {
+        $.ajax({
+            type: "POST",
+            url: "{{ url('training/unlocked') }}",
+            data: {
+                training_id: training_event_id,
+                "_token": "{{ csrf_token() }}"
+            }, 
+            success: function (response) {
+                if (response.status === "success") {
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (xhr) {
+                alert(xhr.responseJSON?.message || "Something went wrong.");
+            }
+        });
+    }
+});
+
+
 </script>
 @endsection
 
