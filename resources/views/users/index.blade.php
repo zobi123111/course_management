@@ -1574,7 +1574,7 @@
                 $('#edit_licence_file').hide().prop('required', false).val('');
                 $('#edit_licence_rating_section').hide();
                 $('#edit_licence_rating').val(null); // clear selection
-                $('#edit_licence_2').val('');
+              //  $('#edit_licence_2').val('');
                 $('#edit_licence_file_2').val('');
                 // $('#edit_license2').hide();
             }
@@ -1901,7 +1901,7 @@
                     }
 
                     if (response.user.licence_required) {
-                        $('#edit_licence_checkbox').prop('checked', true).trigger('change'); // ✅ trigger the .change() to apply all show logic
+                        $('#edit_licence_checkbox').prop('checked', true).trigger('change'); 
 
                         if (document) {
                             $('#edit_licence').val(document.licence);
@@ -1909,14 +1909,16 @@
                             $('#edit_licence').val('');
                         }
                     } else {
-                        $('#edit_licence_checkbox').prop('checked', false).trigger('change'); // ✅ this hides everything
+                        $('#edit_licence_checkbox').prop('checked', false).trigger('change'); 
                     }
 
-
+                    console.log(response.user.licence_2_required);
                     if (response.user.licence_2_required) {
                         $('#edit_licence_2_checkbox').prop('checked', true).trigger('change');
                         $('#edit_second_licence_section').show();
+                     
                         if (document.licence_2) {
+                            console.log("hello");
                             console.log(response.user.documents.licence_2);
                             $('.edit_licence_2').val(response.user.documents.licence_2).prop('required', true);
                             // $('#edit_licence_file_2').show().prop('required', true);
@@ -1993,7 +1995,7 @@
 
 
                     if (response.user.licence_required) {
-                        $('#edit_licence_checkbox').prop('checked', true).trigger('change'); // ✅ trigger the .change() to apply all show logic
+                        $('#edit_licence_checkbox').prop('checked', true).trigger('change'); 
 
                         if (document) {
                             $('#edit_licence').val(document.licence);
@@ -2001,7 +2003,7 @@
                             $('#edit_licence').val('');
                         }
                     } else {
-                        $('#edit_licence_checkbox').prop('checked', false).trigger('change'); // ✅ this hides everything
+                        $('#edit_licence_checkbox').prop('checked', false).trigger('change'); 
                     }
 
                     if (response.user.medical_2_required == 1) {
