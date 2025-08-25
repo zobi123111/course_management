@@ -226,7 +226,7 @@ class UserController extends Controller
         }
 
 
-      
+
         // Fix: Treat parent-only entries (rating_id is NULL, parent_id is set)
         $userRatings = $rawUserRatings->filter(function ($ur) {
             return $ur->rating_id !== null;
@@ -948,7 +948,7 @@ class UserController extends Controller
             "passport_admin_verification_required"       => $request->passport_verification_required ?? 0,
             "rating_required"     => $rating_required,
             "rating" => $request->has('rating') ? json_encode($request->rating) : null,
-             "currency_required"   => $currency_required,
+            "currency_required"   => $currency_required,
             "currency"            => $request->currency ?? null,
             "custom_field_name"   => $request->custom_field_name ?? null,
             "custom_field_value"  => $request->custom_field_value ?? null,
@@ -1338,7 +1338,7 @@ class UserController extends Controller
 
             // Update User
             $store =  $userToUpdate->update($newData);
- 
+
             UserDocument::updateOrCreate(
                 ['user_id' => $userToUpdate->id], // Search criteria
                 [
@@ -1384,7 +1384,7 @@ class UserController extends Controller
                 'general'   => $request->input('general_ratings', []),
             ];
             // ✅ NEW: Save Licence 2 Ratings
-        
+
             if ($request->has('licence_1_ratings') && is_array($request->licence_1_ratings)) {
 
                 $newParentIds = [];
@@ -1404,9 +1404,9 @@ class UserController extends Controller
 
                         // Check if this parent already exists in DB for this user
                         $existingRatings = UserRating::where('user_id', $userToUpdate->id)
-                                            ->where('linked_to', 'licence_1')
-                                            ->where('parent_id', $parentId)
-                                            ->get();
+                            ->where('linked_to', 'licence_1')
+                            ->where('parent_id', $parentId)
+                            ->get();
 
                         $isExistingParent = $existingRatings->isNotEmpty();
                         $existingParentRating = $existingRatings->first();
@@ -1434,7 +1434,7 @@ class UserController extends Controller
                                     $existingChild = $existingRatings->where('rating_id', $childId)->first();
                                     $expiryDate = optional($existingChild)->expiry_date;
                                 }
-                               
+
 
                                 // Remove existing entry
                                 UserRating::where('user_id', $userToUpdate->id)
@@ -1461,15 +1461,15 @@ class UserController extends Controller
                                 $existingverified = $existingRatings->where('parent_id', $parentId)->where('user_id', $userToUpdate->id)->first();
                                 $admin_verified = $existingverified->admin_verified ?? 0;
 
-                               
+
 
                                 // Track combination
                                 $validCombinations[] = [
                                     'parent_id' => $parentId,
                                     'rating_id' => $childId,
                                 ];
-                               
-                            
+
+
 
                                 // Save
                                 UserRating::create([
@@ -1481,7 +1481,7 @@ class UserController extends Controller
                                     'file_path'   => $filePath,
                                     'linked_to'   => 'licence_1',
                                     'admin_verified' => $admin_verified
-                                    
+
                                 ]);
                             }
 
@@ -1507,7 +1507,7 @@ class UserController extends Controller
                             if (!$filePath && $isExistingParent) {
                                 $filePath = optional($existingParentRating)->file_path;
                             }
-                             $admin_verified = $existingParentRating->admin_verified ?? 0;
+                            $admin_verified = $existingParentRating->admin_verified ?? 0;
                             //dump($admin_verified);
 
                             // Track combination for parent-only (rating_id = null)
@@ -1529,10 +1529,10 @@ class UserController extends Controller
                                 ->where('parent_id', $parentId)
                                 ->whereNull('rating_id')
                                 ->delete();
-                         
+
 
                             // Save parent-only
-                            UserRating::create([ 
+                            UserRating::create([
                                 'user_id'     => $request->edit_form_id,
                                 'rating_id'   => null,
                                 'parent_id'   => $parentId,
@@ -1541,7 +1541,7 @@ class UserController extends Controller
                                 'file_path'   => $filePath,
                                 'linked_to'   => 'licence_1',
                                 'admin_verified' => $admin_verified
-                                
+
                             ]);
                         }
                     }
@@ -1643,8 +1643,8 @@ class UserController extends Controller
                                     $filePath = optional($existingChild)->file_path;
                                 }
 
-                               $existingverified = $existingRatings->where('parent_id', $parentId_licence2)->where('user_id', $userToUpdate->id)->first();
-                               $admin_verified = $existingverified->admin_verified ?? 0;
+                                $existingverified = $existingRatings->where('parent_id', $parentId_licence2)->where('user_id', $userToUpdate->id)->first();
+                                $admin_verified = $existingverified->admin_verified ?? 0;
 
                                 // Track valid combination
                                 $validCombinationsLicence2[] = [
@@ -2233,12 +2233,12 @@ class UserController extends Controller
     //             }
     //         }
     //     }
-     
+
     //     // ✅ Define custom priority for sorting
     //     $getRatingPriority = function ($rating) { 
     //         if (!$rating || !$rating->rating) return 999;
     //         $r = $rating->rating;
-          
+
 
     //         if ($r->is_fixed_wing) return 1;
     //         if ($r->is_rotary) return 2;
@@ -2426,57 +2426,57 @@ class UserController extends Controller
         }
 
         // ✅ Define custom priority for sorting CHILDREN only
-$getRatingPriority = function ($rating) { 
-    if (!$rating || !$rating->rating) return 999;
-    $r = $rating->rating;
+        $getRatingPriority = function ($rating) {
+            if (!$rating || !$rating->rating) return 999;
+            $r = $rating->rating;
 
-    // For parent-level (if you need it somewhere else)
-    if ($r->is_fixed_wing) return 1;
-    if ($r->is_rotary) return 2;
-    if ($r->is_instructor) return 3;
-    if ($r->is_examiner) return 4;
+            // For parent-level (if you need it somewhere else)
+            if ($r->is_fixed_wing) return 1;
+            if ($r->is_rotary) return 2;
+            if ($r->is_instructor) return 3;
+            if ($r->is_examiner) return 4;
 
-    return 999;
-};
+            return 999;
+        };
 
-// ✅ Sort only children under each parent (do NOT sort parents)
-foreach ($grouped as $linkedTo => &$ratingsByParent) {
-    foreach ($ratingsByParent as &$ratingGroup) {
-        if (isset($ratingGroup['children'])) {
-            usort($ratingGroup['children'], function ($a, $b) {
-                $rA = $a->rating;
-                $rB = $b->rating;
+        // ✅ Sort only children under each parent (do NOT sort parents)
+        foreach ($grouped as $linkedTo => &$ratingsByParent) {
+            foreach ($ratingsByParent as &$ratingGroup) {
+                if (isset($ratingGroup['children'])) {
+                    usort($ratingGroup['children'], function ($a, $b) {
+                        $rA = $a->rating;
+                        $rB = $b->rating;
 
-                // --- Priority rules ---
-                $priority = function ($r) {
-                    // Pure fixed-wing (not instructor)
-                    if ($r->is_fixed_wing && !$r->is_instructor) return 1;
+                        // --- Priority rules ---
+                        $priority = function ($r) {
+                            // Pure fixed-wing (not instructor)
+                            if ($r->is_fixed_wing && !$r->is_instructor) return 1;
 
-                    // Pure rotary (not instructor)
-                    if ($r->is_rotary && !$r->is_instructor) return 2;
+                            // Pure rotary (not instructor)
+                            if ($r->is_rotary && !$r->is_instructor) return 2;
 
-                    // Anything with instructor (alone OR with others)
-                    if ($r->is_instructor) return 3;
+                            // Anything with instructor (alone OR with others)
+                            if ($r->is_instructor) return 3;
 
-                    // Examiner
-                    if ($r->is_examiner) return 4;
+                            // Examiner
+                            if ($r->is_examiner) return 4;
 
-                    return 999;
-                };
+                            return 999;
+                        };
 
-                $priorityA = $priority($rA);
-                $priorityB = $priority($rB);
+                        $priorityA = $priority($rA);
+                        $priorityB = $priority($rB);
 
-                // If both are same priority → sort alphabetically
-                if ($priorityA === $priorityB) {
-                    return strcasecmp($rA->name ?? '', $rB->name ?? '');
+                        // If both are same priority → sort alphabetically
+                        if ($priorityA === $priorityB) {
+                            return strcasecmp($rA->name ?? '', $rB->name ?? '');
+                        }
+
+                        return $priorityA <=> $priorityB;
+                    });
                 }
-
-                return $priorityA <=> $priorityB;
-            });
+            }
         }
-    }
-}
 
 
 

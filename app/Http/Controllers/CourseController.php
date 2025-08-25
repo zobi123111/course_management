@@ -317,6 +317,7 @@ class CourseController extends Controller
         ]);
     
         //Find the course to be updated
+        
         $course = Courses::findOrFail($request->course_id);
     
         // Handle Image Update
@@ -360,6 +361,7 @@ class CourseController extends Controller
         // Handle Prerequisites
        // If prerequisites are disabled
         $enable = (int) $request->input('enable_prerequisites', 0);
+       
 
         if (!$enable) {
             $course->prerequisites()->delete();
@@ -368,6 +370,7 @@ class CourseController extends Controller
                 ->delete();
         } else {
             $existingPrereqs = $course->prerequisites()->get()->keyBy('id');
+       
             $submittedIds = [];
 
             if ($request->has('prerequisite_details')) {
@@ -433,18 +436,42 @@ class CourseController extends Controller
         }
     
         // Remove existing instructor documents first
-        $course->documents()->delete();
+        // $course->documents()->delete(); 
+      
 
-        if ($request->filled('instructor_documents')) {
-            foreach ($request->instructor_documents as $doc) {
-                if (!empty($doc['name'])) {
-                    $course->documents()->create([
-                        'document_name' => $doc['name'],
-                        'file_path' => null, // or provide actual path if uploading
-                    ]);
-                }
+        // if ($request->filled('instructor_documents')) {
+        //     foreach ($request->instructor_documents as $doc) {
+        //         if (!empty($doc['name'])) {
+        //             $course->documents()->create([
+        //                 'document_name' => $doc['name'],
+        //                 'file_path' => null, // or provide actual path if uploading
+        //             ]);
+        //         }
+        //     }
+        // }
+        $existingDocs = $course->documents()->pluck('document_name', 'id')->toArray();
+
+$submittedDocs = [];
+if ($request->filled('instructor_documents')) {
+    foreach ($request->instructor_documents as $doc) {
+        if (!empty($doc['name'])) {
+            $submittedDocs[] = $doc['name'];
+
+            // Check if doc already exists
+            if (!in_array($doc['name'], $existingDocs)) {
+                $course->documents()->create([
+                    'document_name' => $doc['name'],
+                    'file_path' => null, // or handle upload if needed
+                ]);
             }
         }
+    }
+}
+
+// Delete docs that were not submitted
+$course->documents()
+    ->whereNotIn('document_name', $submittedDocs)
+    ->delete();
 
 
     
