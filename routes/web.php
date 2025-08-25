@@ -164,8 +164,6 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     
     //Users Route
     Route::get('/users', [UserController::class, 'getData'])->name('user.index'); 
-    // Route::get('/users/profile', [UserController::class, 'profile'])->name('user.profile');
-    // Route::post('/users/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update');
     Route::post('/users/save', [UserController::class, 'save_user'])->name('user.store');
     Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.get'); 
     Route::post('/users/update', [UserController::class, 'update'])->name('user.update');

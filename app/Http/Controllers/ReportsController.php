@@ -22,21 +22,37 @@ class ReportsController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $userOuId = $user->ou_id;
+        $userOuId = $user->ou_id; 
+        
+
+        // $courses = Courses::with(['trainingEvents.student'])
+        //             ->when($user->is_owner != 1, function ($query) use ($userOuId) {
+        //                 $query->where('ou_id', $userOuId);
+        //             })
+        //             ->orderBy('position', 'asc')
+        //             ->get();
 
         $courses = Courses::with(['trainingEvents.student'])
-            ->when($user->is_owner != 1, function ($query) use ($userOuId) {
-                $query->where('ou_id', $userOuId);
-            })
-            ->orderBy('position', 'asc')
-            ->get();
+                    ->when($user->is_owner != 1, function ($query) use ($userOuId) {
+                        $query->whereHas('trainingEvents', function ($q) use ($userOuId) {
+                            $q->where('training_events.ou_id', $userOuId);
+                           
+                        });
+                    })
+                    ->orderBy('position', 'asc')
+                    ->get();
+
+         
 
         foreach ($courses as $course) {
             $events = $course->trainingEvents;
+          
+           
             $validEvents = $events->filter(function ($event) {
                 return $event->student !== null;
             });
             $enrolledStudentIds = $validEvents->pluck('student_id')->unique();
+           // dump($enrolledStudentIds);
             $completedStudentIds = collect();
             foreach ($validEvents as $event) {
                 $student = $event->student;
@@ -51,19 +67,19 @@ class ReportsController extends Controller
                     ->map(fn($g) => strtolower((string) $g));
                 $total = $grades->count();
                 $incomplete = $grades->filter(fn($g) => in_array($g, ['1', 'incomplete']))->count();
-                $further = $grades->filter(fn($g) => in_array($g, ['2', 'further training required']))->count();
+                $further    = $grades->filter(fn($g) => in_array($g, ['2', 'further training required']))->count();
                 if ($incomplete == 0 && $further == 0 && $total > 0) {
                     $completedStudentIds->push($student->id);
                 }
             }
-
+           // dd($completedStudentIds);
             $course->students_enrolled = $enrolledStudentIds->count();
             $course->students_completed = $completedStudentIds->unique()->count(); // Updated
             $course->students_active = $enrolledStudentIds->diff($completedStudentIds->unique())->count(); // Updated
         }
 
         $ous = $user->is_owner ? OrganizationUnits::select('id', 'org_unit_name')->get() : [];
-
+       
         return view('reports.index', compact('courses', 'ous'));
     }
 
@@ -267,7 +283,7 @@ class ReportsController extends Controller
 
             // dd($users);
 
-        return view('reports.student-report', compact('users'));
+        return view('reports.student-report', compact('users')); 
     }
 
 }
