@@ -16,7 +16,7 @@
 
 @section('content')
 @if(session()->has('message'))  
-    <div id="successMessage" class="alert alert-success fade show" role="alert">
+    <div id="successMessage" class="alert alert-success fade show" role="alert"> 
         <i class="bi bi-check-circle me-1"></i>
         {{ session()->get('message') }}
     </div>
@@ -43,12 +43,13 @@
 
         {{-- Courses List --}}
         <div class="row" id="course_list">
-            @forelse ($courses as $course)             
+            @forelse ($courses as $course) 
+                    
                 <div class="col-md-4 mb-4 course-card" data-ou="{{ $course->ou_id }}">
-                    <a href="{{ route('reports.course', encode_id($course->id)) }}" class="text-decoration-none text-dark">
+                    <a href="{{ route('reports.course', encode_id($course->course->id )) }}" class="text-decoration-none text-dark">
                         <div class="card shadow-sm border h-100 card-hover">
                             <div class="card-body">
-                                <h5 class="card-title text-primary">{{ $course->course_name }}</h5>
+                                <h5 class="card-title text-primary">{{ $course->course->course_name }}</h5>
 
                                 <div class="d-flex align-items-center mt-3">
                                     <!-- Doughnut chart -->
@@ -89,7 +90,7 @@
 @section('js_scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    function filterCoursesByOU(ouId) {
+    function filterCoursesByOU(ouId) { 
         // Save selected OU to sessionStorage
         sessionStorage.setItem('selected_ou', ouId);
 
@@ -111,9 +112,9 @@
     // On page load: restore selected OU filter if available
     document.addEventListener('DOMContentLoaded', function () {
         @foreach($courses as $course)
-            const enrolled_{{ $course->id }} = {{ $course->students_enrolled }};
-            const active_{{ $course->id }} = {{ $course->students_active }};
-            const completed_{{ $course->id }} = {{ $course->students_completed }};
+           const enrolled_{{ $course->id }} = {{ $course->students_enrolled ?? 0 }};
+           const active_{{ $course->id }} = {{ $course->students_active ?? 0 }};
+             const completed_{{ $course->id }} = {{ $course->students_completed ?? 0 }};
 
             const hasData_{{ $course->id }} = enrolled_{{ $course->id }} > 0 || active_{{ $course->id }} > 0 || completed_{{ $course->id }} > 0;
 

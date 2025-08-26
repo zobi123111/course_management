@@ -19,73 +19,114 @@ use Illuminate\Support\Str;
 
 class ReportsController extends Controller
 {
+    // public function index()
+    // {
+    //     $user = auth()->user();
+    //     $userOuId = $user->ou_id; 
+
+
+    //     $courses = Courses::with(['trainingEvents.student'])
+    //                 ->when($user->is_owner != 1, function ($query) use ($userOuId) {
+    //                     $query->where('ou_id', $userOuId);
+    //                 })
+    //                 ->orderBy('position', 'asc')
+    //                 ->get();
+
+    //     foreach ($courses as $course) {
+    //         $events = $course->trainingEvents;
+
+
+    //         $validEvents = $events->filter(function ($event) {
+    //             return $event->student !== null;
+    //         });
+    //         $enrolledStudentIds = $validEvents->pluck('student_id')->unique();
+    //        // dump($enrolledStudentIds);
+    //         $completedStudentIds = collect();
+    //         foreach ($validEvents as $event) {
+    //             $student = $event->student;
+    //             if (!$student) continue;
+    //             if (!empty($event->course_end_date)) {
+    //                 $completedStudentIds->push($student->id);
+    //                 continue;
+    //             }
+    //             $grades = TaskGrading::where('user_id', $student->id)
+    //                 ->when($event->id, fn($q) => $q->where('event_id', $event->id))
+    //                 ->pluck('task_grade')
+    //                 ->map(fn($g) => strtolower((string) $g));
+    //             $total = $grades->count();
+    //             $incomplete = $grades->filter(fn($g) => in_array($g, ['1', 'incomplete']))->count();
+    //             $further    = $grades->filter(fn($g) => in_array($g, ['2', 'further training required']))->count();
+    //             if ($incomplete == 0 && $further == 0 && $total > 0) {
+    //                 $completedStudentIds->push($student->id);
+    //             }
+    //         }
+    //        // dd($completedStudentIds);
+    //         $course->students_enrolled = $enrolledStudentIds->count();
+    //         $course->students_completed = $completedStudentIds->unique()->count(); // Updated
+    //         $course->students_active = $enrolledStudentIds->diff($completedStudentIds->unique())->count(); // Updated
+    //     }
+
+    //     $ous = $user->is_owner ? OrganizationUnits::select('id', 'org_unit_name')->get() : [];
+
+    //     return view('reports.index', compact('courses', 'ous'));
+    // }
+
     public function index()
     {
         $user = auth()->user();
-        $userOuId = $user->ou_id; 
-        
+        $userOuId = $user->ou_id;
+        $courses = TrainingEvents::with(['course', 'student'])
+            ->when($user->is_owner != 1, function ($query) use ($userOuId) {
+                $query->where('ou_id', $userOuId)
+                    ->whereNull('deleted_at');
+            })
+            ->orderBy('id', 'asc')
+            ->get();
 
-        // $courses = Courses::with(['trainingEvents.student'])
-        //             ->when($user->is_owner != 1, function ($query) use ($userOuId) {
-        //                 $query->where('ou_id', $userOuId);
-        //             })
-        //             ->orderBy('position', 'asc')
-        //             ->get();
 
-        $courses = Courses::with(['trainingEvents.student'])
-                    ->when($user->is_owner != 1, function ($query) use ($userOuId) {
-                        $query->whereHas('trainingEvents', function ($q) use ($userOuId) {
-                            $q->where('training_events.ou_id', $userOuId);
-                           
-                        });
-                    })
-                    ->orderBy('position', 'asc')
-                    ->get();
+        foreach ($courses as $event) {
 
-         
-
-        foreach ($courses as $course) {
-            $events = $course->trainingEvents;
-          
-           
-            $validEvents = $events->filter(function ($event) {
-                return $event->student !== null;
-            });
-            $enrolledStudentIds = $validEvents->pluck('student_id')->unique();
-           // dump($enrolledStudentIds);
+            $student = $event->student;
+            if (!$student) {
+                continue;
+            }
+            $enrolledStudentIds = collect([$student->id]);
             $completedStudentIds = collect();
-            foreach ($validEvents as $event) {
-                $student = $event->student;
-                if (!$student) continue;
-                if (!empty($event->course_end_date)) {
-                    $completedStudentIds->push($student->id);
-                    continue;
-                }
+
+            // dump($enrolledStudentIds);
+            $completedStudentIds = collect();
+            // If course has ended
+            if (!empty($event->course_end_date)) {
+                $completedStudentIds->push($student->id);
+            } else {
+                // Check grading
                 $grades = TaskGrading::where('user_id', $student->id)
                     ->when($event->id, fn($q) => $q->where('event_id', $event->id))
                     ->pluck('task_grade')
                     ->map(fn($g) => strtolower((string) $g));
-                $total = $grades->count();
+
+                $total      = $grades->count();
                 $incomplete = $grades->filter(fn($g) => in_array($g, ['1', 'incomplete']))->count();
                 $further    = $grades->filter(fn($g) => in_array($g, ['2', 'further training required']))->count();
+
                 if ($incomplete == 0 && $further == 0 && $total > 0) {
                     $completedStudentIds->push($student->id);
                 }
             }
-           // dd($completedStudentIds);
-            $course->students_enrolled = $enrolledStudentIds->count();
-            $course->students_completed = $completedStudentIds->unique()->count(); // Updated
-            $course->students_active = $enrolledStudentIds->diff($completedStudentIds->unique())->count(); // Updated
+            $event->students_enrolled  = $enrolledStudentIds->count();
+            $event->students_completed = $completedStudentIds->unique()->count();
+            $event->students_active    = $enrolledStudentIds->diff($completedStudentIds->unique())->count();
+
         }
 
         $ous = $user->is_owner ? OrganizationUnits::select('id', 'org_unit_name')->get() : [];
-       
+
         return view('reports.index', compact('courses', 'ous'));
     }
 
     public function showCourse($hashedId, Request $request)
     {
-        $id = decode_id($hashedId); 
+        $id = decode_id($hashedId);
 
         if (!$id) {
             abort(404, 'Invalid Course ID');
@@ -109,11 +150,11 @@ class ReportsController extends Controller
 
         // Get unique students
         $students = $course->trainingEvents
-                    ->pluck('student')
-                    ->filter()
-                    ->when(!$showArchived, fn($s) => $s->filter(fn($student) => !$student->is_archived))
-                    ->unique('id')
-                    ->values();
+            ->pluck('student')
+            ->filter()
+            ->when(!$showArchived, fn($s) => $s->filter(fn($student) => !$student->is_archived))
+            ->unique('id')
+            ->values();
 
         $activeStudents = $students->filter(fn($s) => $s->course_end_date === null);
         $activeStudentIds = $activeStudents->pluck('id');
@@ -147,7 +188,7 @@ class ReportsController extends Controller
             if ($student->event_date && !$student->course_end_date) {
                 $startDate = Carbon::parse($student->event_date);
                 $daysSinceStart = $startDate->diffInDays(Carbon::now());
-                $student->show_alert = $daysSinceStart >= 150; 
+                $student->show_alert = $daysSinceStart >= 150;
             }
 
             // Progress breakdown from task_grading
@@ -183,7 +224,7 @@ class ReportsController extends Controller
             'archived'    => $students->filter(fn($s) => $s->is_archived)->count(),
             'failing'     => $failingStudentIds->intersect($students->pluck('id'))->count(),
         ];
-        
+
         return view('reports.course_detail', compact('course', 'students', 'showArchived', 'showFailing', 'chartData'));
     }
 
@@ -266,6 +307,7 @@ class ReportsController extends Controller
         $user = auth()->user();
         $ou_id = $user->ou_id;
         $userId = $user->id;
+        
 
         $users = User::where('ou_id', $ou_id)
             ->whereNull('is_admin')
@@ -280,10 +322,8 @@ class ReportsController extends Controller
                 }
             ])
             ->get();
-
-            // dd($users);
-
-        return view('reports.student-report', compact('users')); 
+        
+        
+        return view('reports.student-report', compact('users'));
     }
-
 }
