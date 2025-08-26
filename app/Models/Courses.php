@@ -15,7 +15,7 @@ class Courses extends Model
 
     public function organizationUnit()
     {
-        return $this->belongsTo(OrganizationUnits::class, 'ou_id');
+        return $this->belongsTo(OrganizationUnits::class, 'ou_id'); 
     }
 
     public function courseLessons()
@@ -66,7 +66,7 @@ class Courses extends Model
         return $this->hasMany(TrainingFeedbackQuestion::class, 'course_id');
     }
 
-    public function documents()
+    public function documents() 
     {
         return $this->hasMany(CourseDocuments::class, 'course_id');
     }

@@ -478,7 +478,9 @@ h6 {
 }
 
 .header-nav .nav-profile img {
-  max-height: 50px;
+    width: 61px;
+    object-fit: cover !important;
+    height: 57px;
 }
 
 .header-nav .nav-profile span {

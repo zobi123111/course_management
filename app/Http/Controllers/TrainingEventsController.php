@@ -68,16 +68,19 @@ class TrainingEventsController extends Controller
                 $query->where('role_name', 'like', '%Student%');
             })->with('roles')->get();
             $trainingEvents = TrainingEvents::with($trainingEventsRelations)
-                ->withCount([
-                    'taskGradings',
-                    'competencyGradings'
-                ])->get();
+                                ->withCount([
+                                    'taskGradings',
+                                    'competencyGradings'
+                                ])
+                                ->orderByDesc('created_at')
+                                ->get();
+                              
             $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations)
-                ->where('entry_source', "instructor")
-                ->withCount([
-                    'taskGradings',
-                    'competencyGradings'
-                ])->get();
+                                        ->where('entry_source', "instructor")
+                                        ->withCount([
+                                            'taskGradings',
+                                            'competencyGradings'
+                                        ])->get(); 
         } elseif (checkAllowedModule('training', 'training.index')->isNotEmpty() && empty($currentUser->is_admin)) {
             // Regular User: Get data within their organizational unit
             $resources = Resource::where('ou_id', $currentUser->ou_id)->get();
@@ -200,9 +203,9 @@ class TrainingEventsController extends Controller
 
             // Optional: preload the actual user object
             $event->last_lesson_instructor = $event->lesson_instructor_users->firstWhere('id', $event->last_lesson_instructor_id);
-        });
-
-
+        }); 
+    
+        
         return view('trainings.index', compact('groups', 'courses', 'instructors', 'organizationUnits', 'trainingEvents', 'resources', 'students', 'trainingEvents_instructor'));
     }
 
@@ -842,10 +845,13 @@ class TrainingEventsController extends Controller
             'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id',
             'eventLessons.instructor:id,fname,lname',
             'eventLessons.resource:id,name',
-            'trainingFeedbacks.question', // Eager load the question relationship
+            'trainingFeedbacks.question', 
             'documents',
             'studentDocument'
         ])->find(decode_id($event_id));
+
+        // dd(decode_id($event_id));
+     
 
 
 
@@ -895,7 +901,7 @@ class TrainingEventsController extends Controller
         $overallAssessments = OverallAssessment::where('event_id', $trainingEvent->id)
             ->where('user_id', $student->id ?? null)
             ->first();
-        //dd($trainingEvent->eventLessons);
+       
         $hasCBTA = $trainingEvent->eventLessons->contains(function ($lesson) {
             return $lesson->enable_cbta == 1;
         });
@@ -962,14 +968,16 @@ class TrainingEventsController extends Controller
         $deferredTaskIds = collect($getFirstdeftTasks)->pluck('sub_lesson_id')->toArray();
 
         $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson'])
-            ->where('event_id', $trainingEvent->id)
-            ->get();
+                                ->where('event_id', $trainingEvent->id)
+                                ->orderBy('id', 'desc')
+                                ->get();
+                             
 
 
         $defLessonTasks = DefLessonTask::with(['user', 'defLesson.instructor', 'defLesson.instructor.documents', 'defLesson.resource', 'task'])
-            ->where('event_id', $trainingEvent->id)
-            ->get();
-        // dd($deferredLessons);
+                            ->where('event_id', $trainingEvent->id)
+                            ->get();
+        
 
         $deferredLessonsTasks = DefLessonTask::with([
             'user',
@@ -1002,6 +1010,7 @@ class TrainingEventsController extends Controller
 
         $course = Courses::with('resources')->find($trainingEvent->course_id);
         $resources = $course ? $course->resources : collect();
+     
 
         return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap'));
     }
@@ -1455,7 +1464,6 @@ class TrainingEventsController extends Controller
 
     public function uploadDocuments(Request $request, TrainingEvents $trainingEvent)
     {
-        //dd($request->all());
         $request->validate([
             'training_event_documents' => 'required|array|min:1',
             'training_event_documents.*' => 'required|file|mimes:pdf,doc,docx,jpg,png|max:10240', // Add more formats if needed

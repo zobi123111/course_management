@@ -551,7 +551,9 @@
              <!-- <pre> -->
             @if($trainingEvent?->course?->course_type === 'one_event' && $trainingEvent->eventLessons->count())
                 @php
-                    $eventLesson = $trainingEvent->eventLessons->first();
+                    $eventLesson = $trainingEvent->eventLessons->first() ?? null;
+                    
+
                     $lessons = collect([$eventLesson]);
                   
                 @endphp
@@ -782,8 +784,9 @@
                        
 
                         {{-- Time Tracking --}}
-                   
+                       
                         @if($trainingEvent?->course?->course_type === 'one_event')
+                        
                             @php
                                 $lessonType = $eventLesson?->lesson?->lesson_type ?? null;
                                 $credited = strtotime("1970-01-01 {$eventLesson?->hours_credited}") ?: 0;
@@ -847,10 +850,10 @@
                                 </p>
                             @endif
                           
-                            <p>
+                            <!-- <p>
                                 <strong>Flight:</strong>
                                 Credited: {{ formatSeconds($totals['flight']['credited']) }}
-                            </p>
+                            </p> -->
 
                             @if(!empty($totals['custom']))
                                 @foreach($totals['custom'] as $name => $custom)
@@ -861,13 +864,21 @@
                                     </p>
                                 @endforeach
                             @endif
+                            <?php 
+                                $totalFlightTime = $totals['flight']['credited'] + $totals['deferred'];
+                            
+                            ?>
+                            <p>
+                                <strong>Total Flight Time:</strong>
+                                 {{ formatSeconds($totalFlightTime) }}
+                            </p>
 
-                            @if($totals['deferred'] > 0)
+                            <!-- @if($totals['deferred'] > 0)
                                 <p>
                                     <strong>Deferred Lessons:</strong>
                                     Credited: {{ formatSeconds($totals['deferred']) }}
                                 </p>
-                            @endif
+                            @endif -->
 
                         @else
                             <?php
@@ -1159,7 +1170,7 @@
                     </div>
                 @endif
 
-                @if($isGradingCompleted && $trainingEvent->course->documents->isNotEmpty())
+                @if($isGradingCompleted && $trainingEvent->course->documents->isNotEmpty()) 
                     <div class="mt-4">
                         <h5><i class="fas fa-file-upload"></i>Instructor Document Uploads</h5>
                         <form action="{{ route('training.upload-documents', $trainingEvent->id) }}" method="POST" enctype="multipart/form-data">

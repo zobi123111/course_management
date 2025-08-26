@@ -187,7 +187,7 @@ class UserController extends Controller
         $grouped = [];
 
         foreach ($rawUserRatings as $rating) {
-            dump($rating);
+            
             $linkedTo = $rating->linked_to ?? 'unlinked';
 
             if (is_null($rating->parent_id)) {
@@ -289,7 +289,7 @@ class UserController extends Controller
         // Ratings list (not used in your view, but kept if needed)
         $ratings = $userRatings->pluck('rating');
 
-        dd($grouped);
+       
         return view('users.profile', compact(
             'user',
             'ratings',

@@ -13,7 +13,7 @@
 @if(session()->has('error'))
 <div id="successMessage" class="alert alert-warning fade show" role="alert">
     <i class="bi bi-check-circle me-1"></i>
-    {{ session()->get('error') }}
+    {{ session()->get('error') }} 
 </div>
 @endif
 
@@ -73,7 +73,7 @@
                             <i class="fa fa-eye text-danger me-2"></i>
                             </a>            
                         @endif
-                         <?php // dump($event->can_end_course); ?>
+                
                         @if($event->can_end_course)
                             {{-- Active “End Course” button/icon --}}
                             <button class="btn btn-sm btn-flag-checkered end-course-btn" data-event-id="{{ encode_id($event->id) }}"
@@ -882,7 +882,7 @@ $(document).ready(function() {
             url: "{{ url('/training/edit') }}", 
             type: 'GET',
             data: { eventId: eventId },
-            success: async function (response) {
+            success: async function (response) { 
                 if (response.success) {
                     const event = response.trainingEvent;
                   
@@ -970,7 +970,7 @@ $(document).ready(function() {
 
                     // ✅ Global map of existing lessons for prefill
                    
-              window.existingEventLessons = (event.event_lessons || []).map(l => { 
+              window.existingEventLessons = (event.event_lessons || []).map(l => {  
                            let licenceValue = '';
 
                         if (l.instructor_documents && l.instructor_documents.length > 0) {
@@ -992,9 +992,10 @@ $(document).ready(function() {
                         
                      
                          let hoursCredited = '';
-                        if (l.hours_credited) {
+                        if (l.hours_credited) { 
                             const parts = l.hours_credited.split(':');
-                            hoursCredited = parseInt(parts[0], 10); // convert "12:00:00" → 12
+                            hoursCredited = parseInt(parts[0], 10); 
+                            console.log(hoursCredited);
                             
                         }
                         return {
@@ -1025,7 +1026,7 @@ $(document).ready(function() {
     });
 
 
-    $('#edit_select_lesson').on('change', function () {
+    $('#edit_select_lesson').on('change', function () { 
         const selectedLessonIds = $(this).val() || []; // Get current selected values (array)
         const allLessonBoxes = $('#editLessonDetailsContainer .lesson-box');
 
@@ -1207,6 +1208,7 @@ $(document).ready(function() {
             instructor_license_number = '',
             hours_credited = ''
         } = prefillData;
+        console.log("hours_credited", hours_credited);
          
 
         let isCurrentUserInstructor = currentUser.role === 'instructor';
@@ -1279,7 +1281,7 @@ $(document).ready(function() {
                     </div>
                      <div class="col-md-4 homestudy_default_time">
                         <label class="form-label">Home Study Time${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
-                        <input type="text" name="lesson_data[${currentIndex}][homestudy_time]" id="homestudy_time" class="form-control lesson-end-time" value="${hours_credited}" data-lesson-id="${currentIndex}">
+                        <input type="text" name="lesson_data[${currentIndex}][homestudy_time]" id="homestudy_time${currentIndex}" class="form-control homestudy_time" value="${hours_credited}" data-lesson-id="${currentIndex}">
                         <div id="lesson_data_${currentIndex}_end_time${errorSuffix}" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-6 departure-block">
@@ -1324,7 +1326,6 @@ $(document).ready(function() {
                     $destinationBlock.hide();
                     $simTimeBox.hide();
                     $homestudy_time.hide();
-                  //  $('#homestudy_time').val('');
                 } else if (resourceName === 'Homestudy') {
                     $startBlock.hide();
                     $endBlock.hide();
@@ -1359,7 +1360,7 @@ $(document).ready(function() {
         toggleFields(initialResourceName);
 
         $resourceSelect.on('change', function () {
-            const selectedId = $(this).val();
+            const selectedId = $(this).val(); 
             const selectedName = resourcesdata.find(r => r.id == selectedId)?.name || '';
             toggleFields(selectedName);
         });
