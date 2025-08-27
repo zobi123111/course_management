@@ -131,7 +131,7 @@
                                         <i class="bi bi-star-fill text-warning me-2"></i>Ratings Linked to UK Licence
                                     </h6>
                              
-                                    <div class="d-flex flex-wrap">
+                                    <div class="d-flex flex-wrap" style="justify-content: space-between">
                                         @foreach($grouped['licence_1'] ?? [] as $group)
                                         @php
                                         $parent = $group['parent']; 
