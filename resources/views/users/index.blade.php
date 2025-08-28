@@ -145,6 +145,9 @@
                             </select>
                             <div id="role_name_error" class="text-danger error_e"></div>
                         </div>
+                        <div class="col-md-6">
+
+                        </div>
                         {{-- <div class="col-md-6">
                             <label for="extra_roles" class="form-label">Select Multiple Roles<span
                                     class="text-danger"></span></label>
@@ -156,6 +159,30 @@
                         </select>
                         <div id="extra_roles_error" class="text-danger error_e"></div>
                     </div> --}}
+
+                     <div class="col-md-6">
+                         <div class="mt-3">
+                        <label for="licence_checkbox" class="form-label">UK Licence</label>
+                        <input type="checkbox" name="licence_checkbox" id="licence_checkbox" class="ms-2">
+
+                        <label for="licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
+                        <input type="checkbox" name="licence_verification_required" id="licence_verification_required" class="ms-2" value="1">
+                        </div>
+                        <input type="text" name="licence" id="licence" class="form-control mt-2" style="display: none;" placeholder="Enter UK Licence Number">
+                        <div id="licence_error" class="text-danger error_e"></div>
+
+                        <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                        <div id="licence_file_error" class="text-danger error_e"></div>
+
+                        <div id="licence_rating_section" class="mt-3">
+                            <label class="form-label">Select Ratings for UK Licence</label>
+                            <input type="checkbox" id="uk_licence" />
+                            <div id="rating_select_boxes_container" class="mt-2" style="display: none;">
+                                <!-- Select boxes will be appended here -->
+                            </div>
+                            <button type="button" id="add_rating_box" class="btn btn-primary mt-2" style="display: none;">Add Rating</button>
+                        </div>
+                    </div>
                     <!-- Licence -->
                     <div class="col-md-6">
                         <!-- Enable Licence 2 -->
@@ -188,37 +215,15 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="col-md-6">
-                        <label for="licence_checkbox" class="form-label">UK Licence</label>
-                        <input type="checkbox" name="licence_checkbox" id="licence_checkbox" class="ms-2">
-
-                        <label for="licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
-                        <input type="checkbox" name="licence_verification_required" id="licence_verification_required" class="ms-2" value="1">
-
-                        <input type="text" name="licence" id="licence" class="form-control mt-2" style="display: none;" placeholder="Enter UK Licence Number">
-                        <div id="licence_error" class="text-danger error_e"></div>
-
-                        <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
-                        <div id="licence_file_error" class="text-danger error_e"></div>
-
-                        <div id="licence_rating_section" class="mt-3">
-                            <label class="form-label">Select Ratings for UK Licence</label>
-                            <input type="checkbox" id="uk_licence" />
-                            <div id="rating_select_boxes_container" class="mt-2" style="display: none;">
-                                <!-- Select boxes will be appended here -->
-                            </div>
-                            <button type="button" id="add_rating_box" class="btn btn-primary mt-2" style="display: none;">Add Rating</button>
-                        </div>
-                    </div>
-                    <!--  // Medical  -->
-                    <div class="col-md-6">
+                        <div class="mt-3">
                         <label for="medical_checkbox" class="form-label">UK Medical</label>
                         <input type="checkbox" name="medical_checkbox" id="medical_checkbox" class="ms-2" value="1">
                         <label for="medical_verification_required" class="form-label ms-4">Admin Verification
                             required?</label>
                         <input type="checkbox" name="medical_verification_required"
                             id="medical_verification_required" class="ms-2" value="1">
+                        </div>
                         <div class="medical_issued_div" style="display:none">
                             <label for="extra_roles" class="form-label">Medical Issued By<span
                                     class="text-danger"></span></label>
@@ -270,6 +275,9 @@
                             </button>
 
                         </div>
+                    </div>
+                    <!--  // Medical  -->
+                    <div class="col-md-6">
                         <div class="mt-3" id="medical_2">
                             <label for="medical_2_checkbox" class="form-label">EASA Medical</label>
                             <input type="checkbox" name="medical_2_checkbox" id="medical_2_checkbox" class="ms-2" value="1">
@@ -323,12 +331,14 @@
 
                     <!-- Passport -->
                     <div class="col-md-6">
+                        <div class="mt-3">
                         <label for="passport_checkbox" class="form-label">Passport</label>
                         <input type="checkbox" name="passport_checkbox" id="passport_checkbox" class="ms-2">
                         <label for="passport_verification_required" class="form-label ms-4">Admin Verification
                             required?</label>
                         <input type="checkbox" name="passport_verification_required"
                             id="passport_verification_required" class="ms-2" value="1">
+                            </div>
                         <input type="text" name="passport" id="passport" class="form-control" style="display: none;"
                             placeholder="Enter Passport Number">
                         <div id="passport_error" class="text-danger error_e"></div>
@@ -337,39 +347,16 @@
                         <div id="passport_file_error" class="text-danger error_e"></div>
                     </div>
 
-                    <!-- Rating/s (Stars) -->
-                    {{-- <div class="col-md-6">
-                            <label for="rating_checkbox" class="form-label">Rating/s</label>
-                            <input type="checkbox" name="rating_checkbox" id="rating_checkbox" class="ms-2">
-                            <div id="ratings" style="display: none;">
-                                <select class="form-select rating-select" name="rating[]" aria-label="Default select example" multiple> --}}
-                    {{-- <option value="">Select Rating</option> --}}
-                    {{-- @foreach($rating as $val)
-                                    <option value="{{ $val->id }}">{{ $val->name }}</option>
-                    @endforeach
-                    </select>
-                    <div id="rating_error" class="text-danger error_e"></div>
-            </div>
-        </div> --}}
-
-
-        <!-- Currency (Optional) -->
-        <!-- <div class="col-md-6">
-            <label for="currency" class="form-label">Currency</label>
-            <input type="checkbox" name="currency_checkbox" id="currency_checkbox" class="ms-2">
-            <input type="text" name="currency" id="currency" class="form-control" style="display: none;"
-                placeholder="Enter Currency">
-            <div id="currency_error" class="text-danger error_e"></div>
-        </div> -->
-
         <!-- Custom Field -->
-        <div class="col-md-12">
+        <div class="col-md-6">
+            <div class="mt-3">
             <label for="custom_field_checkbox" class="form-label">Custom Field</label>
             <input type="checkbox" name="custom_field_checkbox" id="custom_field_checkbox" class="ms-2" value="1">
             <label for="customField_verification_required" class="form-label ms-4">Admin Verification
                 required?</label>
             <input type="checkbox" name="customField_verification_required"
                 id="customField_verification_required" class="ms-2" value="1">
+                </div>
         </div>
         <div>
             <label for="customfield_filelabel" id="customfield_filelabel" class="form-label"
@@ -496,28 +483,29 @@
                     </div> --}}
                     <!-- Update Password Checkbox -->
                     <div class="col-md-6">
+                        <div class="">
                         <label for="edit_update_password_checkbox" class="form-label">Password Change on next
                             logon</label>
                         <input type="checkbox" name="edit_update_password_checkbox"
                             id="edit_update_password_checkbox">
                         <input type="hidden" name="edit_update_password" id="edit_update_password" value="0">
                     </div>
+                    </div>
 
 
                     <!-- Licence -->
                     <div class="col-md-6">
+                        <div class="mt-3">
                         <label for="edit_licence_checkbox" class="form-label">UK Licence</label>
                         <input type="checkbox" name="edit_licence_checkbox" value="1" id="edit_licence_checkbox" class="ms-2">
 
                         <label for="edit_licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
                         <input type="checkbox" name="edit_licence_verification_required" id="edit_licence_verification_required" class="ms-2" value="1">
-
+                        </div>
                         <input type="text" name="edit_licence" id="edit_licence" class="form-control" style="display: none;" placeholder="Enter UK Licence Number">
                         <div id="edit_licence_error_up" class="text-danger error_e"></div>
                         <input type="file" name="edit_licence_file" id="edit_licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
                         <div id="edit_licence_file_error_up" class="text-danger error_e"></div>
-
-
 
                         <div id="edit_licence_rating_section" class="mt-3" style="display: none;">
                             <label class="form-label">Select Ratings for UK Licence</label>
@@ -527,15 +515,35 @@
                             </div>
                             <button type="button" id="edit_add_rating_box" class="btn btn-primary mt-2" style="display: none;">Add Rating</button>
                         </div>
+                    </div>
+                    <div class="col-md-6">
+                            <div class="mt-3" id="edit_license2">
+                            <label for="edit_licence_checkbox" class="form-label"> EASA Licence</label>
+                            <input type="checkbox" name="edit_licence_2_checkbox" value="1" id="edit_licence_2_checkbox" class="ms-2">
 
+                            <label for="edit_licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
+                            <input type="checkbox" name="edit_licence_2_verification_required" id="edit_licence_2_verification_required" class="ms-2" value="1">
+                        </div>
+                        <div id="edit_second_licence_section" style="display: none;" class="mt-3">
+                            <input type="text" name="edit_licence_2" id="edit_licence_2" class="form-control edit_licence_2" placeholder="Enter EASA Licence Number">
+                            <div id="edit_licence_2_error" class="text-danger error_e"></div>
 
-                   
+                            <input type="file" name="edit_licence_file_2" id="edit_licence_file_2" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
+                            <div id="edit_licence_file_2_error" class="text-danger error_e"></div>
+                        </div>
 
-                     
-                     
+                           <div id="edit_licence_2_rating_section" class="mt-3">
+                                <label class="form-label">Select Ratings for EASA Licence</label>
+                                <input type="checkbox" id="licence_2_ratings" />
+                                <div id="licence_2_ratings_container" class="mt-2" style="display: none;">
+                                    <!-- Select boxes will be appended here -->
+                                </div>
+                                <button type="button" id="edit_licence_2_ratings" class="btn btn-primary mt-2" style="display: none;">Add Rating</button>
+                            </div>
                     </div>
                     <!--   // Medical  -->
                     <div class="col-md-6">
+                        <div class="mt-3">
                         <label for="licence_checkbox" class="form-label">UK Medical</label>
                         <input type="checkbox" name="editmedical_checkbox" id="editmedical_checkbox" class="ms-2"
                             value="1">
@@ -543,6 +551,7 @@
                             required?</label>
                         <input type="checkbox" name="editmedical_verification_required"
                             id="editmedical_verification_required" class="ms-2" value="1">
+                            </div>
                         <div class="editmedical_issued_div" style="display:none">
                             <label for="extra_roles" class="form-label">Medical Issued By<span
                                     class="text-danger"></span></label>
@@ -589,8 +598,10 @@
                             <!-- <button type="button" id="edit_second_medical_btn" class="btn btn-secondary mt-3">
                                     Second Medical
                                 </button> -->
-
                         </div>
+                    </div>
+
+                    <div class="col-md-6">
                         <div class="mt-3" id="edit_medical_2">
                             <label for="licence_checkbox" class="form-label">EASA Medical</label>
                             <input type="checkbox" name="edit_medical_2_checkbox" id="edit_medical_2_checkbox" class="ms-2" value="1">
@@ -598,30 +609,6 @@
                                 required?</label>
                             <input type="checkbox" name="edit_medical_2_verification_required"
                                 id="edit_medical_2_verification_required" class="ms-2" value="1">
-                        </div>
-
-                        <div class="mt-3" id="edit_license2">
-                            <label for="edit_licence_checkbox" class="form-label"> EASA Licence</label>
-                            <input type="checkbox" name="edit_licence_2_checkbox" value="1" id="edit_licence_2_checkbox" class="ms-2">
-
-                            <label for="edit_licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
-                            <input type="checkbox" name="edit_licence_2_verification_required" id="edit_licence_2_verification_required" class="ms-2" value="1">
-                        </div>
-                             <div id="edit_second_licence_section" style="display: none;" class="mt-3">
-                            <input type="text" name="edit_licence_2" id="edit_licence_2" class="form-control edit_licence_2" placeholder="Enter EASA Licence Number">
-                            <div id="edit_licence_2_error" class="text-danger error_e"></div>
-
-                            <input type="file" name="edit_licence_file_2" id="edit_licence_file_2" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
-                            <div id="edit_licence_file_2_error" class="text-danger error_e"></div>
-                        </div>
-
-                           <div id="edit_licence_2_rating_section" class="mt-3">
-                            <label class="form-label">Select Ratings for EASA Licence</label>
-                            <input type="checkbox" id="licence_2_ratings" />
-                            <div id="licence_2_ratings_container" class="mt-2" style="display: none;">
-                                <!-- Select boxes will be appended here -->
-                            </div>
-                            <button type="button" id="edit_licence_2_ratings" class="btn btn-primary mt-2" style="display: none;">Add Rating</button>
                         </div>
 
 
@@ -692,7 +679,7 @@
         </div> -->
 
                     <!-- Custom Field -->
-                    <div class="col-md-12">
+                    <div class="col-md-6">
                         <label for="custom_field_checkbox" class="form-label">Custom Field</label>
                         <input type="checkbox" name="custom_field_checkbox" id="editcustom_field_checkbox"
                             class="ms-2" value="1">
@@ -718,6 +705,8 @@
                                 class="form-control mt-3" style="display: none;" placeholder="Enter the Text">
                         </div>
                     </div>
+                    </div>
+
                     @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                     <div class="col-md-6">
                         <label for="email" class="form-label">Select Org Unit<span
