@@ -35,7 +35,7 @@ class TrainingEventsController extends Controller
     public function index()
     {
         $currentUser = auth()->user();
-        $organizationUnits = OrganizationUnits::all();
+        $organizationUnits = OrganizationUnits::all(); 
         // $resources = Resource::all();
         // Define relationships for trainingEvents query
         $trainingEventsRelations = [
@@ -51,8 +51,8 @@ class TrainingEventsController extends Controller
             'eventLessons.lesson.subLessons:id,lesson_id,title', // pull sub-lessons from each lesson
             'overallAssessments',                              // for single-event overall check
         ];
-
-        if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) {
+       
+        if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) { 
             // Super Admin: Get all data
             $resources = Resource::all();
             // $courses = Courses::all();
@@ -62,6 +62,7 @@ class TrainingEventsController extends Controller
             $instructors = User::whereHas('roles', function ($query) {
                 $query->where('role_name', 'like', '%Instructor%');
             })->with('roles')->get();
+            //dd($instructors);
 
 
             $students = User::whereHas('roles', function ($query) {
@@ -95,6 +96,7 @@ class TrainingEventsController extends Controller
                 ->whereHas('roles', function ($query) {
                     $query->where('role_name', 'like', '%Instructor%');
                 })->with('roles')->get();
+             
 
 
             $students = User::where('ou_id', $currentUser->ou_id)
@@ -144,7 +146,7 @@ class TrainingEventsController extends Controller
                     ->get();
                 $trainingEvents_instructor = [];
             }
-        } else {
+        } else { 
             // Default Case: Users with limited access within their organization
             $resources = Resource::where('ou_id', $currentUser->ou_id)->get();
             $courses = Courses::where('ou_id', $currentUser->ou_id)->orderBy('position')->get();
@@ -157,8 +159,7 @@ class TrainingEventsController extends Controller
                 ->whereHas('roles', function ($query) {
                     $query->where('role_name', 'like', '%Instructor%');
                 })->with('roles')->get();
-
-
+             
 
             $students = User::where('ou_id', $currentUser->ou_id)
                 ->where(function ($query) {
@@ -297,6 +298,7 @@ class TrainingEventsController extends Controller
     public function getCourseLessons(Request $request)
     {
         $student_id = $request->selectedStudentId;
+        $ou_id = $request->ou_id;
 
         $course = Courses::with(['courseLessons', 'resources'])->find($request->course_id);
 
@@ -305,7 +307,7 @@ class TrainingEventsController extends Controller
 
         $uk_licence = $get_licence->licence ?? null;
         $easa_licence = $get_licence->licence_2 ?? null;
-        $ato_num = strtolower($course->ato_num);
+        $ato_num = strtolower($course->ato_num) ?? null;
 
         if (str_contains($ato_num, 'uk')) {
             $instructors = User::with(['documents', 'roles'])
@@ -373,12 +375,21 @@ class TrainingEventsController extends Controller
             ]);
         }
 
+        $all_ou_instructor = User::where('ou_id', $ou_id)
+            ->where(function ($query) {
+                $query->whereNull('is_admin')->orWhere('is_admin', false);
+            })
+            ->whereHas('roles', function ($query) {
+                $query->where('role_name', 'like', '%Instructor%');
+            })->with('roles')->get();
+
         return response()->json([
             'success'     => true,
             'lessons'     => $course->courseLessons,
             'resources'   => $course->resources,
             'licence'     => $licence_type,
-            'instructors' => $instructors
+            'instructors' => $instructors,
+            'all_ou_instructor' => $all_ou_instructor
         ]);
     }
 

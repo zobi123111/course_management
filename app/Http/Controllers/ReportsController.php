@@ -302,7 +302,7 @@ class ReportsController extends Controller
         ]);
     }
 
-    public function getStudentReports()
+    public function getStudentReports() 
     {
         $user = auth()->user();
         $ou_id = $user->ou_id;
@@ -316,13 +316,12 @@ class ReportsController extends Controller
                 'usrRatings' => function ($query) {
                     $query->whereIn('linked_to', ['licence_1', 'licence_2'])
                         ->with([
-                            'rating.associatedChildren',
+                            'rating.associatedChildren', 
                             'parentRating'
                         ]);
                 }
             ])
             ->get();
-        
         
         return view('reports.student-report', compact('users'));
     }
