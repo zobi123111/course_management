@@ -785,7 +785,7 @@ $(document).ready(function() {
 
         // For edit mode, map saved lessons by lesson_id for quick lookup
         var lessonPrefillMap = {};
-        if (isEditForm && typeof existingEventLessons !== 'undefined') { 
+        if (isEditForm && typeof existingEventLessons !== 'undefined') {  
             existingEventLessons.forEach(lesson => { 
                 lessonPrefillMap[lesson.lesson_id] = {
                     instructor_id: lesson.instructor_id || '',
@@ -801,6 +801,7 @@ $(document).ready(function() {
                 };
             });
         }
+     
             
   
         let selectedStudentId = $('#select_user').val() || $('#edit_select_user').val();

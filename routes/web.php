@@ -120,8 +120,14 @@ Route::group(['middleware' => ['auth']], function () {
     ->name('training.upload-documents');
     Route::get('/training/certificate/{event}', [TrainingEventsController::class, 'generateCertificate'])
      ->name('training.certificate');
-    Route::post('/training/submit_deferred_items', [TrainingEventsController::class, 'storeDeferredLessons'])
+    Route::post('/training/submit_deferred_items', [TrainingEventsController::class, 'storeDeferredLessons']) 
     ->name('training.deferred-lessons.store');
+
+    Route::post('/training/edit_customLesson', [TrainingEventsController::class, 'edit_customLesson'])->name('edit_customLesson');
+    Route::post('/training/delete_customLesson', [TrainingEventsController::class, 'delete_customLesson'])->name('delete_customLesson');
+    Route::post('/training/update_deferred_form', [TrainingEventsController::class, 'update_deferred_form'])->name('update_deferred_form');
+      
+
     Route::post('/training/store-def-grading', [TrainingEventsController::class, 'storeDefGrading'])
     ->name('training.store_def_grading');
     Route::post('/training/end-course', [TrainingEventsController::class, 'endCourse'])->name('training.endCourse');
@@ -188,7 +194,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     
     //Courses 
     Route::get('/courses', [CourseController::class, 'index'])->name('course.index'); 
-    Route::post('/course/create', [CourseController::class, 'createCourse'])->name('course.store'); 
+    Route::post('/course/create', [CourseController::class, 'createCourse'])->name('course.store');  
     Route::get('/course/edit', [CourseController::class, 'getCourse'])->name('course.edit');
     Route::post('/course/update', [CourseController::class, 'updateCourse'])->name('course.update');
     Route::post('/course/delete', [CourseController::class, 'deleteCourse'])->name('course.delete'); 
@@ -246,7 +252,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
 
     //Training Event Route
     Route::get('/training', [TrainingEventsController::class, 'index'])->name('training.index'); 
-    Route::post('/training/create', [TrainingEventsController::class, 'createTrainingEvent'])->name('training.store');
+    Route::post('/training/create', [TrainingEventsController::class, 'createTrainingEvent'])->name('training.store'); 
     Route::get('/training/edit', [TrainingEventsController::class, 'getTrainingEvent'])->name('training.edit');
     Route::post('/training/update', [TrainingEventsController::class, 'updateTrainingEvent'])->name('training.update');
     Route::post('/training/delete', [TrainingEventsController::class, 'deleteTrainingEvent'])->name('training.delete');
