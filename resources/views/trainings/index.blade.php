@@ -199,7 +199,7 @@
                       
                         @if(checkAllowedModule('training','training.edit')->isNotEmpty())
                             <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                            data-event-id="{{ encode_id($event->id) }}"></i>
+                            data-event-id="{{ encode_id($event->id) }}"></i> 
                         @endif
                         @if(checkAllowedModule('training','training.show')->isNotEmpty())
                             <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
@@ -652,7 +652,7 @@ $(document).ready(function() {
         var resourceDropdown = isEditModal ? $('#edit_select_resource') : $('#select_resource');
 
         $.ajax({
-            url: "{{ url('/training/get_ou_students_instructors_resources') }}/" + ou_id, // Append ou_id in URL
+            url: "{{ url('/training/get_ou_students_instructors_resources') }}/" + ou_id, 
             type: "GET",
             dataType: "json",
            success: function (response) {
@@ -676,6 +676,7 @@ $(document).ready(function() {
                     var instructorOptions = '<option value="">Select Instructor</option>';
                     if (response.instructors && response.instructors.length > 0) {  
                         instructorsdata = response.instructors;
+                        console.log(instructorsdata);
                        
                      
                         $.each(instructorsdata, function(index, instructor) {
@@ -805,23 +806,26 @@ $(document).ready(function() {
             
   
         let selectedStudentId = $('#select_user').val() || $('#edit_select_user').val();
+        var edit_ou_id = $('#edit_ou_id').val();
+       
 
    
         $.ajax({
             url: '{{ url("/training/get_course_lessons") }}',
             type: 'GET', 
-            data: { course_id: courseId , selectedStudentId:selectedStudentId},
+            data: { course_id: courseId , selectedStudentId:selectedStudentId, ou_id:edit_ou_id},
             success: function (response) {
                 lessonContainer.empty(); // Clear existing lesson boxes
 
                 if (response.success && response.lessons.length > 0) {
                     let lessons = response.lessons;
                     resourcesdata = response.resources; 
-                   instructorsdata = response.instructors;
+                     instructorsdata = response.instructors;
+                     all_instructors = response.all_ou_instructor;
                     
                         response.lessons.forEach(function (lesson, idx) {
                             let prefillData = isEditForm && lessonPrefillMap[lesson.id] ? lessonPrefillMap[lesson.id] : {};
-                            renderLessonBox(lesson, lessonContainer, prefillData, idx, mode);  
+                            renderLessonBox(lesson, lessonContainer, prefillData, idx, mode, all_instructors);  
                         });
                 } 
                 else {
@@ -967,11 +971,8 @@ $(document).ready(function() {
                     //     });
 
                 //-----------------------------------------------------------------------
-                    $('#edit_select_course').val(selectedCourse).data("selected-value", selectedCourse);
-
-                    // ✅ Global map of existing lessons for prefill
-                   
-              window.existingEventLessons = (event.event_lessons || []).map(l => {  
+                    $('#edit_select_course').val(selectedCourse).data("selected-value", selectedCourse);   
+                     window.existingEventLessons = (event.event_lessons || []).map(l => {  
                            let licenceValue = '';
 
                         if (l.instructor_documents && l.instructor_documents.length > 0) {
@@ -996,7 +997,7 @@ $(document).ready(function() {
                         if (l.hours_credited) { 
                             const parts = l.hours_credited.split(':');
                             hoursCredited = parseInt(parts[0], 10); 
-                            console.log(hoursCredited);
+                            
                             
                         }
                         return {
@@ -1188,7 +1189,7 @@ $(document).ready(function() {
 
     let lessonIndex = 0;
 
-    function renderLessonBox(lesson, container, prefillData = {}, index = null, mode) { 
+    function renderLessonBox(lesson, container, prefillData = {}, index = null, mode, instructor) { 
         const errorSuffix = mode === 'update' ? '_error_up' : '_error';
         const currentIndex = index !== null ? index : lessonIndex++;
         const isFirstLesson = currentIndex === 0;
@@ -1209,19 +1210,21 @@ $(document).ready(function() {
             instructor_license_number = '',
             hours_credited = ''
         } = prefillData;
-        console.log("hours_credited", hours_credited);
+       
          
 
         let isCurrentUserInstructor = currentUser.role === 'instructor';
-       let instructorOptions = instructorsdata
-    .filter(i => i.id != excludedInstructorId) 
-    .map(i => {
-        let selected = '', disabled = '';
-        if (isCurrentUserInstructor && i.id == currentUser.id) selected = 'selected';
-        else if (isCurrentUserInstructor) disabled = 'disabled';
-        else if (i.id == instructor_id) selected = 'selected';
-        return `<option value="${i.id}" ${selected} ${disabled}>${i.fname} ${i.lname}</option>`;
-    }).join('');
+
+        
+        instructorOptions  = instructor.filter(i => i.id != excludedInstructorId) 
+                                .map(i => {
+                                    let selected = '', disabled = '';
+                                    if (isCurrentUserInstructor && i.id == currentUser.id) selected = 'selected';
+                                    else if (isCurrentUserInstructor) disabled = 'disabled';
+                                    else if (i.id == instructor_id) selected = 'selected';
+                                    return `<option value="${i.id}" ${selected} ${disabled}>${i.fname} ${i.lname}</option>`;
+                                }).join('');
+                              
 
 
         let resourceOptions = resourcesdata
@@ -1376,7 +1379,7 @@ $(document).ready(function() {
         if (isCurrentUserInstructor) {
             const $licenseInput = $box.find(`input[name="lesson_data[${currentIndex}][instructor_license_number]"]`);
             let selectedCourseName = $('#edit_select_course option:selected').text();
-            alert(selectedCourseId);
+          
           
             // $.ajax({
             //     url: `/training/get_instructor_license_no/${currentUser.id}/${selectedCourseId}`,
@@ -1515,7 +1518,9 @@ $(document).on('change', '#edit_is_instructor_checkbox', function () {
     hiddenInput.val(isChecked ? 'instructor' : '');
     userDropdown.empty();
     let userOptions = '<option value="">Select ' + (isChecked ? 'Instructor' : 'Student') + '</option>';
+    
     const dataList = isChecked ? instructorsdata : studentsdata;
+    console.log(dataList);
     
     dataList.forEach(user => {
         userOptions += `<option value="${user.id}">${user.fname} ${user.lname}</option>`;

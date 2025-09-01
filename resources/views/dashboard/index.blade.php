@@ -22,149 +22,149 @@ $messages = [];
 $user = Auth::user();
 
 // Check for Admin
-if ($user->is_admin == "1") { 
-    foreach ($users as $u) {
-        $userDoc = $u->documents; 
-      
-        
+if ($user->is_admin == "1") {
+foreach ($users as $u) {
+$userDoc = $u->documents;
 
-        // Admin Verification Alerts
-        if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
-            $messages[] = "📝 <strong>UK Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
-        }
 
-        if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
-            $messages[] = "📝 <strong>EASA Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
-        } 
 
-        if ($u->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
-            $messages[] = "📝 <strong>Passport</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
-        }
+// Admin Verification Alerts
+if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
+$messages[] = "📝 <strong>UK Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+}
 
-        if ($u->medical_adminRequired == '1' && $userDoc?->medical_verified == "0" && !empty($userDoc?->medical_file)) {
-            $messages[] = "📝 <strong>UK Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
-        }
+if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
+$messages[] = "📝 <strong>EASA Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+}
 
-        if ($u->medical_adminRequired == '1' && $userDoc?->medical_verified_2 == "0" && !empty($userDoc?->medical_file_2)) {
-            $messages[] = "📝 <strong>EASA Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
-        }
+if ($u->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
+$messages[] = "📝 <strong>Passport</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+}
 
-        // Expiry Alerts
-        $expiryStatuses = [
-            'UK Licence' => $userDoc?->licence_status,
-            'EASA Licence' => $userDoc?->licence_2_status,
-            'Passport' => $userDoc?->passport_status,
-            'UK Medical' => $userDoc?->medical_status,
-            'EASA Medical' => $userDoc?->medical_2_status,
-        ];
+if ($u->medical_adminRequired == '1' && $userDoc?->medical_verified == "0" && !empty($userDoc?->medical_file)) {
+$messages[] = "📝 <strong>UK Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+}
 
-        foreach ($expiryStatuses as $doc => $status) {
-            if ($status === 'Red') {
-                $messages[] = "❌ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
-            } elseif ($status === 'Yellow') {
-                $messages[] = "⚠️ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
-            }
-        }
-        
-        // User Ratings (untouched)
-        foreach ($u->usrRatings as $userRating) {
-           if($userRating->linked_to == "licence_1")
-            {
-                $linked_to  = "UK";
-            }
-            if($userRating->linked_to == "licence_2"){
-                $linked_to  = "EASA";
-            }
-            $ratingName = $linked_to.' '. "Rating" . ' ' .$userRating->parentRating->name  ?? ''; 
+if ($u->medical_adminRequired == '1' && $userDoc?->medical_verified_2 == "0" && !empty($userDoc?->medical_file_2)) {
+$messages[] = "📝 <strong>EASA Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+}
 
-            if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
-                $messages[] = "📝 <strong>{$ratingName}</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
-            }
+// Expiry Alerts
+$expiryStatuses = [
+'UK Licence' => $userDoc?->licence_status,
+'EASA Licence' => $userDoc?->licence_2_status,
+'Passport' => $userDoc?->passport_status,
+'UK Medical' => $userDoc?->medical_status,
+'EASA Medical' => $userDoc?->medical_2_status,
+];
 
-            $status = $userRating->expiry_status;
-          
-            if ($status === 'Red') {
-                $messages[] = "❌ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
-            } elseif ($status === 'Yellow') {
-                $messages[] = "⚠️ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
-            }
-        }
-        
-    }
+foreach ($expiryStatuses as $doc => $status) {
+if ($status === 'Red') {
+$messages[] = "❌ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
+} elseif ($status === 'Yellow') {
+$messages[] = "⚠️ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
+}
+}
+
+// User Ratings (untouched)
+foreach ($u->usrRatings as $userRating) {
+if($userRating->linked_to == "licence_1")
+{
+$linked_to = "UK";
+}
+if($userRating->linked_to == "licence_2"){
+$linked_to = "EASA";
+}
+$ratingName = $linked_to.' '. "Rating" . ' ' .$userRating->parentRating->name ?? '';
+
+if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
+$messages[] = "📝 <strong>{$ratingName}</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+}
+
+$status = $userRating->expiry_status;
+
+if ($status === 'Red') {
+$messages[] = "❌ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
+} elseif ($status === 'Yellow') {
+$messages[] = "⚠️ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
+}
+}
+
+}
 }
 
 // For Regular Users
 if ($user->is_admin != "1" && !empty($user->ou_id)) {
-    $userDoc = $user->documents;
+$userDoc = $user->documents;
 
-    if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
-        $messages[] = "📝 Your <strong>UK Licence</strong> is pending admin verification.";
-    }
+if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
+$messages[] = "📝 Your <strong>UK Licence</strong> is pending admin verification.";
+}
 
-    if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
-        $messages[] = "📝 Your <strong>EASA Licence</strong> is pending admin verification.";
-    }
+if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
+$messages[] = "📝 Your <strong>EASA Licence</strong> is pending admin verification.";
+}
 
-    if ($user->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
-        $messages[] = "📝 Your <strong>Passport</strong> is pending admin verification.";
-    }
+if ($user->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
+$messages[] = "📝 Your <strong>Passport</strong> is pending admin verification.";
+}
 
-    if ($user->medical_adminRequired == '1' && $userDoc?->medical_verified == "0" && !empty($userDoc?->medical_file)) {
-        $messages[] = "📝 Your <strong>UK Medical</strong> is pending admin verification.";
-    }
+if ($user->medical_adminRequired == '1' && $userDoc?->medical_verified == "0" && !empty($userDoc?->medical_file)) {
+$messages[] = "📝 Your <strong>UK Medical</strong> is pending admin verification.";
+}
 
-    if ($user->medical_adminRequired == '1' && $userDoc?->medical_verified_2 == "0" && !empty($userDoc?->medical_file_2)) {
-        $messages[] = "📝 Your <strong>EASA Medical</strong> is pending admin verification.";
-    }
+if ($user->medical_adminRequired == '1' && $userDoc?->medical_verified_2 == "0" && !empty($userDoc?->medical_file_2)) {
+$messages[] = "📝 Your <strong>EASA Medical</strong> is pending admin verification.";
+}
 
-    $expiryStatuses = [
-        'UK Licence' => $userDoc?->licence_status,
-        'EASA Licence' => $userDoc?->licence_2_status,
-        'Passport' => $userDoc?->passport_status,
-        'UK Medical' => $userDoc?->medical_status,
-        'EASA Medical' => $userDoc?->medical_2_status,
-    ];
+$expiryStatuses = [
+'UK Licence' => $userDoc?->licence_status,
+'EASA Licence' => $userDoc?->licence_2_status,
+'Passport' => $userDoc?->passport_status,
+'UK Medical' => $userDoc?->medical_status,
+'EASA Medical' => $userDoc?->medical_2_status,
+];
 
-    foreach ($expiryStatuses as $doc => $status) {
-        if ($status === 'Red') {
-            $messages[] = "❌ Your <strong>{$doc}</strong> has <strong>expired</strong>.";
-        } elseif ($status === 'Yellow') {
-            $messages[] = "⚠️ Your <strong>{$doc}</strong> will expire in <strong>less than 90 days</strong>.";
-        }
-    }
-  
+foreach ($expiryStatuses as $doc => $status) {
+if ($status === 'Red') {
+$messages[] = "❌ Your <strong>{$doc}</strong> has <strong>expired</strong>.";
+} elseif ($status === 'Yellow') {
+$messages[] = "⚠️ Your <strong>{$doc}</strong> will expire in <strong>less than 90 days</strong>.";
+}
+}
 
-    // User Ratings (untouched)
-    foreach ($user->usrRatings as $userRating) {
-      
-        $ratingName = $userRating->parentRating->name ?? '';
 
-        if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
-            $messages[] = "📝 Your <strong>{$ratingName}</strong> is pending admin verification.";
-        }
+// User Ratings (untouched)
+foreach ($user->usrRatings as $userRating) {
 
-        $status = $userRating->expiry_status;
-        if ($status === 'Red') {
-            $messages[] = "❌ Your <strong>{$ratingName}</strong> has <strong>expired</strong>.";
-        } elseif ($status === 'Yellow') {
-            $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong>less than 90 days</strong>.";
-        }
-    }
+$ratingName = $userRating->parentRating->name ?? '';
+
+if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
+$messages[] = "📝 Your <strong>{$ratingName}</strong> is pending admin verification.";
+}
+
+$status = $userRating->expiry_status;
+if ($status === 'Red') {
+$messages[] = "❌ Your <strong>{$ratingName}</strong> has <strong>expired</strong>.";
+} elseif ($status === 'Yellow') {
+$messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong>less than 90 days</strong>.";
+}
+}
 
 }
 @endphp
 
 
 @if (!empty($messages))
-    <div id="alertBox" class="alert alert-warning alert-dismissible fade show" role="alert">
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        <h5><strong>⚠️ Attention Required</strong></h5>
-        <ul class="mb-0">
-            @foreach ($messages as $message)
-                <li>{!! $message !!}</li>
-            @endforeach
-        </ul>
-    </div>
+<div id="alertBox" class="alert alert-warning alert-dismissible fade show" role="alert">
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <h5><strong>⚠️ Attention Required</strong></h5>
+    <ul class="mb-0">
+        @foreach ($messages as $message)
+        <li>{!! $message !!}</li>
+        @endforeach
+    </ul>
+</div>
 @endif
 
 
@@ -172,10 +172,10 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
 
 @if(auth()->user()->is_admin == 1)
-@if(session()->has('message'))  
+@if(session()->has('message'))
 <div id="successMessage" class="alert alert-success fade show" role="alert">
-  <i class="bi bi-check-circle me-1"></i>
-  {{ session()->get('message') }}
+    <i class="bi bi-check-circle me-1"></i>
+    {{ session()->get('message') }}
 </div>
 @endif
 @endif
@@ -188,286 +188,283 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
             <th>UK Licence Status</th>
             <th>Associated Ratings (UK)</th>
             <th>EASA Licence Status</th>
-            <th>Associated Ratings (EASA)</th> 
-            <th>UK Medical Status</th> 
-            <th>EASA Medical Status</th> 
-            <th>Passport Status</th> 
-            <th>Action</th> 
+            <th>Associated Ratings (EASA)</th>
+            <th>UK Medical Status</th>
+            <th>EASA Medical Status</th>
+            <th>Passport Status</th>
+            <th>Action</th>
         </tr>
     </thead>
-<tbody> 
-@php
-
-if (!function_exists('getTooltip')) {
-    function getTooltip($status, $type) { 
-        return match ($status) {
-            'Red' => "This {type} has expired.",
-            'Yellow' => "This {type} will expire soon.",
-            'Green' => "This {type} is valid.",
-            'Non-Expiring' => "This {type} does not expire.",
-            default => "Status unknown.",
-        };
-    }
-}
-
-
-@endphp
-
-@foreach($users as $user)
-    <tr>
-        <td>{{ $user->fname }} {{ $user->lname }}</td>
-
+    <tbody>
         @php
-         $doc = $user->documents;
-         $ratingsByLicence = $user->usrRatings->groupBy('linked_to');
-        
-        @endphp
 
-        {{-- Licence 1 --}}
-        <td>
-            @if($doc && $doc->licence_file_uploaded)
-                @php
-                    if ($doc->licence_non_expiring) {
-                        $status = 'Non-Expiring';
-                        $color = 'success';
-                        $date = 'Non-Expiring';
-                    } else {
-                        $status = $doc->licence_status;
-                        $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
-                        $date = $doc->licence_expiry_date ? date('d/m/Y', strtotime($doc->licence_expiry_date)) : 'N/A';
-                    }
-                    $tooltip = getTooltip($status, 'UK License');
-                @endphp
-                <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
-            @else
-                <span class="text-muted">Not Uploaded</span>
-            @endif
-
-            {{-- Licence 1 Ratings --}}
-            @if(isset($user->ratings_by_license['license_1']) && $user->ratings_by_license['license_1']->count())
-                <div class="mt-2">
-                    @foreach($user->ratings_by_license['license_1'] as $ur)
-                        @php
-                            $r = $ur->rating;
-                            $expiry = $ur->expiry_date ? \Carbon\Carbon::parse($ur->expiry_date)->format('d/m/Y') : 'N/A';
-                            $status = $ur->expiry_status; // Uses accessor from model
-                            $color = match($status) {
-                                'Red' => 'danger',
-                                'Orange' => 'warning',
-                                'Amber' => 'info',
-                                'Blue' => 'primary',
-                                default => 'secondary'
-                            }; 
-                            $tooltip = "$r->name expires on $expiry";
-                        @endphp
-
-                        <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
-                            {{ $r->name ?? '' }}
-                        </span>
-
-                        {{-- Nested (child) ratings --}}
-                        @if($r->children && $r->children->count())
-                            @foreach($r->children as $child)
-                                <span class="badge bg-light text-dark border ms-1" data-bs-toggle="tooltip" title="Child of {{ $r->name }} (inherits expiry)">
-                                    → {{ $child->name ?? 'N/A' }}
-                                </span>
-                            @endforeach
-                        @endif
-                    @endforeach
-                </div>
-            @endif
-        </td>
-
-        <td>
-   <?php
- 
-        $groupedEASA = [];
-        
-        if (isset($ratingsByLicence['licence_1'])) {
-            //   print_r($ratingsByLicence['licence_1']);
-            foreach ($ratingsByLicence['licence_1'] as $ratings) { 
-               $child_id = $ratings->rating_id ; 
-                $parent_id = $ratings->parent_id;
-                // echo "parent $parent_id  child $child_id <br>";
-
-                if ($parent_id === null && $ratings->rating) { 
-                    
-                    $groupedEASA[$child_id] = [
-                        'parent' => $ratings->rating->name,
-                        'children' => [],
-                    ];
-                   
-
-                } elseif ($ratings->rating) { 
-                    $parentRating = $ratings->parentRating;
-                    $childRating = $ratings->rating;
-
-                    if (!isset($groupedEASA[$parent_id])) { 
-                  
-                        $groupedEASA[$parent_id] = [
-                            'parent' => $parentRating?->name ?? '',
-                            'children' => [],
-                        ];
-                        
-                    }
-
-                    $groupedEASA[$parent_id]['children'][] = $childRating->name;
-                }else {
-                   $parentRating = $ratings->parentRating;
-                    $groupedEASA[$parent_id] = [
-                        'parent' => $parentRating?->name ?? '',
-                        'children' => [],  // No children here
-                    ];
-                }
-            }
+        if (!function_exists('getTooltip')) {
+        function getTooltip($status, $type) {
+        return match ($status) {
+        'Red' => "This {type} has expired.",
+        'Yellow' => "This {type} will expire soon.",
+        'Green' => "This {type} is valid.",
+        'Non-Expiring' => "This {type} does not expire.",
+        default => "Status unknown.",
+        };
+        }
         }
 
 
-        
-   ?>
+        @endphp
 
-    @foreach ($groupedEASA as $entry)
-        <strong>{{ $entry['parent'] }}</strong><br>
-        @if (!empty($entry['children']))
-            <ul style="margin-left: 15px;">
-                @foreach ($entry['children'] as $child)
-                    <li>{{ $child }}</li>
-                @endforeach
-            </ul>
-        @endif
-        <br>
-    @endforeach
-</td>
+        @foreach($users as $user)
+        <tr>
+            <td>{{ $user->fname }} {{ $user->lname }}</td>
 
+            @php
+            $doc = $user->documents;
+            $ratingsByLicence = $user->usrRatings->groupBy('linked_to');
 
+            @endphp
 
-
-
-        {{-- Licence 2 --}}
-        <td>
-            @if($doc && $doc->licence_file_uploaded_2)
+            {{-- Licence 1 --}}
+            <td>
+                @if($doc && $doc->licence_file_uploaded)
                 @php
-                    if ($doc->licence_non_expiring_2) {
-                        $status = 'Non-Expiring';
-                        $color = 'success';
-                        $date = 'Non-Expiring';
-                    } else {
-                        $status = $doc->licence_2_status;
-                        $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
-                        $date = $doc->licence_expiry_date_2 ? date('d/m/Y', strtotime($doc->licence_expiry_date_2)) : 'N/A';
-                    }
-                    $tooltip = getTooltip($status, 'EASA Licence');
+                if ($doc->licence_non_expiring) {
+                $status = 'Non-Expiring';
+                $color = 'success';
+                $date = 'Non-Expiring';
+                } else {
+                $status = $doc->licence_status;
+                $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                $date = $doc->licence_expiry_date ? date('d/m/Y', strtotime($doc->licence_expiry_date)) : 'N/A';
+                }
+                $tooltip = getTooltip($status, 'UK License');
                 @endphp
                 <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
-            @else
+                @else
                 <span class="text-muted">Not Uploaded</span>
-            @endif
-        </td>
+                @endif
 
-        {{-- Associated Ratings (Licence 2) --}}
-<td>
-    @php
-        $groupedEASA = [];
+                {{-- Licence 1 Ratings --}}
+                @if(isset($user->ratings_by_license['license_1']) && $user->ratings_by_license['license_1']->count())
+                <div class="mt-2">
+                    @foreach($user->ratings_by_license['license_1'] as $ur)
+                    @php
+                    $r = $ur->rating;
+                    $expiry = $ur->expiry_date ? \Carbon\Carbon::parse($ur->expiry_date)->format('d/m/Y') : 'N/A';
+                    $status = $ur->expiry_status; // Uses accessor from model
+                    $color = match($status) {
+                    'Red' => 'danger',
+                    'Orange' => 'warning',
+                    'Amber' => 'info',
+                    'Blue' => 'primary',
+                    default => 'secondary'
+                    };
+                    $tooltip = "$r->name expires on $expiry";
+                    @endphp
 
-        if (isset($ratingsByLicence['licence_2'])) {
-            foreach ($ratingsByLicence['licence_2'] as $ratings) {
+                    <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
+                        {{ $r->name ?? '' }}
+                    </span>
+
+                    {{-- Nested (child) ratings --}}
+                    @if($r->children && $r->children->count())
+                    @foreach($r->children as $child)
+                    <span class="badge bg-light text-dark border ms-1" data-bs-toggle="tooltip" title="Child of {{ $r->name }} (inherits expiry)">
+                        → {{ $child->name ?? 'N/A' }}
+                    </span>
+                    @endforeach
+                    @endif
+                    @endforeach
+                </div>
+                @endif
+            </td>
+
+            <td>
+                <?php
+
+                $groupedEASA = [];
+
+                if (isset($ratingsByLicence['licence_1'])) {
+                    //   print_r($ratingsByLicence['licence_1']);
+                    foreach ($ratingsByLicence['licence_1'] as $ratings) {
+                        $child_id = $ratings->rating_id;
+                        $parent_id = $ratings->parent_id;
+                        // echo "parent $parent_id  child $child_id <br>";
+
+                        if ($parent_id === null && $ratings->rating) {
+
+                            $groupedEASA[$child_id] = [
+                                'parent' => $ratings->rating->name,
+                                'children' => [],
+                            ];
+                        } elseif ($ratings->rating) {
+                            $parentRating = $ratings->parentRating;
+                            $childRating = $ratings->rating;
+
+                            if (!isset($groupedEASA[$parent_id])) {
+
+                                $groupedEASA[$parent_id] = [
+                                    'parent' => $parentRating?->name ?? '',
+                                    'children' => [],
+                                ];
+                            }
+
+                            $groupedEASA[$parent_id]['children'][] = $childRating->name;
+                        } else {
+                            $parentRating = $ratings->parentRating;
+                            $groupedEASA[$parent_id] = [
+                                'parent' => $parentRating?->name ?? '',
+                                'children' => [],  // No children here
+                            ];
+                        }
+                    }
+                }
+
+
+
+                ?>
+
+                @foreach ($groupedEASA as $entry)
+                <strong>{{ $entry['parent'] }}</strong><br>
+                @if (!empty($entry['children']))
+                <ul style="margin-left: 15px;">
+                    @foreach ($entry['children'] as $child)
+                    <li>{{ $child }}</li>
+                    @endforeach
+                </ul>
+                @endif
+                <br>
+                @endforeach
+            </td>
+
+
+
+
+
+            {{-- Licence 2 --}}
+            <td>
+                @if($doc && $doc->licence_file_uploaded_2)
+                @php
+                if ($doc->licence_non_expiring_2) {
+                $status = 'Non-Expiring';
+                $color = 'success';
+                $date = 'Non-Expiring';
+                } else {
+                $status = $doc->licence_2_status;
+                $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                $date = $doc->licence_expiry_date_2 ? date('d/m/Y', strtotime($doc->licence_expiry_date_2)) : 'N/A';
+                }
+                $tooltip = getTooltip($status, 'EASA Licence');
+                @endphp
+                <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
+                @else
+                <span class="text-muted">Not Uploaded</span>
+                @endif
+            </td>
+
+            {{-- Associated Ratings (Licence 2) --}}
+            <td>
+                @php
+                $groupedEASA = [];
+
+                if (isset($ratingsByLicence['licence_2'])) {
+                foreach ($ratingsByLicence['licence_2'] as $ratings) {
                 $child_id = $ratings->rating_id;
                 $parent_id = $ratings->parent_id;
 
                 if ($parent_id === null && $ratings->rating) {
-                    $groupedEASA[$child_id] = [
-                        'parent' => $ratings->rating->name,
-                        'children' => [],
-                    ];
+                $groupedEASA[$child_id] = [
+                'parent' => $ratings->rating->name,
+                'children' => [],
+                ];
                 } elseif ($ratings->rating) {
-                    $parentRating = $ratings->parentRating;
-                    $childRating = $ratings->rating;
+                $parentRating = $ratings->parentRating;
+                $childRating = $ratings->rating;
 
-                    if (!isset($groupedEASA[$parent_id])) {
-                        $groupedEASA[$parent_id] = [
-                            'parent' => $parentRating?->name ?? 'Unknown Parent',
-                            'children' => [],
-                        ];
-                    }
-
-                    $groupedEASA[$parent_id]['children'][] = $childRating->name;
+                if (!isset($groupedEASA[$parent_id])) {
+                $groupedEASA[$parent_id] = [
+                'parent' => $parentRating?->name ?? 'Unknown Parent',
+                'children' => [],
+                ];
                 }
-            }
-        }
-    @endphp
 
-    @foreach ($groupedEASA as $entry)
-        <strong>{{ $entry['parent'] }}</strong><br>
-        @if (!empty($entry['children']))
-            <ul style="margin-left: 15px;">
-                @foreach ($entry['children'] as $child)
+                $groupedEASA[$parent_id]['children'][] = $childRating->name;
+                }
+                }
+                }
+                @endphp
+
+                @foreach ($groupedEASA as $entry)
+                <strong>{{ $entry['parent'] }}</strong><br>
+                @if (!empty($entry['children']))
+                <ul style="margin-left: 15px;">
+                    @foreach ($entry['children'] as $child)
                     <li>{{ $child }}</li>
+                    @endforeach
+                </ul>
+                @endif
+                <br>
                 @endforeach
-            </ul>
-        @endif
-        <br>
-    @endforeach
-</td>
+            </td>
 
 
 
 
 
 
-        {{-- Medical 1 --}}
-        <td>
-            @if($doc && $doc->medical_file_uploaded)
+            {{-- Medical 1 --}}
+            <td>
+                @if($doc && $doc->medical_file_uploaded)
                 @php
-                    $status = $doc->medical_status;
-                    $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
-                    $date = $doc->medical_expirydate ? date('d/m/Y', strtotime($doc->medical_expirydate)) : 'N/A';
-                    $tooltip = getTooltip($status, 'medical 1');
+                $status = $doc->medical_status;
+                $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                $date = $doc->medical_expirydate ? date('d/m/Y', strtotime($doc->medical_expirydate)) : 'N/A';
+                $tooltip = getTooltip($status, 'medical 1');
                 @endphp
                 <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
-            @else
+                @else
                 <span class="text-muted">Not Uploaded</span>
-            @endif
-        </td>
+                @endif
+            </td>
 
-        {{-- Medical 2 --}}
-        <td>
-            @if($doc && $doc->medical_file_uploaded_2)
+            {{-- Medical 2 --}}
+            <td>
+                @if($doc && $doc->medical_file_uploaded_2)
                 @php
-                    $status = $doc->medical_2_status;
-                    $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
-                    $date = $doc->medical_expirydate_2 ? date('d/m/Y', strtotime($doc->medical_expirydate_2)) : 'N/A';
-                    $tooltip = getTooltip($status, 'medical 2');
+                $status = $doc->medical_2_status;
+                $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                $date = $doc->medical_expirydate_2 ? date('d/m/Y', strtotime($doc->medical_expirydate_2)) : 'N/A';
+                $tooltip = getTooltip($status, 'medical 2');
                 @endphp
                 <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
-            @else
+                @else
                 <span class="text-muted">Not Uploaded</span>
-            @endif
-        </td>
+                @endif
+            </td>
 
-        {{-- Passport --}}
-        <td>
-            @if($doc && $doc->passport_file_uploaded)
+            {{-- Passport --}}
+            <td>
+                @if($doc && $doc->passport_file_uploaded)
                 @php
-                    $status = $doc->passport_status;
-                    $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
-                    $date = $doc->passport_expiry_date ? date('d/m/Y', strtotime($doc->passport_expiry_date)) : 'N/A';
-                    $tooltip = getTooltip($status, 'passport');
+                $status = $doc->passport_status;
+                $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                $date = $doc->passport_expiry_date ? date('d/m/Y', strtotime($doc->passport_expiry_date)) : 'N/A';
+                $tooltip = getTooltip($status, 'passport');
                 @endphp
                 <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
-            @else
+                @else
                 <span class="text-muted">Not Uploaded</span>
-            @endif
-        </td>
+                @endif
+            </td>
 
-        {{-- View Link --}}
-        <td>
-            <a href="{{ route('user.show', ['user_id' => encode_id($user->id)]) }}" class="view-icon" title="View User" style="font-size:18px; cursor: pointer;">
-                <i class="fa fa-eye text-danger me-2"></i>
-            </a>
-        </td>
-    </tr>
-@endforeach
-</tbody>
+            {{-- View Link --}}
+            <td>
+                <a href="{{ route('user.show', ['user_id' => encode_id($user->id)]) }}" class="view-icon" title="View User" style="font-size:18px; cursor: pointer;">
+                    <i class="fa fa-eye text-danger me-2"></i>
+                </a>
+            </td>
+        </tr>
+        @endforeach
+    </tbody>
 </table>
 @endif
 
@@ -476,103 +473,103 @@ if (!function_exists('getTooltip')) {
     @if(!empty(auth()->user()->is_owner))
     <div class="row">
 
-                <!-- Users Card -->
-                <div class="col-xxl-3 col-md-6">
-                    @if(checkAllowedModule('users','user.index')->isNotEmpty())
-                    <a href="{{ route('user.index') }}" class="text-decoration-none">
-                    @endif
-                        <div class="card info-card sales-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Users</h5>
+        <!-- Users Card -->
+        <div class="col-xxl-3 col-md-6">
+            @if(checkAllowedModule('users','user.index')->isNotEmpty())
+            <a href="{{ route('user.index') }}" class="text-decoration-none">
+                @endif
+                <div class="card info-card sales-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Users</h5>
 
-                                <div class="d-flex align-items-center">
-                                    <div
-                                        class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                        <i class="ri-user-5-fill dashboard_icon"></i>
-                                    </div>
-                                    <div class="ps-3">
-                                        <h6>{{ $user_count }}</h6>
-                                    </div>
-                                </div>
+                        <div class="d-flex align-items-center">
+                            <div
+                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="ri-user-5-fill dashboard_icon"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6>{{ $user_count }}</h6>
                             </div>
                         </div>
-                    </a>
+                    </div>
                 </div>
-                <!-- End Users Card -->
+            </a>
+        </div>
+        <!-- End Users Card -->
 
-                <!-- Courses Card -->
-                <div class="col-xxl-3 col-md-6">
-                    @if(checkAllowedModule('courses','course.index')->isNotEmpty())
-                    <a href="{{ route('course.index') }}" class="text-decoration-none">
-                    @endif
-                        <div class="card info-card sales-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Courses</h5>
+        <!-- Courses Card -->
+        <div class="col-xxl-3 col-md-6">
+            @if(checkAllowedModule('courses','course.index')->isNotEmpty())
+            <a href="{{ route('course.index') }}" class="text-decoration-none">
+                @endif
+                <div class="card info-card sales-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Courses</h5>
 
-                                <div class="d-flex align-items-center">
-                                    <div
-                                        class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                        <i class="ri-user-5-fill dashboard_icon"></i>
-                                    </div>
-                                    <div class="ps-3">
-                                        <h6>{{ $course_count }}</h6>
-                                    </div>
-                                </div>
+                        <div class="d-flex align-items-center">
+                            <div
+                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="ri-user-5-fill dashboard_icon"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6>{{ $course_count }}</h6>
                             </div>
                         </div>
-                    </a>
+                    </div>
                 </div>
-                <!-- End Courses Card -->
+            </a>
+        </div>
+        <!-- End Courses Card -->
 
-                <!-- Group Card -->
-                <div class="col-xxl-3 col-md-6">
-                    @if(checkAllowedModule('groups','group.index')->isNotEmpty())
-                    <a href="{{ route('group.index') }}" class="text-decoration-none">
-                        @endif
-                        <div class="card info-card revenue-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Groups</h5>
+        <!-- Group Card -->
+        <div class="col-xxl-3 col-md-6">
+            @if(checkAllowedModule('groups','group.index')->isNotEmpty())
+            <a href="{{ route('group.index') }}" class="text-decoration-none">
+                @endif
+                <div class="card info-card revenue-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Groups</h5>
 
-                                <div class="d-flex align-items-center">
-                                    <div
-                                        class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                        <i class="ri-group-fill dashboard_icon"></i>
-                                    </div>
-                                    <div class="ps-3">
-                                        <h6>{{ $group_count }}</h6>
-                                    </div>
-                                </div>
+                        <div class="d-flex align-items-center">
+                            <div
+                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="ri-group-fill dashboard_icon"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6>{{ $group_count }}</h6>
                             </div>
                         </div>
-                    </a>
+                    </div>
                 </div>
-                <!-- End Group Card -->
+            </a>
+        </div>
+        <!-- End Group Card -->
 
-                <!-- Folder Card -->
-                <div class="col-xxl-3 col-xl-12">
-                @if(checkAllowedModule('folders','folder.index')->isNotEmpty())
-                    <a href="{{ route('folder.index') }}" class="text-decoration-none"> 
-                        @endif
-                        <div class="card info-card customers-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Folders</h5>
+        <!-- Folder Card -->
+        <div class="col-xxl-3 col-xl-12">
+            @if(checkAllowedModule('folders','folder.index')->isNotEmpty())
+            <a href="{{ route('folder.index') }}" class="text-decoration-none">
+                @endif
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Folders</h5>
 
-                                <div class="d-flex align-items-center">
-                                    <div
-                                        class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                        <i class="ri-briefcase-2-fill dashboard_icon"></i>
-                                    </div>
-                                    <div class="ps-3">
-                                        <h6>{{ $folder_count }}</h6>
-                                    </div>
-                                </div>
+                        <div class="d-flex align-items-center">
+                            <div
+                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="ri-briefcase-2-fill dashboard_icon"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6>{{ $folder_count }}</h6>
                             </div>
                         </div>
-                        @if(auth()->user()->role == 1)
-                    </a>
-                    @endif
+                    </div>
                 </div>
-                <!-- End Folder Card -->
+                @if(auth()->user()->role == 1)
+            </a>
+            @endif
+        </div>
+        <!-- End Folder Card -->
 
         <!-- End Left side columns -->
     </div>
@@ -590,20 +587,27 @@ if (!function_exists('getTooltip')) {
                     <script>
                         document.addEventListener("DOMContentLoaded", () => {
                             let ctx = document.querySelector('#pieChart').getContext('2d');
-                            
+
                             new Chart(ctx, {
                                 type: 'pie',
                                 data: {
                                     labels: ['Read Documents', 'Unread Documents'],
                                     datasets: [{
                                         label: 'Document Statistics',
-                                        data: [
-                                            {{ $readDocuments }},
-                                            {{ $unreadDocuments }}
+                                        data: [{
+                                                {
+                                                    $readDocuments
+                                                }
+                                            },
+                                            {
+                                                {
+                                                    $unreadDocuments
+                                                }
+                                            }
                                         ],
                                         backgroundColor: [
                                             'rgb(75, 192, 192)', // Green (Read)
-                                            'rgb(255, 99, 132)'  // Red (Unread)
+                                            'rgb(255, 99, 132)' // Red (Unread)
                                         ],
                                         hoverOffset: 4
                                     }]
@@ -614,7 +618,11 @@ if (!function_exists('getTooltip')) {
                                             callbacks: {
                                                 label: function(tooltipItem) {
                                                     let value = tooltipItem.raw;
-                                                    let percentage = ((value / {{ $totalDocuments }}) * 100).toFixed(2);
+                                                    let percentage = ((value / {
+                                                        {
+                                                            $totalDocuments
+                                                        }
+                                                    }) * 100).toFixed(2);
                                                     return `${tooltipItem.label}: ${value} (${percentage}%)`;
                                                 }
                                             }
@@ -634,125 +642,125 @@ if (!function_exists('getTooltip')) {
     </div>
 
     @elseif (auth()->user()->is_admin==1)
-    <div class="row">         
-                <!-- Users Card -->
-                <div class="col-xxl-3 col-md-6">
-                    @if(checkAllowedModule('users','user.index')->isNotEmpty())
-                    <a href="{{ route('user.index') }}" class="text-decoration-none">
-                    @endif
-                        <div class="card info-card sales-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Users</h5>
+    <div class="row">
+        <!-- Users Card -->
+        <div class="col-xxl-3 col-md-6">
+            @if(checkAllowedModule('users','user.index')->isNotEmpty())
+            <a href="{{ route('user.index') }}" class="text-decoration-none">
+                @endif
+                <div class="card info-card sales-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Users</h5>
 
-                                <div class="d-flex align-items-center">
-                                    <div
-                                        class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                        <i class="ri-user-5-fill dashboard_icon"></i>
-                                    </div>
-                                    <div class="ps-3">
-                                        <h6>{{ $user_count }}</h6>
-                                    </div>
-                                </div>
+                        <div class="d-flex align-items-center">
+                            <div
+                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="ri-user-5-fill dashboard_icon"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6>{{ $user_count }}</h6>
                             </div>
                         </div>
-                    </a>
+                    </div>
                 </div>
-                <!-- End Users Card -->
+            </a>
+        </div>
+        <!-- End Users Card -->
 
-                <!-- Courses Card -->
-                <div class="col-xxl-3 col-md-6">
-                @if(checkAllowedModule('courses','course.index')->isNotEmpty())
-                    <a href="{{ route('course.index') }}" class="text-decoration-none">
-                        @endif
-                        <div class="card info-card sales-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Courses</h5>
+        <!-- Courses Card -->
+        <div class="col-xxl-3 col-md-6">
+            @if(checkAllowedModule('courses','course.index')->isNotEmpty())
+            <a href="{{ route('course.index') }}" class="text-decoration-none">
+                @endif
+                <div class="card info-card sales-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Courses</h5>
 
-                                <div class="d-flex align-items-center">
-                                    <div
-                                        class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                        <i class="ri-user-5-fill dashboard_icon"></i>
-                                    </div>
-                                    <div class="ps-3">
-                                        <h6>{{ $course_count }}</h6>
-                                    </div>
-                                </div>
+                        <div class="d-flex align-items-center">
+                            <div
+                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="ri-user-5-fill dashboard_icon"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6>{{ $course_count }}</h6>
                             </div>
                         </div>
-                    </a>
+                    </div>
                 </div>
-                <!-- End Courses Card -->
+            </a>
+        </div>
+        <!-- End Courses Card -->
 
-                <!-- Group Card -->
-                <div class="col-xxl-3 col-md-6">
-                @if(checkAllowedModule('groups','group.index')->isNotEmpty())
-                    <a href="{{ route('group.index') }}" class="text-decoration-none">
-                        @endif
-                        <div class="card info-card revenue-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Groups</h5>
+        <!-- Group Card -->
+        <div class="col-xxl-3 col-md-6">
+            @if(checkAllowedModule('groups','group.index')->isNotEmpty())
+            <a href="{{ route('group.index') }}" class="text-decoration-none">
+                @endif
+                <div class="card info-card revenue-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Groups</h5>
 
-                                <div class="d-flex align-items-center">
-                                    <div
-                                        class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                        <i class="ri-group-fill dashboard_icon"></i>
-                                    </div>
-                                    <div class="ps-3">
-                                        <h6>{{ $group_count }}</h6>
-                                    </div>
-                                </div>
+                        <div class="d-flex align-items-center">
+                            <div
+                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="ri-group-fill dashboard_icon"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6>{{ $group_count }}</h6>
                             </div>
                         </div>
-                    </a>
+                    </div>
                 </div>
-                <!-- End Group Card -->
+            </a>
+        </div>
+        <!-- End Group Card -->
 
-                <!-- Folder Card -->
-                <div class="col-xxl-3 col-md-6">
-                    @if(checkAllowedModule('folders','folder.index')->isNotEmpty())
-                        <a href="{{ route('folder.index') }}" class="text-decoration-none">
-                    @endif
-                        <div class="card info-card customers-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Folders</h5>
+        <!-- Folder Card -->
+        <div class="col-xxl-3 col-md-6">
+            @if(checkAllowedModule('folders','folder.index')->isNotEmpty())
+            <a href="{{ route('folder.index') }}" class="text-decoration-none">
+                @endif
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Folders</h5>
 
-                                <div class="d-flex align-items-center">
-                                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                        <i class="ri-briefcase-2-fill dashboard_icon"></i>
-                                    </div>
-                                    <div class="ps-3">
-                                        <h6>{{ $folder_count }}</h6>
-                                    </div>
-                                </div>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="ri-briefcase-2-fill dashboard_icon"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6>{{ $folder_count }}</h6>
                             </div>
                         </div>
-                        </a>
+                    </div>
                 </div>
-                <!-- End Folder Card -->
+            </a>
+        </div>
+        <!-- End Folder Card -->
 
-                <!-- Resource  Card -->
-                <div class="col-xxl-3 col-md-6">
-                    @if(checkAllowedModule('resource','resource.approval')->isNotEmpty())
-                    <a href="{{ url('resource.approval') }}" class="text-decoration-none">
-                    @endif
-                        <div class="card info-card customers-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Resource Request</h5>
+        <!-- Resource  Card -->
+        <div class="col-xxl-3 col-md-6">
+            @if(checkAllowedModule('resource','resource.approval')->isNotEmpty())
+            <a href="{{ url('resource.approval') }}" class="text-decoration-none">
+                @endif
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Resource Request</h5>
 
-                                <div class="d-flex align-items-center">
-                                    <div
-                                        class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                        <i class="ri-briefcase-2-fill dashboard_icon"></i>
-                                    </div>
-                                    <div class="ps-3">
-                                        <h6>{{ $requestCount }}</h6>
-                                    </div>
-                                </div>
+                        <div class="d-flex align-items-center">
+                            <div
+                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="ri-briefcase-2-fill dashboard_icon"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6>{{ $requestCount }}</h6>
                             </div>
                         </div>
-                    </a>
+                    </div>
                 </div>
-                <!-- End Resource  Card -->
+            </a>
+        </div>
+        <!-- End Resource  Card -->
 
 
     </div>
@@ -770,20 +778,27 @@ if (!function_exists('getTooltip')) {
                     <script>
                         document.addEventListener("DOMContentLoaded", () => {
                             let ctx = document.querySelector('#pieChart').getContext('2d');
-                            
+
                             new Chart(ctx, {
                                 type: 'pie',
                                 data: {
                                     labels: ['Read Documents', 'Unread Documents'],
                                     datasets: [{
                                         label: 'Document Statistics',
-                                        data: [
-                                            {{ $readDocuments }},
-                                            {{ $unreadDocuments }}
+                                        data: [{
+                                                {
+                                                    $readDocuments
+                                                }
+                                            },
+                                            {
+                                                {
+                                                    $unreadDocuments
+                                                }
+                                            }
                                         ],
                                         backgroundColor: [
                                             'rgb(75, 192, 192)', // Green (Read)
-                                            'rgb(255, 99, 132)'  // Red (Unread)
+                                            'rgb(255, 99, 132)' // Red (Unread)
                                         ],
                                         hoverOffset: 4
                                     }]
@@ -794,7 +809,11 @@ if (!function_exists('getTooltip')) {
                                             callbacks: {
                                                 label: function(tooltipItem) {
                                                     let value = tooltipItem.raw;
-                                                    let percentage = ((value / {{ $totalDocuments }}) * 100).toFixed(2);
+                                                    let percentage = ((value / {
+                                                        {
+                                                            $totalDocuments
+                                                        }
+                                                    }) * 100).toFixed(2);
                                                     return `${tooltipItem.label}: ${value} (${percentage}%)`;
                                                 }
                                             }
@@ -815,56 +834,56 @@ if (!function_exists('getTooltip')) {
     @else
     <div class="row">
 
-                <!-- Courses Card -->
-                <div class="col-xxl-3 col-md-6">
-                    @if(checkAllowedModule('courses','course.index')->isNotEmpty())
-                    <a href="{{ route('course.index') }}" class="text-decoration-none">
-                    @endif
-                        <div class="card info-card sales-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Courses</h5>
+        <!-- Courses Card -->
+        <div class="col-xxl-3 col-md-6">
+            @if(checkAllowedModule('courses','course.index')->isNotEmpty())
+            <a href="{{ route('course.index') }}" class="text-decoration-none">
+                @endif
+                <div class="card info-card sales-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Courses</h5>
 
-                                <div class="d-flex align-items-center">
-                                    <div
-                                        class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                        <i class="ri-user-5-fill dashboard_icon"></i>
-                                    </div>
-                                    <div class="ps-3">
-                                        <h6>{{ $course_count }}</h6>
-                                    </div>
-                                </div>
+                        <div class="d-flex align-items-center">
+                            <div
+                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="ri-user-5-fill dashboard_icon"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6>{{ $course_count }}</h6>
                             </div>
                         </div>
-                    </a>
+                    </div>
                 </div>
-                <!-- End Users Card -->
+            </a>
+        </div>
+        <!-- End Users Card -->
 
-                <!-- Group Card -->
-                <div class="col-xxl-3 col-md-6">
-                    @if(checkAllowedModule('groups','group.index')->isNotEmpty())
-                    <a href="{{ route('group.index') }}" class="text-decoration-none">
-                    @endif
-                        <div class="card info-card revenue-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Groups</h5>
+        <!-- Group Card -->
+        <div class="col-xxl-3 col-md-6">
+            @if(checkAllowedModule('groups','group.index')->isNotEmpty())
+            <a href="{{ route('group.index') }}" class="text-decoration-none">
+                @endif
+                <div class="card info-card revenue-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Groups</h5>
 
-                                <div class="d-flex align-items-center">
-                                    <div
-                                        class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                        <i class="ri-group-fill dashboard_icon"></i>
-                                    </div>
-                                    <div class="ps-3">
-                                        <h6>{{ $group_count }}</h6>
-                                    </div>
-                                </div>
+                        <div class="d-flex align-items-center">
+                            <div
+                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="ri-group-fill dashboard_icon"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6>{{ $group_count }}</h6>
                             </div>
                         </div>
-                    </a>
+                    </div>
                 </div>
-                <!-- End Group Card -->
+            </a>
+        </div>
+        <!-- End Group Card -->
 
-                <!-- Folder Card -->
-                <!-- <div class="col-xxl-3 col-xl-12">
+        <!-- Folder Card -->
+        <!-- <div class="col-xxl-3 col-xl-12">
                         @if(checkAllowedModule('folders','folder.index')->isNotEmpty())
                         <a href="{{ route('folder.index') }}" class="text-decoration-none">
                         @endif
@@ -883,31 +902,31 @@ if (!function_exists('getTooltip')) {
                             </div>
                         </a>
                 </div> -->
-                <!-- End Folder Card -->
+        <!-- End Folder Card -->
 
-                <!-- Resource  Card -->
-                <div class="col-xxl-3 col-xl-12">
-                    @if(checkAllowedModule('resource','resource.approval')->isNotEmpty())
-                    <a href="{{ url('resource.approval') }}" class="text-decoration-none">
-                    @endif
-                        <div class="card info-card customers-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Resource Request</h5>
+        <!-- Resource  Card -->
+        <div class="col-xxl-3 col-xl-12">
+            @if(checkAllowedModule('resource','resource.approval')->isNotEmpty())
+            <a href="{{ url('resource.approval') }}" class="text-decoration-none">
+                @endif
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Resource Request</h5>
 
-                                <div class="d-flex align-items-center">
-                                    <div
-                                        class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                        <i class="ri-briefcase-2-fill dashboard_icon"></i>
-                                    </div>
-                                    <div class="ps-3">
-                                        <h6>{{ $requestCount }}</h6>
-                                    </div>
-                                </div>
+                        <div class="d-flex align-items-center">
+                            <div
+                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="ri-briefcase-2-fill dashboard_icon"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6>{{ $requestCount }}</h6>
                             </div>
                         </div>
-                    </a>
+                    </div>
                 </div>
-                <!-- End Resource  Card -->
+            </a>
+        </div>
+        <!-- End Resource  Card -->
     </div>
     <div class="row">
         <div class="col-lg-6">
@@ -923,20 +942,27 @@ if (!function_exists('getTooltip')) {
                     <script>
                         document.addEventListener("DOMContentLoaded", () => {
                             let ctx = document.querySelector('#pieChart').getContext('2d');
-                            
+
                             new Chart(ctx, {
                                 type: 'pie',
                                 data: {
                                     labels: ['Read Documents', 'Unread Documents'],
                                     datasets: [{
                                         label: 'Document Statistics',
-                                        data: [
-                                            {{ $readDocuments }},
-                                            {{ $unreadDocuments }}
+                                        data: [{
+                                                {
+                                                    $readDocuments
+                                                }
+                                            },
+                                            {
+                                                {
+                                                    $unreadDocuments
+                                                }
+                                            }
                                         ],
                                         backgroundColor: [
                                             'rgb(75, 192, 192)', // Green (Read)
-                                            'rgb(255, 99, 132)'  // Red (Unread)
+                                            'rgb(255, 99, 132)' // Red (Unread)
                                         ],
                                         hoverOffset: 4
                                     }]
@@ -947,7 +973,11 @@ if (!function_exists('getTooltip')) {
                                             callbacks: {
                                                 label: function(tooltipItem) {
                                                     let value = tooltipItem.raw;
-                                                    let percentage = ((value / {{ $totalDocuments }}) * 100).toFixed(2);
+                                                    let percentage = ((value / {
+                                                        {
+                                                            $totalDocuments
+                                                        }
+                                                    }) * 100).toFixed(2);
                                                     return `${tooltipItem.label}: ${value} (${percentage}%)`;
                                                 }
                                             }
@@ -972,27 +1002,27 @@ if (!function_exists('getTooltip')) {
 
 @section('js_scripts')
 <script>
- $(document).ready(function() {
-    $('#document_table').DataTable({ 
-        searching: true,
-        pageLength: 10,
-        language: {
-        emptyTable: "No records found"
-      }
+    $(document).ready(function() {
+        $('#document_table').DataTable({
+            searching: true,
+            pageLength: 10,
+            language: {
+                emptyTable: "No records found"
+            }
+        });
+
     });
 
-});
-
-setTimeout(function() {
+    setTimeout(function() {
         $('#successMessage').fadeOut('fast');
-}, 3000);
+    }, 3000);
 
-document.addEventListener('DOMContentLoaded', function () {
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
-        new bootstrap.Tooltip(tooltipTriggerEl);
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(function(tooltipTriggerEl) {
+            new bootstrap.Tooltip(tooltipTriggerEl);
+        });
     });
-});
 </script>
 
 @endsection
