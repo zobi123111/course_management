@@ -26,6 +26,7 @@ class DefLesson extends Model
         'departure_airfield',
         'destination_airfield',
         'created_by',
+        'lesson_type'
     ];
 
     protected $casts = [
