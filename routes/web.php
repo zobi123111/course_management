@@ -123,6 +123,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/training/submit_deferred_items', [TrainingEventsController::class, 'storeDeferredLessons']) 
     ->name('training.deferred-lessons.store');
 
+
     Route::post('/training/edit_customLesson', [TrainingEventsController::class, 'edit_customLesson'])->name('edit_customLesson');
     Route::post('/training/delete_customLesson', [TrainingEventsController::class, 'delete_customLesson'])->name('delete_customLesson');
     Route::post('/training/update_deferred_form', [TrainingEventsController::class, 'update_deferred_form'])->name('update_deferred_form');
@@ -132,6 +133,7 @@ Route::group(['middleware' => ['auth']], function () {
     ->name('training.store_def_grading');
     Route::post('/training/end-course', [TrainingEventsController::class, 'endCourse'])->name('training.endCourse');
     Route::post('/training/unlock-lesson', [TrainingEventsController::class, 'unlockLesson'])->name('training.unlockLesson');
+     Route::post('/training/unlock-deflesson', [TrainingEventsController::class, 'unlock_deflesson'])->name('training.unlock_deflesson');
     Route::post('/training/update-competency-grade', [TrainingEventsController::class, 'updateCompGrade'])->name('training.updateCompGrade');
     Route::get('/training/get-recom-instructors/{id}', [TrainingEventsController::class, 'getEventInstructors'])->name('training.getRecommendedInstructors');
 

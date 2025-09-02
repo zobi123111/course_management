@@ -476,6 +476,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
         {{ session()->get('message') }}
     </div>
     @endif
+     <?php // dump($trainingEvent); ?>
     <div class="loader" style="display: none;"></div>
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center">
@@ -1208,7 +1209,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                         ?>
                        
-                        @if(Auth::user()->is_admin == "1")
+                        @if(Auth::user()->is_admin == "1" || Auth::user()->role ==18) 
                         <div class="d-flex justify-content-between align-items-center mb-2 custom_lesson" style="margin-left: 21px;">
                             <h5 class="mb-0 text-primary">Add Custom Lessons</h5>
                             <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addDeferredLessonModal" id="open_add_custom_lesson">
@@ -1608,9 +1609,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                                         {{ $lesson->lesson_title ?? 'Untitled Lesson' }} (Duration: {{ $hours_credited }} / {{ number_format($duration, 2) }} hrs)
 
-
                                         @if($isLocked)
-
                                         @if(auth()->user()?->is_admin==1)
                                         <button type="button"
                                             class="btn btn-sm btn-outline-secondary ms-2 unlock-lesson-btn"
@@ -1915,7 +1914,8 @@ return sprintf("%02d:%02d", $hours, $minutes);
                     @endif
                     <!-- // Custom lesson  -->
                     @if($customLessonTasks->isNotEmpty())
-                    <h4 class="mb-3 text-primary"><i class="bi bi-exclamation-triangle-fill me-2"></i>Custom Lessons</h4>
+                  
+                    <h4 class="mb-3 text-primary"><i class="bi bi-exclamation-triangle-fill me-2"></i>Custom Lessonsd</h4>
                     <form action="" method="POST" id="customGradingFrom">
                         @foreach($customLessonTasks->groupBy('def_lesson_id') as $defLessonId => $tasks)
                         @php $defLesson = $tasks->first()->defLesson;
@@ -1928,19 +1928,42 @@ return sprintf("%02d:%02d", $hours, $minutes);
                         } else {
                         $instructor_lic_no = 'N/A';
                         }
-
                         @endphp
+                        <?php $is_locked = $defLesson->is_locked; ?>
                         @csrf
                         <div class="accordion-item">
                             <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
                             <input type="hidden" name="tg_def_user_id" value="{{ $trainingEvent?->student_id }}">
                             <input type="hidden" name="tg_def_lesson_id[]" value="{{ $defLesson?->id }}">
                             <h2 class="accordion-header">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#def-lesson-{{ $defLesson?->id }}" aria-expanded="false">
-
+                            
+                                <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : '' }}"   @if($is_locked != 1)  
+                                    data-bs-toggle="collapse" 
+                                    data-bs-target="#def-lesson-{{ $defLesson?->id }}" 
+                                    aria-expanded="true"
+                                @else 
+                                    disabled 
+                                    aria-expanded="false"
+                                    style="cursor: not-allowed; background-color:#f8f9fa;"
+                                @endif type="button">
+                                    <?php // dump($tasks); ?>
                                     {{ $defLesson->lesson_title ?? 'Untitled Deferred Lesson' }}
                                 </button>
+                                       @if($is_locked == 1)
+                                        @if(auth()->user()?->is_admin==1)
+                                        <button type="button"
+                                            class="btn btn-sm btn-outline-secondary ms-2 unlock-deflesson-btn"
+                                            data-defLesson-id="{{ $defLesson?->id }}"
+                                            data-bs-toggle="tooltip"
+                                            title="Unlock this event to enable grading edits.">
+                                            <i class="bi bi-lock-fill"></i>
+                                        </button>
+                                        @else
+                                        <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
+                                            <i class="bi bi-lock-fill " ></i>
+                                        </span>
+                                        @endif
+                                        @endif
                             </h2>
                             <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
                                 <div><strong>Instructor:</strong> {{ $defLesson->instructor->fname ?? '' }} {{ $defLesson->instructor->lname ?? '' }}</div>
@@ -2023,8 +2046,6 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                     <!-- Student name aligned to the right, above the competency grading -->
                                     <div class="text-end pe-4 pt-2 fw-semibold">
                                         {{ $student->fname }} {{ $student->lname }}
-
-
                                     </div>
                                     <div class="accordion-body">
                                         @php
@@ -2332,7 +2353,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
             console.log(formData);
 
             $.ajax({
-                url: "{{ route('training.store_grading') }}", // Update with your route
+                url: "{{ route('training.store_grading') }}",  
                 type: "POST",
                 data: formData,
                 processData: false,
@@ -2502,6 +2523,34 @@ return sprintf("%02d:%02d", $hours, $minutes);
                     data: {
                         event_id: eventId,
                         lesson_id: lessonId,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert('Lesson unlocked successfully.');
+                            location.reload(); // Optional: You can replace this with dynamic DOM update
+                        } else {
+                            alert(response.message || 'Failed to unlock lesson.');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error(xhr);
+                        alert('An error occurred while unlocking the lesson.');
+                    }
+                });
+            }
+        });
+
+        // Unlock deffered lesson 
+            $('.unlock-deflesson-btn').on('click', function() {
+            const deflesson_id = $(this).data('deflesson-id');
+
+            if (confirm('Are you sure you want to unlock this lesson for editing?')) {
+                $.ajax({
+                    url: '/training/unlock-deflesson',
+                    method: 'POST',
+                    data: {
+                        deflesson_id: deflesson_id,
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {
