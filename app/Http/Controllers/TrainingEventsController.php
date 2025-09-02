@@ -1416,7 +1416,6 @@ class TrainingEventsController extends Controller
             //DeferredItem::where('event_id', $event_id)->where('created_by', $evaluatorId)->delete();
 
             // Store or update Task Grading (for sublessons):
-               // dd($request->task_grade);
             if ($request->has('task_grade')) {
                 foreach ($request->input('task_grade') as $lesson_id => $subLessons) { 
                     foreach ($subLessons as $sub_lesson_id => $task_grade) {
@@ -1460,7 +1459,6 @@ class TrainingEventsController extends Controller
                     }
 
                     $totalSubLessons = SubLesson::where('lesson_id', $lesson_id)->count();
-                  
 
                     $gradedSubLessons = TaskGrading::where([
                         'event_id'  => $event_id,
