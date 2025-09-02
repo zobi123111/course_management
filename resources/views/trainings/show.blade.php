@@ -476,7 +476,6 @@ return sprintf("%02d:%02d", $hours, $minutes);
         {{ session()->get('message') }}
     </div>
     @endif
-     <?php // dump($trainingEvent); ?>
     <div class="loader" style="display: none;"></div>
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center">
