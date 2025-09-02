@@ -850,8 +850,8 @@ class TrainingEventsController extends Controller
             'eventLessons' => function ($q) {
                 $q->orderByRaw("
                     CASE 
-                        WHEN position = 0 THEN id 
-                        ELSE position 
+                        WHEN event_lessons.position = 0 THEN event_lessons.id 
+                        ELSE event_lessons.position 
                     END ASC
                 ");
             },
