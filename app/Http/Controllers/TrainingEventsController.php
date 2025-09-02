@@ -840,14 +840,17 @@ class TrainingEventsController extends Controller
     public function showTrainingEvent(Request $request, $event_id)
     {
         $currentUser = auth()->user();
-        $trainingEvent = TrainingEvents::with([
+        $trainingEvent = TrainingEvents::with([ 
             'course:id,course_name,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num',
             'course.documents', // Eager load course documents
             'group:id,name,user_ids',
             'instructor:id,fname,lname',
             'student:id,fname,lname,licence',
             'resource:id,name',
-            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id',
+            'eventLessons' => function ($q) {
+               $q->orderBy('position', 'asc'); // 👈 enforce ordering here
+             },
+            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id,position',
             'eventLessons.instructor:id,fname,lname',
             'eventLessons.resource:id,name',
             'trainingFeedbacks.question',
@@ -866,13 +869,11 @@ class TrainingEventsController extends Controller
                 return $lesson->instructor_id == $currentUser->id;
             })->values();
         } else {
-
-            //Admins and others with access can view all lessons
             $eventLessons = $trainingEvent->eventLessons;
-            // dd($eventLessons);
+           //  dd($trainingEvent);
 
         }
-        //dd($eventLessons);
+       
         $student = $trainingEvent->student;
         $lessonIds = $eventLessons->pluck('lesson_id')->filter()->unique();
        

@@ -1175,7 +1175,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                                 <li class="mb-3">
                                     <div>
-                                        <strong>{{ $title }}</strong>
+                                        <strong>{{ $title }}</strong> 
                                         <span class="badge {{ $badgeClass }} ms-2">{{ $badgeText }}</span>
                                     </div>
                                     @if($comment)
@@ -1563,8 +1563,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                         <div class="accordion accordion-flush" id="faq-group-2">
 
                             @foreach($eventLessons as $eventLesson)
-
-                            <?php
+                            <?php 
                             $hours_credited = $eventLesson->hours_credited;
                             $hours_credited = "08:02:00"; // example
 
