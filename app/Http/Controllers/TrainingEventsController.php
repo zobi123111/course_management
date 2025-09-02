@@ -1416,8 +1416,9 @@ class TrainingEventsController extends Controller
             //DeferredItem::where('event_id', $event_id)->where('created_by', $evaluatorId)->delete();
 
             // Store or update Task Grading (for sublessons):
+               // dd($request->task_grade);
             if ($request->has('task_grade')) {
-                foreach ($request->input('task_grade') as $lesson_id => $subLessons) {
+                foreach ($request->input('task_grade') as $lesson_id => $subLessons) { 
                     foreach ($subLessons as $sub_lesson_id => $task_grade) {
                         // Update or create the normal task grade
                         TaskGrading::updateOrCreate(
@@ -1459,6 +1460,7 @@ class TrainingEventsController extends Controller
                     }
 
                     $totalSubLessons = SubLesson::where('lesson_id', $lesson_id)->count();
+                  
 
                     $gradedSubLessons = TaskGrading::where([
                         'event_id'  => $event_id,
@@ -1470,7 +1472,7 @@ class TrainingEventsController extends Controller
                         ->count();
 
                     if ($totalSubLessons > 0 && $totalSubLessons == $gradedSubLessons) {
-                        TrainingEventLessons::where('training_event_id', $event_id)
+                        TrainingEventLessons::where('training_event_id', $event_id) 
                             ->where('lesson_id', $lesson_id)
                             ->update(['is_locked' => 1]);
                     }
@@ -2175,6 +2177,43 @@ class TrainingEventsController extends Controller
                     );
                 }
             }
+
+            // Is locked 
+            $check_taskGrade = DefLessonTask::where('event_id', $event_id)
+                ->whereNull('task_grade')
+                ->count();
+
+            $customLessonTasks = DefLessonTask::with([
+                    'user', 
+                    'defLesson.instructor', 
+                    'defLesson.instructor.documents', 
+                    'defLesson.resource', 
+                    'task.courseLesson.course'
+                ])
+                ->where('event_id', $event_id)
+                ->whereRelation('defLesson', 'lesson_type', 'custom')
+                ->get();
+
+            if ($customLessonTasks->isNotEmpty()) {
+                $check_cbta = $customLessonTasks[0]->task->courseLesson->course->enable_cbta;
+
+                if ($check_cbta == 1) {
+                    // Check if DeferredGrading exists
+                    $deferredExists = DeferredGrading::where('event_id', $event_id)->exists();
+
+                    if ($deferredExists && $check_taskGrade == 0) {
+                        DefLesson::where('event_id', $event_id)->update(['is_locked' => 1]);
+                    }
+                } else {
+                    // Normal case (non-CBTA)
+                    if ($check_taskGrade == 0) {
+                        DefLesson::where('event_id', $event_id)->update(['is_locked' => 1]);
+                    }
+                }
+            }
+
+
+
         }
 
         Session::flash('message', 'Student grading updated successfully.');
@@ -2208,6 +2247,29 @@ class TrainingEventsController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+       public function unlock_deflesson(Request $request)
+        {
+            $user = auth()->user();
+            if ($user->is_admin != 1) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+            }
+
+            $deflesson_id = $request->input('deflesson_id');
+           
+
+            $deflesson = DefLesson::where('id', $deflesson_id)
+                ->first();
+
+            if (!$deflesson) {
+                return response()->json(['success' => false, 'message' => 'Lesson not found'], 404);
+            }
+
+            $deflesson->is_locked = 0;
+            $deflesson->save();
+
+            return response()->json(['success' => true]);
+        }
 
 
     public function endCourse(Request $request)

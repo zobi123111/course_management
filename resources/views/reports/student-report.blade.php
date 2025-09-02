@@ -46,63 +46,29 @@
             @php
             $doc = $user->documents;
             $ratingsByLicence = $user->usrRatings->groupBy('linked_to');
-
             @endphp
         
 
             {{-- Licence 1 --}}
             <td>
-                @if($doc && $doc->licence_file_uploaded)
-                @php
-                if ($doc->licence_non_expiring) {
+                @if($doc && $doc->licence_file_uploaded) 
+                @php   
+                if($doc->licence_non_expiring) { 
                 $status = 'Non-Expiring';
                 $color = 'success';
                 $date = 'Non-Expiring';
                 } else {
-                $status = $doc->licence_status;
+                $status = $doc->licence_status; 
                 $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
                 $date = $doc->licence_expiry_date ? date('d/m/Y', strtotime($doc->licence_expiry_date)) : 'N/A';
                 }
                 $tooltip = getTooltip($status, 'UK License');
                 @endphp
+               
             
                 <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
                 @else
                 <span class="text-muted">Not Uploaded</span>
-                @endif
-
-                {{-- Licence 1 Ratings --}}
-                @if(isset($user->ratings_by_license['license_1']) && $user->ratings_by_license['license_1']->count())
-                <div class="mt-2">
-                    @foreach($user->ratings_by_license['license_1'] as $ur)
-                    @php
-                    $r = $ur->rating;
-                    $expiry = $ur->expiry_date ? \Carbon\Carbon::parse($ur->expiry_date)->format('d/m/Y') : 'N/A';
-                    $status = $ur->expiry_status; // Uses accessor from model
-                    $color = match($status) {
-                    'Red' => 'danger',
-                    'Orange' => 'warning',
-                    'Amber' => 'info',
-                    'Blue' => 'primary',
-                    default => 'secondary'
-                    };
-                    $tooltip = "$r->name expires on $expiry";
-                    @endphp
-
-                    <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
-                        {{ $r->name ?? '' }}
-                    </span>
-
-                    {{-- Nested (child) ratings --}}
-                    @if($r->children && $r->children->count())
-                    @foreach($r->children as $child)
-                    <span class="badge bg-light text-dark border ms-1" data-bs-toggle="tooltip" title="Child of {{ $r->name }} (inherits expiry)">
-                        → {{ $child->name ?? 'N/A' }}
-                    </span>
-                    @endforeach
-                    @endif
-                    @endforeach
-                </div>
                 @endif
             </td>
 
