@@ -45,11 +45,10 @@ class TrainingEventsController extends Controller
             'resource:id,name',
             'firstLesson.instructor:id,fname,lname',
             'firstLesson.resource:id,name',
-            // for your getCanEndCourseAttribute()
             'eventLessons',
-            'eventLessons.lesson:id,enable_cbta',            // pull enable_cbta from course_lessons
-            'eventLessons.lesson.subLessons:id,lesson_id,title', // pull sub-lessons from each lesson
-            'overallAssessments',                              // for single-event overall check
+            'eventLessons.lesson:id,enable_cbta',          
+            'eventLessons.lesson.subLessons:id,lesson_id,title',
+            'overallAssessments',                             
         ];
        
         if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) { 
@@ -73,8 +72,9 @@ class TrainingEventsController extends Controller
                     'taskGradings',
                     'competencyGradings'
                 ])
-                ->orderByDesc('created_at')
+                ->orderByDesc('event_date')
                 ->get();
+              
 
             $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations)
                 ->where('entry_source', "instructor")
