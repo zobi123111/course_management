@@ -848,13 +848,8 @@ class TrainingEventsController extends Controller
             'student:id,fname,lname,licence',
             'resource:id,name',
             'eventLessons' => function ($q) {
-                $q->orderByRaw("
-                    CASE 
-                        WHEN event_lessons.position = 0 THEN event_lessons.id 
-                        ELSE event_lessons.position 
-                    END ASC
-                ");
-            },
+               $q->orderBy('position', 'asc'); // 👈 enforce ordering here
+             },
             'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id,position',
             'eventLessons.instructor:id,fname,lname',
             'eventLessons.resource:id,name',
