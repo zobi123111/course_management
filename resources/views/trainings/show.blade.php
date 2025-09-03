@@ -1306,7 +1306,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                                 </label>
 
                                                 <div class="course-dropdown" id="course-task-dropdown" data-control="checkbox-dropdown">
-                                                    <label class="dropdown-label">Select Courses</label>
+                                                    <label class="dropdown-label">Select Lesson </label>
                                                     <div class="dropdown-list">
                                                         <a href="#" id="check-all-courses" data-toggle="check-all" class="dropdown-option">Check All</a>
 
@@ -1318,7 +1318,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                                         <label class="dropdown-option ps-3">
                                                             <input type="checkbox"
                                                                 name="select_courseTask[]"
-                                                                value="{{ $sublesson->id }}">
+                                                                value="{{ $sublesson->id }}"> 
                                                             {{ $sublesson->title }}
                                                         </label>
                                                         @endforeach
@@ -1570,7 +1570,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             list($hours, $minutes, $seconds) = explode(':', $eventLesson->hours_credited);
 
                             $hours = (int) $hours;
-                            $minutes = (int) $minutes;
+                            $minutes = (int) $minutes; 
 
                             $hours_credited = $minutes > 0
                                 ? "{$hours}hrs {$minutes}min"
