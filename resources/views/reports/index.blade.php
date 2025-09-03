@@ -28,7 +28,7 @@
     <div class="card-body">
         {{-- OU Filter for Owner --}}
         <div class="row mb-3">
-            @if(auth()->user()->is_owner == 1)
+            @if(auth()->user()->is_owner == 1) 
                 <div class="col-md-4">
                     <label for="ou_filter" class="form-label">Select Organization Unit:</label>
                     <select id="ou_filter" class="form-select" onchange="filterCoursesByOU(this.value)">
@@ -43,13 +43,13 @@
 
         {{-- Courses List --}}
         <div class="row" id="course_list">
-            @forelse ($courses as $course) 
+            @forelse ($courses as $course)       
                     
                 <div class="col-md-4 mb-4 course-card" data-ou="{{ $course->ou_id }}">
-                    <a href="{{ route('reports.course', encode_id($course->course->id )) }}" class="text-decoration-none text-dark">
+                    <a href="{{ route('reports.course', encode_id($course->id )) }}" class="text-decoration-none text-dark">
                         <div class="card shadow-sm border h-100 card-hover">
                             <div class="card-body">
-                                <h5 class="card-title text-primary">{{ $course->course->course_name }}</h5>
+                                <h5 class="card-title text-primary">{{ $course->course_name }}</h5>
 
                                 <div class="d-flex align-items-center mt-3">
                                     <!-- Doughnut chart -->

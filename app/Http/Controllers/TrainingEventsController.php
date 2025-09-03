@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use PDF;
 use Illuminate\Support\Str;
+use Auth;
 
 
 
@@ -298,7 +299,7 @@ class TrainingEventsController extends Controller
     public function getCourseLessons(Request $request)
     {
         $student_id = $request->selectedStudentId;
-        $ou_id = $request->ou_id;
+        $ou_id = $request->ou_id ?? Auth::user()->ou_id;
 
         $course = Courses::with(['courseLessons', 'resources'])->find($request->course_id);
 
