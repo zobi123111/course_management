@@ -1105,10 +1105,10 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             </p>
                             @endif
 
-                            <p>
-                            <strong>Flight:</strong>
-                            Credited: {{ formatSeconds($totals['flight']['credited']) }}
-                            </p>
+                            <!-- <p>
+                                <strong>Flight:</strong>
+                                   Credited: {{ formatSeconds($totals['flight']['credited']) }}
+                            </p> -->
                             <?php
                             $totalFlightTime = $totals['flight']['credited'] + $totals['deferred'];
 
