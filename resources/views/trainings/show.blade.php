@@ -982,9 +982,6 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             }
 
                             @endphp
-
-
-
                             @if($totals['groundschool']['duration'] || $totals['groundschool']['credited'])
 
                             <p>
@@ -1017,7 +1014,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             @endforeach
                             @endif
                             <?php
-                            $totalFlightTime = $totals['flight']['credited'] + $totals['deferred'];
+                              $totalFlightTime = $totals['flight']['credited'] + $totals['deferred'];
 
                             ?>
                             <p>
@@ -1077,16 +1074,16 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             $start = strtotime($defLesson->start_time);
                             $end = strtotime($defLesson->end_time);
                             $duration = max(0, $end - $start);
-                            $totals['deferred'] += $duration;
 
                             if ($lessonType === 'flight') {
-                                $totals['flight']['credited'] += $credited;
-                                $totals['deferred'] += $duration;
-                            } elseif ($lessonType === 'groundschool') {
-                                $totals['flight']['credited'] += $credited;
-                            } elseif ($lessonType === 'simulator') {
-                                $totals['flight']['credited'] += $credited;
-                            }
+                                    $totals['flight']['credited'] += $credited;
+                                    $totals['deferred'] += $duration;
+                                } elseif ($lessonType === 'groundschool') {
+                                    $totals['flight']['credited'] += $credited;
+                                } elseif ($lessonType === 'simulator') {
+                                    $totals['flight']['credited'] += $credited;
+                                }
+                                
                             ?>
                             @endforeach
                             @endif
@@ -1108,17 +1105,17 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             </p>
                             @endif
 
-                            <!-- <p>
+                            <p>
                             <strong>Flight:</strong>
                             Credited: {{ formatSeconds($totals['flight']['credited']) }}
-                            </p> -->
+                            </p>
                             <?php
                             $totalFlightTime = $totals['flight']['credited'] + $totals['deferred'];
 
                             ?>
                             <p>
                                 <strong>Total Flight Time:</strong>
-                                {{ formatSeconds($totalFlightTime) }}
+                                {{ formatSeconds($totalFlightTime) }} 
                             </p>
 
                             @if(!empty($totals['custom']))
