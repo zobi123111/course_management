@@ -171,14 +171,18 @@ class TrainingEventsController extends Controller
                 })->with('roles')->get();
 
             $trainingEvents = TrainingEvents::where('ou_id', $currentUser->ou_id)
-                ->with($trainingEventsRelations)
-                ->withCount(['taskGradings', 'competencyGradings'])
-                ->get();
+                                ->where('entry_source', null)
+                                ->with($trainingEventsRelations)
+                                ->withCount(['taskGradings', 'competencyGradings'])
+                                ->get();
+
+            
             $trainingEvents_instructor = TrainingEvents::where('ou_id', $currentUser->ou_id)
-                ->where('entry_source', "instructor")
-                ->with($trainingEventsRelations)
-                ->withCount(['taskGradings', 'competencyGradings'])
-                ->get();
+                                        ->where('entry_source', "instructor")
+                                        //->with($trainingEventsRelations)
+                                        ->withCount(['taskGradings', 'competencyGradings'])
+                                        ->get();
+                                
         }
         // Attach instructor lists to each training event
         $trainingEvents->each(function ($event) {
