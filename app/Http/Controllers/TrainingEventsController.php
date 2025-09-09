@@ -1155,8 +1155,8 @@ class TrainingEventsController extends Controller
                 ->get();
 
             $defLessonTasks = DefLessonTask::with(['user', 'defLesson.instructor', 'defLesson.instructor.documents', 'defLesson.resource', 'task'])
-            ->where('def_lesson_id', $custom_lesson_id)
-            ->get();
+                ->where('def_lesson_id', $custom_lesson_id)
+                ->get();
         }
         if ($lesson_type == "deferred") {
             $deferred_lesson_id = $request->deferred_lesson_id;
@@ -1174,8 +1174,8 @@ class TrainingEventsController extends Controller
                 ->get();
 
             $defLessonTasks = DefLessonTask::with(['user', 'defLesson.instructor', 'defLesson.instructor.documents', 'defLesson.resource', 'task'])
-            ->where('def_lesson_id', $deferred_lesson_id)
-            ->get();
+                ->where('def_lesson_id', $deferred_lesson_id)
+                ->get();
         }
 
         return response()->json(['success' => true,  'defTasks' => $defTasks, 'deferredLessons' => $deferredLessons, 'defLessonTasks' => $defLessonTasks]);
@@ -1327,110 +1327,110 @@ class TrainingEventsController extends Controller
 
     public function update_deferred_form(Request $request)
     {
-       // if ($request->lesson_type == "custom") {
-            $validatedData = $request->validate([
-                'event_id'      => 'required|integer|exists:training_events,id',
-                'lesson_title'  => 'required|string|max:255',
-                'select_courseTask'      => 'required|array',
-                'select_courseTask.*'    => 'integer|exists:sub_lessons,id',
-                'lesson_date'   => 'required|date',
-                'start_time'    => 'required|date_format:H:i',
-                'end_time'      => 'required|date_format:H:i|after:start_time',
-                'resource_id'   => 'required|integer|exists:resources,id',
-                'instructor_id' => 'required|integer|exists:users,id',
-                'std_id'        => 'required|integer|exists:users,id',
-                'departure_airfield'   => 'nullable|string|max:4',
-                'destination_airfield' => 'nullable|string|max:4',
-            ], [], [
-                'item_ids'     => 'Tasks',
-                'resource_id'  => 'Resource',
-                'instructor_id' => 'Instructor'
-            ]);
+        // if ($request->lesson_type == "custom") {
+        $validatedData = $request->validate([
+            'event_id'      => 'required|integer|exists:training_events,id',
+            'lesson_title'  => 'required|string|max:255',
+            'select_courseTask'      => 'required|array',
+            'select_courseTask.*'    => 'integer|exists:sub_lessons,id',
+            'lesson_date'   => 'required|date',
+            'start_time'    => 'required|date_format:H:i',
+            'end_time'      => 'required|date_format:H:i|after:start_time',
+            'resource_id'   => 'required|integer|exists:resources,id',
+            'instructor_id' => 'required|integer|exists:users,id',
+            'std_id'        => 'required|integer|exists:users,id',
+            'departure_airfield'   => 'nullable|string|max:4',
+            'destination_airfield' => 'nullable|string|max:4',
+        ], [], [
+            'item_ids'     => 'Tasks',
+            'resource_id'  => 'Resource',
+            'instructor_id' => 'Instructor'
+        ]);
 
-            $eventId = $validatedData['event_id'];
-            $studentId = $validatedData['std_id'];
-            $authId = auth()->id();
-            $deferredLessons_id = $request->deferredLessons_id;
+        $eventId = $validatedData['event_id'];
+        $studentId = $validatedData['std_id'];
+        $authId = auth()->id();
+        $deferredLessons_id = $request->deferredLessons_id;
 
-            $update_deffered_lesson = [
+        $update_deffered_lesson = [
+            'event_id'      => $eventId,
+            'user_id'       => $studentId,
+            'task_ids'      => $validatedData['select_courseTask'],
+            'instructor_id' => $validatedData['instructor_id'],
+            'resource_id'   => $validatedData['resource_id'],
+            'lesson_title'  => $validatedData['lesson_title'],
+            'lesson_date'   => $validatedData['lesson_date'],
+            'start_time'    => $validatedData['start_time'],
+            'end_time'      => $validatedData['end_time'],
+            'departure_airfield'   => $validatedData['departure_airfield'],
+            'destination_airfield' => $validatedData['destination_airfield'],
+            'created_by'    => $authId,
+            'lesson_type'   => $request->lesson_type
+        ];
+
+        // Update lesson details
+        DefLesson::where('id', $deferredLessons_id)->update($update_deffered_lesson);
+
+        $selectedTasks = $validatedData['select_courseTask'];
+
+        // Remove tasks not in new selection
+        DefLessonTask::where('def_lesson_id', $deferredLessons_id)
+            ->whereNotIn('task_id', $selectedTasks)
+            ->delete();
+
+        foreach ($selectedTasks as $taskId) {
+            // Check if already exists
+            $exists = DefLessonTask::where([
+                'def_lesson_id' => $deferredLessons_id,
                 'event_id'      => $eventId,
                 'user_id'       => $studentId,
-                'task_ids'      => $validatedData['select_courseTask'],
-                'instructor_id' => $validatedData['instructor_id'],
-                'resource_id'   => $validatedData['resource_id'],
-                'lesson_title'  => $validatedData['lesson_title'],
-                'lesson_date'   => $validatedData['lesson_date'],
-                'start_time'    => $validatedData['start_time'],
-                'end_time'      => $validatedData['end_time'],
-                'departure_airfield'   => $validatedData['departure_airfield'],
-                'destination_airfield' => $validatedData['destination_airfield'],
-                'created_by'    => $authId,
-                'lesson_type'   => $request->lesson_type
-            ];
+                'task_id'       => $taskId,
+            ])->exists();
 
-            // Update lesson details
-            DefLesson::where('id', $deferredLessons_id)->update($update_deffered_lesson);
+            if (!$exists) {
+                // Calculate credit minutes
+                $get_lesson_id = SubLesson::where('id', $taskId)->value('lesson_id');
+                $lessonType  = CourseLesson::where('id', $get_lesson_id)->value('lesson_type');
 
-            $selectedTasks = $validatedData['select_courseTask'];
+                $start = $validatedData['start_time'] ?? null;
+                $end = $validatedData['end_time'] ?? null;
+                $creditMinutes = 0;
 
-            // Remove tasks not in new selection
-            DefLessonTask::where('def_lesson_id', $deferredLessons_id)
-                ->whereNotIn('task_id', $selectedTasks)
-                ->delete();
+                if ($lessonType === 'groundschool' && $validatedData['resource_id'] == 3) {
+                    $creditMinutes = 480;
+                    $start = '00:00';
+                    $end = '08:00';
+                } elseif ($start && $end) {
+                    try {
+                        $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
+                        $endTime = \Carbon\Carbon::createFromFormat('H:i', $end);
 
-            foreach ($selectedTasks as $taskId) {
-                // Check if already exists
-                $exists = DefLessonTask::where([
+                        if ($endTime->lessThan($startTime)) {
+                            $endTime->addDay();
+                        }
+
+                        $creditMinutes = $startTime->diffInMinutes($endTime);
+                    } catch (\Exception $e) {
+                        $creditMinutes = 0;
+                    }
+                }
+
+                DefLessonTask::create([
                     'def_lesson_id' => $deferredLessons_id,
                     'event_id'      => $eventId,
                     'user_id'       => $studentId,
                     'task_id'       => $taskId,
-                ])->exists();
-
-                if (!$exists) {
-                    // Calculate credit minutes
-                    $get_lesson_id = SubLesson::where('id', $taskId)->value('lesson_id');
-                    $lessonType  = CourseLesson::where('id', $get_lesson_id)->value('lesson_type');
-
-                    $start = $validatedData['start_time'] ?? null;
-                    $end = $validatedData['end_time'] ?? null;
-                    $creditMinutes = 0;
-
-                    if ($lessonType === 'groundschool' && $validatedData['resource_id'] == 3) {
-                        $creditMinutes = 480;
-                        $start = '00:00';
-                        $end = '08:00';
-                    } elseif ($start && $end) {
-                        try {
-                            $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
-                            $endTime = \Carbon\Carbon::createFromFormat('H:i', $end);
-
-                            if ($endTime->lessThan($startTime)) {
-                                $endTime->addDay();
-                            }
-
-                            $creditMinutes = $startTime->diffInMinutes($endTime);
-                        } catch (\Exception $e) {
-                            $creditMinutes = 0;
-                        }
-                    }
-
-                    DefLessonTask::create([
-                        'def_lesson_id' => $deferredLessons_id,
-                        'event_id'      => $eventId,
-                        'user_id'       => $studentId,
-                        'task_id'       => $taskId,
-                        'hours_credited' => gmdate("H:i", $creditMinutes * 60),
-                        'created_by'    => $authId,
-                    ]);
-                }
+                    'hours_credited' => gmdate("H:i", $creditMinutes * 60),
+                    'created_by'    => $authId,
+                ]);
             }
+        }
 
-            return response()->json([
-                'success' => true,
-                'message' => $request->lesson_type
-            ], 201);
-      //  }
+        return response()->json([
+            'success' => true,
+            'message' => $request->lesson_type
+        ], 201);
+        //  }
     }
 
 
@@ -2159,112 +2159,161 @@ class TrainingEventsController extends Controller
 
     public function storeDefGrading(Request $request)
     {
-        
+        $lesson_type = $request->lesson_type;
+
         $request->validate([
             'event_id' => 'required|integer|exists:training_events,id',
             'task_grade_def' => 'required|array',
-            'task_grade_def.*' => 'required|string|in:Competent,Incomplete,Further training required',
+            'task_grade_def.*' => 'required|array', // ✅ first level (task_id) is an array of lesson IDs
+            'task_grade_def.*.*' => 'required|string|in:Competent,Incomplete,Further training required', // ✅ actual grade values
             'task_comment_def' => 'nullable|array',
-            'task_comment_def.*' => 'nullable|string|max:1000',
+            'task_comment_def.*' => 'nullable|array', // ✅ first level also array
+            'task_comment_def.*.*' => 'nullable|string|max:1000', // ✅ actual comments
         ]);
 
         $event_id = $request->input('event_id');
         $user_id = $request->input('tg_user_id');
 
-        
-        foreach ($request->input('task_grade_def') as $task_id => $task_grade) {
-            $task_comment = $request->input("task_comment_def.$task_id", null);
+        foreach ($request->input('task_grade_def') as $task_id => $lessonGrades) {
+            foreach ($lessonGrades as $def_lesson_id => $task_grade) {
+              
 
-            // Update grading in def_lesson_tasks
-            DefLessonTask::where('id', $task_id)->update([
-                'task_grade'   => $task_grade,
-                'task_comment' => $task_comment,
-            ]);
+                $task_comment = $request->input("task_comment_def.$task_id.$def_lesson_id", null);
 
-            // If task is not 'Competent', insert/update into def_tasks
-            if (strtolower($task_grade) !== 'competent') {
-                $defTask = DefLessonTask::find($task_id);
+                // Update grading in def_lesson_tasks
+                DefLessonTask::where('id', $task_id)->update([
+                    'task_grade'   => $task_grade,
+                    'task_comment' => $task_comment,
+                ]);
 
-                if ($defTask) {
-                    DefTask::firstOrCreate(
-                        [
-                            'event_id' => $event_id,
-                            'user_id'  => $defTask->user_id,
-                            'task_id'  => $defTask->task_id,
-                        ],
-                        [
-                            'created_by' => auth()->id(),
-                        ]
-                    );
-                }
-            }
+                // If task is not 'Competent', insert/update into def_tasks
+                if (strtolower($task_grade) !== 'competent') {
+                    $defTask = DefLessonTask::find($task_id);
 
-            // Grading 
-            $gradedStudentIdForComp = $request->input('cg_user_id');
-            if ($request->has('comp_grade')) {
-                foreach ($request->input('comp_grade') as $lesson_id => $competencyGrades) {
-                    $compData = [
-                        'event_id'  => $event_id,
-                        'lesson_id' => $lesson_id,
-                        'user_id'   => $gradedStudentIdForComp,
-                        'created_by' => auth()->user()->id,
-                    ];
-
-                    // Map each competency grade and comment to its respective database columns.
-                    foreach ($competencyGrades as $code => $grade) {
-                        // Build column names based on competency code (e.g. KNO becomes kno_grade, kno_comment)
-                        $gradeColumn   = strtolower($code) . '_grade';
-                        $commentColumn = strtolower($code) . '_comment';
-
-                        $compData[$gradeColumn] = $grade;
-                        $compData[$commentColumn] = $request->input("comp_comments.$lesson_id.$code", null);
+                    if ($defTask) {
+                        DefTask::firstOrCreate(
+                            [
+                                'event_id' => $event_id,
+                                'user_id'  => $defTask->user_id,
+                                'task_id'  => $defTask->task_id,
+                            ],
+                            [
+                                'created_by' => auth()->id(),
+                            ]
+                        );
                     }
-
-                    DeferredGrading::updateOrCreate(
-                        [
-                            'event_id'  => $event_id,
-                            'deflesson_id' =>  $lesson_id,
-                            'user_id'   => $gradedStudentIdForComp,
-                        ],
-                        $compData
-                    );
                 }
-            }
 
-            // Is locked 
-            $check_taskGrade = DefLessonTask::where('event_id', $event_id)
-                ->whereNull('task_grade')
-                ->count();
+                // Grading 
+                $gradedStudentIdForComp = $request->input('cg_user_id');
+                if ($request->has('comp_grade')) {
+                    foreach ($request->input('comp_grade') as $lesson_id => $competencyGrades) {
+                        $compData = [
+                            'event_id'   => $event_id,
+                            'lesson_id'  => $lesson_id,
+                            'user_id'    => $gradedStudentIdForComp,
+                            'created_by' => auth()->user()->id,
+                        ];
 
-            $customLessonTasks = DefLessonTask::with([
-                'user',
-                'defLesson.instructor',
-                'defLesson.instructor.documents',
-                'defLesson.resource',
-                'task.courseLesson.course'
-            ])
-                ->where('event_id', $event_id)
-                ->whereRelation('defLesson', 'lesson_type', 'custom')
-                ->get();
+                        foreach ($competencyGrades as $code => $grade) {
+                            $gradeColumn   = strtolower($code) . '_grade';
+                            $commentColumn = strtolower($code) . '_comment';
 
-            if ($customLessonTasks->isNotEmpty()) {
-                $check_cbta = $customLessonTasks[0]->task->courseLesson->course->enable_cbta;
+                            $compData[$gradeColumn]   = $grade;
+                            $compData[$commentColumn] = $request->input("comp_comments.$lesson_id.$code", null);
+                        }
 
-                if ($check_cbta == 1) {
-                    // Check if DeferredGrading exists
-                    $deferredExists = DeferredGrading::where('event_id', $event_id)->exists();
-
-                    if ($deferredExists && $check_taskGrade == 0) {
-                        DefLesson::where('event_id', $event_id)->update(['is_locked' => 1]);
+                        DeferredGrading::updateOrCreate(
+                            [
+                                'event_id'    => $event_id,
+                                'deflesson_id' => $lesson_id,
+                                'user_id'     => $gradedStudentIdForComp,
+                            ],
+                            $compData
+                        );
                     }
-                } else {
-                    // Normal case (non-CBTA)
-                    if ($check_taskGrade == 0) {
-                        DefLesson::where('event_id', $event_id)->update(['is_locked' => 1]);
+                }
+
+                // Is locked 
+                $check_taskGrade = DefLessonTask::where('event_id', $event_id)
+                    ->whereNull('task_grade')
+                    ->count();
+
+                if ($lesson_type == "custom") {
+                    $customLessonTasks = DefLessonTask::with([
+                        'user',
+                        'defLesson.instructor',
+                        'defLesson.instructor.documents',
+                        'defLesson.resource',
+                        'task.courseLesson.course'
+                    ])
+                        ->where('event_id', $event_id)
+                        ->whereRelation('defLesson', 'lesson_type', 'custom')
+                        ->get();
+
+                    if ($customLessonTasks->isNotEmpty()) {
+                        $check_cbta = $customLessonTasks[0]->task->courseLesson->course->enable_cbta;
+
+                        if ($check_cbta == 1) {
+                            $deferredExists = DeferredGrading::where('event_id', $event_id)->exists();
+
+                            if ($deferredExists && $check_taskGrade == 0) {
+                                DefLesson::where('event_id', $event_id)
+                                    ->where('lesson_type', "custom")
+                                    ->where('id', $def_lesson_id)
+                                    ->update(['is_locked' => 1]);
+                            }
+                        } else {
+                            if ($check_taskGrade == 0) {
+                                DefLesson::where('event_id', $event_id)
+                                    ->where('lesson_type', "custom")
+                                    ->where('id', $def_lesson_id)
+                                    ->update(['is_locked' => 1]);
+                            }
+                        }
+                    }
+                }
+
+                if ($lesson_type == "deferred") {
+                    $customLessonTasks = DefLessonTask::with([
+                        'user',
+                        'defLesson.instructor',
+                        'defLesson.instructor.documents',
+                        'defLesson.resource',
+                        'task.courseLesson.course'
+                    ])
+                        ->where('event_id', $event_id)
+                        ->whereRelation('defLesson', 'lesson_type', 'deferred')
+                        ->get();
+
+                    if ($customLessonTasks->isNotEmpty()) {
+                        $check_cbta = $customLessonTasks[0]->task->courseLesson->course->enable_cbta;
+
+                        if ($check_cbta == 1) {
+                            $deferredExists = DeferredGrading::where('event_id', $event_id)->exists();
+
+                            if ($deferredExists && $check_taskGrade == 0) {
+                                DefLesson::where('event_id', $event_id)
+                                    ->where('lesson_type', "deferred")
+                                    ->where('id', $def_lesson_id)
+                                    ->update(['is_locked' => 1]);
+                            }
+                        } else {
+                            if ($check_taskGrade == 0) {
+                                DefLesson::where('event_id', $event_id)
+                                    ->where('lesson_type', "deferred")
+                                    ->where('id', $def_lesson_id)
+                                    ->update(['is_locked' => 1]);
+                            }
+                        }
                     }
                 }
             }
         }
+
+
+
+
 
         Session::flash('message', 'Student grading updated successfully.');
 
