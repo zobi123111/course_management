@@ -1821,7 +1821,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                         }
 
                         @endphp 
-                        <?php  // dump($defLesson);  ?>
+                       
                            <?php $is_locked = $defLesson->is_locked;?>
                         @csrf
                         <div class="accordion-item">
@@ -1875,7 +1875,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             <div id="def-lesson-{{ $defLesson?->id }}" class="accordion-collapse collapse" data-bs-parent="#faq-group-2">
                                 <div class="accordion-body">
                                     @foreach($tasks as $task)
-                                     <?php dump($task); ?>
+                                    
                                     <div class="custom-box">
                                         <div class="header" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $task->id }}" aria-expanded="false">
                                             <span class="rmk">RMK</span>
