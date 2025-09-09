@@ -1807,6 +1807,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                     <h4 class="mb-3 text-primary"><i class="bi bi-exclamation-triangle-fill me-2"></i>Deferred Lessons</h4>
                     <form action="" method="POST" id="defGradingFrom">
+                        <input type = "hidden" name ="lesson_type" value="deferred" />
                         @foreach($defLessonTasks->groupBy('def_lesson_id') as $defLessonId => $tasks)
                         @php $defLesson = $tasks->first()->defLesson;
                         $documents = $defLesson?->instructor?->documents; // Only one row expected
@@ -1819,8 +1820,9 @@ return sprintf("%02d:%02d", $hours, $minutes);
                         $instructor_lic_no = 'N/A';
                         }
 
-                        @endphp
-                           <?php $is_locked = $defLesson->is_locked; ?>
+                        @endphp 
+                        <?php  // dump($defLesson);  ?>
+                           <?php $is_locked = $defLesson->is_locked;?>
                         @csrf
                         <div class="accordion-item">
                             <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
@@ -1873,7 +1875,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             <div id="def-lesson-{{ $defLesson?->id }}" class="accordion-collapse collapse" data-bs-parent="#faq-group-2">
                                 <div class="accordion-body">
                                     @foreach($tasks as $task)
-                                   
+                                     <?php dump($task); ?>
                                     <div class="custom-box">
                                         <div class="header" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $task->id }}" aria-expanded="false">
                                             <span class="rmk">RMK</span>
@@ -1893,19 +1895,19 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                                         <tr>
                                                             <td>
                                                                 <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
-                                                                    <input type="radio" name="task_grade_def[{{ $task->id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
+                                                                    <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
                                                                     <span class="custom-radio incomplete">Incomplete</span>
                                                                 </label>
                                                             </td>
                                                             <td>
                                                                 <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
-                                                                    <input type="radio" name="task_grade_def[{{ $task->id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
+                                                                    <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
                                                                     <span class="custom-radio ftr">Further training required</span>
                                                                 </label>
                                                             </td>
                                                             <td>
                                                                 <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
-                                                                    <input type="radio" name="task_grade_def[{{ $task->id }}]" value="Competent" {{ $selectedGrade == 'Competent' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
+                                                                    <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Competent" {{ $selectedGrade == 'Competent' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
                                                                     <span class="custom-radio competent">Competent</span>
                                                                 </label>
                                                             </td>
@@ -2016,6 +2018,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                     <h4 class="mb-3 text-primary"><i class="bi bi-exclamation-triangle-fill me-2"></i>Custom Lessons</h4>
                     <form action="" method="POST" id="customGradingFrom">
+                        <input type="hidden" name="lesson_type" value="custom" />
                         @foreach($customLessonTasks->groupBy('def_lesson_id') as $defLessonId => $tasks)
                         @php $defLesson = $tasks->first()->defLesson;
                         $documents = $defLesson?->instructor?->documents; // Only one row expected
@@ -2102,19 +2105,19 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                                         <tr>
                                                             <td>
                                                                 <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
-                                                                    <input type="radio" name="task_grade_def[{{ $task->id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
+                                                                    <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
                                                                     <span class="custom-radio incomplete">Incomplete</span>
                                                                 </label>
                                                             </td>
                                                             <td>
                                                                 <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
-                                                                    <input type="radio" name="task_grade_def[{{ $task->id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
+                                                                    <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
                                                                     <span class="custom-radio ftr">Further training required</span>
                                                                 </label>
                                                             </td>
                                                             <td>
                                                                 <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
-                                                                    <input type="radio" name="task_grade_def[{{ $task->id }}]" value="Competent" {{ $selectedGrade == 'Competent' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
+                                                                    <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Competent" {{ $selectedGrade == 'Competent' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
                                                                     <span class="custom-radio competent">Competent</span>
                                                                 </label>
                                                             </td>

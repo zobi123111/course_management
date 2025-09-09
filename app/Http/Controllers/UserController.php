@@ -289,7 +289,7 @@ class UserController extends Controller
         // Ratings list (not used in your view, but kept if needed)
         $ratings = $userRatings->pluck('rating');
 
-        dd($grouped);
+        // dd($grouped);
 
        
         return view('users.profile', compact('user','ratings','licence1Ratings','licence2Ratings','selectedIdsLicence1','selectedIdsLicence2','childRatingsGrouped','userRatingsMap','parentIdsLicence1','parentIdsLicence2','missingParentRatingsLicence1',
