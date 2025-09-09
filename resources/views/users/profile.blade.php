@@ -276,7 +276,7 @@
                                             <!-- <div class="col-lg-6 col-md-12"> -->
                                             <h4>Ratings linked to UK Licence</h4>
                                             @foreach($grouped['licence_1'] as $parentId => $entry)
-                                            @php $i = $loop->index; @endphp
+                                            @php $i = $loop->index; @endphp 
                                             @php
                                             $parent = $entry['parent'];
                                             $children = $entry['children'] ?? [];

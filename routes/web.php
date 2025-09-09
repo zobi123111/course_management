@@ -123,9 +123,9 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/training/submit_deferred_items', [TrainingEventsController::class, 'storeDeferredLessons']) 
     ->name('training.deferred-lessons.store');
 
-
     Route::post('/training/edit_customLesson', [TrainingEventsController::class, 'edit_customLesson'])->name('edit_customLesson');
     Route::post('/training/delete_customLesson', [TrainingEventsController::class, 'delete_customLesson'])->name('delete_customLesson');
+    Route::post('/training/delete_deferredLesson', [TrainingEventsController::class, 'delete_deferredLesson'])->name('delete_deferredLesson');
     Route::post('/training/update_deferred_form', [TrainingEventsController::class, 'update_deferred_form'])->name('update_deferred_form');
       
 
