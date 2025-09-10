@@ -173,128 +173,519 @@ class UserController extends Controller
         return view('users.document-table');
     }
 
+    // public function profile()
+    // {
+    //     $id = auth()->id();
+
+    //     $user = User::with([
+    //         'usrRatings.rating',
+    //         'usrRatings.parent',
+    //         'documents'
+    //     ])->findOrFail($id);
+    //     $rawUserRatings = $user->usrRatings;
+
+    //     $grouped = [];
+
+
+    //     foreach ($rawUserRatings as $rating) {
+
+
+    //         $linkedTo = $rating->linked_to ?? 'unlinked';
+    //            // dump($rating->parent_id);
+    //         if (is_null($rating->parent_id)) {
+    //             // Rating is a parent
+
+    //             $grouped[$linkedTo][$rating->rating_id]['parent'] = $rating;
+
+    //         } else {  
+    //             // Rating is a child
+    //             $parentId = $rating->parent_id;
+    //             //  dump($parentId);
+
+    //             // Ensure group for this parent under this linked_to exists
+    //             if (!isset($grouped[$linkedTo][$parentId])) {
+    //                 $grouped[$linkedTo][$parentId] = [];
+
+    //             }
+
+
+    //             // Add child
+    //             $grouped[$linkedTo][$parentId]['children'][] = $rating;
+
+    //             // If parent not already added from user_ratings, fetch from ratings table
+    //             if (!isset($grouped[$linkedTo][$parentId]['parent'])) {
+    //                 $parentRatingModel = \App\Models\Rating::find($parentId);
+    //                 if ($parentRatingModel) {
+    //                     // Wrap it in a fake UserRating instance (so your view works the same way)
+    //                     $fakeParent = new \App\Models\UserRating([
+    //                         'rating_id' => $parentRatingModel->id,
+    //                         'parent_id' => null,
+    //                         'linked_to' => $linkedTo,
+    //                     ]);
+    //                     $fakeParent->setRelation('rating', $parentRatingModel);
+
+    //                     $grouped[$linkedTo][$parentId]['parent'] = $fakeParent;
+    //                       //dump($grouped[$linkedTo][$parentId]['parent']);
+    //                 }
+    //             }
+    //         }
+    //     }
+
+
+
+    //     // Fix: Treat parent-only entries (rating_id is NULL, parent_id is set)
+    //     $userRatings = $rawUserRatings->filter(function ($ur) {
+    //         return $ur->rating_id !== null;
+    //     });
+
+
+    //     // Normalize all ratings: if rating_id is null but parent_id exists, we use parent_id as rating_id
+    //     foreach ($userRatings as $ur) {
+    //         if ($ur->rating_id === null && $ur->parent_id !== null) {
+    //             $ur->rating_id = $ur->parent_id;
+    //             $ur->rating = $ur->parent; // Assign parent as the rating object
+    //         }
+    //     }
+
+    //     // Filter by licence_1
+    //     $licence1Ratings = $userRatings->filter(function ($ur) use ($userRatings) {
+    //         if ($ur->linked_to === 'licence_1') return true;
+
+    //         $parent = $userRatings->firstWhere('rating_id', $ur->parent_id);
+    //         return $parent && $parent->linked_to === 'licence_1';
+    //     })->values();
+
+
+    //     // Filter by licence_2
+    //     $licence2Ratings = $userRatings->filter(function ($ur) use ($userRatings) {
+    //         if ($ur->linked_to === 'licence_2') return true;
+
+    //         $parent = $userRatings->firstWhere('rating_id', $ur->parent_id);
+    //         return $parent && $parent->linked_to === 'licence_2';
+    //     })->values();
+
+    //     // Get selected rating IDs
+    //     $selectedIdsLicence1 = $licence1Ratings->pluck('rating_id')->unique();
+    //     $selectedIdsLicence2 = $licence2Ratings->pluck('rating_id')->unique();
+
+    //     // Determine parent IDs for each licence
+    //     $parentIdsLicence1 = $licence1Ratings
+    //         ->pluck('rating.parent_id')
+    //         ->merge($licence1Ratings->pluck('rating_id')->filter(fn($id) => is_null(optional($userRatings->firstWhere('rating_id', $id))->rating->parent_id)))
+    //         ->unique()->values();
+
+    //     $parentIdsLicence2 = $licence2Ratings
+    //                         ->pluck('rating.parent_id')
+    //                         ->merge($licence2Ratings->pluck('rating_id')->filter(fn($id) => is_null(optional($userRatings->firstWhere('rating_id', $id))->rating->parent_id)))
+    //                         ->unique()->values();
+
+    //     // Missing parent ratings (not saved but required)
+    //     $existingUserRatingIds = $userRatings->pluck('rating_id')->filter();
+    //     $missingParentIdsLicence1 = $parentIdsLicence1->diff($existingUserRatingIds);
+    //     $missingParentIdsLicence2 = $parentIdsLicence2->diff($existingUserRatingIds);
+
+    //     $missingParentRatingsLicence1 = Rating::whereIn('id', $missingParentIdsLicence1)->get();
+    //     $missingParentRatingsLicence2 = Rating::whereIn('id', $missingParentIdsLicence2)->get();
+
+    //     // Group child ratings
+    //     $childRatingsGrouped = ParentRating::with('child')->get()->groupBy('parent_id');
+
+
+    //     // Map for quick access to userRating data
+    //     $userRatingsMap = $userRatings->keyBy('rating_id');
+
+    //     // Ratings list (not used in your view, but kept if needed)
+    //     $ratings = $userRatings->pluck('rating');
+
+
+    //     dd($grouped);
+
+    //     return view('users.profile', compact('user','ratings','licence1Ratings','licence2Ratings','selectedIdsLicence1','selectedIdsLicence2','childRatingsGrouped','userRatingsMap','parentIdsLicence1','parentIdsLicence2','missingParentRatingsLicence1',
+    //     'missingParentRatingsLicence2','grouped' ));
+    // }
+
+    // Parent working fine 
+    // public function profile()
+    // {
+    //     $id = auth()->id();
+
+    //     $user = User::with([
+    //         'usrRatings.rating',
+    //         'usrRatings.parent',
+    //         'documents'
+    //     ])->findOrFail($id);
+    //     $rawUserRatings = $user->usrRatings;
+
+    //     $grouped = [];
+
+    //     foreach ($rawUserRatings as $rating) {
+    //         $linkedTo = $rating->linked_to ?? 'unlinked';
+
+    //         if (is_null($rating->parent_id)) {
+    //             // Rating is a parent
+    //             $grouped[$linkedTo][$rating->rating_id]['parent'] = $rating;
+    //         } else {
+    //             // Rating is a child
+    //             $parentId = $rating->parent_id;
+
+    //             // Ensure group for this parent under this linked_to exists
+    //             if (!isset($grouped[$linkedTo][$parentId])) {
+    //                 $grouped[$linkedTo][$parentId] = [];
+    //             }
+
+    //             // Add child
+    //             $grouped[$linkedTo][$parentId]['children'][] = $rating;
+
+    //             // If parent not already added, fetch from ratings table
+    //             if (!isset($grouped[$linkedTo][$parentId]['parent'])) {
+    //                 $parentRatingModel = \App\Models\Rating::find($parentId);
+    //                 if ($parentRatingModel) {
+    //                     $fakeParent = new \App\Models\UserRating([
+    //                         'rating_id' => $parentRatingModel->id,
+    //                         'parent_id' => null,
+    //                         'linked_to' => $linkedTo,
+    //                     ]);
+    //                     $fakeParent->setRelation('rating', $parentRatingModel);
+    //                     $grouped[$linkedTo][$parentId]['parent'] = $fakeParent;
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    //     // Fix: Treat parent-only entries (rating_id is NULL, parent_id is set)
+    //     $userRatings = $rawUserRatings->filter(function ($ur) {
+    //         return $ur->rating_id !== null;
+    //     });
+
+    //     foreach ($userRatings as $ur) {
+    //         if ($ur->rating_id === null && $ur->parent_id !== null) {
+    //             $ur->rating_id = $ur->parent_id;
+    //             $ur->rating = $ur->parent;
+    //         }
+    //     }
+
+    //     // Filter by licence_1
+    //     $licence1Ratings = $userRatings->filter(function ($ur) use ($userRatings) {
+    //         if ($ur->linked_to === 'licence_1') return true;
+
+    //         $parent = $userRatings->firstWhere('rating_id', $ur->parent_id);
+    //         return $parent && $parent->linked_to === 'licence_1';
+    //     })->values();
+
+    //     // Filter by licence_2
+    //     $licence2Ratings = $userRatings->filter(function ($ur) use ($userRatings) {
+    //         if ($ur->linked_to === 'licence_2') return true;
+
+    //         $parent = $userRatings->firstWhere('rating_id', $ur->parent_id);
+    //         return $parent && $parent->linked_to === 'licence_2';
+    //     })->values();
+
+    //     // Get selected rating IDs
+    //     $selectedIdsLicence1 = $licence1Ratings->pluck('rating_id')->unique();
+    //     $selectedIdsLicence2 = $licence2Ratings->pluck('rating_id')->unique();
+
+    //     // Determine parent IDs for each licence
+    //     $parentIdsLicence1 = $licence1Ratings
+    //         ->pluck('rating.parent_id')
+    //         ->merge($licence1Ratings->pluck('rating_id')->filter(fn($id) => is_null(optional($userRatings->firstWhere('rating_id', $id))->rating->parent_id)))
+    //         ->unique()->values();
+
+    //     $parentIdsLicence2 = $licence2Ratings
+    //         ->pluck('rating.parent_id')
+    //         ->merge($licence2Ratings->pluck('rating_id')->filter(fn($id) => is_null(optional($userRatings->firstWhere('rating_id', $id))->rating->parent_id)))
+    //         ->unique()->values();
+
+    //     // Missing parent ratings (not saved but required)
+    //     $existingUserRatingIds = $userRatings->pluck('rating_id')->filter();
+    //     $missingParentIdsLicence1 = $parentIdsLicence1->diff($existingUserRatingIds);
+    //     $missingParentIdsLicence2 = $parentIdsLicence2->diff($existingUserRatingIds);
+
+    //     $missingParentRatingsLicence1 = Rating::whereIn('id', $missingParentIdsLicence1)->get();
+    //     $missingParentRatingsLicence2 = Rating::whereIn('id', $missingParentIdsLicence2)->get();
+
+    //     // Group child ratings
+    //     $childRatingsGrouped = ParentRating::with('child')->get()->groupBy('parent_id');
+
+    //     // Map for quick access
+    //     $userRatingsMap = $userRatings->keyBy('rating_id');
+
+    //     // Ratings list
+    //     $ratings = $userRatings->pluck('rating');
+
+    //     // -------------------------
+    //     // Sorting Logic
+    //     // -------------------------
+    //     $getPriority = function ($rating) {
+    //         if (!$rating || !$rating->rating) {
+    //             return 999; // fallback (last)
+    //         }
+
+    //         $r = $rating->rating;
+
+    //         // 1) Fixed wing only
+    //         if ($r->is_fixed_wing && !$r->is_rotary && !$r->is_instructor && !$r->is_examiner) {
+    //             return 1;
+    //         }
+
+    //         // 2) Rotary only
+    //         if ($r->is_rotary && !$r->is_fixed_wing && !$r->is_instructor && !$r->is_examiner) {
+    //             return 2;
+    //         }
+
+    //         // 3) Instructor cases (alone or combined)
+    //         if ($r->is_instructor) {
+    //             return 3;
+    //         }
+
+    //         // 4) Examiner cases
+    //         if ($r->is_examiner) {
+    //             return 4;
+    //         }
+
+    //         return 999;
+    //     };
+
+    //     foreach ($grouped as $licence => &$ratingsGroup) {
+    //         uasort($ratingsGroup, function ($a, $b) use ($getPriority) {
+    //             $prioA = $getPriority($a['parent'] ?? null);
+    //             $prioB = $getPriority($b['parent'] ?? null);
+
+    //             // Sort by priority first
+    //             if ($prioA !== $prioB) {
+    //                 return $prioA <=> $prioB;
+    //             }
+
+    //             // If same priority, sort alphabetically by name
+    //             $nameA = strtolower($a['parent']->rating->name ?? '');
+    //             $nameB = strtolower($b['parent']->rating->name ?? '');
+    //             return $nameA <=> $nameB;
+    //         });
+
+    //         // Optional: also sort children alphabetically
+    //         foreach ($ratingsGroup as &$entry) {
+    //             if (isset($entry['children'])) {
+    //                 usort($entry['children'], function ($a, $b) {
+    //                     return strtolower($a->rating->name) <=> strtolower($b->rating->name);
+    //                 });
+    //             }
+    //         }
+    //         unset($entry);
+    //     }
+    //     unset($ratingsGroup);
+
+    //     // -------------------------
+    //     // Return View
+    //     // -------------------------
+    //     return view('users.profile', compact(
+    //         'user',
+    //         'ratings',
+    //         'licence1Ratings',
+    //         'licence2Ratings',
+    //         'selectedIdsLicence1',
+    //         'selectedIdsLicence2',
+    //         'childRatingsGrouped',
+    //         'userRatingsMap',
+    //         'parentIdsLicence1',
+    //         'parentIdsLicence2',
+    //         'missingParentRatingsLicence1',
+    //         'missingParentRatingsLicence2',
+    //         'grouped'
+    //     ));
+    // }
+
     public function profile()
-    {
-        $id = auth()->id();
+{
+    $id = auth()->id();
 
-        $user = User::with([
-            'usrRatings.rating',
-            'usrRatings.parent',
-            'documents'
-        ])->findOrFail($id);
-        $rawUserRatings = $user->usrRatings;
+    $user = User::with([
+        'usrRatings.rating',
+        'usrRatings.parent',
+        'documents'
+    ])->findOrFail($id);
+    $rawUserRatings = $user->usrRatings;
 
-        $grouped = [];
+    $grouped = [];
 
-        foreach ($rawUserRatings as $rating) {
-            
-            $linkedTo = $rating->linked_to ?? 'unlinked';
+    foreach ($rawUserRatings as $rating) {
+        $linkedTo = $rating->linked_to ?? 'unlinked';
 
-            if (is_null($rating->parent_id)) {
-                // Rating is a parent
-                $grouped[$linkedTo][$rating->rating_id]['parent'] = $rating;
-            } else {
-                // Rating is a child
-                $parentId = $rating->parent_id;
+        if (is_null($rating->parent_id)) {
+            // Rating is a parent
+            $grouped[$linkedTo][$rating->rating_id]['parent'] = $rating;
+        } else {
+            // Rating is a child
+            $parentId = $rating->parent_id;
 
+            // Ensure group for this parent under this linked_to exists
+            if (!isset($grouped[$linkedTo][$parentId])) {
+                $grouped[$linkedTo][$parentId] = [];
+            }
 
-                // Ensure group for this parent under this linked_to exists
-                if (!isset($grouped[$linkedTo][$parentId])) {
-                    $grouped[$linkedTo][$parentId] = [];
-                }
+            // Add child
+            $grouped[$linkedTo][$parentId]['children'][] = $rating;
 
+            // If parent not already added from user_ratings, fetch from ratings table
+            if (!isset($grouped[$linkedTo][$parentId]['parent'])) {
+                $parentRatingModel = \App\Models\Rating::find($parentId);
+                if ($parentRatingModel) {
+                    // Wrap it in a fake UserRating instance (so your view works the same way)
+                    $fakeParent = new \App\Models\UserRating([
+                        'rating_id' => $parentRatingModel->id,
+                        'parent_id' => null,
+                        'linked_to' => $linkedTo,
+                    ]);
+                    $fakeParent->setRelation('rating', $parentRatingModel);
 
-                // Add child
-                $grouped[$linkedTo][$parentId]['children'][] = $rating;
-
-                // If parent not already added from user_ratings, fetch from ratings table
-                if (!isset($grouped[$linkedTo][$parentId]['parent'])) {
-                    $parentRatingModel = \App\Models\Rating::find($parentId);
-                    if ($parentRatingModel) {
-                        // Wrap it in a fake UserRating instance (so your view works the same way)
-                        $fakeParent = new \App\Models\UserRating([
-                            'rating_id' => $parentRatingModel->id,
-                            'parent_id' => null,
-                            'linked_to' => $linkedTo,
-                        ]);
-                        $fakeParent->setRelation('rating', $parentRatingModel);
-
-                        $grouped[$linkedTo][$parentId]['parent'] = $fakeParent;
-                    }
+                    $grouped[$linkedTo][$parentId]['parent'] = $fakeParent;
                 }
             }
         }
-
-
-
-        // Fix: Treat parent-only entries (rating_id is NULL, parent_id is set)
-        $userRatings = $rawUserRatings->filter(function ($ur) {
-            return $ur->rating_id !== null;
-        });
-        // dd($userRatings);
-
-        // Normalize all ratings: if rating_id is null but parent_id exists, we use parent_id as rating_id
-        foreach ($userRatings as $ur) {
-            if ($ur->rating_id === null && $ur->parent_id !== null) {
-                $ur->rating_id = $ur->parent_id;
-                $ur->rating = $ur->parent; // Assign parent as the rating object
-            }
-        }
-
-        // Filter by licence_1
-        $licence1Ratings = $userRatings->filter(function ($ur) use ($userRatings) {
-            if ($ur->linked_to === 'licence_1') return true;
-
-            $parent = $userRatings->firstWhere('rating_id', $ur->parent_id);
-            return $parent && $parent->linked_to === 'licence_1';
-        })->values();
-
-        // Filter by licence_2
-        $licence2Ratings = $userRatings->filter(function ($ur) use ($userRatings) {
-            if ($ur->linked_to === 'licence_2') return true;
-
-            $parent = $userRatings->firstWhere('rating_id', $ur->parent_id);
-            return $parent && $parent->linked_to === 'licence_2';
-        })->values();
-
-        // Get selected rating IDs
-        $selectedIdsLicence1 = $licence1Ratings->pluck('rating_id')->unique();
-        $selectedIdsLicence2 = $licence2Ratings->pluck('rating_id')->unique();
-
-        // Determine parent IDs for each licence
-        $parentIdsLicence1 = $licence1Ratings
-            ->pluck('rating.parent_id')
-            ->merge($licence1Ratings->pluck('rating_id')->filter(fn($id) => is_null(optional($userRatings->firstWhere('rating_id', $id))->rating->parent_id)))
-            ->unique()->values();
-
-        $parentIdsLicence2 = $licence2Ratings
-                            ->pluck('rating.parent_id')
-                            ->merge($licence2Ratings->pluck('rating_id')->filter(fn($id) => is_null(optional($userRatings->firstWhere('rating_id', $id))->rating->parent_id)))
-                            ->unique()->values();
-
-        // Missing parent ratings (not saved but required)
-        $existingUserRatingIds = $userRatings->pluck('rating_id')->filter();
-        $missingParentIdsLicence1 = $parentIdsLicence1->diff($existingUserRatingIds);
-        $missingParentIdsLicence2 = $parentIdsLicence2->diff($existingUserRatingIds);
-
-        $missingParentRatingsLicence1 = Rating::whereIn('id', $missingParentIdsLicence1)->get();
-        $missingParentRatingsLicence2 = Rating::whereIn('id', $missingParentIdsLicence2)->get();
-
-        // Group child ratings
-        $childRatingsGrouped = ParentRating::with('child')->get()->groupBy('parent_id');
-
-        // Map for quick access to userRating data
-        $userRatingsMap = $userRatings->keyBy('rating_id');
-
-        // Ratings list (not used in your view, but kept if needed)
-        $ratings = $userRatings->pluck('rating');
-
-        // dd($grouped);
-
-       
-        return view('users.profile', compact('user','ratings','licence1Ratings','licence2Ratings','selectedIdsLicence1','selectedIdsLicence2','childRatingsGrouped','userRatingsMap','parentIdsLicence1','parentIdsLicence2','missingParentRatingsLicence1',
-        'missingParentRatingsLicence2','grouped' ));
     }
+
+    // Fix: Treat parent-only entries (rating_id is NULL, parent_id is set)
+    $userRatings = $rawUserRatings->filter(function ($ur) {
+        return $ur->rating_id !== null;
+    });
+
+    // Normalize all ratings
+    foreach ($userRatings as $ur) {
+        if ($ur->rating_id === null && $ur->parent_id !== null) {
+            $ur->rating_id = $ur->parent_id;
+            $ur->rating = $ur->parent; // Assign parent as the rating object
+        }
+    }
+
+    // Filter by licence_1
+    $licence1Ratings = $userRatings->filter(function ($ur) use ($userRatings) {
+        if ($ur->linked_to === 'licence_1') return true;
+        $parent = $userRatings->firstWhere('rating_id', $ur->parent_id);
+        return $parent && $parent->linked_to === 'licence_1';
+    })->values();
+
+    // Filter by licence_2
+    $licence2Ratings = $userRatings->filter(function ($ur) use ($userRatings) {
+        if ($ur->linked_to === 'licence_2') return true;
+        $parent = $userRatings->firstWhere('rating_id', $ur->parent_id);
+        return $parent && $parent->linked_to === 'licence_2';
+    })->values();
+
+    // Get selected rating IDs
+    $selectedIdsLicence1 = $licence1Ratings->pluck('rating_id')->unique();
+    $selectedIdsLicence2 = $licence2Ratings->pluck('rating_id')->unique();
+
+    // Determine parent IDs for each licence
+    $parentIdsLicence1 = $licence1Ratings
+        ->pluck('rating.parent_id')
+        ->merge($licence1Ratings->pluck('rating_id')->filter(fn($id) => is_null(optional($userRatings->firstWhere('rating_id', $id))->rating->parent_id)))
+        ->unique()->values();
+
+    $parentIdsLicence2 = $licence2Ratings
+        ->pluck('rating.parent_id')
+        ->merge($licence2Ratings->pluck('rating_id')->filter(fn($id) => is_null(optional($userRatings->firstWhere('rating_id', $id))->rating->parent_id)))
+        ->unique()->values();
+
+    // Missing parent ratings (not saved but required)
+    $existingUserRatingIds = $userRatings->pluck('rating_id')->filter();
+    $missingParentIdsLicence1 = $parentIdsLicence1->diff($existingUserRatingIds);
+    $missingParentIdsLicence2 = $parentIdsLicence2->diff($existingUserRatingIds);
+
+    $missingParentRatingsLicence1 = Rating::whereIn('id', $missingParentIdsLicence1)->get();
+    $missingParentRatingsLicence2 = Rating::whereIn('id', $missingParentIdsLicence2)->get();
+
+    // Group child ratings
+    $childRatingsGrouped = ParentRating::with('child')->get()->groupBy('parent_id');
+
+    // Map for quick access to userRating data
+    $userRatingsMap = $userRatings->keyBy('rating_id');
+
+    // Ratings list
+    $ratings = $userRatings->pluck('rating');
+
+    // -------------------------
+    // Sorting Logic
+    // -------------------------
+ $getPriority = function ($rating) {
+    if (!$rating || !$rating->rating) {
+        return 999; // fallback (last)
+    }
+
+    $r = $rating->rating;
+
+    // 1️⃣ Base category: Fixed wing or Rotary (alone)
+    if (($r->is_fixed_wing || $r->is_rotary) && !$r->is_instructor && !$r->is_examiner) {
+        return 1;
+    }
+
+    // 2️⃣ Instructor (with or without examiner, with fixed/rotary or not)
+    if ($r->is_instructor) {
+        return 2;
+    }
+
+    // 3️⃣ Examiner only (or with fixed/rotary, but without instructor)
+    if ($r->is_examiner) {
+        return 3;
+    }
+
+    return 999;
+};
+
+
+    // Sort parents & children
+    foreach ($grouped as $licence => &$ratingsGroup) {
+        // Sort parent ratings
+        uasort($ratingsGroup, function ($a, $b) use ($getPriority) {
+            $prioA = $getPriority($a['parent'] ?? null);
+            $prioB = $getPriority($b['parent'] ?? null);
+
+            if ($prioA !== $prioB) {
+                return $prioA <=> $prioB;
+            }
+
+            $nameA = strtolower($a['parent']->rating->name ?? '');
+            $nameB = strtolower($b['parent']->rating->name ?? '');
+            return $nameA <=> $nameB;
+        });
+
+        // Sort children inside each parent
+        foreach ($ratingsGroup as &$entry) {
+            if (isset($entry['children'])) {
+                usort($entry['children'], function ($a, $b) use ($getPriority) {
+                    $prioA = $getPriority($a ?? null);
+                    $prioB = $getPriority($b ?? null);
+
+                    if ($prioA !== $prioB) {
+                        return $prioA <=> $prioB;
+                    }
+
+                    $nameA = strtolower($a->rating->name ?? '');
+                    $nameB = strtolower($b->rating->name ?? '');
+                    return $nameA <=> $nameB;
+                });
+            }
+        }
+        unset($entry);
+    }
+    unset($ratingsGroup);
+
+    return view('users.profile', compact(
+        'user',
+        'ratings',
+        'licence1Ratings',
+        'licence2Ratings',
+        'selectedIdsLicence1',
+        'selectedIdsLicence2',
+        'childRatingsGrouped',
+        'userRatingsMap',
+        'parentIdsLicence1',
+        'parentIdsLicence2',
+        'missingParentRatingsLicence1',
+        'missingParentRatingsLicence2',
+        'grouped'
+    ));
+}
+
+
+
 
 
     public function profileUpdate(Request $request)
@@ -2413,12 +2804,12 @@ class UserController extends Controller
                 }
             }
         }
-      
+
         // ✅ Define custom priority for sorting CHILDREN only
         $getRatingPriority = function ($rating) {
             if (!$rating || !$rating->rating) return 999;
             $r = $rating->rating;
-             
+
             // For parent-level (if you need it somewhere else)
             if ($r->is_fixed_wing) return 1;
             if ($r->is_rotary) return 2;
@@ -2427,11 +2818,11 @@ class UserController extends Controller
 
             return 999;
         };
-      
-       
+
+
 
         // ✅ Sort only children under each parent (do NOT sort parents)
-        foreach ($grouped as $linkedTo => &$ratingsByParent) { 
+        foreach ($grouped as $linkedTo => &$ratingsByParent) {
             foreach ($ratingsByParent as &$ratingGroup) {
                 if (isset($ratingGroup['children'])) {
                     usort($ratingGroup['children'], function ($a, $b) {
@@ -2486,17 +2877,17 @@ class UserController extends Controller
 
         // Licence 1 ratings
         $licence1Ratings = $userRatings->filter(function ($ur) use ($userRatings) {
-                            if ($ur->linked_to === 'licence_1') return true;
-                            $parent = $userRatings->firstWhere('rating_id', $ur->parent_id);
-                            return $parent && $parent->linked_to === 'licence_1';
-                        })->values();
+            if ($ur->linked_to === 'licence_1') return true;
+            $parent = $userRatings->firstWhere('rating_id', $ur->parent_id);
+            return $parent && $parent->linked_to === 'licence_1';
+        })->values();
 
         // Licence 2 ratings
         $licence2Ratings = $userRatings->filter(function ($ur) use ($userRatings) {
-                            if ($ur->linked_to === 'licence_2') return true;
-                            $parent = $userRatings->firstWhere('rating_id', $ur->parent_id);
-                            return $parent && $parent->linked_to === 'licence_2';
-                        })->values();
+            if ($ur->linked_to === 'licence_2') return true;
+            $parent = $userRatings->firstWhere('rating_id', $ur->parent_id);
+            return $parent && $parent->linked_to === 'licence_2';
+        })->values();
 
         // Selected IDs
         $selectedIdsLicence1 = $licence1Ratings->pluck('rating_id')->unique();
