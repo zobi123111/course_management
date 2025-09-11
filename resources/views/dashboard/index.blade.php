@@ -75,7 +75,8 @@ $linked_to = "UK";
 if($userRating->linked_to == "licence_2"){
 $linked_to = "EASA";
 }
-$ratingName = $linked_to.' '. "Rating" . ' ' .$userRating->parentRating->name ?? '';
+
+$ratingName = $linked_to . ' Rating ' . ($userRating->parentRating?->name ?? '');
 
 if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
 $messages[] = "📝 <strong>{$ratingName}</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
@@ -278,11 +279,9 @@ $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong
                 @endif
             </td>
 
-            <td>
+            <!-- <td>
                 <?php
-
                 $groupedEASA = [];
-
                 if (isset($ratingsByLicence['licence_1'])) {
                     //   print_r($ratingsByLicence['licence_1']);
                     foreach ($ratingsByLicence['licence_1'] as $ratings) {
@@ -318,9 +317,6 @@ $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong
                         }
                     }
                 }
-
-
-
                 ?>
 
                 @foreach ($groupedEASA as $entry)
@@ -334,7 +330,108 @@ $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong
                 @endif
                 <br>
                 @endforeach
-            </td>
+            </td> -->
+            <td>
+    <?php
+    $groupedEASA = [];
+    if (isset($ratingsByLicence['licence_1'])) {
+        foreach ($ratingsByLicence['licence_1'] as $ratings) {
+            $child_id = $ratings->rating_id;
+            $parent_id = $ratings->parent_id;
+
+            if ($parent_id === null && $ratings->rating) {
+                $groupedEASA[$child_id] = [
+                    'parent' => $ratings->rating,
+                    'children' => [],
+                ];
+            } elseif ($ratings->rating) {
+                $parentRating = $ratings->parentRating;
+                $childRating = $ratings->rating;
+
+                if (!isset($groupedEASA[$parent_id])) {
+                    $groupedEASA[$parent_id] = [
+                        'parent' => $parentRating,
+                        'children' => [],
+                    ];
+                }
+                $groupedEASA[$parent_id]['children'][] = $childRating;
+            } else {
+                $parentRating = $ratings->parentRating;
+                $groupedEASA[$parent_id] = [
+                    'parent' => $parentRating,
+                    'children' => [],
+                ];
+            }
+        }
+    }
+
+    // -------------------------
+    // Sorting logic (same as controller)
+    // -------------------------
+    $getPriority = function ($rating) {
+        if (!$rating) return 999;
+
+        $r = $rating;
+
+        if (($r->is_fixed_wing || $r->is_rotary) && !$r->is_instructor && !$r->is_examiner) {
+            return 1;
+        }
+        if ($r->is_instructor) {
+            return 2;
+        }
+        if ($r->is_examiner) {
+            return 3;
+        }
+        return 999;
+    };
+
+    // Sort parent ratings
+    uasort($groupedEASA, function ($a, $b) use ($getPriority) {
+        $prioA = $getPriority($a['parent'] ?? null);
+        $prioB = $getPriority($b['parent'] ?? null);
+
+        if ($prioA !== $prioB) {
+            return $prioA <=> $prioB;
+        }
+
+        $nameA = strtolower($a['parent']->name ?? '');
+        $nameB = strtolower($b['parent']->name ?? '');
+        return $nameA <=> $nameB;
+    });
+
+    // Sort children under each parent
+    foreach ($groupedEASA as &$entry) {
+        if (!empty($entry['children'])) {
+            usort($entry['children'], function ($a, $b) use ($getPriority) {
+                $prioA = $getPriority($a ?? null);
+                $prioB = $getPriority($b ?? null);
+
+                if ($prioA !== $prioB) {
+                    return $prioA <=> $prioB;
+                }
+
+                $nameA = strtolower($a->name ?? '');
+                $nameB = strtolower($b->name ?? '');
+                return $nameA <=> $nameB;
+            });
+        }
+    }
+    unset($entry);
+    ?>
+
+    @foreach ($groupedEASA as $entry)
+        <strong>{{ $entry['parent']->name ?? '' }}</strong><br>
+        @if (!empty($entry['children']))
+            <ul style="margin-left: 15px;">
+                @foreach ($entry['children'] as $child)
+                    <li>{{ $child->name }}</li>
+                @endforeach
+            </ul>
+        @endif
+        <br>
+    @endforeach
+</td>
+
 
 
 
@@ -362,7 +459,7 @@ $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong
             </td>
 
             {{-- Associated Ratings (Licence 2) --}}
-            <td>
+            <!-- <td>
                 @php
                 $groupedEASA = [];
 
@@ -404,7 +501,110 @@ $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong
                 @endif
                 <br>
                 @endforeach
-            </td>
+            </td> -->
+            <td>
+    @php
+    $groupedEASA = [];
+
+    if (isset($ratingsByLicence['licence_2'])) {
+        foreach ($ratingsByLicence['licence_2'] as $ratings) {
+            $child_id = $ratings->rating_id;
+            $parent_id = $ratings->parent_id;
+
+            if ($parent_id === null && $ratings->rating) {
+                $groupedEASA[$child_id] = [
+                    'parent' => $ratings->rating,
+                    'children' => [],
+                ];
+            } elseif ($ratings->rating) {
+                $parentRating = $ratings->parentRating;
+                $childRating = $ratings->rating;
+
+                if (!isset($groupedEASA[$parent_id])) {
+                    $groupedEASA[$parent_id] = [
+                        'parent' => $parentRating,
+                        'children' => [],
+                    ];
+                }
+
+                $groupedEASA[$parent_id]['children'][] = $childRating;
+            } else {
+                $parentRating = $ratings->parentRating;
+                $groupedEASA[$parent_id] = [
+                    'parent' => $parentRating,
+                    'children' => [],
+                ];
+            }
+        }
+    }
+
+    // -------------------------
+    // Sorting logic (same as controller)
+    // -------------------------
+    $getPriority = function ($rating) {
+        if (!$rating) return 999;
+
+        $r = $rating;
+
+        if (($r->is_fixed_wing || $r->is_rotary) && !$r->is_instructor && !$r->is_examiner) {
+            return 1;
+        }
+        if ($r->is_instructor) {
+            return 2;
+        }
+        if ($r->is_examiner) {
+            return 3;
+        }
+        return 999;
+    };
+
+    // Sort parent ratings
+    uasort($groupedEASA, function ($a, $b) use ($getPriority) {
+        $prioA = $getPriority($a['parent'] ?? null);
+        $prioB = $getPriority($b['parent'] ?? null);
+
+        if ($prioA !== $prioB) {
+            return $prioA <=> $prioB;
+        }
+
+        $nameA = strtolower($a['parent']->name ?? '');
+        $nameB = strtolower($b['parent']->name ?? '');
+        return $nameA <=> $nameB;
+    });
+
+    // Sort children under each parent
+    foreach ($groupedEASA as &$entry) {
+        if (!empty($entry['children'])) {
+            usort($entry['children'], function ($a, $b) use ($getPriority) {
+                $prioA = $getPriority($a ?? null);
+                $prioB = $getPriority($b ?? null);
+
+                if ($prioA !== $prioB) {
+                    return $prioA <=> $prioB;
+                }
+
+                $nameA = strtolower($a->name ?? '');
+                $nameB = strtolower($b->name ?? '');
+                return $nameA <=> $nameB;
+            });
+        }
+    }
+    unset($entry);
+    @endphp
+
+    @foreach ($groupedEASA as $entry)
+        <strong>{{ $entry['parent']->name ?? '' }}</strong><br>
+        @if (!empty($entry['children']))
+            <ul style="margin-left: 15px;">
+                @foreach ($entry['children'] as $child)
+                    <li>{{ $child->name }}</li>
+                @endforeach
+            </ul>
+        @endif
+        <br>
+    @endforeach
+</td>
+
 
 
 

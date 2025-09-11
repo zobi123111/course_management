@@ -774,18 +774,18 @@
 
 <script>
     let selectBoxIndex = 0;
-    $(document).ready(function() {
+    $(document).ready(function() { 
         // Edit licence 2 
-        $('#licence_2_ratings').on('change', function() {
+        $('#licence_2_ratings').on('change', function() { 
             if ($(this).is(':checked')) {
                 $('#licence_2_ratings_container').show();
-                $('#edit_add_rating_box').show();
+                $('#edit_licence_2_ratings').show();
                 $('#licence_2_ratings_container').empty(); // reset
 
                 $('#edit_licence_2_ratings').trigger('click'); // add one by default
             } else {
                 $('#licence_2_ratings_container').empty().hide();
-                $('#edit_add_rating_box').hide();
+                $('#edit_licence_2_ratings').hide();
             }
         });
 
@@ -1614,6 +1614,8 @@
 
         // $('.edit-user-icon').click(function(e) {
         //     e.preventDefault();
+        
+
         $(document).on('click', '.edit-user-icon', function() {
             $('.error_e').html('');
             $("#editUserForm")[0].reset();
@@ -1634,8 +1636,8 @@
                     $('#edit_ou_id').val(response.user.ou_id);
                     $('#edit_status').val(response.user.status);
 
-
-                    if (response.licence1 == 1) {
+                        edit_selectBoxIndex = response.userRatings_licence_1.length || 0;
+                    if (response.licence1 == 1) {  console.log("lld");
                         $('#edit_licence_rating_section').show();
                         $('#edit_uk_licence').prop('checked', true);
                         $('#edit_rating_select_boxes_container').show().empty();
@@ -1645,6 +1647,7 @@
                         // let editSelectBoxIndex = 0;
                         edit_selectBoxIndex = response.userRatings_licence_1.length || 0;
                         response.userRatings_licence_1.forEach(function(group, i) {
+                            
                             let index = i;
                             let parentId = group.parent_id;
                             let childIds = group.children;
@@ -1731,7 +1734,7 @@
                             });
                         });
                     }
-
+                        licence2_selectBoxIndex = response.userRatings_licence_2.length || 0;
                     if (response.licence2 == 1) {
                         $('#edit_licence_2_rating_section').show();
                         $('#licence_2_ratings').prop('checked', true);
@@ -1877,14 +1880,13 @@
                         $('#edit_licence_checkbox').prop('checked', false).trigger('change');
                     }
 
-                    console.log(response.user.licence_2_required);
+                  
                     if (response.user.licence_2_required) {
                         $('#edit_licence_2_checkbox').prop('checked', true).trigger('change');
                         $('#edit_second_licence_section').show();
 
                         if (document.licence_2) {
-                            console.log("hello");
-                            console.log(response.user.documents.licence_2);
+                            
                             $('.edit_licence_2').val(response.user.documents.licence_2).prop('required', true);
                             // $('#edit_licence_file_2').show().prop('required', true);
                         } else {

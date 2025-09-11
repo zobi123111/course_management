@@ -68,10 +68,7 @@ class UserRating extends Model
         return $this->belongsTo(Rating::class, 'rating_id');
     }
 
-    //  public function parentrating() 
-    // {
-    //     return $this->belongsTo(Rating::class, 'parent_id');
-    // }
+  
 
       public function parent()
     {
