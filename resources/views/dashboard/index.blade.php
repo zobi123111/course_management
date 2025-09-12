@@ -182,7 +182,7 @@ $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong
 @endif
 
 @if(auth()->user()->is_admin == 1)
-<table class="table table-bordered table-striped" id="document_table">
+<table class="table table-bordered table-striped dashboard_doc_tab" id="document_table">
     <thead>
         <tr>
             <th>Name</th>
@@ -331,7 +331,7 @@ $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong
                 <br>
                 @endforeach
             </td> -->
-            <td>
+<td class="lic_rating_td">
     <?php
     $groupedEASA = [];
     if (isset($ratingsByLicence['licence_1'])) {
@@ -420,15 +420,18 @@ $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong
     ?>
 
     @foreach ($groupedEASA as $entry)
-        <strong>{{ $entry['parent']->name ?? '' }}</strong><br>
         @if (!empty($entry['children']))
-            <ul style="margin-left: 15px;">
-                @foreach ($entry['children'] as $child)
-                    <li>{{ $child->name }}</li>
-                @endforeach
-            </ul>
+            <div class="collapsible">{{ $entry['parent']->name ?? '' }}</div>
+            <div class="content">
+                <ul>
+                    @foreach ($entry['children'] as $child)
+                        <li>{{ $child->name }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @else
+            <div class="parent_rate"><strong>{{ $entry['parent']->name ?? '' }}</strong></div>
         @endif
-        <br>
     @endforeach
 </td>
 
@@ -502,7 +505,7 @@ $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong
                 <br>
                 @endforeach
             </td> -->
-            <td>
+            <td class="lic_rating_td">
     @php
     $groupedEASA = [];
 
@@ -591,17 +594,20 @@ $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong
     }
     unset($entry);
     @endphp
-
+    
     @foreach ($groupedEASA as $entry)
-        <strong>{{ $entry['parent']->name ?? '' }}</strong><br>
         @if (!empty($entry['children']))
-            <ul style="margin-left: 15px;">
-                @foreach ($entry['children'] as $child)
-                    <li>{{ $child->name }}</li>
-                @endforeach
-            </ul>
+            <div class="collapsible">{{ $entry['parent']->name ?? '' }}</div>
+            <div class="content">
+                <ul>
+                    @foreach ($entry['children'] as $child)
+                        <li>{{ $child->name }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @else
+            <div class="parent_rate"><strong>{{ $entry['parent']->name ?? '' }}</strong></div>
         @endif
-        <br>
     @endforeach
 </td>
 
@@ -1209,6 +1215,12 @@ $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong
             language: {
                 emptyTable: "No records found"
             }
+        });
+
+        //RATING HIDE SHOW
+        $(".collapsible").click(function () {
+            $(this).toggleClass("active");
+            $(this).next(".content").slideToggle();
         });
 
     });
