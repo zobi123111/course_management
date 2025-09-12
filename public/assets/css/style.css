@@ -233,8 +233,8 @@ h6 {
 }
 
 .card-title {
-  padding: 20px 0 15px 0;
-  font-size: 18px;
+  padding: 15px 0 10px 0;
+  font-size: 16px;
   font-weight: 500;
   color: #012970;
   font-family: "Poppins", sans-serif;
@@ -1534,4 +1534,69 @@ display: flex;
 .licence2_file {
     margin-top: 18px;
     width: 135px;
+}
+
+.d-flex.flex-wrap.license-lists {
+    display: flex !important;
+    justify-content: flex-start;
+    width: 90%;
+    row-gap: 10px;
+}
+ 
+.license-lists .card {
+    flex: 0 46%;
+    width: unset !important;
+}
+ 
+.license-lists li {
+    font-size: 14px !important;
+    line-height: 20px;
+    margin-bottom: 0 !important;
+}
+ 
+.license-lists ul {
+    margin-top: 15px;
+    margin-bottom: 0px;
+}
+.validate-inner-cont {display: flex;flex-direction: column;gap: 10px;}
+
+.licensefile {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.licensevalidate {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+  .dashboard_doc_tab .lic_rating_td .collapsible {
+      cursor: pointer;
+      user-select: none;
+      font-weight: bold;
+      margin-top: 10px;
+  }
+
+  .dashboard_doc_tab .lic_rating_td .content {
+      display: none;
+      margin-left: 20px;
+  }
+
+  .dashboard_doc_tab .lic_rating_td .collapsible::before {
+      content: "+ ";
+      font-weight: bold;
+  }
+
+  .dashboard_doc_tab .lic_rating_td .collapsible.active::before {
+      content: "- ";
+  }
+
+  .dashboard_doc_tab .lic_rating_td ul {
+      margin: 5px 0;
+      padding-left: 20px;
+  }
+  .dashboard_doc_tab .lic_rating_td .parent_rate {
+    margin-bottom: 8px;
 }

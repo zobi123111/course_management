@@ -770,7 +770,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                         <div class="col-md-2 mt-2">
                             <strong><i class="fas fa-calendar-day"></i> Date:</strong><br>
-                            {{ date('d-m-Y', strtotime($lesson->lesson_date)) }}
+                            {{ date('d-m-Y', strtotime($def->lesson_date)) }}
                         </div>
 
                         <div class="col-md-2 mt-2">
@@ -856,7 +856,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                         <div class="col-md-2 mt-2">
                             <strong><i class="fas fa-calendar-day"></i> Date:</strong><br>
-                            {{ date('d-m-Y', strtotime($lesson->lesson_date)) }}
+                            {{ date('d-m-Y', strtotime($def->lesson_date)) }}
                         </div>
 
                         <div class="col-md-2 mt-2">

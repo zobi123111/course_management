@@ -12,7 +12,7 @@
     @endif
 
     <div class="card shadow-lg rounded-4 border-0 overflow-hidden">
-        <div class="card-body p-4">
+        <div class="card-body p-4"> 
             <div class="container-fluid">
                 <!-- Header Section -->
                 <div class="row align-items-center mb-4">
@@ -89,25 +89,28 @@
 
                     <div class="row mb-4">
                         <!-- License Details -->
-                        <div class="col-md-6 mb-4">
+                        <div class="col-md-6 mb-4 license-six-cont">
                             <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>UK License Details</h5>
                             @if($document && $document->licence)
-                            <div class="d-flex flex-wrap align-items-center gap-3">
-                                <p class="mb-0"><strong>Number:</strong> {{ $document->licence }}</p>
-                                @if($user->licence_admin_verification_required == 1 && $document?->licence_file)
-                                <a href="{{ Storage::url($document->licence_file) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
-
-                                <div class="form-check form-switch mb-0">
-                                    <input class="form-check-input verify-toggle" type="checkbox" id="licence_verify"
-                                        data-user-id="{{ encode_id($user->id) }}" data-type="licence"
-                                        {{ $document->licence_verified ? 'checked disabled' : '' }}>
-                                    <label class="form-check-label" for="licence_verify">{{ $document->licence_verified ? 'Verified' : 'Mark as Verified' }}</label>
+                            <div class="validate-inner-cont">
+                                <div class="licensefile">
+                                    <p class="mb-0"><strong>Number:</strong> {{ $document->licence }}</p>
+                                    @if($user->licence_admin_verification_required == 1 && $document?->licence_file)
+                                    <a href="{{ Storage::url($document->licence_file) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
                                 </div>
-                                @endif
+                                <div class="licensevalidate">
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input verify-toggle" type="checkbox" id="licence_verify"
+                                            data-user-id="{{ encode_id($user->id) }}" data-type="licence"
+                                            {{ $document->licence_verified ? 'checked disabled' : '' }}>
+                                        <label class="form-check-label" for="licence_verify">{{ $document->licence_verified ? 'Verified' : 'Mark as Verified' }}</label>
+                                    </div>
+                                    @endif
 
-                                @if($document->licence_verified)
-                                <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="licence">Invalidate</button>
-                                @endif
+                                    @if($document->licence_verified)
+                                    <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="licence">Invalidate</button>
+                                    @endif
+                                </div>
                             </div>
                             @else
                             <p class="text-muted">No license details available.</p>
@@ -131,13 +134,13 @@
                                         <i class="bi bi-star-fill text-warning me-2"></i>Ratings Linked to UK Licence
                                     </h6>
                              
-                                    <div class="d-flex flex-wrap" style="justify-content: space-between">
+                                    <div class="d-flex flex-wrap license-lists" >
                                         @foreach($grouped['licence_1'] ?? [] as $group)
                                         @php
                                         $parent = $group['parent']; 
                                         @endphp
 
-                                        <div class="card mb-3">
+                                        <div class="card mb-3 me-3">
                                             <div class="card-body">
                                                 <h6 class="card-title text-primary">{{ $parent->rating->name }}</h6>  
                                              
@@ -233,24 +236,28 @@
                         </div>
                         <!-- Second License Details -->
                         @if($document && $document->licence_2)
-                        <div class="col-md-6 mb-4">
+                        <div class="col-md-6 mb-4 license-six-cont">
                             <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>EASA License Details</h5>
-                            <div class="d-flex flex-wrap align-items-center gap-3">
-                                <p class="mb-0"><strong>Number:</strong> {{ $document->licence_2 }}</p>
-                                @if($user->licence_2_admin_verification_required == 1 && $document->licence_file_2)
-                                <a href="{{ Storage::url($document->licence_file_2) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
-
-                                <div class="form-check form-switch mb-0">
-                                    <input class="form-check-input verify-toggle" type="checkbox" id="licence2_verify"
-                                        data-user-id="{{ encode_id($user->id) }}" data-type="licence_2"
-                                        {{ $document->licence_verified_2 ? 'checked disabled' : '' }}>
-                                    <label class="form-check-label" for="licence2_verify">{{ $document->licence_verified_2 ? 'Verified' : 'Mark as Verified' }}</label>
+                            <div class="validate-inner-cont">
+                                <div class="licensefile">
+                                    <p class="mb-0"><strong>Number:</strong> {{ $document->licence_2 }}</p>
+                                    @if($user->licence_2_admin_verification_required == 1 && $document->licence_file_2)
+                                    <a href="{{ Storage::url($document->licence_file_2) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
                                 </div>
-                                @endif
 
-                                @if($document->licence_verified_2)
-                                <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="licence_2">Invalidate</button>
-                                @endif
+                                <div class="licensevalidate">
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input verify-toggle" type="checkbox" id="licence2_verify"
+                                            data-user-id="{{ encode_id($user->id) }}" data-type="licence_2"
+                                            {{ $document->licence_verified_2 ? 'checked disabled' : '' }}>
+                                        <label class="form-check-label" for="licence2_verify">{{ $document->licence_verified_2 ? 'Verified' : 'Mark as Verified' }}</label>
+                                    </div>
+                                    @endif
+
+                                    @if($document->licence_verified_2)
+                                    <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="licence_2">Invalidate</button>
+                                    @endif
+                                </div>
                             </div>
                             @if($user->usrRatings->where('linked_to', 'licence_2')->count())
                             <div class="row mt-3">
@@ -258,13 +265,13 @@
                                     <h6 class="text-secondary mb-3">
                                         <i class="bi bi-star-fill text-warning me-2"></i>Ratings Linked to EASA Licence
                                     </h6>
-                                    <div class="d-flex flex-wrap">
+                                    <div class="d-flex flex-wrap license-lists">
                                         @foreach($grouped['licence_2'] ?? [] as $group)
                                         @php
                                         $parent = $group['parent'];
                                         @endphp
 
-                                        <div class="card mb-3 me-3" style="width: 18rem;">
+                                        <div class="card mb-3 me-3">
                                             <div class="card-body">
                                                 <h6 class="card-title text-primary">{{ $parent->rating->name ?? 'N/A' }}</h6> 
                                                      <div class="form-check form-switch mb-0">
@@ -278,7 +285,7 @@
                                                 @endif
                                                
                                             </div>
-                                                <ul class="list-unstyled small mb-2">
+                                                <ul class=""> 
                                                     <li><strong>Issue Date:</strong> {{ $group['children'][0]['issue_date'] ?? 'N/A' }}</li>
                                                     <li><strong>Expiry Date:</strong> {{ $group['children'][0]['expiry_date'] ?? 'N/A' }}</li>
                                                 </ul>
