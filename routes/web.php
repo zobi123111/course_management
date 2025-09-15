@@ -136,8 +136,12 @@ Route::group(['middleware' => ['auth']], function () {
      Route::post('/training/unlock-deflesson', [TrainingEventsController::class, 'unlock_deflesson'])->name('training.unlock_deflesson');
     Route::post('/training/update-competency-grade', [TrainingEventsController::class, 'updateCompGrade'])->name('training.updateCompGrade');
     Route::get('/training/get-recom-instructors/{id}', [TrainingEventsController::class, 'getEventInstructors'])->name('training.getRecommendedInstructors');
-
     Route::post('/training/unlocked', [TrainingEventsController::class, 'unlocked_trainingEvent'])->name('training.unlocked');
+    Route::post('/training/submit_normal_items', [TrainingEventsController::class, 'submit_normal_items'])->name('submit_normal_items.unlocked');
+
+     Route::post('/training/get_lessonId', [TrainingEventsController::class, 'get_lessonId'])->name('get_lessonId.unlocked');
+
+
 
 
 
