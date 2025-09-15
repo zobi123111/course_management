@@ -537,7 +537,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                 <div class="col-md-6">
                                     <h6 class="text-muted mb-1"><i class="fas fa-user me-1"></i>Student</h6>
                                     <p class="mb-0 fw-semibold">
-                                      
+
                                         {{ $trainingEvent->student->fname ?? '' }} {{ $trainingEvent->student->lname ?? '' }}
                                     </p>
                                 </div>
@@ -1138,9 +1138,9 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             <strong><i class="fas fa-exclamation-triangle"></i> Deferred Items (Auto-Generated)</strong>
                         </div>
                         <div class="card-body">
-                            <ul class="mb-3 ps-4">   
+                            <ul class="mb-3 ps-4">
+                             
                                 @foreach($defTasks as $item)
-                                  
                                 @php
                                 $grade = $item->task_grade ?? null;
                                 $comment = $item->task_comment ?? null;
@@ -1160,12 +1160,16 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                                 $badgeText = $grade ?? 'Deferred';
                                 @endphp
-                             
 
                                 <li class="mb-3">
-                                    <div>
-                                        <strong>{{ $title }}</strong>
-                                        <span class="badge {{ $badgeClass }} ms-2">{{ $badgeText }}</span>
+                                    <div class="d-flex align-items-center">
+                                        <div>
+                                            <strong>{{ $title }}</strong>
+                                            <span class="badge {{ $badgeClass }} ms-2">{{ $badgeText }}</span>
+                                        </div>
+                                        <div class="ms-auto">
+                                            <button class="btn btn-sm btn-primary normal_lesson" data-title="{{ $title }}" data-def-id="{{ $item->task_id }}"> + Normal Lesson</button>
+                                        </div>
                                     </div>
                                     @if($comment)
                                     <div class="text-muted ps-1 mt-1">
@@ -1173,6 +1177,8 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                     </div>
                                     @endif
                                 </li>
+                                <div>
+                                </div>
                                 @endforeach
                             </ul>
 
@@ -1331,6 +1337,49 @@ return sprintf("%02d:%02d", $hours, $minutes);
                     </div>
 
                     {{-- Deferred Lesson Modal End --}}
+
+                    {{-- Normal Lesson Modal Start --}}
+                    <div class="modal fade" id="normalLessonModel" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                        <div class="modal-dialog">
+                            <form id="normalLessonForm">
+                                @csrf
+                                <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
+                                <input type="hidden" name="std_id" value="{{ $trainingEvent->student_id }}">
+                                <input type="hidden" name="def_id" id="def_id">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Add to Normal Lesson</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-2">
+                                            <div class="card-body p-0">
+                                                <h6 class="fw-bold mb-0 text-primary">
+                                                    Deferred Lesson: <span id="add_title" class="text-dark"></span>
+                                                </h6>
+                                            </div><br>
+                                            <label class="form-label">Transferred to Lesson <span class="text-danger">*</span></label>
+                                            <select class="form-select" name="lesson" id="normalLessonId">
+                                                @foreach($eventLessons as $eventLesson)
+                                                @php $lesson = $eventLesson->lesson; @endphp
+                                                @if($lesson && $lesson->subLessons->isNotEmpty())
+                                                <option value="{{ $lesson->id }}"> {{ $lesson->lesson_title }} </option>
+                                                @endif
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button class="btn btn-primary" type="submit" id="submitNormalItems">Submit</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    {{-- Normal Lesson Modal End --}}
 
 
                     <!-- -- Edit Deffered Lesson-- -->
@@ -1553,6 +1602,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                             @foreach($eventLessons as $eventLesson)
                             <?php
+                            // dump($eventLesson);
                             $hours_credited = $eventLesson->hours_credited;
                             $hours_credited = "08:02:00"; // example
 
@@ -1628,8 +1678,11 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                                 <div id="lesson-{{ $eventLesson->id }}" class="accordion-collapse collapse" data-bs-parent="#faq-group-2">
                                     <div class="accordion-body">
+                                        <?php // dump($lesson); 
+                                        ?>
                                         @if($lesson && $lesson->subLessons->isNotEmpty())
-                                        @foreach($lesson->subLessons as $sublesson) 
+                                        @foreach($lesson->subLessons as $sublesson)
+
                                         <div class="custom-box">
                                             <input type="hidden" name="tg_subLesson_id[]" value="{{ $sublesson->id }}">
                                             <div class="header" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $sublesson->id }}" aria-expanded="false">
@@ -1807,7 +1860,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                     <h4 class="mb-3 text-primary"><i class="bi bi-exclamation-triangle-fill me-2"></i>Deferred Lessons</h4>
                     <form action="" method="POST" id="defGradingFrom">
-                        <input type = "hidden" name ="lesson_type" value="deferred" />
+                        <input type="hidden" name="lesson_type" value="deferred" />
                         @foreach($defLessonTasks->groupBy('def_lesson_id') as $defLessonId => $tasks)
                         @php $defLesson = $tasks->first()->defLesson;
                         $documents = $defLesson?->instructor?->documents; // Only one row expected
@@ -1820,47 +1873,47 @@ return sprintf("%02d:%02d", $hours, $minutes);
                         $instructor_lic_no = 'N/A';
                         }
 
-                        @endphp 
-                       
-                           <?php $is_locked = $defLesson->is_locked;?>
+                        @endphp
+
+                        <?php $is_locked = $defLesson->is_locked; ?>
                         @csrf
                         <div class="accordion-item">
                             <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
                             <input type="hidden" name="tg_def_user_id" value="{{ $trainingEvent?->student_id }}">
                             <input type="hidden" name="tg_def_lesson_id[]" value="{{ $defLesson?->id }}">
                             <h2 class="accordion-header">
-                        <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : '' }}" 
-                            @if($is_locked != 1)
-                                data-bs-toggle="collapse"
-                                data-bs-target="#def-lesson-{{ $defLesson?->id }}"
-                                aria-expanded="true"
-                            @else
-                                disabled
-                                aria-expanded="false"
-                                style="cursor: not-allowed; background-color:#f8f9fa;"
-                            @endif type="button">
-                            
-                            {{ $defLesson->lesson_title }}
+                                <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : '' }}"
+                                    @if($is_locked !=1)
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#def-lesson-{{ $defLesson?->id }}"
+                                    aria-expanded="true"
+                                    @else
+                                    disabled
+                                    aria-expanded="false"
+                                    style="cursor: not-allowed; background-color:#f8f9fa;"
+                                    @endif type="button">
 
-                            {{-- Show lock inside button, after text, only for instructors --}}
-                            @if($is_locked == 1 && auth()->user()?->is_admin != 1)
-                                <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
+                                    {{ $defLesson->lesson_title }}
+
+                                    {{-- Show lock inside button, after text, only for instructors --}}
+                                    @if($is_locked == 1 && auth()->user()?->is_admin != 1)
+                                    <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
+                                        <i class="bi bi-lock-fill"></i>
+                                    </span>
+                                    @endif
+                                </button>
+
+                                @if($is_locked == 1 && auth()->user()?->is_admin == 1)
+                                {{-- Unlock button for admin --}}
+                                <button type="button"
+                                    class="btn btn-sm btn-outline-secondary ms-2 unlock-deflesson-btn"
+                                    data-defLesson-id="{{ $defLesson?->id }}"
+                                    data-bs-toggle="tooltip"
+                                    title="Unlock this event to enable grading edits.">
                                     <i class="bi bi-lock-fill"></i>
-                                </span>
-                            @endif
-                        </button>
-
-                        @if($is_locked == 1 && auth()->user()?->is_admin == 1)
-                            {{-- Unlock button for admin --}}
-                            <button type="button"
-                                class="btn btn-sm btn-outline-secondary ms-2 unlock-deflesson-btn"
-                                data-defLesson-id="{{ $defLesson?->id }}"
-                                data-bs-toggle="tooltip"
-                                title="Unlock this event to enable grading edits.">
-                                <i class="bi bi-lock-fill"></i>
-                            </button>
-                        @endif
-                    </h2>
+                                </button>
+                                @endif
+                            </h2>
                             <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
                                 <div><strong>Instructor:</strong> {{ $defLesson->instructor->fname ?? '' }} {{ $defLesson->instructor->lname ?? '' }}</div>
                                 <div><strong>License No:</strong> {{ $instructor_lic_no }}</div>
@@ -1875,7 +1928,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             <div id="def-lesson-{{ $defLesson?->id }}" class="accordion-collapse collapse" data-bs-parent="#faq-group-2">
                                 <div class="accordion-body">
                                     @foreach($tasks as $task)
-                                    
+
                                     <div class="custom-box">
                                         <div class="header" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $task->id }}" aria-expanded="false">
                                             <span class="rmk">RMK</span>
@@ -1935,7 +1988,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                     </h2>
                                     @endif
                                 </div>
-                                 <div id="comptency-{{ $task->id }}" class="accordion-collapse collapse">
+                                <div id="comptency-{{ $task->id }}" class="accordion-collapse collapse">
                                     <!-- Student name aligned to the right, above the competency grading -->
                                     <div class="text-end pe-4 pt-2 fw-semibold">
                                         {{ $student->fname }} {{ $student->lname }}
@@ -2037,39 +2090,39 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
                             <input type="hidden" name="tg_def_user_id" value="{{ $trainingEvent?->student_id }}">
                             <input type="hidden" name="tg_def_lesson_id[]" value="{{ $defLesson?->id }}">
-                     <h2 class="accordion-header">
-                        <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : '' }}" 
-                            @if($is_locked != 1)
-                                data-bs-toggle="collapse"
-                                data-bs-target="#def-lesson-{{ $defLesson?->id }}"
-                                aria-expanded="true"
-                            @else
-                                disabled
-                                aria-expanded="false"
-                                style="cursor: not-allowed; background-color:#f8f9fa;"
-                            @endif type="button">
-                            
-                            {{ $defLesson->lesson_title }}
+                            <h2 class="accordion-header">
+                                <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : '' }}"
+                                    @if($is_locked !=1)
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#def-lesson-{{ $defLesson?->id }}"
+                                    aria-expanded="true"
+                                    @else
+                                    disabled
+                                    aria-expanded="false"
+                                    style="cursor: not-allowed; background-color:#f8f9fa;"
+                                    @endif type="button">
 
-                            {{-- Show lock inside button, after text, only for instructors --}}
-                            @if($is_locked == 1 && auth()->user()?->is_admin != 1)
-                                <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
+                                    {{ $defLesson->lesson_title }}
+
+                                    {{-- Show lock inside button, after text, only for instructors --}}
+                                    @if($is_locked == 1 && auth()->user()?->is_admin != 1)
+                                    <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
+                                        <i class="bi bi-lock-fill"></i>
+                                    </span>
+                                    @endif
+                                </button>
+
+                                @if($is_locked == 1 && auth()->user()?->is_admin == 1)
+                                {{-- Unlock button for admin --}}
+                                <button type="button"
+                                    class="btn btn-sm btn-outline-secondary ms-2 unlock-deflesson-btn"
+                                    data-defLesson-id="{{ $defLesson?->id }}"
+                                    data-bs-toggle="tooltip"
+                                    title="Unlock this event to enable grading edits.">
                                     <i class="bi bi-lock-fill"></i>
-                                </span>
-                            @endif
-                        </button>
-
-                        @if($is_locked == 1 && auth()->user()?->is_admin == 1)
-                            {{-- Unlock button for admin --}}
-                            <button type="button"
-                                class="btn btn-sm btn-outline-secondary ms-2 unlock-deflesson-btn"
-                                data-defLesson-id="{{ $defLesson?->id }}"
-                                data-bs-toggle="tooltip"
-                                title="Unlock this event to enable grading edits.">
-                                <i class="bi bi-lock-fill"></i>
-                            </button>
-                        @endif
-                    </h2>
+                                </button>
+                                @endif
+                            </h2>
 
                             <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
                                 <div><strong>Instructor:</strong> {{ $defLesson->instructor->fname ?? '' }} {{ $defLesson->instructor->lname ?? '' }}</div>
@@ -2489,7 +2542,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
             });
         });
 
-        $(document).on("submit", "#defGradingFrom", function(e) { 
+        $(document).on("submit", "#defGradingFrom", function(e) {
             e.preventDefault(); // Prevent default form submission
 
             let form = this;
@@ -2893,8 +2946,8 @@ return sprintf("%02d:%02d", $hours, $minutes);
             });
         });
 
-        $(document).on("submit", "#customGradingFrom", function(e) { 
-            e.preventDefault(); 
+        $(document).on("submit", "#customGradingFrom", function(e) {
+            e.preventDefault();
 
             let form = this;
             let formData = new FormData(form);
@@ -2983,7 +3036,45 @@ return sprintf("%02d:%02d", $hours, $minutes);
             });
         });
 
+$("#submitNormalItems").on("click", function(e) {
+    e.preventDefault();
+    $(".loader").fadeIn();
+    $.ajax({
+        url: '{{ url("/training/submit_normal_items") }}',
+        type: 'POST',
+        data: $("#normalLessonForm").serialize(),
+        success: function(response) {
+            $(".loader").fadeOut("slow"); 
+            if (response.status === 'error') {
+                alert(response.message);
+            } else {
+                alert(response.message);
+                location.reload();
+            }
+        },
+        error: function(xhr) {
+            $(".loader").fadeOut("slow"); 
+            var errorMessage = JSON.parse(xhr.responseText);
+            var validationErrors = errorMessage.errors;
+            $('.error_e').html('');
+            $.each(validationErrors, function(key, value) {
+                var formattedKey = key.replace(/\./g, '_') + '_error';
+                var errorMsg = '<p>' + value[0] + '</p>';
+                $('#' + formattedKey).html(errorMsg);
+            });
+        }
+    });
+});
 
+
+
+        $('.normal_lesson').on('click', function() {
+            let def_id = $(this).data("def-id");
+            let title = $(this).data("title");
+            $('#def_id').val(def_id);
+            $('#add_title').html(title);
+            $('#normalLessonModel').modal('show');
+        });
     });
 </script>
 

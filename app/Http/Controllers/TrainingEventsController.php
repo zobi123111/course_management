@@ -2445,4 +2445,63 @@ class TrainingEventsController extends Controller
             'message' => 'You do not have permission to unlock this training.'
         ], 403);
     }
+
+   public function submit_normal_items(Request $request)
+    {
+        
+
+        // Fetch the sub lesson
+        $sub_lesson = SubLesson::find($request->def_id);
+
+        if (!$sub_lesson) {
+            return response()->json(['status' => 'error', 'message' => 'Sub Lesson not found']);
+        }
+
+        // Prepare new normal lesson data
+        $NormalLesson = [
+            'lesson_id'    => $request->lesson,
+            'title'        => $sub_lesson->title,
+            'description'  => $sub_lesson->description,
+            'grade_type'   => $sub_lesson->grade_type,
+            'is_mandatory' => $sub_lesson->is_mandatory,
+            'status'       => $sub_lesson->status,
+        ];
+
+        $exists = SubLesson::where('lesson_id', $request->lesson)
+            ->where('title', $sub_lesson->title)
+            ->exists();
+
+     if ($exists) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Task already exists in this Lesson. Please transfer to another Lesson.',
+            ]);
+        }
+
+        // Insert into sub lessons
+        SubLesson::create($NormalLesson);
+        DefTask::where('event_id', $request->event_id)
+                ->where('user_id', $request->std_id)
+                ->where('task_id', $request->def_id)
+                ->delete();
+
+                 
+        TrainingEventLessons::where('training_event_id', $request->event_id)
+                            ->where('lesson_id', $request->lesson)
+                            ->update(['is_locked' => 0]);
+                    
+        Session::flash('message', 'Normal Lesson Added Successfully');
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Normal Lesson Added Successfully',
+        ]);
+    }
+
+
+    public function get_lessonId(Request $request)
+    {
+      $getLessonId =  SubLesson::where('id', $request->task_id)->pluck('lesson_id');
+      return response()->json(['status' => 'success','lessonId' => $getLessonId[0]]);
+    }
 }
