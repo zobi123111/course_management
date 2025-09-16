@@ -305,7 +305,7 @@ class LessonController extends Controller
             'date' => date('m/d/Y'),
             'lesson_detail' => $lesson_detail
         ]; 
-        $pdf = PDF::loadView('courses\generateLessonPdf', $data);
+        $pdf = PDF::loadView('courses.generateLessonPdf', $data);
         return $pdf->download('lesson.pdf');
     }
 
