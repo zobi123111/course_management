@@ -476,6 +476,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
         {{ session()->get('message') }}
     </div>
     @endif
+
     <div class="loader" style="display: none;"></div>
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center">
@@ -602,11 +603,9 @@ return sprintf("%02d:%02d", $hours, $minutes);
                     @if($trainingEvent?->course?->course_type === 'one_event' && $trainingEvent->eventLessons->count())
                     @php
                     $eventLesson = $trainingEvent->eventLessons->first() ?? null;
-
-
                     $lessons = collect([$eventLesson]);
-
                     @endphp
+                    
                     @else
                     @php
                     $lessons = $trainingEvent->eventLessons;
@@ -615,7 +614,6 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                     @if($lessons && $lessons->count())
                     @foreach($lessons as $lesson)
-
                     <div class="row mb-3 p-3 border rounded bg-light">
                         <div class="col-md-12">
                             <strong><i class="fas fa-book"></i> Lesson Name:</strong>
@@ -733,13 +731,16 @@ return sprintf("%02d:%02d", $hours, $minutes);
                     $duration = max(0, $end - $start);
 
                     $documents = $def?->instructor?->documents;
-                    if ($documents && $documents->licence) {
-                    $instructor_lic_no = $documents->licence;
-                    } elseif ($documents && $documents->licence_2) {
-                    $instructor_lic_no = $documents->licence_2;
+
+                  if ($documents && !empty($documents->licence_2)) {
+                        $instructor_lic_no = $documents->licence_2;
+                    } elseif ($documents && !empty($documents->licence)) {
+                        $instructor_lic_no = $documents->licence;
                     } else {
-                    $instructor_lic_no = 'N/A';
+                        $instructor_lic_no = 'N/A';
                     }
+
+
                     @endphp
 
                     <div class="row mb-3 p-3 border rounded bg-light shadow-sm">
@@ -1009,7 +1010,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             ?>
                             <p>
                                 <strong>Total Flight Time:</strong>
-                                {{ formatSeconds($totalFlightTime) }}
+                                {{ formatSeconds($totalFlightTime) }} 
                             </p>
 
                             <!-- @if($totals['deferred'] > 0)
@@ -1032,19 +1033,31 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                 return $lesson->lesson?->lesson_type === 'groundschool';
                             });
                             $totals['groundschool']['duration'] = ($trainingEvent->course->groundschool_hours ?? 0);
+                           
                             ?>
+                              
 
                             @foreach($trainingEvent->eventLessons as $lesson)
                             <?php
+                               if (!function_exists('toSeconds')) {
+                                    function toSeconds(?string $time): int {
+                                        if (!$time) return 0;
+                                        [$h, $m] = array_pad(explode(':', $time), 2, 0);
+                                        return ($h * 3600) + ($m * 60);
+                                    }
+                                }
                             $type = $lesson->lesson?->lesson_type ?? '';
-                            $credited = strtotime("1970-01-01 {$lesson->hours_credited}") ?: 0;
+                            $credited = toSeconds($lesson->hours_credited);
+
                             if ($type === 'groundschool') {
                                 $totals['groundschool']['credited'] += $credited;
                             } elseif ($type === 'simulator') {
                                 $totals['simulator']['duration'] = $trainingEvent->course->simulator_hours ?? 0;
                                 $totals['simulator']['credited'] += $credited;
                             } elseif ($type === 'flight') {
+                              
                                 $totals['flight']['credited'] += $credited;
+                              
                             }
 
                             if ($lesson->lesson?->customTime) {
@@ -1054,19 +1067,18 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             }
                             ?>
                             @endforeach
-
+                            
                             @if(isset($deferredLessons) && $deferredLessons->isNotEmpty())
                             @foreach($deferredLessons as $defLesson)
                             <?php $lessonType = $defLesson?->deftasks?->subddddLesson?->courseLesson?->lesson_type;
-
                             ?>
                             <?php
                             $start = strtotime($defLesson->start_time);
                             $end = strtotime($defLesson->end_time);
                             $duration = max(0, $end - $start);
-
+                             
                             if ($lessonType === 'flight') {
-                                $totals['flight']['credited'] += $credited;
+                               // $totals['flight']['credited'] += $credited;
                                 $totals['deferred'] += $duration;
                             } elseif ($lessonType === 'groundschool') {
                                 $totals['flight']['credited'] += $credited;
@@ -1077,6 +1089,17 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             ?>
                             @endforeach
                             @endif
+
+                            @if(isset($customLessons) && $customLessons->isNotEmpty())
+                            @foreach($customLessons as $custom)
+                             <?php dump("hello"); ?>
+                            <?php 
+                           //  $lessonType = $customLessons?->deftasks?->subddddLesson?->courseLesson?->lesson_type;
+                            ?>
+                      
+                            @endforeach
+                            @endif
+                      
 
 
                             @if($totals['groundschool']['duration'] || $totals['groundschool']['credited'])
@@ -1100,12 +1123,16 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                    Credited: {{ formatSeconds($totals['flight']['credited']) }}
                             </p> -->
                             <?php
+                             
                             $totalFlightTime = $totals['flight']['credited'] + $totals['deferred'];
 
                             ?>
-                            <p>
+                            <p>  
+                                <?php 
+                               
+                                ?>
                                 <strong>Total Flight Time:</strong>
-                                {{ formatSeconds($totalFlightTime) }}
+                                {{ formatSeconds($totalFlightTime) }}  {{ formatSeconds($totals['flight']['credited']) }} {{ formatSeconds($totals['deferred']) }}
                             </p>
 
                             @if(!empty($totals['custom']))
@@ -1130,7 +1157,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                         </div>
                     </div>
 
-
+         
                     {{-- Deferred Items(fallback) --}}
                     @if(isset($defTasks) && $defTasks->isNotEmpty())
                     <div class="card shadow-sm mb-4 border-danger">
@@ -1139,7 +1166,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                         </div>
                         <div class="card-body">
                             <ul class="mb-3 ps-4">
-                             
+                                
                                 @foreach($defTasks as $item)
                                 @php
                                 $grade = $item->task_grade ?? null;
@@ -1313,7 +1340,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                                         <label class="dropdown-option ps-3">
                                                             <input type="checkbox"
                                                                 name="select_courseTask[]"
-                                                                value="{{ $sublesson->id }}">
+                                                                value="{{ $sublesson->id }}" id="select_courseTask">
                                                             {{ $sublesson->title }}
                                                         </label>
                                                         @endforeach
@@ -1463,7 +1490,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                             @endif
                                             <div id="item_ids_uperror" class="text-danger error_e"></div>
                                         </div>
-                                        <div class="mb-2 select_course_task">
+                                        <div class="mb-2 select_course_task" id="custom_select_course_task">
                                             <div class="form-group">
                                                 <label for="courses" class="form-label">
                                                     Courses <span class="text-danger">*</span>
@@ -1602,7 +1629,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                             @foreach($eventLessons as $eventLesson)
                             <?php
-                            // dump($eventLesson);
+                           
                             $hours_credited = $eventLesson->hours_credited;
                             $hours_credited = "08:02:00"; // example
 
@@ -1678,11 +1705,10 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                                 <div id="lesson-{{ $eventLesson->id }}" class="accordion-collapse collapse" data-bs-parent="#faq-group-2">
                                     <div class="accordion-body">
-                                        <?php // dump($lesson); 
-                                        ?>
+                                   
                                         @if($lesson && $lesson->subLessons->isNotEmpty())
                                         @foreach($lesson->subLessons as $sublesson)
-
+                                           
                                         <div class="custom-box">
                                             <input type="hidden" name="tg_subLesson_id[]" value="{{ $sublesson->id }}">
                                             <div class="header" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $sublesson->id }}" aria-expanded="false">
@@ -1697,6 +1723,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                                 $selectedComment = $taskGrade->task_comment ?? null;
                                                 $isDeferred = in_array($sublesson->id, $deferredTaskIds);
                                                 @endphp
+                                              
                                                 <div class="main-tabledesign">
                                                     <input type="hidden" name="tg_user_id" value="{{ $student->id ?? '' }}">
                                                     <h5>{{ $student->fname ?? '' }} {{ $student->lname ?? '' }}</h5>
@@ -2478,7 +2505,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
             $('.select_course_task').hide();
         })
 
-        $('#open_add_custom_lesson').on('click', function() {
+        $('#open_add_custom_lesson').on('click', function() { 
             $('.error_e').html('');
             $("#deferredLessonForm")[0].reset();
             $("#addDeferredLessonModal .modal-title").text("Add Custom Lesson");
@@ -2486,6 +2513,10 @@ return sprintf("%02d:%02d", $hours, $minutes);
             $('#lesson_type').val("custom");
             $('.select_task').hide();
             $('.select_course_task').show();
+           $('#select_courseTask').prop('checked', false).closest('label').hide();
+
+
+
         });
 
         $(document).on("submit", "#gradingFrom", function(e) {
@@ -2866,13 +2897,14 @@ return sprintf("%02d:%02d", $hours, $minutes);
         });
 
 
-        $(document).on("click", "#edit_custom_lesson, #edit_deferred_lesson", function() {
+        $(document).on("click", "#edit_custom_lesson, #edit_deferred_lesson", function() { 
             var event_id = $(this).attr("data-event_id");
 
             var lesson_type = $(this).attr("data-lesson-Type");
             if (lesson_type == "custom") {
                 $('#edit_lesson_type').val("custom");
                 var custom_lesson_id = $(this).attr("data-custom-lesson-id");
+              $('#custom_select_course_task').show();
                 vdata = {
                     event_id: event_id,
                     custom_lesson_id: custom_lesson_id,
@@ -2884,6 +2916,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
             } else if (lesson_type == "deferred") {
                 $('#edit_lesson_type').val("deferred");
                 var deferred_lesson_id = $(this).attr("data-deferred-lesson-id");
+                  $('#custom_select_course_task').hide();
                 vdata = {
                     event_id: event_id,
                     deferred_lesson_id: deferred_lesson_id,
