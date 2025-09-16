@@ -1092,7 +1092,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                             @if(isset($customLessons) && $customLessons->isNotEmpty())
                             @foreach($customLessons as $custom)
-                             <?php dump("hello"); ?>
+                            
                             <?php 
                            //  $lessonType = $customLessons?->deftasks?->subddddLesson?->courseLesson?->lesson_type;
                             ?>
