@@ -31,6 +31,7 @@ use Auth;
 
 
 
+
 class TrainingEventsController extends Controller
 {
     public function index()
@@ -931,57 +932,111 @@ class TrainingEventsController extends Controller
 
         //Retrieve feedback data
         $trainingFeedbacks = $trainingEvent->trainingFeedbacks;
+        // $defTasks = collect(DB::select("
+        //     SELECT 
+        //         dt.*,
+        //         sl.title AS task_title,
+
+        //         -- Prefer task_grade from dlt, else fallback to tg
+        //         CASE 
+        //             WHEN dlt.task_grade IS NOT NULL THEN dlt.task_grade
+        //             ELSE tg.task_grade
+        //         END AS task_grade,
+
+        //         CASE 
+        //             WHEN dlt.task_comment IS NOT NULL THEN dlt.task_comment
+        //             ELSE tg.task_comment
+        //         END AS task_comment
+
+        //     FROM def_tasks dt
+
+        //     -- Subquery join for latest def_lesson_tasks
+        //     LEFT JOIN (
+        //         SELECT dlt.*
+        //         FROM def_lesson_tasks dlt
+        //         INNER JOIN (
+        //             SELECT event_id, user_id, task_id, MAX(id) AS max_id
+        //             FROM def_lesson_tasks
+        //             GROUP BY event_id, user_id, task_id
+        //         ) latest_dlt
+        //         ON dlt.id = latest_dlt.max_id
+        //     ) dlt ON dlt.event_id = dt.event_id
+        //         AND dlt.user_id = dt.user_id
+        //         AND dlt.task_id = dt.task_id
+
+        //     -- Subquery join for latest task_gradings
+        //     LEFT JOIN (
+        //         SELECT tg.*
+        //         FROM task_gradings tg
+        //         INNER JOIN (
+        //             SELECT event_id, user_id, sub_lesson_id, MAX(id) AS max_id
+        //             FROM task_gradings
+        //             GROUP BY event_id, user_id, sub_lesson_id
+        //         ) latest_tg
+        //         ON tg.id = latest_tg.max_id
+        //     ) tg ON tg.event_id = dt.event_id
+        //         AND tg.user_id = dt.user_id
+        //         AND tg.sub_lesson_id = dt.task_id
+
+        //     -- Join to get sublesson title
+        //     LEFT JOIN sub_lessons sl ON sl.id = dt.task_id
+
+        //     WHERE dt.event_id = ?
+        // ", [$trainingEvent->id]));
         $defTasks = collect(DB::select("
-            SELECT 
-                dt.*,
-                sl.title AS task_title,
+    SELECT 
+        dt.*,
+        sl.title AS task_title,
 
-                -- Prefer task_grade from dlt, else fallback to tg
-                CASE 
-                    WHEN dlt.task_grade IS NOT NULL THEN dlt.task_grade
-                    ELSE tg.task_grade
-                END AS task_grade,
+        -- Prefer task_grade from dlt, else fallback to tg
+        CASE 
+            WHEN dlt.task_grade IS NOT NULL THEN dlt.task_grade
+            ELSE tg.task_grade
+        END AS task_grade,
 
-                CASE 
-                    WHEN dlt.task_comment IS NOT NULL THEN dlt.task_comment
-                    ELSE tg.task_comment
-                END AS task_comment
+        CASE 
+            WHEN dlt.task_comment IS NOT NULL THEN dlt.task_comment
+            ELSE tg.task_comment
+        END AS task_comment
 
-            FROM def_tasks dt
+    FROM def_tasks dt
 
-            -- Subquery join for latest def_lesson_tasks
-            LEFT JOIN (
-                SELECT dlt.*
-                FROM def_lesson_tasks dlt
-                INNER JOIN (
-                    SELECT event_id, user_id, task_id, MAX(id) AS max_id
-                    FROM def_lesson_tasks
-                    GROUP BY event_id, user_id, task_id
-                ) latest_dlt
-                ON dlt.id = latest_dlt.max_id
-            ) dlt ON dlt.event_id = dt.event_id
-                AND dlt.user_id = dt.user_id
-                AND dlt.task_id = dt.task_id
+    -- Subquery join for latest def_lesson_tasks (ignore soft-deleted)
+    LEFT JOIN (
+        SELECT dlt.*
+        FROM def_lesson_tasks dlt
+        INNER JOIN (
+            SELECT event_id, user_id, task_id, MAX(id) AS max_id
+            FROM def_lesson_tasks
+            WHERE deleted_at IS NULL
+            GROUP BY event_id, user_id, task_id
+        ) latest_dlt
+        ON dlt.id = latest_dlt.max_id
+        WHERE dlt.deleted_at IS NULL
+    ) dlt ON dlt.event_id = dt.event_id
+        AND dlt.user_id = dt.user_id
+        AND dlt.task_id = dt.task_id
 
-            -- Subquery join for latest task_gradings
-            LEFT JOIN (
-                SELECT tg.*
-                FROM task_gradings tg
-                INNER JOIN (
-                    SELECT event_id, user_id, sub_lesson_id, MAX(id) AS max_id
-                    FROM task_gradings
-                    GROUP BY event_id, user_id, sub_lesson_id
-                ) latest_tg
-                ON tg.id = latest_tg.max_id
-            ) tg ON tg.event_id = dt.event_id
-                AND tg.user_id = dt.user_id
-                AND tg.sub_lesson_id = dt.task_id
+    -- Subquery join for latest task_gradings
+    LEFT JOIN (
+        SELECT tg.*
+        FROM task_gradings tg
+        INNER JOIN (
+            SELECT event_id, user_id, sub_lesson_id, MAX(id) AS max_id
+            FROM task_gradings
+            GROUP BY event_id, user_id, sub_lesson_id
+        ) latest_tg
+        ON tg.id = latest_tg.max_id
+    ) tg ON tg.event_id = dt.event_id
+        AND tg.user_id = dt.user_id
+        AND tg.sub_lesson_id = dt.task_id
 
-            -- Join to get sublesson title
-            LEFT JOIN sub_lessons sl ON sl.id = dt.task_id
+    -- Join to get sublesson title
+    LEFT JOIN sub_lessons sl ON sl.id = dt.task_id
 
-            WHERE dt.event_id = ?
-        ", [$trainingEvent->id]));
+    WHERE dt.event_id = ?
+", [$trainingEvent->id]));
+
 
         $getFirstdeftTasks = TaskGrading::where('event_id', $trainingEvent->id)
             ->whereIn('task_grade', ['Incomplete', 'Further training required'])
@@ -1205,30 +1260,99 @@ class TrainingEventsController extends Controller
         ], 200);
     }
 
+ 
 
-    public function delete_deferredLesson(Request $request)
-    {
-        $deferred_lesson_id = $request->deferred_lesson_id;
+public function delete_deferredLesson(Request $request)
+{
+    $deferred_lesson_id = $request->deferred_lesson_id;
 
+    try {
+        DB::beginTransaction();
+
+        // Get DefLessonTask before delete
+        $def_lesson = DefLessonTask::where('def_lesson_id', $deferred_lesson_id)->get();
+
+        foreach ($def_lesson as $val) {
+            $create_def_task = [
+                "event_id" => $val->event_id,
+                "user_id"  => $val->user_id,
+                "task_id"  => $val->task_id,
+            ];
+            DefTask::create($create_def_task);
+        }
+
+        // Delete def lesson
         $lesson = DefLesson::find($deferred_lesson_id);
-
         if (!$lesson) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => "Lesson not found"
             ], 404);
         }
 
-        // Delete manually
         DefLessonTask::where('def_lesson_id', $deferred_lesson_id)->delete();
         DeferredGrading::where('deflesson_id', $deferred_lesson_id)->delete();
         $lesson->delete();
+
+        DB::commit();
 
         return response()->json([
             'success' => true,
             'message' => "Lesson deleted successfully"
         ], 200);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        return response()->json([
+            'success' => false,
+            'message' => "Error: " . $e->getMessage()
+        ], 500);
     }
+}
+
+
+
+    // public function delete_deferredLesson(Request $request)
+    // {
+    //     $deferred_lesson_id = $request->deferred_lesson_id;
+
+    //     // Store DefTask before delete
+
+    //     $def_lesson =  DefLessonTask::where('def_lesson_id', $deferred_lesson_id)->get();
+     
+    //     foreach($def_lesson as $val)
+    //     {
+    //      $create_def_task = array(
+    //         "event_id"  => $val->event_id,
+    //         "user_id"   => $val->user_id,
+    //         "task_id"    => $val->task_id,
+    //     );
+        
+    //          DefTask::create($create_def_task);
+    //     }
+
+    //     // Delete def lesson
+
+    //     $lesson = DefLesson::find($deferred_lesson_id);
+    //     if (!$lesson) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => "Lesson not found"
+    //         ], 404);
+    //     }
+
+    //     // Delete manually
+    //     DefLessonTask::where('def_lesson_id', $deferred_lesson_id)->delete();
+    //     DeferredGrading::where('deflesson_id', $deferred_lesson_id)->delete();
+    //     $lesson->delete();
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => "Lesson deleted successfully"
+    //     ], 200);
+    // }
     // public function update_deferred_form(Request $request)
     // {
     //     if ($request->lesson_type == "custom") {
@@ -2311,10 +2435,6 @@ class TrainingEventsController extends Controller
             }
         }
 
-
-
-
-
         Session::flash('message', 'Student grading updated successfully.');
 
         return response()->json([
@@ -2465,6 +2585,10 @@ class TrainingEventsController extends Controller
             'grade_type'   => $sub_lesson->grade_type,
             'is_mandatory' => $sub_lesson->is_mandatory,
             'status'       => $sub_lesson->status,
+            'normal_lesson'=> 1,
+            'event_id'     => $request->event_id,
+            'user_id'      => $request->std_id,
+            'task_id'      => $request->def_id
         ];
 
         $exists = SubLesson::where('lesson_id', $request->lesson)
@@ -2504,4 +2628,47 @@ class TrainingEventsController extends Controller
       $getLessonId =  SubLesson::where('id', $request->task_id)->pluck('lesson_id');
       return response()->json(['status' => 'success','lessonId' => $getLessonId[0]]);
     }
+
+
+
+public function backToDeferredLesson(Request $request)
+{
+    DB::beginTransaction();
+
+    try {
+        // Create def task
+        $def_task = [
+            'event_id'   => $request->event_id,
+            'user_id'    => $request->user_id,
+            'task_id'    => $request->task_id,
+            'created_by' => auth()->id(),
+        ];
+
+        DefTask::create($def_task);
+
+        // Delete sub lesson
+        SubLesson::where('id', $request->sublesson_id)
+                 ->where('lesson_id', $request->lesson_id)
+                 ->delete();
+
+        TaskGrading::where('sub_lesson_id', $request->sublesson_id)
+                    ->where('lesson_id', $request->lesson_id)
+                     ->delete();
+
+        // Commit if everything is fine
+        DB::commit();
+
+        return response()->json(['status' => 'success']);
+
+    } catch (\Exception $e) {
+        // Rollback all queries if something fails
+        DB::rollBack();
+
+        return response()->json([
+            'status'  => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
+
 }

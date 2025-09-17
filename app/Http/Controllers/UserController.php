@@ -931,8 +931,8 @@ class UserController extends Controller
             if ($userToUpdate->rating_required == 1 && $request->filled('issue_date')) {
                 foreach ($request->input('issue_date') as $ratingId => $issueDate) {
                     if (!empty($issueDate)) {
-                        $rules["issue_date.$ratingId.issue_date"] = 'required|date';
-                        $rules["expiry_date.$ratingId.expiry_date"] = 'required|date|after_or_equal:issue_date.' . $ratingId . '.issue_date';
+                      //  $rules["issue_date.$ratingId.issue_date"] = 'required|date';
+                      //  $rules["expiry_date.$ratingId.expiry_date"] = 'required|date|after_or_equal:issue_date.' . $ratingId . '.issue_date';
 
                         // Check if existing UserRating has file_path
                         $existingRating = UserRating::where('user_id', $userToUpdate->id)

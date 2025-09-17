@@ -21,6 +21,10 @@ class SubLesson extends Model
         'grade_type',
         'is_mandatory',
         'status',
+        'normal_lesson',
+        'event_id',
+        'user_id',
+        'task_id'
 
     ];
 
