@@ -1600,3 +1600,14 @@ display: flex;
   .dashboard_doc_tab .lic_rating_td .parent_rate {
     margin-bottom: 8px;
 }
+.back_deffered {
+    text-align: right;
+    margin-bottom: 5px;
+}
+
+.back_deffered a {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+    padding: 5px 10px;
+}
