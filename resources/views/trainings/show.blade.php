@@ -1497,10 +1497,23 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                         <div class="mb-2 select_task" id="select_task">
                                             <label class="form-label">Select Tasks <span class="text-danger">*</span></label>
                                             {{-- TaskGrading items --}}
+                                            @if(isset($defTasks) && $defTasks->isNotEmpty())
+                                                @foreach($defTasks as $item)
+                                                <div class="form-check previous" style="margin-left: 22px;">
+                                                    <input type="checkbox" class="form-check-input" name="item_ids[]" value="{{ $item->task_id }}">
+                                                    <label class="form-check-label">
+                                                        {{ $item->task_title ?? 'N/A' }}
+                                                    </label>
+                                                </div>
+                                                @endforeach
+                                             @endif
+                                              <div class="form-check taskContainer">
+
+                                               </div>
                                       
-                                            <div class="form-check taskContainer">
+                                            <!-- <div class="form-check ">
                                                
-                                            </div>
+                                            </div> -->
                                       
                                             <div id="item_ids_uperror" class="text-danger error_e"></div>
                                         </div>
@@ -1515,7 +1528,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                                     <div class="dropdown-list">
                                                         <a href="#" id="check-all-courses" data-toggle="check-all" class="dropdown-option">Check All</a>
 
-                                                        @foreach($eventLessons as $eventLesson)
+                                                        @foreach($eventLessons as $eventLesson) 
                                                         @php $lesson = $eventLesson->lesson; @endphp
                                                         @if($lesson && $lesson->subLessons->isNotEmpty())
                                                         <div class="dropdown-option fw-bold">{{ $lesson->lesson_title }}</div>
@@ -3017,13 +3030,9 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                     <label class="form-check-label">${value.task.title}</label>
                                 </div>
                             `;
-                            $('.taskContainer').append(append_task); // Replace taskContainer with your div ID
+                          $('.taskContainer').append(append_task);
                         });
                     }
-
-
-                 
-
                     $('#edit_DeferredLessonModal').modal('show');
                 },
 
