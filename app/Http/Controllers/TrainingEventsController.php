@@ -1620,10 +1620,6 @@ class TrainingEventsController extends Controller
             DefTask::create($def_task);
                 
             }
-          
-                   
-          
-
             // Remove tasks not in new selection
             DefLessonTask::where('def_lesson_id', $deferredLessons_id)
                 ->whereNotIn('task_id', $selectedTasks)
@@ -1675,6 +1671,8 @@ class TrainingEventsController extends Controller
                             'created_by'    => $authId,
                         ]);
                     }
+
+                    DefTask::where('event_id', $eventId)->where('user_id', $studentId)->where('task_id', $taskId   )->delete();
                 }
             
 
