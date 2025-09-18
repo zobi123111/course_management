@@ -1354,10 +1354,12 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                                         @if($lesson && $lesson->subLessons->isNotEmpty())
                                                         <div class="dropdown-option fw-bold">{{ $lesson->lesson_title }}</div>
                                                         @foreach($lesson->subLessons as $sublesson)
-                                                        <label class="dropdown-option ps-3">
+                                                    
+                                                    <label class="dropdown-option ps-3" for="sublesson-{{ $sublesson->id }}">
                                                             <input type="checkbox"
                                                                 name="select_courseTask[]"
-                                                                value="{{ $sublesson->id }}" id="select_courseTask">
+                                                                value="{{ $sublesson->id }}"
+                                                                id="sublesson-{{ $sublesson->id }}">
                                                             {{ $sublesson->title }}
                                                         </label>
                                                         @endforeach
@@ -1492,19 +1494,14 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                             </select>
                                             <div id="resource_id_uperror" class="text-danger error_e"></div>
                                         </div>
-                                        <div class="mb-2 select_task" style="display:none">
+                                        <div class="mb-2 select_task" id="select_task">
                                             <label class="form-label">Select Tasks <span class="text-danger">*</span></label>
                                             {{-- TaskGrading items --}}
-                                            @if(isset($defTasks) && $defTasks->isNotEmpty())
-                                            @foreach($defTasks as $item)
-                                            <div class="form-check">
-                                                <input type="checkbox" class="form-check-input" name="item_ids[]" value="{{ $item->task_id }}">
-                                                <label class="form-check-label">
-                                                    {{ $item->task_title ?? 'N/A' }}
-                                                </label>
+                                      
+                                            <div class="form-check taskContainer">
+                                               
                                             </div>
-                                            @endforeach
-                                            @endif
+                                      
                                             <div id="item_ids_uperror" class="text-danger error_e"></div>
                                         </div>
                                         <div class="mb-2 select_course_task" id="custom_select_course_task">
@@ -2930,14 +2927,17 @@ return sprintf("%02d:%02d", $hours, $minutes);
         });
 
 
-        $(document).on("click", "#edit_custom_lesson, #edit_deferred_lesson", function() {
+        $(document).on("click", "#edit_custom_lesson, #edit_deferred_lesson", function() { 
+            $('.error_e').empty();
             var event_id = $(this).attr("data-event_id");
-
             var lesson_type = $(this).attr("data-lesson-Type");
             if (lesson_type == "custom") {
+                
+                $('#select_task').hide();
                 $('#edit_lesson_type').val("custom");
                 var custom_lesson_id = $(this).attr("data-custom-lesson-id");
                 $('#custom_select_course_task').show();
+
                 vdata = {
                     event_id: event_id,
                     custom_lesson_id: custom_lesson_id,
@@ -2947,6 +2947,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
 
             } else if (lesson_type == "deferred") {
+                  $('#select_task').show();
                 $('#edit_lesson_type').val("deferred");
                 var deferred_lesson_id = $(this).attr("data-deferred-lesson-id");
                 $('#custom_select_course_task').hide();
@@ -2963,7 +2964,6 @@ return sprintf("%02d:%02d", $hours, $minutes);
                 type: 'POST',
                 data: vdata,
                 success: function(response) {
-                    console.log(response);
 
                     $('#deferredLessons_id').val(response.deferredLessons[0].id);
 
@@ -2991,7 +2991,8 @@ return sprintf("%02d:%02d", $hours, $minutes);
                     // reset checkboxes first
                     $("input[name='select_courseTask[]']").prop("checked", false);
 
-                    if (response.defLessonTasks && response.defLessonTasks.length > 0) {
+                    if (lesson_type === "custom") {
+                           if (response.defLessonTasks && response.defLessonTasks.length > 0) {
                         $.each(response.defLessonTasks, function(index, value) {
                             $("input[name='select_courseTask[]'][value='" + value.task_id + "']").prop("checked", true);
                         });
@@ -3001,6 +3002,27 @@ return sprintf("%02d:%02d", $hours, $minutes);
                     } else {
                         $(".course-dropdown .dropdown-label").text("Select Courses");
                     }
+
+                    }
+               else {
+                        $('.taskContainer').empty();
+                        // console.log(response.deferredLessons);
+                        $.each(response.defLessonTasks, function(index, value) {
+                            console.log(value.task_id);
+                            console.log(value.task.title);
+
+                            let append_task = `
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" name="item_ids[]" checked value="${value.task_id}">
+                                    <label class="form-check-label">${value.task.title}</label>
+                                </div>
+                            `;
+                            $('.taskContainer').append(append_task); // Replace taskContainer with your div ID
+                        });
+                    }
+
+
+                 
 
                     $('#edit_DeferredLessonModal').modal('show');
                 },
