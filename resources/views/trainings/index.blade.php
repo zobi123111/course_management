@@ -73,8 +73,8 @@
                             <i class="fa fa-eye text-danger me-2"></i>
                             </a>            
                         @endif
-                
-                        @if($event->can_end_course)
+                    
+                        @if($event->can_end_course) 
                             {{-- Active “End Course” button/icon --}}
                             <button class="btn btn-sm btn-flag-checkered end-course-btn" data-event-id="{{ encode_id($event->id) }}"
                                 title="End Course/Event" >
@@ -799,7 +799,7 @@ $(document).ready(function() {
                     instructor_license_number: lesson.instructor_license_number || '',
                     hours_credited: lesson.hours_credited || '',
 
-                };
+                }; 
             });
         }
      

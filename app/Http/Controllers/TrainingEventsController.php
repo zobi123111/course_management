@@ -1113,7 +1113,7 @@ class TrainingEventsController extends Controller
         $event_id = $request->event_id;
 
         $lesson_type = $request->lesson_type;
-        //dd($lesson_type);
+       
         if ($lesson_type == "custom") {
             $custom_lesson_id = $request->custom_lesson_id;
         }
@@ -1260,57 +1260,56 @@ class TrainingEventsController extends Controller
         ], 200);
     }
 
- 
 
-public function delete_deferredLesson(Request $request)
-{
-    $deferred_lesson_id = $request->deferred_lesson_id;
 
-    try {
-        DB::beginTransaction();
+    public function delete_deferredLesson(Request $request)
+    {
+        $deferred_lesson_id = $request->deferred_lesson_id;
 
-        // Get DefLessonTask before delete
-        $def_lesson = DefLessonTask::where('def_lesson_id', $deferred_lesson_id)->get();
+        try {
+            DB::beginTransaction();
 
-        foreach ($def_lesson as $val) {
-            $create_def_task = [
-                "event_id" => $val->event_id,
-                "user_id"  => $val->user_id,
-                "task_id"  => $val->task_id,
-            ];
-            DefTask::create($create_def_task);
-        }
+            // Get DefLessonTask before delete
+            $def_lesson = DefLessonTask::where('def_lesson_id', $deferred_lesson_id)->get();
 
-        // Delete def lesson
-        $lesson = DefLesson::find($deferred_lesson_id);
-        if (!$lesson) {
+            foreach ($def_lesson as $val) {
+                $create_def_task = [
+                    "event_id" => $val->event_id,
+                    "user_id"  => $val->user_id,
+                    "task_id"  => $val->task_id,
+                ];
+                DefTask::create($create_def_task);
+            }
+
+            // Delete def lesson
+            $lesson = DefLesson::find($deferred_lesson_id);
+            if (!$lesson) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => "Lesson not found"
+                ], 404);
+            }
+
+            DefLessonTask::where('def_lesson_id', $deferred_lesson_id)->delete();
+            DeferredGrading::where('deflesson_id', $deferred_lesson_id)->delete();
+            $lesson->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Lesson deleted successfully"
+            ], 200);
+        } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => "Lesson not found"
-            ], 404);
+                'message' => "Error: " . $e->getMessage()
+            ], 500);
         }
-
-        DefLessonTask::where('def_lesson_id', $deferred_lesson_id)->delete();
-        DeferredGrading::where('deflesson_id', $deferred_lesson_id)->delete();
-        $lesson->delete();
-
-        DB::commit();
-
-        return response()->json([
-            'success' => true,
-            'message' => "Lesson deleted successfully"
-        ], 200);
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-
-        return response()->json([
-            'success' => false,
-            'message' => "Error: " . $e->getMessage()
-        ], 500);
     }
-}
 
 
 
@@ -1321,7 +1320,7 @@ public function delete_deferredLesson(Request $request)
     //     // Store DefTask before delete
 
     //     $def_lesson =  DefLessonTask::where('def_lesson_id', $deferred_lesson_id)->get();
-     
+
     //     foreach($def_lesson as $val)
     //     {
     //      $create_def_task = array(
@@ -1329,7 +1328,7 @@ public function delete_deferredLesson(Request $request)
     //         "user_id"   => $val->user_id,
     //         "task_id"    => $val->task_id,
     //     );
-        
+
     //          DefTask::create($create_def_task);
     //     }
 
@@ -1347,12 +1346,7 @@ public function delete_deferredLesson(Request $request)
     //     DefLessonTask::where('def_lesson_id', $deferred_lesson_id)->delete();
     //     DeferredGrading::where('deflesson_id', $deferred_lesson_id)->delete();
     //     $lesson->delete();
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => "Lesson deleted successfully"
-    //     ], 200);
-    // }
+ 
     // public function update_deferred_form(Request $request)
     // {
     //     if ($request->lesson_type == "custom") {
@@ -1451,110 +1445,245 @@ public function delete_deferredLesson(Request $request)
 
     public function update_deferred_form(Request $request)
     {
-        // if ($request->lesson_type == "custom") {
-        $validatedData = $request->validate([
-            'event_id'      => 'required|integer|exists:training_events,id',
-            'lesson_title'  => 'required|string|max:255',
-            'select_courseTask'      => 'required|array',
-            'select_courseTask.*'    => 'integer|exists:sub_lessons,id',
-            'lesson_date'   => 'required|date',
-            'start_time'    => 'required|date_format:H:i',
-            'end_time'      => 'required|date_format:H:i|after:start_time',
-            'resource_id'   => 'required|integer|exists:resources,id',
-            'instructor_id' => 'required|integer|exists:users,id',
-            'std_id'        => 'required|integer|exists:users,id',
-            'departure_airfield'   => 'nullable|string|max:4',
-            'destination_airfield' => 'nullable|string|max:4',
-        ], [], [
-            'item_ids'     => 'Tasks',
-            'resource_id'  => 'Resource',
-            'instructor_id' => 'Instructor'
-        ]);
 
-        $eventId = $validatedData['event_id'];
-        $studentId = $validatedData['std_id'];
-        $authId = auth()->id();
-        $deferredLessons_id = $request->deferredLessons_id;
+        if ($request->lesson_type == "custom") {
+            $validatedData = $request->validate([
+                'event_id'      => 'required|integer|exists:training_events,id',
+                'lesson_title'  => 'required|string|max:255',
+                'select_courseTask'      => 'required|array',
+                'select_courseTask.*'    => 'integer|exists:sub_lessons,id',
+                'lesson_date'   => 'required|date',
+                'start_time'    => 'required|date_format:H:i',
+                'end_time'      => 'required|date_format:H:i|after:start_time',
+                'resource_id'   => 'required|integer|exists:resources,id',
+                'instructor_id' => 'required|integer|exists:users,id',
+                'std_id'        => 'required|integer|exists:users,id',
+                'departure_airfield'   => 'nullable|string|max:4',
+                'destination_airfield' => 'nullable|string|max:4',
+            ], [], [
+                'item_ids'     => 'Tasks',
+                'resource_id'  => 'Resource',
+                'instructor_id' => 'Instructor'
+            ]);
 
-        $update_deffered_lesson = [
-            'event_id'      => $eventId,
-            'user_id'       => $studentId,
-            'task_ids'      => $validatedData['select_courseTask'],
-            'instructor_id' => $validatedData['instructor_id'],
-            'resource_id'   => $validatedData['resource_id'],
-            'lesson_title'  => $validatedData['lesson_title'],
-            'lesson_date'   => $validatedData['lesson_date'],
-            'start_time'    => $validatedData['start_time'],
-            'end_time'      => $validatedData['end_time'],
-            'departure_airfield'   => $validatedData['departure_airfield'],
-            'destination_airfield' => $validatedData['destination_airfield'],
-            'created_by'    => $authId,
-            'lesson_type'   => $request->lesson_type
-        ];
+            $eventId = $validatedData['event_id'];
+            $studentId = $validatedData['std_id'];
+            $authId = auth()->id();
+            $deferredLessons_id = $request->deferredLessons_id;
 
-        // Update lesson details
-        DefLesson::where('id', $deferredLessons_id)->update($update_deffered_lesson);
-
-        $selectedTasks = $validatedData['select_courseTask'];
-
-        // Remove tasks not in new selection
-        DefLessonTask::where('def_lesson_id', $deferredLessons_id)
-            ->whereNotIn('task_id', $selectedTasks)
-            ->delete();
-
-        foreach ($selectedTasks as $taskId) {
-            // Check if already exists
-            $exists = DefLessonTask::where([
-                'def_lesson_id' => $deferredLessons_id,
+            $update_deffered_lesson = [
                 'event_id'      => $eventId,
                 'user_id'       => $studentId,
-                'task_id'       => $taskId,
-            ])->exists();
+                'task_ids'      => $validatedData['select_courseTask'],
+                'instructor_id' => $validatedData['instructor_id'],
+                'resource_id'   => $validatedData['resource_id'],
+                'lesson_title'  => $validatedData['lesson_title'],
+                'lesson_date'   => $validatedData['lesson_date'],
+                'start_time'    => $validatedData['start_time'],
+                'end_time'      => $validatedData['end_time'],
+                'departure_airfield'   => $validatedData['departure_airfield'],
+                'destination_airfield' => $validatedData['destination_airfield'],
+                'created_by'    => $authId,
+                'lesson_type'   => $request->lesson_type
+            ];
 
-            if (!$exists) {
-                // Calculate credit minutes
-                $get_lesson_id = SubLesson::where('id', $taskId)->value('lesson_id');
-                $lessonType  = CourseLesson::where('id', $get_lesson_id)->value('lesson_type');
+            // Update lesson details
+            DefLesson::where('id', $deferredLessons_id)->update($update_deffered_lesson);
 
-                $start = $validatedData['start_time'] ?? null;
-                $end = $validatedData['end_time'] ?? null;
-                $creditMinutes = 0;
+            $selectedTasks = $validatedData['select_courseTask'];
 
-                if ($lessonType === 'groundschool' && $validatedData['resource_id'] == 3) {
-                    $creditMinutes = 480;
-                    $start = '00:00';
-                    $end = '08:00';
-                } elseif ($start && $end) {
-                    try {
-                        $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
-                        $endTime = \Carbon\Carbon::createFromFormat('H:i', $end);
+            // Remove tasks not in new selection
+            DefLessonTask::where('def_lesson_id', $deferredLessons_id)
+                ->whereNotIn('task_id', $selectedTasks)
+                ->delete();
 
-                        if ($endTime->lessThan($startTime)) {
-                            $endTime->addDay();
+                foreach ($selectedTasks as $taskId) {
+                    // Check if already exists
+                    $exists = DefLessonTask::where([
+                        'def_lesson_id' => $deferredLessons_id,
+                        'event_id'      => $eventId,
+                        'user_id'       => $studentId,
+                        'task_id'       => $taskId,
+                    ])->exists();
+
+                    if (!$exists) {
+                        // Calculate credit minutes
+                        $get_lesson_id = SubLesson::where('id', $taskId)->value('lesson_id');
+                        $lessonType  = CourseLesson::where('id', $get_lesson_id)->value('lesson_type');
+
+                        $start = $validatedData['start_time'] ?? null;
+                        $end = $validatedData['end_time'] ?? null;
+                        $creditMinutes = 0;
+
+                        if ($lessonType === 'groundschool' && $validatedData['resource_id'] == 3) {
+                            $creditMinutes = 480;
+                            $start = '00:00';
+                            $end = '08:00';
+                        } elseif ($start && $end) {
+                            try {
+                                $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
+                                $endTime = \Carbon\Carbon::createFromFormat('H:i', $end);
+
+                                if ($endTime->lessThan($startTime)) {
+                                    $endTime->addDay();
+                                }
+
+                                $creditMinutes = $startTime->diffInMinutes($endTime);
+                            } catch (\Exception $e) {
+                                $creditMinutes = 0;
+                            }
                         }
 
-                        $creditMinutes = $startTime->diffInMinutes($endTime);
-                    } catch (\Exception $e) {
-                        $creditMinutes = 0;
+                        DefLessonTask::create([
+                            'def_lesson_id' => $deferredLessons_id,
+                            'event_id'      => $eventId,
+                            'user_id'       => $studentId,
+                            'task_id'       => $taskId,
+                            'hours_credited' => gmdate("H:i", $creditMinutes * 60),
+                            'created_by'    => $authId,
+                        ]);
                     }
                 }
+            
 
-                DefLessonTask::create([
-                    'def_lesson_id' => $deferredLessons_id,
-                    'event_id'      => $eventId,
-                    'user_id'       => $studentId,
-                    'task_id'       => $taskId,
-                    'hours_credited' => gmdate("H:i", $creditMinutes * 60),
-                    'created_by'    => $authId,
-                ]);
-            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $request->lesson_type
+            ], 201);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => $request->lesson_type
-        ], 201);
-        //  }
+        // Deferred Lessn 
+        else {
+           $validatedData = $request->validate([
+                'event_id'      => 'required|integer|exists:training_events,id',
+                'lesson_title'  => 'required|string|max:255',
+                'item_ids'      => 'required|array',
+                'item_ids.*'    => 'integer|exists:sub_lessons,id',
+                'lesson_date'   => 'required|date',
+                'start_time'    => 'required|date_format:H:i',
+                'end_time'      => 'required|date_format:H:i|after:start_time',
+                'resource_id'   => 'required|integer|exists:resources,id',
+                'instructor_id' => 'required|integer|exists:users,id',
+                'std_id'        => 'required|integer|exists:users,id',
+                'departure_airfield'   => 'nullable|string|max:4',
+                'destination_airfield' => 'nullable|string|max:4',
+            ], [], [
+                'item_ids'     => 'Tasks',
+                'resource_id'  => 'Resource',
+                'instructor_id' => 'Instructor'
+            ]);
+
+            $eventId = $validatedData['event_id'];
+            $studentId = $validatedData['std_id'];
+            $authId = auth()->id();
+            $deferredLessons_id = $request->deferredLessons_id;
+          
+
+            $update_deffered_lesson = [
+                'event_id'      => $eventId,
+                'user_id'       => $studentId,
+                'task_ids'      => $validatedData['item_ids'],
+                'instructor_id' => $validatedData['instructor_id'],
+                'resource_id'   => $validatedData['resource_id'],
+                'lesson_title'  => $validatedData['lesson_title'],
+                'lesson_date'   => $validatedData['lesson_date'],
+                'start_time'    => $validatedData['start_time'],
+                'end_time'      => $validatedData['end_time'],
+                'departure_airfield'   => $validatedData['departure_airfield'],
+                'destination_airfield' => $validatedData['destination_airfield'],
+                'created_by'    => $authId,
+                'lesson_type'   => $request->lesson_type
+            ];
+
+            // Update lesson details
+          //  DefLesson::where('id', $deferredLessons_id)->update($update_deffered_lesson);
+
+            $selectedTasks = $validatedData['item_ids'];
+         
+            // Restore Def task
+
+            $existingTasks = DefLessonTask::where('def_lesson_id', $deferredLessons_id)
+                ->pluck('task_id')
+                ->toArray();
+             
+
+
+            $tasksToAdd = array_diff($existingTasks, $selectedTasks);
+            foreach($tasksToAdd as $val){
+                $def_task = array(
+                'event_id' => $eventId,
+                'user_id'  => $studentId,
+                'task_id'  => $val,
+                'created_by'=> $authId
+                );
+            DefTask::create($def_task);
+                
+            }
+          
+                   
+          
+
+            // Remove tasks not in new selection
+            DefLessonTask::where('def_lesson_id', $deferredLessons_id)
+                ->whereNotIn('task_id', $selectedTasks)
+                ->delete();
+
+                foreach ($selectedTasks as $taskId) {
+                    // Check if already exists
+                    $exists = DefLessonTask::where([
+                        'def_lesson_id' => $deferredLessons_id,
+                        'event_id'      => $eventId,
+                        'user_id'       => $studentId,
+                        'task_id'       => $taskId,
+                    ])->exists();
+
+                    if (!$exists) {
+                        // Calculate credit minutes
+                        $get_lesson_id = SubLesson::where('id', $taskId)->value('lesson_id');
+                        $lessonType  = CourseLesson::where('id', $get_lesson_id)->value('lesson_type');
+
+                        $start = $validatedData['start_time'] ?? null;
+                        $end = $validatedData['end_time'] ?? null;
+                        $creditMinutes = 0;
+
+                        if ($lessonType === 'groundschool' && $validatedData['resource_id'] == 3) {
+                            $creditMinutes = 480;
+                            $start = '00:00';
+                            $end = '08:00';
+                        } elseif ($start && $end) {
+                            try {
+                                $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
+                                $endTime = \Carbon\Carbon::createFromFormat('H:i', $end);
+
+                                if ($endTime->lessThan($startTime)) {
+                                    $endTime->addDay();
+                                }
+
+                                $creditMinutes = $startTime->diffInMinutes($endTime);
+                            } catch (\Exception $e) {
+                                $creditMinutes = 0;
+                            }
+                        }
+
+                        DefLessonTask::create([
+                            'def_lesson_id' => $deferredLessons_id,
+                            'event_id'      => $eventId,
+                            'user_id'       => $studentId,
+                            'task_id'       => $taskId,
+                            'hours_credited' => gmdate("H:i", $creditMinutes * 60),
+                            'created_by'    => $authId,
+                        ]);
+                    }
+                }
+            
+
+
+            return response()->json([
+                'success' => true,
+                'message' => $request->lesson_type
+            ], 201);
+        }
     }
 
 
@@ -1843,7 +1972,7 @@ public function delete_deferredLesson(Request $request)
                 'documents.courseDocument:id,document_name',
             ])
             ->first();
-        // dd($event);
+       
 
 
 
@@ -1959,7 +2088,7 @@ public function delete_deferredLesson(Request $request)
     public function downloadLessonReport($event_id, $lesson_id, $userID)
     {
         $userId = $userID;
-        // dd($lesson_id);
+      
         $event = TrainingEvents::with([
             'course:id,course_name',
             'orgUnit:id,org_unit_name,org_logo',
@@ -2017,7 +2146,7 @@ public function delete_deferredLesson(Request $request)
         // Loop through the uploaded files
         foreach ($request->file('training_event_documents', []) as $courseDocId => $file) {
             // If file exists in the form input
-            // dd($file);
+           
             if ($file) {
                 // Get the original file name
                 $originalName = $file->getClientOriginalName();
@@ -2126,7 +2255,7 @@ public function delete_deferredLesson(Request $request)
             $eventId = $validatedData['event_id'];
             $studentId = $validatedData['std_id'];
             $authId = auth()->id();
-            // dd($validatedData['select_courseTask']);
+           
             $defLesson = DefLesson::create([
                 'event_id'      => $eventId,
                 'user_id'       => $studentId,
@@ -2300,7 +2429,7 @@ public function delete_deferredLesson(Request $request)
 
         foreach ($request->input('task_grade_def') as $task_id => $lessonGrades) {
             foreach ($lessonGrades as $def_lesson_id => $task_grade) {
-              
+
 
                 $task_comment = $request->input("task_comment_def.$task_id.$def_lesson_id", null);
 
@@ -2566,9 +2695,9 @@ public function delete_deferredLesson(Request $request)
         ], 403);
     }
 
-   public function submit_normal_items(Request $request)
+    public function submit_normal_items(Request $request)
     {
-        
+
 
         // Fetch the sub lesson
         $sub_lesson = SubLesson::find($request->def_id);
@@ -2585,7 +2714,7 @@ public function delete_deferredLesson(Request $request)
             'grade_type'   => $sub_lesson->grade_type,
             'is_mandatory' => $sub_lesson->is_mandatory,
             'status'       => $sub_lesson->status,
-            'normal_lesson'=> 1,
+            'normal_lesson' => 1,
             'event_id'     => $request->event_id,
             'user_id'      => $request->std_id,
             'task_id'      => $request->def_id
@@ -2595,7 +2724,7 @@ public function delete_deferredLesson(Request $request)
             ->where('title', $sub_lesson->title)
             ->exists();
 
-     if ($exists) {
+        if ($exists) {
             return response()->json([
                 'status'  => 'error',
                 'message' => 'Task already exists in this Lesson. Please transfer to another Lesson.',
@@ -2605,15 +2734,15 @@ public function delete_deferredLesson(Request $request)
         // Insert into sub lessons
         SubLesson::create($NormalLesson);
         DefTask::where('event_id', $request->event_id)
-                ->where('user_id', $request->std_id)
-                ->where('task_id', $request->def_id)
-                ->delete();
+            ->where('user_id', $request->std_id)
+            ->where('task_id', $request->def_id)
+            ->delete();
 
-                 
+
         TrainingEventLessons::where('training_event_id', $request->event_id)
-                            ->where('lesson_id', $request->lesson)
-                            ->update(['is_locked' => 0]);
-                    
+            ->where('lesson_id', $request->lesson)
+            ->update(['is_locked' => 0]);
+
         Session::flash('message', 'Normal Lesson Added Successfully');
 
         return response()->json([
@@ -2625,50 +2754,48 @@ public function delete_deferredLesson(Request $request)
 
     public function get_lessonId(Request $request)
     {
-      $getLessonId =  SubLesson::where('id', $request->task_id)->pluck('lesson_id');
-      return response()->json(['status' => 'success','lessonId' => $getLessonId[0]]);
+        $getLessonId =  SubLesson::where('id', $request->task_id)->pluck('lesson_id');
+        return response()->json(['status' => 'success', 'lessonId' => $getLessonId[0]]);
     }
 
 
 
-public function backToDeferredLesson(Request $request)
-{
-    DB::beginTransaction();
+    public function backToDeferredLesson(Request $request)
+    {
+        DB::beginTransaction();
 
-    try {
-        // Create def task
-        $def_task = [
-            'event_id'   => $request->event_id,
-            'user_id'    => $request->user_id,
-            'task_id'    => $request->task_id,
-            'created_by' => auth()->id(),
-        ];
+        try {
+            // Create def task
+            $def_task = [
+                'event_id'   => $request->event_id,
+                'user_id'    => $request->user_id,
+                'task_id'    => $request->task_id,
+                'created_by' => auth()->id(),
+            ];
 
-        DefTask::create($def_task);
+            DefTask::create($def_task);
 
-        // Delete sub lesson
-        SubLesson::where('id', $request->sublesson_id)
-                 ->where('lesson_id', $request->lesson_id)
-                 ->delete();
+            // Delete sub lesson
+            SubLesson::where('id', $request->sublesson_id)
+                ->where('lesson_id', $request->lesson_id)
+                ->delete();
 
-        TaskGrading::where('sub_lesson_id', $request->sublesson_id)
-                    ->where('lesson_id', $request->lesson_id)
-                     ->delete();
+            TaskGrading::where('sub_lesson_id', $request->sublesson_id)
+                ->where('lesson_id', $request->lesson_id)
+                ->delete();
 
-        // Commit if everything is fine
-        DB::commit();
+            // Commit if everything is fine
+            DB::commit();
 
-        return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success']);
+        } catch (\Exception $e) {
+            // Rollback all queries if something fails
+            DB::rollBack();
 
-    } catch (\Exception $e) {
-        // Rollback all queries if something fails
-        DB::rollBack();
-
-        return response()->json([
-            'status'  => 'error',
-            'message' => $e->getMessage()
-        ], 500);
+            return response()->json([
+                'status'  => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
-}
-
 }
