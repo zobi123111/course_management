@@ -52,4 +52,9 @@ class DeferredGrading extends Model
     {
         return $this->belongsTo(TrainingEvents::class, 'event_id');
     }
+
+     public function defLesson()
+    {
+        return $this->belongsTo(DefLesson::class, 'deflesson_id');
+    }
 }

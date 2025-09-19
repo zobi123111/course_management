@@ -1019,6 +1019,7 @@
                             let instructorDocumentHtml = generateDocumentsContainerHtml(
                                 instructor_documents, index
                             );
+                           
                             $('#edit_instructor_documents_items').append(instructorDocumentHtml);
                         });
                     } else {
@@ -1446,6 +1447,7 @@
 
 
     function generateDocumentsContainerHtml(instructor_documents, index) {
+        console.log(instructor_documents.id);
         let documentName = instructor_documents.document_name || '';
         let filePath = instructor_documents.file_path ? `/storage/${instructor_documents.file_path}` : '';
         let existingFilePath = instructor_documents.file_path || '';
@@ -1461,7 +1463,9 @@
         return `<div class="instructor-documents-item border p-2 mt-2">
                 <div class="form-group">
                     <label class="form-label">Document Name</label>
+                     <input type="hidden" name="instructor_documents[${index}][id]" value="${docRowId}">
                     <input type="text" name="instructor_documents[${index}][name]" value="${documentName}" id="documents_name_${index}" class="form-control">
+
                     <div id="instructor_documents_${index}_name_error_up" class="text-danger error_e"></div>
                 </div>
                 <button type="button" class="btn btn-danger remove-documents-container mt-2">X</button>

@@ -2039,25 +2039,47 @@ class TrainingEventsController extends Controller
         $userId = $userID;
 
         // Fetch Training Event with related Def Lessons and Def Lesson Tasks
+        // $event = TrainingEvents::with([
+        //     'course:id,course_name', 
+        //     'orgUnit:id,org_unit_name,org_logo',
+        //     'instructor:id,fname,lname',
+        //     'student:id,fname,lname',
+        //     'resource:id,name,type,class,registration',
+        //     'defLessons' => function ($query) use ($lesson_id) {
+        //         $query->where('id', $lesson_id)
+        //             ->with([
+        //                 'instructor:id,fname,lname',
+        //                 'resource:id,name,type,class,registration'
+        //             ]);
+        //     },
+        //     'defLessonTasks' => function ($query) use ($userId, $lesson_id) {
+        //         $query->where('user_id', $userId)
+        //             ->where('def_lesson_id', $lesson_id)
+        //             ->with('task:id,title,grade_type,description');
+        //     },
+        // ])->findOrFail($event_id);
         $event = TrainingEvents::with([
-            'course:id,course_name',
-            'orgUnit:id,org_unit_name,org_logo',
-            'instructor:id,fname,lname',
-            'student:id,fname,lname',
-            'resource:id,name,type,class,registration',
-            'defLessons' => function ($query) use ($lesson_id) {
-                $query->where('id', $lesson_id)
-                    ->with([
-                        'instructor:id,fname,lname',
-                        'resource:id,name,type,class,registration'
-                    ]);
-            },
-            'defLessonTasks' => function ($query) use ($userId, $lesson_id) {
-                $query->where('user_id', $userId)
-                    ->where('def_lesson_id', $lesson_id)
-                    ->with('task:id,title,grade_type,description');
-            },
-        ])->findOrFail($event_id);
+                    'course:id,course_name', 
+                    'orgUnit:id,org_unit_name,org_logo',
+                    'instructor:id,fname,lname',
+                    'student:id,fname,lname',
+                    'resource:id,name,type,class,registration',
+                    'defLessons' => function ($query) use ($lesson_id, $userId) {
+                        $query->where('id', $lesson_id)
+                            ->with([
+                                'instructor:id,fname,lname',
+                                'resource:id,name,type,class,registration',
+                                'deferredGradings' => function ($q) use ($userId) {
+                                    $q->where('user_id', $userId);
+                                },
+                            ]);
+                    },
+                    'defLessonTasks' => function ($query) use ($userId, $lesson_id) {
+                        $query->where('user_id', $userId)
+                            ->where('def_lesson_id', $lesson_id)
+                            ->with('task:id,title,grade_type,description');
+                    },
+                ])->findOrFail($event_id);  
 
 
         $defLesson = $event->defLessons->first();
@@ -2069,21 +2091,23 @@ class TrainingEventsController extends Controller
             abort(404, 'Deferred lesson not found for this training event.');
         }
         $tasks = $event->defLessonTasks;
-        //  return view('trainings.deferred-lesson-report', compact('event', 'eventLesson', 'tasks'));
+         // return view('trainings.deferred-lesson-report', compact('event', 'eventLesson', 'tasks'));
         // Pass to PDF view
 
-        $pdf = PDF::loadView('trainings.deferred-lesson-report', [
+        // dd($event);
+
+        $pdf = PDF::loadView('trainings.deferred-lesson-report', [ 
             'event' => $event,
             'eventLesson' => $eventLesson,
             'tasks' => $tasks,
         ]);
 
         $filename = 'Deferred_Lesson_Report_' . Str::slug($defLesson->lesson_title) . '.pdf';
-        return $pdf->download($filename);
+         return $pdf->download($filename);
     }
 
 
-    public function downloadLessonReport($event_id, $lesson_id, $userID)
+    public function downloadLessonReport($event_id, $lesson_id, $userID) 
     {
         $userId = $userID;
       
