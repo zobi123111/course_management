@@ -37,7 +37,9 @@
         overflow-y: auto;
         z-index: 1050;
     }
-
+    .header.grade_head{
+        box-shadow: unset !important;
+    }
     .course-dropdown.active .dropdown-list {
         display: block;
     }
@@ -1743,7 +1745,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                                         <div class="custom-box">
                                             <input type="hidden" name="tg_subLesson_id[]" value="{{ $sublesson->id }}">
-                                            <div class="header" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $sublesson->id }}" aria-expanded="false">
+                                            <div class="header grade_head" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $sublesson->id }}" aria-expanded="false">
                                                 
                                                 <div class="task-desc">
                                                     <span class="rmk">RMK</span>
@@ -1751,7 +1753,6 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                                     <span class="title">{{ $sublesson->title }}</span>
                                                 </div>
                                                 <i class="grade-comment">click to enter comment</i>
-                                        </div>
                                             </div>
                                             <div class="table-container">
                                                 @php
@@ -2011,7 +2012,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                     @foreach($tasks as $task)
 
                                     <div class="custom-box">
-                                        <div class="header" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $task->id }}" aria-expanded="false">
+                                        <div class="header grade_head" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $task->id }}" aria-expanded="false">
                                             <div class="task-desc">
                                                 <span class="rmk">RMK</span>
                                                 <span class="question-mark">?</span>
@@ -2224,7 +2225,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                     @foreach($tasks as $task)
 
                                     <div class="custom-box">
-                                        <div class="header" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $task->id }}" aria-expanded="false">
+                                        <div class="header grade_head" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $task->id }}" aria-expanded="false">
                                              <div class="task-desc">
                                                <span class="rmk">RMK</span>
                                                 <span class="question-mark">?</span>
