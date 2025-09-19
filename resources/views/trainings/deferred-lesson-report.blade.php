@@ -86,6 +86,33 @@
                 <p><strong>No Data Available</strong></p>
             @endif
         </div>
+      
+
+         @if($event->defLessons->isNotEmpty() && $event->defLessons[0]->deferredGradings->isNotEmpty())
+            <div class="section">
+                <h2>Competencies</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Competency</th>
+                            <th>Grade</th>
+                            <th>Comment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($event->defLessons[0]->deferredGradings as $competency)
+                            @foreach(['kno','pro','com','fpa','fpm','ltw','psd','saw','wlm'] as $comp)
+                                <tr>
+                                    <td>{{ strtoupper($comp) }}</td>
+                                    <td>{{ $competency[$comp.'_grade'] ?? 'N/A' }}</td>
+                                    <td>{{ $competency[$comp.'_comment'] ?? '-' }}</td>
+                                </tr>
+                            @endforeach
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
 
       
 

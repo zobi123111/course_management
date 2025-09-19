@@ -87,7 +87,7 @@
         justify-content: space-between;
         border: 0px solid #ddd;
         align-items: center;
-        white-space: nowrap;
+        /* white-space: nowrap; */
         flex-direction: row;
         /* flex-wrap: wrap; */
         gap: 20px;
@@ -149,7 +149,9 @@
     button.accordion-button {
         padding: 1rem 0rem;
     }
-
+    .grade-comment{
+        font-size: 12px;
+    }
     @media (max-width: 768px) {
         .custom-box {
             flex-direction: column;
@@ -722,7 +724,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                     @endforeach
 
                     @if($deferredLessons->isNotEmpty())
-                    <strong><i class="fas fa-exclamation-circle"></i> Deferred Lessons :</strong>
+                    <strong><i class="fas fa-exclamation-circle"></i> Deferred Lessons:</strong>
 
                     @foreach($deferredLessons as $def)
                     @php
@@ -748,11 +750,14 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             <strong><i class="fas fa-book"></i> Lesson Name:</strong>
                             <span class="text-primary">{{ $def->lesson_title ?? 'Untitled' }}</span>
                         </div>
+                       
+                        @if(Auth::user()->role  == "1")
                         <div class="col-md-6 mb-2" style="text-align:end">
                             <button id="edit_deferred_lesson" class="btn btn-primary" data-event_id="{{ $def->event_id }}" data-deferred-lesson-id="{{$def->id }}" data-lesson-Type="deferred">Edit</button>
 
                             <button id="delete_deferred_lesson" class="btn btn-danger" data-event_id="{{ $def->event_id }}" data-deferred-lesson-id="{{$def->id }}" data-lesson-Type="deferred">Delete</button>
                         </div>
+                        @endif
 
                         <div class="col-md-2 mt-2">
                             <strong><i class="fas fa-chalkboard-teacher"></i> Instructor:</strong>
@@ -1505,7 +1510,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                                         {{ $item->task_title ?? 'N/A' }}
                                                     </label>
                                                 </div>
-                                                @endforeach
+                                                @endforeach 
                                              @endif
                                               <div class="form-check taskContainer">
 
@@ -1599,7 +1604,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                         </div>
                     </div>
                     @endif
-
+                       
                     @if($isGradingCompleted && $trainingEvent->course->documents->isNotEmpty())
                     <div class="mt-4">
                         <h5><i class="fas fa-file-upload"></i>Instructor Document Uploads</h5>
@@ -1610,10 +1615,11 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                 @php
                                 $uploadedDoc = optional($trainingEvent->documents)->where('course_document_id', $doc->id)->first();
                                 @endphp
+                                
                                 <div class="col-md-6 mb-3">
                                     <div class="border p-3 rounded">
                                         <label class="form-label fw-bold">
-                                            {{ $doc->document_name }}
+                                            {{ $doc->document_name }} 
                                         </label>
 
                                         {{-- Show existing uploaded document --}}
@@ -1738,9 +1744,14 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                         <div class="custom-box">
                                             <input type="hidden" name="tg_subLesson_id[]" value="{{ $sublesson->id }}">
                                             <div class="header" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $sublesson->id }}" aria-expanded="false">
-                                                <span class="rmk">RMK</span>
-                                                <span class="question-mark">?</span>
-                                                <span class="title">{{ $sublesson->title }}</span>
+                                                
+                                                <div class="task-desc">
+                                                    <span class="rmk">RMK</span>
+                                                    <span class="question-mark">?</span>
+                                                    <span class="title">{{ $sublesson->title }}</span>
+                                                </div>
+                                                <i class="grade-comment">click to enter comment</i>
+                                        </div>
                                             </div>
                                             <div class="table-container">
                                                 @php
@@ -1781,7 +1792,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                                                 <td>
                                                                     <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
                                                                         <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
-                                                                        <span class="custom-radio ftr">Further training required</span>
+                                                                        <span class="custom-radio ftr">FTR</span>
                                                                     </label>
                                                                 </td>
                                                                 <td>
@@ -2001,9 +2012,12 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                                     <div class="custom-box">
                                         <div class="header" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $task->id }}" aria-expanded="false">
-                                            <span class="rmk">RMK</span>
-                                            <span class="question-mark">?</span>
-                                            <span class="title">{{ $task->task->title ?? 'Untitled Task' }}</span>
+                                            <div class="task-desc">
+                                                <span class="rmk">RMK</span>
+                                                <span class="question-mark">?</span>
+                                                <span class="title">{{ $task->task->title ?? 'Untitled Task' }}</span>
+                                            </div>
+                                                <i class="grade-comment">click to enter comment</i>
                                         </div>
                                         <div class="table-container">
                                             <div class="main-tabledesign">
@@ -2025,7 +2039,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                                             <td>
                                                                 <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
                                                                     <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
-                                                                    <span class="custom-radio ftr">Further training required</span>
+                                                                    <span class="custom-radio ftr">FTR</span>
                                                                 </label>
                                                             </td>
                                                             <td>
@@ -2211,9 +2225,12 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                                     <div class="custom-box">
                                         <div class="header" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $task->id }}" aria-expanded="false">
-                                            <span class="rmk">RMK</span>
-                                            <span class="question-mark">?</span>
-                                            <span class="title">{{ $task->task->title ?? 'Untitled Task' }}</span>
+                                             <div class="task-desc">
+                                               <span class="rmk">RMK</span>
+                                                <span class="question-mark">?</span>
+                                                <span class="title">{{ $task->task->title ?? 'Untitled Task' }}</span>
+                                            </div>
+                                                <i class="grade-comment">click to enter comment</i>
                                         </div>
                                         <div class="table-container">
                                             <div class="main-tabledesign">
@@ -2235,7 +2252,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                                             <td>
                                                                 <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
                                                                     <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
-                                                                    <span class="custom-radio ftr">Further training required</span>
+                                                                    <span class="custom-radio ftr">FTR</span>
                                                                 </label>
                                                             </td>
                                                             <td>
@@ -2375,7 +2392,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                                 <td>
                                                     <label class="radio-label">
                                                         <input type="radio" name="user_result_{{ $student->id ?? '' }}" value="Further training required" {{ isset($overallAssessments) && isset($overallAssessments->result) && $overallAssessments->result == 'Further training required' ? 'checked' : '' }}>
-                                                        <span class="custom-radio ftr">Further training required</span>
+                                                        <span class="custom-radio ftr">FTR</span>
                                                     </label>
                                                 </td>
                                                 <td>
@@ -2477,17 +2494,18 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
 
 
-        $('.scale-radio').on('click', function() {
+        $('.scale-radio').on('change', function() { 
             const name = $(this).attr('name');
             const wasChecked = $(this).data('waschecked');
             const event_id = $(this).data('event-id');
             const lesson_id = $(this).data('lesson-id');
             const user_id = $(this).data('user-id');
             const code = $(this).data('code');
+             updateRadioStyles(name);
 
             if (wasChecked) {
                 // Uncheck and remove color class
-                $(this).prop('checked', false).data('waschecked', false);
+              //  $(this).prop('checked', false).data('waschecked', false);
 
                 $.ajax({
                     url: '/training/update-competency-grade', // Replace with your actual route

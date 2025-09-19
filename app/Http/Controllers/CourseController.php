@@ -437,43 +437,45 @@ class CourseController extends Controller
             }
         }
     
-        // Remove existing instructor documents first
-        // $course->documents()->delete(); 
-      
-
-        // if ($request->filled('instructor_documents')) {
-        //     foreach ($request->instructor_documents as $doc) {
-        //         if (!empty($doc['name'])) {
-        //             $course->documents()->create([
-        //                 'document_name' => $doc['name'],
-        //                 'file_path' => null, // or provide actual path if uploading
-        //             ]);
-        //         }
-        //     }
-        // }
         $existingDocs = $course->documents()->pluck('document_name', 'id')->toArray();
 
-$submittedDocs = [];
+
+$submittedDocIds = [];
+$submittedDocNames = [];
+
 if ($request->filled('instructor_documents')) {
     foreach ($request->instructor_documents as $doc) {
-        if (!empty($doc['name'])) {
-            $submittedDocs[] = $doc['name'];
+        $docId = $doc['id'] ?? null;   // hidden input should send id if editing
+        $docName = $doc['name'] ?? null;
 
-            // Check if doc already exists
-            if (!in_array($doc['name'], $existingDocs)) {
-                $course->documents()->create([
-                    'document_name' => $doc['name'],
-                    'file_path' => null, // or handle upload if needed
+        if (!empty($docName)) {
+            if ($docId && isset($existingDocs[$docId])) {
+                // ✅ Update existing
+                $course->documents()
+                    ->where('id', $docId)
+                    ->update(['document_name' => $docName]);
+
+                $submittedDocIds[] = $docId;
+            } else {
+                // ✅ Create new
+                $newDoc = $course->documents()->create([
+                    'document_name' => $docName,
+                    'file_path' => null, // handle file upload if needed
                 ]);
+
+                $submittedDocIds[] = $newDoc->id;
             }
+
+            $submittedDocNames[] = $docName;
         }
     }
 }
 
-// Delete docs that were not submitted
+
 $course->documents()
-    ->whereNotIn('document_name', $submittedDocs)
+    ->whereNotIn('id', $submittedDocIds)
     ->delete();
+
 
 
     

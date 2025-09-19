@@ -87,4 +87,11 @@ class DefLesson extends Model
     }
 
 
+    public function deferredGradings()
+    {
+        return $this->hasMany(DeferredGrading::class, 'deflesson_id', 'id');
+    }
+
+
+
 }
