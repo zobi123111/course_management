@@ -48,6 +48,7 @@
                 @php
                     $lesson = $event->firstLesson;
                 @endphp 
+                
             <tr>
                 <td class="eventName">{{ $event->course?->course_name }}</td>
                 <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
@@ -246,7 +247,7 @@
             <div class="modal-body">
             <form action="" id="trainingEventForm" method="POST" class="row g-3">
                 @csrf
-                <div class="col-md-12">
+                <div class="col-md-12 d-flex justify-content-end">
                     <div class="form-check mt-4">
                         <input class="form-check-input" type="checkbox" id="is_instructor_checkbox">
                         <input type="hidden" name="entry_source" id="entry_source" value="">
@@ -348,7 +349,7 @@
             <div class="modal-body">
             <form action="" id="editTrainingEventForm" method="POST" class="row g-3">
                 @csrf
-                <div class="col-12">
+                <div class="col-12 d-flex justify-content-end">
                     <div class="form-check mt-2">
                         <input class="form-check-input" type="checkbox" id="edit_is_instructor_checkbox">
                         <input type="hidden" name="entry_source" id="edit_entry_source" value="">
@@ -1490,7 +1491,7 @@ $(document).on('click', '.end-course-btn', function () {
             $.each(instructorsdata, function(index, instructor) {
                 dropdown.append(`<option value="${instructor.id}">${instructor.fname} ${instructor.lname}</option>`);
             });
-            label.text('Select Instructor');
+            label.text('Select Instructor, Student');
             $('#entry_source').val('instructor');
         } else {
             // Load students
@@ -1514,7 +1515,7 @@ $(document).on('change', '#edit_is_instructor_checkbox', function () {
     const userDropdown = $('#edit_select_user');
     const hiddenInput = $('#edit_entry_source');
 
-    label.text(isChecked ? 'Select Instructor' : 'Select Student');
+    label.text(isChecked ? 'Select Instructor, Student' : 'Select Student');
     hiddenInput.val(isChecked ? 'instructor' : '');
     userDropdown.empty();
     let userOptions = '<option value="">Select ' + (isChecked ? 'Instructor' : 'Student') + '</option>';

@@ -1097,14 +1097,15 @@ class TrainingEventsController extends Controller
                 })
                 ->whereHas('roles', function ($query) {
                     $query->where('role_name', 'like', '%Instructor%');
-                })->with('roles')->get();
+                })->with('roles')->get(); 
         }
 
         $course = Courses::with('resources')->find($trainingEvent->course_id);
         $resources = $course ? $course->resources : collect();
 
         $courses = Courses::orderBy('position')->get();
-
+       
+         
         return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading'));
     }
 
@@ -1901,33 +1902,7 @@ class TrainingEventsController extends Controller
 
         $ouId = $trainingEvent->ou_id;
         $userId = $trainingEvent->student_id;
-
-        // $event = TrainingEvents::where('ou_id', $ouId)
-        //     ->where('id', decode_id($event_id))
-        //     ->whereHas('taskGradings', function ($query) use ($userId) {
-        //         $query->where('user_id', $userId);
-        //     })
-
-        //     ->with([
-        //         'taskGradings' => function ($query) use ($userId) {
-        //             $query->where('user_id', $userId)
-        //                 ->with('lesson:id,lesson_title,grade_type') // Load only lesson_name
-        //                 ->with('subLesson:id,title'); // Load only sub_lesson_name
-        //         },
-        //         'competencyGradings' => function ($query) use ($userId) {
-        //             $query->where('user_id', $userId);
-        //         },
-        //         'overallAssessments' => function ($query) use ($userId) {
-        //             $query->where('user_id', $userId);
-        //         },
-        //         'course:id,course_name,enable_feedback', // Load only course name
-        //         'group:id,name', // Load only group name
-        //         'instructor:id,fname,lname', // Load only instructor name
-        //         'documents:id,training_event_id,course_document_id,file_path', // make sure these fields exist
-        //         'documents.courseDocument:id,document_name', // 🆕 Add this to load document name from course_documents
-        //     ])
-        //     ->first();
-
+      
 
         $event = TrainingEvents::where('ou_id', $ouId)
             ->where('id', decode_id($event_id))
@@ -1963,6 +1938,9 @@ class TrainingEventsController extends Controller
                 'overallAssessments' => function ($query) use ($userId) {
                     $query->where('user_id', $userId);
                 },
+              'deferredGradings' => function ($query) {
+                        $query->with('defLesson:id,lesson_title');
+                    },
                 'course:id,course_name,enable_feedback',
                 'group:id,name',
                 'instructor:id,fname,lname',
@@ -1970,29 +1948,37 @@ class TrainingEventsController extends Controller
                 'documents.courseDocument:id,document_name',
             ])
             ->first();
-       
 
-
-
+          //  dd($event);
+    
         if (!$event) {
             return redirect()
                 ->route('training.index')
                 ->with('error', 'Training event or grading not found.');
         }
 
-        $defLessonGrading = DefLessonTask::with(['task', 'defLesson'])
+        $defLessonGrading = DefLessonTask::with(['task', 'defLesson']) 
             ->where('event_id', $event->id)
-            ->where('user_id', auth()->id())
+            ->whereRelation('defLesson', 'lesson_type', 'deferred')
             ->get()
             ->groupBy('def_lesson_id');
+
+        $CustomLessonGrading = DefLessonTask::with(['task', 'defLesson']) 
+            ->where('event_id', $event->id)
+            ->whereRelation('defLesson', 'lesson_type', 'custom')
+            ->get()
+            ->groupBy('def_lesson_id');
+           
+            
 
         if ($event) {
             $event->student_feedback_submitted = $event->trainingFeedbacks()->where('user_id', auth()->user()->id)->exists();
             // abort(404, 'Training Event not found.'); 
         }
-
-
-        return view('trainings.grading-list', compact('event', 'defLessonGrading'));
+        // dump( $event->id);
+        // dump(auth()->id());
+        // dd($defLessonGrading);
+        return view('trainings.grading-list', compact('event', 'defLessonGrading', 'CustomLessonGrading'));
     }
 
     // public function unlockEventGarding(Request $request, $event_id)

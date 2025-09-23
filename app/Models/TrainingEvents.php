@@ -123,7 +123,7 @@ class TrainingEvents extends Model
     //         ->select('training_event_lessons.*', 'resources.name as resource_name', 'course_lessons.lesson_type');
     // }
 
-    public function trainingFeedbacks()
+    public function trainingFeedbacks() 
     {
         return $this->hasMany(TrainingFeedback::class, 'training_event_id');
     }
@@ -234,6 +234,12 @@ class TrainingEvents extends Model
         public function  def_lesson_tasks()
         {
             return $this->hasMany(DefLessonTask::class, 'task_id', 'id');
+        }
+
+
+        public function deferredGradings()
+        {
+            return $this->hasMany(DeferredGrading::class, 'event_id', 'id');
         }
 
 }
