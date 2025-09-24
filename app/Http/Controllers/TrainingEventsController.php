@@ -1939,7 +1939,7 @@ class TrainingEventsController extends Controller
                     $query->where('user_id', $userId);
                 },
               'deferredGradings' => function ($query) {
-                        $query->with('defLesson:id,lesson_title');
+                        $query->with('defLesson:id,lesson_title'); 
                     },
                 'course:id,course_name,enable_feedback',
                 'group:id,name',
@@ -1949,7 +1949,7 @@ class TrainingEventsController extends Controller
             ])
             ->first();
 
-          //  dd($event);
+           // dd($event);
     
         if (!$event) {
             return redirect()
@@ -1957,19 +1957,26 @@ class TrainingEventsController extends Controller
                 ->with('error', 'Training event or grading not found.');
         }
 
-        $defLessonGrading = DefLessonTask::with(['task', 'defLesson']) 
-            ->where('event_id', $event->id)
-            ->whereRelation('defLesson', 'lesson_type', 'deferred')
-            ->get()
-            ->groupBy('def_lesson_id');
+        $defLessonGrading = DefLessonTask::with([
+                            'task',
+                            'defLesson.deferredGradings',
+                            'defLesson.student' 
+                        ])
+                        ->where('event_id', $event->id)
+                        ->whereRelation('defLesson', 'lesson_type', 'deferred')
+                        ->get()
+                        ->groupBy('def_lesson_id');
 
-        $CustomLessonGrading = DefLessonTask::with(['task', 'defLesson']) 
-            ->where('event_id', $event->id)
-            ->whereRelation('defLesson', 'lesson_type', 'custom')
-            ->get()
-            ->groupBy('def_lesson_id');
-           
-            
+            $CustomLessonGrading = DefLessonTask::with([
+                                'task',
+                                'defLesson.deferredGradings',
+                                'defLesson.student' 
+                            ])
+                            ->where('event_id', $event->id)
+                            ->whereRelation('defLesson', 'lesson_type', 'custom')
+                            ->get()
+                            ->groupBy('def_lesson_id');                
+                      
 
         if ($event) {
             $event->student_feedback_submitted = $event->trainingFeedbacks()->where('user_id', auth()->user()->id)->exists();
@@ -1977,7 +1984,7 @@ class TrainingEventsController extends Controller
         }
         // dump( $event->id);
         // dump(auth()->id());
-        // dd($defLessonGrading);
+        // dd($defLessonGrading); 
         return view('trainings.grading-list', compact('event', 'defLessonGrading', 'CustomLessonGrading'));
     }
 
@@ -2420,13 +2427,14 @@ class TrainingEventsController extends Controller
 
     public function storeDefGrading(Request $request)
     {
-        $lesson_type = $request->lesson_type;
+        $lesson_type = $request->lesson_type; 
+      //  dd($request->all());
 
         $request->validate([
             'event_id' => 'required|integer|exists:training_events,id',
             'task_grade_def' => 'required|array',
-            'task_grade_def.*' => 'required|array', // ✅ first level (task_id) is an array of lesson IDs
-            'task_grade_def.*.*' => 'required|string|in:Competent,Incomplete,Further training required', // ✅ actual grade values
+            'task_grade_def.*' => 'required|array', 
+            'task_grade_def.*.*' => 'required|string|in:Competent,Incomplete,Further training required', 
             'task_comment_def' => 'nullable|array',
             'task_comment_def.*' => 'nullable|array', // ✅ first level also array
             'task_comment_def.*.*' => 'nullable|string|max:1000', // ✅ actual comments

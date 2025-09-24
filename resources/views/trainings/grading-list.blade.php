@@ -70,6 +70,10 @@
                         $meta = $lessonMeta[$lessonId] ?? null;
                         @endphp
                         <div class="mb-3">
+                        <?php
+                           $lesson['title'] = $tasks->first()->lesson?->lesson_title;
+
+                        ?>
                             <div class="fw-bold text-secondary mb-2">
                                 <i class="bi bi-book me-1"></i>Lesson: {{ $tasks->first()->lesson?->lesson_title ?? 'N/A' }}
                                 @if($meta)
@@ -121,8 +125,8 @@
                         @endif
                     </div>
                 </div>
-              
-             
+
+
 
                 <!-- Competency Grading -->
                 <div class="mb-4">
@@ -195,14 +199,18 @@
                 </div>
 
                 <!-- // Deffered Lesson -->
-                @if($defLessonGrading->isNotEmpty()) 
+
                 <div class="mb-4">
-                    <h5 class="text-danger d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#defLessonGrading" role="button" aria-expanded="false" aria-controls="defLessonGrading">
+                    <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#defLessonGrading" role="button" aria-expanded="false" aria-controls="defLessonGrading">
                         <span><i class="bi bi-exclamation-circle me-2"></i>Deferred Lesson Grading</span>
                         <i class="bi bi-chevron-down"></i>
                     </h5>
                     <div class="collapse" id="defLessonGrading">
+                        @if($defLessonGrading->isEmpty())
+                        <p class="text-muted">No Deferred grading available.</p>
+                        @else
                         @foreach($defLessonGrading as $defLessonId => $tasks)
+
                         @php
                         $defLesson = $tasks->first()?->defLesson;
                         $instructor = $defLesson?->instructor;
@@ -247,94 +255,104 @@
                                     </span>
                                 </li>
                                 @endforeach
+
+                                <!-- Deferred Competency Grading -->
+                                <div class="mb-4">
+                                    <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#deferredcompetencyGrading{{ $defLesson->id }}" role="button" aria-expanded="false" aria-controls="deferredcompetencyGrading123">
+                                        <span><i class="bi bi-bar-chart-steps me-2"></i>Deferred Competency Grading</span>
+                                        <i class="bi bi-chevron-down"></i>
+                                    </h5>
+                                    <div class="collapse" id="deferredcompetencyGrading{{ $defLesson->id }}">
+                                        @if($defLesson->deferredGradings->isEmpty())
+                                        <p class="text-muted">No competency grading available.</p>
+                                        @else
+                                        @php
+                                        $lessonMeta = $event->eventLessons->keyBy('lesson_id');
+                                        @endphp
+                                        @foreach($defLesson->deferredGradings as $grading)
+                                        @php
+                                        $meta = $lessonMeta[$grading->lesson_id] ?? null;
+                                        @endphp
+                                        <div class="mb-4">
+                                          <h6 class="fw-bold text-secondary mb-2"> 
+                                            <i class="bi bi-book me-1"></i>Lesson: {{ $lesson['title'] }}
+                                            <br><small class="text-muted">
+                                                <i class="bi bi-person-video3 me-1"></i>Instructor:  {{ $defLesson->student->fname }}     {{ $defLesson->student->lname }}|
+                                                 @if($defLesson->lesson_date)
+                                                        <i class="bi bi-calendar-date me-1"></i>Date: {{ date('M d, Y', strtotime($defLesson->lesson_date)) }} |
+                                                      @endif
+
+                                                     @if($defLesson->start_time && $defLesson->end_time)
+                                                    <i class="bi bi-calendar-date me-1"></i>Time: {{ date('h:i A', strtotime($defLesson->start_time)) }} - {{ date('h:i A', strtotime($defLesson->end_time)) }}
+                                                    @endif
+                                            </small>
+                                            
+                                        </h6>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered align-middle text-center shadow-sm">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th>Competency</th>
+                                                            <th>Grade</th>
+                                                            <th>Comment</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach(['kno','pro','com','fpa','fpm','ltw','psd','saw','wlm'] as $competency)
+                                                        @php
+                                                        $grade = $grading[$competency.'_grade'] ?? null;
+                                                        $badgeClass = 'bg-secondary'; // default
+
+                                                        if ($grade == 1) {
+                                                        $badgeClass = 'grade-incomplete';
+                                                        } elseif ($grade == 2) {
+                                                        $badgeClass = 'grade-ftr';
+                                                        } elseif (in_array($grade, [3, 4, 5])) {
+                                                        $badgeClass = 'grade-competent';
+                                                        }
+                                                        @endphp
+                                                        <tr>
+                                                            <td><strong>{{ strtoupper($competency) }}</strong></td>
+                                                            <td>
+                                                                <span class="badge {{ $badgeClass }}">
+                                                                    {{ $grade ?? 'N/A' }}
+                                                                </span>
+                                                            </td>
+                                                            <td class="text-start">{{ $grading[$competency.'_comment'] ?? '-' }}</td>
+                                                        </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        @endforeach
+                                        @endif
+                                    </div>
+                                </div>
+                                <!-- End Deferred Competency Grading -->
+
                             </ul>
                         </div>
                         @endforeach
                     </div>
+                    @endif
                 </div>
-                @endif
                 <!-- // End Deffered Lesson -->
 
-                  <!-- Deferred Competency Grading -->
-                <div class="mb-4">
-                    <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#deferredcompetencyGrading" role="button" aria-expanded="false" aria-controls="deferredcompetencyGrading">
-                        <span><i class="bi bi-bar-chart-steps me-2"></i>Deferred Competency Grading</span>
-                        <i class="bi bi-chevron-down"></i>
-                    </h5>
-                    <div class="collapse" id="deferredcompetencyGrading">
-                        @if($event->deferredGradings->isEmpty())
-                        <p class="text-muted">No competency grading available.</p>
-                        @else
-                        @php
-                        $lessonMeta = $event->eventLessons->keyBy('lesson_id');
-                        @endphp
-                        @foreach($event->deferredGradings as $grading)
-                        @php
-                        $meta = $lessonMeta[$grading->lesson_id] ?? null;
-                        @endphp
-                        <div class="mb-4">
-                            <h6 class="fw-bold text-secondary mb-2">
-                                <i class="bi bi-book me-1"></i>Lesson: {{ $grading->lesson?->lesson_title ?? 'N/A' }}
-                                @if($meta)
-                                <br><small class="text-muted">
-                                    <i class="bi bi-person-video3 me-1"></i>Instructor: {{ $meta->instructor?->fname }} {{ $meta->instructor?->lname }} |
-                                    <i class="bi bi-calendar-date me-1"></i>Date: {{ date('M d, Y', strtotime($meta->lesson_date)) }} |
-                                    <i class="bi bi-clock me-1"></i>Time: {{ date('h:i A', strtotime($meta->start_time)) }} - {{ date('h:i A', strtotime($meta->end_time)) }}
-                                </small>
-                                @endif
-                            </h6>
-                            <div class="table-responsive">
-                                <table class="table table-bordered align-middle text-center shadow-sm">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Competency</th>
-                                            <th>Grade</th>
-                                            <th>Comment</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach(['kno','pro','com','fpa','fpm','ltw','psd','saw','wlm'] as $competency)
-                                        @php
-                                        $grade = $grading[$competency.'_grade'] ?? null;
-                                        $badgeClass = 'bg-secondary'; // default
 
-                                        if ($grade == 1) {
-                                        $badgeClass = 'grade-incomplete';
-                                        } elseif ($grade == 2) {
-                                        $badgeClass = 'grade-ftr';
-                                        } elseif (in_array($grade, [3, 4, 5])) {
-                                        $badgeClass = 'grade-competent';
-                                        }
-                                        @endphp
-                                        <tr>
-                                            <td><strong>{{ strtoupper($competency) }}</strong></td>
-                                            <td>
-                                                <span class="badge {{ $badgeClass }}">
-                                                    {{ $grade ?? 'N/A' }}
-                                                </span>
-                                            </td>
-                                            <td class="text-start">{{ $grading[$competency.'_comment'] ?? '-' }}</td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        @endforeach
-                        @endif
-                    </div>
-                </div>
-                  <!-- End Deferred Competency Grading -->
 
 
                 <!-- // Custom Lesson -->
-                @if($CustomLessonGrading->isNotEmpty())  <?php dump("dd"); ?>
+
                 <div class="mb-4">
-                    <h5 class="text-danger d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#CustomLessonGrading" role="button" aria-expanded="false" aria-controls="CustomLessonGrading">
+                    <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#cusLessonGrading{{ $defLesson->id }}" role="button" aria-expanded="false" aria-controls="cusLessonGrading">
                         <span><i class="bi bi-exclamation-circle me-2"></i>Custom Lesson Grading</span>
                         <i class="bi bi-chevron-down"></i>
                     </h5>
-                    <div class="collapse" id="CustomLessonGrading">
+                    <div class="collapse" id="cusLessonGrading{{ $defLesson->id }}">
+                        @if($CustomLessonGrading->isEmpty())
+                        <p class="text-muted">No Custom grading available.</p>
+                        @else
                         @foreach($CustomLessonGrading as $defLessonId => $tasks)
                         @php
                         $defLesson = $tasks->first()?->defLesson;
@@ -380,21 +398,91 @@
                                     </span>
                                 </li>
                                 @endforeach
+                                  <!-- Custom Competency Grading -->
+                                <div class="mb-4">
+                                    <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#deferredcompetencyGrading{{ $defLesson->id }}" role="button" aria-expanded="false" aria-controls="deferredcompetencyGrading123">
+                                        <span><i class="bi bi-bar-chart-steps me-2"></i>Custom Competency Grading</span>
+                                        <i class="bi bi-chevron-down"></i>
+                                    </h5>
+                                    <div class="collapse" id="deferredcompetencyGrading{{ $defLesson->id }}">
+                                        
+                                        @if($defLesson->deferredGradings->isEmpty())
+                                        <p class="text-muted">No competency grading available.</p>
+                                        @else
+                                        @php
+                                        $lessonMeta = $event->eventLessons->keyBy('lesson_id');
+                                        @endphp
+                                        @foreach($defLesson->deferredGradings as $grading)
+                                        @php
+                                        $meta = $lessonMeta[$grading->lesson_id] ?? null;
+                                        @endphp
+                                        <div class="mb-4">
+                                         <h6 class="fw-bold text-secondary mb-2"> 
+                                                <i class="bi bi-book me-1"></i>Lesson: {{ $lesson['title'] }}
+                                                <br><small class="text-muted">
+                                                    <i class="bi bi-person-video3 me-1"></i>Instructor: {{ $defLesson->student->fname }}     {{ $defLesson->student->lname }} |
+                                                      @if($defLesson->lesson_date)
+                                                        <i class="bi bi-calendar-date me-1"></i>Date: {{ date('M d, Y', strtotime($defLesson->lesson_date)) }} |
+                                                      @endif
+
+                                                     @if($defLesson->start_time && $defLesson->end_time)
+                                                    <i class="bi bi-calendar-date me-1"></i>Time: {{ date('h:i A', strtotime($defLesson->start_time)) }} - {{ date('h:i A', strtotime($defLesson->end_time)) }}
+                                                    @endif
+                                                </small>
+                                               
+                                            </h6>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered align-middle text-center shadow-sm">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th>Competency</th>
+                                                            <th>Grade</th>
+                                                            <th>Comment</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach(['kno','pro','com','fpa','fpm','ltw','psd','saw','wlm'] as $competency)
+                                                        @php
+                                                        $grade = $grading[$competency.'_grade'] ?? null;
+                                                        $badgeClass = 'bg-secondary'; // default
+
+                                                        if ($grade == 1) {
+                                                        $badgeClass = 'grade-incomplete';
+                                                        } elseif ($grade == 2) {
+                                                        $badgeClass = 'grade-ftr';
+                                                        } elseif (in_array($grade, [3, 4, 5])) {
+                                                        $badgeClass = 'grade-competent';
+                                                        }
+                                                        @endphp
+                                                        <tr>
+                                                            <td><strong>{{ strtoupper($competency) }}</strong></td>
+                                                            <td>
+                                                                <span class="badge {{ $badgeClass }}">
+                                                                    {{ $grade ?? 'N/A' }}
+                                                                </span>
+                                                            </td>
+                                                            <td class="text-start">{{ $grading[$competency.'_comment'] ?? '-' }}</td>
+                                                        </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        @endforeach
+                                        @endif
+                                    </div>
+                                </div>
+                                <!-- End Custom Competency Grading -->
                             </ul>
                         </div>
                         @endforeach
                     </div>
+                    @endif
                 </div>
-                @endif
+
                 <!-- // End Custom Lesson -->
 
-                <!-- Custom Competency Grading -->
-
-                <!--End Deferred Competency Grading -->
-
-
-
-
+             
                 <!-- Overall Assessments -->
                 <div class="mb-4">
                     <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#overallAssessments" role="button" aria-expanded="false" aria-controls="overallAssessments">
