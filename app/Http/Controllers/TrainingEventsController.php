@@ -1958,7 +1958,7 @@ class TrainingEventsController extends Controller
         }
 
         $defLessonGrading = DefLessonTask::with([
-                            'task',
+                            'task', 
                             'defLesson.deferredGradings',
                             'defLesson.student' 
                         ])
