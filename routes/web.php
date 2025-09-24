@@ -73,7 +73,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/rating/save', [UserController::class, 'saveRating'])->name('rating.store');
     Route::get('/rating/edit', [UserController::class, 'getRating'])->name('rating.edit');
     Route::post('/rating/select_rating', [UserController::class, 'select_rating'])->name('rating.select_rating');
-     Route::post('/rating/deselect_rating', [UserController::class, 'deselect_rating'])->name('rating.deselect_rating');
+    Route::post('/rating/deselect_rating', [UserController::class, 'deselect_rating'])->name('rating.deselect_rating');
+    Route::post('/users/change-password', [UserController::class, 'changePassword'])->name('user.change-password');
 
 
 
