@@ -18,7 +18,8 @@ use App\Mail\UserCreated;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 use App\Models\ParentRating;
-
+use Illuminate\Support\Facades\Validator;
+use Auth;
 
 class UserController extends Controller
 {
@@ -931,8 +932,8 @@ class UserController extends Controller
             if ($userToUpdate->rating_required == 1 && $request->filled('issue_date')) {
                 foreach ($request->input('issue_date') as $ratingId => $issueDate) {
                     if (!empty($issueDate)) {
-                      //  $rules["issue_date.$ratingId.issue_date"] = 'required|date';
-                      //  $rules["expiry_date.$ratingId.expiry_date"] = 'required|date|after_or_equal:issue_date.' . $ratingId . '.issue_date';
+                        //  $rules["issue_date.$ratingId.issue_date"] = 'required|date';
+                        //  $rules["expiry_date.$ratingId.expiry_date"] = 'required|date|after_or_equal:issue_date.' . $ratingId . '.issue_date';
 
                         // Check if existing UserRating has file_path
                         $existingRating = UserRating::where('user_id', $userToUpdate->id)
@@ -2385,128 +2386,128 @@ class UserController extends Controller
     //     ]);
     // }
     public function getUserById(Request $request)
-{
-    $user = User::with('usrRatings', 'documents')->find(decode_id($request->id));
+    {
+        $user = User::with('usrRatings', 'documents')->find(decode_id($request->id));
 
-    if (!$user) {
-        return response()->json(['error' => 'User not found']);
-    }
-
-    $userRatings = $user->usrRatings
-        ->groupBy('linked_to')
-        ->map(function ($items) {
-            return $items->pluck('rating_id')->values();
-        })
-        ->toArray();
-
-    $userRatingsLicence1 = UserRating::with('parentRating')
-        ->where('user_id', decode_id($request->id))
-        ->where('linked_to', 'licence_1') 
-        ->get();
-
-    $userRatingsLicence2 = UserRating::with('parentRating')
-        ->where('user_id', decode_id($request->id))
-        ->where('linked_to', 'licence_2')
-        ->get();
-
-    // -------------------------
-    // Sorting Logic (same as profile)
-    // -------------------------
-    $getPriority = function ($rating) {
-        if (!$rating || !$rating->parentRating) {
-            return 999; // fallback (last)
+        if (!$user) {
+            return response()->json(['error' => 'User not found']);
         }
 
-        $r = $rating->parentRating;
+        $userRatings = $user->usrRatings
+            ->groupBy('linked_to')
+            ->map(function ($items) {
+                return $items->pluck('rating_id')->values();
+            })
+            ->toArray();
 
-        // 1️⃣ Base category: Fixed wing or Rotary (alone)
-        if (($r->is_fixed_wing || $r->is_rotary) && !$r->is_instructor && !$r->is_examiner) {
-            return 1;
-        }
+        $userRatingsLicence1 = UserRating::with('parentRating')
+            ->where('user_id', decode_id($request->id))
+            ->where('linked_to', 'licence_1')
+            ->get();
 
-        // 2️⃣ Instructor
-        if ($r->is_instructor) {
-            return 2;
-        }
+        $userRatingsLicence2 = UserRating::with('parentRating')
+            ->where('user_id', decode_id($request->id))
+            ->where('linked_to', 'licence_2')
+            ->get();
 
-        // 3️⃣ Examiner only
-        if ($r->is_examiner) {
-            return 3;
-        }
+        // -------------------------
+        // Sorting Logic (same as profile)
+        // -------------------------
+        $getPriority = function ($rating) {
+            if (!$rating || !$rating->parentRating) {
+                return 999; // fallback (last)
+            }
 
-        return 999;
-    };
+            $r = $rating->parentRating;
 
-    // Sort Licence 1
-    $userRatingsLicence1 = $userRatingsLicence1->sort(function ($a, $b) use ($getPriority) {
-        $prioA = $getPriority($a);
-        $prioB = $getPriority($b);
+            // 1️⃣ Base category: Fixed wing or Rotary (alone)
+            if (($r->is_fixed_wing || $r->is_rotary) && !$r->is_instructor && !$r->is_examiner) {
+                return 1;
+            }
 
-        if ($prioA !== $prioB) {
-            return $prioA <=> $prioB;
-        }
+            // 2️⃣ Instructor
+            if ($r->is_instructor) {
+                return 2;
+            }
 
-        $nameA = strtolower($a->parentRating->name ?? '');
-        $nameB = strtolower($b->parentRating->name ?? '');
-        return $nameA <=> $nameB;
-    })->values();
+            // 3️⃣ Examiner only
+            if ($r->is_examiner) {
+                return 3;
+            }
 
-    // Sort Licence 2
-    $userRatingsLicence2 = $userRatingsLicence2->sort(function ($a, $b) use ($getPriority) {
-        $prioA = $getPriority($a);
-        $prioB = $getPriority($b);
+            return 999;
+        };
 
-        if ($prioA !== $prioB) {
-            return $prioA <=> $prioB;
-        }
+        // Sort Licence 1
+        $userRatingsLicence1 = $userRatingsLicence1->sort(function ($a, $b) use ($getPriority) {
+            $prioA = $getPriority($a);
+            $prioB = $getPriority($b);
 
-        $nameA = strtolower($a->parentRating->name ?? '');
-        $nameB = strtolower($b->parentRating->name ?? '');
-        return $nameA <=> $nameB;
-    })->values();
+            if ($prioA !== $prioB) {
+                return $prioA <=> $prioB;
+            }
 
-    // Group again after sorting
-    $userRatingsLicence1Grouped = $userRatingsLicence1
-        ->groupBy('parent_id')
-        ->map(function ($group) {
-            return [
-                'parent_id'   => $group[0]->parent_id,
-                'children'    => $group->pluck('rating_id')->filter()->values(),
-                'issue_date'  => $group[0]->issue_date,
-                'expire_date' => $group[0]->expiry_date,
-                'file_path'   => $group[0]->file_path,
-            ];
+            $nameA = strtolower($a->parentRating->name ?? '');
+            $nameB = strtolower($b->parentRating->name ?? '');
+            return $nameA <=> $nameB;
         })->values();
 
-    $userRatingsLicence2Grouped = $userRatingsLicence2
-        ->groupBy('parent_id')
-        ->map(function ($group) {
-            return [
-                'parent_id'   => $group[0]->parent_id,
-                'children'    => $group->pluck('rating_id')->filter()->values(),
-                'issue_date'  => $group[0]->issue_date,
-                'expire_date' => $group[0]->expiry_date,
-                'file_path'   => $group[0]->file_path,
-            ];
+        // Sort Licence 2
+        $userRatingsLicence2 = $userRatingsLicence2->sort(function ($a, $b) use ($getPriority) {
+            $prioA = $getPriority($a);
+            $prioB = $getPriority($b);
+
+            if ($prioA !== $prioB) {
+                return $prioA <=> $prioB;
+            }
+
+            $nameA = strtolower($a->parentRating->name ?? '');
+            $nameB = strtolower($b->parentRating->name ?? '');
+            return $nameA <=> $nameB;
         })->values();
 
-    if ($userRatingsLicence1->isNotEmpty()) {
-        $licence1 = 1;
-    }
+        // Group again after sorting
+        $userRatingsLicence1Grouped = $userRatingsLicence1
+            ->groupBy('parent_id')
+            ->map(function ($group) {
+                return [
+                    'parent_id'   => $group[0]->parent_id,
+                    'children'    => $group->pluck('rating_id')->filter()->values(),
+                    'issue_date'  => $group[0]->issue_date,
+                    'expire_date' => $group[0]->expiry_date,
+                    'file_path'   => $group[0]->file_path,
+                ];
+            })->values();
 
-    if ($userRatingsLicence2->isNotEmpty()) {
-        $licence2 = 1;
-    }
+        $userRatingsLicence2Grouped = $userRatingsLicence2
+            ->groupBy('parent_id')
+            ->map(function ($group) {
+                return [
+                    'parent_id'   => $group[0]->parent_id,
+                    'children'    => $group->pluck('rating_id')->filter()->values(),
+                    'issue_date'  => $group[0]->issue_date,
+                    'expire_date' => $group[0]->expiry_date,
+                    'file_path'   => $group[0]->file_path,
+                ];
+            })->values();
 
-    return response()->json([
-        'user'                  => $user,
-        'user_ratings'          => $userRatings,
-        'userRatings_licence_1' => $userRatingsLicence1Grouped,
-        'licence1'              => $licence1 ?? 0,
-        'userRatings_licence_2' => $userRatingsLicence2Grouped,
-        'licence2'              => $licence2 ?? 0,
-    ]);
-}
+        if ($userRatingsLicence1->isNotEmpty()) {
+            $licence1 = 1;
+        }
+
+        if ($userRatingsLicence2->isNotEmpty()) {
+            $licence2 = 1;
+        }
+
+        return response()->json([
+            'user'                  => $user,
+            'user_ratings'          => $userRatings,
+            'userRatings_licence_1' => $userRatingsLicence1Grouped,
+            'licence1'              => $licence1 ?? 0,
+            'userRatings_licence_2' => $userRatingsLicence2Grouped,
+            'licence2'              => $licence2 ?? 0,
+        ]);
+    }
 
 
 
@@ -3817,5 +3818,28 @@ class UserController extends Controller
         if ($verified) {
             return response()->json(['success' => 'User rating Invalidated successfully.']);
         }
+    }
+
+    public function changePassword(Request $request)
+    {
+
+
+        $validator = Validator::make($request->all(), [
+            'password' => 'required|min:6',
+            'password_confirmation' => 'required|same:password'
+        ]);
+
+        $id = Auth::user()->id;
+      
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+        $data = array(
+            "password" => Hash::make($request->password)
+        );
+        // Update the user's password
+           User::where('id', $id)->update($data);
+           Session::flash('message', 'Password changed successfully');
+
     }
 }
