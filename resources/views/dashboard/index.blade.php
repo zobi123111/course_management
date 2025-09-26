@@ -1039,7 +1039,6 @@ $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong
     </div>
     @else
     <div class="row">
-
         <!-- Courses Card -->
         <div class="col-xxl-3 col-md-6">
             @if(checkAllowedModule('courses','course.index')->isNotEmpty())
@@ -1201,6 +1200,113 @@ $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong
             </div>
         </div>
     </div>
+    <div class="row">
+      <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Last Training Event</h5>
+                   <table class="table table-hover" id="trainingEventTable">
+        <thead>
+            <tr>
+                <th scope="col">Event</th>
+                <th scope="col">Student</th>
+                <th scope="col">Instructor</th>
+                <th scope="col">Resource</th>
+                <th scope="col">Event Date</th>
+                <th scope="col">Start Time</th>
+                <th scope="col">End Time</th>
+                @if(checkAllowedModule('training','training.show')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.grading-list')->isNotEmpty())
+                <th scope="col">Action</th>
+                @endif
+            </tr>
+        </thead>
+        <tbody> 
+            @foreach($trainingEvents as $event)
+           
+                @php
+                    $lesson = $event->firstLesson;
+                @endphp 
+                
+            <tr>
+                <td class="eventName">{{ $event->course?->course_name }} </td>
+                <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
+                <td>{{ $lesson?->instructor?->fname }} {{ $lesson?->instructor?->lname }}</td>
+                <td>{{ $lesson?->resource?->name }}</td>
+                <td>{{ $lesson?->lesson_date ? date('d-m-y', strtotime($lesson->lesson_date)) : '' }}</td>
+                <td>{{ $lesson?->start_time ? date('h:i A', strtotime($lesson->start_time)) : '' }}</td>
+                <td>{{ $lesson?->end_time ? date('h:i A', strtotime($lesson->end_time)) : '' }}</td>
+                <td>
+                @if(get_user_role(auth()->user()->role) == 'administrator')  
+                    @if(empty($event->is_locked))
+                     
+                        @if(checkAllowedModule('training','training.edit')->isNotEmpty())
+                            <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                            data-event-id="{{ encode_id($event->id) }}"></i>
+                        @endif
+                        @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                            <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                            data-event-id="{{ encode_id($event->id) }}"></i>
+                        @endif
+                        @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                            <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                            <i class="fa fa-eye text-danger me-2"></i>
+                            </a>            
+                        @endif
+                    
+                        @if($event->can_end_course) 
+                            {{-- Active “End Course” button/icon --}}
+                            <button class="btn btn-sm btn-flag-checkered end-course-btn" data-event-id="{{ encode_id($event->id) }}"
+                                title="End Course/Event" >
+                                <i class="fa fa-flag-checkered text-primary"></i>
+                            </button>
+                        @endif
+                    @else
+                        {{-- This event is already locked/ended --}}
+                        <span class="badge bg-secondary unlocked" data-bs-toggle="tooltip" data-id = "{{ $event->id}}"
+                            title="This course has been ended and is locked from editing">
+                            <i class="bi bi-lock-fill me-1"></i>Ended
+                        </span>
+                        @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                            <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                            data-event-id="{{ encode_id($event->id) }}"></i>
+                        @endif
+                    @endif
+                @elseif(get_user_role(auth()->user()->role) == 'instructor')   
+                    @if(empty($event->is_locked))
+                     
+                       @if(checkAllowedModule('training','training.edit')->isNotEmpty())
+                            <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                            data-event-id="{{ encode_id($event->id) }}"></i>
+                        @endif
+                        @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                            <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                            <i class="fa fa-eye text-danger me-2"></i>
+                            </a>            
+                        @endif
+                    @else   
+                        {{-- This event is already locked/ended --}}
+                        <span class="badge bg-secondary" data-bs-toggle="tooltip"
+                            title="This course has been ended and is locked from editing">
+                            <i class="bi bi-lock-fill me-1"></i>Ended
+                        </span>
+                    @endif
+                @else                   
+                    @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
+                        <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
+                        <i class="fa fa-list text-danger me-2"></i>
+                        </a>
+                    @endif    
+                @endif
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+                </div>
+            </div>
+       </div>
+    </div>
     @endif
 </section>
 
@@ -1217,12 +1323,12 @@ $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong
             }
         });
 
-      
 
-        $('#document_table').on("click", ".collapsible", function () {
-                $(this).toggleClass("active");
-                $(this).next(".content").slideToggle();
-            });
+
+        $('#document_table').on("click", ".collapsible", function() {
+            $(this).toggleClass("active");
+            $(this).next(".content").slideToggle();
+        });
 
     });
 
