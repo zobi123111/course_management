@@ -50,7 +50,7 @@
                 @endphp 
                 
             <tr>
-                <td class="eventName">{{ $event->course?->course_name }} {{ $event->id }}</td>
+                <td class="eventName">{{ $event->course?->course_name }} </td>
                 <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
                 <td>{{ $lesson?->instructor?->fname }} {{ $lesson?->instructor?->lname }}</td>
                 <td>{{ $lesson?->resource?->name }}</td>
