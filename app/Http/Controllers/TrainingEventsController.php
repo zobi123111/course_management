@@ -1726,6 +1726,8 @@ class TrainingEventsController extends Controller
                 foreach ($request->input('task_grade') as $lesson_id => $subLessons) {
                     foreach ($subLessons as $sub_lesson_id => $task_grade) {
                         // Update or create the normal task grade
+                    
+                       
                         TaskGrading::updateOrCreate(
                             [
                                 'event_id'      => $event_id,
@@ -1739,8 +1741,20 @@ class TrainingEventsController extends Controller
                                 'created_by'    => auth()->user()->id,
                             ]
                         );
+                     
 
-                        if (strtolower($task_grade) == 'incomplete' || strtolower($task_grade) == 'further training required') {
+                          $lessonSummary = $request->input("lesson_summary.$lesson_id");
+                          $instructor_summary = $request->input("instructor_summary.$lesson_id");
+
+                            // Now update only the specific lesson_id
+                            TrainingEventLessons::where('training_event_id', $event_id)
+                                ->where('lesson_id', $lesson_id)
+                                ->update([
+                                    'lesson_summary' => $lessonSummary,
+                                    'instructor_comment' => $instructor_summary,
+                                ]);
+
+                         if (strtolower($task_grade) == 'incomplete' || strtolower($task_grade) == 'further training required') {
                             // Check if task already exists in def_lesson_tasks
                             $alreadyDeferred = DefLessonTask::where([
                                 'event_id' => $event_id,
@@ -1816,8 +1830,6 @@ class TrainingEventsController extends Controller
 
             // Commit the transaction on success    
             DB::commit();
-
-
             Session::flash('message', 'Student grading updated successfully.');
             return response()->json(['success' => true, 'message' => 'Student grading updated successfully.']);
         } catch (\Exception $e) {
@@ -1946,6 +1958,9 @@ class TrainingEventsController extends Controller
                 'instructor:id,fname,lname',
                 'documents:id,training_event_id,course_document_id,file_path',
                 'documents.courseDocument:id,document_name',
+                 'eventLessons' => function ($query) {   // 👈 added this
+                    $query->with(['lesson:id,lesson_title,enable_cbta', 'instructor:id,fname,lname']);
+                }
             ])
             ->first();
 
@@ -1982,9 +1997,6 @@ class TrainingEventsController extends Controller
             $event->student_feedback_submitted = $event->trainingFeedbacks()->where('user_id', auth()->user()->id)->exists();
             // abort(404, 'Training Event not found.'); 
         }
-        // dump( $event->id);
-        // dump(auth()->id());
-        // dd($defLessonGrading); 
         return view('trainings.grading-list', compact('event', 'defLessonGrading', 'CustomLessonGrading'));
     }
 
@@ -2443,9 +2455,9 @@ class TrainingEventsController extends Controller
         $event_id = $request->input('event_id');
         $user_id = $request->input('tg_user_id');
 
-        foreach ($request->input('task_grade_def') as $task_id => $lessonGrades) {
+        foreach ($request->input('task_grade_def') as $task_id => $lessonGrades) { 
             foreach ($lessonGrades as $def_lesson_id => $task_grade) {
-
+                 
 
                 $task_comment = $request->input("task_comment_def.$task_id.$def_lesson_id", null);
 
@@ -2541,6 +2553,15 @@ class TrainingEventsController extends Controller
                             }
                         }
                     }
+                       $lessonSummary = $request->input("def_lesson_summary.$def_lesson_id");
+                       $instructor_summary = $request->input("def_instructor_summary.$def_lesson_id");
+
+                        DefLesson::where('event_id', $event_id)
+                                ->where('id', $def_lesson_id)
+                                ->update([
+                                    'lesson_summary' => $lessonSummary,
+                                    'instructor_comment' => $instructor_summary,
+                                ]);
                 }
 
                 if ($lesson_type == "deferred") {
@@ -2576,6 +2597,16 @@ class TrainingEventsController extends Controller
                             }
                         }
                     }
+                       $lessonSummary = $request->input("def_lesson_summary.$def_lesson_id");
+                       $instructor_summary = $request->input("def_instructor_summary.$def_lesson_id");
+
+                        DefLesson::where('event_id', $event_id)
+                                ->where('id', $def_lesson_id)
+                                ->update([
+                                    'lesson_summary' => $lessonSummary,
+                                    'instructor_comment' => $instructor_summary,
+                                ]);
+                 
                 }
             }
         }

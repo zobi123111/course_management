@@ -58,6 +58,7 @@
                         <i class="bi bi-chevron-down"></i>
                     </h5>
                     <div class="collapse" id="taskGrading">
+                       
                         @if($event->taskGradings->isEmpty())
                         <p class="text-muted">No task grading available.</p>
                         @else
@@ -72,7 +73,7 @@
                         <div class="mb-3">
                         <?php
                            $lesson['title'] = $tasks->first()->lesson?->lesson_title;
-
+                         
                         ?>
                             <div class="fw-bold text-secondary mb-2">
                                 <i class="bi bi-book me-1"></i>Lesson: {{ $tasks->first()->lesson?->lesson_title ?? 'N/A' }}
@@ -86,6 +87,7 @@
                             </div>
                             <ul class="list-group shadow-sm">
                                 @foreach($tasks as $task)
+                                
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <span><i class="bi bi-chevron-double-right me-1"></i>{{ $task->subLesson?->title ?? 'N/A' }}</span>
                                     @php
@@ -120,6 +122,49 @@
                                 </li>
                                 @endforeach
                             </ul>
+                            <div>
+
+                            </div>
+                            
+                    <!-- {{-- Lesson Summary --}} -->
+                        @if($event->eventLessons->whereNotNull('lesson_summary')->isNotEmpty())
+                        <div class="col-md-12 mt-3">
+                            <div class="card shadow-sm border-0">
+                                <div class="card-header bg-primary text-white py-0">
+                                    <i class="bi bi-journal-text me-2"></i> Lesson Summary
+                                </div>
+                                <div class="card-body">
+                                    @if(!empty($event->eventLessons[0]->lesson_summary))
+                                    <p class="mb-0 text-muted">
+                                        {{ $event->eventLessons[0]->lesson_summary }}
+                                    </p>
+                                    @else
+                                    <p class="mb-0 text-muted fst-italic">No Lesson summary provided.</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                              <!-- //  Instructor Comment -->
+                        @if($event->eventLessons->whereNotNull('instructor_comment')->isNotEmpty())
+                        <div class="col-md-12 mt-3">
+                            <div class="card shadow-sm border-0">
+                                <div class="card-header bg-primary text-white py-0">
+                                    <i class="bi bi-journal-text me-2"></i> Instructor Comment
+                                </div>
+                                <div class="card-body">
+                                    @if(!empty($event->eventLessons[0]->instructor_comment ))
+                                    <p class="mb-0 text-muted">
+                                        {{ $event->eventLessons[0]->instructor_comment }}
+                                    </p>
+                                    @else
+                                    <p class="mb-0 text-muted fst-italic">No Instructor Comment provided.</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @endif
                         </div>
                         @endforeach
                         @endif
@@ -256,6 +301,51 @@
                                     </li>
                                     @endforeach
 
+                              <!-- {{-- Lesson Summary --}} -->
+                                    @if(!empty($defLesson->lesson_summary))
+                                    <div class="col-md-12 mt-3">
+                                        <div class="card shadow-sm border-0">
+                                            <div class="card-header bg-primary text-white py-0">
+                                                <i class="bi bi-journal-text me-2"></i> Lesson Summary
+                                            </div>
+                                            <div class="card-body">
+                                                @if(!empty($defLesson->lesson_summary))
+                                                <p class="mb-0 text-muted">
+                                                    {{ $defLesson->lesson_summary }}
+                                                </p>
+                                                @else
+                                                <p class="mb-0 text-muted fst-italic">No Lesson summary provided.</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endif
+
+                                    
+                                    <!-- //  Instructor Comment -->
+                                    @if(!empty($defLesson->instructor_comment))
+                                    <div class="col-md-12 mt-3">
+                                        <div class="card shadow-sm border-0">
+                                            <div class="card-header bg-primary text-white py-0">
+                                                <i class="bi bi-journal-text me-2"></i> Instructor Comment
+                                            </div>
+                                            <div class="card-body">
+                                                @if(!empty($defLesson->instructor_comment ))
+                                                <p class="mb-0 text-muted">
+                                                    {{ $defLesson->instructor_comment }}
+                                                </p>
+                                                @else
+                                                <p class="mb-0 text-muted fst-italic">No Instructor Comment provided.</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endif
+
+
+
+
+                                  
                                     <!-- Deferred Competency Grading -->
                                     <div class="mb-4">
                                         <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#deferredcompetencyGrading{{ $defLesson->id }}" role="button" aria-expanded="false" aria-controls="deferredcompetencyGrading123">
@@ -332,6 +422,7 @@
                                     <!-- End Deferred Competency Grading -->
 
                                 </ul>
+                                
                             </div>
                             @endforeach
                         </div>
@@ -400,6 +491,50 @@
                                             </span>
                                         </li>
                                         @endforeach
+
+           <!-- {{-- Lesson Summary --}} -->
+                                    @if(!empty($defLesson->lesson_summary))
+                                    <div class="col-md-12 mt-3">
+                                        <div class="card shadow-sm border-0">
+                                            <div class="card-header bg-primary text-white py-0">
+                                                <i class="bi bi-journal-text me-2"></i> Lesson Summary
+                                            </div>
+                                            <div class="card-body">
+                                                @if(!empty($defLesson->lesson_summary))
+                                                <p class="mb-0 text-muted">
+                                                    {{ $defLesson->lesson_summary }}
+                                                </p>
+                                                @else
+                                                <p class="mb-0 text-muted fst-italic">No Lesson summary provided.</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endif
+
+                                    
+                                    <!-- //  Instructor Comment -->
+                                    @if(!empty($defLesson->instructor_comment))
+                                    <div class="col-md-12 mt-3">
+                                        <div class="card shadow-sm border-0">
+                                            <div class="card-header bg-primary text-white py-0">
+                                                <i class="bi bi-journal-text me-2"></i> Instructor Comment
+                                            </div>
+                                            <div class="card-body">
+                                                @if(!empty($defLesson->instructor_comment ))
+                                                <p class="mb-0 text-muted">
+                                                    {{ $defLesson->instructor_comment }}
+                                                </p>
+                                                @else
+                                                <p class="mb-0 text-muted fst-italic">No Instructor Comment provided.</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endif
+
+
+
                                         <!-- Custom Competency Grading -->
                                         <div class="mb-4">
                                             <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#deferredcompetencyGrading{{ $defLesson->id }}" role="button" aria-expanded="false" aria-controls="deferredcompetencyGrading123">
