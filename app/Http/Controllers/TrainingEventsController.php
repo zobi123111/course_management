@@ -85,7 +85,8 @@ class TrainingEventsController extends Controller
                     'taskGradings',
                     'competencyGradings'
                 ])->get();
-        } elseif (checkAllowedModule('training', 'training.index')->isNotEmpty() && empty($currentUser->is_admin)) {
+        } 
+        elseif (checkAllowedModule('training', 'training.index')->isNotEmpty() && empty($currentUser->is_admin)) {
             // Regular User: Get data within their organizational unit
             $resources = Resource::where('ou_id', $currentUser->ou_id)->get();
             // $courses = Courses::where('ou_id', $currentUser->ou_id)->get();
@@ -110,11 +111,13 @@ class TrainingEventsController extends Controller
                     $query->where('role_name', 'like', '%Student%');
                 })->with('roles')->get();
 
+               
+
             // Determine if user is an Instructor or Student and filter events accordingly
             $trainingEventsQuery = TrainingEvents::where('ou_id', $currentUser->ou_id)
                 ->with($trainingEventsRelations)
                 ->withCount(['taskGradings', 'competencyGradings']);
-
+           
             $trainingEvents_instructorQuery = TrainingEvents::where('ou_id', $currentUser->ou_id)
                 ->with($trainingEventsRelations)
                 ->withCount(['taskGradings', 'competencyGradings']);
@@ -148,8 +151,11 @@ class TrainingEventsController extends Controller
                     })
                     ->get();
                 $trainingEvents_instructor = [];
+              //  dd($trainingEvents);
+                
             }
-        } else {
+        } 
+        else {
             // Default Case: Users with limited access within their organization
             $resources = Resource::where('ou_id', $currentUser->ou_id)->get();
             $courses = Courses::where('ou_id', $currentUser->ou_id)->orderBy('position')->get();
@@ -177,6 +183,7 @@ class TrainingEventsController extends Controller
                 ->with($trainingEventsRelations)
                 ->withCount(['taskGradings', 'competencyGradings'])
                 ->get();
+                
 
 
             $trainingEvents_instructor = TrainingEvents::where('ou_id', $currentUser->ou_id)
@@ -184,7 +191,7 @@ class TrainingEventsController extends Controller
                 //->with($trainingEventsRelations)
                 ->withCount(['taskGradings', 'competencyGradings'])
                 ->get();
-        }
+        } 
         // Attach instructor lists to each training event
         $trainingEvents->each(function ($event) {
             if (!$event->relationLoaded('eventLessons') || !($event->eventLessons instanceof \Illuminate\Support\Collection)) {
@@ -212,7 +219,7 @@ class TrainingEventsController extends Controller
             $event->last_lesson_instructor = $event->lesson_instructor_users->firstWhere('id', $event->last_lesson_instructor_id);
         });
 
-
+        
         return view('trainings.index', compact('groups', 'courses', 'instructors', 'organizationUnits', 'trainingEvents', 'resources', 'students', 'trainingEvents_instructor'));
     }
 

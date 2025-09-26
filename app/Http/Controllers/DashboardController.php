@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Group;
 use App\Models\Folder;
 use App\Models\Document;
+use App\Models\TrainingEvents;
 use App\Models\BookedResource;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ParentRating;
@@ -91,6 +92,7 @@ class DashboardController extends Controller
             $group_count = Group::count();
             $folder_count = Folder::whereNull('parent_id')->with('children')->count();
             $documents = Document::with('groups')->get();
+             $trainingEvents = [];
         } elseif ($user->is_admin) {
             $user_count = User::where('ou_id', $ou_id)->count();
             $course_count = Courses::where('ou_id', $ou_id)->count();
@@ -98,7 +100,8 @@ class DashboardController extends Controller
             $folder_count = Folder::whereNull('parent_id')->where('ou_id', $ou_id)->with('children')->count();
             $documents = Document::where('ou_id', $ou_id)->with('groups')->get();
             $requestCount = BookedResource::where('ou_id', $ou_id)->count();
-        } else {
+            $trainingEvents = [];
+        } else { 
             $groups = Group::all();
             $filteredGroups = $groups->filter(function ($group) use ($userId) {
                 $userIds = is_array($group->user_ids) ? $group->user_ids : explode(',', $group->user_ids);
@@ -122,7 +125,48 @@ class DashboardController extends Controller
             $course_count = $courses->count();
             $group_count = $filteredGroups->count();
             $requestCount = BookedResource::where('user_id', $userId)->where('ou_id', $ou_id)->count();
-        }
+             $user = auth()->user();
+             $userId = $user->id;
+
+             // Last Training event
+             $currentUser = auth()->user();
+
+                $trainingEventsRelations = [
+                        'course:id,course_name,course_type',
+                        'student:id,fname,lname',
+                        'instructor:id,fname,lname',
+                        'resource:id,name',
+                        'firstLesson.instructor:id,fname,lname',
+                        'firstLesson.resource:id,name',
+                        'eventLessons',
+                        'eventLessons.lesson:id,enable_cbta',
+                        'eventLessons.lesson.subLessons:id,lesson_id,title',
+                        'overallAssessments',
+                    ];
+
+
+
+                $trainingEventsQuery = TrainingEvents::where('ou_id', $currentUser->ou_id)
+                                ->with($trainingEventsRelations)
+                                ->withCount(['taskGradings', 'competencyGradings']);
+
+           $trainingEvents = $trainingEventsQuery
+                            ->where('student_id', $currentUser->id)
+                            ->where(function ($query) use ($currentUser) {
+                                $query->whereHas('taskGradings', function ($q) use ($currentUser) {
+                                    $q->where('user_id', $currentUser->id);
+                                })->orWhereHas('competencyGradings', function ($q) use ($currentUser) {
+                                    $q->where('user_id', $currentUser->id);
+                                })->orWhereHas('overallAssessments', function ($q) use ($currentUser) {
+                                    $q->where('user_id', $currentUser->id);
+                                });
+                            })
+
+                           ->orderBy('id', 'DESC')
+                           ->limit(1)  
+                           ->get();
+                        
+                        }
     
         $totalDocuments = $documents->count();
         $readDocuments = countAcknowledgedDocuments($documents, $user);
@@ -143,9 +187,7 @@ class DashboardController extends Controller
                     ])
                     ->get();
       //  dd($users);
-        return view('dashboard.index', compact(
-            'user_count', 'course_count', 'group_count', 'folder_count',
-            'totalDocuments', 'readDocuments', 'unreadDocuments', 'requestCount', 'users'
+        return view('dashboard.index', compact('user_count', 'course_count', 'group_count', 'folder_count','totalDocuments', 'readDocuments', 'unreadDocuments', 'requestCount', 'users', 'trainingEvents'
         ));
     }
     
