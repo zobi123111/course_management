@@ -739,7 +739,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             </div>
                         </div>
                         @endif
-
+                      @if(Auth::user()->role == "1")
                         <!-- //  Instructor Comment -->
                         @if(!empty($lesson->instructor_comment))
                         <div class="col-md-12 mt-3">
@@ -759,6 +759,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             </div>
                         </div>
                         @endif
+                       @endif
                     </div>
                     @endforeach
 
@@ -993,7 +994,8 @@ return sprintf("%02d:%02d", $hours, $minutes);
                         @endif
 
                         <!-- //  Instructor Comment -->
-                        @if(!empty($def->instructor_comment))
+                       
+                        @if(!empty($def->instructor_comment)) 
                         <div class="col-md-12 mt-3">
                             <div class="card shadow-sm border-0">
                                 <div class="card-header bg-primary text-white py-0">
@@ -1001,7 +1003,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                 </div>
                                 <div class="card-body">
                                     @if(!empty($def->instructor_comment ))
-                                    <p class="mb-0 text-muted">
+                                    <p class="mb-0 text-muted"> 
                                         {{ $def->instructor_comment }}
                                     </p>
                                     @else
@@ -2052,11 +2054,12 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                         <textarea name="lesson_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Write Lesson Summary">{{ old("lesson_summary.$lesson->id", $eventLesson->lesson_summary ?? '') }}</textarea>
                                     </div>
 
+                                  @if(Auth::user()->role == "1")
                                     <div>
-                                        <label>Instructor Comment</label>
+                                        <label>Instructor Comment</label> 
                                         <textarea name="instructor_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Instructor Comment">{{ old("lesson_summary.$lesson->id", $eventLesson->instructor_comment ?? '') }}</textarea>
                                     </div>
-
+                                  @endif
                                 </div>
                             </div>
 
