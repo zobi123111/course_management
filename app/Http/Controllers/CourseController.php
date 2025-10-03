@@ -203,6 +203,10 @@ class CourseController extends Controller
             'custom_time_name' => $request->custom_time_name ?? null,
             'custom_time_hours' => $request->custom_time_hours ?? null,
             'enable_cbta' => $request->enable_cbta ?? 0,
+            'instructor_cbta' => $request->enable_instructor_cbta ?? 0,
+            'examiner_cbta' => $request->enable_examiner_cbta ?? 0,
+
+
         ]);
     
         $course->groups()->attach($request->group_ids);
@@ -349,7 +353,9 @@ class CourseController extends Controller
             'enable_simulator_time' => (int) $request->input('enable_simulator_time', 0),
             'simulator_hours' => $request->simulator_hours,
             'ato_num' => $request->ato_number ?? null,
-            'enable_cbta' => $request->edit_enable_cbta ?? 0
+            'enable_cbta' => $request->edit_enable_cbta ?? 0 ,
+            'instructor_cbta' => $request->edit_enable_instructor_cbta ?? 0,
+            'examiner_cbta'   => $request->edit_enable_examiner_cbta ?? 0
         ]);
     
         // Update groups and resources relationships
