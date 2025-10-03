@@ -26,11 +26,7 @@
                 </td>
             </tr>
         </table>
-
-
         <hr>
-
-
             <div class="section">
             <strong>Date:</strong> {{ date('M d, Y', strtotime($eventLesson?->lesson_date)) }}<br>
             <strong>Student Name:</strong> {{ $event?->student?->fname }} {{ $event?->student?->lname }}<br>
@@ -113,6 +109,89 @@
                 </table>
             </div>
         @endif
+
+        <!-- // Examiner competency grading  -->
+          @if($examiner_grading->isNotEmpty())
+               <div class="section">
+                <h2>Examiner Competency</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Competency</th>
+                            <th>Grade</th>
+                            <th>Comment</th>
+                        </tr>
+                    </thead>
+                     <tbody>
+                        @foreach($examiner_grading as $grading)
+                            @php
+                                $grade = $grading->examinerGrading[0]->competency_value  ?? null;
+                                $badgeClass = 'bg-secondary'; // default
+
+                                if ($grade == 1) {
+                                $badgeClass = 'grade-incomplete';
+                                } elseif ($grade == 2) {
+                                $badgeClass = 'grade-ftr';
+                                } elseif (in_array($grade, [3, 4, 5])) {
+                                $badgeClass = 'grade-competent';
+                                }
+                            @endphp
+                        <tr>
+                            <td><strong>{{ strtoupper($grading->short_name) }}</strong></td>
+                            <td>
+                                <span class="badge {{ $badgeClass }}"> {{ $grading->examinerGrading[0]->competency_value ?? 'N/A' }}</span>
+                            </td>
+                            <td class="text-start">{{ $grading->examinerGrading[0]->comment ?? '-' }}</td>
+                        </tr>
+                            @endforeach
+                        
+                    </tbody>
+                </table>
+            </div>
+          @endif
+        <!-- // End Examiner competency grading  -->
+
+        <!-- // Instructor competency grading  -->
+  <div class="section">
+                <h2>Instructor Competency</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Competency</th>
+                            <th>Grade</th>
+                            <th>Comment</th>
+                        </tr>
+                    </thead>
+                     <tbody>
+                        @foreach($instructor_grading as $grading)
+                            @php
+                                $grade = $grading->examinerGrading[0]->competency_value  ?? null;
+                                $badgeClass = 'bg-secondary'; // default
+
+                                if ($grade == 1) {
+                                $badgeClass = 'grade-incomplete';
+                                } elseif ($grade == 2) {
+                                $badgeClass = 'grade-ftr';
+                                } elseif (in_array($grade, [3, 4, 5])) {
+                                $badgeClass = 'grade-competent';
+                                }
+                            @endphp
+                        <tr>
+                            <td><strong>{{ strtoupper($grading->short_name) }}</strong></td>
+                            <td>
+                                <span class="badge {{ $badgeClass }}"> {{ $grading->examinerGrading[0]->competency_value ?? 'N/A' }}</span>
+                            </td>
+                            <td class="text-start">{{ $grading->examinerGrading[0]->comment ?? '-' }}</td>
+                        </tr>
+                            @endforeach
+                        
+                    </tbody>
+                </table>
+            </div>
+         <!-- // End Instructor competency grading  -->
+
+
+
 
 
         <div class="section">
