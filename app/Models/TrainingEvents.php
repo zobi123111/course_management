@@ -113,15 +113,7 @@ class TrainingEvents extends Model
                 )
                 ->with('instructorDocuments'); 
         }
-    // public function eventLessons()
-    // {
-    //     return $this->hasMany(TrainingEventLessons::class, 'training_event_id', 'id')
-    //         ->join('course_lessons', 'training_event_lessons.lesson_id', '=', 'course_lessons.id') 
-    //         ->join('resources', 'training_event_lessons.resource_id', '=', 'resources.id')
-    //         ->join('user_documents', 'training_event_lessons.instructor_id', '=', 'user_documents.user_id')
-    //         ->orderBy('course_lessons.position')
-    //         ->select('training_event_lessons.*', 'resources.name as resource_name', 'course_lessons.lesson_type');
-    // }
+
 
     public function trainingFeedbacks() 
     {

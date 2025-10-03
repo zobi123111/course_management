@@ -21,6 +21,8 @@ use App\Models\DefLesson;
 use App\Models\DefLessonTask;
 use App\Models\UserDocument;
 use App\Models\DeferredGrading;
+use App\Models\CbtaGrading;
+use App\Models\ExaminerGrading;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -853,9 +855,9 @@ class TrainingEventsController extends Controller
     public function showTrainingEvent(Request $request, $event_id)
     {
         $currentUser = auth()->user();
-        $trainingEvent = TrainingEvents::with([
-            'course:id,course_name,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num',
-            'course.documents', // Eager load course documents
+        $trainingEvent = TrainingEvents::with([ 
+            'course:id,course_name,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num,instructor_cbta,examiner_cbta',
+            'course.documents', 
             'group:id,name,user_ids',
             'instructor:id,fname,lname',
             'student:id,fname,lname,licence',
@@ -889,6 +891,8 @@ class TrainingEventsController extends Controller
 
         $student = $trainingEvent->student;
         $lessonIds = $eventLessons->pluck('lesson_id')->filter()->unique();
+
+      
 
 
         //Get task gradings (sublesson grades and comments)
@@ -1098,7 +1102,7 @@ class TrainingEventsController extends Controller
                 $query->where('role_name', 'like', '%Instructor%');
             })->with('roles')->get();
         } else {
-            $instructors = User::where('ou_id', $currentUser->ou_id)
+            $instructors = User::where('ou_id', $currentUser->ou_id) 
                 ->where(function ($query) {
                     $query->whereNull('is_admin')->orWhere('is_admin', false);
                 })
@@ -1111,9 +1115,20 @@ class TrainingEventsController extends Controller
         $resources = $course ? $course->resources : collect();
 
         $courses = Courses::orderBy('position')->get();
+         $event_id =  decode_id($event_id);
+
+        $instructor_cbta = CbtaGrading::where('competency_type', 'instructor')->get()->toArray();
+        $examiner_cbta = CbtaGrading::where('competency_type', 'examiner')->get()->toArray();
+
+        $instructor_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'instructor')->get()->toArray();
+        
+        $examiner_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'examiner')->get()->toArray();
+
+     
        
-         
-        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading'));
+      // dd($trainingEvent);
+       
+        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading','instructor_cbta', 'examiner_cbta', 'examiner_grading','instructor_grading'));
     }
 
     public function edit_customLesson(Request $request)
@@ -1240,6 +1255,8 @@ class TrainingEventsController extends Controller
                 ->where('def_lesson_id', $deferred_lesson_id)
                 ->get();
         }
+
+       
 
         return response()->json(['success' => true,  'defTasks' => $defTasks, 'deferredLessons' => $deferredLessons, 'defLessonTasks' => $defLessonTasks]);
     }
@@ -1834,6 +1851,69 @@ class TrainingEventsController extends Controller
                     );
                 }
             }
+
+            // Examiner CBTA Grading
+         if ($request->has('examiner_grade')) {
+                foreach ($request->input('examiner_grade') as $lesson_id => $competencyGrades) {
+                    foreach ($competencyGrades as $competency_id => $grade) {
+                        
+                        // fetch comment if exists
+                        $comment = $request->input("examiner_comments.$lesson_id.$competency_id");
+
+                        $compData = [
+                            'event_id'          => $event_id,
+                            'cbta_gradings_id'  => $competency_id, 
+                            'user_id'           => $gradedStudentIdForComp, 
+                            'competency_value'  => $grade,  
+                            'competency_type'   => 'examiner',
+                            'comment'           => $comment ?? null,
+                        ];
+
+
+                        ExaminerGrading::updateOrCreate(
+                            [
+                                'event_id' => $event_id,
+                                'cbta_gradings_id' => $competency_id,
+                                'competency_type'   => 'examiner',
+                                'user_id' => $gradedStudentIdForComp,
+                            ],
+                            $compData
+                        );
+                    }
+                }
+         }
+
+         // Instructor Grading 
+             if ($request->has('instructor_grade')) {
+                foreach ($request->input('instructor_grade') as $lesson_id => $competencyGrades) {
+                    foreach ($competencyGrades as $competency_id => $grade) {
+                        
+                        // fetch comment if exists
+                        $comment = $request->input("instructor_comments.$lesson_id.$competency_id");
+
+                        $compData = [
+                            'event_id'          => $event_id,
+                            'cbta_gradings_id'  => $competency_id, 
+                            'user_id'           => $gradedStudentIdForComp, 
+                            'competency_value'  => $grade,  
+                            'competency_type'   => 'instructor',
+                            'comment'           => $comment ?? null,
+                        ];
+
+
+                        ExaminerGrading::updateOrCreate(
+                            [
+                                'event_id' => $event_id,
+                                'cbta_gradings_id' => $competency_id,
+                                'competency_type'   => 'instructor',
+                                'user_id' => $gradedStudentIdForComp,
+                            ],
+                            $compData
+                        );
+                    }
+                }
+         }
+
 
             // Commit the transaction on success    
             DB::commit();
