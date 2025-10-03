@@ -11,10 +11,12 @@
 @endif
 
 <div class="main_cont_outer">
+    @if(checkAllowedModule('custom-cbta','custom-cbta.add')->isNotEmpty()) 
     <div class="create_btn ">
         <button class="btn btn-primary create-button" id="create-cbta" data-toggle="modal"
             data-target="#orgUnitModal">Create CBTA</button>
     </div>
+    @endif
     <br>
     <div id="update_success_msg"></div>
     <div class="card pt-4">
@@ -41,19 +43,30 @@
                     <table class="table table-hover" id="orgUnitTable">
                         <thead>
                             <tr>
-                                <th scope="col">Competency</th>
+                                <th scope="col">Competency</th> 
                                 <th scope="col">Short Name</th>
-                                <th scope="col">Action</th>
+                                @if(checkAllowedModule('custom-cbta','custom-cbta.edit')->isNotEmpty()) 
+                                <th scope="col">Edit</th>
+                                @endif
+                                @if(checkAllowedModule('custom-cbta','custom-cbta.delete')->isNotEmpty()) 
+                                <th scope="col">Delete</th>
+                                @endif
                             </tr>
                         </thead>
                         @foreach ($instructor as $val)
                         <tr>
                             <td> {{ $val->competency }}</td>
                             <td> {{ $val->short_name }}</td>
+                            @if(checkAllowedModule('custom-cbta','custom-cbta.edit')->isNotEmpty()) 
                             <td>
                                 <i class="fa fa-edit edit-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>
-                                <i class="fa-solid fa-trash delete-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>
                             </td>
+                            @endif
+                           @if(checkAllowedModule('custom-cbta','custom-cbta.delete')->isNotEmpty()) 
+                            <td>
+                             <i class="fa-solid fa-trash delete-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>
+                            </td>
+                            @endif
                         </tr>
                         @endforeach
 
