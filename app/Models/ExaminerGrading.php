@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ExaminerGrading extends Model
+class ExaminerGrading extends Model 
 {
     use HasFactory;
     use SoftDeletes;
@@ -19,4 +19,9 @@ class ExaminerGrading extends Model
         'comment',
         'competency_value'
     ];
+
+    public function cbta(): BelongsTo
+    {
+        return $this->belongsTo(CbtaGrading::class, 'cbta_gradings_id');
+    }
 }
