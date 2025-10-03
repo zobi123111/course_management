@@ -13,7 +13,7 @@ class CourseLesson extends Model
     protected $fillable = ['course_id','lesson_title','description','grade_type', 'lesson_type', 'custom_time_id', 'enable_cbta', 'comment','status', 'enable_prerequisites'];
 
     public function course()
-    {
+    { 
         return $this->belongsTo(Courses::class, 'course_id');
     } 
 
@@ -41,6 +41,11 @@ class CourseLesson extends Model
     public function courseLesson()
     {
         return $this->belongsTo(CourseLesson::class, 'lesson_id');
+    }
+
+    public function examinerGradings(): HasMany
+    {
+        return $this->hasMany(ExaminerGrading::class, 'lesson_id', 'id');
     }
 
 }

@@ -70,6 +70,7 @@
                         @php
                         $meta = $lessonMeta[$lessonId] ?? null;
                         @endphp
+                     
                         <div class="mb-3">
                             <?php
                             $lesson['title'] = $tasks->first()->lesson?->lesson_title;
@@ -125,46 +126,39 @@
                             <div>
 
                             </div>
-
+                            <?php // dump($event->eventLessons); ?>
                             <!-- {{-- Lesson Summary --}} -->
-                            @if($event->eventLessons->whereNotNull('lesson_summary')->isNotEmpty())
+                             
+                      @if(!empty($meta?->lesson_summary))
                             <div class="col-md-12 mt-3">
                                 <div class="card shadow-sm border-0">
                                     <div class="card-header bg-primary text-white py-0">
                                         <i class="bi bi-journal-text me-2"></i> Lesson Summary
                                     </div>
                                     <div class="card-body">
-                                        @if(!empty($event->eventLessons[0]->lesson_summary))
                                         <p class="mb-0 text-muted">
-                                            {{ $event->eventLessons[0]->lesson_summary }}
+                                            {{ $meta->lesson_summary }}
                                         </p>
-                                        @else
-                                        <p class="mb-0 text-muted fst-italic">No Lesson summary provided.</p>
-                                        @endif
                                     </div>
                                 </div>
                             </div>
-                            @endif
+                      @endif
 
-                            <!-- //  Instructor Comment -->
-                            @if($event->eventLessons->whereNotNull('instructor_comment')->isNotEmpty())
-                            <div class="col-md-12 mt-3">
-                                <div class="card shadow-sm border-0">
-                                    <div class="card-header bg-primary text-white py-0">
-                                        <i class="bi bi-journal-text me-2"></i> Instructor Comment
-                                    </div>
-                                    <div class="card-body">
-                                        @if(!empty($event->eventLessons[0]->instructor_comment ))
-                                        <p class="mb-0 text-muted">
-                                            {{ $event->eventLessons[0]->instructor_comment }}
-                                        </p>
-                                        @else
-                                        <p class="mb-0 text-muted fst-italic">No Instructor Comment provided.</p>
-                                        @endif
+                        {{-- Instructor Comment --}}
+                                @if(!empty($meta?->instructor_comment))
+                                <div class="col-md-12 mt-3">
+                                    <div class="card shadow-sm border-0">
+                                        <div class="card-header bg-primary text-white py-0">
+                                            <i class="bi bi-chat-square-text me-2"></i> Instructor Comment
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="mb-0 text-muted">
+                                                {{ $meta->instructor_comment }}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            @endif
+                                @endif
                         </div>
                         @endforeach
                         @endif
@@ -528,7 +522,7 @@
                                 @endif
 
 
-                                 
+
                                 <!-- Custom Competency Grading -->
                                 <div class="mb-4">
                                     <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#deferredcompetencyGrading{{ $defLesson->id }}" role="button" aria-expanded="false" aria-controls="deferredcompetencyGrading123">
@@ -615,15 +609,28 @@
 
                 <!-- // Examiner Grading -->
                 <div class="mb-4">
-                    <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#examinercompetencyGrading" role="button" aria-expanded="false" aria-controls="">
+                    <h5 class="text-primary d-flex justify-content-between align-items-center"
+                        data-bs-toggle="collapse"
+                        href="#examinercompetencyGrading"
+                        role="button"
+                        aria-expanded="false">
                         <span><i class="bi bi-bar-chart-steps me-2"></i>Examiner Competency Grading</span>
                         <i class="bi bi-chevron-down"></i>
                     </h5>
+
                     <div class="collapse" id="examinercompetencyGrading">
-                        @if($examiner_grading->isEmpty())
+                        @if($examinerGrouped->isEmpty())
                         <p class="text-muted">No examiner competency grading available.</p>
                         @else
-                      
+                        @foreach($examinerGrouped as $lessonId => $gradings)
+                        @php
+                        $lessonTitle = $gradings->first()->courseLesson->lesson_title ?? 'Unknown Lesson';
+                        @endphp
+
+                        <h6 class="mt-3 text-success">
+                            <i class="bi bi-journal-text me-1"></i> {{ $lessonTitle }}
+                        </h6>
+
                         <div class="mb-4">
                             <div class="table-responsive">
                                 <table class="table table-bordered align-middle text-center shadow-sm">
@@ -635,49 +642,55 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($examiner_grading as $grading)
-                                            @php
-                                                $grade = $grading->examinerGrading[0]->competency_value  ?? null;
-                                                $badgeClass = 'bg-secondary'; // default
-
-                                                if ($grade == 1) {
-                                                $badgeClass = 'grade-incomplete';
-                                                } elseif ($grade == 2) {
-                                                $badgeClass = 'grade-ftr';
-                                                } elseif (in_array($grade, [3, 4, 5])) {
-                                                $badgeClass = 'grade-competent';
-                                                }
-                                            @endphp
+                                        @foreach($gradings as $examiner)
+                                        @php
+                                        $grade = $examiner->competency_value;
+                                        $badgeClass = 'bg-secondary';
+                                        if ($grade == 1) $badgeClass = 'grade-incomplete';
+                                        elseif ($grade == 2) $badgeClass = 'grade-ftr';
+                                        elseif (in_array($grade, [3,4,5])) $badgeClass = 'grade-competent';
+                                        @endphp
                                         <tr>
-                                            <td><strong>{{ strtoupper($grading->short_name) }}</strong></td>
-                                            <td>
-                                                <span class="badge {{ $badgeClass }}"> {{ $grading->examinerGrading[0]->competency_value ?? 'N/A' }}</span>
-                                            </td>
-                                            <td class="text-start">{{ $grading->examinerGrading[0]->comment ?? '-' }}</td>
+                                            <td><strong>{{ strtoupper($examiner->cbta->short_name ?? '-') }}</strong></td>
+                                            <td><span class="badge {{ $badgeClass }}">{{ $grade ?? 'N/A' }}</span></td>
+                                            <td class="text-start">{{ $examiner->comment ?? '-' }}</td>
                                         </tr>
-                                          @endforeach
-                                       
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-                      
+                        @endforeach
                         @endif
                     </div>
                 </div>
+
                 <!-- // End Examiner Grading -->
 
                 <!-- Instructor Rating  -->
-                 <div class="mb-4">
-                    <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#ins_competencyGrading" role="button" aria-expanded="false" aria-controls="">
+                <div class="mb-4">
+                    <h5 class="text-primary d-flex justify-content-between align-items-center"
+                        data-bs-toggle="collapse"
+                        href="#ins_competencyGrading"
+                        role="button"
+                        aria-expanded="false">
                         <span><i class="bi bi-bar-chart-steps me-2"></i>Instructor Competency Grading</span>
                         <i class="bi bi-chevron-down"></i>
                     </h5>
+
                     <div class="collapse" id="ins_competencyGrading">
-                        @if($instructor_grading->isEmpty())
+                        @if($instructorGrouped->isEmpty())
                         <p class="text-muted">No instructor competency grading available.</p>
                         @else
-                      
+                        @foreach($instructorGrouped as $lessonId => $gradings)
+                        @php
+                        $lessonTitle = $gradings->first()->courseLesson->lesson_title ?? 'Unknown Lesson';
+                        @endphp
+
+                        <h6 class="mt-3 text-success">
+                            <i class="bi bi-journal-text me-1"></i> {{ $lessonTitle }}
+                        </h6>
+
                         <div class="mb-4">
                             <div class="table-responsive">
                                 <table class="table table-bordered align-middle text-center shadow-sm">
@@ -689,36 +702,29 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($instructor_grading as $grading)
-                                            @php
-                                                $grade = $grading->examinerGrading[0]->competency_value  ?? null;
-                                                $badgeClass = 'bg-secondary'; // default
-
-                                                if ($grade == 1) {
-                                                $badgeClass = 'grade-incomplete';
-                                                } elseif ($grade == 2) {
-                                                $badgeClass = 'grade-ftr';
-                                                } elseif (in_array($grade, [3, 4, 5])) {
-                                                $badgeClass = 'grade-competent';
-                                                }
-                                            @endphp
+                                        @foreach($gradings as $instructor)
+                                        @php
+                                        $grade = $instructor->competency_value;
+                                        $badgeClass = 'bg-secondary';
+                                        if ($grade == 1) $badgeClass = 'grade-incomplete';
+                                        elseif ($grade == 2) $badgeClass = 'grade-ftr';
+                                        elseif (in_array($grade, [3,4,5])) $badgeClass = 'grade-competent';
+                                        @endphp
                                         <tr>
-                                            <td><strong>{{ strtoupper($grading->short_name) }}</strong></td>
-                                            <td>
-                                                <span class="badge {{ $badgeClass }}"> {{ $grading->examinerGrading[0]->competency_value ?? 'N/A' }}</span>
-                                            </td>
-                                            <td class="text-start">{{ $grading->examinerGrading[0]->comment ?? '-' }}</td>
+                                            <td><strong>{{ strtoupper($instructor->cbta->short_name ?? '-') }}</strong></td>
+                                            <td><span class="badge {{ $badgeClass }}">{{ $grade ?? 'N/A' }}</span></td>
+                                            <td class="text-start">{{ $instructor->comment ?? '-' }}</td>
                                         </tr>
-                                          @endforeach
-                                       
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-                      
+                        @endforeach
                         @endif
                     </div>
                 </div>
+
                 <!-- // End Instructor Grading -->
 
 
