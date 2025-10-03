@@ -15,11 +15,13 @@ class CbtaGrading extends Model
     protected $fillable = [
         'competency',
         'short_name',
-        'competency_type'
+        'competency_type' 
     ];
 
     public function examinerGrading(): HasMany
     {
          return $this->hasMany(ExaminerGrading::class, 'cbta_gradings_id', 'id');
     }
+
+   
 }
