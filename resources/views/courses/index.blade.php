@@ -881,16 +881,6 @@
                         $('#edit_enable_cbta').prop('checked', false);
                        
                     }
-                    if (response.course.instructor_cbta == 1){
-                       $('#edit_enable_instructor_cbta').prop('checked', true);
-                    }else{
-                        $('#edit_enable_instructor_cbta').prop('checked', false);
-                    }
-                    if (response.course.examiner_cbta == 1){
-                          $('#edit_enable_examiner_cbta').prop('checked', true);
-                    }else{
-                         $('#edit_enable_examiner_cbta').prop('checked', false);
-                    }
 
 
                     // Populate Resources
