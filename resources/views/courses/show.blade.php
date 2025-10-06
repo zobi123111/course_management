@@ -450,6 +450,18 @@
                                 Enable CBTA
                             </label>
                         </div>
+                    </div> 
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="enable_examiner_cbta" name="enable_examiner_cbta">
+                            <label class="form-check-label" for="enable_examiner_cbta"> Enable Examiner CBTA</label>
+                       </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="enable_instructor_cbta" name="enable_instructor_cbta">
+                            <label class="form-check-label" for="enable_instructor_cbta"> Enable Instructor CBTA</label>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
@@ -549,12 +561,24 @@
                         </div>
                         <div id="edit_grade_type_error_up" class="text-danger error_e"></div>
                     </div>
-                     <div class="form-group">
+                    <div class="form-group">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="edit_enable_cbta" name="edit_enable_cbta">
                             <label class="form-check-label" for="edit_enable_cbta">
-                                Enable CBTA
+                                Enable CBTA 
                             </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="edit_enable_examiner_cbta" name="edit_enable_examiner_cbta">
+                            <label class="form-check-label" for="edit_enable_examiner_cbta"> Enable Examiner CBTA</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="edit_enable_instructor_cbta" name="edit_enable_instructor_cbta">
+                            <label class="form-check-label" for="edit_enable_instructor_cbta"> Enable Instructor CBTA</label>
                         </div>
                     </div>
                     <div class="form-group">
@@ -738,7 +762,23 @@ $(document).ready(function() {
                 $('#edit_lesson_type').val(response.lesson.lesson_type);
 
                 //Check the correct custom time type radio button
-                console.log(response.lesson.custom_time_id);
+               
+                if (response.lesson.instructor_cbta== 1){
+                    $('#edit_enable_instructor_cbta').prop('checked', true);
+                }else{
+                    $('#edit_enable_instructor_cbta').prop('checked', false);
+                }
+                if (response.lesson.examiner_cbta == 1){
+                        $('#edit_enable_examiner_cbta').prop('checked', true);
+                }else{
+                        $('#edit_enable_examiner_cbta').prop('checked', false);
+                }
+
+
+
+
+
+
                 if (response.lesson.custom_time_id) {
                     $('#edit_custom_time_'+response.lesson.custom_time_id).prop('checked', true);  
 

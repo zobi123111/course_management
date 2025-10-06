@@ -83,6 +83,8 @@ class LessonController extends Controller
             'grade_type' => $request->grade_type,
             'lesson_type' => $request->lesson_type,
             'enable_cbta' => $request->enable_cbta ?? 0,
+            'instructor_cbta' => $request->enable_instructor_cbta ?? 0,
+            'examiner_cbta' => $request->enable_examiner_cbta ?? 0,
             'custom_time_id' => $request->custom_time_type ?? null
         ]);
     
@@ -127,7 +129,7 @@ class LessonController extends Controller
 
     public function updateLesson(Request $request)
     {
-        // dd($request->all());
+       //  dd($request->all());
         // Validate request data
         $request->validate([
             'edit_lesson_title' => 'required',
@@ -158,8 +160,10 @@ class LessonController extends Controller
             'grade_type' => $request->edit_grade_type, // Update grading type
             'enable_cbta' => $request->edit_enable_cbta ?? 0, // Update enable_cbta
             'lesson_type' => $request->edit_lesson_type,
-            'enable_prerequisites' => (int) $request->input('enable_prerequisites', 0),
-            'custom_time_id' => $request->edit_custom_time_type ?? null
+            'enable_prerequisites' => (int) $request->input('enable_prerequisites', 0), 
+            'custom_time_id' => $request->edit_custom_time_type ?? null,
+            'instructor_cbta' => $request->edit_enable_instructor_cbta ?? 0,
+            'examiner_cbta' => $request->edit_enable_examiner_cbta ?? 0,
         ]);
 
         if ($request->edit_grade_type === 'percentage') {
