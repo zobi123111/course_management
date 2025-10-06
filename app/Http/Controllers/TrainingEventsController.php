@@ -864,8 +864,8 @@ class TrainingEventsController extends Controller
             'eventLessons' => function ($q) {
                 $q->orderBy('position', 'asc'); // 👈 enforce ordering here
             },
-            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id,position',
-            'eventLessons.instructor:id,fname,lname',
+            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id,position,instructor_cbta,examiner_cbta',
+            'eventLessons.instructor:id,fname,lname', 
             'eventLessons.resource:id,name',
             'trainingFeedbacks.question',
             'documents',

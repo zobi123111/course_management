@@ -399,20 +399,8 @@
                             <input class="form-check-input" type="checkbox" value="1" id="enable_cbta" name="enable_cbta">
                             <label class="form-check-label" for="enable_cbta"> Enable CBTA</label>
                         </div>
-                    <div class="form-group">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="1" id="enable_examiner_cbta" name="enable_examiner_cbta">
-                            <label class="form-check-label" for="enable_examiner_cbta"> Enable Examiner CBTA</label>
-                    </div>
-                    </div>
-                    </div>
-                        <div class="form-group">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="1" id="enable_instructor_cbta" name="enable_instructor_cbta">
-                            <label class="form-check-label" for="enable_instructor_cbta"> Enable Instructor CBTA</label>
-                        </div>
-                    </div>
                 
+                    </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -669,20 +657,9 @@
                             <label class="form-check-label" for="edit_enable_cbta"> Enable CBTA</label>
                         </div>
                     </div>
-                        <div class="form-group">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="1" id="edit_enable_examiner_cbta" name="edit_enable_examiner_cbta">
-                            <label class="form-check-label" for="edit_enable_examiner_cbta"> Enable Examiner CBTA</label>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="1" id="edit_enable_instructor_cbta" name="edit_enable_instructor_cbta">
-                            <label class="form-check-label" for="edit_enable_instructor_cbta"> Enable Instructor CBTA</label>
-                        </div>
-                    </div>
+            
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button> 
                         <button type="button" id="updateCourse" class="btn btn-primary sbt_btn">Update</button>
                     </div>
                     <div class="loader" style="display: none;"></div>
