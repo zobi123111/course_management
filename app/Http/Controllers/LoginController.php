@@ -42,20 +42,22 @@ class LoginController extends Controller
             ]);
 
             if (Auth::attempt($credentials)) {
-                $user = User::where('email', $credentials['email'])->first();
-                if (Auth::attempt($credentials)) {
+                    $user = Auth::user();
+
+                    // ✅ Check if user status is inactive
+                    if ($user->status == 0) {
+                        Auth::logout();
+                        return response()->json([
+                            'credentials_error' => 'Your status has been inactive recently. Please contact your administrator.'
+                        ]);
+                    }
+
+                    // ✅ Regenerate session and return success
                     $request->session()->regenerate();
-                    //  return redirect()->intended('dashboard');
                     return response()->json(['success' => 'Login Successfully']);
-                } else {
-                    Auth::logout();
-                    return back()->withErrors([
-                        'credentials_error' => 'Your status has been inactive recently. Please contact your administrator.',
-                    ])->onlyInput('email');
-                }
-            } else {
-                return response()->json(['credentials_error' => 'The provided credentials do not match our records.']);
-            }
+                }else {
+                  return response()->json(['credentials_error' => 'The provided credentials do not match our records.']);
+              }
         }
     }
 

@@ -152,7 +152,6 @@ class TrainingEvents extends Model
     {
         $studentId = $this->student_id;
         $allTasksGraded = $this->eventLessons->every(function ($eventLesson) use ($studentId) {
-                        // If lesson is null, consider tasks not graded
                         if (!$eventLesson->lesson) {
                             return false;
                         }
