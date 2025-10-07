@@ -115,7 +115,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/lesson-report/download/{event_id}/{lesson_id}/{userID}', [TrainingEventsController::class, 'downloadLessonReport'])
     ->name('lesson.report.download'); 
 
-        Route::get('/deffered-lesson-report/download/{event_id}/{lesson_id}/{userID}', [TrainingEventsController::class, 'downloadDefferedLessonReport'])
+    Route::get('/deffered-lesson-report/download/{event_id}/{lesson_id}/{userID}', [TrainingEventsController::class, 'downloadDefferedLessonReport'])
     ->name('lesson.deffered.report.download');
 
     Route::post('/training/{trainingEvent}/upload-documents', [TrainingEventsController::class, 'uploadDocuments'])
@@ -272,6 +272,8 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     // Route::get('/grading', [TrainingEventsController::class, 'getStudentGrading'])->name('grading.list');
     Route::get('/training/grading-list/{event_id}', [TrainingEventsController::class, 'getStudentGrading'])->name('training.grading-list');
     Route::post('/grading/unlock/{event_id}', [TrainingEventsController::class, 'unlockEventGarding'])->name('grading.unlock'); 
+    
+
 
     // Course Template
     Route::get('/course-template', [CourseTemplateController::class, 'index'])->name('course-template.index');
@@ -313,11 +315,16 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/custom-cbta', [CbtaControlller::class, 'index'])->name('custom-cbta.show');
     Route::post('/custom-cbta-add', [CbtaControlller::class, 'save'])->name('custom-cbta.add');
     Route::post('/custom-cbta-edit', [CbtaControlller::class, 'edit'])->name('custom-cbta.edit');
-     Route::post('/custom-cbta-update', [CbtaControlller::class, 'update'])->name('custom-cbta.edit');
+    Route::post('/custom-cbta-update', [CbtaControlller::class, 'update'])->name('custom-cbta.update');
     Route::post('/custom-cbta-delete', [CbtaControlller::class, 'delete'])->name('custom-cbta.delete');
+    Route::get('/archieveUser', [TrainingEventsController::class, 'archieveUser'])->name('archieveUser.index');
     
 
 });
+
+Route::get('/training/unarchieveUser', [TrainingEventsController::class, 'unarchieveUser'])->name('unarchieveUser.index'); 
+
+Route::post('/unarchive-user', [TrainingEventsController::class, 'unarchive'])->name('unarchive.index');
 
     
 Route::get('/clear-cache', function() {

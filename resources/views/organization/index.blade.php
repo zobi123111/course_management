@@ -558,7 +558,6 @@ $(document).ready(function() {
             type: 'GET',
             data: { ou_id: ou_id },
             success: function(response) {
-                console.log(response);
 
                 // Check if users exist
                 if (!response.orgUnitUsers || response.orgUnitUsers.length === 0) {

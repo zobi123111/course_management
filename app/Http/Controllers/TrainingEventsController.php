@@ -1809,10 +1809,10 @@ class TrainingEventsController extends Controller
                         'user_id'   => $gradedStudentId,
                     ])
                         ->whereNotNull('task_grade')
-                        ->where('task_grade', '!=', '')
+                        ->where('task_grade', '!=', '') 
                         ->count();
-
-                    if ($totalSubLessons > 0 && $totalSubLessons == $gradedSubLessons) {
+                    
+                    if ($totalSubLessons > 0 && $totalSubLessons == $gradedSubLessons) { 
                         TrainingEventLessons::where('training_event_id', $event_id)
                             ->where('lesson_id', $lesson_id)
                             ->update(['is_locked' => 1]);
@@ -2986,7 +2986,7 @@ class TrainingEventsController extends Controller
             DB::commit();
 
             return response()->json(['status' => 'success']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Rollback all queries if something fails
             DB::rollBack();
 
@@ -2996,4 +2996,52 @@ class TrainingEventsController extends Controller
             ], 500);
         }
     }
+
+    public function unarchieveUser()
+    {
+        $endedEvents = TrainingEvents::whereNotNull('course_end_date')
+                        ->orderByDesc('course_end_date')
+                        ->get();
+
+        $today = now(); // current date
+
+        foreach ($endedEvents as $event) {
+            // Check if course_end_date is older than 1 month
+            if ($event->course_end_date && $today->diffInMonths($event->course_end_date) >= 1) {
+                $user = User::find($event->student_id);
+
+                if ($user && $user->status != 0) {
+                    $user->update(['status' => 0]);
+                }
+            }
+        }
+    }
+
+
+    public function archieveUser()
+    {
+        $user = User::where('status', 0)->get();
+        return view('users.archieveUser', compact('user'));
+    }
+
+    public function unarchive(Request $request)
+    {
+        // Find and update the user
+        $user = User::find($request->user_id);
+
+        if ($user) {
+            $user->update(['status' => 1]);
+            Session::flash('message', "{$user->fname} {$user->lname} unarchived successfully");
+            return response()->json([
+                'success' => true,
+                'message' => "{$user->fname} {$user->lname} unarchived successfully"
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'User not found'
+        ], 404);
+    }
+
 }
