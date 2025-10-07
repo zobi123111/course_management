@@ -68,7 +68,7 @@ class CheckRolePermission
         if ($request->route()->getName() == 'dashboard') {
             return $next($request);
         }
-       
+
         // Fetch allowed pages based on the active session role
         $allowedPages = getAllowedPages($current_role)->pluck('modules.*.route_name')->flatten();
         // dd($allowedPages); 
