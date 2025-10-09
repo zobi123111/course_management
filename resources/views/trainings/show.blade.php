@@ -1821,10 +1821,10 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                         style="{{ $isLocked ? 'cursor: not-allowed; background-color: #f8f9fa;' : '' }}">
 
                                         {{ $lesson->lesson_title ?? 'Untitled Lesson' }} (Duration: {{ $hours_credited }} / {{ number_format($duration, 2) }} hrs)
-
+                                      
                                         @if($isLocked)
                                         @if(auth()->user()?->is_admin==1)
-                                        <?php dump($eventLesson->lesson_id); ?>
+                                      
                                         <button type="button"
                                             class="btn btn-sm btn-outline-secondary ms-2 unlock-lesson-btn"
                                             data-event-id="{{ $eventLesson->training_event_id }}"
@@ -1834,7 +1834,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                             <i class="bi bi-lock-fill"></i>
                                         </button>
                                         @else
-
+                                    
                                         <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
                                             <i class="bi bi-lock-fill " data-training-event-leeson="{{ $eventLesson->id }}"></i>
                                         </span>
