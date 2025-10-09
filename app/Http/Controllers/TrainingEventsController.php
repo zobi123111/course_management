@@ -1747,7 +1747,7 @@ class TrainingEventsController extends Controller
             //DeferredItem::where('event_id', $event_id)->where('created_by', $evaluatorId)->delete();
 
             // Store or update Task Grading (for sublessons):
-               dump(($request->has('task_grade')));
+               dump(($request->input('task_grade')));
             if ($request->has('task_grade')) {
                 foreach ($request->input('task_grade') as $lesson_id => $subLessons) {
                     foreach ($subLessons as $sub_lesson_id => $task_grade) {
