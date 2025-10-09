@@ -187,6 +187,7 @@ class DashboardController extends Controller
                     ])
                     ->get();
       //  dd($users);
+      ini_set('max_input_vars', 10000);
       phpinfo();
       //  return view('dashboard.index', compact('user_count', 'course_count', 'group_count', 'folder_count','totalDocuments', 'readDocuments', 'unreadDocuments', 'requestCount', 'users', 'trainingEvents'
       //  ));
