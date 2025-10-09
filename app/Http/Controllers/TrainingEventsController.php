@@ -1712,7 +1712,7 @@ class TrainingEventsController extends Controller
 
     public function createGrading(Request $request)
     {
-        
+       phpinfo();
         //Validate the incoming data:
         $request->validate([
             'event_id'             => 'required|integer|exists:training_events,id',
