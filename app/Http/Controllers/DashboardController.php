@@ -187,8 +187,9 @@ class DashboardController extends Controller
                     ])
                     ->get();
       //  dd($users);
-        return view('dashboard.index', compact('user_count', 'course_count', 'group_count', 'folder_count','totalDocuments', 'readDocuments', 'unreadDocuments', 'requestCount', 'users', 'trainingEvents'
-        ));
+      phpinfo();
+      //  return view('dashboard.index', compact('user_count', 'course_count', 'group_count', 'folder_count','totalDocuments', 'readDocuments', 'unreadDocuments', 'requestCount', 'users', 'trainingEvents'
+      //  ));
     }
     
 }
