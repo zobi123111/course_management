@@ -1813,6 +1813,8 @@ class TrainingEventsController extends Controller
                         ->whereNotNull('task_grade')
                         ->where('task_grade', '!=', '') 
                         ->count();
+
+                        dump($lesson_id);
                         dump($totalSubLessons);
                         dump($totalSubLessons);
                         dump($gradedSubLessons);
