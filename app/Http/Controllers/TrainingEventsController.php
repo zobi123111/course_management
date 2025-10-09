@@ -1712,7 +1712,7 @@ class TrainingEventsController extends Controller
 
     public function createGrading(Request $request)
     {
-        dd($request->all());
+        
         //Validate the incoming data:
         $request->validate([
             'event_id'             => 'required|integer|exists:training_events,id',
@@ -1814,15 +1814,9 @@ class TrainingEventsController extends Controller
                         ->whereNotNull('task_grade')
                         ->where('task_grade', '!=', '') 
                         ->count();
-
-                        dump("lesson_id");
-                        dump($lesson_id);
-                        dump($totalSubLessons);
-                        dump($totalSubLessons);
-                        dump($gradedSubLessons);
                     
                     if ($totalSubLessons > 0 && $totalSubLessons == $gradedSubLessons) { 
-                        dump($lesson_id);
+                      
                         TrainingEventLessons::where('training_event_id', $event_id)
                             ->where('lesson_id', $lesson_id)
                             ->update(['is_locked' => 1]); 
