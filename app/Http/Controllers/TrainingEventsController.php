@@ -1822,13 +1822,13 @@ class TrainingEventsController extends Controller
                             ->where('lesson_id', $lesson_id)
                             ->update(['is_locked' => 1]); 
                             
-                         TrainingEventLog::create([
-                             'event_id'  => $event_id,
-                             'lesson_id' =>   $lesson_id,
-                             'user_id'   => auth()->user()->id,
-                             'is_locked' => 1
+                        //  TrainingEventLog::create([
+                        //      'event_id'  => $event_id,
+                        //      'lesson_id' =>   $lesson_id,
+                        //      'user_id'   => auth()->user()->id,
+                        //      'is_locked' => 1
 
-                            ]);
+                        //     ]);
 
                     }
                 }
