@@ -1783,7 +1783,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             $hours_credited = "08:02:00"; // example
 
                             list($hours, $minutes, $seconds) = explode(':', $eventLesson->hours_credited);
-
+ 
                             $hours = (int) $hours;
                             $minutes = (int) $minutes;
 
@@ -1824,6 +1824,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
                                         @if($isLocked)
                                         @if(auth()->user()?->is_admin==1)
+                                        <?php dump($eventLesson->lesson_id); ?>
                                         <button type="button"
                                             class="btn btn-sm btn-outline-secondary ms-2 unlock-lesson-btn"
                                             data-event-id="{{ $eventLesson->training_event_id }}"
