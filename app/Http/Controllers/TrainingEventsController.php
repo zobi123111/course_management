@@ -23,6 +23,7 @@ use App\Models\UserDocument;
 use App\Models\DeferredGrading;
 use App\Models\CbtaGrading;
 use App\Models\ExaminerGrading;
+use App\Models\TrainingEventLog;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -1711,6 +1712,7 @@ class TrainingEventsController extends Controller
 
     public function createGrading(Request $request)
     {
+       // dd($request->all());
         //Validate the incoming data:
         $request->validate([
             'event_id'             => 'required|integer|exists:training_events,id',
@@ -1811,11 +1813,23 @@ class TrainingEventsController extends Controller
                         ->whereNotNull('task_grade')
                         ->where('task_grade', '!=', '') 
                         ->count();
+                        dump($totalSubLessons);
+                        dump($totalSubLessons);
+                        dump($gradedSubLessons);
                     
                     if ($totalSubLessons > 0 && $totalSubLessons == $gradedSubLessons) { 
                         TrainingEventLessons::where('training_event_id', $event_id)
                             ->where('lesson_id', $lesson_id)
-                            ->update(['is_locked' => 1]);
+                            ->update(['is_locked' => 1]); 
+                            
+                         TrainingEventLog::create([
+                             'event_id'  => $event_id,
+                             'lesson_id' =>   $lesson_id,
+                             'user_id'   => auth()->user()->id,
+                             'is_locked' => 1
+
+                            ]);
+
                     }
                 }
             }
@@ -2791,6 +2805,16 @@ class TrainingEventsController extends Controller
         $eventLesson->is_locked = 0;
         $eventLesson->save();
 
+
+        TrainingEventLog::create([
+                'event_id'  => $eventId,
+                'lesson_id' =>   $lessonId,
+                'user_id'   => auth()->user()->id,
+                'is_locked' => 0
+            ]);
+
+
+
         return response()->json(['success' => true]);
     }
 
@@ -3018,7 +3042,7 @@ class TrainingEventsController extends Controller
     }
 
 
-    public function archieveUser()
+    public function archieveUser() 
     {
         $user = User::where('status', 0)->get();
         return view('users.archieveUser', compact('user'));
