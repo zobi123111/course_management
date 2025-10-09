@@ -2805,12 +2805,12 @@ class TrainingEventsController extends Controller
         $eventLesson->save();
 
 
-        TrainingEventLog::create([
-                'event_id'  => $eventId,
-                'lesson_id' =>   $lessonId,
-                'user_id'   => auth()->user()->id,
-                'is_locked' => 0
-            ]);
+        // TrainingEventLog::create([
+        //         'event_id'  => $eventId,
+        //         'lesson_id' =>   $lessonId,
+        //         'user_id'   => auth()->user()->id,
+        //         'is_locked' => 0
+        //     ]);
 
 
 
