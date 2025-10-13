@@ -51,6 +51,11 @@ class LoginController extends Controller
                             'credentials_error' => 'Your status has been inactive recently. Please contact your administrator.'
                         ]);
                     }
+                    elseif($user->is_activated == 1){
+                        return response()->json([
+                            'credentials_error' => 'Your Training event hasbeen Completed . Please contact your administrator.'
+                        ]);
+                    }
 
                     // ✅ Regenerate session and return success
                     $request->session()->regenerate();

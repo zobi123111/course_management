@@ -33,10 +33,11 @@
                 <th scope="col">Event</th>
                 <th scope="col">Student</th>
                 <th scope="col">Instructor</th>
-                <th scope="col">Resource</th>
-                <th scope="col">Event Date</th>
-                <th scope="col">Start Time</th>
-                <th scope="col">End Time</th>
+                <!-- <th scope="col">Resource</th> -->
+                <th scope="col">Start Date</th>
+                <!-- <th scope="col">Start Time</th>
+                <th scope="col">End Time</th> -->
+                <th scope="col">Status</th>
                 @if(checkAllowedModule('training','training.show')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.grading-list')->isNotEmpty())
                 <th scope="col">Action</th>
                 @endif
@@ -44,19 +45,28 @@
         </thead>
         <tbody> 
             @foreach($trainingEvents as $event)
-           
                 @php
                     $lesson = $event->firstLesson;
                 @endphp 
                 
             <tr>
-                <td class="eventName">{{ $event->course?->course_name }} </td>
+                <td class="eventName">{{ $event->course?->course_name }} {{ $event->id }}</td>
                 <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
                 <td>{{ $lesson?->instructor?->fname }} {{ $lesson?->instructor?->lname }}</td>
-                <td>{{ $lesson?->resource?->name }}</td>
+                <!-- <td>{{ $lesson?->resource?->name }}</td> -->
                 <td>{{ $lesson?->lesson_date ? date('d-m-y', strtotime($lesson->lesson_date)) : '' }}</td>
-                <td>{{ $lesson?->start_time ? date('h:i A', strtotime($lesson->start_time)) : '' }}</td>
-                <td>{{ $lesson?->end_time ? date('h:i A', strtotime($lesson->end_time)) : '' }}</td>
+                <!-- <td>{{ $lesson?->start_time ? date('h:i A', strtotime($lesson->start_time)) : '' }}</td>
+                <td>{{ $lesson?->end_time ? date('h:i A', strtotime($lesson->end_time)) : '' }}</td> -->
+              <td>
+                    @if($event->can_end_course)
+                        <span class="text-primary">Complete</span>
+                    @elseif(!empty($event->is_locked))
+                        <span class="text-info">Ended</span>
+                    @else
+                        <span class="text-danger">Incomplete</span>
+                    @endif
+                </td>
+
                 <td>
                 @if(get_user_role(auth()->user()->role) == 'administrator')  
                     @if(empty($event->is_locked))
@@ -135,10 +145,11 @@
                 <th scope="col">Event</th>
                 <th scope="col">Student</th>
                 <th scope="col">Instructor</th>
-                <th scope="col">Resource</th>
-                <th scope="col">Event Date</th>
-                <th scope="col">Start Time</th>
-                <th scope="col">End Time</th>
+                <!-- <th scope="col">Resource</th> -->
+                <th scope="col">Start Date</th>
+                <!-- <th scope="col">Start Time</th>
+                <th scope="col">End Time</th> -->
+                <th scope="col">Status</th>
                 @if(checkAllowedModule('training','training.show')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.grading-list')->isNotEmpty())
                 <th scope="col">Action</th>
                 @endif
@@ -153,10 +164,20 @@
                 <td class="eventName">{{ $event->course?->course_name }}</td>
                 <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
                 <td>{{ $lesson?->instructor?->fname }} {{ $lesson?->instructor?->lname }}</td>
-                <td>{{ $lesson?->resource?->name }}</td>
+                <!-- <td>{{ $lesson?->resource?->name }}</td> -->
                 <td>{{ $lesson?->lesson_date ? date('d-m-y', strtotime($lesson->lesson_date)) : '' }}</td>
-                <td>{{ $lesson?->start_time ? date('h:i A', strtotime($lesson->start_time)) : '' }}</td>
-                <td>{{ $lesson?->end_time ? date('h:i A', strtotime($lesson->end_time)) : '' }}</td>
+                <!-- <td>{{ $lesson?->start_time ? date('h:i A', strtotime($lesson->start_time)) : '' }}</td>
+                <td>{{ $lesson?->end_time ? date('h:i A', strtotime($lesson->end_time)) : '' }}</td> -->
+                <td>
+                        @if($event->can_end_course)
+                            <span class="text-primary">Complete</span>
+                        @elseif(!empty($event->is_locked))
+                            <span class="text-info">Ended</span>
+                        @else
+                            <span class="text-danger">Incomplete</span>
+                        @endif
+                    </td>
+
                 <td>
                 @if(get_user_role(auth()->user()->role) == 'administrator')  
                     @if(empty($event->is_locked))
@@ -252,7 +273,7 @@
                         <input class="form-check-input" type="checkbox" id="is_instructor_checkbox">
                         <input type="hidden" name="entry_source" id="entry_source" value="">
                         <label class="form-check-label" for="is_instructor_checkbox">
-                            Select Instructor Instead of Student
+                            Instructor Training
                         </label>
                     </div>
                 </div>
@@ -354,7 +375,7 @@
                         <input class="form-check-input" type="checkbox" id="edit_is_instructor_checkbox">
                         <input type="hidden" name="entry_source" id="edit_entry_source" value="">
                         <label class="form-check-label" for="edit_is_instructor_checkbox">
-                            Select Instructor Instead of Student
+                            Instructor Training
                         </label>
                     </div>
                 </div>
@@ -605,7 +626,7 @@ $(document).ready(function() {
 
         $('.lesson-box').each(function () {
             let $box = $(this);
-            let lessonId = $box.data('lesson-id');
+            let lessonId = $box.data('lesson-id'); 
             let lessonType = $box.data('lesson-type');
 
             // Get selected resource ID and name

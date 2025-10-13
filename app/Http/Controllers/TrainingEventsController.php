@@ -67,7 +67,7 @@ class TrainingEventsController extends Controller
             $instructors = User::whereHas('roles', function ($query) {
                 $query->where('role_name', 'like', '%Instructor%');
             })->with('roles')->get();
-            //dd($instructors);
+           
 
 
             $students = User::whereHas('roles', function ($query) {
@@ -93,7 +93,7 @@ class TrainingEventsController extends Controller
             // Regular User: Get data within their organizational unit
             $resources = Resource::where('ou_id', $currentUser->ou_id)->get();
             // $courses = Courses::where('ou_id', $currentUser->ou_id)->get();
-            $courses = Courses::where('ou_id', $currentUser->ou_id)->orderBy('position')->get();
+            $courses = Courses::where('ou_id', $currentUser->ou_id)->orderBy('position')->get(); 
             $groups = Group::where('ou_id', $currentUser->ou_id)->get();
 
             $instructors = User::where('ou_id', $currentUser->ou_id)
@@ -154,7 +154,8 @@ class TrainingEventsController extends Controller
                     })
                     ->get();
                 $trainingEvents_instructor = [];
-                //  dd($trainingEvents);
+                 
+               
 
             }
         } else {
@@ -185,6 +186,7 @@ class TrainingEventsController extends Controller
                 ->with($trainingEventsRelations)
                 ->withCount(['taskGradings', 'competencyGradings'])
                 ->get();
+              
 
 
 
@@ -796,7 +798,7 @@ class TrainingEventsController extends Controller
                 } else {
                     $creditMinutes  = 0;
                 }
-                // dd($creditMinutes);
+               
                 // $creditMinutes = 480;
                 $start = '00:00';
                 $end = '00:00';
@@ -884,9 +886,7 @@ class TrainingEventsController extends Controller
                 return $lesson->instructor_id == $currentUser->id;
             })->values();
         } else {
-            $eventLessons = $trainingEvent->eventLessons;
-            //  dd($trainingEvent);
-
+            $eventLessons = $trainingEvent->eventLessons; 
         }
 
         $student = $trainingEvent->student;
@@ -943,57 +943,7 @@ class TrainingEventsController extends Controller
 
         //Retrieve feedback data
         $trainingFeedbacks = $trainingEvent->trainingFeedbacks;
-        // $defTasks = collect(DB::select("
-        //     SELECT 
-        //         dt.*,
-        //         sl.title AS task_title,
-
-        //         -- Prefer task_grade from dlt, else fallback to tg
-        //         CASE 
-        //             WHEN dlt.task_grade IS NOT NULL THEN dlt.task_grade
-        //             ELSE tg.task_grade
-        //         END AS task_grade,
-
-        //         CASE 
-        //             WHEN dlt.task_comment IS NOT NULL THEN dlt.task_comment
-        //             ELSE tg.task_comment
-        //         END AS task_comment
-
-        //     FROM def_tasks dt
-
-        //     -- Subquery join for latest def_lesson_tasks
-        //     LEFT JOIN (
-        //         SELECT dlt.*
-        //         FROM def_lesson_tasks dlt
-        //         INNER JOIN (
-        //             SELECT event_id, user_id, task_id, MAX(id) AS max_id
-        //             FROM def_lesson_tasks
-        //             GROUP BY event_id, user_id, task_id
-        //         ) latest_dlt
-        //         ON dlt.id = latest_dlt.max_id
-        //     ) dlt ON dlt.event_id = dt.event_id
-        //         AND dlt.user_id = dt.user_id
-        //         AND dlt.task_id = dt.task_id
-
-        //     -- Subquery join for latest task_gradings
-        //     LEFT JOIN (
-        //         SELECT tg.*
-        //         FROM task_gradings tg
-        //         INNER JOIN (
-        //             SELECT event_id, user_id, sub_lesson_id, MAX(id) AS max_id
-        //             FROM task_gradings
-        //             GROUP BY event_id, user_id, sub_lesson_id
-        //         ) latest_tg
-        //         ON tg.id = latest_tg.max_id
-        //     ) tg ON tg.event_id = dt.event_id
-        //         AND tg.user_id = dt.user_id
-        //         AND tg.sub_lesson_id = dt.task_id
-
-        //     -- Join to get sublesson title
-        //     LEFT JOIN sub_lessons sl ON sl.id = dt.task_id
-
-        //     WHERE dt.event_id = ?
-        // ", [$trainingEvent->id]));
+ 
         $defTasks = collect(DB::select("
     SELECT 
         dt.*,
@@ -1079,7 +1029,7 @@ class TrainingEventsController extends Controller
             ->whereRelation('defLesson', 'lesson_type', 'custom')
             // ->orderBy('def_lesson_id', 'desc')
             ->get();
-        //dd($customLessonTasks);
+      
 
 
         $deferredLessonsTasks = DefLessonTask::with([
@@ -1095,7 +1045,7 @@ class TrainingEventsController extends Controller
         $gradedDefTasksMap = $deferredLessonsTasks->mapWithKeys(function ($item) {
             return [$item->def_lesson_id . '_' . $item->task_id => true];
         });
-        // dd($gradedDefTaskIds);           
+                
         if ($currentUser->is_owner == 1) {
             // Super Admin: Get all data
             $instructors = User::whereHas('roles', function ($query) {
@@ -1123,13 +1073,18 @@ class TrainingEventsController extends Controller
         $instructor_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'instructor')->get()->toArray();
 
         $examiner_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'examiner')->get()->toArray();
-        // dd($examiner_grading);
+     
 
 
+       $training_logs = TrainingEventLog::with('users', 'lesson')
+                        ->where('event_id', $trainingEvent->id)
+                        ->orderBy('id', 'asc')
+                        ->get();
 
-        // dd($trainingEvent);
+        $groupedLogs = $training_logs->groupBy('lesson_id');
 
-        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading'));
+     
+        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs'));
     }
 
     public function edit_customLesson(Request $request)
@@ -1821,13 +1776,13 @@ class TrainingEventsController extends Controller
                             ->where('lesson_id', $lesson_id)
                             ->update(['is_locked' => 1]); 
                             
-                        //  TrainingEventLog::create([
-                        //      'event_id'  => $event_id,
-                        //      'lesson_id' =>   $lesson_id,
-                        //      'user_id'   => auth()->user()->id,
-                        //      'is_locked' => 1
+                         TrainingEventLog::create([
+                             'event_id'  => $event_id,
+                             'lesson_id' =>   $lesson_id,
+                             'user_id'   => auth()->user()->id,
+                             'is_locked' => 1
 
-                        //     ]);
+                            ]);
 
                     }
                 }
@@ -2111,7 +2066,7 @@ class TrainingEventsController extends Controller
 
         // Group by lesson_id
         $examinerGrouped = $examinerGradings->groupBy('lesson_id');
-        // dd($examiner_grading);
+ 
         $competencyType = 'instructor';
 
         $instructor_grading = CbtaGrading::with([
@@ -2236,7 +2191,7 @@ class TrainingEventsController extends Controller
         // return view('trainings.deferred-lesson-report', compact('event', 'eventLesson', 'tasks'));
         // Pass to PDF view
 
-        // dd($event);
+   
 
         $pdf = PDF::loadView('trainings.deferred-lesson-report', [
             'event' => $event,
@@ -2343,7 +2298,7 @@ class TrainingEventsController extends Controller
                 // Get the original file name
                 $originalName = $file->getClientOriginalName();
 
-                // dd($originalName);
+             
                 // Generate a unique filename with the original file name
                 $filename = time() . '_' . $originalName;
 
@@ -2605,8 +2560,7 @@ class TrainingEventsController extends Controller
     public function storeDefGrading(Request $request)
     {
         $lesson_type = $request->lesson_type;
-        //  dd($request->all());
-
+      
         $request->validate([
             'event_id' => 'required|integer|exists:training_events,id',
             'task_grade_def' => 'required|array',
@@ -2679,9 +2633,10 @@ class TrainingEventsController extends Controller
                         );
                     }
                 }
-
+               
                 // Is locked 
                 $check_taskGrade = DefLessonTask::where('event_id', $event_id)
+                    ->where('def_lesson_id', $def_lesson_id)
                     ->whereNull('task_grade')
                     ->count();
 
@@ -2694,16 +2649,16 @@ class TrainingEventsController extends Controller
                         'task.courseLesson.course'
                     ])
                         ->where('event_id', $event_id)
-                        ->whereRelation('defLesson', 'lesson_type', 'custom')
+                        ->whereRelation('defLesson', 'lesson_type', 'custom') 
                         ->get();
 
                     if ($customLessonTasks->isNotEmpty()) {
                         $check_cbta = $customLessonTasks[0]->task->courseLesson->course->enable_cbta;
-
+                           
                         if ($check_cbta == 1) {
                             $deferredExists = DeferredGrading::where('event_id', $event_id)->exists();
 
-                            if ($deferredExists && $check_taskGrade == 0) {
+                            if ($check_taskGrade == 0) {
                                 DefLesson::where('event_id', $event_id)
                                     ->where('lesson_type', "custom")
                                     ->where('id', $def_lesson_id)
@@ -2740,6 +2695,7 @@ class TrainingEventsController extends Controller
                         ->where('event_id', $event_id)
                         ->whereRelation('defLesson', 'lesson_type', 'deferred')
                         ->get();
+                        
 
                     if ($customLessonTasks->isNotEmpty()) {
                         $check_cbta = $customLessonTasks[0]->task->courseLesson->course->enable_cbta;
@@ -2747,7 +2703,7 @@ class TrainingEventsController extends Controller
                         if ($check_cbta == 1) {
                             $deferredExists = DeferredGrading::where('event_id', $event_id)->exists();
 
-                            if ($deferredExists && $check_taskGrade == 0) {
+                            if ($check_taskGrade == 0) {
                                 DefLesson::where('event_id', $event_id)
                                     ->where('lesson_type', "deferred")
                                     ->where('id', $def_lesson_id)
@@ -2805,12 +2761,12 @@ class TrainingEventsController extends Controller
         $eventLesson->save();
 
 
-        // TrainingEventLog::create([
-        //         'event_id'  => $eventId,
-        //         'lesson_id' =>   $lessonId,
-        //         'user_id'   => auth()->user()->id,
-        //         'is_locked' => 0
-        //     ]);
+        TrainingEventLog::create([
+                'event_id'  => $eventId,
+                'lesson_id' =>   $lessonId,
+                'user_id'   => auth()->user()->id,
+                'is_locked' => 0
+            ]);
 
 
 
@@ -3032,10 +2988,10 @@ class TrainingEventsController extends Controller
             // Check if course_end_date is older than 1 month
             if ($event->course_end_date && $today->diffInMonths($event->course_end_date) >= 1) {
                 $user = User::find($event->student_id);
-
-                if ($user && $user->status != 0) {
-                    $user->update(['status' => 0]);
-                }
+              
+                if ($user && $user->role == 3) {
+                   $user->update(['is_activated' => 1]);
+               }
             }
         }
     }
@@ -3043,7 +2999,7 @@ class TrainingEventsController extends Controller
 
     public function archieveUser() 
     {
-        $user = User::where('status', 0)->get();
+        $user = User::where('is_activated', 1)->get();
         return view('users.archieveUser', compact('user'));
     }
 
@@ -3053,7 +3009,7 @@ class TrainingEventsController extends Controller
         $user = User::find($request->user_id);
 
         if ($user) {
-            $user->update(['status' => 1]);
+            $user->update(['is_activated' => 0]);
             Session::flash('message', "{$user->fname} {$user->lname} unarchived successfully");
             return response()->json([
                 'success' => true,

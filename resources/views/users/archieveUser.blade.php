@@ -1,5 +1,5 @@
-@section('title', 'Unarchieve User')
-@section('sub-title', 'Unarchieve User')
+@section('title', 'Unarchive User')
+@section('sub-title', 'Unarchive User')
 @extends('layout.app')
 @section('content')
 
@@ -28,7 +28,7 @@
                      <tr>
                         <td>{{ $val->fname }} {{ $val->lname }}</td>
                         <td>
-                            @if($val->status == 0)
+                            @if($val->is_activated == 1)
                                 <span class="badge bg-danger">Inactive</span>
                             @endif
                         </td>
@@ -68,8 +68,6 @@ $(document).on('click', '.archieve_user', function() {
             _token: '{{ csrf_token() }}'
         },
         success: function(response) {
-            console.log(response.message);
-            alert(response.message);
             location.reload();
         },
         error: function(xhr) {

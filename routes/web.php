@@ -144,12 +144,6 @@ Route::group(['middleware' => ['auth']], function () {
      Route::post('/training/get_lessonId', [TrainingEventsController::class, 'get_lessonId'])->name('get_lessonId.unlocked');
 
 
-
-
-
-
-
-    
     //Grading feedback routes
     Route::get('/grading/feedback_form/{event_id}', [TrainingFeedbackController::class, 'index'])->name('training.feedback.form');
     Route::post('/grading/feedback_form/submit', [TrainingFeedbackController::class, 'submitFeedbackForm'])->name('training.feedback.submit');
@@ -267,7 +261,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/training/backToDeferredLesson', [TrainingEventsController::class, 'backToDeferredLesson'])->name('backToDeferredLesson.delete');
     // Route::get('/training/get_ou_groups_and_instructors/', [TrainingEventsController::class, 'getOrgGroupsAndInstructors'])->name('training.get_ou_groups_and_instructors');
     Route::get('/training/show/{event_id}', [TrainingEventsController::class, 'showTrainingEvent'])->name('training.show'); 
-    Route::post('/training/store_grading', [TrainingEventsController::class, 'createGrading'])->name('training.store_grading');
+    Route::post('/training/store_grading', [TrainingEventsController::class, 'createGrading'])->name('training.store_grading'); 
     Route::post('/training/overall_assessment', [TrainingEventsController::class, 'storeOverallAssessment'])->name('training.overall_assessment');
     // Route::get('/grading', [TrainingEventsController::class, 'getStudentGrading'])->name('grading.list');
     Route::get('/training/grading-list/{event_id}', [TrainingEventsController::class, 'getStudentGrading'])->name('training.grading-list');
@@ -305,7 +299,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     // Reporting section Routes
     Route::get('/reports', [ReportsController::class, 'index'])->name('reports.index');
     Route::get('/reports/course/{hashedId}', [ReportsController::class, 'showCourse'])->name('reports.course');
-    Route::post('/students/archive', [ReportsController::class, 'updateStudentArchiveStatus'])->name('students.archive.ajax');
+    Route::post('/students/archive', [ReportsController::class, 'updateStudentArchiveStatus'])->name('students.archive.ajax'); 
 
     // Student specific reporting section Routes
     Route::get('/user-reporting', [ReportsController::class, 'getStudentReports'])->name('user.reporting');
@@ -317,14 +311,18 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/custom-cbta-edit', [CbtaControlller::class, 'edit'])->name('custom-cbta.edit');
     Route::post('/custom-cbta-update', [CbtaControlller::class, 'update'])->name('custom-cbta.update');
     Route::post('/custom-cbta-delete', [CbtaControlller::class, 'delete'])->name('custom-cbta.delete');
-    Route::get('/archieveUser', [TrainingEventsController::class, 'archieveUser'])->name('archieveUser.index');
+    
     
 
 });
 
-Route::get('/training/unarchieveUser', [TrainingEventsController::class, 'unarchieveUser'])->name('unarchieveUser.index'); 
+Route::get('/archieveUser', [TrainingEventsController::class, 'archieveUser'])->name('archieveUser.index');
+
+Route::get('/training/unarchieveUser', [TrainingEventsController::class, 'unarchieveUser'])->name('unarchieveUser.index');  
 
 Route::post('/unarchive-user', [TrainingEventsController::class, 'unarchive'])->name('unarchive.index');
+
+
 
     
 Route::get('/clear-cache', function() {

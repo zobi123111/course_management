@@ -70,7 +70,8 @@ class User extends Authenticatable
         'medical_file_uploaded',
         'medical_2_required',
         'medical_2_adminRequired',
-        'is_admin'  
+        'is_admin',
+        'is_activated'
     ];
 
     /**
@@ -228,6 +229,11 @@ class User extends Authenticatable
     public function documents()
     {
         return $this->hasOne(UserDocument::class, 'user_id');
+    }
+
+    public function trainingLogsUsers()
+    {
+        return $this->hasMany(TrainingEventLog::class, 'user_id', 'id');
     }
     
 }
