@@ -34,7 +34,7 @@
 
 <div class="main_cont_outer">
     @if(session()->has('message'))
-    <div id="successMessage" class="alert alert-success fade show" role="alert">
+    <div id="successMessage" class="alert alert-success fade show" role="alert"> 
         <i class="bi bi-check-circle me-1"></i>
         {{ session()->get('message') }}
     </div>
@@ -49,6 +49,9 @@
             @endif
             @if(auth()->user()->ou_id != null)
             <a href="{{ route('users.ou_rating') }}" class="btn btn-primary" id="addRating">View OU Rating</a>
+            @endif
+            @if(auth()->user()->is_owner == 1)
+            <a href="{{ route('archieveUser.index') }}" class="btn btn-primary" id="addRating">Unarchive User</a>
             @endif
         </div>
 

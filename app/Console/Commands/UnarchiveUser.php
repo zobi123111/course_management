@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\TrainingEvents;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class UnarchiveUser extends Command
 {

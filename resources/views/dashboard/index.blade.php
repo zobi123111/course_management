@@ -16,17 +16,20 @@ $subTitle = "Welcome to Admin Dashboard";
 
 @extends('layout.app')
 @section('content')
-@php
+<?php
 
 $messages = [];
 $user = Auth::user();
 
 // Check for Admin
 if ($user->is_admin == "1") {
+
+
+
 foreach ($users as $u) {
-$userDoc = $u->documents;
-
-
+    if($u->is_activated == 0){
+         $userDoc = $u->documents;
+ 
 
 // Admin Verification Alerts
 if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
@@ -93,10 +96,12 @@ $messages[] = "⚠️ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u
 
 }
 }
+}
 
 // For Regular Users
 if ($user->is_admin != "1" && !empty($user->ou_id)) {
 $userDoc = $user->documents;
+
 
 if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
 $messages[] = "📝 Your <strong>UK Licence</strong> is pending admin verification.";
@@ -153,7 +158,7 @@ $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong
 }
 
 }
-@endphp
+?>
 
 
 @if (!empty($messages))
@@ -1224,7 +1229,7 @@ $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong
             @foreach($trainingEvents as $event)
            
                 @php
-                    $lesson = $event->firstLesson;
+                    $lesson = $event->firstLesson; 
                 @endphp 
                 
             <tr>

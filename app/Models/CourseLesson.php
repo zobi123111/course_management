@@ -48,4 +48,9 @@ class CourseLesson extends Model
         return $this->hasMany(ExaminerGrading::class, 'lesson_id', 'id');
     }
 
+    public function trainingLogLesson()
+    {
+        return $this->hasMany(TrainingEventLog::class, 'lesson_id', 'id');
+    }
+
 }
