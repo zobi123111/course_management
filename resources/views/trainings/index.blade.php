@@ -35,6 +35,7 @@
                 <th scope="col">Instructor</th>
                 <!-- <th scope="col">Resource</th> -->
                 <th scope="col">Start Date</th>
+                <th scope="col">Completion Date</th>
                 <!-- <th scope="col">Start Time</th>
                 <th scope="col">End Time</th> -->
                 <th scope="col">Status</th>
@@ -45,6 +46,7 @@
         </thead>
         <tbody> 
             @foreach($trainingEvents as $event)
+            <?php // dump($event);  ?>
                 @php
                     $lesson = $event->firstLesson;
                 @endphp 
@@ -54,7 +56,8 @@
                 <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
                 <td>{{ $lesson?->instructor?->fname }} {{ $lesson?->instructor?->lname }}</td>
                 <!-- <td>{{ $lesson?->resource?->name }}</td> -->
-                <td>{{ $lesson?->lesson_date ? date('d-m-y', strtotime($lesson->lesson_date)) : '' }}</td>
+                <td>{{ $event?->event_date ? date('d-m-y', strtotime($event->event_date)) : '' }}</td>
+                <td>{{ $event?->course_end_date ? date('d-m-y', strtotime($event->course_end_date)) : '' }}</td>
                 <!-- <td>{{ $lesson?->start_time ? date('h:i A', strtotime($lesson->start_time)) : '' }}</td>
                 <td>{{ $lesson?->end_time ? date('h:i A', strtotime($lesson->end_time)) : '' }}</td> -->
               <td>
@@ -147,6 +150,7 @@
                 <th scope="col">Instructor</th>
                 <!-- <th scope="col">Resource</th> -->
                 <th scope="col">Start Date</th>
+                <th scope="col">Completion Date</th>
                 <!-- <th scope="col">Start Time</th>
                 <th scope="col">End Time</th> -->
                 <th scope="col">Status</th>
@@ -165,7 +169,8 @@
                 <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
                 <td>{{ $lesson?->instructor?->fname }} {{ $lesson?->instructor?->lname }}</td>
                 <!-- <td>{{ $lesson?->resource?->name }}</td> -->
-                <td>{{ $lesson?->lesson_date ? date('d-m-y', strtotime($lesson->lesson_date)) : '' }}</td>
+                <td>{{ $event?->event_date ? date('d-m-y', strtotime($event->event_date)) : '' }}</td>
+                <td>{{ $event?->course_end_date ? date('d-m-y', strtotime($event->course_end_date)) : '' }}</td>
                 <!-- <td>{{ $lesson?->start_time ? date('h:i A', strtotime($lesson->start_time)) : '' }}</td>
                 <td>{{ $lesson?->end_time ? date('h:i A', strtotime($lesson->end_time)) : '' }}</td> -->
                 <td>

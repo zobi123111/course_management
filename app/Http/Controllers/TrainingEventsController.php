@@ -576,6 +576,10 @@ class TrainingEventsController extends Controller
                 'hours_credited' => gmdate("H:i", $creditMinutes * 60),
             ]);
         }
+        $user = User::find($request->student_id);
+        if ($user) {   
+                $user->update(['is_activated' => 0]);
+             }
 
         Session::flash('message', 'Training event created successfully.');
 
