@@ -83,7 +83,7 @@ class TrainingEventsController extends Controller
                 ->get();
 
 
-            $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations)
+            $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations) 
                 ->where('entry_source', "instructor")
                 ->withCount([
                     'taskGradings',
@@ -2971,30 +2971,66 @@ class TrainingEventsController extends Controller
 
             return response()->json([
                 'status'  => 'error',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage() 
             ], 500);
         }
     }
 
-    public function unarchieveUser()
-    {
-        $endedEvents = TrainingEvents::whereNotNull('course_end_date')
-                        ->orderByDesc('course_end_date')
-                        ->get();
+    // public function unarchieveUser()
+    // {
+    //     $endedEvents = TrainingEvents::whereNotNull('course_end_date')
+    //                     ->orderByDesc('course_end_date')
+    //                     ->get();
 
-        $today = now(); // current date
+    //     $today = now(); // current date
 
-        foreach ($endedEvents as $event) {
-            // Check if course_end_date is older than 1 month
-            if ($event->course_end_date && $today->diffInMonths($event->course_end_date) >= 1) {
-                $user = User::find($event->student_id);
+    //     foreach ($endedEvents as $event) {
+    //         // Check if course_end_date is older than 1 month
+    //         if ($event->course_end_date && $today->diffInMonths($event->course_end_date) >= 1) {
+    //             $user = User::find($event->student_id);
               
-                if ($user && $user->role == 3) {
-                   $user->update(['is_activated' => 1]);
-               }
+    //             if ($user && $user->role == 3) {
+    //                $user->update(['is_activated' => 1]);
+    //            }
+    //         }
+    //     }
+    // }
+
+   public function unarchieveUser()
+    {
+        $today = now();
+        // Group training events by student_id
+        $students = TrainingEvents::select('student_id')
+            ->groupBy('student_id')
+            ->get();
+
+        foreach ($students as $student) {
+            $events = TrainingEvents::where('student_id', $student->student_id)->get();
+
+            // Skip if no events found
+            if ($events->isEmpty()) continue;
+
+            $totalEvents = $events->count();
+            $completedEvents = $events->whereNotNull('course_end_date')->count();
+
+            // Proceed only if all events are completed
+            if ($completedEvents === $totalEvents) {
+
+                // Get the latest (most recent) course_end_date
+                $latestEndDate = $events->max('course_end_date');
+
+                // Check if last event ended at least 1 month ago
+                if ($latestEndDate && $today->diffInMonths($latestEndDate) >= 1) {
+                    $user = User::find($student->student_id);
+                     dump($student->student_id);
+                    if ($user && $user->role == 3) {   
+                        $user->update(['is_activated' => 1]);
+                    }
+                }
             }
         }
     }
+
 
 
     public function archieveUser() 
