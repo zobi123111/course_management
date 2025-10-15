@@ -14,6 +14,7 @@ use App\Models\OverallAssessment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use App\Models\OrganizationUnits;
+use App\Models\DefLessonTask;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
@@ -201,7 +202,7 @@ public function index()
                 $daysSinceStart = $startDate->diffInDays(Carbon::now());
                 $student->show_alert = $daysSinceStart >= 150;
             }
-
+            
             // Progress breakdown from task_grading
             $grades = TaskGrading::where('user_id', $student->id)
                 ->when($student->event_id, fn($q) => $q->where('event_id', $student->event_id))
@@ -209,12 +210,71 @@ public function index()
                 ->map(fn($grade) => strtolower((string) $grade));
 
             $total = $grades->count();
-            $student->progress = [
-                'total' => $total,
-                'incomplete' => $grades->filter(fn($g) => in_array($g, ['1', 'incomplete']))->count(),
-                'further' => $grades->filter(fn($g) => in_array($g, ['2', 'further training required']))->count(),
-                'competent' => $grades->filter(fn($g) => in_array($g, ['3', '4', '5', 'competent']))->count(),
-            ];
+
+        //    $def =   DefLessonTask::where('user_id', $student->id)
+        //         ->when($student->event_id, fn($q) => $q->where('event_id', $student->event_id))
+        //         ->pluck('task_grade')
+        //         ->map(fn($grade) => strtolower((string) $grade));
+                
+
+
+        //     $student->progress = [
+        //         'total' => $total,
+        //         'incomplete' => $grades->filter(fn($g) => in_array($g, ['1', 'incomplete']))->count(),
+        //         'further'    => $grades->filter(fn($g) => in_array($g, ['2', 'further training required']))->count(),
+        //         'competent'  => $grades->filter(fn($g) => in_array($g, ['3', '4', '5', 'competent']))->count(),
+        //     ];
+            // 1️⃣ Fetch student's TaskGrading records
+                $grades = TaskGrading::where('user_id', $student->id)
+                    ->when($student->event_id, fn($q) => $q->where('event_id', $student->event_id))
+                    ->get(['sub_lesson_id', 'task_grade']);
+
+                // 2️⃣ Fetch DefLessonTask records for comparison
+              $defTasks = DefLessonTask::where('user_id', $student->id)
+                        ->when($student->event_id, fn($q) => $q->where('event_id', $student->event_id))
+                        ->get(['task_id', 'task_grade']);
+
+                // 3️⃣ Normalize all task grades to lowercase strings for consistent comparison
+              $normalizedGrades = $grades->map(function ($g) {
+                    $g->task_grade = strtolower((string) $g->task_grade);
+                    return $g;
+                });
+
+              $normalizedDef = $defTasks->map(function ($d) {
+                    $d->task_grade = strtolower((string) $d->task_grade);
+                    return $d;
+                });
+                // 4️⃣ Initialize progress counters
+              $progress = [
+                    'total' => $normalizedGrades->count(),
+                    'incomplete' => 0,
+                    'further' => 0,
+                    'competent' => 0,
+                ];
+
+             foreach ($normalizedGrades as $grade) {
+                        $matchingDef = $normalizedDef->firstWhere('task_id', $grade->sub_lesson_id);
+
+                        // Determine which grade to use:
+                        // - If DefLessonTask exists but its grade is null/empty => treat as incomplete
+                        // - Otherwise, use DefLessonTask grade if available, else TaskGrading grade
+                        if ($matchingDef) {
+                            $finalGrade = $matchingDef->task_grade ?: 'incomplete';
+                        } else {
+                            $finalGrade = $grade->task_grade;
+                        }
+
+                        if (in_array($finalGrade, ['1', 'incomplete'])) {
+                            $progress['incomplete']++;
+                        } elseif (in_array($finalGrade, ['2', 'further training required'])) {
+                            $progress['further']++;
+                        } elseif (in_array($finalGrade, ['3', '4', '5', 'competent'])) {
+                            $progress['competent']++;
+                        }
+                    }
+
+                    $student->progress = $progress;
+
 
             // Completion logic
             $student->is_completed = false;
@@ -230,7 +290,7 @@ public function index()
         // === Chart Data ===
         $chartData = [
             'enrolled'    => $students->count(),
-            'completed' => $students->filter(fn($s) => $s->is_completed)->count(),
+            'completed'   => $students->filter(fn($s) => $s->is_completed)->count(),
             'active'      => $students->filter(fn($s) => !$s->is_archived && $s->course_end_date === null)->count(),
             'archived'    => $students->filter(fn($s) => $s->is_archived)->count(),
             'failing'     => $failingStudentIds->intersect($students->pluck('id'))->count(),
