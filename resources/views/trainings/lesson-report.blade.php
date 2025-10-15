@@ -18,7 +18,7 @@
 
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: collapse; 
             margin-bottom: 20px;
         }
 
@@ -38,13 +38,12 @@
     <table width="100%" style="border: none; border-collapse: collapse;">
         <tr>
             <td style="border: none; text-align: left; vertical-align: top;">
-                <h1 style="margin: 0;">Lesson Report</h1>
+               <h1 style="display: inline-block; margin: 0;">Lesson Report -</h1>
+               <h2 style="display: inline-block; margin: 0 0 3px 9px;">{{ $lesson->lesson_title }}</h2>
             </td>
             <td style="border: none; text-align: right; vertical-align: top;">
                 @if($event?->orgUnit?->org_logo)
-                <img src="{{ public_path('storage/organization_logo/' . $event->orgUnit->org_logo) }}"
-                    alt="Org Logo"
-                    style="height: 60px;">
+                 <img src="{{ public_path('storage/organization_logo/' . $event->orgUnit->org_logo) }}" alt="Org Logo" style="height: 60px;">
                 @endif
             </td>
         </tr>
@@ -173,6 +172,7 @@
     <!-- // End Examiner competency grading  -->
 
     <!-- // Instructor competency grading  -->
+     @if($instructor_grading->isNotEmpty())
     <div class="section">
         <h2>Instructor Competency</h2>
         <table>
@@ -209,7 +209,9 @@
             </tbody>
         </table>
     </div>
+    @endif
     <!-- // End Instructor competency grading  -->
+ @if($event->overallAssessments->isNotEmpty())
     <div class="section">
         <h2>Lesson Summary</h2>
         @foreach($event->overallAssessments as $assessment)
@@ -217,5 +219,6 @@
         <p><strong>Remarks:</strong> {{ $assessment->remarks ?? 'No remarks' }}</p>
         @endforeach
     </div>
+  @endif  
 </body>
 </html>
