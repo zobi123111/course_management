@@ -162,11 +162,14 @@ public function index()
 
         // Get unique students
         $students = $course->trainingEvents
-            ->pluck('student')
-            ->filter()
-            ->when(!$showArchived, fn($s) => $s->filter(fn($student) => !$student->is_archived))
-            ->unique('id')
-            ->values();
+                    ->pluck('student')
+                    ->filter()
+                    ->when(!$showArchived, fn($s) => $s->filter(fn($student) => !$student->is_archived))
+                    ->filter(fn($student) => $student->is_activated == 0)
+                    ->filter(fn($student) => $student->status == 1)
+                    ->unique('id')
+                    ->values();
+       //   dd($students);  
 
         $activeStudents = $students->filter(fn($s) => $s->course_end_date === null);
         $activeStudentIds = $activeStudents->pluck('id');

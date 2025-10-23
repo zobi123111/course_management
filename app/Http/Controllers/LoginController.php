@@ -48,12 +48,13 @@ class LoginController extends Controller
                     if ($user->status == 0) {
                         Auth::logout();
                         return response()->json([
-                            'credentials_error' => 'Your status has been inactive recently. Please contact your administrator.'
+                            'credentials_error' => 'Your account is currently disabled. Please contact your administrator.'
                         ]);
                     }
-                    elseif($user->is_activated == 1){
+                    elseif($user->is_activated == 1){ 
+                        Auth::logout();
                         return response()->json([
-                            'credentials_error' => 'Your Training event hasbeen Completed . Please contact your administrator.'
+                            'credentials_error' => 'Your account is currently disabled . Please contact your administrator.'
                         ]);
                     }
 

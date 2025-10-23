@@ -24,6 +24,7 @@ use App\Models\DeferredGrading;
 use App\Models\CbtaGrading;
 use App\Models\ExaminerGrading;
 use App\Models\TrainingEventLog;
+use App\Models\TrainingEventReview;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -32,8 +33,6 @@ use PDF;
 use Illuminate\Support\Str;
 use Auth;
 use Illuminate\Contracts\Database\Eloquent\Builder;
-
-
 
 
 class TrainingEventsController extends Controller
@@ -1968,18 +1967,19 @@ class TrainingEventsController extends Controller
 
 
 
-    public function getStudentGrading(Request $request, $event_id)
-    {
+    public function getStudentGrading(Request $request, $event_id) 
+    {  
         $eventId = decode_id($event_id);
+        
         $trainingEvent = TrainingEvents::select('ou_id', 'student_id')->findOrFail($eventId);
-
-        $ouId = $trainingEvent->ou_id;
-        $userId = $trainingEvent->student_id;
+       
+        $ouId = $trainingEvent->ou_id; 
+        $userId = $trainingEvent->student_id; 
 
 
         $event = TrainingEvents::where('ou_id', $ouId)
             ->where('id', decode_id($event_id))
-            ->where(function ($query) use ($userId) {
+            ->orwhere(function ($query) use ($userId) {
                 $query->whereHas('taskGradings', function ($q) use ($userId) {
                     $q->where('user_id', $userId);
                 })
@@ -2024,6 +2024,7 @@ class TrainingEventsController extends Controller
                 }
             ])
             ->first();
+         
 
 
         if (!$event) {
@@ -2086,14 +2087,14 @@ class TrainingEventsController extends Controller
         // Group by lesson_id
         $instructorGrouped = $instructorGradings->groupBy('lesson_id');
 
-
-
-        if ($event) {
+        if ($event) { 
             $event->student_feedback_submitted = $event->trainingFeedbacks()->where('user_id', auth()->user()->id)->exists();
             // abort(404, 'Training Event not found.'); 
         }
+        $reviews = TrainingEventReview::with('users')->where('event_id', $eventId)->get();
+     
 
-        return view('trainings.grading-list', compact('event', 'defLessonGrading', 'CustomLessonGrading', 'examinerGrouped', 'instructorGrouped'));
+        return view('trainings.grading-list', compact('event', 'defLessonGrading', 'CustomLessonGrading', 'examinerGrouped', 'instructorGrouped', 'reviews'));
     }
 
     // public function unlockEventGarding(Request $request, $event_id)
@@ -2341,7 +2342,7 @@ class TrainingEventsController extends Controller
     {
         $eventId = decode_id($event); // decode the ID
         $event = TrainingEvents::with('eventLessons', 'recommendedInstructor')->findOrFail($eventId);
-        $student = $event->student;
+        $student = $event->student; 
         $course = $event->course;
         $firstLesson = $event->firstLesson;
 
@@ -2364,6 +2365,61 @@ class TrainingEventsController extends Controller
         $flightTime = $event->total_time ?? 0; // e.g., "10:00"
         $simulatorTime = $event->simulator_time ?? 0; // e.g., "2.00"
 
+        $recommendedBy = $event->recommendedInstructor; 
+
+        // Progress breakdown from task_grading
+       
+
+        $grades = TaskGrading::where('user_id', $student->id)
+                    ->when($eventId, fn($q) => $q->where('event_id', $eventId))
+                    ->get(['sub_lesson_id', 'task_grade']);
+        $total = $grades->count();
+
+         // 2️⃣ Fetch DefLessonTask records for comparison
+        $defTasks = DefLessonTask::where('user_id', $student->id)
+                    ->when($eventId, fn($q) => $q->where('event_id', $eventId))
+                    ->get(['task_id', 'task_grade']);
+
+        $normalizedGrades = $grades->map(function ($g) {
+                                $g->task_grade = strtolower((string) $g->task_grade);
+                                return $g;
+                            });
+
+        $normalizedDef = $defTasks->map(function ($d) {
+                        $d->task_grade = strtolower((string) $d->task_grade);
+                        return $d;
+                    });
+
+        $progress = [
+                    'total'      => $normalizedGrades->count(),
+                    'incomplete' => 0,
+                    'further'    => 0,
+                    'competent'  => 0,
+                ];
+
+        foreach ($normalizedGrades as $grade) {
+                        $matchingDef = $normalizedDef->firstWhere('task_id', $grade->sub_lesson_id);
+
+                        if ($matchingDef) {
+                            $finalGrade = $matchingDef->task_grade ?: 'incomplete';
+                        } else {
+                            $finalGrade = $grade->task_grade;
+                        }
+
+                        if (in_array($finalGrade, ['1', 'incomplete'])) {
+                            $progress['incomplete']++;
+                        } elseif (in_array($finalGrade, ['2', 'further training required'])) {
+                            $progress['further']++;
+                        } elseif (in_array($finalGrade, ['3', '4', '5', 'competent'])) {
+                            $progress['competent']++;
+                        }
+                    }
+                 
+                    $student->progress = $progress;
+      
+
+      //  return view('trainings.course-completion-certificate', compact('event', 'student', 'course', 'firstLesson', 'hoursOfGroundschool', 'flightTime', 'simulatorTime', 'recommendedBy'));
+
         $pdf = PDF::loadView('trainings.course-completion-certificate', [
             'event' => $event,
             'student' => $student,
@@ -2371,13 +2427,13 @@ class TrainingEventsController extends Controller
             'firstLesson' => $firstLesson,
             'hoursOfGroundschool' => $hoursOfGroundschool,
             'flightTime' => $flightTime,
-            'simulatorTime' => $simulatorTime,
+            'simulatorTime' => $simulatorTime, 
             'recommendedBy' => $event->recommendedInstructor,
         ]);
 
         $filename = 'Certificate_' . Str::slug($student->fname . ' ' . $student->lname) . '.pdf';
 
-        return $pdf->download($filename);
+        return $pdf->download($filename); 
     }
 
 
@@ -3026,7 +3082,7 @@ class TrainingEventsController extends Controller
                 // Check if last event ended at least 1 month ago
                 if ($latestEndDate && $today->diffInMonths($latestEndDate) >= 1) {
                     $user = User::find($student->student_id);
-                     dump($student->student_id);
+                  
                     if ($user && $user->role == 3) {   
                         $user->update(['is_activated' => 1]);
                     }
@@ -3061,6 +3117,21 @@ class TrainingEventsController extends Controller
             'success' => false,
             'message' => 'User not found'
         ], 404);
+    }
+
+    public function review_store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'review' => 'required',
+        ]);
+
+        TrainingEventReview::create([
+            "event_id" => $request->event_id,
+            "user_id" => auth()->user()->id,
+            "review"  => $request->review
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Review saved successfully.']);
     }
 
 }

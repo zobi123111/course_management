@@ -134,8 +134,8 @@
                     <div class="course_card course-card" data-id="{{ $val->id }}">
                         <div class="course-image-container" style="position: relative;">
                             @if($val->image)
-                            <img src="{{ asset('storage/' . $val->image) }}" class="card-img-top course-image"
-                                alt="Course Image">
+                            <img src="{{ asset('storage/' . $val->image) }}" class="card-img-top"
+                                alt="Course Image" >
                             @else
                             <img src="{{ asset('/assets/img/profile-img.jpg') }}" class="card-img-top course-image"
                                 alt="Course Image">

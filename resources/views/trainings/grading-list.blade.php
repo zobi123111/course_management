@@ -70,7 +70,7 @@
                         @php
                         $meta = $lessonMeta[$lessonId] ?? null;
                         @endphp
-                     
+
                         <div class="mb-3">
                             <?php
                             $lesson['title'] = $tasks->first()->lesson?->lesson_title;
@@ -126,10 +126,11 @@
                             <div>
 
                             </div>
-                            <?php // dump($event->eventLessons); ?>
+                            <?php // dump($event->eventLessons); 
+                            ?>
                             <!-- {{-- Lesson Summary --}} -->
-                             
-                      @if(!empty($meta?->lesson_summary))
+
+                            @if(!empty($meta?->lesson_summary))
                             <div class="col-md-12 mt-3">
                                 <div class="card shadow-sm border-0">
                                     <div class="card-header bg-primary text-white py-0">
@@ -142,23 +143,23 @@
                                     </div>
                                 </div>
                             </div>
-                      @endif
+                            @endif
 
-                        {{-- Instructor Comment --}}
-                                @if(!empty($meta?->instructor_comment))
-                                <div class="col-md-12 mt-3">
-                                    <div class="card shadow-sm border-0">
-                                        <div class="card-header bg-primary text-white py-0">
-                                            <i class="bi bi-chat-square-text me-2"></i> Instructor Comment
-                                        </div>
-                                        <div class="card-body">
-                                            <p class="mb-0 text-muted">
-                                                {{ $meta->instructor_comment }}
-                                            </p>
-                                        </div>
+                            {{-- Instructor Comment --}}
+                            @if(!empty($meta?->instructor_comment))
+                            <div class="col-md-12 mt-3">
+                                <div class="card shadow-sm border-0">
+                                    <div class="card-header bg-primary text-white py-0">
+                                        <i class="bi bi-chat-square-text me-2"></i> Instructor Comment
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-0 text-muted">
+                                            {{ $meta->instructor_comment }}
+                                        </p>
                                     </div>
                                 </div>
-                                @endif
+                            </div>
+                            @endif
                         </div>
                         @endforeach
                         @endif
@@ -609,6 +610,7 @@
 
                 <!-- // Examiner Grading -->
                 <div class="mb-4">
+                    @if(auth()->user()->role != 3)
                     <h5 class="text-primary d-flex justify-content-between align-items-center"
                         data-bs-toggle="collapse"
                         href="#examinercompetencyGrading"
@@ -617,6 +619,7 @@
                         <span><i class="bi bi-bar-chart-steps me-2"></i>Examiner Competency Grading</span>
                         <i class="bi bi-chevron-down"></i>
                     </h5>
+                    @endif
 
                     <div class="collapse" id="examinercompetencyGrading">
                         @if($examinerGrouped->isEmpty())
@@ -669,6 +672,7 @@
 
                 <!-- Instructor Rating  -->
                 <div class="mb-4">
+                    @if(auth()->user()->role != 3)
                     <h5 class="text-primary d-flex justify-content-between align-items-center"
                         data-bs-toggle="collapse"
                         href="#ins_competencyGrading"
@@ -677,6 +681,7 @@
                         <span><i class="bi bi-bar-chart-steps me-2"></i>Instructor Competency Grading</span>
                         <i class="bi bi-chevron-down"></i>
                     </h5>
+                    @endif
 
                     <div class="collapse" id="ins_competencyGrading">
                         @if($instructorGrouped->isEmpty())
@@ -857,7 +862,7 @@
                 </div> -->
 
             @auth
-            @if(auth()->user()->id === $event->student_id)
+            @if(auth()->user()->id  === $event->student_id) 
             <div class="card-footer bg-white border-top">
                 @if($event->student_acknowledged)
                 <div class="alert alert-success mb-0">
@@ -884,7 +889,7 @@
             </div>
             {{-- Buttons shown only after acknowledgment --}}
             @if($event->student_acknowledged)
-            <div class="card-footer bg-white border-top">
+            <div class="card-footer bg-white border-top"> 
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-3">
                     <a href="{{ route('training.certificate', ['event' => encode_id($event->id)]) }}" class="btn btn-success shadow-sm">
                         <i class="bi bi-patch-check-fill me-1"></i> Generate Course Completion Certificate
@@ -905,7 +910,38 @@
             @endif
             @endauth
         </div>
+
+    
+
+
+
         @endif
+     
+            <!-- <div class="mb-4">
+            <h5 class="text-primary">
+                <i class="bi bi-file-earmark-pdf me-2"></i>Review
+            </h5>
+           <form id="review_form" method="POST" action="{{ route('review.store') }}">
+                @csrf  
+                <div class="mb-3">
+                    <input type="hidden" name="event_id" value="{{ $event->id }}"/>
+                    <textarea name="review" class="form-control" rows="4" placeholder="Write your review..."></textarea>
+                </div>
+                <input type="submit" value="Submit" class="btn btn-primary">
+            </form> -->
+              
+        </div>
+
+        <div id="reviews_list" class="mt-4"> 
+        @foreach($reviews as $val) 
+            <!-- <div class="card mb-2">
+                <div class="card-body">
+                    <strong>{{ $val->users->fname }} {{ $val->users->lname }}</strong>:
+                    <p>{{ $val->review }}</p>
+                </div>
+            </div> -->
+        @endforeach
+       </div>
     </div>
 </section>
 @endsection
@@ -935,7 +971,41 @@
                     console.error('Unlock failed:', xhr.responseText);
                 }
             });
-        })
+        });
+
+  $('#review_form').on('submit', function(e) {
+        e.preventDefault(); // Prevent default form submission
+
+        let form = $(this);
+        let formData = form.serialize(); // Collect form data
+
+        $.ajax({
+            url: form.attr('action'),   // URL from the form action attribute
+            type: form.attr('method'),  // Method from the form
+            data: formData,
+            beforeSend: function() {
+                // Optional: disable button or show loader
+                form.find('input[type=submit]').val('Submitting...').prop('disabled', true);
+            },
+            success: function(response) {
+                // Reset form or show success message
+                form[0].reset();
+                alert('Review submitted successfully!');
+            },
+            error: function(xhr) {
+                // Handle validation or server errors
+                if (xhr.status === 422) {
+                    let errors = xhr.responseJSON.errors;
+                    alert(errors.review ? errors.review[0] : 'Validation error');
+                } else {
+                    alert('Something went wrong. Please try again.');
+                }
+            },
+            complete: function() {
+                form.find('input[type=submit]').val('Submit').prop('disabled', false);
+            }
+        });
+    });
 
         setTimeout(function() {
             $('#successMessage').fadeOut('slow');

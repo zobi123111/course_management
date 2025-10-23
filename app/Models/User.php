@@ -235,5 +235,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(TrainingEventLog::class, 'user_id', 'id');
     }
+
+    public function trainingreview_users()
+    {
+        return $this->hasMany(TrainingEventReview::class, 'user_id', 'id');
+    }
     
 }

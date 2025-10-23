@@ -35,6 +35,14 @@
 }
   </style>
 </head>
+    @php
+        $progress = $student->progress;
+        $total = max(1, $progress['total']); // avoid division by zero
+        $incompletePercent = round(($progress['incomplete'] / $total) * 100);
+        $furtherPercent = round(($progress['further'] / $total) * 100);
+        $competentPercent = 100 - ($incompletePercent + $furtherPercent);
+    @endphp
+    
 <body style=" margin: 0; font-family: Arial, sans-serif;">
   <div class="certificate" style="max-width: 800px; background-color: white; padding: 20px 40px 20px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.15); color: #000;">
     <div style="text-align: center; margin-bottom: 10px;">
@@ -47,8 +55,8 @@
 
     <div style="text-align: center; margin: 0px 0 30px;">
       <p>This is to certify that:</p>
-      <h5 style="font-weight: bold; margin: 10px 0;">{{ $student->fname }} {{ $student->lname }}</h5>
-      <p>has successfully Completed: <strong style="color: #35a1e1;">PC-12 SET Class Rating:</strong></p>
+      <h5 style="font-weight: bold; margin: 10px 0;">{{ $student->fname }} {{ $student->lname }}</h5> 
+      <p>has successfully Completed: <strong style="color: #35a1e1;">{{ $event->course?->course_name }}:</strong></p>
     </div>
 
     <table style="width: 100%; border-collapse: collapse; background: #fff;">
@@ -75,7 +83,7 @@
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Training device/s:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">{{ $firstLesson->resource?->name ?? 'N/A' }}</td>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Theoretical Knowledge Exam Result:</th>
-          <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">98%</td>
+          <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">{{ $competentPercent . '%' }}</td>
         </tr>
         <tr style="background-color: #f8f9fa;">
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Reg of device/s:</th>
@@ -105,20 +113,21 @@
     <div style="text-align: center; margin-top: 60px;">
       <img src="images/AvMS_Logo.png" alt="Signature" style="height: 50px; margin-bottom: 5px;">
       <p style="font-weight: 600;">{{ $event->instructor->fname ?? '' }} {{ $event->instructor->lname ?? '' }}</p>
-      <p style="color: #6c757d;">Accountable Manager<br>{{ $event->orgUnit?->org_unit_name }}, EASA.GBR.ATO.0447</p>
+      <p style="color: #6c757d;">Accountable Manager<br>{{ $event->orgUnit?->org_unit_name }}</p>
     </div>
 
-    <div style="font-size: 0.75rem; margin-top: 50px;">
-      <p>Part-4, Appendix 10<br>Rev. 1 dated 14<sup>th</sup> November 2023</p>
-    </div>
+  <div style="font-size: 0.75rem; margin-top: 50px;">
+     <p>Part-4, Appendix 10<br>Rev. 1 dated {{ \Carbon\Carbon::now()->format('jS F Y') }}</p>
+  </div>
+
 
     <div style="width: 100%; margin-top: 30px; font-size: 0.8rem; color: #666; display: table;">
       <!-- Left Side -->
       <div style="display: table-cell; vertical-align: middle; width: 60%;">
         <p style="margin: 0;">
           {{ $event->orgUnit->org_unit_name ?? '' }} LIMITED |
-          <a href="mailto:{{ $event->orgUnit->admin->email ?? 'admin@example.com' }}" style="color: #1c3b6f; text-decoration: none; font-weight: 600;">{{ $event->orgUnit->admin->email ?? 'admin@example.com' }}</a> |
-          EASA.GBR.ATO.0447
+          <a href="mailto:{{ $event->orgUnit->admin->email ?? 'admin@example.com' }}" style="color: #1c3b6f; text-decoration: none; font-weight: 600;">{{ $event->orgUnit->admin->email}}</a> |
+        
         </p>
       </div>
 
@@ -131,7 +140,7 @@
           <div>
             <a href="mailto:{{ $event->orgUnit->admin->email ?? '#' }}"
               style="color: #1c3b6f; text-decoration: none; font-weight: 600;">
-              {{ $event->orgUnit->admin->email ?? 'admin@example.com' }}
+              {{ $event->orgUnit->admin->email }}
             </a>
           </div>
         </div>

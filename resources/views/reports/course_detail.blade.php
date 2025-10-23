@@ -126,10 +126,10 @@
                                     data-event="{{ $student->event_id }}"
                                     {{ $student->is_archived ? 'checked' : '' }}>
                             </td>
-                            <td class="no-click">
+                            <td class="no-click"> 
                                 @php
                                     $progress = $student->progress;
-                                    $total = max(1, $progress['total']); // avoid division by zero
+                                    $total = max(1, $progress['total']); 
                                     $incompletePercent = round(($progress['incomplete'] / $total) * 100);
                                     $furtherPercent = round(($progress['further'] / $total) * 100);
                                     $competentPercent = 100 - ($incompletePercent + $furtherPercent);
@@ -143,8 +143,9 @@
                                             {{ $incompletePercent . '%' }}
                                         </div>
                                     @endif
-
-                                    @if ($furtherPercent > 0)
+                                   
+                                  
+                                    @if ($furtherPercent > 0) 
                                         <div class="progress-bar status-box" role="progressbar"
                                             style="width: {{ $furtherPercent }}%; background-color: #ffc107; color: #000; font-weight: 700; font-size: 11px;"
                                             title="Further Training Required">

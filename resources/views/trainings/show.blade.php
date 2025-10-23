@@ -2030,7 +2030,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                                                         <label class="radio-label">
                                                                             <input type="radio" class="scale-radio"
                                                                                 name="comp_grade[{{ $lesson->id }}][{{ $code }}]"
-                                                                                value="{{ $i }}" data-event-id="{{ $trainingEvent->id }}" data-lesson-id="{{ $lesson->id }}" data-user-id="{{ $student->id ?? '' }}" data-code="{{ $code }}" data-color-class="{{ $colorClass }}"
+                                                                                value="{{ $i }}" data-event-id="{{ $trainingEvent->id }}" data-lesson-id="{{ $lesson->id }}" data-user-id="{{ $student->id ?? '' }}"data-code="{{ $code }}" data-color-class="{{ $colorClass }}"
                                                                                 {{ $selectedCompGrade == $i ? 'checked' : '' }}>
                                                                             <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
                                                                         </label>
@@ -2888,48 +2888,117 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
 
 
-        $('.scale-radio').on('change', function() {
-            const name = $(this).attr('name');
-            const wasChecked = $(this).data('waschecked');
-            const event_id = $(this).data('event-id');
-            const lesson_id = $(this).data('lesson-id');
-            const user_id = $(this).data('user-id');
-            const code = $(this).data('code');
-            updateRadioStyles(name);
+        // $('.scale-radio').on('change', function() { 
+        //     const name = $(this).attr('name');
+        //     const wasChecked = $(this).data('waschecked');
+        //     const event_id = $(this).data('event-id');
+        //     const lesson_id = $(this).data('lesson-id');
+        //     const user_id = $(this).data('user-id');
+        //     const code = $(this).data('code');
+         
+        //     updateRadioStyles(name);
 
-            if (wasChecked) {
-                // Uncheck and remove color class
-                //  $(this).prop('checked', false).data('waschecked', false);
+        //     if (wasChecked) {
+        //         // Uncheck and remove color class
+        //         //  $(this).prop('checked', false).data('waschecked', false);
 
-                $.ajax({
-                    url: '/training/update-competency-grade', // Replace with your actual route
-                    method: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        event_id: event_id,
-                        lesson_id: lesson_id,
-                        user_id: user_id,
-                        code: code,
-                    },
-                    success: function(response) {
-                        console.log('Grade updated:', response);
-                    },
-                    error: function(xhr) {
-                        alert('Failed to update grade.');
-                        console.error(xhr.responseText);
-                    }
-                });
+        //         $.ajax({
+        //             url: '/training/update-competency-grade', // Replace with your actual route
+        //             method: 'POST',
+        //             data: {
+        //                 _token: '{{ csrf_token() }}',
+        //                 event_id: event_id,
+        //                 lesson_id: lesson_id,
+        //                 user_id: user_id,
+        //                 code: code,
+        //             },
+        //             success: function(response) {
+        //                 console.log('Grade updated:', response);
+        //             },
+        //             error: function(xhr) {
+        //                 alert('Failed to update grade.');
+        //                 console.error(xhr.responseText);
+        //             }
+        //         });
 
-            } else {
-                // Deselect others, then mark this as checked
-                $('input[name="' + name + '"]').each(function() {
-                    $(this).data('waschecked', false);
-                });
-                $(this).data('waschecked', true);
+        //     } else {
+        //         // Deselect others, then mark this as checked
+        //         $('input[name="' + name + '"]').each(function() {
+        //             $(this).data('waschecked', false);
+        //         });
+        //         $(this).data('waschecked', true);
+        //     }
+
+        //     // updateRadioStyles(name);
+        // });
+        $('.scale-radio').on('click', function(e) {
+    const $this = $(this);
+    const name = $this.attr('name');
+    const event_id = $this.data('event-id');
+    const lesson_id = $this.data('lesson-id');
+    const user_id = $this.data('user-id');
+    const code = $this.data('code');
+    const colorClass = $this.data('color-class');
+
+    // If this was already checked, we toggle off
+    if ($this.data('waschecked')) {
+        $this.prop('checked', false);
+        $this.data('waschecked', false);
+        $this.siblings('.custom-radio').removeClass('active-selected incomplete ftr competent');
+
+        // send ajax to clear
+        $.ajax({
+            url: '/training/update-competency-grade',
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                event_id,
+                lesson_id,
+                user_id,
+                code,
+                grade: null
+            },
+            success: function(response) {
+                console.log('Grade cleared:', response);
+            },
+            error: function(xhr) {
+                console.error('Failed to update grade', xhr.responseText);
             }
-
-            // updateRadioStyles(name);
         });
+    } else {
+        // mark all others in group as unchecked
+        $('input[name="' + name + '"]').each(function() {
+            $(this).data('waschecked', false);
+            $(this).siblings('.custom-radio').removeClass('active-selected incomplete ftr competent');
+        });
+
+        // mark this one checked
+        $this.prop('checked', true);
+        $this.data('waschecked', true);
+        $this.siblings('.custom-radio').addClass('active-selected').addClass(colorClass);
+
+        // send ajax to update
+        $.ajax({
+            url: '/training/update-competency-grade',
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                event_id,
+                lesson_id,
+                user_id,
+                code,
+                grade: $this.val()
+            },
+            success: function(response) {
+                console.log('Grade updated:', response);
+            },
+            error: function(xhr) {
+                console.error('Failed to update grade', xhr.responseText);
+            }
+        });
+    }
+});
+
 
         function updateRadioStyles(groupName) {
             $('input[name="' + groupName + '"]').each(function() {
@@ -2988,12 +3057,11 @@ return sprintf("%02d:%02d", $hours, $minutes);
             }).length;
 
             if (taskGradeData === 0 && compGradeData === 0) {
-                alert('You must fill in at least one task or competency grade for one lesson.');
+                alert('You must fill in at least one task or competency grade for one lesson.'); 
                 return;
             }
 
             let formData = new FormData(this);
-            console.log(formData);
 
             $.ajax({
                 url: "{{ route('training.store_grading') }}",
@@ -3188,7 +3256,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
         $('.unlock-deflesson-btn').on('click', function() {
             const deflesson_id = $(this).data('deflesson-id');
 
-            if (confirm('Are you sure you want to unlock this lesson for editing?')) {
+            if (confirm('Are you sure you want to unlock this lesson for editing ?')) {
                 $.ajax({
                     url: '/training/unlock-deflesson',
                     method: 'POST',
@@ -3219,7 +3287,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
         $(document).on('click', '.unlock-event-icon', function() {
             let eventId = $(this).data('training-event-leeson');
 
-            if (confirm('Are you sure you want to unlock this training event?')) {
+            if (confirm('Are you sure you want to unlock this training event ?')) {
                 $.ajax({
                     url: '/grading/unlock/' + eventId,
                     type: 'POST',
@@ -3432,8 +3500,6 @@ return sprintf("%02d:%02d", $hours, $minutes);
                         $('.taskContainer').empty();
                         // console.log(response.deferredLessons);
                         $.each(response.defLessonTasks, function(index, value) {
-                            console.log(value.task_id);
-                            console.log(value.task.title);
 
                             let append_task = `
                                 <div class="form-check">
@@ -3618,8 +3684,6 @@ return sprintf("%02d:%02d", $hours, $minutes);
                     }
                 });
             }
-
-
         });
     });
 </script>
