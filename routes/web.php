@@ -316,6 +316,8 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
 
 });
 
+Route::post('/review_store', [TrainingEventsController::class, 'review_store'])->name('review.store');
+
 Route::get('/archieveUser', [TrainingEventsController::class, 'archieveUser'])->name('archieveUser.index');
 
 Route::get('/training/unarchieveUser', [TrainingEventsController::class, 'unarchieveUser'])->name('unarchieveUser.index');  

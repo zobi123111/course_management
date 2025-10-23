@@ -52,7 +52,7 @@
                 @endphp 
                 
             <tr>
-                <td class="eventName">{{ $event->course?->course_name }} {{ $event->id }}</td>
+                <td class="eventName">{{ $event->course?->course_name }}</td>
                 <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
                 <td>{{ $lesson?->instructor?->fname }} {{ $lesson?->instructor?->lname }}</td>
                 <!-- <td>{{ $lesson?->resource?->name }}</td> -->
@@ -65,6 +65,7 @@
                         <span class="text-primary">Complete</span>
                     @elseif(!empty($event->is_locked))
                         <span class="text-info">Ended</span>
+                      
                     @else
                         <span class="text-danger">Incomplete</span>
                     @endif
@@ -117,13 +118,16 @@
                             <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
                             <i class="fa fa-eye text-danger me-2"></i>
                             </a>            
-                        @endif
+                        @endif 
                     @else   
                         {{-- This event is already locked/ended --}}
                         <span class="badge bg-secondary" data-bs-toggle="tooltip"
-                            title="This course has been ended and is locked from editing">
+                            title="This course has been ended and is locked from editingfff">
                             <i class="bi bi-lock-fill me-1"></i>Ended
                         </span>
+                        <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
+                        <i class="fa fa-list text-danger me-2"></i>
+                        </a>
                     @endif
                 @else                   
                     @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
@@ -244,6 +248,9 @@
                             title="This course has been ended and is locked from editing">
                             <i class="bi bi-lock-fill me-1"></i>Ended
                         </span>
+                        <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
+                        <i class="fa fa-list text-danger me-2"></i>
+                        </a>
                     @endif
                 @else                   
                     @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())

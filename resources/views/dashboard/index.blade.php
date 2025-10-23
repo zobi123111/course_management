@@ -26,137 +26,134 @@ if ($user->is_admin == "1") {
 
 
 
-foreach ($users as $u) {
-    if($u->is_activated == 0){
-         $userDoc = $u->documents;
- 
+    foreach ($users as $u) {
+        if ($u->is_activated == 0 && $u->status == 1) {
+            $userDoc = $u->documents;
 
-// Admin Verification Alerts
-if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
-$messages[] = "📝 <strong>UK Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
-}
 
-if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
-$messages[] = "📝 <strong>EASA Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
-}
+            // Admin Verification Alerts
+            if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
+                $messages[] = "📝 <strong>UK Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+            }
 
-if ($u->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
-$messages[] = "📝 <strong>Passport</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
-}
+            if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
+                $messages[] = "📝 <strong>EASA Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+            }
 
-if ($u->medical_adminRequired == '1' && $userDoc?->medical_verified == "0" && !empty($userDoc?->medical_file)) {
-$messages[] = "📝 <strong>UK Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
-}
+            if ($u->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
+                $messages[] = "📝 <strong>Passport</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+            }
 
-if ($u->medical_adminRequired == '1' && $userDoc?->medical_verified_2 == "0" && !empty($userDoc?->medical_file_2)) {
-$messages[] = "📝 <strong>EASA Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
-}
+            if ($u->medical_adminRequired == '1' && $userDoc?->medical_verified == "0" && !empty($userDoc?->medical_file)) {
+                $messages[] = "📝 <strong>UK Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+            }
 
-// Expiry Alerts
-$expiryStatuses = [
-'UK Licence' => $userDoc?->licence_status,
-'EASA Licence' => $userDoc?->licence_2_status,
-'Passport' => $userDoc?->passport_status,
-'UK Medical' => $userDoc?->medical_status,
-'EASA Medical' => $userDoc?->medical_2_status,
-];
+            if ($u->medical_adminRequired == '1' && $userDoc?->medical_verified_2 == "0" && !empty($userDoc?->medical_file_2)) {
+                $messages[] = "📝 <strong>EASA Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+            }
 
-foreach ($expiryStatuses as $doc => $status) {
-if ($status === 'Red') {
-$messages[] = "❌ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
-} elseif ($status === 'Yellow') {
-$messages[] = "⚠️ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
-}
-}
+            // Expiry Alerts
+            $expiryStatuses = [
+                'UK Licence' => $userDoc?->licence_status,
+                'EASA Licence' => $userDoc?->licence_2_status,
+                'Passport' => $userDoc?->passport_status,
+                'UK Medical' => $userDoc?->medical_status,
+                'EASA Medical' => $userDoc?->medical_2_status,
+            ];
 
-// User Ratings (untouched)
-foreach ($u->usrRatings as $userRating) {
-if($userRating->linked_to == "licence_1")
-{
-$linked_to = "UK";
-}
-if($userRating->linked_to == "licence_2"){
-$linked_to = "EASA";
-}
+            foreach ($expiryStatuses as $doc => $status) {
+                if ($status === 'Red') {
+                    $messages[] = "❌ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
+                } elseif ($status === 'Yellow') {
+                    $messages[] = "⚠️ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
+                }
+            }
 
-$ratingName = $linked_to . ' Rating ' . ($userRating->parentRating?->name ?? '');
+            // User Ratings (untouched)
+            foreach ($u->usrRatings as $userRating) {
+                if ($userRating->linked_to == "licence_1") {
+                    $linked_to = "UK";
+                }
+                if ($userRating->linked_to == "licence_2") {
+                    $linked_to = "EASA";
+                }
 
-if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
-$messages[] = "📝 <strong>{$ratingName}</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
-}
+                $ratingName = $linked_to . ' Rating ' . ($userRating->parentRating?->name ?? '');
 
-$status = $userRating->expiry_status;
+                if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
+                    $messages[] = "📝 <strong>{$ratingName}</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+                }
 
-if ($status === 'Red') {
-$messages[] = "❌ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
-} elseif ($status === 'Yellow') {
-$messages[] = "⚠️ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
-}
-}
+                $status = $userRating->expiry_status;
 
-}
-}
+                if ($status === 'Red') {
+                    $messages[] = "❌ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
+                } elseif ($status === 'Yellow') {
+                    $messages[] = "⚠️ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
+                }
+            }
+        }
+    }
 }
 
 // For Regular Users
 if ($user->is_admin != "1" && !empty($user->ou_id)) {
-$userDoc = $user->documents;
+    $userDoc = $user->documents;
 
 
-if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
-$messages[] = "📝 Your <strong>UK Licence</strong> is pending admin verification.";
-}
+    if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
+        $messages[] = "📝 Your <strong>UK Licence</strong> is pending admin verification.";
+    }
 
-if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
-$messages[] = "📝 Your <strong>EASA Licence</strong> is pending admin verification.";
-}
+    if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
+        $messages[] = "📝 Your <strong>EASA Licence</strong> is pending admin verification.";
+    }
 
-if ($user->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
-$messages[] = "📝 Your <strong>Passport</strong> is pending admin verification.";
-}
+    if ($user->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
+        $messages[] = "📝 Your <strong>Passport</strong> is pending admin verification.";
+    }
 
-if ($user->medical_adminRequired == '1' && $userDoc?->medical_verified == "0" && !empty($userDoc?->medical_file)) {
-$messages[] = "📝 Your <strong>UK Medical</strong> is pending admin verification.";
-}
+    if ($user->medical_adminRequired == '1' && $userDoc?->medical_verified == "0" && !empty($userDoc?->medical_file)) {
+        $messages[] = "📝 Your <strong>UK Medical</strong> is pending admin verification.";
+    }
 
-if ($user->medical_adminRequired == '1' && $userDoc?->medical_verified_2 == "0" && !empty($userDoc?->medical_file_2)) {
-$messages[] = "📝 Your <strong>EASA Medical</strong> is pending admin verification.";
-}
+    if ($user->medical_adminRequired == '1' && $userDoc?->medical_verified_2 == "0" && !empty($userDoc?->medical_file_2)) {
+        $messages[] = "📝 Your <strong>EASA Medical</strong> is pending admin verification.";
+    }
 
-$expiryStatuses = [
-'UK Licence' => $userDoc?->licence_status,
-'EASA Licence' => $userDoc?->licence_2_status,
-'Passport' => $userDoc?->passport_status,
-'UK Medical' => $userDoc?->medical_status,
-'EASA Medical' => $userDoc?->medical_2_status,
-];
+    $expiryStatuses = [
+        'UK Licence' => $userDoc?->licence_status,
+        'EASA Licence' => $userDoc?->licence_2_status,
+        'Passport' => $userDoc?->passport_status,
+        'UK Medical' => $userDoc?->medical_status,
+        'EASA Medical' => $userDoc?->medical_2_status,
+    ];
 
-foreach ($expiryStatuses as $doc => $status) {
-if ($status === 'Red') {
-$messages[] = "❌ Your <strong>{$doc}</strong> has <strong>expired</strong>.";
-} elseif ($status === 'Yellow') {
-$messages[] = "⚠️ Your <strong>{$doc}</strong> will expire in <strong>less than 90 days</strong>.";
-}
-}
+    foreach ($expiryStatuses as $doc => $status) {
+        if ($status === 'Red') {
+            $messages[] = "❌ Your <strong>{$doc}</strong> has <strong>expired</strong>.";
+        } elseif ($status === 'Yellow') {
+            $messages[] = "⚠️ Your <strong>{$doc}</strong> will expire in <strong>less than 90 days</strong>.";
+        }
+    }
 
 
-// User Ratings (untouched)
-foreach ($user->usrRatings as $userRating) {
+    // User Ratings (untouched)
+    foreach ($user->usrRatings as $userRating) {
 
-$ratingName = $userRating->parentRating->name ?? '';
+        $ratingName = $userRating->parentRating->name ?? '';
 
-if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
-$messages[] = "📝 Your <strong>{$ratingName}</strong> is pending admin verification.";
-}
+        if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
+            $messages[] = "📝 Your <strong>{$ratingName}</strong> is pending admin verification.";
+        }
 
-$status = $userRating->expiry_status;
-if ($status === 'Red') {
-$messages[] = "❌ Your <strong>{$ratingName}</strong> has <strong>expired</strong>.";
-} elseif ($status === 'Yellow') {
-$messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong>less than 90 days</strong>.";
-}
-}
-
+        $status = $userRating->expiry_status;
+        if ($status === 'Red') {
+            $messages[] = "❌ Your <strong>{$ratingName}</strong> has <strong>expired</strong>.";
+        } elseif ($status === 'Yellow') {
+            $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong>less than 90 days</strong>.";
+        }
+    }
 }
 ?>
 
@@ -1206,111 +1203,105 @@ $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong
         </div>
     </div>
     <div class="row">
-      <div class="col-lg-12">
+        <div class="col-lg-12">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Last Training Event</h5>
-                   <table class="table table-hover" id="trainingEventTable">
-        <thead>
-            <tr>
-                <th scope="col">Event</th>
-                <th scope="col">Student</th>
-                <th scope="col">Instructor</th>
-                <th scope="col">Resource</th>
-                <th scope="col">Event Date</th>
-                <th scope="col">Start Time</th>
-                <th scope="col">End Time</th>
-                @if(checkAllowedModule('training','training.show')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.grading-list')->isNotEmpty())
-                <th scope="col">Action</th>
-                @endif
-            </tr>
-        </thead>
-        <tbody> 
-            @foreach($trainingEvents as $event)
-           
-                @php
-                    $lesson = $event->firstLesson; 
-                @endphp 
-                
-            <tr>
-                <td class="eventName">{{ $event->course?->course_name }} </td>
-                <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
-                <td>{{ $lesson?->instructor?->fname }} {{ $lesson?->instructor?->lname }}</td>
-                <td>{{ $lesson?->resource?->name }}</td>
-                <td>{{ $lesson?->lesson_date ? date('d-m-y', strtotime($lesson->lesson_date)) : '' }}</td>
-                <td>{{ $lesson?->start_time ? date('h:i A', strtotime($lesson->start_time)) : '' }}</td>
-                <td>{{ $lesson?->end_time ? date('h:i A', strtotime($lesson->end_time)) : '' }}</td>
-                <td>
-                @if(get_user_role(auth()->user()->role) == 'administrator')  
-                    @if(empty($event->is_locked))
-                     
-                        @if(checkAllowedModule('training','training.edit')->isNotEmpty())
-                            <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                            data-event-id="{{ encode_id($event->id) }}"></i>
-                        @endif
-                        @if(checkAllowedModule('training','training.delete')->isNotEmpty())
-                            <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                            data-event-id="{{ encode_id($event->id) }}"></i>
-                        @endif
-                        @if(checkAllowedModule('training','training.show')->isNotEmpty())
-                            <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
-                            <i class="fa fa-eye text-danger me-2"></i>
-                            </a>            
-                        @endif
-                    
-                        @if($event->can_end_course) 
-                            {{-- Active “End Course” button/icon --}}
-                            <button class="btn btn-sm btn-flag-checkered end-course-btn" data-event-id="{{ encode_id($event->id) }}"
-                                title="End Course/Event" >
-                                <i class="fa fa-flag-checkered text-primary"></i>
-                            </button>
-                        @endif
-                    @else
-                        {{-- This event is already locked/ended --}}
-                        <span class="badge bg-secondary unlocked" data-bs-toggle="tooltip" data-id = "{{ $event->id}}"
-                            title="This course has been ended and is locked from editing">
-                            <i class="bi bi-lock-fill me-1"></i>Ended
-                        </span>
-                        @if(checkAllowedModule('training','training.delete')->isNotEmpty())
-                            <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                            data-event-id="{{ encode_id($event->id) }}"></i>
-                        @endif
-                    @endif
-                @elseif(get_user_role(auth()->user()->role) == 'instructor')   
-                    @if(empty($event->is_locked))
-                     
-                       @if(checkAllowedModule('training','training.edit')->isNotEmpty())
-                            <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                            data-event-id="{{ encode_id($event->id) }}"></i>
-                        @endif
-                        @if(checkAllowedModule('training','training.show')->isNotEmpty())
-                            <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
-                            <i class="fa fa-eye text-danger me-2"></i>
-                            </a>            
-                        @endif
-                    @else   
-                        {{-- This event is already locked/ended --}}
-                        <span class="badge bg-secondary" data-bs-toggle="tooltip"
-                            title="This course has been ended and is locked from editing">
-                            <i class="bi bi-lock-fill me-1"></i>Ended
-                        </span>
-                    @endif
-                @else                   
-                    @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
-                        <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
-                        <i class="fa fa-list text-danger me-2"></i>
-                        </a>
-                    @endif    
-                @endif
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+                    <table class="table table-hover" id="trainingEventTable">
+                        <thead>
+                            <tr>
+                                <th scope="col">Event</th>
+                                <th scope="col">Student</th>
+                                <th scope="col">Instructor</th>
+                                <th scope="col">Resource</th>
+                                <th scope="col">Event Date</th>
+                                <th scope="col">Start Time</th>
+                                <th scope="col">End Time</th>
+                                @if(checkAllowedModule('training','training.show')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.grading-list')->isNotEmpty())
+                                <th scope="col">Action</th>
+                                @endif
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($trainingEvents as $event)
 
+                            @php
+                            $lesson = $event->firstLesson;
+                            @endphp
+
+                            <tr>
+                                <td class="eventName">{{ $event->course?->course_name }} </td>
+                                <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
+                                <td>{{ $lesson?->instructor?->fname }} {{ $lesson?->instructor?->lname }}</td>
+                                <td>{{ $lesson?->resource?->name }}</td>
+                                <td>{{ $lesson?->lesson_date ? date('d-m-y', strtotime($lesson->lesson_date)) : '' }}</td>
+                                <td>{{ $lesson?->start_time ? date('h:i A', strtotime($lesson->start_time)) : '' }}</td>
+                                <td>{{ $lesson?->end_time ? date('h:i A', strtotime($lesson->end_time)) : '' }}</td>
+                                <td>
+                                    @if(get_user_role(auth()->user()->role) == 'administrator')
+                                    @if(empty($event->is_locked))
+
+
+                                    @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                                    <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                                        data-event-id="{{ encode_id($event->id) }}"></i>
+                                    @endif
+                                    @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                                    <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                                        <i class="fa fa-eye text-danger me-2"></i>
+                                    </a>
+                                    @endif
+
+                                    @if($event->can_end_course)
+                                    {{-- Active “End Course” button/icon --}}
+                                    <button class="btn btn-sm btn-flag-checkered end-course-btn" data-event-id="{{ encode_id($event->id) }}"
+                                        title="End Course/Event">
+                                        <i class="fa fa-flag-checkered text-primary"></i>
+                                    </button>
+                                    @endif
+                                    @else
+                                    {{-- This event is already locked/ended --}}
+                                    <span class="badge bg-secondary unlocked" data-bs-toggle="tooltip" data-id="{{ $event->id}}"
+                                        title="This course has been ended and is locked from editing">
+                                        <i class="bi bi-lock-fill me-1"></i>Ended
+                                    </span>
+                                    @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                                    <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                                        data-event-id="{{ encode_id($event->id) }}"></i>
+                                    @endif
+                                    @endif
+                                    @elseif(get_user_role(auth()->user()->role) == 'instructor')
+                                    @if(empty($event->is_locked))
+
+
+                                    @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                                    <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                                        <i class="fa fa-eye text-danger me-2"></i>
+                                    </a>
+                                    @endif
+                                    @else
+                                    {{-- This event is already locked/ended --}}
+                                    <span class="badge bg-secondary" data-bs-toggle="tooltip"
+                                        title="This course has been ended and is locked from editing">
+                                        <i class="bi bi-lock-fill me-1"></i>Ended
+                                    </span>
+                                    @endif
+                                    @else
+                                    @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
+                                    <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
+                                        <i class="fa fa-list text-danger me-2"></i>
+                                    </a>
+                                    @endif
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+
+                        </tbody>
+                    </table>
                 </div>
             </div>
-       </div>
+        </div>
     </div>
     @endif
 </section>
@@ -1325,6 +1316,14 @@ $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong
             pageLength: 10,
             language: {
                 emptyTable: "No records found"
+            }
+        });
+
+        $('#trainingEventTable').DataTable({
+            searching: true,
+            pageLength: 10,
+            language: {
+                emptyTable: "No previous training events completed"
             }
         });
 

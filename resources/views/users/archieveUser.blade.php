@@ -1,5 +1,5 @@
-@section('title', 'Unarchive User')
-@section('sub-title', 'Unarchive User')
+@section('title', 'Archive User')
+@section('sub-title', 'Archive User')
 @extends('layout.app')
 @section('content')
 
@@ -29,7 +29,7 @@
                         <td>{{ $val->fname }} {{ $val->lname }}</td>
                         <td>
                             @if($val->is_activated == 1)
-                                <span class="badge bg-danger">Inactive</span>
+                                <span class="badge bg-danger">Archive</span>
                             @endif
                         </td>
                          <td>

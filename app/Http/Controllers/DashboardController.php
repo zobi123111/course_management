@@ -149,7 +149,7 @@ class DashboardController extends Controller
                 $trainingEventsQuery = TrainingEvents::where('ou_id', $currentUser->ou_id)
                                 ->with($trainingEventsRelations)
                                 ->withCount(['taskGradings', 'competencyGradings']);
-
+ 
            $trainingEvents = $trainingEventsQuery
                             ->where('student_id', $currentUser->id)
                             ->where(function ($query) use ($currentUser) {
@@ -165,6 +165,15 @@ class DashboardController extends Controller
                            ->orderBy('id', 'DESC')
                            ->limit(1)  
                            ->get();
+        
+           $trainingEvents_instructor = TrainingEvents::where('entry_source', "instructor")
+                                        ->where('entry_source', "instructor")
+                                        ->where('student_id', $currentUser->id)
+                                        ->withCount(['taskGradings', 'competencyGradings'])
+                                        ->orderBy('id', 'DESC')
+                                    // ->limit(1)  
+                                        ->get();
+            // dd($trainingEvents_instructor);
                         
                         }
     
@@ -187,7 +196,7 @@ class DashboardController extends Controller
                     ])
                     ->get();
       //  dd($users);
-        return view('dashboard.index', compact('user_count', 'course_count', 'group_count', 'folder_count','totalDocuments', 'readDocuments', 'unreadDocuments', 'requestCount', 'users', 'trainingEvents'
+        return view('dashboard.index', compact('user_count', 'course_count', 'group_count', 'folder_count','totalDocuments', 'readDocuments', 'unreadDocuments', 'requestCount', 'users', 'trainingEvents','trainingEvents_instructor'
         ));
     }
     
