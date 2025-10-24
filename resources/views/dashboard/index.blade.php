@@ -750,7 +750,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     </div>
                 </div>
             </a>
-        </div>
+        </div> 
         <!-- End Group Card -->
 
         <!-- Folder Card -->
@@ -793,7 +793,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
                     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                     <script>
-                        document.addEventListener("DOMContentLoaded", () => {
+                          document.addEventListener("DOMContentLoaded", () => {
                             let ctx = document.querySelector('#pieChart').getContext('2d');
 
                             new Chart(ctx, {
@@ -802,20 +802,10 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     labels: ['Read Documents', 'Unread Documents'],
                                     datasets: [{
                                         label: 'Document Statistics',
-                                        data: [{
-                                                {
-                                                    $readDocuments
-                                                }
-                                            },
-                                            {
-                                                {
-                                                    $unreadDocuments
-                                                }
-                                            }
-                                        ],
+                                        data: [{{ $readDocuments }}, {{ $unreadDocuments }}],
                                         backgroundColor: [
                                             'rgb(75, 192, 192)', // Green (Read)
-                                            'rgb(255, 99, 132)' // Red (Unread)
+                                            'rgb(255, 99, 132)'  // Red (Unread)
                                         ],
                                         hoverOffset: 4
                                     }]
@@ -826,11 +816,8 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                             callbacks: {
                                                 label: function(tooltipItem) {
                                                     let value = tooltipItem.raw;
-                                                    let percentage = ((value / {
-                                                        {
-                                                            $totalDocuments
-                                                        }
-                                                    }) * 100).toFixed(2);
+                                                    let total = {{ $totalDocuments }};
+                                                    let percentage = ((value / total) * 100).toFixed(2);
                                                     return `${tooltipItem.label}: ${value} (${percentage}%)`;
                                                 }
                                             }
@@ -984,55 +971,42 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
                     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                     <script>
-                        document.addEventListener("DOMContentLoaded", () => {
-                            let ctx = document.querySelector('#pieChart').getContext('2d');
+                         document.addEventListener("DOMContentLoaded", () => {
+                        let ctx = document.querySelector('#pieChart').getContext('2d');
 
-                            new Chart(ctx, {
-                                type: 'pie',
-                                data: {
-                                    labels: ['Read Documents', 'Unread Documents'],
-                                    datasets: [{
-                                        label: 'Document Statistics',
-                                        data: [{
-                                                {
-                                                    $readDocuments
-                                                }
-                                            },
-                                            {
-                                                {
-                                                    $unreadDocuments
-                                                }
+                        new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: ['Read Documents', 'Unread Documents'],
+                                datasets: [{
+                                    label: 'Document Statistics',
+                                    data: [{{ $readDocuments }}, {{ $unreadDocuments }}],
+                                    backgroundColor: [
+                                        'rgb(75, 192, 192)', // Green (Read)
+                                        'rgb(255, 99, 132)'  // Red (Unread)
+                                    ],
+                                    hoverOffset: 4
+                                }]
+                            },
+                            options: {
+                                plugins: {
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(tooltipItem) {
+                                                let value = tooltipItem.raw;
+                                                let total = {{ $totalDocuments }};
+                                                let percentage = ((value / total) * 100).toFixed(2);
+                                                return `${tooltipItem.label}: ${value} (${percentage}%)`;
                                             }
-                                        ],
-                                        backgroundColor: [
-                                            'rgb(75, 192, 192)', // Green (Read)
-                                            'rgb(255, 99, 132)' // Red (Unread)
-                                        ],
-                                        hoverOffset: 4
-                                    }]
-                                },
-                                options: {
-                                    plugins: {
-                                        tooltip: {
-                                            callbacks: {
-                                                label: function(tooltipItem) {
-                                                    let value = tooltipItem.raw;
-                                                    let percentage = ((value / {
-                                                        {
-                                                            $totalDocuments
-                                                        }
-                                                    }) * 100).toFixed(2);
-                                                    return `${tooltipItem.label}: ${value} (${percentage}%)`;
-                                                }
-                                            }
-                                        },
-                                        legend: {
-                                            position: 'bottom'
                                         }
+                                    },
+                                    legend: {
+                                        position: 'bottom'
                                     }
                                 }
-                            });
+                            }
                         });
+                    });
                     </script>
                     <!-- End Pie Chart -->
                 </div>
@@ -1147,7 +1121,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
                     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                     <script>
-                        document.addEventListener("DOMContentLoaded", () => {
+                         document.addEventListener("DOMContentLoaded", () => {
                             let ctx = document.querySelector('#pieChart').getContext('2d');
 
                             new Chart(ctx, {
@@ -1156,20 +1130,10 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     labels: ['Read Documents', 'Unread Documents'],
                                     datasets: [{
                                         label: 'Document Statistics',
-                                        data: [{
-                                                {
-                                                    $readDocuments
-                                                }
-                                            },
-                                            {
-                                                {
-                                                    $unreadDocuments
-                                                }
-                                            }
-                                        ],
+                                        data: [{{ $readDocuments }}, {{ $unreadDocuments }}],
                                         backgroundColor: [
                                             'rgb(75, 192, 192)', // Green (Read)
-                                            'rgb(255, 99, 132)' // Red (Unread)
+                                            'rgb(255, 99, 132)'  // Red (Unread)
                                         ],
                                         hoverOffset: 4
                                     }]
@@ -1180,11 +1144,8 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                             callbacks: {
                                                 label: function(tooltipItem) {
                                                     let value = tooltipItem.raw;
-                                                    let percentage = ((value / {
-                                                        {
-                                                            $totalDocuments
-                                                        }
-                                                    }) * 100).toFixed(2);
+                                                    let total = {{ $totalDocuments }};
+                                                    let percentage = ((value / total) * 100).toFixed(2);
                                                     return `${tooltipItem.label}: ${value} (${percentage}%)`;
                                                 }
                                             }

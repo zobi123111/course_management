@@ -40,7 +40,7 @@
     </div>
     @endif
     @if(checkAllowedModule('users','user.store')->isNotEmpty())
-    <div class="create_btn d-flex justify-content-between align-items-center">
+    <div class="create_btn d-flex justify-content-between align-items-center"> 
         <div>
             <a href="#" class="btn btn-primary me-2 create-button" id="createUser" data-toggle="modal"
                 data-target="#userModal">Create Users</a>
@@ -48,10 +48,10 @@
             <a href="{{ route('users.rating') }}" class="btn btn-primary" id="addRating">View Rating</a>
             @endif
             @if(auth()->user()->ou_id != null)
-            <a href="{{ route('users.ou_rating') }}" class="btn btn-primary" id="addRating">View OU Rating</a>
+            <a href="{{ route('users.ou_rating') }}" class="btn btn-primary" id="addRating">View OU Rating</a> 
             @endif
             @if(auth()->user()->is_owner == 1)
-            <a href="{{ route('archieveUser.index') }}" class="btn btn-primary" id="addRating">Unarchive User</a>
+            <a href="{{ route('archieveUser.index') }}" class="btn btn-primary" id="addRating">Archive User</a>
             @endif
         </div>
 
@@ -400,6 +400,13 @@
             </select>
             <div id="status_error" class="text-danger error_e"></div>
         </div>
+        <div class="col-md-6">
+            <label for="archive_status" class="form-label">Archive Status</label>
+            <select class="form-select" name="archive_status" aria-label="Default select example">
+                <option value="0" selected>UnArchive</option>
+                <option value="1">Archive</option>
+            </select>
+        </div>
     </div>
     <div class="modal-footer">
         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
@@ -673,13 +680,13 @@
 
                     <!-- Currency (Optional) -->
                     <!-- <div class="col-md-6">
-            <label for="edit_currency" class="form-label">Currency</label>
-            <input type="checkbox" name="edit_currency_checkbox" id="edit_currency_checkbox"
-                class="ms-2">
-            <input type="text" name="edit_currency" id="edit_currency" class="form-control"
-                style="display: none;" placeholder="Enter Currency">
-            <div id="edit_currency_error_up" class="text-danger error_e"></div>
-        </div> -->
+                            <label for="edit_currency" class="form-label">Currency</label>
+                            <input type="checkbox" name="edit_currency_checkbox" id="edit_currency_checkbox"
+                                class="ms-2">
+                            <input type="text" name="edit_currency" id="edit_currency" class="form-control"
+                                style="display: none;" placeholder="Enter Currency">
+                            <div id="edit_currency_error_up" class="text-danger error_e"></div>
+                    </div> -->
 
                     <!-- Custom Field -->
                     <div class="col-md-6">
@@ -732,6 +739,13 @@
                             <option value="0">Inactive</option>
                         </select>
                         <div id="status_error_up" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-6" style="display:none" id="archiveStatus_col">
+                        <label for="archive_status" class="form-label">Archive Status</label>
+                        <select class="form-select" name="archive_status" id="archive_status" aria-label="Default select example">
+                            <option value="0" selected>UnArchive</option>
+                            <option value="1">Archive</option>
+                        </select>
                     </div>
             </div>
             <div class="modal-footer">
@@ -1629,7 +1643,7 @@
             };
             $.ajax({
                 type: 'post',
-                url: "{{ url('users/edit') }}",
+                url: "{{ url('users/edit') }}", 
                 data: vdata,
                 success: function(response) {
                     $('input[name="edit_firstname"]').val(response.user.fname);
@@ -1638,9 +1652,10 @@
                     $('input[name="edit_form_id"]').val(response.user.id);
                     $('#edit_ou_id').val(response.user.ou_id);
                     $('#edit_status').val(response.user.status);
+                    $('#archive_status').val(response.user.is_activated);
 
-                        edit_selectBoxIndex = response.userRatings_licence_1.length || 0;
-                    if (response.licence1 == 1) {  console.log("lld");
+                    edit_selectBoxIndex = response.userRatings_licence_1.length || 0;
+                    if (response.licence1 == 1) {
                         $('#edit_licence_rating_section').show();
                         $('#edit_uk_licence').prop('checked', true);
                         $('#edit_rating_select_boxes_container').show().empty();
@@ -1737,7 +1752,7 @@
                             });
                         });
                     }
-                        licence2_selectBoxIndex = response.userRatings_licence_2.length || 0;
+                    licence2_selectBoxIndex = response.userRatings_licence_2.length || 0;
                     if (response.licence2 == 1) {
                         $('#edit_licence_2_rating_section').show();
                         $('#licence_2_ratings').prop('checked', true);
@@ -1834,12 +1849,13 @@
 
                     var userRoleId = response.user.role;
                     $('#role_id option').removeAttr('selected');
-                    $('#edit_role option[value="' + userRoleId + '"]').attr('selected',
-                        'selected');
-
+                    $('#edit_role option[value="' + userRoleId + '"]').attr('selected','selected');
+                    if(userRoleId == 18){
+                       $('#archiveStatus_col').show();
+                    }else{
+                       $('#archiveStatus_col').hide(); 
+                    }
                     const document = response.user.documents ?? {};
-
-
                     const ratings = response.user_ratings || {};
 
                     // General Ratings
