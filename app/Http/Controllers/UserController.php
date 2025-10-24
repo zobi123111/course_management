@@ -668,7 +668,7 @@ class UserController extends Controller
         }
         unset($ratingsGroup);
 
-        return view('users.profile', compact(
+        return view('users.profile', compact( 
             'user',
             'ratings',
             'licence1Ratings',
@@ -1189,7 +1189,6 @@ class UserController extends Controller
 
     public function save_user(Request $request)
     {
-        // dd($request->all());
         $validated = $request->validate([
             'firstname' => 'required',
             'lastname' => 'required',
@@ -1345,8 +1344,9 @@ class UserController extends Controller
             'medical_restriction'   => $medical_detail,
             'medical_file'          => $medicalFilePath ?? null,
             "medical_2_required"        => $request->medical_2_checkbox ?? 0,
-            "medical_2_adminRequired"        => $request->medical_2_verification_required ?? 0,
-            "is_admin"              => $is_admin
+            "medical_2_adminRequired"  => $request->medical_2_verification_required ?? 0,
+            "is_admin"              => $is_admin,
+            "is_activated"           => $request->archive_status,
         );
 
         // dd($store_user);
@@ -1700,7 +1700,8 @@ class UserController extends Controller
                 'medical_file'  => $medicalFilePath,
                 'medical_2_required' => $medical_2_checkbox,
                 'medical_2_adminRequired' => $medical_2_adminRequired ?? 0,
-                'is_admin' => $is_admin
+                'is_admin' => $is_admin,
+                "is_activated"  => $request->archive_status,
             ];
 
 
@@ -2392,6 +2393,7 @@ class UserController extends Controller
         if (!$user) {
             return response()->json(['error' => 'User not found']);
         }
+  
 
         $userRatings = $user->usrRatings
             ->groupBy('linked_to')

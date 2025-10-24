@@ -115,7 +115,8 @@ class DashboardController extends Controller
             })->get();
     
             // Get documents where user has access via group pivot
-            $documents = Document::whereHas('groups', function ($query) use ($groupIds) {
+           //  dd($groupIds);
+            $documents = Document::whereHas('groups', function ($query) use ($groupIds) { 
                 $query->whereIn('groups.id', $groupIds);
             })
             ->where('ou_id', $ou_id)
@@ -176,7 +177,7 @@ class DashboardController extends Controller
             // dd($trainingEvents_instructor);
                         
                         }
-    
+      
         $totalDocuments = $documents->count();
         $readDocuments = countAcknowledgedDocuments($documents, $user);
         $unreadDocuments = $totalDocuments - $readDocuments;
@@ -195,7 +196,8 @@ class DashboardController extends Controller
                         }
                     ])
                     ->get();
-      //  dd($users);
+            
+
         return view('dashboard.index', compact('user_count', 'course_count', 'group_count', 'folder_count','totalDocuments', 'readDocuments', 'unreadDocuments', 'requestCount', 'users', 'trainingEvents'
         ));
     }

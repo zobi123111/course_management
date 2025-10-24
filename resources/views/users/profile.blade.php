@@ -111,11 +111,11 @@
     }
 
     .sbt_btn {
-         background-color: #0d6efd;
+        background-color: #0d6efd;
     }
 
     .close_btn {
-         background-color: #0d6efd;
+        background-color: #0d6efd;
     }
 </style>
 
@@ -134,10 +134,10 @@
             <div class="container-fluid">
                 <div class="row">
                     <h2 class="mb-5">User Profile</h2>
-                     <div class="change_password d-flex justify-content-end" >
+                    <div class="change_password d-flex justify-content-end">
                         <a href="{{ url('forgot-password') }}" class="btn btn-primary me-2 change-password-btn" style="width:unset;background-color: #0d6efd;">Forget Password</a>
                     </div>
-                   
+
                 </div>
                 <form id="userProfileForm" enctype="multipart/form-data">
                     @csrf
@@ -685,10 +685,10 @@
                                 @endif
                             </div>
                             <div class="row">
-                                @if ($user->medical == 1)
+                               
                                 <div class="col-md-12">
                                     <div class="row">
-
+                                      <!-- // -->@if ($user->medical == 1)
                                         <div class="col-md-6">
                                             <label for="extra_roles" class="form-label"><strong>UK Medical Issued By </strong>
                                                 <span class="text-danger"></span>
@@ -773,7 +773,8 @@
                                             </button>
                                         @endif -->
                                         </div>
-
+                                        <!-- // -->  @endif
+                                   <!-- // -->@if ($user->medical_2_required == 1)
                                         <div class="col-md-6" id="edit_second_medical_section" style="display: {{ !empty($user?->medical_2_required) ? 'block' : 'none' }};">
                                             <!-- <div> -->
                                             <label for="extra_roles" class="form-label"><strong>EASA Medical Issued By </strong>
@@ -852,12 +853,10 @@
                                             <div id="medical_file_2_error_up" class="text-danger error_e"></div>
                                             <!-- </div> -->
                                         </div>
+                                    <!-- // -->  @endif
                                     </div>
                                 </div>
-
-                                @endif
-
-
+                              
                             </div>
 
 
@@ -892,39 +891,39 @@
         </div>
     </div>
 
-        <!-- Change Password Modal -->
-<div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="changePasswordForm" method="POST" class="row g-3">
-                    @csrf
-                    <div class="alert alert-danger" style="display:none"></div>
-                    <div class="form-group">
-                        <label for="password">New Password<span class="text-danger">*</span></label>
-                        <input type="password" name="password" class="form-control">
-                        <div id="password_errorr" class="text-danger error_ee"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="password_confirmation">Confirm Password<span class="text-danger">*</span></label>
-                        <input type="password" name="password_confirmation" class="form-control">
-                        <div id="password_confirmation_errorr" class="text-danger error_ee"></div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary  sbt_btn">Change</button>
-                    </div>
-                </form>
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="changePasswordForm" method="POST" class="row g-3">
+                        @csrf
+                        <div class="alert alert-danger" style="display:none"></div>
+                        <div class="form-group">
+                            <label for="password">New Password<span class="text-danger">*</span></label>
+                            <input type="password" name="password" class="form-control">
+                            <div id="password_errorr" class="text-danger error_ee"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="password_confirmation">Confirm Password<span class="text-danger">*</span></label>
+                            <input type="password" name="password_confirmation" class="form-control">
+                            <div id="password_confirmation_errorr" class="text-danger error_ee"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary  sbt_btn">Change</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
-<!-- End of change password -->
+    <!-- End of change password -->
 </div>
 
 
@@ -1061,7 +1060,7 @@
         $('#changePasswordModal').modal('show');
     });
 
-       $('#changePasswordForm').submit(function(e) {
+    $('#changePasswordForm').submit(function(e) {
         e.preventDefault();
         $('.error_ee').html('');
         var formData = $(this).serialize();
