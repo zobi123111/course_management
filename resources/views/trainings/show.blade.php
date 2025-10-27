@@ -781,10 +781,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                     } else {
                     $instructor_lic_no = 'N/A';
                     }
-
-
                     @endphp
-
                     <div class="row mb-3 p-3 border rounded bg-light shadow-sm">
                         <div class="col-md-6 mb-2">
                             <strong><i class="fas fa-book"></i> Lesson Name:</strong>
@@ -1812,35 +1809,35 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             <div class="accordion-item">
                                 <input type="hidden" name="tg_lesson_id[]" value="{{ $eventLesson->id }}">
                                 <h2 class="accordion-header">
-                                    <button class="accordion-button {{ $isLocked ? 'collapsed' : '' }}"
-                                        type="button"
-                                        {{ $isLocked ? '' : 'data-bs-toggle=collapse' }}
-                                        {{ $isLocked ? '' : 'data-bs-target=#lesson-' . $eventLesson->id }}
-                                        aria-expanded="{{ $isLocked ? 'false' : 'true' }}"
-                                        aria-controls="lesson-{{ $eventLesson->id }}"
-                                        style="{{ $isLocked ? 'cursor: not-allowed; background-color: #f8f9fa;' : '' }}">
+                              <button class="accordion-button {{ $isLocked ? 'collapsed' : 'collapsed' }}"
+                                    type="button"
+                                    {{ $isLocked ? '' : 'data-bs-toggle=collapse' }}
+                                    {{ $isLocked ? '' : 'data-bs-target=#lesson-' . $eventLesson->id }}
+                                    aria-expanded="false"
+                                    aria-controls="lesson-{{ $eventLesson->id }}"
+                                    style="{{ $isLocked ? 'cursor: not-allowed; background-color: #f8f9fa;' : '' }}">
 
-                                        {{ $lesson->lesson_title ?? 'Untitled Lesson' }} (Duration: {{ $hours_credited }} / {{ number_format($duration, 2) }} hrs)
+                                    {{ $lesson->lesson_title ?? 'Untitled Lesson' }} 
+                                    (Duration: {{ $hours_credited }} / {{ number_format($duration, 2) }} hrs)
 
-                                        @if($isLocked)
+                                    @if($isLocked)
                                         @if(auth()->user()?->is_admin==1)
-
-                                        <button type="button"
-                                            class="btn btn-sm btn-outline-secondary ms-2 unlock-lesson-btn"
-                                            data-event-id="{{ $eventLesson->training_event_id }}"
-                                            data-lesson-id="{{ $eventLesson->lesson_id }}"
-                                            data-bs-toggle="tooltip"
-                                            title="Unlock this event to enable grading edits.">
-                                            <i class="bi bi-lock-fill"></i>
-                                        </button>
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-secondary ms-2 unlock-lesson-btn"
+                                                data-event-id="{{ $eventLesson->training_event_id }}"
+                                                data-lesson-id="{{ $eventLesson->lesson_id }}"
+                                                data-bs-toggle="tooltip"
+                                                title="Unlock this event to enable grading edits.">
+                                                <i class="bi bi-lock-fill"></i>
+                                            </button>
                                         @else
+                                            <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
+                                                <i class="bi bi-lock-fill" data-training-event-leeson="{{ $eventLesson->id }}"></i>
+                                            </span>
+                                        @endif
+                                    @endif
+                                </button>
 
-                                        <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
-                                            <i class="bi bi-lock-fill " data-training-event-leeson="{{ $eventLesson->id }}"></i>
-                                        </span>
-                                        @endif
-                                        @endif
-                                    </button>
                                 </h2>
                                 <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
                                     <div><strong>Instructor:</strong> {{ $eventLesson->instructor->fname ?? '' }} {{ $eventLesson->instructor->lname ?? '' }}</div>
@@ -2230,7 +2227,6 @@ return sprintf("%02d:%02d", $hours, $minutes);
 
 
                                 </div>
-
                             </div>
 
                             @endforeach
@@ -2264,29 +2260,9 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             <input type="hidden" name="tg_def_user_id" value="{{ $trainingEvent?->student_id }}">
                             <input type="hidden" name="tg_def_lesson_id[]" value="{{ $defLesson?->id }}">
                             <h2 class="accordion-header">
-                                <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : '' }}"
-                                    @if($is_locked !=1)
-                                    data-bs-toggle="collapse"
-                                    data-bs-target="#def-lesson-{{ $defLesson?->id }}"
-                                    aria-expanded="true"
-                                    @else
-                                    disabled
-                                    aria-expanded="false"
-                                    style="cursor: not-allowed; background-color:#f8f9fa;"
-                                    @endif type="button">
-
-                                    {{ $defLesson->lesson_title }}
-
-                                    {{-- Show lock inside button, after text, only for instructors --}}
-                                    @if($is_locked == 1 && auth()->user()?->is_admin != 1)
-                                    <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
-                                        <i class="bi bi-lock-fill"></i>
-                                    </span>
-                                    @endif
-                                </button>
+                         <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : '' }}" @if($is_locked !=1) data-bs-toggle="collapse" data-bs-target="#def-lesson-{{ $defLesson?->id }}" aria-expanded="true" @else disabled aria-expanded="false" style="cursor: not-allowed; background-color:#f8f9fa;" @endif type="button"> {{ $defLesson->lesson_title }} {{-- Show lock inside button, after text, only for instructors --}} @if($is_locked == 1 && auth()->user()?->is_admin != 1) <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked"> <i class="bi bi-lock-fill"></i> </span> @endif </button>
 
                                 @if($is_locked == 1 && auth()->user()?->is_admin == 1)
-                                {{-- Unlock button for admin --}}
                                 <button type="button"
                                     class="btn btn-sm btn-outline-secondary ms-2 unlock-deflesson-btn"
                                     data-defLesson-id="{{ $defLesson?->id }}"
@@ -2484,26 +2460,28 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             <input type="hidden" name="tg_def_user_id" value="{{ $trainingEvent?->student_id }}">
                             <input type="hidden" name="tg_def_lesson_id[]" value="{{ $defLesson?->id }}">
                             <h2 class="accordion-header">
-                                <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : '' }}"
-                                    @if($is_locked !=1)
+                           <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : 'collapsed' }}"
+                                @if($is_locked != 1)
                                     data-bs-toggle="collapse"
                                     data-bs-target="#def-lesson-{{ $defLesson?->id }}"
-                                    aria-expanded="true"
-                                    @else
+                                    aria-expanded="false"
+                                @else
                                     disabled
                                     aria-expanded="false"
                                     style="cursor: not-allowed; background-color:#f8f9fa;"
-                                    @endif type="button">
+                                @endif
+                                type="button">
 
-                                    {{ $defLesson->lesson_title }}
+                                {{ $defLesson->lesson_title }}
 
-                                    {{-- Show lock inside button, after text, only for instructors --}}
-                                    @if($is_locked == 1 && auth()->user()?->is_admin != 1)
+                                {{-- Show lock inside button, after text, only for instructors --}}
+                                @if($is_locked == 1 && auth()->user()?->is_admin != 1)
                                     <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
                                         <i class="bi bi-lock-fill"></i>
                                     </span>
-                                    @endif
-                                </button>
+                                @endif
+                            </button>
+
 
                                 @if($is_locked == 1 && auth()->user()?->is_admin == 1)
                                 {{-- Unlock button for admin --}}

@@ -1976,19 +1976,18 @@ class TrainingEventsController extends Controller
         $ouId = $trainingEvent->ou_id; 
         $userId = $trainingEvent->student_id; 
 
-
         $event = TrainingEvents::where('ou_id', $ouId)
-            ->where('id', decode_id($event_id))
-            ->orwhere(function ($query) use ($userId) {
-                $query->whereHas('taskGradings', function ($q) use ($userId) {
-                    $q->where('user_id', $userId);
-                })
-                    ->orWhereHas('defLessonTasks', function ($q) use ($userId) {
-                        $q->where('user_id', $userId);
-                    });
-            })
+            ->where('id', $eventId)
+            // ->orwhere(function ($query) use ($userId) {
+            //     $query->whereHas('taskGradings', function ($q) use ($userId) {
+            //         $q->where('user_id', $userId);
+            //     })
+            //         ->orWhereHas('defLessonTasks', function ($q) use ($userId) {
+            //             $q->where('user_id', $userId);
+            //         });
+            // })
             ->with([
-                'taskGradings' => function ($query) use ($userId) {
+                'taskGradings' => function ($query) use ($userId) { 
                     $query->where('user_id', $userId)
                         ->with('lesson:id,lesson_title,grade_type')
                         ->with('subLesson:id,title');
@@ -2024,6 +2023,7 @@ class TrainingEventsController extends Controller
                 }
             ])
             ->first();
+           // dd($event);
          
 
 
