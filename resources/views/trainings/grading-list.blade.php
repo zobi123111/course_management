@@ -167,6 +167,7 @@
                 </div>
 
                 <!-- Competency Grading -->
+            @if($event->competencyGradings->isEmpty())
                 <div class="mb-4">
                     <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#competencyGrading" role="button" aria-expanded="false" aria-controls="competencyGrading">
                         <span><i class="bi bi-bar-chart-steps me-2"></i>Competency Grading</span>
@@ -235,6 +236,9 @@
                         @endif
                     </div>
                 </div>
+            @endif    
+
+                <!--End  Competency Grading -->
 
                 <!-- // Deffered Lesson -->
                 @if(!$defLessonGrading->isEmpty())
@@ -427,11 +431,11 @@
 
                 @if(!$CustomLessonGrading->isEmpty())
                 <div class="mb-4">
-                    <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#cusLessonGrading{{ $defLesson->id }}" role="button" aria-expanded="false" aria-controls="cusLessonGrading">
+                    <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#cusLessonGrading{{ $defLesson->id ?? '' }}" role="button" aria-expanded="false" aria-controls="cusLessonGrading">
                         <span><i class="bi bi-exclamation-circle me-2"></i>Custom Lesson Grading</span>
                         <i class="bi bi-chevron-down"></i>
                     </h5>
-                    <div class="collapse" id="cusLessonGrading{{ $defLesson->id }}">
+                    <div class="collapse" id="cusLessonGrading{{ $defLesson->id ?? '' }}">
                         @if($CustomLessonGrading->isEmpty())
                         <p class="text-muted">No Custom grading available.</p>
                         @else
@@ -442,7 +446,7 @@
                         @endphp
                         <div class="mb-3">
                             <div class="fw-bold text-secondary mb-2">
-                                <i class="bi bi-book me-1"></i>Deferred Lesson: {{ $defLesson?->lesson_title ?? 'N/A' }}
+                                <i class="bi bi-book me-1"></i>Custom Lesson: {{ $defLesson?->lesson_title ?? 'N/A' }}
                                 @if($defLesson)
                                 <br><small class="text-muted">
                                     @if($instructor)
@@ -609,6 +613,7 @@
                 <!-- // End Custom Lesson -->
 
                 <!-- // Examiner Grading -->
+                @if(!$examinerGrouped->isEmpty())
                 <div class="mb-4">
                     @if(auth()->user()->role != 3)
                     <h5 class="text-primary d-flex justify-content-between align-items-center"
@@ -667,10 +672,12 @@
                         @endif
                     </div>
                 </div>
+                @endif
 
                 <!-- // End Examiner Grading -->
 
                 <!-- Instructor Rating  -->
+                @if(!$instructorGrouped->isEmpty())
                 <div class="mb-4">
                     @if(auth()->user()->role != 3)
                     <h5 class="text-primary d-flex justify-content-between align-items-center"
@@ -729,11 +736,13 @@
                         @endif
                     </div>
                 </div>
+                @endif
 
                 <!-- // End Instructor Grading -->
 
 
                 <!-- Overall Assessments -->
+                @if(!$event->overallAssessments->isEmpty())
                 <div class="mb-4">
                     <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#overallAssessments" role="button" aria-expanded="false" aria-controls="overallAssessments">
                         <span><i class="bi bi-award me-2"></i>Overall Assessments</span>
@@ -771,6 +780,8 @@
                         @endif
                     </div>
                 </div>
+                @endif
+
             </div>
             <div class="card-body">
                 <hr>

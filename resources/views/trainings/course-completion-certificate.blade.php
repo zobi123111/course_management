@@ -79,12 +79,12 @@
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Hours of groundschool:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">{{ $hoursOfGroundschool ?? 'N/A' }}</td>
         </tr> -->
-        <tr>
+        <!-- <tr>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Training device/s:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">{{ $firstLesson->resource?->name ?? 'N/A' }}</td>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Theoretical Knowledge Exam Result:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">{{ $competentPercent . '%' }}</td>
-        </tr>
+        </tr> -->
         <!-- <tr style="background-color: #f8f9fa;">
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Reg of device/s:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">{{ $firstLesson->resource?->registration ?? 'N/A' }}</td>
