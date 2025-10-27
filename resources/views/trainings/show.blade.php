@@ -2333,7 +2333,14 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                     </div>
                                     <!-- Toggleable Comment Box -->
                                     <div class="collapse mt-2" id="comment-box-{{ $task->id }}">
-                                        <textarea name="task_comment_def[{{ $task->id }}]" rows="3" class="form-control" placeholder="Add your remarks or feedback here..." @if($isDeferredGraded) readonly title="Deferred: You cannot edit this comment." @endif>{{ old("task_comment_def.$task->id", $selectedComment) }}</textarea>
+                                        <textarea 
+    name="task_comment_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" 
+    rows="3" 
+    class="form-control"
+    placeholder="Add your remarks or feedback here..."
+    @if($isDeferredGraded) readonly title="Deferred: You cannot edit this comment." @endif>
+    {{ old("task_comment_def.$task->id.$task->def_lesson_id", $selectedComment) }}
+</textarea>
                                     </div>
                                     @endforeach
                                 </div>
@@ -2556,7 +2563,17 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                     </div>
                                     <!-- Toggleable Comment Box -->
                                     <div class="collapse mt-2" id="comment-box-{{ $task->id }}">
-                                        <textarea name="task_comment_def[{{ $task->id }}]" rows="3" class="form-control" placeholder="Add your remarks or feedback here..." @if($isDeferredGraded) readonly title="Deferred: You cannot edit this comment." @endif>{{ old("task_comment_def.$task->id", $selectedComment) }}</textarea>
+                                        <!-- <textarea name="task_comment_def[{{ $task->id }}]" rows="3" class="form-control" placeholder="Add your remarks or feedback here..." @if($isDeferredGraded) readonly title="Deferred: You cannot edit this comment." @endif>{{ old("task_comment_def.$task->id", $selectedComment) }}
+                                        </textarea> -->
+
+                                        <textarea name="task_comment_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" 
+                                            rows="3" 
+                                            class="form-control"
+                                            placeholder="Add your remarks or feedback here..."
+                                            @if($isDeferredGraded) readonly title="Deferred: You cannot edit this comment." @endif>
+                                            {{ old("task_comment_def.$task->id.$task->def_lesson_id", $selectedComment) }}
+                                        </textarea>
+
                                     </div>
                                     @endforeach
                                 </div>

@@ -114,18 +114,28 @@
             </div>
         @endif
 
-      
-
-
+        
         <div class="section">
-            @if(!empty($event->overallAssessments) && count($event->overallAssessments) > 0)
+            <!-- @if(!empty($event->overallAssessments) && count($event->overallAssessments) > 0)
                         <h2>Lesson Summary</h2>
             @endif
             
             @foreach($event->overallAssessments as $assessment)
                 <p><strong>Result:</strong> {{ $assessment->result }}</p>
                 <p><strong>Remarks:</strong> {{ $assessment->remarks ?? 'No remarks' }}</p>
-            @endforeach
+            @endforeach -->
         </div>
+
+   {{-- Lesson Summary Section --}}
+    <div class="section">
+        <h2>Lesson Summary</h2>
+        <p><strong>Result:</strong> {{ $event->defLessons[0]->lesson_summary ?? '' }}</p>
+    </div>
+
+    {{-- Instructor Comment Section --}}
+    <div class="section">
+        <h2>Instructor Comment</h2>
+        <p><strong>Result:</strong> {{ $event->defLessons[0]->instructor_comment ?? '' }}</p>
+    </div>
 </body>
 </html>
