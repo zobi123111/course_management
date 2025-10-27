@@ -1857,12 +1857,13 @@ class TrainingEventsController extends Controller
 
             // Instructor Grading 
             if ($request->has('instructor_grade')) {
+               // dump($request->input('instructor_grade'));
                 foreach ($request->input('instructor_grade') as $lesson_id => $competencyGrades) {
                     foreach ($competencyGrades as $competency_id => $grade) {
 
                         // fetch comment if exists
                         $comment = $request->input("instructor_comments.$lesson_id.$competency_id");
-
+                         
                         $compData = [
                             'event_id'          => $event_id,
                             'cbta_gradings_id'  => $competency_id,
@@ -1877,6 +1878,7 @@ class TrainingEventsController extends Controller
                         ExaminerGrading::updateOrCreate(
                             [
                                 'event_id' => $event_id,
+                                'lesson_id'  => $lesson_id,
                                 'cbta_gradings_id' => $competency_id,
                                 'competency_type'   => 'instructor',
                                 'user_id' => $gradedStudentIdForComp,
@@ -2193,11 +2195,8 @@ class TrainingEventsController extends Controller
             abort(404, 'Deferred lesson not found for this training event.');
         }
         $tasks = $event->defLessonTasks;
-        // return view('trainings.deferred-lesson-report', compact('event', 'eventLesson', 'tasks'));
-        // Pass to PDF view
-
-   
-
+       //  return view('trainings.deferred-lesson-report', compact('event', 'eventLesson', 'tasks'));
+        
         $pdf = PDF::loadView('trainings.deferred-lesson-report', [
             'event' => $event,
             'eventLesson' => $eventLesson,
@@ -2238,6 +2237,8 @@ class TrainingEventsController extends Controller
             'eventLessons.resource:id,id,name,type,class,registration',
         ])->findOrFail($event_id);
 
+      //  dd($event);
+
         $eventLesson = $event->eventLessons->first();
 
 
@@ -2246,35 +2247,40 @@ class TrainingEventsController extends Controller
         }
 
         $lesson = $eventLesson->lesson;
+
         $competencyType = 'examiner';
-        $examiner_grading = CbtaGrading::with(['examinerGrading' => function ($query) use ($event_id, $userID, $competencyType) {
-            $query->where('event_id', $event_id)
-                ->where('user_id', $userID)
-                ->where('competency_type', $competencyType);
-        }])
-            ->whereHas('examinerGrading', function ($query) use ($event_id, $userID, $competencyType) {
-                $query->where('event_id', $event_id)
-                    ->where('user_id', $userID)
-                    ->where('competency_type', $competencyType);
-            })
-            ->get();
+        $examiner_grading = CbtaGrading::with(['examinerGrading' => function ($query) use ($event_id, $userID, $competencyType, $lesson_id) {
+                            $query->where('event_id', $event_id)
+                                ->where('user_id', $userID)
+                                ->where('competency_type', $competencyType)
+                                ->where('lesson_id', $lesson_id);
+                        }])
+                            ->whereHas('examinerGrading', function ($query) use ($event_id, $userID, $competencyType, $lesson_id) {
+                                $query->where('event_id', $event_id)
+                                    ->where('user_id', $userID)
+                                    ->where('competency_type', $competencyType)
+                                     ->where('lesson_id', $lesson_id);
+                            })
+                            ->get();
 
         $instructor = 'instructor';
-        $instructor_grading = CbtaGrading::with(['examinerGrading' => function ($query) use ($event_id, $userID, $instructor) {
+        $instructor_grading = CbtaGrading::with(['examinerGrading' => function ($query) use ($event_id, $userID, $instructor, $lesson_id) {
             $query->where('event_id', $event_id)
                 ->where('user_id', $userID)
+                ->where('lesson_id', $lesson_id)
                 ->where('competency_type', $instructor);
         }])
-            ->whereHas('examinerGrading', function ($query) use ($event_id, $userID, $instructor) {
+            ->whereHas('examinerGrading', function ($query) use ($event_id, $userID, $instructor, $lesson_id) {
                 $query->where('event_id', $event_id)
                     ->where('user_id', $userID)
+                    ->where('lesson_id', $lesson_id)
                     ->where('competency_type', $instructor);
             })
             ->get();
 
-        // return view('trainings.lesson-report', compact('event', 'lesson', 'eventLesson','examiner_grading', 'instructor_grading'));
+      //   return view('trainings.lesson-report', compact('event', 'lesson', 'eventLesson','examiner_grading', 'instructor_grading'));
 
-        $pdf = PDF::loadView('trainings.lesson-report', [
+        $pdf = PDF::loadView('trainings.lesson-report', [ 
             'event' => $event,
             'lesson' => $lesson,
             'eventLesson' => $eventLesson,
@@ -2626,8 +2632,8 @@ class TrainingEventsController extends Controller
             'task_grade_def' => 'required|array',
             'task_grade_def.*' => 'required|array',
             'task_grade_def.*.*' => 'required|string|in:Competent,Incomplete,Further training required',
-            'task_comment_def' => 'nullable|array',
-            'task_comment_def.*' => 'nullable|array', // ✅ first level also array
+            
+            'task_comment_def.*' => 'nullable', // ✅ first level also array
             'task_comment_def.*.*' => 'nullable|string|max:1000', // ✅ actual comments
         ]);
 
