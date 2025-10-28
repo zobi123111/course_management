@@ -4,6 +4,7 @@
 
       <ul class="sidebar-nav" id="sidebar-nav">
           @foreach(getAllowedPages() as $page)
+          <?php // dump($page); ?>
             <!-- {{$page->modules}} -->
                 <li class="nav-item" style="list-style: none;">
                     <a class="nav-link {{ Request::is($page->route_name) ? 'active' : '' }}" href="{{ url($page->route_name) }}">

@@ -169,7 +169,7 @@ public function index()
                     ->filter(fn($student) => $student->status == 1)
                     ->unique('id')
                     ->values();
-       //   dd($students);  
+          
 
         $activeStudents = $students->filter(fn($s) => $s->course_end_date === null);
         $activeStudentIds = $activeStudents->pluck('id');
@@ -289,7 +289,6 @@ public function index()
 
             return $student;
         });
-
         // === Chart Data ===
         $chartData = [
             'enrolled'    => $students->count(),
@@ -300,7 +299,7 @@ public function index()
         ];
 
         return view('reports.course_detail', compact('course', 'students', 'showArchived', 'showFailing', 'chartData'));
-    }
+    } 
 
     public function updateStudentArchiveStatus(Request $request)
     {

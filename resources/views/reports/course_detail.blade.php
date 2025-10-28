@@ -108,6 +108,7 @@
                     </thead>
                     <tbody>
                         @foreach ($students as $student)
+                        <?php // dump($student); ?>
                        <tr class="clickable-row {{ $student->show_alert ? 'row-alert' : '' }}" 
                             data-href="{{ route('training.grading-list', ['event_id' => encode_id($student->event_id)]) }}" 
                             style="cursor: pointer;">
@@ -159,7 +160,7 @@
                                             title="Competent">
                                             {{ $competentPercent . '%' }}
                                         </div>
-                                    @endif
+                                    @endif 
                                 </div>
                             </td>
                             <td>

@@ -166,8 +166,7 @@ Route::group(['middleware' => ['auth']], function () {
 Route::middleware(['auth', 'role.permission'])->group(function () { 
     //Dashboard Route
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
-    Route::post('/settings', [SettingController::class, 'store'])->name('settings.store');
+  
     Route::get('/users/document-data', [UserController::class, 'userData'])->name('users.document.data');
     
     //Users Route
@@ -298,7 +297,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
 
     // Reporting section Routes
     Route::get('/reports', [ReportsController::class, 'index'])->name('reports.index');
-    Route::get('/reports/course/{hashedId}', [ReportsController::class, 'showCourse'])->name('reports.course');
+    Route::get('/reports/course/{hashedId}', [ReportsController::class, 'showCourse'])->name('reports.course'); 
     Route::post('/students/archive', [ReportsController::class, 'updateStudentArchiveStatus'])->name('students.archive.ajax'); 
 
     // Student specific reporting section Routes
@@ -315,6 +314,9 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     
 
 });
+
+Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+Route::post('/settings', [SettingController::class, 'store'])->name('settings.store');
 
 Route::post('/review_store', [TrainingEventsController::class, 'review_store'])->name('review.store');
 

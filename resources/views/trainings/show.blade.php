@@ -477,7 +477,8 @@ return sprintf("%02d:%02d", $hours, $minutes);
         {{ session()->get('message') }}
     </div>
     @endif
-<?php // dump($trainingEvent); ?>
+    <?php // dump($trainingEvent); 
+    ?>
     <div class="loader" style="display: none;"></div>
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center">
@@ -1772,10 +1773,8 @@ return sprintf("%02d:%02d", $hours, $minutes);
                         @csrf
                         <input type="hidden" name="event_id" id="event_id" value="{{ $trainingEvent->id }}">
                         <div class="accordion accordion-flush" id="faq-group-2">
-
                             @foreach($eventLessons as $eventLesson)
                             <?php
-
                             $hours_credited = $eventLesson->hours_credited;
                             $hours_credited = "08:02:00"; // example
 
@@ -1809,34 +1808,34 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             <div class="accordion-item">
                                 <input type="hidden" name="tg_lesson_id[]" value="{{ $eventLesson->id }}">
                                 <h2 class="accordion-header">
-                              <button class="accordion-button {{ $isLocked ? 'collapsed' : 'collapsed' }}"
-                                    type="button"
-                                    {{ $isLocked ? '' : 'data-bs-toggle=collapse' }}
-                                    {{ $isLocked ? '' : 'data-bs-target=#lesson-' . $eventLesson->id }}
-                                    aria-expanded="false"
-                                    aria-controls="lesson-{{ $eventLesson->id }}"
-                                    style="{{ $isLocked ? 'cursor: not-allowed; background-color: #f8f9fa;' : '' }}">
+                                    <button class="accordion-button {{ $isLocked ? 'collapsed' : 'collapsed' }}"
+                                        type="button"
+                                        {{ $isLocked ? '' : 'data-bs-toggle=collapse' }}
+                                        {{ $isLocked ? '' : 'data-bs-target=#lesson-' . $eventLesson->id }}
+                                        aria-expanded="false"
+                                        aria-controls="lesson-{{ $eventLesson->id }}"
+                                        style="{{ $isLocked ? 'cursor: not-allowed; background-color: #f8f9fa;' : '' }}">
 
-                                    {{ $lesson->lesson_title ?? 'Untitled Lesson' }} 
-                                    (Duration: {{ $hours_credited }} / {{ number_format($duration, 2) }} hrs)
+                                        {{ $lesson->lesson_title ?? 'Untitled Lesson' }}
+                                        (Duration: {{ $hours_credited }} / {{ number_format($duration, 2) }} hrs)
 
-                                    @if($isLocked)
+                                        @if($isLocked)
                                         @if(auth()->user()?->is_admin==1)
-                                            <button type="button"
-                                                class="btn btn-sm btn-outline-secondary ms-2 unlock-lesson-btn"
-                                                data-event-id="{{ $eventLesson->training_event_id }}"
-                                                data-lesson-id="{{ $eventLesson->lesson_id }}"
-                                                data-bs-toggle="tooltip"
-                                                title="Unlock this event to enable grading edits.">
-                                                <i class="bi bi-lock-fill"></i>
-                                            </button>
+                                        <button type="button"
+                                            class="btn btn-sm btn-outline-secondary ms-2 unlock-lesson-btn"
+                                            data-event-id="{{ $eventLesson->training_event_id }}"
+                                            data-lesson-id="{{ $eventLesson->lesson_id }}"
+                                            data-bs-toggle="tooltip"
+                                            title="Unlock this event to enable grading edits.">
+                                            <i class="bi bi-lock-fill"></i>
+                                        </button>
                                         @else
-                                            <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
-                                                <i class="bi bi-lock-fill" data-training-event-leeson="{{ $eventLesson->id }}"></i>
-                                            </span>
+                                        <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
+                                            <i class="bi bi-lock-fill" data-training-event-leeson="{{ $eventLesson->id }}"></i>
+                                        </span>
                                         @endif
-                                    @endif
-                                </button>
+                                        @endif
+                                    </button>
 
                                 </h2>
                                 <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
@@ -2027,7 +2026,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                                                         <label class="radio-label">
                                                                             <input type="radio" class="scale-radio"
                                                                                 name="comp_grade[{{ $lesson->id }}][{{ $code }}]"
-                                                                                value="{{ $i }}" data-event-id="{{ $trainingEvent->id }}" data-lesson-id="{{ $lesson->id }}" data-user-id="{{ $student->id ?? '' }}"data-code="{{ $code }}" data-color-class="{{ $colorClass }}"
+                                                                                value="{{ $i }}" data-event-id="{{ $trainingEvent->id }}" data-lesson-id="{{ $lesson->id }}" data-user-id="{{ $student->id ?? '' }}" data-code="{{ $code }}" data-color-class="{{ $colorClass }}"
                                                                                 {{ $selectedCompGrade == $i ? 'checked' : '' }}>
                                                                             <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
                                                                         </label>
@@ -2226,6 +2225,38 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                     </div>
 
 
+                                    @if(!empty($groupedLogs[$eventLesson->lesson_id]))
+                                    @php
+                                    $lessonLogs = $groupedLogs[$eventLesson->lesson_id];
+                                    @endphp
+
+                                    <div class="accordion-body mt-3">
+                                        <h5 class="text-primary mb-2">
+                                            <i class="bi bi-exclamation-triangle-fill me-2"></i> Training Logs
+                                        </h5>
+                                        <table class="table table-striped table-bordered align-middle mb-0">
+                                            <thead class="table-light text-center">
+                                                <tr>
+                                                    <th scope="col">User</th>
+                                                    <th scope="col">Lesson</th>
+                                                    <th scope="col">Status</th>
+                                                    <th scope="col">Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($lessonLogs as $log)
+                                                <tr>
+                                                    <td>{{ $log->users->fname ?? '' }} {{ $log->users->lname ?? '' }}</td>
+                                                    <td>{{ $log->lesson->lesson_title ?? '' }}</td>
+                                                    <td>{{ $log->is_locked ? 'Locked' : 'Unlocked' }}</td>
+                                                    <td>{{ $log->created_at->format('d M Y, h:i A') }}</td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    @endif
+
                                 </div>
                             </div>
 
@@ -2260,7 +2291,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             <input type="hidden" name="tg_def_user_id" value="{{ $trainingEvent?->student_id }}">
                             <input type="hidden" name="tg_def_lesson_id[]" value="{{ $defLesson?->id }}">
                             <h2 class="accordion-header">
-                         <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : '' }}" @if($is_locked !=1) data-bs-toggle="collapse" data-bs-target="#def-lesson-{{ $defLesson?->id }}" aria-expanded="true" @else disabled aria-expanded="false" style="cursor: not-allowed; background-color:#f8f9fa;" @endif type="button"> {{ $defLesson->lesson_title }} {{-- Show lock inside button, after text, only for instructors --}} @if($is_locked == 1 && auth()->user()?->is_admin != 1) <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked"> <i class="bi bi-lock-fill"></i> </span> @endif </button>
+                                <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : '' }}" @if($is_locked !=1) data-bs-toggle="collapse" data-bs-target="#def-lesson-{{ $defLesson?->id }}" aria-expanded="true" @else disabled aria-expanded="false" style="cursor: not-allowed; background-color:#f8f9fa;" @endif type="button"> {{ $defLesson->lesson_title }} {{-- Show lock inside button, after text, only for instructors --}} @if($is_locked == 1 && auth()->user()?->is_admin != 1) <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked"> <i class="bi bi-lock-fill"></i> </span> @endif </button>
 
                                 @if($is_locked == 1 && auth()->user()?->is_admin == 1)
                                 <button type="button"
@@ -2333,14 +2364,14 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                     </div>
                                     <!-- Toggleable Comment Box -->
                                     <div class="collapse mt-2" id="comment-box-{{ $task->id }}">
-                                        <textarea 
-    name="task_comment_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" 
-    rows="3" 
-    class="form-control"
-    placeholder="Add your remarks or feedback here..."
-    @if($isDeferredGraded) readonly title="Deferred: You cannot edit this comment." @endif>
-    {{ old("task_comment_def.$task->id.$task->def_lesson_id", $selectedComment) }}
-</textarea>
+                                        <textarea
+                                            name="task_comment_def[{{ $task->id }}][{{ $task->def_lesson_id }}]"
+                                            rows="3"
+                                            class="form-control"
+                                            placeholder="Add your remarks or feedback here..."
+                                            @if($isDeferredGraded) readonly title="Deferred: You cannot edit this comment." @endif>
+                                        {{ old("task_comment_def.$task->id.$task->def_lesson_id", $selectedComment) }}
+                                        </textarea>
                                     </div>
                                     @endforeach
                                 </div>
@@ -2453,7 +2484,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
                         $documents = $defLesson?->instructor?->documents; // Only one row expected
 
                         if ($documents && $documents->licence) {
-                        $instructor_lic_no = $documents->licence; 
+                        $instructor_lic_no = $documents->licence;
                         } elseif ($documents && $documents->licence_2) {
                         $instructor_lic_no = $documents->licence_2;
                         } else {
@@ -2467,27 +2498,27 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             <input type="hidden" name="tg_def_user_id" value="{{ $trainingEvent?->student_id }}">
                             <input type="hidden" name="tg_def_lesson_id[]" value="{{ $defLesson?->id }}">
                             <h2 class="accordion-header">
-                           <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : 'collapsed' }}"
-                                @if($is_locked != 1)
+                                <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : 'collapsed' }}"
+                                    @if($is_locked !=1)
                                     data-bs-toggle="collapse"
                                     data-bs-target="#def-lesson-{{ $defLesson?->id }}"
                                     aria-expanded="false"
-                                @else
+                                    @else
                                     disabled
                                     aria-expanded="false"
                                     style="cursor: not-allowed; background-color:#f8f9fa;"
-                                @endif
-                                type="button">
+                                    @endif
+                                    type="button">
 
-                                {{ $defLesson->lesson_title }}
+                                    {{ $defLesson->lesson_title }}
 
-                                {{-- Show lock inside button, after text, only for instructors --}}
-                                @if($is_locked == 1 && auth()->user()?->is_admin != 1)
+                                    {{-- Show lock inside button, after text, only for instructors --}}
+                                    @if($is_locked == 1 && auth()->user()?->is_admin != 1)
                                     <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
                                         <i class="bi bi-lock-fill"></i>
                                     </span>
-                                @endif
-                            </button>
+                                    @endif
+                                </button>
 
 
                                 @if($is_locked == 1 && auth()->user()?->is_admin == 1)
@@ -2566,12 +2597,12 @@ return sprintf("%02d:%02d", $hours, $minutes);
                                         <!-- <textarea name="task_comment_def[{{ $task->id }}]" rows="3" class="form-control" placeholder="Add your remarks or feedback here..." @if($isDeferredGraded) readonly title="Deferred: You cannot edit this comment." @endif>{{ old("task_comment_def.$task->id", $selectedComment) }}
                                         </textarea> -->
 
-                                        <textarea name="task_comment_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" 
-                                            rows="3" 
+                                        <textarea name="task_comment_def[{{ $task->id }}][{{ $task->def_lesson_id }}]"
+                                            rows="3"
                                             class="form-control"
                                             placeholder="Add your remarks or feedback here..."
                                             @if($isDeferredGraded) readonly title="Deferred: You cannot edit this comment." @endif>
-                                            {{ old("task_comment_def.$task->id.$task->def_lesson_id", $selectedComment) }}
+                                        {{ old("task_comment_def.$task->id.$task->def_lesson_id", $selectedComment) }}
                                         </textarea>
 
                                     </div>
@@ -2681,8 +2712,8 @@ return sprintf("%02d:%02d", $hours, $minutes);
                 </div>
 
                 <!-- // Logs -->
-            @if(!empty($groupedLogs) && count($groupedLogs) > 0)
-              <h4 class="mb-3 text-primary"><i class="bi bi-exclamation-triangle-fill me-2"></i>Training Logs</h4>
+                @if(!empty($groupedLogs) && count($groupedLogs) > 0)
+                <!-- <h4 class="mb-3 text-primary"><i class="bi bi-exclamation-triangle-fill me-2"></i>Training Logs</h4>
                 <div class="accordion accordion-flush" id="faq-group-2">
                     @foreach($groupedLogs as $lesson_id => $logs)
                     @php
@@ -2728,8 +2759,8 @@ return sprintf("%02d:%02d", $hours, $minutes);
                         </div>
                     </div>
                     @endforeach
-                </div>
-            @endif
+                </div> -->
+                @endif
                 <!-- // End Logs -->
 
 
@@ -2890,7 +2921,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
         //     const lesson_id = $(this).data('lesson-id');
         //     const user_id = $(this).data('user-id');
         //     const code = $(this).data('code');
-         
+
         //     updateRadioStyles(name);
 
         //     if (wasChecked) {
@@ -2927,72 +2958,72 @@ return sprintf("%02d:%02d", $hours, $minutes);
         //     // updateRadioStyles(name);
         // });
         $('.scale-radio').on('click', function(e) {
-    const $this = $(this);
-    const name = $this.attr('name');
-    const event_id = $this.data('event-id');
-    const lesson_id = $this.data('lesson-id');
-    const user_id = $this.data('user-id');
-    const code = $this.data('code');
-    const colorClass = $this.data('color-class');
+            const $this = $(this);
+            const name = $this.attr('name');
+            const event_id = $this.data('event-id');
+            const lesson_id = $this.data('lesson-id');
+            const user_id = $this.data('user-id');
+            const code = $this.data('code');
+            const colorClass = $this.data('color-class');
 
-    // If this was already checked, we toggle off
-    if ($this.data('waschecked')) {
-        $this.prop('checked', false);
-        $this.data('waschecked', false);
-        $this.siblings('.custom-radio').removeClass('active-selected incomplete ftr competent');
+            // If this was already checked, we toggle off
+            if ($this.data('waschecked')) {
+                $this.prop('checked', false);
+                $this.data('waschecked', false);
+                $this.siblings('.custom-radio').removeClass('active-selected incomplete ftr competent');
 
-        // send ajax to clear
-        $.ajax({
-            url: '/training/update-competency-grade',
-            method: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}',
-                event_id,
-                lesson_id,
-                user_id,
-                code,
-                grade: null
-            },
-            success: function(response) {
-                console.log('Grade cleared:', response);
-            },
-            error: function(xhr) {
-                console.error('Failed to update grade', xhr.responseText);
+                // send ajax to clear
+                $.ajax({
+                    url: '/training/update-competency-grade',
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        event_id,
+                        lesson_id,
+                        user_id,
+                        code,
+                        grade: null
+                    },
+                    success: function(response) {
+                        console.log('Grade cleared:', response);
+                    },
+                    error: function(xhr) {
+                        console.error('Failed to update grade', xhr.responseText);
+                    }
+                });
+            } else {
+                // mark all others in group as unchecked
+                $('input[name="' + name + '"]').each(function() {
+                    $(this).data('waschecked', false);
+                    $(this).siblings('.custom-radio').removeClass('active-selected incomplete ftr competent');
+                });
+
+                // mark this one checked
+                $this.prop('checked', true);
+                $this.data('waschecked', true);
+                $this.siblings('.custom-radio').addClass('active-selected').addClass(colorClass);
+
+                // send ajax to update
+                $.ajax({
+                    url: '/training/update-competency-grade',
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        event_id,
+                        lesson_id,
+                        user_id,
+                        code,
+                        grade: $this.val()
+                    },
+                    success: function(response) {
+                        console.log('Grade updated:', response);
+                    },
+                    error: function(xhr) {
+                        console.error('Failed to update grade', xhr.responseText);
+                    }
+                });
             }
         });
-    } else {
-        // mark all others in group as unchecked
-        $('input[name="' + name + '"]').each(function() {
-            $(this).data('waschecked', false);
-            $(this).siblings('.custom-radio').removeClass('active-selected incomplete ftr competent');
-        });
-
-        // mark this one checked
-        $this.prop('checked', true);
-        $this.data('waschecked', true);
-        $this.siblings('.custom-radio').addClass('active-selected').addClass(colorClass);
-
-        // send ajax to update
-        $.ajax({
-            url: '/training/update-competency-grade',
-            method: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}',
-                event_id,
-                lesson_id,
-                user_id,
-                code,
-                grade: $this.val()
-            },
-            success: function(response) {
-                console.log('Grade updated:', response);
-            },
-            error: function(xhr) {
-                console.error('Failed to update grade', xhr.responseText);
-            }
-        });
-    }
-});
 
 
         function updateRadioStyles(groupName) {
@@ -3052,7 +3083,7 @@ return sprintf("%02d:%02d", $hours, $minutes);
             }).length;
 
             if (taskGradeData === 0 && compGradeData === 0) {
-                alert('You must fill in at least one task or competency grade for one lesson.'); 
+                alert('You must fill in at least one task or competency grade for one lesson.');
                 return;
             }
 

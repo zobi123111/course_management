@@ -967,7 +967,7 @@ class UserController extends Controller
                 $licenceFilePath = $request->old_licence_file;
             }
         } else {
-            $licenceFilePath = $document->licence_file;
+            $licenceFilePath = $document->licence_file ?? '';
         }
 
         if ($request->hasFile('licence_file_2')) {
@@ -994,7 +994,7 @@ class UserController extends Controller
                 $passportFilePath = $request->old_passport_file ?? NULL;
             }
         } else {
-            $passportFilePath = $document->passport_file;
+            $passportFilePath = $document->passport_file ?? '';
         }
 
         // if ($userToUpdate->currency_required == 1) {
