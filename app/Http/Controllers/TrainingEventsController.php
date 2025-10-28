@@ -948,58 +948,58 @@ class TrainingEventsController extends Controller
         $trainingFeedbacks = $trainingEvent->trainingFeedbacks;
  
         $defTasks = collect(DB::select("
-    SELECT 
-        dt.*,
-        sl.title AS task_title,
+            SELECT 
+                dt.*,
+                sl.title AS task_title,
 
-        -- Prefer task_grade from dlt, else fallback to tg
-        CASE 
-            WHEN dlt.task_grade IS NOT NULL THEN dlt.task_grade
-            ELSE tg.task_grade
-        END AS task_grade,
+                -- Prefer task_grade from dlt, else fallback to tg
+                CASE 
+                    WHEN dlt.task_grade IS NOT NULL THEN dlt.task_grade
+                    ELSE tg.task_grade
+                END AS task_grade,
 
-        CASE 
-            WHEN dlt.task_comment IS NOT NULL THEN dlt.task_comment
-            ELSE tg.task_comment
-        END AS task_comment
+                CASE 
+                    WHEN dlt.task_comment IS NOT NULL THEN dlt.task_comment
+                    ELSE tg.task_comment
+                END AS task_comment
 
-    FROM def_tasks dt
+            FROM def_tasks dt
 
-    -- Subquery join for latest def_lesson_tasks (ignore soft-deleted)
-    LEFT JOIN (
-        SELECT dlt.*
-        FROM def_lesson_tasks dlt
-        INNER JOIN (
-            SELECT event_id, user_id, task_id, MAX(id) AS max_id
-            FROM def_lesson_tasks
-            WHERE deleted_at IS NULL
-            GROUP BY event_id, user_id, task_id
-        ) latest_dlt
-        ON dlt.id = latest_dlt.max_id
-        WHERE dlt.deleted_at IS NULL
-    ) dlt ON dlt.event_id = dt.event_id
-        AND dlt.user_id = dt.user_id
-        AND dlt.task_id = dt.task_id
+            -- Subquery join for latest def_lesson_tasks (ignore soft-deleted)
+            LEFT JOIN (
+                SELECT dlt.*
+                FROM def_lesson_tasks dlt
+                INNER JOIN (
+                    SELECT event_id, user_id, task_id, MAX(id) AS max_id
+                    FROM def_lesson_tasks
+                    WHERE deleted_at IS NULL
+                    GROUP BY event_id, user_id, task_id
+                ) latest_dlt
+                ON dlt.id = latest_dlt.max_id
+                WHERE dlt.deleted_at IS NULL
+            ) dlt ON dlt.event_id = dt.event_id
+                AND dlt.user_id = dt.user_id
+                AND dlt.task_id = dt.task_id
 
-    -- Subquery join for latest task_gradings
-    LEFT JOIN (
-        SELECT tg.*
-        FROM task_gradings tg
-        INNER JOIN (
-            SELECT event_id, user_id, sub_lesson_id, MAX(id) AS max_id
-            FROM task_gradings
-            GROUP BY event_id, user_id, sub_lesson_id
-        ) latest_tg
-        ON tg.id = latest_tg.max_id
-    ) tg ON tg.event_id = dt.event_id
-        AND tg.user_id = dt.user_id
-        AND tg.sub_lesson_id = dt.task_id
+            -- Subquery join for latest task_gradings
+            LEFT JOIN (
+                SELECT tg.*
+                FROM task_gradings tg
+                INNER JOIN (
+                    SELECT event_id, user_id, sub_lesson_id, MAX(id) AS max_id
+                    FROM task_gradings
+                    GROUP BY event_id, user_id, sub_lesson_id
+                ) latest_tg
+                ON tg.id = latest_tg.max_id
+            ) tg ON tg.event_id = dt.event_id
+                AND tg.user_id = dt.user_id
+                AND tg.sub_lesson_id = dt.task_id
 
-    -- Join to get sublesson title
-    LEFT JOIN sub_lessons sl ON sl.id = dt.task_id
+            -- Join to get sublesson title
+            LEFT JOIN sub_lessons sl ON sl.id = dt.task_id
 
-    WHERE dt.event_id = ?
-", [$trainingEvent->id]));
+            WHERE dt.event_id = ?
+        ", [$trainingEvent->id]));
 
 
         $getFirstdeftTasks = TaskGrading::where('event_id', $trainingEvent->id)

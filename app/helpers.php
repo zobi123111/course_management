@@ -76,22 +76,20 @@ function getAllowedPages()
     }
     // Get the active role from session (fallback to the default role)
     $current_role = session('current_role', $user->role);
-
-
     
-
     // If user is the owner, return all pages
     if ($user->is_owner) {
         return Page::with('modules')->orderBy('position', 'asc')->get();
     }  
-
+ 
     // Always allow the Dashboard page
     $dashboardPage = Page::with('modules')->whereHas('modules', function ($query) {
         $query->where('route_name', 'dashboard');
     })->first();
 
 
-    if ($user->is_admin == 1) {
+
+    if ($user->is_admin == 1) { 
         $organizationUnit = DB::table('organization_units')->where('id', $user->ou_id)->first();
 
         if ($organizationUnit && $organizationUnit->permission) {
@@ -110,7 +108,7 @@ function getAllowedPages()
         return collect([$dashboardPage]);
     }
 
-    if (empty($user->is_admin)) {
+    if (empty($user->is_admin)) { 
         $organizationUnit = DB::table('organization_units')->where('id', $user->ou_id)->first();
 
         if ($organizationUnit && $organizationUnit->permission) {
@@ -136,7 +134,7 @@ function getAllowedPages()
 
             return $allowedPages;
         }
-
+         dd($dashboardPage);
         return collect($dashboardPage ? [$dashboardPage] : []);
     }
 
