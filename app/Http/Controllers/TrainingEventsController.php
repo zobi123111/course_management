@@ -594,6 +594,7 @@ class TrainingEventsController extends Controller
 
         $trainingEvent = TrainingEvents::with('eventLessons.lesson', 'course:id,course_name,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num')->findOrFail(decode_id($request->eventId));
 
+       // dd($trainingEvent);
 
         $atoNum = strtolower($trainingEvent->course->ato_num);
 
