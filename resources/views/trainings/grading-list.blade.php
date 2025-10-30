@@ -124,10 +124,8 @@
                                 @endforeach
                             </ul>
                             <div>
-
                             </div>
-                            <?php // dump($event->eventLessons); 
-                            ?>
+                          
                             <!-- {{-- Lesson Summary --}} -->
 
                             @if(!empty($meta?->lesson_summary))
