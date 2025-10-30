@@ -319,6 +319,14 @@
                         </div>
                         <button type="button" class="btn btn-sm btn-outline-primary" id="add_another_time_btn">Add More</button>
                     </div>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="enable_mp_lifus"  value="1">
+                            <label class="form-check-label" for="enable_mp_lifus">
+                                Enable MP LIFUS
+                            </label>
+                        </div>
+                    </div>
 
                     <div class="form-group">
                         <label for="groups" class="form-label">Assigned Resource<span
@@ -531,6 +539,7 @@
                             </label>
                         </div>
                     </div>
+                
                     <div id="editCustomTimeConfigSection" style="display:none; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-top: 15px;">
                         <div id="edit_custom_time_tracking_container">
                             <div class="custom-time mb-3">
@@ -543,6 +552,14 @@
                             </div>
                         </div>
                         <button type="button" class="btn btn-sm btn-outline-primary" id="edit_add_another_time_btn">Add More</button>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="enable_mp_lifus" id="enable_mp_lifus" value="1">
+                            <label class="form-check-label" for="enable_mp_lifus">
+                                Enable MP LIFUS
+                            </label>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="groups" class="form-label">Assigned Resource<span
@@ -719,8 +736,6 @@
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {
-                        console.log('Sublesson order updated');
-
                         let $msg = $('#reoderMessage');
                         if ($msg.length) {
                             $msg.removeClass('d-none')
@@ -880,7 +895,15 @@
                     } else {
                         $('#edit_enable_cbta').prop('checked', false);
                        
-                    }
+                    } 
+              
+                    if (response.course.enable_mp_lifus == 1) {
+                        $('#enable_mp_lifus').prop('checked', true);
+                       
+                    } else {
+                        $('#enable_mp_lifus').prop('checked', false);
+                       
+                    } 
 
 
                     // Populate Resources
@@ -1014,7 +1037,7 @@
 
                     $('#edit_instructor_documents_items').empty(); // Clear existing containers
                     let instructor_documents = response.course.documents;
-                    // console.log(instructor_documents);
+                   
                     if (instructor_documents.length > 0) {
                         instructor_documents.forEach((instructor_documents, index) => {
                             let instructorDocumentHtml = generateDocumentsContainerHtml(
@@ -1033,7 +1056,7 @@
 
                     //Training Feedback
                     const questions = response.course.training_feedback_questions || [];
-                    // console.log('feedback questions:', questions);
+                 
                     if (questions.length > 0) {
                         $('#edit_enable_feedback').prop('checked', true);
                         $('#edit_feedbackConfigSection').show();
@@ -1448,7 +1471,7 @@
 
 
     function generateDocumentsContainerHtml(instructor_documents, index) {
-        console.log(instructor_documents.id);
+       
         let documentName = instructor_documents.document_name || '';
         let filePath = instructor_documents.file_path ? `/storage/${instructor_documents.file_path}` : '';
         let existingFilePath = instructor_documents.file_path || '';

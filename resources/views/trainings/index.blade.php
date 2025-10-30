@@ -710,11 +710,8 @@ $(document).ready(function() {
                     var instructorOptions = '<option value="">Select Instructor</option>';
                     if (response.instructors && response.instructors.length > 0) {  
                         instructorsdata = response.instructors;
-                        console.log(instructorsdata);
-                       
-                     
+
                         $.each(instructorsdata, function(index, instructor) {
-                              
                             var selected = instructor.id == selectedInstructor ? 'selected' : '';
                             instructorOptions += '<option value="' + instructor.id + '" ' + selected + '>' + instructor.fname + ' ' + instructor.lname + '</option>';
                         });
@@ -820,9 +817,27 @@ $(document).ready(function() {
 
         // For edit mode, map saved lessons by lesson_id for quick lookup
         var lessonPrefillMap = {};
+        // if (isEditForm && typeof existingEventLessons !== 'undefined') {  
+        //     existingEventLessons.forEach(lesson => { 
+        //         lessonPrefillMap[lesson.lesson_id] = {
+        //             instructor_id: lesson.instructor_id || '',
+        //             resource_id: lesson.resource_id || '',
+        //             lesson_date: lesson.lesson_date || '',
+        //             start_time: lesson.start_time || '',
+        //             end_time: lesson.end_time || '',
+        //             departure_airfield: lesson.departure_airfield || '',
+        //             destination_airfield: lesson.destination_airfield || '',
+        //             instructor_license_number: lesson.instructor_license_number || '',
+        //             hours_credited: lesson.hours_credited || ''
+        //             operation: lesson.operation || '',
+        //             rank: lesson.rank || '',
+        //         }; 
+        //     });
+        // }
+
         if (isEditForm && typeof existingEventLessons !== 'undefined') {  
-            existingEventLessons.forEach(lesson => { 
-                lessonPrefillMap[lesson.lesson_id] = {
+             existingEventLessons.forEach(lesson => { 
+                lessonPrefillMap[lesson.lesson_id] = { 
                     instructor_id: lesson.instructor_id || '',
                     resource_id: lesson.resource_id || '',
                     lesson_date: lesson.lesson_date || '',
@@ -832,34 +847,32 @@ $(document).ready(function() {
                     destination_airfield: lesson.destination_airfield || '',
                     instructor_license_number: lesson.instructor_license_number || '',
                     hours_credited: lesson.hours_credited || '',
-
+                    operation: lesson.operation || '',
+                    rank: lesson.rank || '',
                 }; 
-            });
-        }
-     
-            
-  
-        let selectedStudentId = $('#select_user').val() || $('#edit_select_user').val();
-        var edit_ou_id = $('#edit_ou_id').val();
-       
-
+    });
+}
    
+        let selectedStudentId = $('#select_user').val() || $('#edit_select_user').val();
+        var edit_ou_id = isEditForm ? $('#edit_ou_id').val() : $('#select_org_unit').val(); 
+     //   var edit_ou_id = $('#edit_ou_id').val();
         $.ajax({
             url: '{{ url("/training/get_course_lessons") }}',
             type: 'GET', 
             data: { course_id: courseId , selectedStudentId:selectedStudentId, ou_id:edit_ou_id},
             success: function (response) {
                 lessonContainer.empty(); // Clear existing lesson boxes
-
+             
                 if (response.success && response.lessons.length > 0) {
                     let lessons = response.lessons;
                     resourcesdata = response.resources; 
                      instructorsdata = response.instructors;
                      all_instructors = response.all_ou_instructor;
+                     course = response.course;
                     
                         response.lessons.forEach(function (lesson, idx) {
                             let prefillData = isEditForm && lessonPrefillMap[lesson.id] ? lessonPrefillMap[lesson.id] : {};
-                            renderLessonBox(lesson, lessonContainer, prefillData, idx, mode, all_instructors);  
+                            renderLessonBox(lesson, lessonContainer, prefillData, idx, mode, all_instructors, course);  
                         });
                 } 
                 else {
@@ -914,32 +927,30 @@ $(document).ready(function() {
 
     })
 
-    $(document).on('click', '.edit-event-icon', function () {
+    $(document).on('click', '.edit-event-icon', function () {  
         $('.error_e').html('');
         var eventId = $(this).data('event-id');
         $.ajax({
             url: "{{ url('/training/edit') }}", 
             type: 'GET',
             data: { eventId: eventId },
-            success: async function (response) { 
+            success: async function (response) {  
                 if (response.success) {
-                    const event = response.trainingEvent;
-                  
+
+                   const event = response.trainingEvent;
+                   
                    let ato_num = event.course.ato_num;
                    let prefix = "", value = "";
                      if (ato_num) {
                             [prefix, value] = ato_num.split('-', 2);
                         }
-                 
                 
                     // Store values temporarily
                     const selectedOU = event.ou_id;
                     const selectedStudent = event.student_id;
-                   
                     const selectedInstructor = event.student_id;
                     const selectedResource = event.resource_id;
                     const selectedCourse = event.course_id;
-                  
                      
                     // Set static values
                     $('#edit_event_id').val(event.id); 
@@ -948,22 +959,13 @@ $(document).ready(function() {
                     $('#edit_total_time').val(moment(event.total_time, 'HH:mm:ss').format('HH:mm'));
                       if (event.entry_source === 'instructor') 
                         { 
-                         // $('#edit_is_instructor_checkbox').prop('checked', true);
-                         // $('#edit_is_instructor_checkbox').trigger('click');
-                         $('#edit_is_instructor_checkbox').prop('checked', true).trigger('change');
-                         
-    
+                           $('#edit_is_instructor_checkbox').prop('checked', true).trigger('change');
                            $('#edit_ou_id').val(selectedOU).trigger('change'); 
-
-
                         }
-                 
 
                     // Set OU and wait for dependent dropdowns.
-                  
                     $('#edit_ou_id').val(selectedOU).trigger('change');
                     await new Promise(resolve => setTimeout(resolve, 500));
-
                     // Set dropdown values
                
                     $('#edit_select_user').val(selectedStudent).data("selected-value", selectedStudent);
@@ -971,44 +973,14 @@ $(document).ready(function() {
                     $('#edit_select_resource').val(selectedResource).data("selected-value", selectedResource);
                     await new Promise(resolve => setTimeout(resolve, 500));
                 //----------------------------------------------------------------------
-                 
-
-                //  var userId = selectedStudent;
-                //  var ouDropdown = $('#edit_ou_id').length ? $('#edit_ou_id') : $('#select_org_unit');
-                //   var ou_id = ouDropdown.length ? ouDropdown.val() : '{{ auth()->user()->ou_id }}';
-            
-                //      var courseDropdown = $('#edit_select_course').length ? $('#edit_select_course') : $('#select_course');
-             
-                    //   $.ajax({
-                    //         url: "{{ url('/training/get_licence_number_and_courses') }}/" + userId + '/' + ou_id, 
-                    //         type: "GET",
-                    //         success: function(response) { 
-                    //             if (response.success) {
-                    //                 var courseOptions = '<option value="">Select Course</option>'; // Default option
-                    //                 if (response.courses && response.courses.length > 0) {
-                                       
-                    //                   $.each(response.courses, function(index, course) {
-                    //                         var selected = (course.id == selectedCourse) ? 'selected="selected"' : '';
-                    //                         courseOptions += '<option value="' + course.id + '" ' + selected + '>' + course.course_name + '</option>';
-                    //                     });
-                    //                 } else {
-                    //                     alert('No courses found!'); // Notify user
-                    //                 }
-                    //                 courseDropdown.html(courseOptions); // Update dropdown
-                    //             } else {
-                    //                 courseDropdown.html('<option value="">Select Course</option>'); // Clear courses
-                    //             }
-                    //         },
-                    //         error: function(xhr) {
-                    //             console.error(xhr.responseText);
-                    //         }
-                    //     });
+       
 
                 //-----------------------------------------------------------------------
-                    $('#edit_select_course').val(selectedCourse).data("selected-value", selectedCourse);   
-                     window.existingEventLessons = (event.event_lessons || []).map(l => {  
-                           let licenceValue = '';
+                    $('#edit_select_course').val(selectedCourse).data("selected-value", selectedCourse);  
 
+                     window.existingEventLessons = (event.event_lessons || []).map(l => {  
+                        let licenceValue = '';
+                     
                         if (l.instructor_documents && l.instructor_documents.length > 0) {
                             if (prefix === "uk") {
                                 licenceValue = l.instructor_documents[0].licence;
@@ -1025,8 +997,6 @@ $(document).ready(function() {
                             }
                         }
                     
-                        
-                     
                          let hoursCredited = '';
                         if (l.hours_credited) { 
                             const parts = l.hours_credited.split(':');
@@ -1045,6 +1015,10 @@ $(document).ready(function() {
                             destination_airfield: l.destination_airfield || '',
                             instructor_license_number: licenceValue || '',
                             hours_credited: hoursCredited || '',
+                            operation:l.operation || '',
+                            rank:l.rank || '',
+
+
                         };
                     }); 
 
@@ -1223,7 +1197,8 @@ $(document).ready(function() {
 
     let lessonIndex = 0;
 
-    function renderLessonBox(lesson, container, prefillData = {}, index = null, mode, instructor) { 
+    function renderLessonBox(lesson, container, prefillData = {}, index = null, mode, instructor, course) {  
+          
         const errorSuffix = mode === 'update' ? '_error_up' : '_error';
         const currentIndex = index !== null ? index : lessonIndex++;
         const isFirstLesson = currentIndex === 0;
@@ -1242,14 +1217,18 @@ $(document).ready(function() {
             departure_airfield = '',
             destination_airfield = '',
             instructor_license_number = '',
-            hours_credited = ''
+            hours_credited = '',
+            operation = '',
+            rank = ''
         } = prefillData;
-       
-         
+
+       operation = operation ? String(operation) : '';
+       rank = rank ? String(rank) : '';
+
+    console.log("Prefill Operation:", operation);
+    console.log("Prefill Rank:", rank);
 
         let isCurrentUserInstructor = currentUser.role === 'instructor';
-
-        
         instructorOptions  = instructor.filter(i => i.id != excludedInstructorId) 
                                 .map(i => {
                                     let selected = '', disabled = '';
@@ -1258,11 +1237,8 @@ $(document).ready(function() {
                                     else if (i.id == instructor_id) selected = 'selected';
                                     return `<option value="${i.id}" ${selected} ${disabled}>${i.fname} ${i.lname}</option>`;
                                 }).join('');
-                              
-
-
-        let resourceOptions = resourcesdata
-            .filter(r => {
+                            
+        let resourceOptions = resourcesdata.filter(r => { 
                 if (lessonType === 'groundschool') {
                     return ['Classroom', 'Homestudy'].includes(r.name);
                 }
@@ -1337,6 +1313,29 @@ $(document).ready(function() {
                         <input type="text" name="lesson_data[${currentIndex}][instructor_license_number]" class="form-control" value="${instructor_license_number}" readonly>
                         <div id="lesson_data_${currentIndex}_instructor_license_number${errorSuffix}" class="text-danger error_e"></div>
                     </div>
+                    ${course.enable_mp_lifus == 1 && lessonType == 'flight' ? `
+                    <div class="col-md-6">
+                        <label class="form-label">Operation<span class="text-danger">*</span></label>
+                        <select class="form-select" name="lesson_data[${currentIndex}][operation]">
+                            <option value="">Select Operation</option>
+                            <option value="1" ${operation === '1' ? 'selected' : ''}>PF in LHS</option>
+                            <option value="2" ${operation === '2' ? 'selected' : ''}>PM in LHS</option>
+                            <option value="3" ${operation === '3' ? 'selected' : ''}>PF in RHS</option>
+                            <option value="4" ${operation === '4' ? 'selected' : ''}>PM in RHS</option>
+                        </select>
+                        <div id="lesson_data_${currentIndex}_operation${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Rank<span class="text-danger">*</span></label>
+                        <select class="form-select" name="lesson_data[${currentIndex}][rank]">
+                            <option value="">Select Rank</option>
+                            <option value="1" ${rank === '1' ? 'selected' : ''}>Captain</option>
+                            <option value="2" ${rank === '2' ? 'selected' : ''}>First Officer</option>
+                            <option value="3" ${rank === '3' ? 'selected' : ''}>Second Officer</option>
+                        </select>
+                        <div id="lesson_data_${currentIndex}_rank${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                ` : ''}
                 </div>
             </div>
         `;
@@ -1554,7 +1553,6 @@ $(document).on('change', '#edit_is_instructor_checkbox', function () {
     let userOptions = '<option value="">Select ' + (isChecked ? 'Instructor' : 'Student') + '</option>';
     
     const dataList = isChecked ? instructorsdata : studentsdata;
-    console.log(dataList);
     
     dataList.forEach(user => {
         userOptions += `<option value="${user.id}">${user.fname} ${user.lname}</option>`;

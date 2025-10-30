@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 use App\Models\Group;
 use App\Models\Courses;
@@ -313,11 +311,12 @@ class TrainingEventsController extends Controller
 
     public function getCourseLessons(Request $request)
     {
+       
         $student_id = $request->selectedStudentId;
         $ou_id = $request->ou_id ?? Auth::user()->ou_id;
 
         $course = Courses::with(['courseLessons', 'resources'])->find($request->course_id);
-
+     
 
         $get_licence = UserDocument::where('user_id', $student_id)->select('licence', 'licence_2')->first();
 
@@ -392,12 +391,14 @@ class TrainingEventsController extends Controller
         }
 
         $all_ou_instructor = User::where('ou_id', $ou_id)
-            ->where(function ($query) {
-                $query->whereNull('is_admin')->orWhere('is_admin', false);
-            })
-            ->whereHas('roles', function ($query) {
-                $query->where('role_name', 'like', '%Instructor%');
-            })->with('roles')->get();
+                            ->where(function ($query) {
+                                $query->whereNull('is_admin')->orWhere('is_admin', false);
+                            })
+                            ->whereHas('roles', function ($query) {
+                                $query->where('role_name', 'like', '%Instructor%');
+                            })->with('roles')->get();
+
+          
 
         return response()->json([
             'success'     => true,
@@ -405,7 +406,8 @@ class TrainingEventsController extends Controller
             'resources'   => $course->resources,
             'licence'     => $licence_type,
             'instructors' => $instructors,
-            'all_ou_instructor' => $all_ou_instructor
+            'all_ou_instructor' => $all_ou_instructor,
+            'course'         => $course
         ]);
     }
 
@@ -479,8 +481,6 @@ class TrainingEventsController extends Controller
         ]);
 
         $lesson_ids = collect($request->lesson_data)->pluck('lesson_id')->toArray();
-
-
 
         // Check for duplicate training event
         $existingEvent = TrainingEvents::where('student_id', $request->student_id)
@@ -573,6 +573,9 @@ class TrainingEventsController extends Controller
                 'destination_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($lesson['destination_airfield']),
                 'instructor_license_number' => $lesson['instructor_license_number'] ?? null,
                 'hours_credited' => gmdate("H:i", $creditMinutes * 60),
+                'operation'    => $lesson['operation'] ?? null,
+                'rank'         => $lesson['rank'] ?? null,
+
             ]);
         }
         $user = User::find($request->student_id);
@@ -594,7 +597,6 @@ class TrainingEventsController extends Controller
 
         $trainingEvent = TrainingEvents::with('eventLessons.lesson', 'course:id,course_name,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num')->findOrFail(decode_id($request->eventId));
 
-       // dd($trainingEvent);
 
         $atoNum = strtolower($trainingEvent->course->ato_num);
 
@@ -650,6 +652,7 @@ class TrainingEventsController extends Controller
             ->whereHas('roles', function ($query) {
                 $query->where('role_name', 'like', '%Instructor%');
             })->with('roles')->get();
+          //  dd($trainingEvent);
 
         if ($trainingEvent) {
             return response()->json(['success' => true, 'trainingEvent' => $trainingEvent, 'instructors' => $instructors, 'licence_number' => $student_licence]);
@@ -660,7 +663,6 @@ class TrainingEventsController extends Controller
 
     public function updateTrainingEvent(Request $request)
     {
-
         // Convert nested lesson times to H:i format
         $lessonData = $request->input('lesson_data', []);
         foreach ($lessonData as $key => $lesson) {
@@ -784,7 +786,7 @@ class TrainingEventsController extends Controller
             ->delete();
 
         // Re-insert/update lessons
-        foreach ($lessonData as $data) {
+        foreach ($lessonData as $data) { 
             $lessonModel = \App\Models\CourseLesson::find($data['lesson_id']);
             $resourceModel = \App\Models\Resource::find($data['resource_id']);
 
@@ -836,6 +838,8 @@ class TrainingEventsController extends Controller
                     'destination_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($data['destination_airfield']),
                     'instructor_license_number' => $data['instructor_license_number'] ?? null,
                     'hours_credited' => gmdate("H:i", $creditMinutes * 60),
+                    'operation'    => $data['operation'] ?? null,
+                    'rank'         => $data['rank'] ?? null,
                 ]
             );
         }
