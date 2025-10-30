@@ -70,6 +70,35 @@
         <strong>Aircraft:</strong> N/A<br>
         <strong>Reg:</strong> N/A<br>
         @endif
+
+        @if(!empty($eventLesson->operation))
+           <strong>Operation :</strong>  
+               @if($eventLesson->operation == 1)
+                    PF in LHS
+                @elseif($eventLesson->operation == 2)
+                    PM in LHS
+                @elseif($eventLesson->operation == 3)
+                    PF in RHS
+                @elseif($eventLesson->operation == 4)
+                    PM in RHS
+                @endif
+            <br>
+        @endif
+
+        <!-- // Rank -->
+        @if(!empty($eventLesson->rank))
+        <strong>Rank :</strong>    
+                @if($eventLesson->rank == 1)
+                    Captain
+                @elseif($eventLesson->rank == 2)
+                    First Officer
+                @elseif($eventLesson->rank == 3)
+                    Second Officer
+                @endif<br>
+            
+      
+        @endif
+  
     </div>
 
     <div class="section">

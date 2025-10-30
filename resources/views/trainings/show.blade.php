@@ -707,6 +707,38 @@ return sprintf("%02d:%02d", $hours, $minutes);
                             <strong><i class="fas fa-hourglass-half"></i> Credited Hours:</strong><br>
                             {{ $lesson->hours_credited ?? '00:00' }}
                         </div>
+                 
+
+                        <!-- // Operation -->
+                        @if(!empty($lesson->operation))
+                            <div class="col-md-2 mt-2">
+                                <strong><i class="fas fa-hourglass-half"></i> Operation:</strong><br>
+                                @if($lesson->operation == 1)
+                                    PF in LHS
+                                @elseif($lesson->operation == 2)
+                                    PM in LHS
+                                @elseif($lesson->operation == 3)
+                                    PF in RHS
+                                @elseif($lesson->operation == 4)
+                                    PM in RHS
+                                @endif
+                            </div>
+                            @endif
+
+                            <!-- // Rank -->
+                            @if(!empty($lesson->rank))
+                            <div class="col-md-2 mt-2">
+                                <strong><i class="fas fa-hourglass-half"></i> Rank:</strong><br>
+                                    @if($lesson->rank == 1)
+                                        Captain
+                                    @elseif($lesson->rank == 2)
+                                        First Officer
+                                    @elseif($lesson->rank == 3)
+                                        Second Officer
+                                    @endif
+                            </div>
+                            @endif
+
 
                         @php
                         $customTime = $lesson->lesson->customTime ?? null;
