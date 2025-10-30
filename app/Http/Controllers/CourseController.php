@@ -121,7 +121,6 @@ class CourseController extends Controller
 
     public function createCourse(Request $request)
     {
-
         if (!$request->enable_feedback) {
             $request->merge(['feedback_questions' => null]);
         }
@@ -202,7 +201,8 @@ class CourseController extends Controller
             'enable_custom_time_tracking' => (int) $request->input('enable_custom_time_tracking', 0),
             'custom_time_name' => $request->custom_time_name ?? null,
             'custom_time_hours' => $request->custom_time_hours ?? null,
-            'enable_cbta' => $request->enable_cbta ?? 0
+            'enable_cbta' => $request->enable_cbta ?? 0,
+            'enable_mp_lifus' => $request->enable_mp_lifus ?? 0
         ]);
     
         $course->groups()->attach($request->group_ids);
@@ -349,7 +349,8 @@ class CourseController extends Controller
             'enable_simulator_time' => (int) $request->input('enable_simulator_time', 0),
             'simulator_hours' => $request->simulator_hours,
             'ato_num' => $request->ato_number ?? null,
-            'enable_cbta' => $request->edit_enable_cbta ?? 0
+            'enable_cbta' => $request->edit_enable_cbta ?? 0,
+            'enable_mp_lifus' => $request->enable_mp_lifus ?? 0
         ]);
     
         // Update groups and resources relationships
