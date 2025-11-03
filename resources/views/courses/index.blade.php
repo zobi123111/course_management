@@ -319,13 +319,22 @@
                         </div>
                         <button type="button" class="btn btn-sm btn-outline-primary" id="add_another_time_btn">Add More</button>
                     </div>
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="enable_mp_lifus"  value="1">
                             <label class="form-check-label" for="enable_mp_lifus">
                                 Enable MP LIFUS
                             </label>
                         </div>
+                    </div> -->
+                    <div class="form-group">
+                        <label for="course_type" class="form-label">Enable MP Event</label>
+                        <select class="form-select" name="enable_mp_lifus">
+                            <option value="0">Select MP Event</option>
+                            <option value="1">SP Event</option>
+                            <option value="2">MP Event</option>
+                            <option value="3">SP+MP Event</option>
+                        </select>
                     </div>
 
                     <div class="form-group">
@@ -553,13 +562,22 @@
                         </div>
                         <button type="button" class="btn btn-sm btn-outline-primary" id="edit_add_another_time_btn">Add More</button>
                     </div>
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="enable_mp_lifus" id="enable_mp_lifus" value="1">
                             <label class="form-check-label" for="enable_mp_lifus">
-                                Enable MP LIFUS
+                                Enable MP Lifus
                             </label>
                         </div>
+                    </div> -->
+                    <div class="form-group">
+                        <label for="course_type" class="form-label">Enable MP Event</label>
+                        <select class="form-select" name="enable_mp_lifus" id="enable_mp_lifus" required>
+                            <option value="0">Select MP Event</option>
+                            <option value="1">SP Event</option>
+                            <option value="2">MP Event</option>
+                            <option value="3">SP+MP Event</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="groups" class="form-label">Assigned Resource<span
@@ -896,15 +914,8 @@
                         $('#edit_enable_cbta').prop('checked', false);
                        
                     } 
-              
-                    if (response.course.enable_mp_lifus == 1) {
-                        $('#enable_mp_lifus').prop('checked', true);
-                       
-                    } else {
-                        $('#enable_mp_lifus').prop('checked', false);
-                       
-                    } 
 
+                   $('#enable_mp_lifus').val(response.course.enable_mp_lifus);
 
                     // Populate Resources
                     if (response.resources) {

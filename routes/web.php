@@ -173,7 +173,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/users', [UserController::class, 'getData'])->name('user.index'); 
     Route::post('/users/save', [UserController::class, 'save_user'])->name('user.store');
     Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.get'); 
-    Route::post('/users/update', [UserController::class, 'update'])->name('user.update');
+    Route::post('/users/update', [UserController::class, 'update'])->name('user.update'); 
     Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
     Route::post('/users/verify', [UserController::class, 'docsVerify'])->name('user.verify');
     Route::post('/users/verify_rating', [UserController::class, 'verify_rating'])->name('user.verify_rating');
