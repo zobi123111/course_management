@@ -79,7 +79,7 @@
                     PM in LHS
                 @elseif($eventLesson->operation == 3)
                     PF in RHS
-                @elseif($eventLesson->operation == 4)
+                @elseif($eventLesson->operation == 4) 
                     PM in RHS
                 @endif
             <br>
@@ -95,8 +95,6 @@
                 @elseif($eventLesson->rank == 3)
                     Second Officer
                 @endif<br>
-            
-      
         @endif
   
     </div>
@@ -169,7 +167,7 @@
 
 
     <!-- // Examiner competency grading  -->
-
+   @if(Auth::user()->role !=3)
     <div class="section">
         <h2>Examiner Competency</h2>
         <table>
@@ -213,12 +211,13 @@
             </tbody>
         </table>
     </div>
+    @endif
 
 
     <!-- // End Examiner competency grading  -->
 
     <!-- // Instructor competency grading  -->
-
+   @if(Auth::user()->role !=3)
     <div class="section">
         <h2>Instructor Competency</h2>
         <table>
@@ -262,6 +261,7 @@
             </tbody>
         </table>
     </div>
+    @endif
 
 
     <!-- // End Instructor competency grading  -->
@@ -282,10 +282,12 @@
     </div>
 
     {{-- Instructor Comment Section --}}
+    @if(Auth::user()->role !=3)
     <div class="section">
         <h2>Instructor Comment</h2>
         <p><strong>Result:</strong> {{ $event->eventLessons[0]->instructor_comment ?? '' }}</p>
     </div>
+    @endif
 
 
 

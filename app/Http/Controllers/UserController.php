@@ -1573,9 +1573,11 @@ class UserController extends Controller
                     $licenceFilePath = $UserDocument ? $UserDocument?->licence_file : null;
                 }
             } else {
+             
                 $licence_required = null;
-                $licenceFilePath = $UserDocument ? $UserDocument?->licence_file : null;
+                $licenceFilePath = null;
             }
+           // dump($licenceFilePath);
 
             if ($request->has('edit_licence_2_checkbox') && $request->edit_licence_2_checkbox) {
                 $licence_2_required = $request->edit_licence_2_checkbox;

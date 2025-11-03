@@ -31,7 +31,8 @@ class TrainingEvents extends Model
         'is_locked',
         'student_acknowledged',
         'student_acknowledgement_comments',
-        'entry_source'
+        'entry_source',
+        'rank'
     ];
  
     public function orgUnit()

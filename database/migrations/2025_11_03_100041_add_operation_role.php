@@ -12,8 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('training_event_lessons', function (Blueprint $table) {
-            $table->integer('operation')->nullable()->after('instructor_comment');
-            $table->integer('rank')->nullable()->after('operation');
+            $table->integer('operation1')->nullable()->after('instructor_comment');
+            $table->integer('role1')->nullable()->after('operation1');
+
+            $table->integer('operation2')->nullable()->after('role1');
+            $table->integer('role2')->nullable()->after('operation2');
         });
     }
 
@@ -23,8 +26,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('training_event_lessons', function (Blueprint $table) {
-            $table->dropColumn('operation');
-            $table->dropColumn('operation');
+            $table->dropColumn('operation1');
+            $table->dropColumn('role1');
+            $table->dropColumn('operation2');
+            $table->dropColumn('role2');
         });
     }
 };
