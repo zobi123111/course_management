@@ -2347,7 +2347,6 @@
                                 <div id="def-lesson-{{ $defLesson?->id }}" class="accordion-collapse collapse" data-bs-parent="#faq-group-2">
                                     <div class="accordion-body">
                                         @foreach($tasks as $task)
-
                                         <div class="custom-box">
                                             <div class="header grade_head" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $task->id }}" aria-expanded="false">
                                                 <div class="task-desc">
@@ -2530,15 +2529,11 @@
                                         @endif
                                     @endif
                                     <!-- // End Logs -->
-
-                                    <div class="btn-container">
+                                    <div class="btn-container mt-4">
                                         <button type="submit" class="btn btn-save" id="submitDefGrading">Save</button>
                                     </div>
                                 </div>
-
                             </div>
-
-
                         </form>
 
                         @endforeach

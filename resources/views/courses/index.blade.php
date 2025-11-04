@@ -330,7 +330,6 @@
                     <div class="form-group">
                         <label for="course_type" class="form-label">Enable MP Event</label>
                         <select class="form-select" name="enable_mp_lifus">
-                            <option value="0">Select MP Event</option>
                             <option value="1">SP Event</option>
                             <option value="2">MP Event</option>
                             <option value="3">SP+MP Event</option>
@@ -572,8 +571,7 @@
                     </div> -->
                     <div class="form-group">
                         <label for="course_type" class="form-label">Enable MP Event</label>
-                        <select class="form-select" name="enable_mp_lifus" id="enable_mp_lifus" required>
-                            <option value="0">Select MP Event</option>
+                        <select class="form-select" name="enable_mp_lifus" id="enable_mp_lifus">
                             <option value="1">SP Event</option>
                             <option value="2">MP Event</option>
                             <option value="3">SP+MP Event</option>
