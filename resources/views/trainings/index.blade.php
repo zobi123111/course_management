@@ -52,7 +52,7 @@
                 @endphp 
                 
             <tr>
-                <td class="eventName">{{ $event->course?->course_name }} {{ $event->id }}</td>
+                <td class="eventName">{{ $event->course?->course_name }}</td>
                 <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
                 <td>{{ $lesson?->instructor?->fname }} {{ $lesson?->instructor?->lname }}</td>
                 <!-- <td>{{ $lesson?->resource?->name }}</td> -->
@@ -169,7 +169,7 @@
                     $lesson = $event->firstLesson;
                 @endphp 
             <tr>
-                <td class="eventName">{{ $event->course?->course_name }} {{ $event->id }}</td>
+                <td class="eventName">{{ $event->course?->course_name }}</td>
                 <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
                 <td>{{ $lesson?->instructor?->fname }} {{ $lesson?->instructor?->lname }}</td>
                 <!-- <td>{{ $lesson?->resource?->name }}</td> -->
@@ -338,7 +338,7 @@
 
                 
                 <!-- // Rank -->
-                <div class="col-md-6">
+                <div class="col-md-6" id="add_rank_col" >
                   <label class="form-label">Select Rank<span class="text-danger">*</span></label>
                     <select class="form-select" name="rank" id="">
                         <option value="">Select Rank</option>
@@ -448,7 +448,7 @@
                 </div>
 
                 <!-- // Rank -->
-                <div class="col-md-6">
+                <div class="col-md-6" id="edit_rank_col">
                   <label class="form-label">Select Rank<span class="text-danger">*</span></label>
                     <select class="form-select" name="rank" id="edit_rank">
                         <option value="">Select Rank</option>
@@ -860,7 +860,7 @@ $(document).ready(function() {
         // }
 
         if (isEditForm && typeof existingEventLessons !== 'undefined') {  
-             existingEventLessons.forEach(lesson => { // console.log(lesson);
+             existingEventLessons.forEach(lesson => { 
                 lessonPrefillMap[lesson.lesson_id] = { 
                     instructor_id: lesson.instructor_id || '',
                     resource_id: lesson.resource_id || '',
@@ -978,6 +978,7 @@ $(document).ready(function() {
                     const selectedResource = event.resource_id;
                     const selectedCourse = event.course_id;
                     const rank = event.rank;
+                     
                     $('#edit_rank').val(rank);
                      
                     // Set static values
@@ -1007,7 +1008,7 @@ $(document).ready(function() {
                     $('#edit_select_course').val(selectedCourse).data("selected-value", selectedCourse);  
 
                      window.existingEventLessons = (event.event_lessons || []).map(l => {  
-                       // console.log(l);
+                     
                         let licenceValue = '';
                         if (l.instructor_documents && l.instructor_documents.length > 0) {
                             if (prefix === "uk") {
@@ -1228,7 +1229,7 @@ $(document).ready(function() {
     let lessonIndex = 0;
 
     function renderLessonBox(lesson, container, prefillData = {}, index = null, mode, instructor, course) {  
-        console.log(course);  
+        
         const errorSuffix = mode === 'update' ? '_error_up' : '_error';
         const currentIndex = index !== null ? index : lessonIndex++;
         const isFirstLesson = currentIndex === 0;
