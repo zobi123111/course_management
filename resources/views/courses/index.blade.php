@@ -329,11 +329,19 @@
                     </div> -->
                     <div class="form-group">
                         <label for="course_type" class="form-label">Enable MP Event</label>
-                        <select class="form-select" name="enable_mp_lifus">
+                        <select class="form-select" name="enable_mp_lifus" id="enable_mp_lifus">
                             <option value="1">SP Event</option>
                             <option value="2">MP Event</option>
                             <option value="3">SP+MP Event</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="enable_more_mp">
+                            <label class="form-check-label" for="enable_more_mp">
+                                Enable More MP Event
+                            </label>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -568,15 +576,25 @@
                                 Enable MP Lifus
                             </label>
                         </div>
-                    </div> -->
+                    </div> --> 
                     <div class="form-group">
                         <label for="course_type" class="form-label">Enable MP Event</label>
-                        <select class="form-select" name="enable_mp_lifus" id="enable_mp_lifus">
+                        <select class="form-select" name="enable_mp_lifus" id="edit_enable_mp_lifus">
                             <option value="1">SP Event</option>
                             <option value="2">MP Event</option>
                             <option value="3">SP+MP Event</option>
                         </select>
                     </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="edit_enable_more_mp">
+                            <label class="form-check-label" for="edit_enable_more_mp">
+                                Enable More MP Event
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label for="groups" class="form-label">Assigned Resource<span
                                 class="text-danger"></span></label>
@@ -913,7 +931,19 @@
                        
                     } 
 
-                   $('#enable_mp_lifus').val(response.course.enable_mp_lifus);
+                 if (response.course.enable_mp_lifus == 1) {
+                        // 🔹 Only SP Event
+                        $('#edit_enable_more_mp').prop('checked', false);
+                        $('#edit_enable_mp_lifus').val(1);
+                        $('#edit_enable_mp_lifus option[value="2"], #edit_enable_mp_lifus option[value="3"]').hide();
+                    } 
+                    else if (response.course.enable_mp_lifus == 2 || response.course.enable_mp_lifus == 3) {
+                        // 🔹 MP Event or SP+MP Event
+                        $('#edit_enable_more_mp').prop('checked', true);
+                        $('#edit_enable_mp_lifus').val(response.course.enable_mp_lifus);
+                        $('#edit_enable_mp_lifus option[value="2"], #edit_enable_mp_lifus option[value="3"]').show();
+                    }
+                  
 
                     // Populate Resources
                     if (response.resources) {
@@ -1643,6 +1673,34 @@
             }
         });
     });
+
+$(document).ready(function() {
+
+    // 🔹 Function to toggle MP options
+    function toggleMPOpions(checkboxSelector, selectSelector) {
+        const checkbox = $(checkboxSelector);
+        const select = $(selectSelector);
+        
+        function updateVisibility() {
+            if (checkbox.is(":checked")) {
+                select.find("option[value='2'], option[value='3']").show();
+            } else {
+                select.find("option[value='2'], option[value='3']").hide();
+                select.val("1"); // Reset to SP Event
+            }
+        }
+
+        // Run once on page load (for edit mode)
+        updateVisibility();
+
+        // Run every time checkbox changes
+        checkbox.on("change", updateVisibility);
+    }
+
+    // 🔹 Initialize for both Add & Edit sections
+    toggleMPOpions("#enable_more_mp", "#enable_mp_lifus");
+    toggleMPOpions("#edit_enable_more_mp", "#edit_enable_mp_lifus");
+});
 </script>
 
 @endsection

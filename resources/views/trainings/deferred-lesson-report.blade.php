@@ -12,10 +12,11 @@
     </style>
 </head>
 <body>
+
         <table width="100%" style="border: none; border-collapse: collapse;">
             <tr>
                 <td style="border: none; text-align: left; vertical-align: top;">
-                    <h1 style="margin: 0;">Lesson Report</h1>
+                    <h1 style="margin: 0;">Lesson Report - {{ $eventLesson->lesson_title }}</h1>
                 </td>
                 <td style="border: none; text-align: right; vertical-align: top;">
                     @if($event?->orgUnit?->org_logo)
@@ -29,8 +30,6 @@
 
 
         <hr>
-
-
             <div class="section">
             <strong>Date:</strong> {{ date('M d, Y', strtotime($eventLesson?->lesson_date)) }}<br>
             <strong>Student Name:</strong> {{ $event?->student?->fname }} {{ $event?->student?->lname }}<br>
@@ -133,9 +132,12 @@
     </div>
 
     {{-- Instructor Comment Section --}}
+ 
+    @if(Auth::user()->role != 3)
     <div class="section">
         <h2>Instructor Comment</h2>
         <p><strong>Result:</strong> {{ $event->defLessons[0]->instructor_comment ?? '' }}</p>
     </div>
+    @endif
 </body>
 </html>

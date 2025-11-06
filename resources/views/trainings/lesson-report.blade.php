@@ -38,7 +38,7 @@
     <table width="100%" style="border: none; border-collapse: collapse;">
         <tr>
             <td style="border: none; text-align: left; vertical-align: top;">
-                <h1 style="display: inline-block; margin: 0;">Lesson Report -</h1>
+                <h1 style="display: inline-block; margin: 0;">Lesson Report -</h1> 
                 <h2 style="display: inline-block; margin: 0 0 3px 9px;">{{ $lesson->lesson_title }}</h2>
             </td>
             <td style="border: none; text-align: right; vertical-align: top;">
@@ -167,7 +167,8 @@
 
 
     <!-- // Examiner competency grading  -->
-   @if(Auth::user()->role !=3)
+  
+   @if($event->entry_source == "instructor") 
     <div class="section">
         <h2>Examiner Competency</h2>
         <table>
@@ -212,12 +213,14 @@
         </table>
     </div>
     @endif
+  
 
 
     <!-- // End Examiner competency grading  -->
 
     <!-- // Instructor competency grading  -->
-   @if(Auth::user()->role !=3)
+   
+     @if($event->entry_source == "instructor") 
     <div class="section">
         <h2>Instructor Competency</h2>
         <table>
@@ -282,7 +285,7 @@
     </div>
 
     {{-- Instructor Comment Section --}}
-    @if(Auth::user()->role !=3)
+    @if($event->entry_source == "instructor") 
     <div class="section">
         <h2>Instructor Comment</h2>
         <p><strong>Result:</strong> {{ $event->eventLessons[0]->instructor_comment ?? '' }}</p>
