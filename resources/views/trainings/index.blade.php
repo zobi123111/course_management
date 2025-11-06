@@ -143,7 +143,7 @@
     </table>
 </div>
 </div>
-  <h4>Instructor  Training events</h4>
+  <h4>Instructor  Training events</h4> 
 <div class="card pt-4">
         <div class="card-body">
     <table class="table table-hover" id="trainingEventTable">
@@ -339,9 +339,8 @@
                 
                 <!-- // Rank -->
                 <div class="col-md-6" id="add_rank_col" >
-                  <label class="form-label">Select Rank<span class="text-danger">*</span></label>
-                    <select class="form-select" name="rank" id="">
-                        <option value="">Select Rank</option>
+                  <label class="form-label">Rank<span class="text-danger">*</span></label>
+                    <select class="form-select" name="rank" id="addRankSelectBox">
                         <option value="1">Captain</option>
                         <option value="2">First Officer</option>
                         <option value="3">Second Officer</option>
@@ -449,9 +448,9 @@
 
                 <!-- // Rank -->
                 <div class="col-md-6" id="edit_rank_col">
-                  <label class="form-label">Select Rank<span class="text-danger">*</span></label>
-                    <select class="form-select" name="rank" id="edit_rank">
-                        <option value="">Select Rank</option>
+                  <label class="form-label">Rank<span class="text-danger">*</span></label>
+                    <select class="form-select" name="rank" id="edit_rank" >
+                        <option value="0">Select Rank</option>
                         <option value="1">Captain</option>
                         <option value="2">First Officer</option>
                         <option value="3">Second Officer</option>
@@ -640,7 +639,7 @@ $(document).ready(function() {
     $('#groupTable').DataTable();
     initializeSelect2();
     
-    $("#createTrainingEvent").on('click', function() {  
+    $("#createTrainingEvent").on('click', function() {
         $(".error_e").html('');
         $("#trainingEventForm")[0].reset();
         $('#total_time').val('');
@@ -841,23 +840,7 @@ $(document).ready(function() {
 
         // For edit mode, map saved lessons by lesson_id for quick lookup
         var lessonPrefillMap = {};
-        // if (isEditForm && typeof existingEventLessons !== 'undefined') {  
-        //     existingEventLessons.forEach(lesson => { 
-        //         lessonPrefillMap[lesson.lesson_id] = {
-        //             instructor_id: lesson.instructor_id || '',
-        //             resource_id: lesson.resource_id || '',
-        //             lesson_date: lesson.lesson_date || '',
-        //             start_time: lesson.start_time || '',
-        //             end_time: lesson.end_time || '',
-        //             departure_airfield: lesson.departure_airfield || '',
-        //             destination_airfield: lesson.destination_airfield || '',
-        //             instructor_license_number: lesson.instructor_license_number || '',
-        //             hours_credited: lesson.hours_credited || ''
-        //             operation: lesson.operation || '',
-        //             rank: lesson.rank || '',
-        //         }; 
-        //     });
-        // }
+
 
         if (isEditForm && typeof existingEventLessons !== 'undefined') {  
              existingEventLessons.forEach(lesson => { 
@@ -895,12 +878,33 @@ $(document).ready(function() {
                      instructorsdata = response.instructors;
                      all_instructors = response.all_ou_instructor;
                      course = response.course;
-                    
+
+                        console.log("course.enable_mp_lifus:", course.enable_mp_lifus);
+
+                        // 🔹 Function to handle rank visibility
+                        function toggleRankOptions(selectSelector, enableValue) {
+                            const rankSelect = $(selectSelector);
+
+                            if (enableValue == 0 || enableValue == 1) {
+                                // Single Pilot (SP Event)
+                                rankSelect.find("option[value='2'], option[value='3']").hide(); // Hide FO & SO
+                                rankSelect.val("1"); // Default to Captain
+                            } 
+                            else if (enableValue == 2 || enableValue == 3) {
+                                // Multi Pilot (MP or SP+MP Event)
+                                rankSelect.find("option[value='2'], option[value='3']").show(); // Show FO & SO
+                            }
+                        }
+
+                        // 🔹 Apply logic to both Add & Edit rank dropdowns
+                        toggleRankOptions("#addRankSelectBox", course.enable_mp_lifus);
+                        toggleRankOptions("#edit_rank", course.enable_mp_lifus);
+
                         response.lessons.forEach(function (lesson, idx) {
                             let prefillData = isEditForm && lessonPrefillMap[lesson.id] ? lessonPrefillMap[lesson.id] : {};
                             renderLessonBox(lesson, lessonContainer, prefillData, idx, mode, all_instructors, course);  
                         });
-                } 
+                                } 
                 else {
                     alert('No lessons found for the selected course.');
                 }
@@ -978,8 +982,15 @@ $(document).ready(function() {
                     const selectedResource = event.resource_id;
                     const selectedCourse = event.course_id;
                     const rank = event.rank;
-                     
-                    $('#edit_rank').val(rank);
+                   // console.log(event.event_lessons);
+                     console.log("rank", rank);
+                    if(rank == null){
+                        $('#edit_rank').val(0);
+
+                     }else{
+                        $('#edit_rank').val(rank);
+                     }
+                  
                      
                     // Set static values
                     $('#edit_event_id').val(event.id); 
@@ -1008,7 +1019,6 @@ $(document).ready(function() {
                     $('#edit_select_course').val(selectedCourse).data("selected-value", selectedCourse);  
 
                      window.existingEventLessons = (event.event_lessons || []).map(l => {  
-                     
                         let licenceValue = '';
                         if (l.instructor_documents && l.instructor_documents.length > 0) {
                             if (prefix === "uk") {
@@ -1346,73 +1356,74 @@ $(document).ready(function() {
                         <input type="text" name="lesson_data[${currentIndex}][instructor_license_number]" class="form-control" value="${instructor_license_number}" readonly>
                         <div id="lesson_data_${currentIndex}_instructor_license_number${errorSuffix}" class="text-danger error_e"></div>
                     </div>
-                  ${lessonType == 'flight' ? (
-                    course.enable_mp_lifus == 1 ? `
-                        <!-- Single Pilot -->
-                        <div class="col-md-6">
-                            <label class="form-label">Operation<span class="text-danger">*</span></label>
-                            <select class="form-select" name="lesson_data[${currentIndex}][operation_1]">
-                                <option value="">Select Operation</option>
-                                <option value="1" ${operation1 === '1' ? 'selected' : ''}>PF in LHS</option>
-                                <option value="2" ${operation1 === '2' ? 'selected' : ''}>PM in LHS</option>
-                                <option value="3" ${operation1 === '3' ? 'selected' : ''}>PF in RHS</option>
-                                <option value="4" ${operation1 === '4' ? 'selected' : ''}>PM in RHS</option>
-                            </select>
-                            <div id="lesson_data_${currentIndex}_operation${errorSuffix}" class="text-danger error_e"></div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Role<span class="text-danger">*</span></label>
-                            <select class="form-select" name="lesson_data[${currentIndex}][role_1]">
-                                <option value="">Select Role</option>
-                                <option value="1" ${role1 === '1' ? 'selected' : ''}>PF-Pilot Flying</option>
-                                <option value="2" ${role1 === '2' ? 'selected' : ''}>PM-Pilot Monitoring</option>
-                            </select>
-                            <div id="lesson_data_${currentIndex}_rank${errorSuffix}" class="text-danger error_e"></div>
-                        </div>
-                    ` : (course.enable_mp_lifus == 2 || course.enable_mp_lifus == 3) ? `
-                        <!-- Multi Pilot -->
-                        <div class="col-md-6">
-                            <label class="form-label">Operation (Pilot 1)<span class="text-danger">*</span></label>
-                            <select class="form-select" name="lesson_data[${currentIndex}][operation_1]">
-                                <option value="">Select Operation</option>
-                                <option value="1" ${operation1 === '1' ? 'selected' : ''}>PF in LHS</option>
-                                <option value="2" ${operation1 === '2' ? 'selected' : ''}>PM in LHS</option>
-                                <option value="3" ${operation1 === '3' ? 'selected' : ''}>PF in RHS</option>
-                                <option value="4" ${operation1 === '4' ? 'selected' : ''}>PM in RHS</option>
-                            </select>
-                            <div id="lesson_data_${currentIndex}_operation_1${errorSuffix}" class="text-danger error_e"></div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Role (Pilot 1)<span class="text-danger">*</span></label>
-                            <select class="form-select" name="lesson_data[${currentIndex}][role_1]">
-                                <option value="">Select Role</option>
-                                <option value="1" ${role1 === '1' ? 'selected' : ''}>PF-Pilot Flying</option>
-                                <option value="2" ${role1 === '2' ? 'selected' : ''}>PM-Pilot Monitoring</option>
-                            </select>
-                            <div id="lesson_data_${currentIndex}_rank_1${errorSuffix}" class="text-danger error_e"></div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Operation (Pilot 2)<span class="text-danger">*</span></label>
-                            <select class="form-select" name="lesson_data[${currentIndex}][operation_2]">
-                                <option value="">Select Operation</option>
-                                <option value="1" ${operation2 === '1' ? 'selected' : ''}>PF in LHS</option>
-                                <option value="2" ${operation2 === '2' ? 'selected' : ''}>PM in LHS</option>
-                                <option value="3" ${operation2 === '3' ? 'selected' : ''}>PF in RHS</option>
-                                <option value="4" ${operation2 === '4' ? 'selected' : ''}>PM in RHS</option>
-                            </select>
-                            <div id="lesson_data_${currentIndex}_operation_2${errorSuffix}" class="text-danger error_e"></div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Role (Pilot 2)<span class="text-danger">*</span></label>
-                            <select class="form-select" name="lesson_data[${currentIndex}][role_2]">
-                                <option value="">Select Role</option>
-                                <option value="1" ${role2 === '1' ? 'selected' : ''}>PF-Pilot Flying</option>
-                                <option value="2" ${role2 === '2' ? 'selected' : ''}>PM-Pilot Monitoring</option>
-                            </select>
-                            <div id="lesson_data_${currentIndex}_rank_2${errorSuffix}" class="text-danger error_e"></div>
-                        </div>
-                    ` : ''
-                ) : ''}
+              ${lessonType == 'flight' ? (
+    course.enable_mp_lifus == 2 || course.enable_mp_lifus == 3 ?  `
+        <!-- Single Pilot -->
+        <div class="col-md-6">
+            <label class="form-label">Operation<span class="text-danger">*</span></label>
+            <select class="form-select" name="lesson_data[${currentIndex}][operation_1]">
+                <option value="">Select Operation</option>
+                <option value="1" ${operation1 === '1' ? 'selected' : ''}>PF in LHS</option>
+                <option value="2" ${operation1 === '2' ? 'selected' : ''}>PM in LHS</option>
+                <option value="3" ${operation1 === '3' ? 'selected' : ''}>PF in RHS</option>
+                <option value="4" ${operation1 === '4' ? 'selected' : ''}>PM in RHS</option>
+            </select>
+            <div id="lesson_data_${currentIndex}_operation${errorSuffix}" class="text-danger error_e"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Role<span class="text-danger">*</span></label>
+            <select class="form-select" name="lesson_data[${currentIndex}][role_1]">
+                <option value="">Select Role</option>
+                <option value="1" ${role1 === '1' ? 'selected' : ''}>PF-Pilot Flying</option>
+                <option value="2" ${role1 === '2' ? 'selected' : ''}>PM-Pilot Monitoring</option>
+            </select>
+            <div id="lesson_data_${currentIndex}_rank${errorSuffix}" class="text-danger error_e"></div>
+        </div>
+    ` : (course.enable_mp_lifus == 4 || course.enable_mp_lifus == 5) ? `
+        <!-- Multi Pilot -->
+        <div class="col-md-6">
+            <label class="form-label">Operation (Pilot 1)<span class="text-danger">*</span></label>
+            <select class="form-select" name="lesson_data[${currentIndex}][operation_1]">
+                <option value="">Select Operation</option>
+                <option value="1" ${operation1 === '1' ? 'selected' : ''}>PF in LHS</option>
+                <option value="2" ${operation1 === '2' ? 'selected' : ''}>PM in LHS</option>
+                <option value="3" ${operation1 === '3' ? 'selected' : ''}>PF in RHS</option>
+                <option value="4" ${operation1 === '4' ? 'selected' : ''}>PM in RHS</option>
+            </select>
+            <div id="lesson_data_${currentIndex}_operation_1${errorSuffix}" class="text-danger error_e"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Role (Pilot 1)<span class="text-danger">*</span></label>
+            <select class="form-select" name="lesson_data[${currentIndex}][role_1]">
+                <option value="">Select Role</option>
+                <option value="1" ${role1 === '1' ? 'selected' : ''}>PF-Pilot Flying</option>
+                <option value="2" ${role1 === '2' ? 'selected' : ''}>PM-Pilot Monitoring</option>
+            </select>
+            <div id="lesson_data_${currentIndex}_rank_1${errorSuffix}" class="text-danger error_e"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Operation (Pilot 2)<span class="text-danger">*</span></label>
+            <select class="form-select" name="lesson_data[${currentIndex}][operation_2]">
+                <option value="">Select Operation</option>
+                <option value="1" ${operation2 === '1' ? 'selected' : ''}>PF in LHS</option>
+                <option value="2" ${operation2 === '2' ? 'selected' : ''}>PM in LHS</option>
+                <option value="3" ${operation2 === '3' ? 'selected' : ''}>PF in RHS</option>
+                <option value="4" ${operation2 === '4' ? 'selected' : ''}>PM in RHS</option>
+            </select>
+            <div id="lesson_data_${currentIndex}_operation_2${errorSuffix}" class="text-danger error_e"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Role (Pilot 2)<span class="text-danger">*</span></label>
+            <select class="form-select" name="lesson_data[${currentIndex}][role_2]">
+                <option value="">Select Role</option>
+                <option value="1" ${role2 === '1' ? 'selected' : ''}>PF-Pilot Flying</option>
+                <option value="2" ${role2 === '2' ? 'selected' : ''}>PM-Pilot Monitoring</option>
+            </select>
+            <div id="lesson_data_${currentIndex}_rank_2${errorSuffix}" class="text-danger error_e"></div>
+        </div>
+    ` : ''
+) : ''}
+
 
                 </div>
             </div>

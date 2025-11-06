@@ -870,6 +870,9 @@
                             </div>
                             <div class="col-md-2 mt-2">
                                 <strong><i class="fas fa-clock"></i> Lesson Type:</strong><br>
+                                <?php 
+                                   //  dump($def->deftasks?->subddddLesson?->courseLesson);
+                                ?>
                                 {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
 
                             </div>
@@ -1427,6 +1430,18 @@
                                                 <input type="hidden" name="lesson_type" id="lesson_type" class="form-control">
                                                 <div id="lesson_title_error" class="text-danger error_e"></div>
                                             </div>
+                                            <!-- <div class="mb-2">
+                                                <label class="form-label">Rank</label>
+                                           <select class="form-select" name="rank" id="add_deferred_rank">
+                                                @if($trainingEvent->course->enable_mp_lifus == 1)
+                                                    <option value="1">Captain</option>
+                                                @else
+                                                    <option value="1">Captain</option>
+                                                    <option value="2">First Officer</option>
+                                                    <option value="3">Second Officer</option>
+                                                @endif
+                                            </select>
+                                            </div> -->
                                             <div class="mb-2">
                                                 <label class="form-label">Date <span class="text-danger">*</span></label>
                                                 <input type="date" name="lesson_date" class="form-control">
@@ -1437,7 +1452,7 @@
                                                 <input type="time" name="start_time" class="form-control">
                                                 <div id="start_time_error" class="text-danger error_e"></div>
                                             </div>
-                                            <div class="mb-2">
+                                            <div class="mb-2"> 
                                                 <label class="form-label">End Time <span class="text-danger">*</span></label>
                                                 <input type="time" name="end_time" class="form-control">
                                                 <div id="end_time_error" class="text-danger error_e"></div>
@@ -2670,9 +2685,8 @@
                                                 @if($isDeferredGraded) readonly title="Deferred: You cannot edit this comment." @endif>
                                             {{ old("task_comment_def.$task->id.$task->def_lesson_id", $selectedComment) }}
                                             </textarea>
-
                                         </div>
-                                        @endforeach
+                                        @endforeach 
                                     </div>
                                     <div class="accordion-item">
                                         @if($task->task->courseLesson->course->enable_cbta==1)
@@ -2810,10 +2824,6 @@
                         @endif
                         <!-- // End custom lesson -->
                     </div>
-
-                  
-
-
                 </div>
             </div>
             <div class="tab-pane fade" id="student-{{ $student->id ?? '' }}" role="tabpanel" aria-labelledby="student-tab-{{ $student->id ?? '' }}">
@@ -2878,7 +2888,6 @@
 
     <script>
         $(document).ready(function() {
-
             // Ensure all .tab-pane elements live inside #myTabContent to avoid layout gaps
             var $tabContent = $('#myTabContent');
             if ($tabContent.length) {
@@ -2959,11 +2968,6 @@
                     $dropdown.find('.dropdown-label').text('Select Courses');
                 }
             }
-
-
-
-
-
             // $('.scale-radio').on('change', function() { 
             //     const name = $(this).attr('name');
             //     const wasChecked = $(this).data('waschecked');
@@ -3103,6 +3107,8 @@
                 $('#lesson_type').val("deferred");
                 $('.select_task').show();
                 $('.select_course_task').hide();
+
+
             })
 
             $('#open_add_custom_lesson').on('click', function() {
@@ -3646,8 +3652,6 @@
                     }
                 });
             });
-
-
 
             $("#update_deferredLessonForm").submit(function(e) {
                 e.preventDefault();
