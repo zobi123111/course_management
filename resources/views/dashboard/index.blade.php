@@ -679,121 +679,300 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
 <section class="section dashboard">
     @if(!empty(auth()->user()->is_owner))
-    <div class="row">
+    
+        <div class="row">
+            <!-- Users Card -->
+            <div class="col-xxl-3 col-md-6">
+                @if(checkAllowedModule('users','user.index')->isNotEmpty())
+                <a href="{{ route('user.index') }}" class="text-decoration-none">
+                    @endif
+                    <div class="card info-card sales-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Users</h5>
 
-        <!-- Users Card -->
-        <div class="col-xxl-3 col-md-6">
-            @if(checkAllowedModule('users','user.index')->isNotEmpty())
-            <a href="{{ route('user.index') }}" class="text-decoration-none">
-                @endif
-                <div class="card info-card sales-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Users</h5>
-
-                        <div class="d-flex align-items-center">
-                            <div
-                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                <i class="ri-user-5-fill dashboard_icon"></i>
-                            </div>
-                            <div class="ps-3">
-                                <h6>{{ $user_count }}</h6>
+                            <div class="d-flex align-items-center">
+                                <div
+                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="ri-user-5-fill dashboard_icon"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>{{ $user_count }}</h6>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </a>
+                </a>
+            </div>
+            <!-- End Users Card -->
+
+            <!-- Courses Card -->
+            <div class="col-xxl-3 col-md-6">
+                @if(checkAllowedModule('courses','course.index')->isNotEmpty())
+                <a href="{{ route('course.index') }}" class="text-decoration-none">
+                    @endif
+                    <div class="card info-card sales-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Courses</h5>
+
+                            <div class="d-flex align-items-center">
+                                <div
+                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="ri-user-5-fill dashboard_icon"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>{{ $course_count }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- End Courses Card -->
+
+            <!-- Group Card -->
+            <div class="col-xxl-3 col-md-6">
+                @if(checkAllowedModule('groups','group.index')->isNotEmpty())
+                <a href="{{ route('group.index') }}" class="text-decoration-none">
+                    @endif
+                    <div class="card info-card revenue-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Groups</h5>
+
+                            <div class="d-flex align-items-center">
+                                <div
+                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="ri-group-fill dashboard_icon"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>{{ $group_count }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div> 
+            <!-- End Group Card -->
+
+            <!-- Folder Card -->
+            <div class="col-xxl-3 col-xl-12">
+                @if(checkAllowedModule('folders','folder.index')->isNotEmpty())
+                <a href="{{ route('folder.index') }}" class="text-decoration-none">
+                    @endif
+                    <div class="card info-card customers-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Folders</h5>
+
+                            <div class="d-flex align-items-center">
+                                <div
+                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="ri-briefcase-2-fill dashboard_icon"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>{{ $folder_count }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @if(auth()->user()->role == 1)
+                </a>
+                @endif
+            </div>
+            <!-- End Folder Card -->
+
+            <!-- End Left side columns -->
         </div>
-        <!-- End Users Card -->
 
-        <!-- Courses Card -->
-        <div class="col-xxl-3 col-md-6">
-            @if(checkAllowedModule('courses','course.index')->isNotEmpty())
-            <a href="{{ route('course.index') }}" class="text-decoration-none">
-                @endif
-                <div class="card info-card sales-card">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Courses</h5>
+                        <h5 class="card-title">Documents Pie Chart</h5>
+                        <p>Total Documents: <strong>{{ $totalDocuments }}</strong></p>
 
-                        <div class="d-flex align-items-center">
-                            <div
-                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                <i class="ri-user-5-fill dashboard_icon"></i>
-                            </div>
-                            <div class="ps-3">
-                                <h6>{{ $course_count }}</h6>
-                            </div>
-                        </div>
+                        <!-- Pie Chart -->
+                        <canvas id="pieChart" style="max-height: 400px;"></canvas>
+
+                        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                        <script>
+                            document.addEventListener("DOMContentLoaded", () => {
+                                let ctx = document.querySelector('#pieChart').getContext('2d');
+
+                                new Chart(ctx, {
+                                    type: 'pie',
+                                    data: {
+                                        labels: ['Read Documents', 'Unread Documents'],
+                                        datasets: [{
+                                            label: 'Document Statistics',
+                                            data: [{{ $readDocuments }}, {{ $unreadDocuments }}],
+                                            backgroundColor: [
+                                                'rgb(75, 192, 192)', // Green (Read)
+                                                'rgb(255, 99, 132)'  // Red (Unread)
+                                            ],
+                                            hoverOffset: 4
+                                        }]
+                                    },
+                                    options: {
+                                        plugins: {
+                                            tooltip: {
+                                                callbacks: {
+                                                    label: function(tooltipItem) {
+                                                        let value = tooltipItem.raw;
+                                                        let total = {{ $totalDocuments }};
+                                                        let percentage = ((value / total) * 100).toFixed(2);
+                                                        return `${tooltipItem.label}: ${value} (${percentage}%)`;
+                                                    }
+                                                }
+                                            },
+                                            legend: {
+                                                position: 'bottom'
+                                            }
+                                        }
+                                    }
+                                });
+                            });
+                        </script>
+                        <!-- End Pie Chart -->
                     </div>
                 </div>
-            </a>
+            </div>
         </div>
-        <!-- End Courses Card -->
 
-        <!-- Group Card -->
-        <div class="col-xxl-3 col-md-6">
-            @if(checkAllowedModule('groups','group.index')->isNotEmpty())
-            <a href="{{ route('group.index') }}" class="text-decoration-none">
-                @endif
-                <div class="card info-card revenue-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Groups</h5>
+    @elseif (auth()->user()->is_admin==1)
+        
+        <div class="row">
+            <!-- Users Card -->
+            <div class="col-xxl-3 col-md-6">
+                @if(checkAllowedModule('users','user.index')->isNotEmpty())
+                <a href="{{ route('user.index') }}" class="text-decoration-none">
+                    @endif
+                    <div class="card info-card sales-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Users</h5>
 
-                        <div class="d-flex align-items-center">
-                            <div
-                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                <i class="ri-group-fill dashboard_icon"></i>
-                            </div>
-                            <div class="ps-3">
-                                <h6>{{ $group_count }}</h6>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div> 
-        <!-- End Group Card -->
-
-        <!-- Folder Card -->
-        <div class="col-xxl-3 col-xl-12">
-            @if(checkAllowedModule('folders','folder.index')->isNotEmpty())
-            <a href="{{ route('folder.index') }}" class="text-decoration-none">
-                @endif
-                <div class="card info-card customers-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Folders</h5>
-
-                        <div class="d-flex align-items-center">
-                            <div
-                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                <i class="ri-briefcase-2-fill dashboard_icon"></i>
-                            </div>
-                            <div class="ps-3">
-                                <h6>{{ $folder_count }}</h6>
+                            <div class="d-flex align-items-center">
+                                <div
+                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="ri-user-5-fill dashboard_icon"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>{{ $user_count }}</h6>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                @if(auth()->user()->role == 1)
-            </a>
-            @endif
+                </a>
+            </div>
+            <!-- End Users Card -->
+
+            <!-- Courses Card -->
+            <div class="col-xxl-3 col-md-6">
+                @if(checkAllowedModule('courses','course.index')->isNotEmpty())
+                <a href="{{ route('course.index') }}" class="text-decoration-none">
+                    @endif
+                    <div class="card info-card sales-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Courses</h5>
+
+                            <div class="d-flex align-items-center">
+                                <div
+                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="ri-user-5-fill dashboard_icon"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>{{ $course_count }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- End Courses Card -->
+
+            <!-- Group Card -->
+            <div class="col-xxl-3 col-md-6">
+                @if(checkAllowedModule('groups','group.index')->isNotEmpty())
+                <a href="{{ route('group.index') }}" class="text-decoration-none">
+                    @endif
+                    <div class="card info-card revenue-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Groups</h5>
+
+                            <div class="d-flex align-items-center">
+                                <div
+                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="ri-group-fill dashboard_icon"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>{{ $group_count }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- End Group Card -->
+
+            <!-- Folder Card -->
+            <div class="col-xxl-3 col-md-6">
+                @if(checkAllowedModule('folders','folder.index')->isNotEmpty())
+                <a href="{{ route('folder.index') }}" class="text-decoration-none">
+                    @endif
+                    <div class="card info-card customers-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Folders</h5>
+
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="ri-briefcase-2-fill dashboard_icon"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>{{ $folder_count }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- End Folder Card -->
+
+            <!-- Resource  Card -->
+            <div class="col-xxl-3 col-md-6">
+                @if(checkAllowedModule('resource','resource.approval')->isNotEmpty())
+                <a href="{{ url('resource.approval') }}" class="text-decoration-none">
+                    @endif
+                    <div class="card info-card customers-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Resource Request</h5>
+
+                            <div class="d-flex align-items-center">
+                                <div
+                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="ri-briefcase-2-fill dashboard_icon"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>{{ $requestCount }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- End Resource  Card -->
         </div>
-        <!-- End Folder Card -->
 
-        <!-- End Left side columns -->
-    </div>
-    <div class="row">
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Documents Pie Chart</h5>
-                    <p>Total Documents: <strong>{{ $totalDocuments }}</strong></p>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Documents Pie Chart</h5>
+                        <p>Total Documents: <strong>{{ $totalDocuments }}</strong></p>
 
-                    <!-- Pie Chart -->
-                    <canvas id="pieChart" style="max-height: 400px;"></canvas>
+                        <!-- Pie Chart -->
+                        <canvas id="pieChart" style="max-height: 400px;"></canvas>
 
-                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                    <script>
-                          document.addEventListener("DOMContentLoaded", () => {
+                        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                        <script>
+                            document.addEventListener("DOMContentLoaded", () => {
                             let ctx = document.querySelector('#pieChart').getContext('2d');
 
                             new Chart(ctx, {
@@ -829,441 +1008,289 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                 }
                             });
                         });
-                    </script>
-                    <!-- End Pie Chart -->
+                        </script>
+                        <!-- End Pie Chart -->
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    @elseif (auth()->user()->is_admin==1)
-    <div class="row">
-        <!-- Users Card -->
-        <div class="col-xxl-3 col-md-6">
-            @if(checkAllowedModule('users','user.index')->isNotEmpty())
-            <a href="{{ route('user.index') }}" class="text-decoration-none">
-                @endif
-                <div class="card info-card sales-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Users</h5>
-
-                        <div class="d-flex align-items-center">
-                            <div
-                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                <i class="ri-user-5-fill dashboard_icon"></i>
-                            </div>
-                            <div class="ps-3">
-                                <h6>{{ $user_count }}</h6>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <!-- End Users Card -->
-
-        <!-- Courses Card -->
-        <div class="col-xxl-3 col-md-6">
-            @if(checkAllowedModule('courses','course.index')->isNotEmpty())
-            <a href="{{ route('course.index') }}" class="text-decoration-none">
-                @endif
-                <div class="card info-card sales-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Courses</h5>
-
-                        <div class="d-flex align-items-center">
-                            <div
-                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                <i class="ri-user-5-fill dashboard_icon"></i>
-                            </div>
-                            <div class="ps-3">
-                                <h6>{{ $course_count }}</h6>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <!-- End Courses Card -->
-
-        <!-- Group Card -->
-        <div class="col-xxl-3 col-md-6">
-            @if(checkAllowedModule('groups','group.index')->isNotEmpty())
-            <a href="{{ route('group.index') }}" class="text-decoration-none">
-                @endif
-                <div class="card info-card revenue-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Groups</h5>
-
-                        <div class="d-flex align-items-center">
-                            <div
-                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                <i class="ri-group-fill dashboard_icon"></i>
-                            </div>
-                            <div class="ps-3">
-                                <h6>{{ $group_count }}</h6>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <!-- End Group Card -->
-
-        <!-- Folder Card -->
-        <div class="col-xxl-3 col-md-6">
-            @if(checkAllowedModule('folders','folder.index')->isNotEmpty())
-            <a href="{{ route('folder.index') }}" class="text-decoration-none">
-                @endif
-                <div class="card info-card customers-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Folders</h5>
-
-                        <div class="d-flex align-items-center">
-                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                <i class="ri-briefcase-2-fill dashboard_icon"></i>
-                            </div>
-                            <div class="ps-3">
-                                <h6>{{ $folder_count }}</h6>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <!-- End Folder Card -->
-
-        <!-- Resource  Card -->
-        <div class="col-xxl-3 col-md-6">
-            @if(checkAllowedModule('resource','resource.approval')->isNotEmpty())
-            <a href="{{ url('resource.approval') }}" class="text-decoration-none">
-                @endif
-                <div class="card info-card customers-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Resource Request</h5>
-
-                        <div class="d-flex align-items-center">
-                            <div
-                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                <i class="ri-briefcase-2-fill dashboard_icon"></i>
-                            </div>
-                            <div class="ps-3">
-                                <h6>{{ $requestCount }}</h6>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <!-- End Resource  Card -->
-
-
-    </div>
-    <div class="row">
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Documents Pie Chart</h5>
-                    <p>Total Documents: <strong>{{ $totalDocuments }}</strong></p>
-
-                    <!-- Pie Chart -->
-                    <canvas id="pieChart" style="max-height: 400px;"></canvas>
-
-                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                    <script>
-                         document.addEventListener("DOMContentLoaded", () => {
-                        let ctx = document.querySelector('#pieChart').getContext('2d');
-
-                        new Chart(ctx, {
-                            type: 'pie',
-                            data: {
-                                labels: ['Read Documents', 'Unread Documents'],
-                                datasets: [{
-                                    label: 'Document Statistics',
-                                    data: [{{ $readDocuments }}, {{ $unreadDocuments }}],
-                                    backgroundColor: [
-                                        'rgb(75, 192, 192)', // Green (Read)
-                                        'rgb(255, 99, 132)'  // Red (Unread)
-                                    ],
-                                    hoverOffset: 4
-                                }]
-                            },
-                            options: {
-                                plugins: {
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(tooltipItem) {
-                                                let value = tooltipItem.raw;
-                                                let total = {{ $totalDocuments }};
-                                                let percentage = ((value / total) * 100).toFixed(2);
-                                                return `${tooltipItem.label}: ${value} (${percentage}%)`;
-                                            }
-                                        }
-                                    },
-                                    legend: {
-                                        position: 'bottom'
-                                    }
-                                }
-                            }
-                        });
-                    });
-                    </script>
-                    <!-- End Pie Chart -->
-                </div>
-            </div>
-        </div>
-    </div>
     @else
-    <div class="row">
-        <!-- Courses Card -->
-        <div class="col-xxl-3 col-md-6">
-            @if(checkAllowedModule('courses','course.index')->isNotEmpty())
-            <a href="{{ route('course.index') }}" class="text-decoration-none">
-                @endif
-                <div class="card info-card sales-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Courses</h5>
 
-                        <div class="d-flex align-items-center">
-                            <div
-                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                <i class="ri-user-5-fill dashboard_icon"></i>
-                            </div>
-                            <div class="ps-3">
-                                <h6>{{ $course_count }}</h6>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <!-- End Users Card -->
+        <div class="row">
+            <!-- Courses Card -->
+            <div class="col-xxl-3 col-md-6">
+                @if(checkAllowedModule('courses','course.index')->isNotEmpty())
+                <a href="{{ route('course.index') }}" class="text-decoration-none">
+                    @endif
+                    <div class="card info-card sales-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Courses</h5>
 
-        <!-- Group Card -->
-        <div class="col-xxl-3 col-md-6">
-            @if(checkAllowedModule('groups','group.index')->isNotEmpty())
-            <a href="{{ route('group.index') }}" class="text-decoration-none">
-                @endif
-                <div class="card info-card revenue-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Groups</h5>
-
-                        <div class="d-flex align-items-center">
-                            <div
-                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                <i class="ri-group-fill dashboard_icon"></i>
-                            </div>
-                            <div class="ps-3">
-                                <h6>{{ $group_count }}</h6>
+                            <div class="d-flex align-items-center">
+                                <div
+                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="ri-user-5-fill dashboard_icon"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>{{ $course_count }}</h6>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </a>
-        </div>
-        <!-- End Group Card -->
+                </a>
+            </div>
+            <!-- End Users Card -->
 
-        <!-- Folder Card -->
-        <!-- <div class="col-xxl-3 col-xl-12">
-                        @if(checkAllowedModule('folders','folder.index')->isNotEmpty())
-                        <a href="{{ route('folder.index') }}" class="text-decoration-none">
-                        @endif
-                            <div class="card info-card customers-card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Folders</h5>
-                                    <div class="d-flex align-items-center">
-                                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                            <i class="ri-briefcase-2-fill dashboard_icon"></i>
-                                        </div>
-                                        <div class="ps-3">
-                                            <h6>{{ $folder_count }}</h6>
+            <!-- Group Card -->
+            <div class="col-xxl-3 col-md-6">
+                @if(checkAllowedModule('groups','group.index')->isNotEmpty())
+                <a href="{{ route('group.index') }}" class="text-decoration-none">
+                    @endif
+                    <div class="card info-card revenue-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Groups</h5>
+
+                            <div class="d-flex align-items-center">
+                                <div
+                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="ri-group-fill dashboard_icon"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>{{ $group_count }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- End Group Card -->
+
+            <!-- Folder Card -->
+            <!-- <div class="col-xxl-3 col-xl-12">
+                            @if(checkAllowedModule('folders','folder.index')->isNotEmpty())
+                            <a href="{{ route('folder.index') }}" class="text-decoration-none">
+                            @endif
+                                <div class="card info-card customers-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Folders</h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="ri-briefcase-2-fill dashboard_icon"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ $folder_count }}</h6>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </a>
-                </div> -->
-        <!-- End Folder Card -->
+                            </a>
+                    </div> -->
+            <!-- End Folder Card -->
 
-        <!-- Resource  Card -->
-        <div class="col-xxl-3 col-xl-12">
-            @if(checkAllowedModule('resource','resource.approval')->isNotEmpty())
-            <a href="{{ url('resource.approval') }}" class="text-decoration-none">
-                @endif
-                <div class="card info-card customers-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Resource Request</h5>
+            <!-- Resource  Card -->
+            <div class="col-xxl-3 col-xl-12">
+                @if(checkAllowedModule('resource','resource.approval')->isNotEmpty())
+                <a href="{{ url('resource.approval') }}" class="text-decoration-none">
+                    @endif
+                    <div class="card info-card customers-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Resource Request</h5>
 
-                        <div class="d-flex align-items-center">
-                            <div
-                                class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                <i class="ri-briefcase-2-fill dashboard_icon"></i>
-                            </div>
-                            <div class="ps-3">
-                                <h6>{{ $requestCount }}</h6>
+                            <div class="d-flex align-items-center">
+                                <div
+                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="ri-briefcase-2-fill dashboard_icon"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>{{ $requestCount }}</h6>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </a>
+                </a>
+            </div>
+            <!-- End Resource  Card -->
+
+            <!-- Quiz  Card -->
+            <div class="col-xxl-3 col-md-6">
+                <a href="{{ route('quizzes.index') }}" class="text-decoration-none">
+                    <div class="card info-card customers-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Quiz</h5>
+
+                            <div class="d-flex align-items-center">
+                                <div
+                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="ri-briefcase-2-fill dashboard_icon"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>{{ $quizscount }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- End Quiz  Card -->
         </div>
-        <!-- End Resource  Card -->
-    </div>
-    <div class="row">
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Documents Pie Chart</h5>
-                    <p>Total Documents: <strong>{{ $totalDocuments }}</strong></p>
 
-                    <!-- Pie Chart -->
-                    <canvas id="pieChart" style="max-height: 400px;"></canvas>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Documents Pie Chart</h5>
+                        <p>Total Documents: <strong>{{ $totalDocuments }}</strong></p>
 
-                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                    <script>
-                         document.addEventListener("DOMContentLoaded", () => {
-                            let ctx = document.querySelector('#pieChart').getContext('2d');
+                        <!-- Pie Chart -->
+                        <canvas id="pieChart" style="max-height: 400px;"></canvas>
 
-                            new Chart(ctx, {
-                                type: 'pie',
-                                data: {
-                                    labels: ['Read Documents', 'Unread Documents'],
-                                    datasets: [{
-                                        label: 'Document Statistics',
-                                        data: [{{ $readDocuments }}, {{ $unreadDocuments }}],
-                                        backgroundColor: [
-                                            'rgb(75, 192, 192)', // Green (Read)
-                                            'rgb(255, 99, 132)'  // Red (Unread)
-                                        ],
-                                        hoverOffset: 4
-                                    }]
-                                },
-                                options: {
-                                    plugins: {
-                                        tooltip: {
-                                            callbacks: {
-                                                label: function(tooltipItem) {
-                                                    let value = tooltipItem.raw;
-                                                    let total = {{ $totalDocuments }};
-                                                    let percentage = ((value / total) * 100).toFixed(2);
-                                                    return `${tooltipItem.label}: ${value} (${percentage}%)`;
+                        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                        <script>
+                            document.addEventListener("DOMContentLoaded", () => {
+                                let ctx = document.querySelector('#pieChart').getContext('2d');
+
+                                new Chart(ctx, {
+                                    type: 'pie',
+                                    data: {
+                                        labels: ['Read Documents', 'Unread Documents'],
+                                        datasets: [{
+                                            label: 'Document Statistics',
+                                            data: [{{ $readDocuments }}, {{ $unreadDocuments }}],
+                                            backgroundColor: [
+                                                'rgb(75, 192, 192)', // Green (Read)
+                                                'rgb(255, 99, 132)'  // Red (Unread)
+                                            ],
+                                            hoverOffset: 4
+                                        }]
+                                    },
+                                    options: {
+                                        plugins: {
+                                            tooltip: {
+                                                callbacks: {
+                                                    label: function(tooltipItem) {
+                                                        let value = tooltipItem.raw;
+                                                        let total = {{ $totalDocuments }};
+                                                        let percentage = ((value / total) * 100).toFixed(2);
+                                                        return `${tooltipItem.label}: ${value} (${percentage}%)`;
+                                                    }
                                                 }
+                                            },
+                                            legend: {
+                                                position: 'bottom'
                                             }
-                                        },
-                                        legend: {
-                                            position: 'bottom'
                                         }
                                     }
-                                }
+                                });
                             });
-                        });
-                    </script>
-                    <!-- End Pie Chart -->
+                        </script>
+                        <!-- End Pie Chart -->
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Last Training Event</h5>
-                    <table class="table table-hover" id="trainingEventTable">
-                        <thead>
-                            <tr>
-                                <th scope="col">Event</th>
-                                <th scope="col">Student</th>
-                                <th scope="col">Instructor</th>
-                                <th scope="col">Resource</th>
-                                <th scope="col">Event Date</th>
-                                <th scope="col">Start Time</th>
-                                <th scope="col">End Time</th>
-                                @if(checkAllowedModule('training','training.show')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.grading-list')->isNotEmpty())
-                                <th scope="col">Action</th>
-                                @endif
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($trainingEvents as $event)
 
-                            @php
-                            $lesson = $event->firstLesson;
-                            @endphp
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Last Training Event</h5>
+                        <table class="table table-hover" id="trainingEventTable">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Event</th>
+                                    <th scope="col">Student</th>
+                                    <th scope="col">Instructor</th>
+                                    <th scope="col">Resource</th>
+                                    <th scope="col">Event Date</th>
+                                    <th scope="col">Start Time</th>
+                                    <th scope="col">End Time</th>
+                                    @if(checkAllowedModule('training','training.show')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.grading-list')->isNotEmpty())
+                                    <th scope="col">Action</th>
+                                    @endif
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($trainingEvents as $event)
 
-                            <tr>
-                                <td class="eventName">{{ $event->course?->course_name }} </td>
-                                <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
-                                <td>{{ $lesson?->instructor?->fname }} {{ $lesson?->instructor?->lname }}</td>
-                                <td>{{ $lesson?->resource?->name }}</td>
-                                <td>{{ $lesson?->lesson_date ? date('d-m-y', strtotime($lesson->lesson_date)) : '' }}</td>
-                                <td>{{ $lesson?->start_time ? date('h:i A', strtotime($lesson->start_time)) : '' }}</td>
-                                <td>{{ $lesson?->end_time ? date('h:i A', strtotime($lesson->end_time)) : '' }}</td>
-                                <td>
-                                    @if(get_user_role(auth()->user()->role) == 'administrator')
-                                    @if(empty($event->is_locked))
+                                @php
+                                $lesson = $event->firstLesson;
+                                @endphp
 
-
-                                    @if(checkAllowedModule('training','training.delete')->isNotEmpty())
-                                    <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                                        data-event-id="{{ encode_id($event->id) }}"></i>
-                                    @endif
-                                    @if(checkAllowedModule('training','training.show')->isNotEmpty())
-                                    <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
-                                        <i class="fa fa-eye text-danger me-2"></i>
-                                    </a>
-                                    @endif
-
-                                    @if($event->can_end_course)
-                                    {{-- Active “End Course” button/icon --}}
-                                    <button class="btn btn-sm btn-flag-checkered end-course-btn" data-event-id="{{ encode_id($event->id) }}"
-                                        title="End Course/Event">
-                                        <i class="fa fa-flag-checkered text-primary"></i>
-                                    </button>
-                                    @endif
-                                    @else
-                                    {{-- This event is already locked/ended --}}
-                                    <span class="badge bg-secondary unlocked" data-bs-toggle="tooltip" data-id="{{ $event->id}}"
-                                        title="This course has been ended and is locked from editing">
-                                        <i class="bi bi-lock-fill me-1"></i>Ended
-                                    </span>
-                                    @if(checkAllowedModule('training','training.delete')->isNotEmpty())
-                                    <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                                        data-event-id="{{ encode_id($event->id) }}"></i>
-                                    @endif
-                                    @endif
-                                    @elseif(get_user_role(auth()->user()->role) == 'instructor')
-                                    @if(empty($event->is_locked))
+                                <tr>
+                                    <td class="eventName">{{ $event->course?->course_name }} </td>
+                                    <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
+                                    <td>{{ $lesson?->instructor?->fname }} {{ $lesson?->instructor?->lname }}</td>
+                                    <td>{{ $lesson?->resource?->name }}</td>
+                                    <td>{{ $lesson?->lesson_date ? date('d-m-y', strtotime($lesson->lesson_date)) : '' }}</td>
+                                    <td>{{ $lesson?->start_time ? date('h:i A', strtotime($lesson->start_time)) : '' }}</td>
+                                    <td>{{ $lesson?->end_time ? date('h:i A', strtotime($lesson->end_time)) : '' }}</td>
+                                    <td>
+                                        @if(get_user_role(auth()->user()->role) == 'administrator')
+                                        @if(empty($event->is_locked))
 
 
-                                    @if(checkAllowedModule('training','training.show')->isNotEmpty())
-                                    <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
-                                        <i class="fa fa-eye text-danger me-2"></i>
-                                    </a>
-                                    @endif
-                                    @else
-                                    {{-- This event is already locked/ended --}}
-                                    <span class="badge bg-secondary" data-bs-toggle="tooltip"
-                                        title="This course has been ended and is locked from editing">
-                                        <i class="bi bi-lock-fill me-1"></i>Ended
-                                    </span>
-                                    @endif
-                                    @else
-                                    @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
-                                    <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
-                                        <i class="fa fa-list text-danger me-2"></i>
-                                    </a>
-                                    @endif
-                                    @endif
-                                </td>
-                            </tr>
-                            @endforeach
+                                        @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                                        <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                                            data-event-id="{{ encode_id($event->id) }}"></i>
+                                        @endif
+                                        @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                                        <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                                            <i class="fa fa-eye text-danger me-2"></i>
+                                        </a>
+                                        @endif
 
-                        </tbody>
-                    </table>
+                                        @if($event->can_end_course)
+                                        {{-- Active “End Course” button/icon --}}
+                                        <button class="btn btn-sm btn-flag-checkered end-course-btn" data-event-id="{{ encode_id($event->id) }}"
+                                            title="End Course/Event">
+                                            <i class="fa fa-flag-checkered text-primary"></i>
+                                        </button>
+                                        @endif
+                                        @else
+                                        {{-- This event is already locked/ended --}}
+                                        <span class="badge bg-secondary unlocked" data-bs-toggle="tooltip" data-id="{{ $event->id}}"
+                                            title="This course has been ended and is locked from editing">
+                                            <i class="bi bi-lock-fill me-1"></i>Ended
+                                        </span>
+                                        @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                                        <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                                            data-event-id="{{ encode_id($event->id) }}"></i>
+                                        @endif
+                                        @endif
+                                        @elseif(get_user_role(auth()->user()->role) == 'instructor')
+                                        @if(empty($event->is_locked))
+
+
+                                        @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                                        <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                                            <i class="fa fa-eye text-danger me-2"></i>
+                                        </a>
+                                        @endif
+                                        @else
+                                        {{-- This event is already locked/ended --}}
+                                        <span class="badge bg-secondary" data-bs-toggle="tooltip"
+                                            title="This course has been ended and is locked from editing">
+                                            <i class="bi bi-lock-fill me-1"></i>Ended
+                                        </span>
+                                        @endif
+                                        @else
+                                        @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
+                                        <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
+                                            <i class="fa fa-list text-danger me-2"></i>
+                                        </a>
+                                        @endif
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endforeach
+
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     @endif
 </section>
 

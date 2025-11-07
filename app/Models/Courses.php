@@ -99,5 +99,11 @@ class Courses extends Model
         return $this->hasMany(CourseCustomTime::class, 'course_id');
     }
 
+    public function quizzes()
+    {
+        return $this->hasMany(Quiz::class);
+    }
+
+
 }
 
