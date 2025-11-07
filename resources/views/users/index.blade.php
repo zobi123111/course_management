@@ -740,7 +740,7 @@
                         </select>
                         <div id="status_error_up" class="text-danger error_e"></div>
                     </div>
-                    <div class="col-md-6" style="display:none" id="archiveStatus_col">
+                    <div class="col-md-6"  id="archiveStatus_col">
                         <label for="archive_status" class="form-label">Archive Status</label>
                         <select class="form-select" name="archive_status" id="archive_status" aria-label="Default select example">
                             <option value="0" selected>UnArchive</option>
@@ -1850,11 +1850,11 @@
                     var userRoleId = response.user.role;
                     $('#role_id option').removeAttr('selected');
                     $('#edit_role option[value="' + userRoleId + '"]').attr('selected','selected');
-                    if(userRoleId == 18){
-                       $('#archiveStatus_col').show();
-                    }else{
-                       $('#archiveStatus_col').hide(); 
-                    }
+                    // if(userRoleId == 18){
+                    //    $('#archiveStatus_col').show();  
+                    // }else{
+                    //    $('#archiveStatus_col').hide(); 
+                    // }
                     const document = response.user.documents ?? {};
                     const ratings = response.user_ratings || {};
 
