@@ -1343,10 +1343,11 @@ class UserController extends Controller
             'medical_expirydate'    => $medical_expiry_date,
             'medical_restriction'   => $medical_detail,
             'medical_file'          => $medicalFilePath ?? null,
-            "medical_2_required"        => $request->medical_2_checkbox ?? 0,
-            "medical_2_adminRequired"  => $request->medical_2_verification_required ?? 0,
-            "is_admin"              => $is_admin,
-            "is_activated"           => $request->archive_status,
+            "medical_2_required"     => $request->medical_2_checkbox ?? 0,
+            "medical_2_adminRequired" => $request->medical_2_verification_required ?? 0,
+            "is_admin"               => $is_admin,
+            "is_activated"           => $request->archive_status
+            
         );
 
         // dd($store_user);
@@ -1704,6 +1705,7 @@ class UserController extends Controller
                 'medical_2_adminRequired' => $medical_2_adminRequired ?? 0,
                 'is_admin' => $is_admin,
                 "is_activated"  => $request->archive_status,
+                 "unarchived_by"  => NULL
             ];
 
 
@@ -3263,9 +3265,9 @@ class UserController extends Controller
         return view('users.show', compact(
             'user',
             'extraRoles',
-            'licence1Ratings',
+            'licence1Ratings', 
             'licence2Ratings',
-            'selectedIdsLicence1',
+            'selectedIdsLicence1', 
             'selectedIdsLicence2',
             'childRatingsGrouped',
             'userRatingsMap',

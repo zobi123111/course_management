@@ -3222,7 +3222,7 @@ class TrainingEventsController extends Controller
         $user = User::find($request->user_id);
 
         if ($user) {
-            $user->update(['is_activated' => 0]);
+            $user->update(['is_activated' => 0, "unarchived_by"  => auth()->user()->id]);
             Session::flash('message', "{$user->fname} {$user->lname} unarchived successfully");
             return response()->json([
                 'success' => true,
