@@ -1357,72 +1357,64 @@ $(document).ready(function() {
                         <div id="lesson_data_${currentIndex}_instructor_license_number${errorSuffix}" class="text-danger error_e"></div>
                     </div>
               ${lessonType == 'flight' ? (
-    course.enable_mp_lifus == 2 || course.enable_mp_lifus == 3 ?  `
-        <!-- Single Pilot -->
-        <div class="col-md-6">
-            <label class="form-label">Operation<span class="text-danger">*</span></label>
-            <select class="form-select" name="lesson_data[${currentIndex}][operation_1]">
-                <option value="">Select Operation</option>
-                <option value="1" ${operation1 === '1' ? 'selected' : ''}>PF in LHS</option>
-                <option value="2" ${operation1 === '2' ? 'selected' : ''}>PM in LHS</option>
-                <option value="3" ${operation1 === '3' ? 'selected' : ''}>PF in RHS</option>
-                <option value="4" ${operation1 === '4' ? 'selected' : ''}>PM in RHS</option>
-            </select>
-            <div id="lesson_data_${currentIndex}_operation${errorSuffix}" class="text-danger error_e"></div>
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Role<span class="text-danger">*</span></label>
-            <select class="form-select" name="lesson_data[${currentIndex}][role_1]">
-                <option value="">Select Role</option>
-                <option value="1" ${role1 === '1' ? 'selected' : ''}>PF-Pilot Flying</option>
-                <option value="2" ${role1 === '2' ? 'selected' : ''}>PM-Pilot Monitoring</option>
-            </select>
-            <div id="lesson_data_${currentIndex}_rank${errorSuffix}" class="text-danger error_e"></div>
-        </div>
-    ` : (course.enable_mp_lifus == 4 || course.enable_mp_lifus == 5) ? `
-        <!-- Multi Pilot -->
-        <div class="col-md-6">
-            <label class="form-label">Operation (Pilot 1)<span class="text-danger">*</span></label>
-            <select class="form-select" name="lesson_data[${currentIndex}][operation_1]">
-                <option value="">Select Operation</option>
-                <option value="1" ${operation1 === '1' ? 'selected' : ''}>PF in LHS</option>
-                <option value="2" ${operation1 === '2' ? 'selected' : ''}>PM in LHS</option>
-                <option value="3" ${operation1 === '3' ? 'selected' : ''}>PF in RHS</option>
-                <option value="4" ${operation1 === '4' ? 'selected' : ''}>PM in RHS</option>
-            </select>
-            <div id="lesson_data_${currentIndex}_operation_1${errorSuffix}" class="text-danger error_e"></div>
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Role (Pilot 1)<span class="text-danger">*</span></label>
-            <select class="form-select" name="lesson_data[${currentIndex}][role_1]">
-                <option value="">Select Role</option>
-                <option value="1" ${role1 === '1' ? 'selected' : ''}>PF-Pilot Flying</option>
-                <option value="2" ${role1 === '2' ? 'selected' : ''}>PM-Pilot Monitoring</option>
-            </select>
-            <div id="lesson_data_${currentIndex}_rank_1${errorSuffix}" class="text-danger error_e"></div>
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Operation (Pilot 2)<span class="text-danger">*</span></label>
-            <select class="form-select" name="lesson_data[${currentIndex}][operation_2]">
-                <option value="">Select Operation</option>
-                <option value="1" ${operation2 === '1' ? 'selected' : ''}>PF in LHS</option>
-                <option value="2" ${operation2 === '2' ? 'selected' : ''}>PM in LHS</option>
-                <option value="3" ${operation2 === '3' ? 'selected' : ''}>PF in RHS</option>
-                <option value="4" ${operation2 === '4' ? 'selected' : ''}>PM in RHS</option>
-            </select>
-            <div id="lesson_data_${currentIndex}_operation_2${errorSuffix}" class="text-danger error_e"></div>
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Role (Pilot 2)<span class="text-danger">*</span></label>
-            <select class="form-select" name="lesson_data[${currentIndex}][role_2]">
-                <option value="">Select Role</option>
-                <option value="1" ${role2 === '1' ? 'selected' : ''}>PF-Pilot Flying</option>
-                <option value="2" ${role2 === '2' ? 'selected' : ''}>PM-Pilot Monitoring</option>
-            </select>
-            <div id="lesson_data_${currentIndex}_rank_2${errorSuffix}" class="text-danger error_e"></div>
-        </div>
-    ` : ''
-) : ''}
+                course.enable_mp_lifus == 2 || course.enable_mp_lifus == 3 ?  `
+                    <!-- Single Pilot -->
+                    <div class="col-md-6">
+                        <label class="form-label">Operation<span class="text-danger">*</span></label>
+                        <select class="form-select" name="lesson_data[${currentIndex}][operation_1]">
+                            <option value="">Select Operation</option>
+                            <option value="1" ${operation1 === '1' ? 'selected' : ''}>PF in LHS</option>
+                            <option value="2" ${operation1 === '2' ? 'selected' : ''}>PM in LHS</option>
+                            <option value="3" ${operation1 === '3' ? 'selected' : ''}>PF in RHS</option>
+                            <option value="4" ${operation1 === '4' ? 'selected' : ''}>PM in RHS</option>
+                        </select>
+                        <div id="lesson_data_${currentIndex}_operation${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+              
+                ` : (course.enable_mp_lifus == 4 || course.enable_mp_lifus == 5) ? `
+                    <!-- Multi Pilot -->
+                    <div class="col-md-6">
+                        <label class="form-label">Operation (Pilot 1)<span class="text-danger">*</span></label>
+                        <select class="form-select" name="lesson_data[${currentIndex}][operation_1]">
+                            <option value="">Select Operation</option>
+                            <option value="1" ${operation1 === '1' ? 'selected' : ''}>PF in LHS</option>
+                            <option value="2" ${operation1 === '2' ? 'selected' : ''}>PM in LHS</option>
+                            <option value="3" ${operation1 === '3' ? 'selected' : ''}>PF in RHS</option>
+                            <option value="4" ${operation1 === '4' ? 'selected' : ''}>PM in RHS</option>
+                        </select>
+                        <div id="lesson_data_${currentIndex}_operation_1${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Role (Pilot 1)<span class="text-danger">*</span></label>
+                        <select class="form-select" name="lesson_data[${currentIndex}][role_1]">
+                            <option value="">Select Role</option>
+                            <option value="1" ${role1 === '1' ? 'selected' : ''}>PF-Pilot Flying</option>
+                            <option value="2" ${role1 === '2' ? 'selected' : ''}>PM-Pilot Monitoring</option>
+                        </select>
+                        <div id="lesson_data_${currentIndex}_rank_1${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Operation (Pilot 2)<span class="text-danger">*</span></label>
+                        <select class="form-select" name="lesson_data[${currentIndex}][operation_2]">
+                            <option value="">Select Operation</option>
+                            <option value="1" ${operation2 === '1' ? 'selected' : ''}>PF in LHS</option>
+                            <option value="2" ${operation2 === '2' ? 'selected' : ''}>PM in LHS</option>
+                            <option value="3" ${operation2 === '3' ? 'selected' : ''}>PF in RHS</option>
+                            <option value="4" ${operation2 === '4' ? 'selected' : ''}>PM in RHS</option>
+                        </select>
+                        <div id="lesson_data_${currentIndex}_operation_2${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Role (Pilot 2)<span class="text-danger">*</span></label>
+                        <select class="form-select" name="lesson_data[${currentIndex}][role_2]">
+                            <option value="">Select Role</option>
+                            <option value="1" ${role2 === '1' ? 'selected' : ''}>PF-Pilot Flying</option>
+                            <option value="2" ${role2 === '2' ? 'selected' : ''}>PM-Pilot Monitoring</option>
+                        </select>
+                        <div id="lesson_data_${currentIndex}_rank_2${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                ` : ''
+            ) : ''}
 
 
                 </div>
