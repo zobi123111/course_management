@@ -39,7 +39,8 @@ class UserController extends Controller
         $ou_id = auth()->user()->ou_id;
         if ($ou_id != null) {
             $rating = Rating::with(['ou_ratings.organization_unit'])->where('status', 1)->whereHas('ou_ratings')->get();
-        }
+        }  
+        
 
         if ($request->ajax()) {
             $query = User::query()
