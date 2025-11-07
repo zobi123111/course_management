@@ -498,7 +498,7 @@
                 @if($trainingEvent?->course?->course_type === 'one_event' && $student)
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="student-tab-{{ $student->id ?? ''}}" data-bs-toggle="tab" data-bs-target="#student-{{ $student->id ?? '' }}" type="button" role="tab" aria-controls="student-{{ $student->id ?? '' }}" aria-selected="false">
-                        {{ $student->fname }} {{ $student->lname }}
+                        Overall Assessment
                     </button>
                 </li>
                 @endif
@@ -1432,7 +1432,7 @@
                                             </div>
                                             <!-- <div class="mb-2">
                                                 <label class="form-label">Rank</label>
-                                           <select class="form-select" name="rank" id="add_deferred_rank">
+                                           <select class="form-select" name="rank" id="add_deferred_rank"> 
                                                 @if($trainingEvent->course->enable_mp_lifus == 1)
                                                     <option value="1">Captain</option>
                                                 @else

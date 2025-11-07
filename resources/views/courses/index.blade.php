@@ -328,6 +328,14 @@
                         </div>
                     </div> -->
                     <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="enable_more_mp">
+                            <label class="form-check-label" for="enable_more_mp">
+                                MP Event
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="course_type" class="form-label">Enable MP Event</label>
                         <select class="form-select" name="enable_mp_lifus" id="enable_mp_lifus">
                             <option value="1">SP Event</option>
@@ -335,14 +343,7 @@
                             <option value="3">SP+MP Event</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="enable_more_mp">
-                            <label class="form-check-label" for="enable_more_mp">
-                                Enable More MP Event
-                            </label>
-                        </div>
-                    </div>
+                 
 
                     <div class="form-group">
                         <label for="groups" class="form-label">Assigned Resource<span
@@ -578,21 +579,21 @@
                         </div>
                     </div> --> 
                     <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="edit_enable_more_mp">
+                            <label class="form-check-label" for="edit_enable_more_mp">
+                                MP Event
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
                         <label for="course_type" class="form-label">Enable MP Event</label>
                         <select class="form-select" name="enable_mp_lifus" id="edit_enable_mp_lifus">
                             <option value="1">SP Event</option>
                             <option value="2">MP Event</option>
                             <option value="3">SP+MP Event</option>
                         </select>
-                    </div>
-
-                    <div class="form-group">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="edit_enable_more_mp">
-                            <label class="form-check-label" for="edit_enable_more_mp">
-                                Enable More MP Event
-                            </label>
-                        </div>
                     </div>
 
                     <div class="form-group">
@@ -928,7 +929,7 @@
                        
                     } else {
                         $('#edit_enable_cbta').prop('checked', false);
-                       
+                        
                     } 
 
                  if (response.course.enable_mp_lifus == 1) {
