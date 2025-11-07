@@ -49,7 +49,7 @@
             <?php // dump($event);  ?>
                 @php
                     $lesson = $event->firstLesson;
-                @endphp 
+                @endphp   
                 
             <tr>
                 <td class="eventName">{{ $event->course?->course_name }}</td>
