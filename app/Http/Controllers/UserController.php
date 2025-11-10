@@ -29,7 +29,8 @@ class UserController extends Controller
         $authUser = auth()->user();
         $ou_id = $authUser->ou_id;
         $is_owner = $authUser->is_owner;
-        $is_admin = $authUser->is_admin;
+        $is_admin = $authUser->is_admin; 
+        
 
         $organizationUnits = OrganizationUnits::all();
         $roles = Role::all();
