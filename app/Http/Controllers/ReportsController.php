@@ -91,6 +91,7 @@ public function index()
 
         $enrolledStudentIds  = collect();
         $completedStudentIds = collect();
+        $archivedStudentIds  = collect();
 
         foreach ($courseEvents as $event) {
             $student = $event->student;
@@ -99,7 +100,11 @@ public function index()
             }
 
             // enrolled
-            $enrolledStudentIds->push($student->id);
+            $enrolledStudentIds->push($student->id); 
+
+              if ($student->is_activated == 1) {
+                $archivedStudentIds->push($student->id);
+            }
 
             // completed check
             if (!empty($event->course_end_date)) {
@@ -119,11 +124,11 @@ public function index()
                 }
             }
         }
-
         // attach counts to course
         $course->students_enrolled  = $enrolledStudentIds->unique()->count();
         $course->students_completed = $completedStudentIds->unique()->count();
         $course->students_active    = $enrolledStudentIds->diff($completedStudentIds)->unique()->count();
+        $course->archived           = $archivedStudentIds->unique()->count();
 
         return $course;
     });
@@ -147,6 +152,8 @@ public function index()
         $showArchived = $request->has('show_archived') && $request->show_archived == '1';
         $showFailing = $request->has('show_failing') && $request->show_failing == '1';
 
+        
+
         $course = Courses::with(['trainingEvents.student'])->findOrFail($id);
 
         // Create a map of student_id => training_event data
@@ -163,12 +170,22 @@ public function index()
         // Get unique students
         $students = $course->trainingEvents
                     ->pluck('student')
-                    ->filter()
-                    ->when(!$showArchived, fn($s) => $s->filter(fn($student) => !$student->is_archived))
-                    ->filter(fn($student) => $student->is_activated == 0)
-                    ->filter(fn($student) => $student->status == 1)
+                    ->filter();
+        $students = $students
                     ->unique('id')
-                    ->values();
+                    ->values();   
+                 
+
+       $employees = $course->trainingEvents
+                        ->pluck('student')
+                        ->filter(); 
+                        if ($showArchived == true) {
+                        } else {
+                            $employees = $employees->filter(fn($student) => $student->is_activated == 0);
+                        }
+                        $employees = $employees
+                            ->unique('id')
+                            ->values();                 
           
 
         $activeStudents = $students->filter(fn($s) => $s->course_end_date === null);
@@ -214,19 +231,7 @@ public function index()
 
             $total = $grades->count();
 
-        //    $def =   DefLessonTask::where('user_id', $student->id)
-        //         ->when($student->event_id, fn($q) => $q->where('event_id', $student->event_id))
-        //         ->pluck('task_grade')
-        //         ->map(fn($grade) => strtolower((string) $grade));
-                
-
-
-        //     $student->progress = [
-        //         'total' => $total,
-        //         'incomplete' => $grades->filter(fn($g) => in_array($g, ['1', 'incomplete']))->count(),
-        //         'further'    => $grades->filter(fn($g) => in_array($g, ['2', 'further training required']))->count(),
-        //         'competent'  => $grades->filter(fn($g) => in_array($g, ['3', '4', '5', 'competent']))->count(),
-        //     ];
+  
             // 1️⃣ Fetch student's TaskGrading records
                 $grades = TaskGrading::where('user_id', $student->id)
                     ->when($student->event_id, fn($q) => $q->where('event_id', $student->event_id))
@@ -257,10 +262,6 @@ public function index()
 
              foreach ($normalizedGrades as $grade) {
                         $matchingDef = $normalizedDef->firstWhere('task_id', $grade->sub_lesson_id);
-
-                        // Determine which grade to use:
-                        // - If DefLessonTask exists but its grade is null/empty => treat as incomplete
-                        // - Otherwise, use DefLessonTask grade if available, else TaskGrading grade
                         if ($matchingDef) {
                             $finalGrade = $matchingDef->task_grade ?: 'incomplete';
                         } else {
@@ -290,15 +291,17 @@ public function index()
             return $student;
         });
         // === Chart Data ===
+       //  dump($students);
         $chartData = [
             'enrolled'    => $students->count(),
             'completed'   => $students->filter(fn($s) => $s->is_completed)->count(),
             'active'      => $students->filter(fn($s) => !$s->is_archived && $s->course_end_date === null)->count(),
             'archived'    => $students->filter(fn($s) => $s->is_archived)->count(),
+            'is_activated' => $students->filter(fn($s) => $s->is_activated)->count(),
             'failing'     => $failingStudentIds->intersect($students->pluck('id'))->count(),
-        ];
+        ]; 
 
-        return view('reports.course_detail', compact('course', 'students', 'showArchived', 'showFailing', 'chartData'));
+        return view('reports.course_detail', compact('course', 'students', 'showArchived', 'showFailing', 'chartData', 'employees'));
     } 
 
     public function updateStudentArchiveStatus(Request $request)
@@ -351,6 +354,7 @@ public function index()
                 if ($s->course_end_date !== null) {
                     return true;
                 }
+              
 
                 // Fallback to check task_grading competency
                 $grades = TaskGrading::where('user_id', $s->id)
