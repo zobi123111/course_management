@@ -60,6 +60,12 @@
                                         <div><span class="badge bg-primary">Enrolled: {{ $course->students_enrolled }}</span></div>
                                         <div class="mt-2"><span class="badge bg-warning text-dark">Active: {{ $course->students_active }}</span></div>
                                         <div class="mt-2"><span class="badge bg-success">Completed: {{ $course->students_completed }}</span></div>
+                                      <div class="mt-2">
+                                        <span class="badge" style="background-color: #d33d4b; color: #ffffff;">
+                                            Archive: {{ $course->archived }}
+                                        </span>
+                                      </div>
+
                                     </div>
                                 </div>
                             </div>
