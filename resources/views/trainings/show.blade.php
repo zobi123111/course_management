@@ -1554,7 +1554,8 @@
                             <div class="modal-dialog">
                                 <form id="normalLessonForm">
                                     @csrf
-                                    <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
+                                    <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}"> 
+
                                     <input type="hidden" name="std_id" value="{{ $trainingEvent->student_id }}">
                                     <input type="hidden" name="def_id" id="def_id">
                                     <div class="modal-content">
@@ -1563,6 +1564,7 @@
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
                                         <div class="modal-body">
+                                            
                                             <div class="mb-2">
                                                 <div class="card-body p-0">
                                                     <h6 class="fw-bold mb-0 text-primary">
