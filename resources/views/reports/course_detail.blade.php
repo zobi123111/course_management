@@ -27,6 +27,17 @@
         min-width: 50px;
         font-weight: bold;
     }
+    .archived-row {
+        background-color: #d19898 !important; /* Light red for non-archived when showing archived */
+    }
+
+    .archived-row:hover {
+        background-color: #ffcccc !important; /* Slightly darker red on hover */
+    }
+
+    .row-alert {
+        background-color: #fff3cd !important; /* Keep alert yellow styling */
+    }
 </style>
 
 @section('content')
@@ -71,9 +82,9 @@
                     <div class="col-auto">
                         <span class="badge text-white" style="background-color: #28a745;" title="Completed">Completed: {{ $chartData['completed'] }}</span>
                     </div>
-                    <!-- <div class="col-auto">
+                    <div class="col-auto">
                         <span class="badge text-white" style="background-color: #ffc107;" title="Active">Active: {{ $chartData['active'] }}</span>
-                    </div> -->
+                    </div>
                      <div class="col-auto">
                         <span class="badge text-white" style="background-color: #d33d4b; color: #ffffff;" title="Active">Archive: {{ $chartData['is_activated'] }}</span>
                     </div>
@@ -112,7 +123,7 @@
                     <tbody>
                         @foreach ($employees as $student)
                         <?php // dump($student); ?>
-                       <tr class="clickable-row {{ $student->show_alert ? 'row-alert' : '' }}" 
+                      <tr class="clickable-row {{ $student->show_alert ? 'row-alert' : '' }}  {{ ($showArchived && $student->is_activated != 0) ? 'archived-row' : '' }}" 
                             data-href="{{ route('training.grading-list', ['event_id' => encode_id($student->event_id)]) }}" 
                             style="cursor: pointer;">
                             <td class="expiry">
@@ -309,7 +320,7 @@ $(document).ready(function () {
         enrolled: {{ $chartData['enrolled'] }},
         completed: {{ $chartData['completed'] }},
         archived: {{ $chartData['is_activated'] ?? 0 }},
-        active: {{ $chartData['active'] }},
+        active: {{ $chartData['active'] ?? 0 }},
         @if($showFailing) failing: {{ $chartData['failing'] }} @endif
     };
 

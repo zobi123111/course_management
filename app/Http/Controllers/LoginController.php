@@ -43,20 +43,20 @@ class LoginController extends Controller
 
             if (Auth::attempt($credentials)) {
                     $user = Auth::user();
-
-                    // ✅ Check if user status is inactive
-                    if ($user->status == 0) {
-                        Auth::logout();
-                        return response()->json([
-                            'credentials_error' => 'Your account is currently disabled. Please contact your administrator.'
-                        ]);
-                    }
-                    elseif($user->is_activated == 1){ 
+                    
+                    if($user->is_activated == 1){ 
                         Auth::logout();
                         return response()->json([
                             'credentials_error' => 'Your account is currently disabled . Please contact your administrator.'
                         ]);
                     }
+                    elseif($user->status == 0){
+                        Auth::logout();
+                        return response()->json([
+                            'credentials_error' => 'Your account is currently disabled. Please contact your administrator.'
+                        ]);
+
+                     }
 
                     // ✅ Regenerate session and return success
                     $request->session()->regenerate();
