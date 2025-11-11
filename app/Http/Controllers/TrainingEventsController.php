@@ -597,10 +597,7 @@ class TrainingEventsController extends Controller
 
     public function getTrainingEvent(Request $request)
     {
-
         $trainingEvent = TrainingEvents::with('eventLessons.lesson', 'course:id,course_name,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num,enable_mp_lifus')->findOrFail(decode_id($request->eventId));
-
-
         $atoNum = strtolower($trainingEvent->course->ato_num);
 
         $isUK   = str_contains($atoNum, 'uk');
@@ -3058,12 +3055,10 @@ class TrainingEventsController extends Controller
         }
     }
 
-
-
-    public function archieveUser() 
+    public function archieveUser()  
     {
-        $user = User::where('is_activated', 1)->get();
-        return view('users.archieveUser', compact('user'));
+        $user = User::with('organization')->where('is_activated', 1)->get();
+        return view('users.archieveUser', compact('user')); 
     }
 
     public function unarchive(Request $request)

@@ -19,7 +19,8 @@
                 <thead>
                     <tr>
                         <th scope="col">User Name</th>
-                        <th scope="col">Status</th>
+                        <th scope="col">OU</th>
+                        <th scope="col">Status</th> 
                         <th scope="col">Action</th>
                     </tr>
                 </thead>
@@ -27,13 +28,14 @@
                     @foreach($user as $val)
                      <tr>
                         <td>{{ $val->fname }} {{ $val->lname }}</td>
+                        <td>{{ $val->organization->org_unit_name }}</td>
                         <td>
                             @if($val->is_activated == 1)
                                 <span class="badge bg-danger">Archive</span>
                             @endif
                         </td>
                          <td>
-                            <i class="bi bi-check-square archieve_user" data-user_id="{{ $val->id }}" style="cursor:pointer;"></i>
+                            <i class="bi bi-lock archieve_user" data-user_id="{{ $val->id }}" style="cursor:pointer;"></i>
                          </td>
                     </tr>
                     @endforeach

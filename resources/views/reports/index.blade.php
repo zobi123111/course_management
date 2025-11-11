@@ -116,50 +116,57 @@
     }
 
     // On page load: restore selected OU filter if available
-    document.addEventListener('DOMContentLoaded', function () {
-        @foreach($courses as $course)
-           const enrolled_{{ $course->id }} = {{ $course->students_enrolled ?? 0 }};
-           const active_{{ $course->id }} = {{ $course->students_active ?? 0 }};
-             const completed_{{ $course->id }} = {{ $course->students_completed ?? 0 }};
+   document.addEventListener('DOMContentLoaded', function () {
+    @foreach($courses as $course)
+        const enrolled_{{ $course->id }} = {{ $course->students_enrolled ?? 0 }};
+        const active_{{ $course->id }} = {{ $course->students_active ?? 0 }};
+        const completed_{{ $course->id }} = {{ $course->students_completed ?? 0 }};
+        const archived_{{ $course->id }} = {{ $course->archived ?? 0 }};
 
-            const hasData_{{ $course->id }} = enrolled_{{ $course->id }} > 0 || active_{{ $course->id }} > 0 || completed_{{ $course->id }} > 0;
+        const hasData_{{ $course->id }} = 
+            enrolled_{{ $course->id }} > 0 || 
+            active_{{ $course->id }} > 0 || 
+            completed_{{ $course->id }} > 0 ||
+            archived_{{ $course->id }} > 0;
 
-            const ctx{{ $course->id }} = document.getElementById('chart-{{ $course->id }}').getContext('2d');
+        const ctx{{ $course->id }} = document.getElementById('chart-{{ $course->id }}').getContext('2d'); 
 
-            new Chart(ctx{{ $course->id }}, {
-                type: 'doughnut',
-                data: {
-                    labels: hasData_{{ $course->id }} ? ['Enrolled', 'Active', 'Completed'] : ['No Data'],
-                    datasets: [{
-                        data: hasData_{{ $course->id }} 
-                            ? [enrolled_{{ $course->id }}, active_{{ $course->id }}, completed_{{ $course->id }}]
-                            : [1],
-                        backgroundColor: hasData_{{ $course->id }} 
-                            ? ['#0d6efd', '#ffc107', '#198754']  // blue, yellow, green
-                            : ['#dee2e6'],                       // gray fallback
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: false,
-                    cutout: '65%',
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return hasData_{{ $course->id }}
-                                        ? `${context.label}: ${context.parsed}`
-                                        : 'No course data available';
-                                }
+        new Chart(ctx{{ $course->id }}, {
+            type: 'doughnut',
+            data: {
+                labels: hasData_{{ $course->id }} 
+                    ? ['Enrolled', 'Active', 'Completed', 'Archived'] 
+                    : ['No Data'],
+                datasets: [{
+                    data: hasData_{{ $course->id }} 
+                        ? [enrolled_{{ $course->id }}, active_{{ $course->id }}, completed_{{ $course->id }}, archived_{{ $course->id }}]
+                        : [1],
+                    backgroundColor: hasData_{{ $course->id }} 
+                        ? ['#0d6efd', '#ffc107', '#198754', '#d33d4b']  // blue, yellow, green, red
+                        : ['#dee2e6'],  // gray fallback
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return hasData_{{ $course->id }}
+                                    ? `${context.label}: ${context.parsed}`
+                                    : 'No course data available';
                             }
                         }
                     }
                 }
-            });
-        @endforeach
-    });
+            }
+        });
+    @endforeach
+});
 </script>
 @endsection
