@@ -2096,7 +2096,7 @@ class TrainingEventsController extends Controller
         $userId = $userID;
 
         $event = TrainingEvents::with([
-            'course:id,course_name',
+            'course:id,course_name,ato_num',
             'orgUnit:id,org_unit_name,org_logo',
             'instructor:id,fname,lname',
             'student:id,fname,lname',
@@ -2163,7 +2163,7 @@ class TrainingEventsController extends Controller
         
           
 
-       //  return view('trainings.lesson-report', compact('event', 'lesson', 'eventLesson','examiner_grading', 'instructor_grading'));
+        // return view('trainings.lesson-report', compact('event', 'lesson', 'eventLesson','examiner_grading', 'instructor_grading'));
 
         $pdf = PDF::loadView('trainings.lesson-report', [   
             'event' => $event,

@@ -49,6 +49,7 @@
         </tr>
     </table>
     <hr>
+   
     <div class="section">
         <strong>Date:</strong> {{ date('M d, Y', strtotime($eventLesson?->lesson_date)) }}<br>
         <strong>Student Name:</strong> {{ $event?->student?->fname }} {{ $event?->student?->lname }}<br>
@@ -70,32 +71,36 @@
         <strong>Aircraft:</strong> N/A<br>
         <strong>Reg:</strong> N/A<br>
         @endif
+        @if(!empty($eventLesson->operation1))
 
-        @if(!empty($eventLesson->operation))
            <strong>Operation :</strong>  
-               @if($eventLesson->operation == 1)
+               @if($eventLesson->operation1 == 1)
                     PF in LHS
-                @elseif($eventLesson->operation == 2)
+                @elseif($eventLesson->operation1 == 2)
                     PM in LHS
-                @elseif($eventLesson->operation == 3)
+                @elseif($eventLesson->operation1 == 3)
                     PF in RHS
-                @elseif($eventLesson->operation == 4) 
+                @elseif($eventLesson->operation1 == 4) 
                     PM in RHS
                 @endif
             <br>
         @endif
-
         <!-- // Rank -->
-        @if(!empty($eventLesson->rank))
+        @if(!empty($event->rank))
         <strong>Rank :</strong>    
-                @if($eventLesson->rank == 1)
+                @if($event->rank == 1)
                     Captain
-                @elseif($eventLesson->rank == 2)
+                @elseif($event->rank == 2)
                     First Officer
-                @elseif($eventLesson->rank == 3)
+                @elseif($event->rank == 3)
                     Second Officer
                 @endif<br>
         @endif
+        <!-- ATO Num -->
+         @if(!empty($event->course->ato_num))
+            <strong>Ato Num :</strong>   {{ $event->course->ato_num }} 
+          @endif
+
   
     </div>
 
