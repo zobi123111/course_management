@@ -7,7 +7,7 @@ use App\Models\User;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\OrganizationUnits;
-
+use Carbon\Carbon;
 
 function encode_id($id)
 {
@@ -278,11 +278,29 @@ function get_user_role($roleId)
     return $role ? strtolower($role->role_name) : null;
 }
 
+   function getExpiryStatus($date, $nonExpiring = false)
+    {
+        if ($nonExpiring) {
+            return 'Green'; // Non-expiring = always valid
+        }
 
+        if (!$date) {
+            return 'N/A';
+        }
 
+        $expiryDate = Carbon::parse($date);
+        $now = now();
 
+        if ($expiryDate->lt($now)) {
+            return 'Red'; // Already expired
+        }
 
+        if ($expiryDate->diffInDays($now) < 90) {
+            return 'Yellow'; // Expiring soon
+        }
 
+        return 'Green'; // Valid
+    }
 
 
 ?>
