@@ -399,7 +399,7 @@ class TrainingEventsController extends Controller
                             })->with('roles')->get();
 
           
-        // dump($course);
+      
         return response()->json([
             'success'     => true,
             'lessons'     => $course->courseLessons,
@@ -1751,7 +1751,7 @@ class TrainingEventsController extends Controller
 
             // Instructor Grading 
             if ($request->has('instructor_grade')) {
-               // dump($request->input('instructor_grade'));
+             
                 foreach ($request->input('instructor_grade') as $lesson_id => $competencyGrades) {
                     foreach ($competencyGrades as $competency_id => $grade) {
 
@@ -2163,7 +2163,7 @@ class TrainingEventsController extends Controller
         
           
 
-        // return view('trainings.lesson-report', compact('event', 'lesson', 'eventLesson','examiner_grading', 'instructor_grading'));
+       //  return view('trainings.lesson-report', compact('event', 'lesson', 'eventLesson','examiner_grading', 'instructor_grading'));
 
         $pdf = PDF::loadView('trainings.lesson-report', [   
             'event' => $event,
@@ -2173,7 +2173,7 @@ class TrainingEventsController extends Controller
             'instructor_grading' => $instructor_grading
         ]);
 
-        $filename = 'Lesson_Report_' . Str::slug($lesson->lesson_title) . '.pdf';
+        $filename = 'Lesson_Report_' . Str::slug($lesson->lesson_title) . '.pdf'; 
         return $pdf->download($filename);
     }
 
@@ -2233,7 +2233,7 @@ class TrainingEventsController extends Controller
     {
         $eventId = decode_id($event); // decode the ID
         $event = TrainingEvents::with('eventLessons', 'recommendedInstructor')->findOrFail($eventId);
-        $student = $event->student; 
+        $student = $event->student;  
         $course = $event->course;
         $firstLesson = $event->firstLesson;
 
@@ -2615,7 +2615,7 @@ class TrainingEventsController extends Controller
                        // Log lock activity
                                 $lastLog = TrainingEventLog::where('event_id', $event_id)
                                     ->where('lesson_id', $def_lesson_id)
-                                    ->where('user_id', auth()->user()->id)
+                                  //  ->where('user_id', auth()->user()->id)
                                     ->where('lesson_type', 3)
                                     ->latest('id')
                                     ->first();
@@ -2639,7 +2639,7 @@ class TrainingEventsController extends Controller
                        // Log lock activity
                                 $lastLog = TrainingEventLog::where('event_id', $event_id)
                                     ->where('lesson_id', $def_lesson_id)
-                                    ->where('user_id', auth()->user()->id)
+                                  //  ->where('user_id', auth()->user()->id)
                                      ->where('lesson_type', 3)
                                     ->latest('id')
                                     ->first();
@@ -2667,7 +2667,7 @@ class TrainingEventsController extends Controller
                         ]);
                 }
 
-                if ($lesson_type == "deferred") {
+                if ($lesson_type == "deferred") { 
                     $customLessonTasks = DefLessonTask::with([
                         'user',
                         'defLesson.instructor',
@@ -2686,23 +2686,33 @@ class TrainingEventsController extends Controller
                         if ($check_cbta == 1) {
                             $deferredExists = DeferredGrading::where('event_id', $event_id)->exists();
 
-                            if ($check_taskGrade == 0) {
+                            if ($check_taskGrade == 0) { 
                                 DefLesson::where('event_id', $event_id)
                                     ->where('lesson_type', "deferred")
                                     ->where('id', $def_lesson_id)
                                     ->update(['is_locked' => 1]);
 
 
-                               // Training Logs 
-                         // Log lock activity
+                        // Training Logs 
+                        // Log lock activity
                         $lastLog = TrainingEventLog::where('event_id', $event_id)
-                            ->where('lesson_id', $def_lesson_id)
-                            ->where('user_id', auth()->user()->id)
-                             ->where('lesson_type', 2)
-                            ->latest('id')
-                            ->first();
+                                ->where('lesson_id', $def_lesson_id)
+                               // ->where('user_id', auth()->user()->id)
+                                ->where('lesson_type', 2)
+                                ->latest('id')
+                                ->first();
+                              
 
-                        if (!$lastLog || $lastLog->is_locked == 0) {
+                        if (!$lastLog || $lastLog->is_locked == 0) { 
+                            $test = array(
+                                'event_id'  => $event_id,
+                                'lesson_id' => $def_lesson_id,
+                                'user_id'   => auth()->user()->id,
+                                'lesson_type' => 2,
+                                'is_locked' => 1,
+
+                            );
+                          
                             TrainingEventLog::create([
                                 'event_id'  => $event_id,
                                 'lesson_id' => $def_lesson_id,
@@ -2713,7 +2723,7 @@ class TrainingEventsController extends Controller
                         }
 
                             }
-                        } else {
+                        } else { 
                             if ($check_taskGrade == 0) {
                                 DefLesson::where('event_id', $event_id)
                                     ->where('lesson_type', "deferred")
@@ -2724,12 +2734,21 @@ class TrainingEventsController extends Controller
                        // Log lock activity
                                 $lastLog = TrainingEventLog::where('event_id', $event_id)
                                     ->where('lesson_id', $def_lesson_id)
-                                    ->where('user_id', auth()->user()->id)
+                                   // ->where('user_id', auth()->user()->id)
                                     ->where('lesson_type', 2)
                                     ->latest('id')
                                     ->first();
 
                                 if (!$lastLog || $lastLog->is_locked == 0) {
+                                       $test = array(
+                                                'event_id'  => $event_id,
+                                                'lesson_id' => $def_lesson_id,
+                                                'user_id'   => auth()->user()->id,
+                                                'lesson_type' => 2,
+                                                'is_locked' => 1,
+
+                                            );
+                                          
                                     TrainingEventLog::create([
                                         'event_id'  => $event_id,
                                         'lesson_id' => $def_lesson_id,

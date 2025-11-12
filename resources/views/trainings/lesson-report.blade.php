@@ -98,7 +98,7 @@
         @endif
         <!-- ATO Num -->
          @if(!empty($event->course->ato_num))
-            <strong>Ato Num :</strong>   {{ $event->course->ato_num }} 
+            <strong>Ato Num :</strong>   {{ strtoupper($event->course->ato_num) }}
           @endif
 
   
@@ -117,8 +117,7 @@
             </thead>
             <tbody>
                 @foreach($event->taskGradings as $task)
-                <?php // dump($task); 
-                ?>
+             
                 <tr>
                     <td>{{ $task->subLesson->title ?? 'N/A' }}</td>
                     <td>
@@ -172,8 +171,7 @@
 
 
     <!-- // Examiner competency grading  -->
-  
-   @if($event->entry_source == "instructor") 
+   @if(Auth::user()->role == 1) 
     <div class="section">
         <h2>Examiner Competency</h2>
         <table>
@@ -225,7 +223,7 @@
 
     <!-- // Instructor competency grading  -->
    
-     @if($event->entry_source == "instructor") 
+     @if(Auth::user()->role == 1) 
     <div class="section">
         <h2>Instructor Competency</h2>
         <table>
@@ -285,12 +283,12 @@
 
     {{-- Lesson Summary Section --}}
     <div class="section">
-        <h2>Lesson Summary</h2>
+        <h2>Lesson Comment</h2>
         <p><strong>Result:</strong> {{ $event->eventLessons[0]->lesson_summary ?? '' }}</p>
     </div>
 
     {{-- Instructor Comment Section --}}
-    @if($event->entry_source == "instructor") 
+    @if(Auth::user()->role == 1) 
     <div class="section">
         <h2>Instructor Comment</h2>
         <p><strong>Result:</strong> {{ $event->eventLessons[0]->instructor_comment ?? '' }}</p>
