@@ -178,8 +178,12 @@
                                 </div>
                             </td>
                             <td>
+                                <?php // dump($student->event_id); ?>
                                 <a href="{{ route('training.grading-list', ['event_id' =>  encode_id($student->event_id)]) }}" class="view-icon" title="View Record" style="font-size:18px; cursor: pointer;">
                                     <i class="fa fa-eye text-danger"></i>
+                                </a>
+                                 <a href="{{ route('training.certificate', ['event' => encode_id($student->event_id)]) }}" style="font-size:18px; cursor: pointer;">
+                                    <i class="bi bi-card-heading"></i> 
                                 </a>
                             </td>
                         </tr>

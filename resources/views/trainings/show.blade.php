@@ -1552,7 +1552,7 @@
                         {{-- Normal Lesson Modal Start --}}
                         <div class="modal fade" id="normalLessonModel" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
                             <div class="modal-dialog">
-                                <form id="normalLessonForm">
+                                <form id="normalLessonForm"> 
                                     @csrf
                                     <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}"> 
 
@@ -1866,6 +1866,14 @@
 
                                             {{ $lesson->lesson_title ?? 'Untitled Lesson' }}
                                             (Duration: {{ $hours_credited }} / {{ number_format($duration, 2) }} hrs)
+                                            
+                                            @if($isLocked && !empty($groupedLogs[$eventLesson->lesson_id]))
+                                                    @php
+                                                        $lastLog = $groupedLogs[$eventLesson->lesson_id]->last();
+                                                        $lockedBy = trim(($lastLog->users->fname ?? '') . ' ' . ($lastLog->users->lname ?? ''));
+                                                    @endphp
+                                                   <span>(Locked By - {{ $lockedBy ?? '' }}, Time - {{ ($lastLog->created_at->format('d M Y, h:i A')) ?? '' }})</span>
+                                            @endif
 
                                             @if($isLocked)
                                             @if(auth()->user()?->is_admin==1)
@@ -2336,7 +2344,23 @@
                                 <input type="hidden" name="tg_def_user_id" value="{{ $trainingEvent?->student_id }}">
                                 <input type="hidden" name="tg_def_lesson_id[]" value="{{ $defLesson?->id }}">
                                 <h2 class="accordion-header">
-                                    <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : '' }}" @if($is_locked !=1) data-bs-toggle="collapse" data-bs-target="#def-lesson-{{ $defLesson?->id }}" aria-expanded="true" @else disabled aria-expanded="false" style="cursor: not-allowed; background-color:#f8f9fa;" @endif type="button"> {{ $defLesson->lesson_title }} {{-- Show lock inside button, after text, only for instructors --}} @if($is_locked == 1 && auth()->user()?->is_admin != 1) <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked"> <i class="bi bi-lock-fill"></i> </span> @endif </button>
+                                <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : '' }}" @if($is_locked !=1) data-bs-toggle="collapse" data-bs-target="#def-lesson-{{ $defLesson?->id }}" aria-expanded="true" @else disabled aria-expanded="false" style="cursor: not-allowed; background-color:#f8f9fa;" @endif type="button"> {{ $defLesson->lesson_title }} {{-- Show lock inside button, after text, only for instructors --}} 
+                                        @if($is_locked == 1 && auth()->user()?->is_admin != 1) <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked"> <i class="bi bi-lock-fill"></i> </span>
+                                         @endif 
+                                        @php
+                                            // ✅ Get the most recent log for this lesson
+                                            $lessonLogs = $grouped_deferredLogs->get($defLessonId, collect());
+                                            $latestLog = $lessonLogs->sortByDesc('created_at')->first();
+                                        @endphp
+
+                                        @if($is_locked == 1 && $latestLog)
+                                            <small class="text-secondary ms-1">
+                                                (Locked By - {{ $latestLog->users->fname ?? '' }} {{ $latestLog->users->lname ?? '' }},
+                                                Time - {{ \Carbon\Carbon::parse($latestLog->created_at)->format('d M Y, h:i A') }})
+                                                
+                                            </small>
+                                        @endif
+                                        </button>
 
                                     @if($is_locked == 1 && auth()->user()?->is_admin == 1)
                                     <button type="button"
@@ -2526,7 +2550,7 @@
                                                     <thead class="table-light text-center">
                                                         <tr>
                                                             <th scope="col">User</th>
-                                                            <th scope="col">Lesson</th>
+                                                            <!-- <th scope="col">Lesson</th> -->
                                                             <th scope="col">Status</th>
                                                             <th scope="col">Date</th>
                                                         </tr>
@@ -2535,7 +2559,7 @@
                                                         @foreach($lessonLogs as $log)
                                                             <tr>
                                                                 <td>{{ $log->users->fname ?? '' }} {{ $log->users->lname ?? '' }}</td>
-                                                                <td>{{ $log->lesson->lesson_title ?? '' }}</td>
+                                                                <!-- <td>{{ $log->lesson->lesson_title ?? '' }}</td> -->
                                                                 <td>{{ $log->is_locked ? 'Locked' : 'Unlocked' }}</td>
                                                                 <td>{{ $log->created_at->format('d M Y, h:i A') }}</td>
                                                             </tr>
@@ -2552,7 +2576,6 @@
                                 </div>
                             </div>
                         </form>
-
                         @endforeach
                         @endif
                         <!-- // Custom lesson  -->
@@ -2598,6 +2621,21 @@
                                         <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
                                             <i class="bi bi-lock-fill"></i>
                                         </span>
+                                 
+                                        @endif
+                                        <?php
+                                          if($is_locked == 1){
+                                            $lessonLogs = $grouped_customLogs->get($defLessonId, collect());
+                                            $latestLog = $lessonLogs->sortByDesc('created_at')->first();
+                                          }
+                                        ?>
+                                        
+                                        @if($is_locked == 1 && $latestLog)
+                                            <small class="text-secondary ms-1">
+                                                (Locked By - {{ $latestLog->users->fname ?? '' }} {{ $latestLog->users->lname ?? '' }},
+                                                Time - {{ \Carbon\Carbon::parse($latestLog->created_at)->format('d M Y, h:i A') }})
+                                                
+                                            </small>
                                         @endif
                                     </button>
 
@@ -2796,7 +2834,7 @@
                                                     <thead class="table-light text-center">
                                                         <tr>
                                                             <th scope="col">User</th>
-                                                            <th scope="col">Lesson</th>
+                                                            <!-- <th scope="col">Lesson</th> -->
                                                             <th scope="col">Status</th>
                                                             <th scope="col">Date</th>
                                                         </tr>
@@ -2805,7 +2843,7 @@
                                                         @foreach($lessonLogs as $log)
                                                             <tr>
                                                                 <td>{{ $log->users->fname ?? '' }} {{ $log->users->lname ?? '' }}</td>
-                                                                <td>{{ $log->lesson->lesson_title ?? '' }}</td>
+                                                                <!-- <td>{{ $log->lesson->lesson_title ?? '' }}</td> -->
                                                                 <td>{{ $log->is_locked ? 'Locked' : 'Unlocked' }}</td>
                                                                 <td>{{ $log->created_at->format('d M Y, h:i A') }}</td>
                                                             </tr>
