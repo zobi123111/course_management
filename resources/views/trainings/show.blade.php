@@ -537,7 +537,7 @@
                         <div class="card border-0 shadow-sm mb-4">
                             <div class="card-body">
                                 <div class="row g-4 align-items-center">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <h6 class="text-muted mb-1"><i class="fas fa-user me-1"></i>Student</h6>
                                         <p class="mb-0 fw-semibold">
 
@@ -564,43 +564,69 @@
 
                                     // Determine label based only on atoNum
                                     if ($isUK && !$isEASA) {
-                                        $label = "License Number (UK)";
+                                        $label = "Licence Number (UK)";
                                         $student_licence = !empty($ukLicence) ? $ukLicence : 'N/A';
                                     } elseif ($isEASA && !$isUK) {
-                                        $label = "License Number (EASA)";
+                                        $label = "Licence Number (EASA)";
                                         $student_licence = !empty($easaLicence) ? $easaLicence : 'N/A';
                                     } elseif ($isUK && $isEASA) {
                                         if (empty($ukLicence) && empty($easaLicence)) {
                                             // Generic case, but no data — fallback to general label
-                                            $label = "License";
+                                            $label = "Licence";
                                             $student_licence = "N/A";
                                         } else {
-                                            $label = "License Number (Generic)";
+                                            $label = "Licence Number";
                                             $student_licence = implode(', ', array_filter([$ukLicence, $easaLicence]));
                                         }
                                     } else {
                                         // Neither UK nor EASA in ATO number
                                         if (empty($ukLicence) && empty($easaLicence)) {
-                                            $label = "License";
+                                            $label = "Licence";
                                             $student_licence = "N/A";
                                         } else {
-                                            $label = "License Number (Generic)";
+                                            $label = "Licence Number";
                                             $student_licence = implode(', ', array_filter([$ukLicence, $easaLicence]));
                                         }
                                     }
                                     ?>
 
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <h6 class="text-muted mb-1">
                                             <i class="fas fa-id-card me-1"></i><?= $label ?>
                                         </h6>
                                         <p class="mb-0 fw-semibold"><?= $student_licence ?></p>
                                     </div>
+                                    <!-- // Rank -->
+                                     @if(!empty($trainingEvent->rank))
+                                    <div class="col-md-4">
+                                        <h6 class="text-muted mb-1">
+                                            <i class="fas fa-id-card me-1"></i>Rank
+                                        </h6>
+                                    <?php 
+                                          if($trainingEvent->rank == 1){
+                                            $rank = "Captain";
+                                          }
+                                          elseif($trainingEvent->rank == 2){
+                                              $rank = "First Officer";
+                                          }
+                                          elseif($trainingEvent->rank == 3){
+                                              $rank = "Second Officer";
+                                          }
+                                    ?>
+                                        <p class="mb-0 fw-semibold"><?= $rank ?></p>
+                                    </div>
+                                    @endif
+
+                                    <!-- // End Rank -->
 
 
                                 </div>
                             </div>
                         </div>
+
+
+                  
+
                         <!-- <pre> -->
                         @if($trainingEvent?->course?->course_type === 'one_event' && $trainingEvent->eventLessons->count())
                         @php
@@ -870,8 +896,8 @@
                             </div>
                             <div class="col-md-2 mt-2">
                                 <strong><i class="fas fa-clock"></i> Lesson Type:</strong><br>
-                                <?php 
-                                   //  dump($def->deftasks?->subddddLesson?->courseLesson);
+                                <?php
+                                //  dump($def->deftasks?->subddddLesson?->courseLesson);
                                 ?>
                                 {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
 
@@ -1452,7 +1478,7 @@
                                                 <input type="time" name="start_time" class="form-control">
                                                 <div id="start_time_error" class="text-danger error_e"></div>
                                             </div>
-                                            <div class="mb-2"> 
+                                            <div class="mb-2">
                                                 <label class="form-label">End Time <span class="text-danger">*</span></label>
                                                 <input type="time" name="end_time" class="form-control">
                                                 <div id="end_time_error" class="text-danger error_e"></div>
@@ -1552,9 +1578,9 @@
                         {{-- Normal Lesson Modal Start --}}
                         <div class="modal fade" id="normalLessonModel" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
                             <div class="modal-dialog">
-                                <form id="normalLessonForm"> 
+                                <form id="normalLessonForm">
                                     @csrf
-                                    <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}"> 
+                                    <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
 
                                     <input type="hidden" name="std_id" value="{{ $trainingEvent->student_id }}">
                                     <input type="hidden" name="def_id" id="def_id">
@@ -1564,7 +1590,7 @@
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
                                         <div class="modal-body">
-                                            
+
                                             <div class="mb-2">
                                                 <div class="card-body p-0">
                                                     <h6 class="fw-bold mb-0 text-primary">
@@ -1866,13 +1892,13 @@
 
                                             {{ $lesson->lesson_title ?? 'Untitled Lesson' }}
                                             (Duration: {{ $hours_credited }} / {{ number_format($duration, 2) }} hrs)
-                                            
+
                                             @if($isLocked && !empty($groupedLogs[$eventLesson->lesson_id]))
-                                                    @php
-                                                        $lastLog = $groupedLogs[$eventLesson->lesson_id]->last();
-                                                        $lockedBy = trim(($lastLog->users->fname ?? '') . ' ' . ($lastLog->users->lname ?? ''));
-                                                    @endphp
-                                                   <span>(Locked By - {{ $lockedBy ?? '' }}, Time - {{ ($lastLog->created_at->format('d M Y, h:i A')) ?? '' }})</span>
+                                            @php
+                                            $lastLog = $groupedLogs[$eventLesson->lesson_id]->last();
+                                            $lockedBy = trim(($lastLog->users->fname ?? '') . ' ' . ($lastLog->users->lname ?? ''));
+                                            @endphp
+                                            <span>(Locked By - {{ $lockedBy ?? '' }}, Time - {{ ($lastLog->created_at->format('d M Y, h:i A')) ?? '' }})</span>
                                             @endif
 
                                             @if($isLocked)
@@ -1896,7 +1922,7 @@
                                     </h2>
                                     <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
                                         <div><strong>Instructor:</strong> {{ $eventLesson->instructor->fname ?? '' }} {{ $eventLesson->instructor->lname ?? '' }}</div>
-                                        <div><strong>License No:</strong> {{ !empty($eventLesson->instructor_license_number) ? $eventLesson->instructor_license_number : 'N/A' }}</div>
+                                        <div><strong>Licence No:</strong> {{ !empty($eventLesson->instructor_license_number) ? $eventLesson->instructor_license_number : 'N/A' }}</div>
                                         <div><strong>Resource:</strong> {{ $eventLesson->resource->name ?? 'N/A' }}</div>
                                         <div><strong>Lesson Date:</strong> {{ ($eventLesson->lesson_date) ? date('d/m/Y', strtotime($eventLesson->lesson_date)) : 'N/A' }}</div>
                                         <div><strong>Start Time:</strong> {{ ($eventLesson->start_time) ? date('h:i A', strtotime($eventLesson->start_time)) : 'N/A' }}</div>
@@ -2344,23 +2370,23 @@
                                 <input type="hidden" name="tg_def_user_id" value="{{ $trainingEvent?->student_id }}">
                                 <input type="hidden" name="tg_def_lesson_id[]" value="{{ $defLesson?->id }}">
                                 <h2 class="accordion-header">
-                                <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : '' }}" @if($is_locked !=1) data-bs-toggle="collapse" data-bs-target="#def-lesson-{{ $defLesson?->id }}" aria-expanded="true" @else disabled aria-expanded="false" style="cursor: not-allowed; background-color:#f8f9fa;" @endif type="button"> {{ $defLesson->lesson_title }} {{-- Show lock inside button, after text, only for instructors --}} 
+                                    <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : '' }}" @if($is_locked !=1) data-bs-toggle="collapse" data-bs-target="#def-lesson-{{ $defLesson?->id }}" aria-expanded="true" @else disabled aria-expanded="false" style="cursor: not-allowed; background-color:#f8f9fa;" @endif type="button"> {{ $defLesson->lesson_title }} {{-- Show lock inside button, after text, only for instructors --}}
                                         @if($is_locked == 1 && auth()->user()?->is_admin != 1) <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked"> <i class="bi bi-lock-fill"></i> </span>
-                                         @endif 
+                                        @endif
                                         @php
-                                            // ✅ Get the most recent log for this lesson
-                                            $lessonLogs = $grouped_deferredLogs->get($defLessonId, collect());
-                                            $latestLog = $lessonLogs->sortByDesc('created_at')->first();
+                                        // ✅ Get the most recent log for this lesson
+                                        $lessonLogs = $grouped_deferredLogs->get($defLessonId, collect());
+                                        $latestLog = $lessonLogs->sortByDesc('created_at')->first();
                                         @endphp
 
                                         @if($is_locked == 1 && $latestLog)
-                                            <small class="text-secondary ms-1">
-                                                (Locked By - {{ $latestLog->users->fname ?? '' }} {{ $latestLog->users->lname ?? '' }},
-                                                Time - {{ \Carbon\Carbon::parse($latestLog->created_at)->format('d M Y, h:i A') }})
-                                                
-                                            </small>
+                                        <small class="text-secondary ms-1">
+                                            (Locked By - {{ $latestLog->users->fname ?? '' }} {{ $latestLog->users->lname ?? '' }},
+                                            Time - {{ \Carbon\Carbon::parse($latestLog->created_at)->format('d M Y, h:i A') }})
+
+                                        </small>
                                         @endif
-                                        </button>
+                                    </button>
 
                                     @if($is_locked == 1 && auth()->user()?->is_admin == 1)
                                     <button type="button"
@@ -2376,7 +2402,7 @@
                                 </h2>
                                 <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
                                     <div><strong>Instructor:</strong> {{ $defLesson->instructor->fname ?? '' }} {{ $defLesson->instructor->lname ?? '' }}</div>
-                                    <div><strong>License No:</strong> {{ $instructor_lic_no }}</div>
+                                    <div><strong>Licence No:</strong> {{ $instructor_lic_no }}</div>
                                     <div><strong>Resource:</strong> {{ $defLesson->resource->name ?? 'N/A' }}</div>
                                     <div><strong>Lesson Date:</strong> {{ $defLesson?->lesson_date ? \Carbon\Carbon::parse($defLesson->lesson_date)->format('d/m/Y') : 'N/A' }}</div>
                                     <div><strong>Start Time:</strong> {{ $defLesson?->start_time ? \Carbon\Carbon::parse($defLesson?->start_time)->format('h:i A') : 'N/A' }}</div>
@@ -2536,38 +2562,38 @@
                                         <label>Instructor Comment</label>
                                         <textarea name="def_instructor_summary[{{ $task->def_lesson_id }}]" rows="3" class="form-control" placeholder="Instructor Comment">{{ old("def_instructor_summary.$task->def_lesson_id ", $defLesson->instructor_comment ?? '') }}</textarea>
                                     </div>
-                                     <!-- // Logs -->
+                                    <!-- // Logs -->
                                     @if(!empty($grouped_deferredLogs) && $grouped_deferredLogs->count() > 0)
-                                        <?php 
-                                            $lessonLogs = $grouped_deferredLogs->get($defLessonId, collect()); // <-- safe fallback
-                                        ?>
-                                        @if($lessonLogs->isNotEmpty())
-                                            <div class="accordion-body mt-3">
-                                                <h5 class="text-primary mb-2">
-                                                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Training Logs
-                                                </h5>
-                                                <table class="table table-striped table-bordered align-middle mb-0">
-                                                    <thead class="table-light text-center">
-                                                        <tr>
-                                                            <th scope="col">User</th>
-                                                            <!-- <th scope="col">Lesson</th> -->
-                                                            <th scope="col">Status</th>
-                                                            <th scope="col">Date</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach($lessonLogs as $log)
-                                                            <tr>
-                                                                <td>{{ $log->users->fname ?? '' }} {{ $log->users->lname ?? '' }}</td>
-                                                                <!-- <td>{{ $log->lesson->lesson_title ?? '' }}</td> -->
-                                                                <td>{{ $log->is_locked ? 'Locked' : 'Unlocked' }}</td>
-                                                                <td>{{ $log->created_at->format('d M Y, h:i A') }}</td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        @endif
+                                    <?php
+                                    $lessonLogs = $grouped_deferredLogs->get($defLessonId, collect()); // <-- safe fallback
+                                    ?>
+                                    @if($lessonLogs->isNotEmpty())
+                                    <div class="accordion-body mt-3">
+                                        <h5 class="text-primary mb-2">
+                                            <i class="bi bi-exclamation-triangle-fill me-2"></i> Training Logs
+                                        </h5>
+                                        <table class="table table-striped table-bordered align-middle mb-0">
+                                            <thead class="table-light text-center">
+                                                <tr>
+                                                    <th scope="col">User</th>
+                                                    <!-- <th scope="col">Lesson</th> -->
+                                                    <th scope="col">Status</th>
+                                                    <th scope="col">Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($lessonLogs as $log)
+                                                <tr>
+                                                    <td>{{ $log->users->fname ?? '' }} {{ $log->users->lname ?? '' }}</td>
+                                                    <!-- <td>{{ $log->lesson->lesson_title ?? '' }}</td> -->
+                                                    <td>{{ $log->is_locked ? 'Locked' : 'Unlocked' }}</td>
+                                                    <td>{{ $log->created_at->format('d M Y, h:i A') }}</td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    @endif
                                     @endif
                                     <!-- // End Logs -->
                                     <div class="btn-container mt-4">
@@ -2621,21 +2647,21 @@
                                         <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
                                             <i class="bi bi-lock-fill"></i>
                                         </span>
-                                 
+
                                         @endif
                                         <?php
-                                          if($is_locked == 1){
+                                        if ($is_locked == 1) {
                                             $lessonLogs = $grouped_customLogs->get($defLessonId, collect());
                                             $latestLog = $lessonLogs->sortByDesc('created_at')->first();
-                                          }
+                                        }
                                         ?>
-                                        
+
                                         @if($is_locked == 1 && $latestLog)
-                                            <small class="text-secondary ms-1">
-                                                (Locked By - {{ $latestLog->users->fname ?? '' }} {{ $latestLog->users->lname ?? '' }},
-                                                Time - {{ \Carbon\Carbon::parse($latestLog->created_at)->format('d M Y, h:i A') }})
-                                                
-                                            </small>
+                                        <small class="text-secondary ms-1">
+                                            (Locked By - {{ $latestLog->users->fname ?? '' }} {{ $latestLog->users->lname ?? '' }},
+                                            Time - {{ \Carbon\Carbon::parse($latestLog->created_at)->format('d M Y, h:i A') }})
+
+                                        </small>
                                         @endif
                                     </button>
 
@@ -2656,7 +2682,7 @@
 
                                 <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
                                     <div><strong>Instructor:</strong> {{ $defLesson->instructor->fname ?? '' }} {{ $defLesson->instructor->lname ?? '' }}</div>
-                                    <div><strong>License No:</strong> {{ $instructor_lic_no }}</div>
+                                    <div><strong>Licence No:</strong> {{ $instructor_lic_no }}</div>
                                     <div><strong>Resource:</strong> {{ $defLesson->resource->name ?? 'N/A' }}</div>
                                     <div><strong>Lesson Date:</strong> {{ $defLesson?->lesson_date ? \Carbon\Carbon::parse($defLesson->lesson_date)->format('d/m/Y') : 'N/A' }}</div>
                                     <div><strong>Start Time:</strong> {{ $defLesson?->start_time ? \Carbon\Carbon::parse($defLesson?->start_time)->format('h:i A') : 'N/A' }}</div>
@@ -2726,7 +2752,7 @@
                                             {{ old("task_comment_def.$task->id.$task->def_lesson_id", $selectedComment) }}
                                             </textarea>
                                         </div>
-                                        @endforeach 
+                                        @endforeach
                                     </div>
                                     <div class="accordion-item">
                                         @if($task->task->courseLesson->course->enable_cbta==1)
@@ -2822,36 +2848,36 @@
                                     </div>
                                     <!-- // Logs -->
                                     @if(!empty($grouped_customLogs) && $grouped_customLogs->count() > 0)
-                                        <?php 
-                                            $lessonLogs = $grouped_customLogs->get($defLessonId, collect()); // <-- safe fallback
-                                        ?>
-                                        @if($lessonLogs->isNotEmpty())
-                                            <div class="accordion-body mt-3">
-                                                <h5 class="text-primary mb-2">
-                                                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Training Logs
-                                                </h5>
-                                                <table class="table table-striped table-bordered align-middle mb-0">
-                                                    <thead class="table-light text-center">
-                                                        <tr>
-                                                            <th scope="col">User</th>
-                                                            <!-- <th scope="col">Lesson</th> -->
-                                                            <th scope="col">Status</th>
-                                                            <th scope="col">Date</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach($lessonLogs as $log)
-                                                            <tr>
-                                                                <td>{{ $log->users->fname ?? '' }} {{ $log->users->lname ?? '' }}</td>
-                                                                <!-- <td>{{ $log->lesson->lesson_title ?? '' }}</td> -->
-                                                                <td>{{ $log->is_locked ? 'Locked' : 'Unlocked' }}</td>
-                                                                <td>{{ $log->created_at->format('d M Y, h:i A') }}</td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        @endif
+                                    <?php
+                                    $lessonLogs = $grouped_customLogs->get($defLessonId, collect()); // <-- safe fallback
+                                    ?>
+                                    @if($lessonLogs->isNotEmpty())
+                                    <div class="accordion-body mt-3">
+                                        <h5 class="text-primary mb-2">
+                                            <i class="bi bi-exclamation-triangle-fill me-2"></i> Training Logs
+                                        </h5>
+                                        <table class="table table-striped table-bordered align-middle mb-0">
+                                            <thead class="table-light text-center">
+                                                <tr>
+                                                    <th scope="col">User</th>
+                                                    <!-- <th scope="col">Lesson</th> -->
+                                                    <th scope="col">Status</th>
+                                                    <th scope="col">Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($lessonLogs as $log)
+                                                <tr>
+                                                    <td>{{ $log->users->fname ?? '' }} {{ $log->users->lname ?? '' }}</td>
+                                                    <!-- <td>{{ $log->lesson->lesson_title ?? '' }}</td> -->
+                                                    <td>{{ $log->is_locked ? 'Locked' : 'Unlocked' }}</td>
+                                                    <td>{{ $log->created_at->format('d M Y, h:i A') }}</td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    @endif
                                     @endif
                                     <!-- // End Logs -->
                                     <div class="btn-container">

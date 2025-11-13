@@ -97,9 +97,14 @@
                 @endif<br>
         @endif
         <!-- ATO Num -->
-         @if(!empty($event->course->ato_num))
-            <strong>Ato Num :</strong>   {{ strtoupper($event->course->ato_num) }}
-          @endif
+      @if(!empty($event->course->ato_num))
+        @php
+            $atoNum = $event->course->ato_num;
+            // Remove prefixes "easa-" or "uk-" (case-insensitive)
+            $atoNum = preg_replace('/^(easa-|uk-)/i', '', $atoNum);
+        @endphp
+        <strong>ATO Num:</strong> {{ strtoupper($atoNum) }}
+    @endif
 
   
     </div>

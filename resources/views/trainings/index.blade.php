@@ -362,9 +362,9 @@
                     <div id="total_simulator_time_error" class="text-danger error_e"></div>
                 </div>
 
-                <!-- License Number (Extracted from user profile) -->
+                <!-- Licence Number (Extracted from user profile) -->
                 <div class="col-md-6">
-                    <label class="form-label">Student License Number</label>    
+                    <label class="form-label">Student Licence Number</label>    
                     <input type="text" name="std_licence_number" class="form-control" id="std_licence_number" value="">
                     <div id="std_licence_number_error" class="text-danger error_e"></div>
                 </div>
@@ -607,7 +607,7 @@ $(document).on('change', 'select[name^="lesson_data"][name$="[instructor_id]"]',
                 if (response.success) {
                     licenseInput.val(response.instructor_licence_number || '');
                     if (!response.instructor_licence_number) {
-                        alert("Instructor license number not found.");
+                        alert("Instructor Licence number not found.");
                     }
                 } else {
                     licenseInput.val('');
@@ -616,8 +616,8 @@ $(document).on('change', 'select[name^="lesson_data"][name$="[instructor_id]"]',
             },
             error: function () {
                 licenseInput.val('');
-                console.error("Failed to fetch license number");
-                alert("An error occurred while fetching the license number.");
+                console.error("Failed to fetch Licence  number");
+                alert("An error occurred while fetching the Licence number.");
             }
         });
     } else {
@@ -733,7 +733,7 @@ $(document).ready(function() {
                     var instructorOptions = '<option value="">Select Instructor</option>';
                     if (response.instructors && response.instructors.length > 0) {  
                         instructorsdata = response.instructors;
-
+                        
                         $.each(instructorsdata, function(index, instructor) {
                             var selected = instructor.id == selectedInstructor ? 'selected' : '';
                             instructorOptions += '<option value="' + instructor.id + '" ' + selected + '>' + instructor.fname + ' ' + instructor.lname + '</option>';
@@ -795,11 +795,11 @@ $(document).ready(function() {
                 success: function(response) { 
                     if (response.success) {
                         var instructorCheckbox = isEditModal ? $('#edit_is_instructor_checkbox') : $('#is_instructor_checkbox');
-                        // Update license number if available
+                        // Update Licence number if available
                         if (response.licence_number) {
                             licenceNumberField.val(response.licence_number);
                         } else {
-                            alert('Student License number not found!');
+                            alert('Student Licence number not found!');
                             licenceNumberField.val('');
                         }
                         // Store the previously selected course (if available)
@@ -818,7 +818,7 @@ $(document).ready(function() {
                         courseDropdown.html(courseOptions); // Update dropdown
                     } else {
                         licenceNumberField.val('');
-                        alert('License number not found!');
+                        alert('Licence number not found!');
                         courseDropdown.html('<option value="">Select Course</option>'); // Clear courses
                     }
                 },
@@ -876,10 +876,9 @@ $(document).ready(function() {
                     let lessons = response.lessons;
                     resourcesdata = response.resources; 
                      instructorsdata = response.instructors;
+                    
                      all_instructors = response.all_ou_instructor;
                      course = response.course;
-
-                        console.log("course.enable_mp_lifus:", course.enable_mp_lifus);
 
                         // 🔹 Function to handle rank visibility
                         function toggleRankOptions(selectSelector, enableValue) {
@@ -982,8 +981,7 @@ $(document).ready(function() {
                     const selectedResource = event.resource_id;
                     const selectedCourse = event.course_id;
                     const rank = event.rank;
-                   // console.log(event.event_lessons);
-                     console.log("rank", rank);
+                 
                     if(rank == null){
                         $('#edit_rank').val(0);
 
@@ -1151,7 +1149,7 @@ $(document).ready(function() {
                                 <div id="lesson_data_${lessonId}_destination_airfield_error" class="text-danger error_e"></div>
                             </div>  
                             <div class="col-md-6">
-                                <label class="form-label">Instructor License Number</label>
+                                <label class="form-label">Instructor Licence Number</label>
                                 <input type="text" name="lesson_data[${lessonId}][instructor_license_number]" class="form-control" id="instructor_license_number" value="" readonly>
                                 <div id="lesson_data_${lessonId}_instructor_license_number_error" class="text-danger error_e"></div>
                             </div>
@@ -1238,8 +1236,7 @@ $(document).ready(function() {
 
     let lessonIndex = 0;
 
-    function renderLessonBox(lesson, container, prefillData = {}, index = null, mode, instructor, course) {  
-        
+    function renderLessonBox(lesson, container, prefillData = {}, index = null, mode, instructor, course) { 
         const errorSuffix = mode === 'update' ? '_error_up' : '_error';
         const currentIndex = index !== null ? index : lessonIndex++;
         const isFirstLesson = currentIndex === 0;
@@ -1272,14 +1269,25 @@ $(document).ready(function() {
         role2 = role2 ? String(role2) : '';
 
         let isCurrentUserInstructor = currentUser.role === 'instructor';
-        instructorOptions  = instructor.filter(i => i.id != excludedInstructorId) 
+     
+        // instructorOptions  = instructor.filter(i => i.id != excludedInstructorId) 
+        //                         .map(i => {
+        //                             let selected = '', disabled = '';
+        //                             if (isCurrentUserInstructor && i.id == currentUser.id) selected = 'selected';
+        //                             else if (isCurrentUserInstructor) disabled = 'disabled';
+        //                             else if (i.id == instructor_id) selected = 'selected';
+        //                             return `<option value="${i.id}" ${selected} ${disabled}>${i.fname} ${i.lname}</option>`;
+        //                         }).join('');
+
+        instructorOptions = instructor
+                                .filter(i => i.id != excludedInstructorId)
                                 .map(i => {
-                                    let selected = '', disabled = '';
-                                    if (isCurrentUserInstructor && i.id == currentUser.id) selected = 'selected';
-                                    else if (isCurrentUserInstructor) disabled = 'disabled';
-                                    else if (i.id == instructor_id) selected = 'selected';
-                                    return `<option value="${i.id}" ${selected} ${disabled}>${i.fname} ${i.lname}</option>`;
-                                }).join('');
+                                    let selected = '';
+                                    if (i.id == instructor_id) selected = 'selected';
+                                    return `<option value="${i.id}" ${selected}>${i.fname} ${i.lname}</option>`;
+                                })
+                                .join('');
+                                                        
                             
         let resourceOptions = resourcesdata.filter(r => { 
                 if (lessonType === 'groundschool') {
@@ -1352,7 +1360,7 @@ $(document).ready(function() {
                         <div id="lesson_data_${currentIndex}_destination_airfield${errorSuffix}" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Instructor License Number</label>
+                        <label class="form-label">Instructor Licence Number</label>
                         <input type="text" name="lesson_data[${currentIndex}][instructor_license_number]" class="form-control" value="${instructor_license_number}" readonly>
                         <div id="lesson_data_${currentIndex}_instructor_license_number${errorSuffix}" class="text-danger error_e"></div>
                     </div>
@@ -1507,8 +1515,8 @@ $(document).ready(function() {
             //         }
             //     },
             //     error: function () {
-            //         $licenseInput.val('');
-            //         alert("Error fetching license number.");
+            //         $licenseInput.val(''); 
+            //         alert("Error fetching Licence number.");
             //     }
             // });
         }

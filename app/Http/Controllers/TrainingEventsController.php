@@ -130,6 +130,7 @@ class TrainingEventsController extends Controller
 
 
                 $trainingEvents = $trainingEvents_instructorQuery->whereIn('id', $eventIds)->get();
+                
                 $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations)
                     ->where('entry_source', "instructor")
                     ->where('student_id', $currentUser->id)
@@ -138,19 +139,21 @@ class TrainingEventsController extends Controller
                         'competencyGradings'
                     ])->get();
             } else {
+              //  dd($currentUser->id);
                 $trainingEvents = $trainingEventsQuery
                     ->where('student_id', $currentUser->id)
-                    ->where(function ($query) use ($currentUser) {
-                        $query->whereHas('taskGradings', function ($q) use ($currentUser) {
-                            $q->where('user_id', $currentUser->id);
-                        })->orWhereHas('competencyGradings', function ($q) use ($currentUser) {
-                            $q->where('user_id', $currentUser->id);
-                        })->orWhereHas('overallAssessments', function ($q) use ($currentUser) {
-                            $q->where('user_id', $currentUser->id);
-                        });
-                    })
+                    // ->where(function ($query) use ($currentUser) {
+                    //     $query->whereHas('taskGradings', function ($q) use ($currentUser) {
+                    //         $q->where('user_id', $currentUser->id);
+                    //      })->orWhereHas('competencyGradings', function ($q) use ($currentUser) {
+                    //         $q->where('user_id', $currentUser->id);
+                    //     })->orWhereHas('overallAssessments', function ($q) use ($currentUser) {
+                    //         $q->where('user_id', $currentUser->id);
+                    //      });
+                    // })
                     ->get();
                 $trainingEvents_instructor = [];
+               // dd($trainingEvents);
                  
                
 
@@ -185,7 +188,7 @@ class TrainingEventsController extends Controller
                 ->get();
               
 
-
+             
 
             $trainingEvents_instructor = TrainingEvents::where('ou_id', $currentUser->ou_id)
                 ->where('entry_source', "instructor")
@@ -220,7 +223,7 @@ class TrainingEventsController extends Controller
             $event->last_lesson_instructor = $event->lesson_instructor_users->firstWhere('id', $event->last_lesson_instructor_id);
         });
 
-
+       // dd($trainingEvents);
         return view('trainings.index', compact('groups', 'courses', 'instructors', 'organizationUnits', 'trainingEvents', 'resources', 'students', 'trainingEvents_instructor'));
     }
 
@@ -2256,7 +2259,25 @@ class TrainingEventsController extends Controller
         $flightTime = $event->total_time ?? 0; // e.g., "10:00"
         $simulatorTime = $event->simulator_time ?? 0; // e.g., "2.00"
 
-        $recommendedBy = $event->recommendedInstructor; 
+         $recommendedBy = $event->recommendedInstructor; 
+           $licence1 = null;
+
+            if (!empty($event) && !empty($event->recommendedInstructor)) {
+                $recommendedBy = $event->recommendedInstructor;
+
+                if (!empty($recommendedBy->id)) {
+                    $document_info = UserDocument::where('user_id', $recommendedBy->id)->get();
+
+                    if ($document_info && $document_info->count() > 0) {
+                        // safely access first record and its property
+                        $firstDocument = $document_info->first();
+
+                        if (!empty($firstDocument->licence)) {
+                            $licence1 = $firstDocument->licence;
+                        }
+                    }
+                }
+            }
 
         // Progress breakdown from task_grading
        
@@ -2308,8 +2329,8 @@ class TrainingEventsController extends Controller
                  
                     $student->progress = $progress;
       
-
-      //  return view('trainings.course-completion-certificate', compact('event', 'student', 'course', 'firstLesson', 'hoursOfGroundschool', 'flightTime', 'simulatorTime', 'recommendedBy'));
+         
+      //  return view('trainings.course-completion-certificate', compact('event', 'student', 'course', 'firstLesson', 'hoursOfGroundschool', 'flightTime', 'simulatorTime', 'recommendedBy', 'licence1'));
 
         $pdf = PDF::loadView('trainings.course-completion-certificate', [
             'event' => $event,
@@ -2323,7 +2344,6 @@ class TrainingEventsController extends Controller
         ]);
 
         $filename = 'Certificate_' . Str::slug($student->fname . ' ' . $student->lname) . '.pdf';
-
         return $pdf->download($filename); 
     }
 
