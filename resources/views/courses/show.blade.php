@@ -237,7 +237,12 @@
                                         <i class="fa-solid fa-trash"></i> Delete
                                     </a>
                                     @endif
-
+                                    @if(checkAllowedModule('courses', 'copy_lesson.index')->isNotEmpty())
+                                    <!-- <a href="javascript:void(0)" class="btn btn-light copy-lesson-icon"
+                                        data-lesson-id="{{ encode_id($val->id) }}">
+                                        <i class="fa fa-copy" style="color:#0d6efd"></i> Copy
+                                    </a> -->
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -1026,6 +1031,83 @@ function generatePrerequisiteHtml(prerequisite, index) {
 //             }
 //         })
 // });
+
+$('.copy-lesson-icon').click(function () {
+
+    let lesson_id = $(this).data("lesson-id");
+
+    // Validate lesson_id
+    if (!lesson_id || lesson_id === "" || lesson_id === undefined) {
+        alert("Invalid lesson ID.");
+        return;
+    }
+
+    // Extract course_id from URL safely
+    let urlParts = window.location.pathname.split("/");
+    
+    let course_id = urlParts[3] ?? null;
+
+
+    if (!course_id) {
+        alert("Course ID not found in URL.");
+        return;
+    }
+
+    // Ask confirmation
+    if (!confirm("Are you sure you want to duplicate this lesson ?")) {
+        return;
+    }
+
+    let btn = $(this);
+    btn.css("pointer-events", "none"); // prevent double click
+
+    $.ajax({
+        url: "{{ url('copy_lesson') }}",
+        type: "POST",
+        data: {
+            course_id: course_id,
+            lesson_id: lesson_id,
+            _token: "{{ csrf_token() }}"
+        },
+
+        success: function (response) {
+
+            btn.css("pointer-events", "auto"); // re-enable
+
+            // Validate server response
+            if (!response || typeof response !== "object") {
+                alert("Unexpected server response.");
+                return;
+            }
+
+            // Laravel returns boolean true/false (not "true")
+            if (response.success === true || response.success === "true") { 
+                alert(response.message);
+                window.location.reload();
+                return;
+            }
+
+            // Error from server
+            alert(response.error || "Unable to copy lesson.");
+        },
+
+        error: function (xhr) {
+            btn.css("pointer-events", "auto");
+
+            let msg = "Server error: " + xhr.status;
+
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+                msg = xhr.responseJSON.error;
+            }
+
+            alert(msg);
+        }
+    });
+
+});
+
+
+
 </script>
 
 @endsection

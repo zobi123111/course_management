@@ -15,7 +15,7 @@ class SubLessonController extends Controller
     /**
         * SUB LESSON FUNCTIONS
     */    
-        public function createSubLesson(Request $request)
+     public function createSubLesson(Request $request)
     {
         $lesson = CourseLesson::findOrFail($request->lesson_id);
         $rules = [

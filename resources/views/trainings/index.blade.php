@@ -1279,14 +1279,23 @@ $(document).ready(function() {
         //                             return `<option value="${i.id}" ${selected} ${disabled}>${i.fname} ${i.lname}</option>`;
         //                         }).join('');
 
-        instructorOptions = instructor
-                                .filter(i => i.id != excludedInstructorId)
-                                .map(i => {
-                                    let selected = '';
-                                    if (i.id == instructor_id) selected = 'selected';
-                                    return `<option value="${i.id}" ${selected}>${i.fname} ${i.lname}</option>`;
-                                })
-                                .join('');
+    instructorOptions = instructor
+                        .filter(i => i.id != excludedInstructorId)
+                        .map(i => {
+                            let selected = '';
+
+                            // Auto-select current user if instructor AND no other selection exists
+                            if (isCurrentUserInstructor && !instructor_id && i.id == currentUser.id) {
+                                selected = 'selected';
+                            } 
+                            // OR preserve previously selected instructor
+                            else if (i.id == instructor_id) {
+                                selected = 'selected';
+                            }
+
+                            return `<option value="${i.id}" ${selected}>${i.fname} ${i.lname}</option>`;
+                        })
+                        .join('');
                                                         
                             
         let resourceOptions = resourcesdata.filter(r => { 
@@ -1311,11 +1320,11 @@ $(document).ready(function() {
                     <div class="col-md-6">
                         <label class="form-label">Instructor${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <select class="form-select" name="lesson_data[${currentIndex}][instructor_id]"
-                                ${isCurrentUserInstructor ? 'disabled' : ''}>
+                               >
                             <option value="">Select Instructor</option>
                             ${instructorOptions}
                         </select>
-                        ${isCurrentUserInstructor ? `<input type="hidden" name="lesson_data[${currentIndex}][instructor_id]" value="${currentUser.id}">` : ''}
+                    
                         <div id="lesson_data_${currentIndex}_instructor_id${errorSuffix}" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-6">
