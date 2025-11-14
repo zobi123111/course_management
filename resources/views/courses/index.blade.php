@@ -176,6 +176,10 @@
                                 <i class="fa-solid fa-trash"></i> Delete
                             </a>
                             @endif
+                            <!-- <a href="javascript:void(0)" class="btn btn-light course-copy-icon"
+                                data-course-id="{{ encode_id($val->id) }}">
+                                <i class="fa fa-copy"></i> Copy
+                            </a> -->
                         </div>
                     </div>
                 </div>
@@ -1676,7 +1680,6 @@
     });
 
 $(document).ready(function() {
-
     // 🔹 Function to toggle MP options
     function toggleMPOpions(checkboxSelector, selectSelector) {
         const checkbox = $(checkboxSelector);
@@ -1701,6 +1704,69 @@ $(document).ready(function() {
     // 🔹 Initialize for both Add & Edit sections
     toggleMPOpions("#enable_more_mp", "#enable_mp_lifus");
     toggleMPOpions("#edit_enable_more_mp", "#edit_enable_mp_lifus");
+});
+
+// Course Copy
+
+$('.course-copy-icon').click(function () {
+
+    let course_id = $(this).data("course-id");
+    
+     if (!course_id || course_id === "" || course_id === undefined) {
+        alert("Invalid Course ID.");
+        return;
+    }
+
+     if (!confirm("Are you sure you want to duplicate this lesson ?")) {
+        return;
+    }
+
+      let btn = $(this);
+        btn.css("pointer-events", "none"); 
+
+    $.ajax({
+        url: "{{ url('copy_course') }}",
+        type: "POST",
+        data: {
+            course_id: course_id,
+            _token: "{{ csrf_token() }}"
+        },
+
+        success: function (response) {
+
+            btn.css("pointer-events", "auto"); // re-enable
+
+            // Validate server response
+            if (!response || typeof response !== "object") {
+                alert("Unexpected server response.");
+                return;
+            }
+
+            // Laravel returns boolean true/false (not "true")
+            if (response.success === true || response.success === "true") { 
+                alert(response.message);
+                window.location.reload();
+                return;
+            }
+
+            // Error from server
+            alert(response.error || "Unable to copy Course.");
+        },
+
+        error: function (xhr) {
+            btn.css("pointer-events", "auto");
+
+            let msg = "Server error: " + xhr.status;
+
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+                msg = xhr.responseJSON.error;
+            }
+
+            alert(msg);
+        }
+    });
+
+
 });
 </script>
 

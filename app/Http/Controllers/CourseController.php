@@ -17,6 +17,8 @@ use App\Models\Resource;
 use App\Models\CourseResources;
 use App\Models\CourseDocuments;
 use App\Models\CourseCustomTime;
+use App\Models\CourseLesson;
+use App\Models\SubLesson;
 use Illuminate\Support\Facades\DB;
 
 
@@ -603,6 +605,184 @@ $course->documents()
     //         return redirect()->route('course.show',['course_id' => encode_id($course_id)])->with('message', 'This lesson deleted successfully');
     //     }
     // }
+
+
+
+
+      public function copy_lesson(Request $request)
+        {
+            try {
+
+                // Validate incoming request
+                $request->validate([
+                    'course_id' => 'required',
+                    'lesson_id' => 'required',
+                ]);
+
+                $course_id = decode_id($request->course_id);
+                $lesson_id = decode_id($request->lesson_id);
+
+                // Validate decoded IDs
+                if (!$course_id || !$lesson_id) {
+                    return response()->json(['error' => 'Invalid course_id or lesson_id'], 400);
+                }
+
+                // Fetch original lesson
+                $lesson_info = CourseLesson::where('course_id', $course_id)
+                    ->where('id', $lesson_id)
+                    ->first();
+
+                if (!$lesson_info) {
+                    return response()->json(['error' => 'Lesson not found'], 404);
+                }
+
+                // Count duplicates
+                $baseTitle = $lesson_info->lesson_title;
+
+                $duplicateCount = CourseLesson::where('course_id', $course_id)
+                    ->where('lesson_title', 'LIKE', $baseTitle . ' - Duplicate %')
+                    ->count();
+
+                $newTitle = $baseTitle . " - Duplicate " . ($duplicateCount + 1);
+
+                // Prepare lesson payload
+                $lesson = [
+                    'course_id' => $lesson_info->course_id,
+                    'lesson_title' => $newTitle,
+                    'description' => $lesson_info->description,
+                    'comment' => $lesson_info->comment,
+                    'status' => $lesson_info->status,
+                    'grade_type' => $lesson_info->grade_type,
+                    'lesson_type' => $lesson_info->lesson_type,
+                    'enable_cbta' => $lesson_info->enable_cbta ?? 0,
+                    'instructor_cbta' => $lesson_info->instructor_cbta ?? 0,
+                    'examiner_cbta' => $lesson_info->examiner_cbta ?? 0,
+                    'custom_time_id' => $lesson_info->custom_time_type,
+                ];
+
+                // 🔥 Start Transaction (MOST IMPORTANT)
+                DB::beginTransaction();
+
+                // Create duplicated lesson
+                $create_lesson = CourseLesson::create($lesson);
+
+                if (!$create_lesson) {
+                    DB::rollBack();
+                    return response()->json(['error' => 'Unable to duplicate lesson.'], 500);
+                }
+
+                // Duplicate sub-lessons
+                $sublesson_info = SubLesson::where('lesson_id', $lesson_id)->get();
+             
+
+                foreach ($sublesson_info as $val) {
+
+                    $subLesson = [
+                        'lesson_id'    => $create_lesson->id,
+                        'title'        => $val->title,
+                        'description'  => $val->description,
+                        'grade_type'   => $val->grade_type,
+                        'status'       => $val->status,
+                        'is_mandatory' => $val->is_mandatory,
+                    ];
+
+                    $created = SubLesson::create($subLesson);
+
+                    if (!$created) {
+                        DB::rollBack();
+                        return response()->json(['error' => 'Unable to duplicate sub lessons'], 500);
+                    }
+                }
+
+                // 🔥 Commit only if everything succeeds
+                DB::commit();
+                Session::flash('message', 'Lesson created successfully.');
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Lesson duplicated successfully.'
+                ]);
+
+            } catch (\Exception $e) {
+
+                DB::rollBack();
+
+                return response()->json([
+                    'error' => 'Something went wrong.',
+                    'details' => $e->getMessage()
+                ], 500);
+            }
+        }
+
+    public function copy_course(Request $request)
+    {
+       $course_id = decode_id($request->course_id);
+       $course_info =  Courses::where('id', $course_id)->first();
+
+       $course = array(
+            'ou_id'                      => $course_info->ou_id,
+            'course_name'                => $course_info->course_name,
+            'description'                => $course_info->description,
+            'image'                      => $course_info->image ?? null,
+            'status'                     => $course_info->status,
+            'duration_type'              => $course_info->duration_type ?? null,
+            'duration_value'             => $course_info->duration_value ?? null,
+            'course_type'                => $course_info->course_type,
+            'enable_feedback'            => $course_info->enable_feedback,
+            'enable_custom_time_tracking'=> $course_info->enable_custom_time_tracking,
+            'enable_instructor_upload'   => $course_info->enable_instructor_upload,
+            'enable_groundschool_time'   => $course_info->enable_groundschool_time,
+            'groundschool_hours'         => $course_info->groundschool_hours ?? null,
+            'enable_simulator_time'      => $course_info->enable_simulator_time,
+            'simulator_hours'            => $request->simulator_hours ?? null,
+            'enable_custom_time_tracking'=> $course_info->enable_custom_time_tracking,
+            'custom_time_name'           => $course_info->custom_time_name ?? null,
+            'custom_time_hours'          => $course_info->custom_time_hours ?? null,
+            'enable_cbta'                => $course_info->enable_cbta ?? 0,
+            'enable_mp_lifus'            => $course_info->enable_mp_lifus ?? 0
+       );
+
+      // $create_course =  Courses::create($course);
+
+     $questions = TrainingFeedbackQuestion::where('course_id', $course_id)->first();
+     if(!empty($questions))
+     {
+        $questions = array(
+               // "course_id" => $create_course->id,
+                "question" =>  $questions->question ?? '',
+                "answer_type" =>  $questions->answer_type ?? ''
+        );
+
+      //  TrainingFeedbackQuestion::create($questions);
+     }
+
+      $custom_time = CourseCustomTime::where('course_id', $course_id)->first();
+      if(!empty($custom_time)){
+
+        $custom = array(
+          //  "course_id" => $create_course->id ,
+            "name"      => $custom_time->name,
+            "hours"      => $custom_time->hours
+        );
+       // CourseCustomTime::create($custom);      
+      }
+
+      // Course Documnet
+     $course_document = CourseDocuments::where('course_id', $course_id)->first();
+     if(!empty($course_document)){
+
+        $document = array(
+             "document_name" => $course_document->document_name,
+             "file_path" => $course_document->document_name ?? null
+        );
+       
+        CourseDocuments::create($document);
+           
+     }
+     
+    
+
+    }
+
 
 
 }

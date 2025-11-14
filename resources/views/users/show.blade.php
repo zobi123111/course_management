@@ -390,6 +390,7 @@
                     </div>
 
                     <!-- Medical Details -->
+                    
                     @if($document && $document->medical && !empty($document->medical_issuedby) && !empty($document->medical_class) && !empty($document->medical_issuedate))
                     <div class="col-md-12 mb-4">
                         <h5 class="text-muted mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>UK Medical Details</h5>
@@ -424,7 +425,8 @@
                     @endif
 
                     <!-- Second Medical Details -->
-                    @if($document && $document->medical_2 && !empty($document->medical_issuedby_2) && !empty($document->medical_class_2) && !empty($document->medical_issuedate_2))
+                
+                    @if($user->medical_2_required == 1)
                     <div class="col-md-12 mb-4">
                         <h5 class="text-muted mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>EASA Medical Details</h5>
                         <div class="d-flex flex-wrap align-items-center gap-3">
