@@ -972,7 +972,7 @@
                             }
                             if (value.easa_ato_number) {
                                 ato_number += "<option value='easa-" + value.easa_ato_number + "'>EASA ATO Number - " + value.easa_ato_number + "</option>";
-                                hasData = true;
+                                hasData = true; 
                             }
                         });
 
