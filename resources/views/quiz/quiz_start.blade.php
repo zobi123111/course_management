@@ -142,64 +142,104 @@
         <form id="quizForm" method="POST" action="">
             @csrf
             <div class="quiz-container position-relative">
-                @foreach($quiz->quizQuestions as $index => $question)
-                    <div class="question-box {{ $index === 0 ? 'active' : 'd-none' }}" data-index="{{ $index }}">
-                        <h5>Q{{ $index + 1 }}. {{ $question->question_text }}</h5>
-                        <input type="hidden" name="questions[{{ $question->id }}][id]" value="{{ $question->id }}">
+               @foreach($quiz->quizQuestions as $index => $quizQuestion)
+    @php
+        $q = $quizQuestion->question; // Shortcut for TopicQuestion
+    @endphp
 
-                        @if($question->question_type === 'single_choice')
-                            @foreach(['A', 'B', 'C', 'D'] as $option)
-                                @php $optionValue = $question->{'option_' . $option}; @endphp
-                                @if(!empty($optionValue))
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio"
-                                            name="questions[{{ $question->id }}][answer]"
-                                            value="{{ $option }}">
-                                        <label class="form-check-label">{{ $optionValue }}</label>
-                                    </div>
-                                @endif
-                            @endforeach
+    <div class="question-box {{ $index === 0 ? 'active' : 'd-none' }}" data-index="{{ $index }}">
 
-                        @elseif($question->question_type === 'multiple_choice')
-                            @foreach(['A', 'B', 'C', 'D'] as $option)
-                                @php $optionValue = $question->{'option_' . $option}; @endphp
-                                @if($optionValue)
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox"
-                                            name="questions[{{ $question->id }}][answer][]"
-                                            value="{{ $option }}">
-                                        <label class="form-check-label">{{ $optionValue }}</label>
-                                    </div>
-                                @endif
-                            @endforeach
+        <!-- Question Text -->
+        <h5>Q{{ $index + 1 }}. {{ $q->question_text }}</h5>
 
-                        @elseif($question->question_type === 'text')
-                            <textarea class="form-control mt-2" name="questions[{{ $question->id }}][answer]" rows="3" placeholder="Type your answer here..."></textarea>
+        <input type="hidden" name="questions[{{ $quizQuestion->id }}][id]" value="{{ $quizQuestion->id }}">
 
-                        @elseif($question->question_type === 'sequence')
-                            <p>Drag and drop to arrange the options in correct order:</p>
-                            <ul id="sequence-{{ $question->id }}" class="list-group">
-                                @foreach(['A', 'B', 'C', 'D'] as $option)
-                                    @php $optionValue = $question->{'option_' . $option}; @endphp
-                                    @if($optionValue)
-                                        <li class="list-group-item" data-option="{{ $option }}">{{ $optionValue }}</li>
-                                    @endif
-                                @endforeach
-                            </ul>
-                            <input type="hidden" name="questions[{{ $question->id }}][answer]" id="sequence-input-{{ $question->id }}">
-                        @endif
+        {{-- Single Choice --}}
+        @if($q->question_type === 'single_choice')
+            @foreach(['A', 'B', 'C', 'D'] as $option)
+                @php $optionValue = $q->{'option_' . $option}; @endphp
 
-                        <div class="mt-4 d-flex justify-content-between">
-                            <button type="button" class="btn btn-secondary prev-btn" {{ $index == 0 ? 'disabled' : '' }}>Previous</button>
-
-                            @if($index < count($quiz->quizQuestions) - 1)
-                                <button type="button" class="btn btn-primary next-btn">Next Question</button>
-                            @else
-                                <button type="submit" class="btn btn-success">Submit Quiz</button>
-                            @endif
-                        </div>
+                @if(!empty($optionValue))
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio"
+                            name="questions[{{ $quizQuestion->id }}][answer]"
+                            value="{{ $option }}">
+                        <label class="form-check-label">{{ $optionValue }}</label>
                     </div>
+                @endif
+            @endforeach
+        @endif
+
+
+        {{-- Multiple Choice --}}
+        @if($q->question_type === 'multiple_choice')
+            @foreach(['A', 'B', 'C', 'D'] as $option)
+                @php $optionValue = $q->{'option_' . $option}; @endphp
+
+                @if(!empty($optionValue))
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox"
+                            name="questions[{{ $quizQuestion->id }}][answer][]"
+                            value="{{ $option }}">
+                        <label class="form-check-label">{{ $optionValue }}</label>
+                    </div>
+                @endif
+            @endforeach
+        @endif
+
+
+        {{-- Text Type --}}
+        @if($q->question_type === 'text')
+            <textarea class="form-control mt-2"
+                name="questions[{{ $quizQuestion->id }}][answer]"
+                rows="3"
+                placeholder="Type your answer here..."></textarea>
+        @endif
+
+
+        {{-- Sequence Type --}}
+        @if($q->question_type === 'sequence')
+            <p>Drag and drop to arrange the options in correct order:</p>
+
+            <ul id="sequence-{{ $quizQuestion->id }}" class="list-group">
+                @foreach(['A', 'B', 'C', 'D'] as $option)
+                    @php $optionValue = $q->{'option_' . $option}; @endphp
+
+                    @if(!empty($optionValue))
+                        <li class="list-group-item" data-option="{{ $option }}">
+                            {{ $optionValue }}
+                        </li>
+                    @endif
                 @endforeach
+            </ul>
+
+            <input type="hidden"
+                name="questions[{{ $quizQuestion->id }}][answer]"
+                id="sequence-input-{{ $quizQuestion->id }}">
+        @endif
+
+
+        <!-- Navigation -->
+        <div class="mt-4 d-flex justify-content-between">
+            <button type="button" class="btn btn-secondary prev-btn"
+                {{ $index === 0 ? 'disabled' : '' }}>
+                Previous
+            </button>
+
+            @if($index < count($quiz->quizQuestions) - 1)
+                <button type="button" class="btn btn-primary next-btn">
+                    Next Question
+                </button>
+            @else
+                <button type="submit" class="btn btn-success">
+                    Submit Quiz
+                </button>
+            @endif
+        </div>
+
+    </div>
+@endforeach
+
             </div>
         </form>
     </div>

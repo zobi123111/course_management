@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('training_events', function (Blueprint $table) {
-            $table->softDeletes();
+        Schema::create('quiz_topics', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('quiz_id');
+            $table->unsignedBigInteger('topic_id');
+            $table->integer('question_quantity')->default(0);
+            $table->timestamps();
         });
     }
 
@@ -21,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('training_events', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-        });
+        Schema::dropIfExists('quiz_topics');
     }
 };

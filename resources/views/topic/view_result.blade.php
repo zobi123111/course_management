@@ -44,45 +44,33 @@
 
     @foreach($quiz->quizQuestions as $index => $question)
         @php
-            $isCorrect = false;
             $userAnswer = $answers[$question->id] ?? null;
-            if($userAnswer){
-                $user = strtolower($userAnswer->selected_option);
-                $correct = strtolower($question->question->correct_option);
-
-                $userArr = array_map('trim', explode(',', $user));
-                $correctArr = array_map('trim', explode(',', $correct));
-
-                sort($userArr);
-                sort($correctArr);
-
-                $isCorrect = ($userArr == $correctArr);
-            }
+            $isCorrect = $userAnswer ? $userAnswer->is_correct : false;
         @endphp
 
         <div class="card mb-4 shadow-sm">
             <div class="card-body">
                 <h5 class="card-title">
-                    {{ $loop->iteration }}. {{ $question->question->question_text }}
+                    {{ $loop->iteration }}. {{ $question->question_text }}
                 </h5>
 
-                @if(in_array($question->question->question_type, ['single_choice', 'multiple_choice', 'sequence']))
+                @if(in_array($question->question_type, ['single_choice', 'multiple_choice', 'sequence']))
                     <ul class="list-group mb-3">
                         @foreach(['A', 'B', 'C', 'D'] as $opt)
                             @php $optKey = 'option_' . $opt; @endphp
-                            @if($question->question->$optKey)
+                            @if($question->$optKey)
                                 <li class="list-group-item
                                     @if($question->correct_option == $opt) list-group-item-success @endif
                                     @if($userAnswer && $userAnswer->answer_text == $opt && !$isCorrect) list-group-item-danger @endif
                                 ">
-                                    <strong>{{ $opt }}:</strong> {{ $question->question->$optKey }}
+                                    <strong>{{ $opt }}:</strong> {{ $question->$optKey }}
                                 </li>
                             @endif
                         @endforeach
                     </ul>
                 @endif
 
-                <p class="text-muted"><strong>Type:</strong> {{ $question->question->question_type }}</p>
+                <p class="text-muted"><strong>Type:</strong> {{ $question->question_type }}</p>
 
                 <p><strong>Your Answer:</strong>
                     @if(in_array($question->question_type, ['multiple_choice', 'sequence']))
@@ -100,13 +88,13 @@
                 </p>
 
                 <p><strong>Correct Answer:</strong>
-                    @if(in_array($question->question->question_type, ['multiple_choice', 'sequence']))
+                    @if(in_array($question->question_type, ['multiple_choice', 'sequence']))
                         @php
-                            $decodedCorrect = $question->question->correct_option;
+                            $decodedCorrect = $question->correct_option;
                         @endphp
                         {{ $decodedCorrect }}
                     @else
-                        {{ $question->question->correct_option }}
+                        {{ $question->correct_option }}
                     @endif
                 </p>
 

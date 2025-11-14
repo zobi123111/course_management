@@ -13,10 +13,9 @@ return new class extends Migration
     {
         Schema::create('quiz_questions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('quiz_id')->constrained('quizs')->onDelete('cascade');
-            $table->text('question_text');
-            $table->json('options');  // Multiple choices stored as JSON
-            $table->char('correct_option', 1);  // 'A', 'B', 'C', 'D'
+            $table->integer('quiz_id');
+            $table->integer('topic_id');
+            $table->integer('question_id');
             $table->timestamps();
         });
     }

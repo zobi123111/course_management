@@ -11,8 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('quiz_questions', function (Blueprint $table) {
-            $table->string('correct_option', 255)->nullable()->change();
+        Schema::create('topics', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->text('description')->nullable();
         });
     }
 
@@ -21,8 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('quiz_questions', function (Blueprint $table) {
-            $table->char('correct_option', 1)->nullable(false)->change();
-        });
+        Schema::dropIfExists('topics');
     }
 };
