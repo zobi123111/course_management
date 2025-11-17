@@ -238,10 +238,10 @@
                                     </a>
                                     @endif
                                     @if(checkAllowedModule('courses', 'copy_lesson.index')->isNotEmpty())
-                                    <!-- <a href="javascript:void(0)" class="btn btn-light copy-lesson-icon"
+                                    <a href="javascript:void(0)" class="btn btn-light copy-lesson-icon"
                                         data-lesson-id="{{ encode_id($val->id) }}">
                                         <i class="fa fa-copy" style="color:#0d6efd"></i> Copy
-                                    </a> -->
+                                    </a>
                                     @endif
                                 </div>
                             </div>

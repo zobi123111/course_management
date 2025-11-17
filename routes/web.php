@@ -326,6 +326,7 @@ Route::get('/training/unarchieveUser', [TrainingEventsController::class, 'unarch
 
 Route::post('/unarchive-user', [TrainingEventsController::class, 'unarchive'])->name('unarchive.index');
 
+Route::post('/copy_course', [CourseController::class, 'copy_course'])->name('copy_course.index');
 
 
     

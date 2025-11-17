@@ -1717,7 +1717,7 @@ $('.course-copy-icon').click(function () {
         return;
     }
 
-     if (!confirm("Are you sure you want to duplicate this lesson ?")) {
+     if (!confirm("Are you sure you want to duplicate this Course ?")) {
         return;
     }
 
@@ -1743,7 +1743,7 @@ $('.course-copy-icon').click(function () {
             }
 
             // Laravel returns boolean true/false (not "true")
-            if (response.success === true || response.success === "true") { 
+            if (response.status === true || response.status === "true") { 
                 alert(response.message);
                 window.location.reload();
                 return;
