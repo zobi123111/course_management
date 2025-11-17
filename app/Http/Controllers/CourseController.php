@@ -637,13 +637,39 @@ $course->documents()
                 }
 
                 // Count duplicates
-                $baseTitle = $lesson_info->lesson_title;
+               // $baseTitle = $lesson_info->lesson_title;
+               $originalTitle = $lesson_info->lesson_title;
+
+                // CHECK IF THE LESSON IS ALREADY A DUPLICATE
+          $originalTitle = $lesson_info->lesson_title;
+
+            // CASE A: The title already has a duplicate at the end → Nested duplication
+            if (preg_match('/Duplicate \d+$/', $originalTitle)) {
+
+                // This duplicate becomes the base for nested copies
+                $duplicateBase = $originalTitle;
 
                 $duplicateCount = CourseLesson::where('course_id', $course_id)
-                    ->where('lesson_title', 'LIKE', $baseTitle . ' - Duplicate %')
+                    ->where('lesson_title', 'LIKE', $duplicateBase . ' - Duplicate %')
                     ->count();
 
-                $newTitle = $baseTitle . " - Duplicate " . ($duplicateCount + 1);
+                $newTitle = $duplicateBase . ' - Duplicate ' . ($duplicateCount + 1);
+
+            } else {
+
+                // CASE B: Original title → Only count direct duplicates
+                $baseTitle = $originalTitle;
+
+                // Match ONLY: "Profile 3 - Duplicate X"
+                // NOT: "Profile 3 - Duplicate 1 - Duplicate 1"
+                $duplicateCount = CourseLesson::where('course_id', $course_id)
+                    ->where('lesson_title', 'REGEXP', '^' . preg_quote($baseTitle) . ' - Duplicate [0-9]+$')
+                    ->count();
+
+                $newTitle = $baseTitle . ' - Duplicate ' . ($duplicateCount + 1);
+            }
+
+                
 
                 // Prepare lesson payload
                 $lesson = [
@@ -713,76 +739,215 @@ $course->documents()
             }
         }
 
-    public function copy_course(Request $request)
-    {
-       $course_id = decode_id($request->course_id);
-       $course_info =  Courses::where('id', $course_id)->first();
+   public function copy_course(Request $request)
+    { 
+        // ----------------------------------Start Copy Course ----------------------------------------------
 
-       $course = array(
+        // ------------ VALIDATION ------------
+        $request->validate([
+            'course_id' => 'required|string',
+        ]);
+
+        // ------------ DECODE COURSE ID ------------
+        $course_id = decode_id($request->course_id);
+      
+
+        if (!$course_id || !is_numeric($course_id)) {
+            return response()->json(['status' => false, 'message' => 'Invalid Course ID'], 400);
+        }
+
+        // ------------ FETCH MAIN COURSE ------------
+        $course_info = Courses::find($course_id);
+       
+
+        if (!$course_info) {
+            return response()->json(['status' => false, 'message' => 'Course not found'], 404);
+        }
+
+     
+
+          $baseTitle = $course_info->course_name;
+
+        if (preg_match('/Duplicate \d+$/', $baseTitle)) {
+            $duplicateBase = $baseTitle;
+            $duplicateCount = Courses::where('course_name', 'LIKE', $duplicateBase . ' - Duplicate %')
+                ->where('course_name', 'REGEXP', '^' . preg_quote($duplicateBase) . ' - Duplicate [0-9]+$')
+                ->count();
+
+            $newTitle = $duplicateBase . ' - Duplicate ' . ($duplicateCount + 1);
+
+        } else {
+            $duplicateCount = Courses::where('course_name', 'REGEXP',
+                    '^' . preg_quote($baseTitle) . ' - Duplicate [0-9]+$'
+                )
+                ->count();
+
+            $newTitle = $baseTitle . ' - Duplicate ' . ($duplicateCount + 1);
+        }
+
+
+        // ------------ PREPARE COURSE PAYLOAD ------------
+        $course = [
             'ou_id'                      => $course_info->ou_id,
-            'course_name'                => $course_info->course_name,
+            'course_name'                => $newTitle,
             'description'                => $course_info->description,
-            'image'                      => $course_info->image ?? null,
+            'image'                      => $course_info->image,
             'status'                     => $course_info->status,
-            'duration_type'              => $course_info->duration_type ?? null,
-            'duration_value'             => $course_info->duration_value ?? null,
+            'duration_type'              => $course_info->duration_type,
+            'duration_value'             => $course_info->duration_value,
             'course_type'                => $course_info->course_type,
             'enable_feedback'            => $course_info->enable_feedback,
             'enable_custom_time_tracking'=> $course_info->enable_custom_time_tracking,
             'enable_instructor_upload'   => $course_info->enable_instructor_upload,
             'enable_groundschool_time'   => $course_info->enable_groundschool_time,
-            'groundschool_hours'         => $course_info->groundschool_hours ?? null,
+            'groundschool_hours'         => $course_info->groundschool_hours,
             'enable_simulator_time'      => $course_info->enable_simulator_time,
-            'simulator_hours'            => $request->simulator_hours ?? null,
-            'enable_custom_time_tracking'=> $course_info->enable_custom_time_tracking,
-            'custom_time_name'           => $course_info->custom_time_name ?? null,
-            'custom_time_hours'          => $course_info->custom_time_hours ?? null,
-            'enable_cbta'                => $course_info->enable_cbta ?? 0,
-            'enable_mp_lifus'            => $course_info->enable_mp_lifus ?? 0
-       );
+            'simulator_hours'            => $course_info->simulator_hours,
+            'custom_time_name'           => $course_info->custom_time_name,
+            'custom_time_hours'          => $course_info->custom_time_hours,
+            'enable_cbta'                => $course_info->enable_cbta,
+            'enable_mp_lifus'            => $course_info->enable_mp_lifus,
+            'enable_prerequisites'       => $course_info->enable_prerequisites,
+        ];
 
-      // $create_course =  Courses::create($course);
-
-     $questions = TrainingFeedbackQuestion::where('course_id', $course_id)->first();
-     if(!empty($questions))
-     {
-        $questions = array(
-               // "course_id" => $create_course->id,
-                "question" =>  $questions->question ?? '',
-                "answer_type" =>  $questions->answer_type ?? ''
-        );
-
-      //  TrainingFeedbackQuestion::create($questions);
-     }
-
-      $custom_time = CourseCustomTime::where('course_id', $course_id)->first();
-      if(!empty($custom_time)){
-
-        $custom = array(
-          //  "course_id" => $create_course->id ,
-            "name"      => $custom_time->name,
-            "hours"      => $custom_time->hours
-        );
-       // CourseCustomTime::create($custom);      
-      }
-
-      // Course Documnet
-     $course_document = CourseDocuments::where('course_id', $course_id)->first();
-     if(!empty($course_document)){
-
-        $document = array(
-             "document_name" => $course_document->document_name,
-             "file_path" => $course_document->document_name ?? null
-        );
+        // CREATE NEW COURSE
+          $create_course = Courses::create($course);
        
-        CourseDocuments::create($document);
-           
-     }
-     
-    
 
+        // ------------ COPY GROUPS ------------
+        $group_info = CourseGroup::where('courses_id', $course_id)->get();
+
+        if ($group_info->isNotEmpty()) {
+            foreach ($group_info as $row) {
+                CourseGroup::create([
+                    "courses_id" => $create_course->id,
+                    "group_id"   => $row->group_id
+                ]);
+            }
+        }
+      // ------------ Course Prerequisite Detail ------------
+
+      $CoursePrerequisite =  CoursePrerequisite::where('course_id', $course_id)->get();
+       if ($CoursePrerequisite->isNotEmpty()) {
+                  foreach ($CoursePrerequisite as $row) {
+                CoursePrerequisite::create([
+                        'course_id'           => $create_course->id,
+                        'prerequisite_detail' => $row->prerequisite_detail,
+                        'prerequisite_type'    => $row->prerequisite_type,
+                    ]);
+            }
+       }
+
+
+
+        // ------------ COPY RESOURCES ------------
+        $resource_info = CourseResources::where('courses_id', $course_id)->get();
+
+        if ($resource_info->isNotEmpty()) {
+            foreach ($resource_info as $val) {
+                CourseResources::create([
+                    "courses_id"   => $create_course->id,
+                    "resources_id" => $val->resources_id
+                ]);
+            }
+        }
+
+        // ------------ COPY FEEDBACK QUESTIONS ------------
+        $questions = TrainingFeedbackQuestion::where('course_id', $course_id)->get();
+         
+        if ($questions->isNotEmpty()) {
+            foreach ($questions as $val) {
+                TrainingFeedbackQuestion::create([
+                    "course_id"   => $create_course->id,
+                    "question"    => $val->question,
+                    "answer_type" => $val->answer_type
+               ]);
+            }
+         
+        }
+
+        // ------------ COPY CUSTOM TIME ------------
+        $custom_time = CourseCustomTime::where('course_id', $course_id)->get();
+         if ($custom_time->isNotEmpty()) {
+            foreach ($custom_time as $val) {
+              CourseCustomTime::create([
+                  "course_id" => $create_course->id,
+                   "name"      => $val->name ?? '',
+                    "hours"     =>is_numeric($val->hours) ? $val->hours : 0,
+            ]);
+            }
+        
+        }
+
+        // ------------ COPY COURSE DOCUMENTS ------------
+        $course_document = CourseDocuments::where('course_id', $course_id)->get();
+         if ($course_document->isNotEmpty()) {
+            foreach ($course_document as $val) {
+                CourseDocuments::create([
+                    "course_id"      => $create_course->id,
+                    "document_name"  => $val->document_name,
+                    "file_path"      => $val->file_path
+                ]);
+            }
+         
+        }
+
+    // ------------------------------------- Copy Course End---------------------------------------------------------
+
+    // ------------------------------------- Start Copy Lesson Start---------------------------------------------------------
+          $lesson_info = CourseLesson::where('course_id', $course_id)->get();
+
+            if ($lesson_info->isNotEmpty()) {
+                foreach ($lesson_info as $lessonRow) { 
+                    $lesson = [
+                        'course_id'       => $create_course->id,
+                        'lesson_title'    => $lessonRow->lesson_title,
+                        'description'     => $lessonRow->description,
+                        'comment'         => $lessonRow->comment,
+                        'status'          => $lessonRow->status,
+                        'grade_type'      => $lessonRow->grade_type,
+                        'lesson_type'     => $lessonRow->lesson_type,
+                        'enable_cbta'     => $lessonRow->enable_cbta ?? 0,
+                        'instructor_cbta' => $lessonRow->instructor_cbta ?? 0,
+                        'examiner_cbta'   => $lessonRow->examiner_cbta ?? 0,
+                        'custom_time_id'  => $lessonRow->custom_time_type,
+                    ];
+
+                  
+
+                    // Create lesson copy
+                    $create_lesson = CourseLesson::create($lesson);
+
+                    // Fetch sub-lessons of the ORIGINAL lesson
+                    $sublesson_info = SubLesson::where('lesson_id', $lessonRow->id)->get();
+
+                    if ($sublesson_info->isNotEmpty()) {
+
+                        foreach ($sublesson_info as $sub) {
+
+                            $subLesson = [
+                                'lesson_id'    => $create_lesson->id,
+                                'title'        => $sub->title,
+                                'description'  => $sub->description,
+                                'grade_type'   => $sub->grade_type,
+                                'status'       => $sub->status,
+                                'is_mandatory' => $sub->is_mandatory,
+                            ];
+
+                            SubLesson::create($subLesson);
+                        }
+                    }
+                }
+             }
+
+    // ------------------------------------- End Copy Lesson Start-----------------------------------------------------------
+
+
+        Session::flash('message', 'Course created successfully.');
+        return response()->json([
+            'status' => true,
+            'message' => 'Course copied successfully',
+        ]);
     }
-
-
 
 }

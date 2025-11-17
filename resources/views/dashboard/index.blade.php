@@ -326,125 +326,109 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 ?>
 
        
-           <td class="lic_rating_td">  
-    <?php 
-    $groupedEASA = [];
-    if (isset($ratingsByLicence['licence_1'])) {
-        foreach ($ratingsByLicence['licence_1'] as $ratings) {
-            $child_id = $ratings->rating_id;
-            $parent_id = $ratings->parent_id;
+ <td class="lic_rating_td">
+                <?php
+                $groupedEASA = [];
+                if (isset($ratingsByLicence['licence_1'])) {
+                    foreach ($ratingsByLicence['licence_1'] as $ratings) {
+                        $child_id = $ratings->rating_id;
+                        $parent_id = $ratings->parent_id;
 
-            if ($parent_id === null && $ratings->rating) {
-                $groupedEASA[$child_id] = [
-                    'parent' => $ratings->rating,
-                    'children' => [],
-                ];
-            } elseif ($ratings->rating) {
-                $parentRating = $ratings->parentRating;
-                $childRating = $ratings->rating;
+                        if ($parent_id === null && $ratings->rating) {
+                            $groupedEASA[$child_id] = [
+                                'parent' => $ratings->rating,
+                                'children' => [],
+                            ];
+                        } elseif ($ratings->rating) {
+                            $parentRating = $ratings->parentRating;
+                            $childRating = $ratings->rating;
 
-                if (!isset($groupedEASA[$parent_id])) {
-                    $groupedEASA[$parent_id] = [
-                        'parent' => $parentRating,
-                        'children' => [],
-                    ];
-                }
-                $groupedEASA[$parent_id]['children'][] = $childRating;
-            } else {
-                $parentRating = $ratings->parentRating;
-                $groupedEASA[$parent_id] = [
-                    'parent' => $parentRating,
-                    'children' => [],
-                ];
-            }
-        }
-    }
-
-    // -------------------------
-    // Sorting logic (same as controller)
-    // -------------------------
-    $getPriority = function ($rating) {
-        if (!$rating) return 999;
-
-        $r = $rating;
-
-        if (($r->is_fixed_wing || $r->is_rotary) && !$r->is_instructor && !$r->is_examiner) {
-            return 1;
-        }
-        if ($r->is_instructor) {
-            return 2;
-        }
-        if ($r->is_examiner) {
-            return 3;
-        }
-        return 999;
-    };
-
-    // Sort parent ratings
-    uasort($groupedEASA, function ($a, $b) use ($getPriority) {
-        $prioA = $getPriority($a['parent'] ?? null);
-        $prioB = $getPriority($b['parent'] ?? null);
-
-        if ($prioA !== $prioB) {
-            return $prioA <=> $prioB;
-        }
-
-        $nameA = strtolower($a['parent']->name ?? '');
-        $nameB = strtolower($b['parent']->name ?? '');
-        return $nameA <=> $nameB;
-    });
-
-    // Sort children under each parent
-    foreach ($groupedEASA as &$entry) {
-        if (!empty($entry['children'])) {
-            usort($entry['children'], function ($a, $b) use ($getPriority) {
-                $prioA = $getPriority($a ?? null);
-                $prioB = $getPriority($b ?? null);
-
-                if ($prioA !== $prioB) {
-                    return $prioA <=> $prioB;
+                            if (!isset($groupedEASA[$parent_id])) {
+                                $groupedEASA[$parent_id] = [
+                                    'parent' => $parentRating,
+                                    'children' => [],
+                                ];
+                            }
+                            $groupedEASA[$parent_id]['children'][] = $childRating;
+                        } else {
+                            $parentRating = $ratings->parentRating;
+                            $groupedEASA[$parent_id] = [
+                                'parent' => $parentRating,
+                                'children' => [],
+                            ];
+                        }
+                    }
                 }
 
-                $nameA = strtolower($a->name ?? '');
-                $nameB = strtolower($b->name ?? '');
-                return $nameA <=> $nameB;
-            });
-        }
-    }
-    unset($entry);
-    ?>
+                // -------------------------
+                // Sorting logic (same as controller)
+                // -------------------------
+                $getPriority = function ($rating) {
+                    if (!$rating) return 999;
 
-    @foreach ($groupedEASA as $entry) 
-        @php
-            // ✅ Determine color based on parentStatus (string like "Green, Red")
-            $color = '';
-            if (!empty($parentStatus)) {
-                if (str_contains($parentStatus, 'Green')) {
-                    $color = 'green';
-                } elseif (str_contains($parentStatus, 'Red')) {
-                    $color = 'red';
+                    $r = $rating;
+
+                    if (($r->is_fixed_wing || $r->is_rotary) && !$r->is_instructor && !$r->is_examiner) {
+                        return 1;
+                    }
+                    if ($r->is_instructor) {
+                        return 2;
+                    }
+                    if ($r->is_examiner) {
+                        return 3;
+                    }
+                    return 999;
+                };
+
+                // Sort parent ratings
+                uasort($groupedEASA, function ($a, $b) use ($getPriority) {
+                    $prioA = $getPriority($a['parent'] ?? null);
+                    $prioB = $getPriority($b['parent'] ?? null);
+
+                    if ($prioA !== $prioB) {
+                        return $prioA <=> $prioB;
+                    }
+
+                    $nameA = strtolower($a['parent']->name ?? '');
+                    $nameB = strtolower($b['parent']->name ?? '');
+                    return $nameA <=> $nameB;
+                });
+
+                // Sort children under each parent
+                foreach ($groupedEASA as &$entry) {
+                    if (!empty($entry['children'])) {
+                        usort($entry['children'], function ($a, $b) use ($getPriority) {
+                            $prioA = $getPriority($a ?? null);
+                            $prioB = $getPriority($b ?? null);
+
+                            if ($prioA !== $prioB) {
+                                return $prioA <=> $prioB;
+                            }
+
+                            $nameA = strtolower($a->name ?? '');
+                            $nameB = strtolower($b->name ?? '');
+                            return $nameA <=> $nameB;
+                        });
+                    }
                 }
-            }
-        @endphp
+                unset($entry);
+                ?>
 
-        @if (!empty($entry['children']))
-            <div class="collapsible" style="color: {{ $color }}">
-                {{ $entry['parent']->name ?? '' }}
-            </div>
-            <div class="content">
-                <ul>
-                    @foreach ($entry['children'] as $child)
+                @foreach ($groupedEASA as $entry)
+                @if (!empty($entry['children']))
+                <div class="collapsible">{{ $entry['parent']->name ?? '' }}</div>
+                <div class="content">
+                    <ul>
+                        @foreach ($entry['children'] as $child)
                         <li>{{ $child->name }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @else 
-            <div class="parent_rate" style="color: {{ $color }}">
-                <strong>{{ $entry['parent']->name ?? '' }}</strong>
-            </div>
-        @endif
-    @endforeach
-</td>
+                        @endforeach
+                    </ul>
+                </div>
+                @else
+                <div class="parent_rate"><strong>{{ $entry['parent']->name ?? '' }}</strong></div>
+                @endif
+                @endforeach
+            </td>
 
 
             {{-- Licence 2 --}}
