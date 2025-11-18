@@ -19,6 +19,7 @@ use App\Models\CourseDocuments;
 use App\Models\CourseCustomTime;
 use App\Models\CourseLesson;
 use App\Models\SubLesson;
+use App\Models\LessonPrerequisite;
 use Illuminate\Support\Facades\DB;
 
 
@@ -684,6 +685,7 @@ $course->documents()
                     'instructor_cbta' => $lesson_info->instructor_cbta ?? 0,
                     'examiner_cbta' => $lesson_info->examiner_cbta ?? 0,
                     'custom_time_id' => $lesson_info->custom_time_type,
+                    'enable_prerequisites' => $lesson_info->enable_prerequisites,
                 ];
 
                 // 🔥 Start Transaction (MOST IMPORTANT)
@@ -697,12 +699,27 @@ $course->documents()
                     return response()->json(['error' => 'Unable to duplicate lesson.'], 500);
                 }
 
+                // Lesson Prerequisite
+               $lesson_pre =LessonPrerequisite::where('lesson_id', $lesson_id)->where('course_id', $course_id)->get();
+               if ($lesson_pre->isNotEmpty()) {
+                   foreach($lesson_pre as $row){
+                       $prequites = array(
+                                "course_id"           => $row->course_id,
+                                "lesson_id"           => $create_lesson->id,
+                                "prerequisite_detail" => $row->prerequisite_detail,
+                                "prerequisite_type"   => $row->prerequisite_type,
+                            );
+                         LessonPrerequisite::create($prequites);
+                   }
+               }
+             
+
+
                 // Duplicate sub-lessons
                 $sublesson_info = SubLesson::where('lesson_id', $lesson_id)->get();
              
 
                 foreach ($sublesson_info as $val) {
-
                     $subLesson = [
                         'lesson_id'    => $create_lesson->id,
                         'title'        => $val->title,
@@ -719,7 +736,6 @@ $course->documents()
                         return response()->json(['error' => 'Unable to duplicate sub lessons'], 500);
                     }
                 }
-
                 // 🔥 Commit only if everything succeeds
                 DB::commit();
                 Session::flash('message', 'Lesson created successfully.');

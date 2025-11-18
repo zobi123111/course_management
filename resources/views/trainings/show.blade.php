@@ -477,8 +477,7 @@
             {{ session()->get('message') }}
         </div>
         @endif
-        <?php // dump($trainingEvent); 
-        ?>
+      
         <div class="loader" style="display: none;"></div>
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
@@ -495,7 +494,7 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link " id="Lesson-tab" data-bs-toggle="tab" data-bs-target="#Lesson" type="button" role="tab" aria-controls="Lesson" aria-selected="true">Lesson Plan</button>
                 </li>
-               @if(($trainingEvent?->course?->course_type === 'one_event'  || $trainingEvent?->course?->course_type === 'multi_lesson') && $student)
+                @if(($trainingEvent?->course?->course_type === 'one_event' || $trainingEvent?->course?->course_type === 'multi_lesson') && $student)
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="student-tab-{{ $student->id ?? ''}}" data-bs-toggle="tab" data-bs-target="#student-{{ $student->id ?? '' }}" type="button" role="tab" aria-controls="student-{{ $student->id ?? '' }}" aria-selected="false">
                         Overall Assessment
@@ -597,22 +596,20 @@
                                         <p class="mb-0 fw-semibold"><?= $student_licence ?></p>
                                     </div>
                                     <!-- // Rank -->
-                                     @if(!empty($trainingEvent->rank))
+                                    @if(!empty($trainingEvent->rank))
                                     <div class="col-md-4">
                                         <h6 class="text-muted mb-1">
                                             <i class="fas fa-id-card me-1"></i>Rank
                                         </h6>
-                                    <?php 
-                                          if($trainingEvent->rank == 1){
+                                        <?php
+                                        if ($trainingEvent->rank == 1) {
                                             $rank = "Captain";
-                                          }
-                                          elseif($trainingEvent->rank == 2){
-                                              $rank = "First Officer";
-                                          }
-                                          elseif($trainingEvent->rank == 3){
-                                              $rank = "Second Officer";
-                                          }
-                                    ?>
+                                        } elseif ($trainingEvent->rank == 2) {
+                                            $rank = "First Officer";
+                                        } elseif ($trainingEvent->rank == 3) {
+                                            $rank = "Second Officer";
+                                        }
+                                        ?>
                                         <p class="mb-0 fw-semibold"><?= $rank ?></p>
                                     </div>
                                     @endif
@@ -625,7 +622,7 @@
                         </div>
 
 
-                  
+
 
                         <!-- <pre> -->
                         @if($trainingEvent?->course?->course_type === 'one_event' && $trainingEvent->eventLessons->count())
@@ -896,9 +893,7 @@
                             </div>
                             <div class="col-md-2 mt-2">
                                 <strong><i class="fas fa-clock"></i> Lesson Type:</strong><br>
-                                <?php
-                                //  dump($def->deftasks?->subddddLesson?->courseLesson);
-                                ?>
+                            
                                 {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
 
                             </div>
@@ -1845,6 +1840,8 @@
                 <div class="tab-pane fade" id="Lesson" role="tabpanel" aria-labelledby="Lesson-tab">
                     <div class="card-body">
                         @foreach($eventLessons as $eventLesson)
+                   
+
                         <form action="" method="POST" id="gradingFrom">
                             @csrf
                             <input type="hidden" name="event_id" id="event_id" value="{{ $trainingEvent->id }}">
@@ -1935,6 +1932,7 @@
                                         <div class="accordion-body">
                                             @if($lesson && $lesson->subLessons->isNotEmpty())
                                             @foreach($lesson->subLessons as $sublesson)
+                                            <?php $is_my_lesson = $eventLesson->is_my_lesson; ?>
                                             <div class="custom-box">
                                                 <input type="hidden" name="tg_subLesson_id[]" value="{{ $sublesson->id }}">
                                                 <div class="header grade_head" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $sublesson->id }}" aria-expanded="false">
@@ -1954,7 +1952,10 @@
 
                                                     $selectedComment = $taskGrade->task_comment ?? null;
                                                     $isDeferred = in_array($sublesson->id, $deferredTaskIds);
+                                                    $is_my_lesson = $eventLesson->is_my_lesson;
+                                                    $isDisabled =  !$is_my_lesson;
                                                     @endphp
+                                                
 
                                                     <div class="main-tabledesign">
                                                         <div class="back_deffered">
@@ -1977,6 +1978,7 @@
                                                                     @if($sublesson->grade_type == 'pass_fail')
 
                                                                     <tr>
+                                                                        
                                                                         <td>
                                                                             <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
                                                                                 <input type="radio" class="deselectable-radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
@@ -2332,9 +2334,18 @@
                                             </table>
                                         </div>
                                         @endif
-                                        <div class="btn-container">
-                                            <button type="submit" class="btn btn-save" id="submitGrading">Save</button>
+                                        <div class="d-flex align-items-center justify-content-end">
+                                            @if($isDisabled)
+                                            <div>
+                                            <span style="color:red"> You are not eligible to perform any action on this lesson </span>
+                                            </div>
+                                            @endif
+                                            <div class="btn-container ms-3">
+                                                <button type="submit" class="btn btn-save" id="submitGrading"  {{ $isDisabled ? 'disabled' : '' }}>Save</button>
+                                            </div>
+
                                         </div>
+                                      
 
                                     </div>
 
