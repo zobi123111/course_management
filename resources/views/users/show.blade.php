@@ -51,7 +51,7 @@
                 @endphp
 
                 <!-- Additional Details: Passport & License -->
-                
+
                 <div class="row g-4">
                     @if(!empty($document?->passport))
                     <div class="col-md-12 mb-4">
@@ -99,8 +99,14 @@
                             <div class="validate-inner-cont">
                                 <div class="licensefile">
                                     <p class="mb-0"><strong>Number:</strong> {{ $document->licence }}</p>
-                                    @if($user->licence_admin_verification_required == 1 && $document?->licence_file)
-                                    <a href="{{ Storage::url($document->licence_file) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
+                                    @if(!empty($document->licence_file))
+                                       <a href="{{ Storage::url($document->licence_file) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
+                                    @else  
+                                     <span style="color:#c52020"> ( No Licence uploaded )</span>
+                                     @endif
+
+                                    @if($user->licence_admin_verification_required == 1)
+                                    
                                 </div>
                                 <div class="licensevalidate">
                                     <div class="form-check form-switch mb-0">
@@ -239,19 +245,24 @@
                             @endif
                         </div>
                         @endif
-                       
+
                         <!-- Second License Details -->
-                       
+
                         <div class="col-md-6 mb-4 license-six-cont">
                             @if(!empty($document->licence_2))
                             <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>EASA License Details</h5>
                             <div class="validate-inner-cont">
                                 <div class="licensefile">
                                     <p class="mb-0"><strong>Number:</strong> {{ $document->licence_2 }}</p>
-                                    @if($user->licence_2_admin_verification_required == 1 && $document->licence_file_2)
+                                    @if(!empty($document->licence_file_2))
                                     <a href="{{ Storage::url($document->licence_file_2) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
+                                    @else
+                                    <span style="color:#c52020"> ( No Licence Uploaded )</span>   
+                                    @endif
+                               
+                                   
                                 </div>
-
+                                  @if($user->licence_2_admin_verification_required == 1)
                                 <div class="licensevalidate">
                                     <div class="form-check form-switch mb-0">
                                         <input class="form-check-input verify-toggle" type="checkbox" id="licence2_verify"
@@ -386,11 +397,11 @@
                             </div>
                             @endif
                         </div>
-                       
+
                     </div>
 
                     <!-- Medical Details -->
-                    
+
                     @if($document && $document->medical && !empty($document->medical_issuedby) && !empty($document->medical_class) && !empty($document->medical_issuedate))
                     <div class="col-md-12 mb-4">
                         <h5 class="text-muted mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>UK Medical Details</h5>
@@ -425,7 +436,7 @@
                     @endif
 
                     <!-- Second Medical Details -->
-                
+
                     @if($user->medical_2_required == 1)
                     <div class="col-md-12 mb-4">
                         <h5 class="text-muted mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>EASA Medical Details</h5>
