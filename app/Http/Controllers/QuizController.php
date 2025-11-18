@@ -76,7 +76,7 @@ class QuizController extends Controller
         $quizId = decode_id($request->id);
         $quiz = Quiz::with('topics.topic')->findOrFail($quizId);
         $topics = Topic::get();
-        $quizQuestions = QuizQuestion::where('quiz_id', $quizId)->get();
+        $quizQuestions = QuizQuestion::with('question')->where('quiz_id', $quizId)->get();
         
         return view('quiz.view', compact('quiz', 'topics', 'quizQuestions'));
     }
@@ -224,10 +224,21 @@ class QuizController extends Controller
     public function deleteTopic(Request $request)
     {
         $id = decode_id($request->topic_id);
+        $quiz_id = decode_id($request->quiz_id);
+
         $quizTopic = QuizTopic::findOrFail($id);
+
+        $quizQuestions = QuizQuestion::where('topic_id', $id)
+        ->where('quiz_id', $quiz_id)
+        ->get();
+
+        $quizQuestions->each(function($question) {
+            $question->delete();
+        });
+
         $quizTopic->delete();
 
-       return redirect()->back()->with('message', 'Topic Unassigned successfully.');
+       return redirect()->back()->with('message', 'Topic and questions Unassigned successfully.');
     }
 
     public function updateStatus(Request $request)

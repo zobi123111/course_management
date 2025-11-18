@@ -17,8 +17,15 @@
     }
 
     .custom-btn:hover {
-        background-color: red; /* Red background on hover */
+        background-color: White;
     }
+
+    .question_delete {
+        color: rgba(253, 13, 13, 1);
+        cursor: pointer;
+        font-size: 18px;
+    }
+
 </style>
 
     @if(session()->has('message'))
@@ -240,226 +247,307 @@
         </div>
     </form>
 
-
-
 @endsection
 
 @section('js_scripts')
-<script>
-    setTimeout(function() {
-        $('#successMessage').fadeOut('slow');
-    }, 2000);
-
-    $(document).ready(function() {
-        $('#questionTable').DataTable({
-            "order": []
-        });
-
-        $('#questionTable').on('click', '.edit-quiz-icon', function() {
-            $('.error_e').html('');
-            var quizId = $(this).data('quiz-id');
-            $(".loader").fadeIn();
-
-            $.ajax({
-                url: "{{ url('/question/edit') }}",
-                type: 'GET',
-                data: { id: quizId },
-                success: function(response) {
-                    $('#edit_question_id').val(response.question.id);
-                    $('#edit_question_text').val(response.question.question_text);
-                    $('#edit_option_A').val(response.question.option_A);
-                    $('#edit_option_B').val(response.question.option_B);
-                    $('#edit_option_C').val(response.question.option_C);
-                    $('#edit_option_D').val(response.question.option_D);
-                    $('#edit_correct_option').val(response.question.correct_option);
-
-                    if (response.question.question_type === 'text') {
-                        $('#edit_option_A').closest('.form-group').hide();
-                        $('#edit_option_B').closest('.form-group').hide();
-                        $('#edit_option_C').closest('.form-group').hide();
-                        $('#edit_option_D').closest('.form-group').hide();
-                        $('#edit_correct_option').closest('.form-group').hide();
-                    } else {
-                        $('#edit_option_A').closest('.form-group').show();
-                        $('#edit_option_B').closest('.form-group').show();
-                        $('#edit_option_C').closest('.form-group').show();
-                        $('#edit_option_D').closest('.form-group').show();
-                        $('#edit_correct_option').closest('.form-group').show();
-                    }
-                    
-                    $('#editQuestionModal').modal('show');
-                    $(".loader").fadeOut("slow");
-                },
-                error: function(xhr) {
-                    console.log(xhr.responseJSON);
-                    alert("Error fetching question details!");
-                    $(".loader").fadeOut("slow");
-                }
-            });
-        });
-
-        $('#updateQuestion').on('click', function(e) {
-            e.preventDefault();
-
-            if ($('#editQuestionForm')[0].checkValidity() === false) {
-                e.stopPropagation();
-                return;
-            }
-
-            $(".loader").fadeIn();
-
-            $.ajax({
-                url: "{{ url('/question/update') }}",
-                type: "POST",
-                data: $("#editQuestionForm").serialize(),
-                success: function(response) {
-                    $('#editQuestionModal').modal('hide');
-                    
-                    location.reload();
-                    $(".loader").fadeOut("slow");
-                },
-                error: function(xhr) {
-                    var errors = xhr.responseJSON.errors;
-                    $.each(errors, function(key, value) {
-                        $('#' + key + '_error_up').html('<p>' + value + '</p>');
-                    });
-                    $(".loader").fadeOut("slow");
-                }
-            });
-        });
-
-        $(document).on('click', '.delete-quiz-icon', function() {
-            $('#deleteQuiz').modal('show');
-            var questionId = $(this).data('question-id');
-            var quizId = $(this).data('quiz-id');
-
-            console.log("Question ID:", questionId);
-            console.log("Quiz ID:", quizId);
-            var quizName = $(this).closest('tr').find('.quizTitle').text();
-            $('#append_title').html(quizName);
-            $('#questionId').val(questionId);
-            $('#quizId').val(quizId);
-        });
-
+    <script>
         setTimeout(function() {
             $('#successMessage').fadeOut('slow');
         }, 2000);
-    });
 
-    // function addQuestion(questionType) {
-    //     let questionCount = document.querySelectorAll('#questions-container .form-group').length;
-    //     questionCount++;
-    //     const questionContainer = document.getElementById('questions-container');
-    //     const newQuestionDiv = document.createElement('div');
-    //     newQuestionDiv.classList.add('form-group', 'mb-3');
-    //     newQuestionDiv.innerHTML = `
-    //         <label for="question">Question ${questionCount}</label> <button type="button" class="btn custom-btn" onclick="removeQuestion(this)"><i class="fa fa-trash" aria-hidden="true"></i></button>
-    //         <input type="text" name="questions[${questionCount}][question]" class="form-control mb-2 mt-3" placeholder="Enter text" required>
-    //         <input type="hidden" name="questions[${questionCount}][type]" value="${questionType}" required>
-    //     `;
-    //     if (questionType === 'single_choice' || questionType === 'multiple_choice' || questionType === 'sequence') {
-    //         newQuestionDiv.innerHTML += `
-    //             <div class="options-container">
-    //                 <label for="options_${questionCount}">Options:</label>
-    //                 <input type="text" name="questions[${questionCount}][options][]" class="form-control mb-2" placeholder="Option 1" required>
-    //                 <input type="text" name="questions[${questionCount}][options][]" class="form-control mb-2" placeholder="Option 2" required>
-    //                 <div id="additionalOptions_${questionCount}"></div>
-    //                 <button type="button" class="btn btn-secondary mt-2" onclick="addOption(${questionCount})">Add Option</button>
-    //             </div>
-    //         `;
-    //     }   
-    //     questionContainer.appendChild(newQuestionDiv);
-    // }
+        $(document).ready(function() {
+            $('#questionTable').DataTable({
+                "order": []
+            });
 
-    // function addOption(questionCount) {
-    //     const additionalOptionsContainer = document.getElementById(`additionalOptions_${questionCount}`);
-    //     const newOptionInput = document.createElement('input');
-    //     newOptionInput.type = 'text';
-    //     newOptionInput.name = `questions[${questionCount}][options][]`;
-    //     newOptionInput.className = 'form-control mb-2';
-    //     newOptionInput.placeholder = 'Enter option';
-    //     newOptionInput.required = true;
-    //     additionalOptionsContainer.appendChild(newOptionInput);
-    // }
+            $('#questionTable').on('click', '.edit-quiz-icon', function() {
+                $('.error_e').html('');
+                var quizId = $(this).data('quiz-id');
+                $(".loader").fadeIn();
 
-    function addQuestion(questionType) {
-        let questionCount = document.querySelectorAll('#questions-container .form-group').length;
-        questionCount++;
-        const questionContainer = document.getElementById('questions-container');
-        const newQuestionDiv = document.createElement('div');
-        newQuestionDiv.classList.add('form-group', 'mb-3');
-        newQuestionDiv.innerHTML = `
-            <label for="question">Question ${questionCount}</label> <button type="button" class="btn custom-btn" onclick="removeQuestion(this)"><i class="fa fa-trash" aria-hidden="true"></i></button>
-            <input type="text" name="questions[${questionCount}][question]" class="form-control mb-2 mt-3" placeholder="Enter text" required>
-            <input type="hidden" name="questions[${questionCount}][type]" value="${questionType}" required>
-        `;
-        
-        if (questionType === 'single_choice' || questionType === 'multiple_choice' || questionType === 'sequence') {
-            newQuestionDiv.innerHTML += `
-                <div class="options-container">
-                    <label for="options_${questionCount}">Options:</label>
-                    <input type="text" name="questions[${questionCount}][options][]" class="form-control mb-2" placeholder="Option 1" required>
-                    <input type="text" name="questions[${questionCount}][options][]" class="form-control mb-2" placeholder="Option 2" required>
-                    <div id="additionalOptions_${questionCount}"></div>
-                    <button type="button" class="btn btn-secondary mt-2" onclick="addOption(${questionCount})" id="addOptionButton_${questionCount}">Add Option</button>
-                </div>
+                $.ajax({
+                    url: "{{ url('/question/edit') }}",
+                    type: 'GET',
+                    data: { id: quizId },
+                    success: function(response) {
+                        $('#edit_question_id').val(response.question.id);
+                        $('#edit_question_text').val(response.question.question_text);
+                        $('#edit_option_A').val(response.question.option_A);
+                        $('#edit_option_B').val(response.question.option_B);
+                        $('#edit_option_C').val(response.question.option_C);
+                        $('#edit_option_D').val(response.question.option_D);
+                        $('#edit_correct_option').val(response.question.correct_option);
 
-                <div class="options-container mt-3">
-                    <label for="options_${questionCount}">Correct Answer:</label>
-                    <input type="text" name="questions[${questionCount}][correct_answer]" class="form-control mb-2" placeholder="Correct Answer" required>
-                </div>
-            `;
-        }
+                        if (response.question.question_type === 'text') {
+                            $('#edit_option_A').closest('.form-group').hide();
+                            $('#edit_option_B').closest('.form-group').hide();
+                            $('#edit_option_C').closest('.form-group').hide();
+                            $('#edit_option_D').closest('.form-group').hide();
+                            $('#edit_correct_option').closest('.form-group').hide();
+                        } else {
+                            $('#edit_option_A').closest('.form-group').show();
+                            $('#edit_option_B').closest('.form-group').show();
+                            $('#edit_option_C').closest('.form-group').show();
+                            $('#edit_option_D').closest('.form-group').show();
+                            $('#edit_correct_option').closest('.form-group').show();
+                        }
+                        
+                        $('#editQuestionModal').modal('show');
+                        $(".loader").fadeOut("slow");
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseJSON);
+                        alert("Error fetching question details!");
+                        $(".loader").fadeOut("slow");
+                    }
+                });
+            });
 
-        questionContainer.appendChild(newQuestionDiv);
-    }
+            $('#updateQuestion').on('click', function(e) {
+                e.preventDefault();
 
-    function addOption(questionCount) {
-        const additionalOptionsContainer = document.getElementById(`additionalOptions_${questionCount}`);
-        const addOptionButton = document.getElementById(`addOptionButton_${questionCount}`);
-        
-        const currentAdditionalCount = additionalOptionsContainer.querySelectorAll('input').length;
+                if ($('#editQuestionForm')[0].checkValidity() === false) {
+                    e.stopPropagation();
+                    return;
+                }
 
-        if (currentAdditionalCount < 2) {
-            const newOptionInput = document.createElement('input');
-            newOptionInput.type = 'text';
-            newOptionInput.name = `questions[${questionCount}][options][]`;
-            newOptionInput.className = 'form-control mb-2';
-            newOptionInput.placeholder = `Option ${currentAdditionalCount + 3}`;
-            newOptionInput.required = true;
-            additionalOptionsContainer.appendChild(newOptionInput);
+                $(".loader").fadeIn();
 
-            if (currentAdditionalCount + 1 === 2) {
-                addOptionButton.style.display = 'none';
-            }
-        }
-    }
+                $.ajax({
+                    url: "{{ url('/question/update') }}",
+                    type: "POST",
+                    data: $("#editQuestionForm").serialize(),
+                    success: function(response) {
+                        $('#editQuestionModal').modal('hide');
+                        
+                        location.reload();
+                        $(".loader").fadeOut("slow");
+                    },
+                    error: function(xhr) {
+                        var errors = xhr.responseJSON.errors;
+                        $.each(errors, function(key, value) {
+                            $('#' + key + '_error_up').html('<p>' + value + '</p>');
+                        });
+                        $(".loader").fadeOut("slow");
+                    }
+                });
+            });
 
-    function removeQuestion(button) {
-        const questionDiv = button.parentElement;
-        questionDiv.remove();
-    }
+            $(document).on('click', '.delete-quiz-icon', function() {
+                $('#deleteQuiz').modal('show');
+                var questionId = $(this).data('question-id');
+                var quizId = $(this).data('quiz-id');
 
-    $('#questionForm').on('submit', function(e) {
-        e.preventDefault();
-        var formData = new FormData(this);
+                console.log("Question ID:", questionId);
+                console.log("Quiz ID:", quizId);
+                var quizName = $(this).closest('tr').find('.quizTitle').text();
+                $('#append_title').html(quizName);
+                $('#questionId').val(questionId);
+                $('#quizId').val(quizId);
+            });
 
-        $.ajax({
-            url: $(this).attr('action'),
-            method: 'POST',
-            data: formData,
-            contentType: false,
-            processData: false,
-            success: function(response) {
-                location.reload();
-            },
-            error: function(response) {
-                console.log(response.errors);
-            }
+            setTimeout(function() {
+                $('#successMessage').fadeOut('slow');
+            }, 2000);
         });
-    });
+
+        // function addQuestion(questionType) {
+        //     let questionCount = document.querySelectorAll('#questions-container .form-group').length;
+        //     questionCount++;
+        //     const questionContainer = document.getElementById('questions-container');
+        //     const newQuestionDiv = document.createElement('div');
+        //     newQuestionDiv.classList.add('form-group', 'mb-3');
+        //     newQuestionDiv.innerHTML = `
+        //         <label for="question">Question ${questionCount}</label> <button type="button" class="btn custom-btn" onclick="removeQuestion(this)"><i class="fa fa-trash" aria-hidden="true"></i></button>
+        //         <input type="text" name="questions[${questionCount}][question]" class="form-control mb-2 mt-3" placeholder="Enter text" required>
+        //         <input type="hidden" name="questions[${questionCount}][type]" value="${questionType}" required>
+        //     `;
+            
+        //     if (questionType === 'single_choice' || questionType === 'multiple_choice' || questionType === 'sequence') {
+        //         newQuestionDiv.innerHTML += `
+        //             <div class="options-container">
+        //                 <label for="options_${questionCount}">Options:</label>
+        //                 <input type="text" name="questions[${questionCount}][options][]" class="form-control mb-2" placeholder="Option 1" required>
+        //                 <input type="text" name="questions[${questionCount}][options][]" class="form-control mb-2" placeholder="Option 2" required>
+        //                 <div id="additionalOptions_${questionCount}"></div>
+        //                 <button type="button" class="btn btn-secondary mt-2" onclick="addOption(${questionCount})" id="addOptionButton_${questionCount}">Add Option</button>
+        //             </div>
+
+        //             <div class="options-container mt-3">
+        //                 <label for="options_${questionCount}">Correct Answer: (add correct answer like A,B,C)</label>
+        //                 <input type="text" name="questions[${questionCount}][correct_answer]" class="form-control mb-2" placeholder="Correct Answer" required>
+        //             </div>
+        //         `;
+        //     }
+
+        //     questionContainer.appendChild(newQuestionDiv);
+        // }
+        function addQuestion(questionType) {
+            let questionCount = document.querySelectorAll('#questions-container .form-group').length;
+            questionCount++;
+
+            // readable label
+            let typeLabel = '';
+            if (questionType === 'text') typeLabel = 'Text';
+            if (questionType === 'single_choice') typeLabel = 'Single Choice';
+            if (questionType === 'multiple_choice') typeLabel = 'Multiple Choice';
+            if (questionType === 'sequence') typeLabel = 'Sequence';
+
+            const questionContainer = document.getElementById('questions-container');
+            const newQuestionDiv = document.createElement('div');
+            newQuestionDiv.classList.add('form-group', 'mb-3');
+            
+            newQuestionDiv.innerHTML = `
+                <label for="question">Question ${questionCount} (${typeLabel})</label>
+                <button type="button" class="btn custom-btn" onclick="removeQuestion(this)">
+                    <i class="fa fa-trash question_delete" aria-hidden="true"></i>
+                </button>
+
+                <input type="text" name="questions[${questionCount}][question]" class="form-control mb-2 mt-3" placeholder="Enter text" required>
+                <input type="hidden" name="questions[${questionCount}][type]" value="${questionType}" required>
+            `;
+            
+            // if (questionType === 'single_choice' || questionType === 'multiple_choice' || questionType === 'sequence') {
+            //     newQuestionDiv.innerHTML += `
+            //         <div class="options-container">
+            //             <label>Options:</label>
+            //             <input type="text" name="questions[${questionCount}][options][]" class="form-control mb-2" placeholder="Option 1" required>
+            //             <input type="text" name="questions[${questionCount}][options][]" class="form-control mb-2" placeholder="Option 2" required>
+            //             <div id="additionalOptions_${questionCount}"></div>
+            //             <button type="button" class="btn btn-secondary mt-2" onclick="addOption(${questionCount})" id="addOptionButton_${questionCount}">Add Option</button>
+            //         </div>
+
+            //         <div class="options-container mt-3">
+            //             <label>Correct Answer: (A,B,C)</label>
+            //             <input type="text" name="questions[${questionCount}][correct_answer]" class="form-control mb-2" placeholder="Correct Answer" required>
+            //         </div>
+            //     `;
+            // }
+
+           if (
+                questionType === 'single_choice' ||
+                questionType === 'multiple_choice' ||
+                questionType === 'sequence'
+            ) {
+                let html = `
+                    <div class="options-container">
+                        <label>Options:</label>
+
+                        <div class="mb-2">
+                            <label>A</label>
+                            <input type="text" name="questions[${questionCount}][options][]" class="form-control" placeholder="Option A" required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label>B</label>
+                            <input type="text" name="questions[${questionCount}][options][]" class="form-control" placeholder="Option B" required>
+                        </div>
+
+                        <div id="additionalOptions_${questionCount}"></div>
+
+                        <button type="button" class="btn btn-secondary mt-2" onclick="addOption(${questionCount})" id="addOptionButton_${questionCount}">
+                            Add Option
+                        </button>
+                    </div>
+                `;
+
+                // Add correct answer section based on type
+                if (questionType === 'single_choice') {
+                    html += `
+                        <div class="options-container mt-3">
+                            <label>Correct Answer (e.g., A)</label>
+                            <input type="text" name="questions[${questionCount}][correct_answer]" class="form-control mb-2" placeholder="Correct Answer" required>
+                        </div>
+                    `;
+                }
+
+                if (questionType === 'multiple_choice' || questionType === 'sequence') {
+                    html += `
+                        <div class="options-container mt-3">
+                            <label>Correct Answers (e.g., A,B,C)</label>
+                            <input type="text" name="questions[${questionCount}][correct_answer]" class="form-control mb-2" placeholder="Correct Answers" required>
+                        </div>
+                    `;
+                }
+
+                newQuestionDiv.innerHTML += html;
+            }
+
+            questionContainer.appendChild(newQuestionDiv);
+        }
+
+        // function addOption(questionCount) {
+        //     const additionalOptionsContainer = document.getElementById(`additionalOptions_${questionCount}`);
+        //     const addOptionButton = document.getElementById(`addOptionButton_${questionCount}`);
+            
+        //     const currentAdditionalCount = additionalOptionsContainer.querySelectorAll('input').length;
+
+        //     if (currentAdditionalCount < 2) {
+        //         const newOptionInput = document.createElement('input');
+        //         newOptionInput.type = 'text';
+        //         newOptionInput.name = `questions[${questionCount}][options][]`;
+        //         newOptionInput.className = 'form-control mb-2';
+        //         newOptionInput.placeholder = `Option ${currentAdditionalCount + 3}`;
+        //         newOptionInput.required = true;
+        //         additionalOptionsContainer.appendChild(newOptionInput);
+
+        //         if (currentAdditionalCount + 1 === 2) {
+        //             addOptionButton.style.display = 'none';
+        //         }
+        //     }
+        // }
+
+        function addOption(questionCount) {
+            const additionalOptionsContainer = document.getElementById(`additionalOptions_${questionCount}`);
+            const addOptionButton = document.getElementById(`addOptionButton_${questionCount}`);
+
+            const existing = additionalOptionsContainer.querySelectorAll('.option-field').length;
+
+            const optionLabels = ['C', 'D'];
+            
+            if (existing < optionLabels.length) {
+                const label = optionLabels[existing];
+
+                const newOption = document.createElement('div');
+                newOption.className = 'mb-2 option-field';
+                newOption.innerHTML = `
+                    <label>${label}</label>
+                    <input type="text" name="questions[${questionCount}][options][]" class="form-control" placeholder="Option ${label}" required>
+                `;
+                
+                additionalOptionsContainer.appendChild(newOption);
+
+                if (existing + 1 === optionLabels.length) {
+                    addOptionButton.style.display = 'none';
+                }
+            }
+        }
+
+        function removeQuestion(button) {
+            const questionDiv = button.parentElement;
+            questionDiv.remove();
+        }
+
+        $('#questionForm').on('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: $(this).attr('action'),
+                method: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    location.reload();
+                },
+                error: function(response) {
+                    console.log(response.errors);
+                }
+            });
+        });
 
 
 
-</script>
+    </script>
 @endsection

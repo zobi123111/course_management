@@ -68,8 +68,8 @@
     
     <div class="card shadow-sm">
         <div class="card-body">
-            <div class="card-body d-flex align-items-center">
-                <h1 class="me-3">Assigned Topics</h1>
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <h3 class="me-3 mt-3">Assigned Topics</h3>
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTopicModal">
                     Add Topic
                 </button>
@@ -92,7 +92,9 @@
                         <td class="topicTitle">{{ $topic->topic->title }}</td>
                         <td>{{ $topic->question_quantity }}</td>
                         <td>
-                            <i class="fa-solid fa-trash delete-topic-icon action-btn" style="font-size:25px; cursor: pointer;" data-topic-id="{{ encode_id($topic->id) }}" data-topic-name="{{ $topic->topic->title }}"></i>
+                            <i class="fa fa-eye action-btn" data-bs-toggle="modal" data-bs-target="#viewQuestionsModal_{{ $topic->id }}" style="font-size:25px; cursor:pointer;"></i>
+
+                            <i class="fa-solid fa-trash delete-topic-icon action-btn" style="font-size:25px; cursor: pointer;" data-topic-id="{{ encode_id($topic->topic->id) }}" data-quiz-id="{{ encode_id($quiz->id) }}" data-topic-name="{{ $topic->topic->title }}"></i>
                         </td>
                     </tr>
                     @empty
@@ -104,6 +106,82 @@
             </table>
         </div>
     </div>
+
+   @foreach($quiz->topics as $topic)
+
+    @php
+        $topicQuestions = $quizQuestions->where('topic_id', $topic->topic_id);
+    @endphp
+
+    <div class="modal fade" id="viewQuestionsModal_{{ $topic->id }}" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Questions — {{ $topic->topic->title }}
+                    </h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <table class="table table-hover mt-3">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Question Text</th>
+                                <th>Question Type</th>
+                                <th>Option A</th>
+                                <th>Option B</th>
+                                <th>Option C</th>
+                                <th>Option D</th>
+                                <th>Correct Option</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @forelse($topicQuestions as $q)
+                                <tr>
+                                    <td>{{ $q->question->question_text }}</td>
+
+                                    <td>
+                                        @switch($q->question->question_type)
+                                            @case('single_choice') Single Choice @break
+                                            @case('multiple_choice') Multiple Choice @break
+                                            @case('sequence') Sequence @break
+                                            @case('text') Text @break
+                                        @endswitch
+                                    </td>
+
+                                    <td>{{ $q->question->option_A ?? '-' }}</td>
+                                    <td>{{ $q->question->option_B ?? '-' }}</td>
+                                    <td>{{ $q->question->option_C ?? '-' }}</td>
+                                    <td>{{ $q->question->option_D ?? '-' }}</td>
+                                    <td>{{ $q->question->correct_option ?? '-' }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">
+                                        No questions assigned to this topic.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    @endforeach
+
+
 
     <!-- Add Topic Modal -->
     <div class="modal fade" id="addTopicModal" tabindex="-1" aria-labelledby="addTopicModalLabel" aria-hidden="true">
@@ -123,7 +201,9 @@
                             <select name="topic_id" class="form-select" required>
                                 <option value="" disabled selected>-- Select Topic --</option>
                                 @foreach($topics as $topic)
-                                    <option value="{{ $topic->id }}">{{ $topic->title }}</option>
+                                    @unless($quiz->topics->pluck('topic_id')->contains($topic->id))
+                                        <option value="{{ $topic->id }}">{{ $topic->title }}</option>
+                                    @endunless
                                 @endforeach
                             </select>
                         </div>
@@ -153,6 +233,7 @@
                     <div class="modal-header">
                         <h5 class="modal-title" id="deleteTopicLabel">Delete Topic</h5>
                         <input type="hidden" name="topic_id" id="topicId">
+                        <input type="hidden" name="quiz_id" id="quizId">
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -177,17 +258,18 @@
         $('#successMessage').fadeOut('slow');
     }, 2000);
 
-    // $(document).ready(function() {
+    $(document).ready(function() {
     
         $(document).on('click', '.delete-topic-icon', function() {
             $('#deleteTopic').modal('show');
             var topicId = $(this).data('topic-id');
+            var quizId = $(this).data('quiz-id');
             var topicName = $(this).closest('tr').find('.topicTitle').text();
             $('#append_title').html(topicName);
             $('#topicId').val(topicId);
+            $('#quizId').val(quizId);
         });
-
-    // });
+    });
 
 </script>
 

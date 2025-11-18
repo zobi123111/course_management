@@ -315,7 +315,6 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/custom-cbta-delete', [CbtaControlller::class, 'delete'])->name('custom-cbta.delete');
     
     Route::post('/quiz/create', [QuizController::class, 'store'])->name('quiz.store');
-    Route::get('/lessons-by-course', [QuizController::class, 'getLessonsByCourse'])->name('lessons.byCourse');
     Route::get('/quiz/edit', [QuizController::class, 'edit'])->name('quiz.edit');
     Route::get('/quiz/view/{id}', [QuizController::class, 'view'])->name('quiz.view');
     Route::post('/quiz/update', [QuizController::class, 'update'])->name('quiz.update');
@@ -328,6 +327,9 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
 });
 
 Route::get('/quiz', [QuizController::class, 'quizzes'])->name('quizzes.index');
+Route::get('/quiz/topic-questions', [QuizController::class, 'getTopicQuestions'])->name('quiz.getTopicQuestions');
+Route::get('/lessons-by-course', [QuizController::class, 'getLessonsByCourse'])->name('lessons.byCourse');
+
 
 Route::get('/quiz/start/{id}', [QuizController::class, 'startQuiz'])->name('quiz.start');
 Route::get('/quiz/view-result/{id}', [QuizController::class, 'viewResult'])->name('quiz.result');
