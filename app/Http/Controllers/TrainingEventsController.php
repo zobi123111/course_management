@@ -890,15 +890,28 @@ class TrainingEventsController extends Controller
         if (!$trainingEvent) {
             return abort(404, 'Training Event not found');
         }
-        //Filter lessons based on role
-        if (hasUserRole($currentUser, 'Instructor') && empty($currentUser->is_admin)) {
-            // Only show lessons assigned to this instructor
-            $eventLessons = $trainingEvent->eventLessons->filter(function ($lesson) use ($currentUser) {
-                return $lesson->instructor_id == $currentUser->id;
-            })->values();
+
+      //  dump($eventLessons);
+        if (hasUserRole($currentUser, 'Instructor') && empty($currentUser->is_admin)) { 
+            $eventLessons = $trainingEvent->eventLessons->map(function ($lesson) use ($currentUser) {
+                // Add a flag to indicate if this is instructor's own lesson
+                $lesson->is_my_lesson = ($lesson->instructor_id == $currentUser->id);
+                return $lesson;
+            });
         } else {
-            $eventLessons = $trainingEvent->eventLessons; 
-        }
+                 $eventLessons = $trainingEvent->eventLessons->map(function ($lesson) {
+                    $lesson->is_my_lesson = true;
+                    return $lesson;
+                });
+         }
+
+        // if (hasUserRole($currentUser, 'Instructor') && empty($currentUser->is_admin)) { 
+        //     $eventLessons = $trainingEvent->eventLessons->filter(function ($lesson) use ($currentUser) {
+        //         return $lesson->instructor_id == $currentUser->id;
+        //     })->values();
+        // } else {
+        //     $eventLessons = $trainingEvent->eventLessons; 
+        // }
 
         $student = $trainingEvent->student;
         $lessonIds = $eventLessons->pluck('lesson_id')->filter()->unique();
@@ -1004,7 +1017,7 @@ class TrainingEventsController extends Controller
                 AND tg.sub_lesson_id = dt.task_id
 
             -- Join to get sublesson title
-            LEFT JOIN sub_lessons sl ON sl.id = dt.task_id
+            LEFT JOIN sub_lessons sl ON sl.id = dt.task_id 
 
             WHERE dt.event_id = ?
         ", [$trainingEvent->id]));
