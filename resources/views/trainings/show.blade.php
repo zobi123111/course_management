@@ -495,7 +495,7 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link " id="Lesson-tab" data-bs-toggle="tab" data-bs-target="#Lesson" type="button" role="tab" aria-controls="Lesson" aria-selected="true">Lesson Plan</button>
                 </li>
-                @if($trainingEvent?->course?->course_type === 'one_event' && $student)
+               @if(($trainingEvent?->course?->course_type === 'one_event'  || $trainingEvent?->course?->course_type === 'multi_lesson') && $student)
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="student-tab-{{ $student->id ?? ''}}" data-bs-toggle="tab" data-bs-target="#student-{{ $student->id ?? '' }}" type="button" role="tab" aria-controls="student-{{ $student->id ?? '' }}" aria-selected="false">
                         Overall Assessment
