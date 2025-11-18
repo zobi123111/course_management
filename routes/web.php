@@ -201,6 +201,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/course/delete', [CourseController::class, 'deleteCourse'])->name('course.delete'); 
     Route::get('/course/show/{course_id}', [LessonController::class, 'showCourse'])->name('course.show');
     Route::post('/courses/reorder', [CourseController::class, 'reorder'])->name('courses.reorder');
+    Route::post('/copy_lesson', [CourseController::class, 'copy_lesson'])->name('copy_lesson.index');
 
     //Lesson 
     Route::post('/lesson/create', [LessonController::class, 'createLesson'])->name('lesson.store');
