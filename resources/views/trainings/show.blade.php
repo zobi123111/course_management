@@ -821,7 +821,6 @@
 
                         @if($deferredLessons->isNotEmpty())
                         <strong><i class="fas fa-exclamation-circle"></i> Deferred Lessons:</strong>
-
                         @foreach($deferredLessons as $def)
                         @php
                         $start = strtotime($def->start_time);
@@ -901,6 +900,22 @@
                                 <strong><i class="fas fa-hourglass-half"></i> Credited Hours:</strong><br>
                                 {{ $def->defLesson->hours_credited ?? '00:00' }}
                             </div>
+                               @if($def->operation != 0)
+                            <div class="col-md-2 mt-2">
+                                <strong><i class="fas fa-hourglass-half"></i> Operation:</strong><br>
+                                    @if($def->operation == 1)
+                                        PF in LHS
+                                    @elseif($def->operation == 2)
+                                        PM in LHS
+                                    @elseif($def->operation == 3)
+                                        PF in RHS
+                                    @elseif($def->operation == 4)
+                                        PM in RHS
+                                    @else
+                                        N/A
+                                    @endif
+                                </div>
+                             @endif
 
                             <!-- {{-- Lesson Summary --}} -->
                             @if(!empty($def->lesson_summary))
@@ -1027,6 +1042,23 @@
                                 <strong><i class="fas fa-hourglass-half"></i> Credited Hours:</strong><br>
                                 {{ $def->defLesson->hours_credited ?? '00:00' }}
                             </div>
+                            @if($def->operation != 0)
+                            <div class="col-md-2 mt-2">
+                            <strong><i class="fas fa-hourglass-half"></i> Operation:</strong><br>
+                                @if($def->operation == 1)
+                                    PF in LHS
+                                @elseif($def->operation == 2)
+                                    PM in LHS
+                                @elseif($def->operation == 3)
+                                    PF in RHS
+                                @elseif($def->operation == 4)
+                                    PM in RHS
+                                @else
+                                    N/A
+                                @endif
+                             </div>
+                             @endif
+                           
                             <!-- {{-- Lesson Summary --}} -->
                             @if(!empty($def->lesson_summary))
                             <div class="col-md-12 mt-3">
@@ -1509,6 +1541,17 @@
                                                 </select>
                                                 <div id="resource_id_error" class="text-danger error_e"></div>
                                             </div>
+                                            <div class="mb-2">
+                                                <label class="form-label">Opeartion </label>
+                                                <select class="form-select" name="operation">
+                                                    <option value="0">Select Opeartion</option>
+                                                    <option value="1">PF in LHS</option>
+                                                    <option value="2">PM in LHS</option>
+                                                    <option value="3">PF in RHS</option>
+                                                    <option value="4">PM in RHS</option>
+
+                                                </select>
+                                            </div>
                                             <div class="mb-2 select_task" style="display:none">
                                                 <label class="form-label">Select Tasks <span class="text-danger">*</span></label>
                                                 {{-- TaskGrading items --}}
@@ -1682,6 +1725,17 @@
                                                 </select>
                                                 <div id="resource_id_uperror" class="text-danger error_e"></div>
                                             </div>
+
+                                            <div class="mb-2">
+                                                <label class="form-label">Opeartion </label>
+                                                <select class="form-select" name="edit_operation" id="edit_operation">
+                                                    <option value="0">Select Opeartion</option>
+                                                    <option value="1">PF in LHS</option>
+                                                    <option value="2">PM in LHS</option>
+                                                    <option value="3">PF in RHS</option>
+                                                    <option value="4">PM in RHS</option>
+                                                </select>
+                                            </div>  
                                             <div class="mb-2 select_task" id="select_task">
                                                 <label class="form-label">Select Tasks <span class="text-danger">*</span></label>
                                                 {{-- TaskGrading items --}}
@@ -1846,7 +1900,7 @@
                             <input type="hidden" name="event_id" id="event_id" value="{{ $trainingEvent->id }}">
                             <div class="accordion accordion-flush" id="faq-group-2">
                                 <?php
-                                $hours_credited = $eventLesson->hours_credited;
+                                $hours_credited = $eventLesson->hours_credited; 
                                 $hours_credited = "08:02:00"; // example
 
                                 list($hours, $minutes, $seconds) = explode(':', $eventLesson->hours_credited);
@@ -3620,7 +3674,10 @@
                     type: 'POST',
                     data: vdata,
                     success: function(response) {
-
+                        if(response.deferredLessons[0].operation){
+                             $('#edit_operation').val(response.deferredLessons[0].operation);
+                        }
+                         console.log(response.deferredLessons[0].operation);
                         $('#deferredLessons_id').val(response.deferredLessons[0].id);
 
                         if (lesson_type === "custom") {
@@ -3648,6 +3705,7 @@
                         $("input[name='select_courseTask[]']").prop("checked", false);
 
                         if (lesson_type === "custom") {
+                           
                             if (response.defLessonTasks && response.defLessonTasks.length > 0) {
                                 $.each(response.defLessonTasks, function(index, value) {
                                     $("input[name='select_courseTask[]'][value='" + value.task_id + "']").prop("checked", true);
@@ -3655,7 +3713,7 @@
 
                                 let selectedCourses = response.defLessonTasks.map(item => item.task.title);
                                 $(".course-dropdown .dropdown-label").text(selectedCourses.join(", "));
-                            } else {
+                            } else {  
                                 $(".course-dropdown .dropdown-label").text("Select Courses");
                             }
 

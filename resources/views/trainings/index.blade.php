@@ -1405,7 +1405,7 @@ $(document).ready(function() {
                         <label class="form-label">Role (Pilot 1)<span class="text-danger">*</span></label>
                         <select class="form-select" name="lesson_data[${currentIndex}][role_1]">
                             <option value="">Select Role</option>
-                            <option value="1" ${role1 === '1' ? 'selected' : ''}>PF-Pilot Flying</option>
+                            <option value="1" ${role1 === '1' ? 'selected' : ''}>PF-Pilot Flying</option> 
                             <option value="2" ${role1 === '2' ? 'selected' : ''}>PM-Pilot Monitoring</option>
                         </select>
                         <div id="lesson_data_${currentIndex}_rank_1${errorSuffix}" class="text-danger error_e"></div>

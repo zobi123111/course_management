@@ -179,7 +179,7 @@
                             <!-- <a href="javascript:void(0)" class="btn btn-light course-copy-icon"
                                 data-course-id="{{ encode_id($val->id) }}">
                                 <i class="fa fa-copy"></i> Copy
-                            </a> -->
+                            </a> --> 
                         </div>
                     </div>
                 </div>
@@ -423,12 +423,19 @@
                         </div>
                         <button type="button" id="addDocumentsContainer" class="btn btn-primary mt-2">Add More</button>
                     </div>
-                     <div class="form-group">
+                    <div class="form-group d-flex align-items-center gap-4">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="enable_cbta" name="enable_cbta">
                             <label class="form-check-label" for="enable_cbta"> Enable CBTA</label>
                         </div>
-                
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="instructor" name="instructor_cbta">
+                            <label class="form-check-label" for="instructor"> Instructor </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="examiner" name="examiner_cbta">
+                            <label class="form-check-label" for="examiner"> Examiner </label>
+                        </div>
                     </div>
 
                     <div class="modal-footer">
@@ -707,10 +714,18 @@
                         </div>
                         <button type="button" id="editAddDocumentsContainer" class="btn btn-primary mt-2">Add More</button>
                     </div>
-                    <div class="form-group">
+                     <div class="form-group d-flex align-items-center gap-4">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="edit_enable_cbta" name="edit_enable_cbta">
                             <label class="form-check-label" for="edit_enable_cbta"> Enable CBTA</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="edit_instructor" name="edit_instructor_cbta">
+                            <label class="form-check-label" for="instructor"> Instructor </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="edit_examiner" name="edit_examiner_cbta">
+                            <label class="form-check-label" for="examiner"> Examiner </label>
                         </div>
                     </div>
             
@@ -933,6 +948,20 @@
                        
                     } else {
                         $('#edit_enable_cbta').prop('checked', false);
+                        
+                    } 
+                    if (response.course.instructor_cbta == 1) {
+                        $('#edit_instructor').prop('checked', true);
+                       
+                    } else {
+                        $('#edit_instructor').prop('checked', false);
+                        
+                    } 
+                    if (response.course.examiner_cbta == 1) {
+                        $('#edit_examiner').prop('checked', true);
+                       
+                    } else {
+                        $('#edit_examiner').prop('checked', false);
                         
                     } 
 
