@@ -1273,6 +1273,7 @@ class UserController extends Controller
                 }
             } else {
                 $licence_2_required = 0;
+                $licenceFilePath_2 = null; 
             }
 
 

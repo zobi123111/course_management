@@ -172,7 +172,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     //Users Route
     Route::get('/users', [UserController::class, 'getData'])->name('user.index'); 
     Route::post('/users/save', [UserController::class, 'save_user'])->name('user.store');
-    Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.get'); 
+    Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.get');  
     Route::post('/users/update', [UserController::class, 'update'])->name('user.update'); 
     Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
     Route::post('/users/verify', [UserController::class, 'docsVerify'])->name('user.verify');
@@ -328,6 +328,8 @@ Route::get('/training/unarchieveUser', [TrainingEventsController::class, 'unarch
 Route::post('/unarchive-user', [TrainingEventsController::class, 'unarchive'])->name('unarchive.index');
 
 Route::post('/copy_course', [CourseController::class, 'copy_course'])->name('copy_course.index');
+
+Route::get('/calender', [TrainingEventsController::class, 'calender'])->name('calender.index');
 
 
     

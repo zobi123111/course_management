@@ -3148,4 +3148,9 @@ class TrainingEventsController extends Controller
         return response()->json(['success' => true, 'message' => 'Review saved successfully.']);
     }
 
+    public function calender()
+    {
+        return view('trainings.calender');
+    }
+
 }

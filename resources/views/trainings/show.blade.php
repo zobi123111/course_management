@@ -1840,8 +1840,7 @@
                 <div class="tab-pane fade" id="Lesson" role="tabpanel" aria-labelledby="Lesson-tab">
                     <div class="card-body">
                         @foreach($eventLessons as $eventLesson)
-                   
-
+                        <?php $isDisabled = false; ?>
                         <form action="" method="POST" id="gradingFrom">
                             @csrf
                             <input type="hidden" name="event_id" id="event_id" value="{{ $trainingEvent->id }}">
@@ -2315,7 +2314,7 @@
                                             <table class="table table-striped table-bordered align-middle mb-0">
                                                 <thead class="table-light text-center">
                                                     <tr>
-                                                        <th scope="col">User</th>
+                                                        <th scope="col">User</th> 
                                                         <th scope="col">Lesson</th>
                                                         <th scope="col">Status</th>
                                                         <th scope="col">Date</th>
