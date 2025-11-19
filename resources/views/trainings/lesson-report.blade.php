@@ -97,7 +97,8 @@
                 @endif<br>
         @endif
         <!-- ATO Num -->
-      @if(!empty($event->course->ato_num))
+        
+      @if(!empty($event->course->ato_num)) 
         @php
             $atoNum = $event->course->ato_num;
             // Remove prefixes "easa-" or "uk-" (case-insensitive)
@@ -176,7 +177,7 @@
 
 
     <!-- // Examiner competency grading  -->
-   @if(Auth::user()->role == 1) 
+   @if($event->course->examiner_cbta == 1) 
     <div class="section">
         <h2>Examiner Competency</h2>
         <table>
@@ -228,7 +229,7 @@
 
     <!-- // Instructor competency grading  -->
    
-     @if(Auth::user()->role == 1) 
+     @if($event->course->instructor_cbta == 1) 
     <div class="section">
         <h2>Instructor Competency</h2>
         <table>
@@ -293,7 +294,7 @@
     </div>
 
     {{-- Instructor Comment Section --}}
-    @if(Auth::user()->role == 1) 
+     @if($event->course->instructor_cbta == 1) 
     <div class="section">
         <h2>Instructor Comment</h2>
         <p><strong>Result:</strong> {{ $event->eventLessons[0]->instructor_comment ?? '' }}</p>

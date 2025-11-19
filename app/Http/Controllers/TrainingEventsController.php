@@ -1256,7 +1256,7 @@ class TrainingEventsController extends Controller
         }
 
 
-
+      // dump($deferredLessons);
         return response()->json(['success' => true,  'defTasks' => $defTasks, 'deferredLessons' => $deferredLessons, 'defLessonTasks' => $defLessonTasks]);
     }
 
@@ -1377,7 +1377,10 @@ class TrainingEventsController extends Controller
                 'departure_airfield'   => $validatedData['departure_airfield'],
                 'destination_airfield' => $validatedData['destination_airfield'],
                 'created_by'    => $authId,
-                'lesson_type'   => $request->lesson_type
+                'lesson_type'   => $request->lesson_type,
+                'operation'     => $request->edit_operation ?? 0,
+               
+
             ];
 
             // Update lesson details
@@ -1486,7 +1489,8 @@ class TrainingEventsController extends Controller
                 'departure_airfield'   => $validatedData['departure_airfield'],
                 'destination_airfield' => $validatedData['destination_airfield'],
                 'created_by'    => $authId,
-                'lesson_type'   => $request->lesson_type
+                'lesson_type'   => $request->lesson_type,
+                'operation'     => $request->edit_operation ?? 0,
             ];
 
             // Update lesson details
@@ -2112,7 +2116,7 @@ class TrainingEventsController extends Controller
         $userId = $userID;
 
         $event = TrainingEvents::with([
-            'course:id,course_name,ato_num',
+            'course:id,course_name,ato_num,enable_cbta,instructor_cbta,examiner_cbta',
             'orgUnit:id,org_unit_name,org_logo',
             'instructor:id,fname,lname',
             'student:id,fname,lname',
@@ -2189,7 +2193,7 @@ class TrainingEventsController extends Controller
             'instructor_grading' => $instructor_grading
         ]);
 
-        $filename = 'Lesson_Report_' . Str::slug($lesson->lesson_title) . '.pdf'; 
+        $filename = 'Lesson_Report_' . Str::slug($lesson->lesson_title) . '.pdf';  
         return $pdf->download($filename);
     }
 
@@ -2400,7 +2404,8 @@ class TrainingEventsController extends Controller
                 'departure_airfield'   => $validatedData['departure_airfield'],
                 'destination_airfield' => $validatedData['destination_airfield'],
                 'created_by'    => $authId,
-                'lesson_type'   => $request->lesson_type
+                'lesson_type'   => $request->lesson_type,
+                'operation'     => $request->operation ?? 0,
             ]);
             // Step 3: Create def_lesson_tasks entries
             foreach ($validatedData['select_courseTask'] as $index => $taskId) {
@@ -2491,7 +2496,9 @@ class TrainingEventsController extends Controller
                 'departure_airfield'   => $validatedData['departure_airfield'],
                 'destination_airfield' => $validatedData['destination_airfield'],
                 'created_by'    => $authId,
-                'lesson_type'   => $request->lesson_type
+                'lesson_type'   => $request->lesson_type,
+                'operation'     => $request->operation ?? 0,
+
             ]);
 
             // Step 3: Create def_lesson_tasks entries

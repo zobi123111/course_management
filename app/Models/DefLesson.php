@@ -29,7 +29,8 @@ class DefLesson extends Model
         'lesson_type',
         'is_locked',
         'lesson_summary',
-        'instructor_comment'
+        'instructor_comment',
+        'operation'
     ];
 
     protected $casts = [
