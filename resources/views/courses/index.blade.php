@@ -423,20 +423,20 @@
                         </div>
                         <button type="button" id="addDocumentsContainer" class="btn btn-primary mt-2">Add More</button>
                     </div>
-                    <div class="form-group d-flex align-items-center gap-4">
+                    <div class="form-group">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="enable_cbta" name="enable_cbta">
-                            <label class="form-check-label" for="enable_cbta"> Enable CBTA</label>
+                            <label class="form-check-label" for="enable_cbta"> Enable Pilot Competencies </label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="instructor" name="instructor_cbta">
-                            <label class="form-check-label" for="instructor"> Instructor </label>
+                            <label class="form-check-label" for="instructor"> Enable Instructor Competencies </label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="examiner" name="examiner_cbta">
-                            <label class="form-check-label" for="examiner"> Examiner </label>
+                            <label class="form-check-label" for="examiner"> Enable Examiner Competencies </label>
                         </div>
-                    </div>
+                     </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -714,20 +714,20 @@
                         </div>
                         <button type="button" id="editAddDocumentsContainer" class="btn btn-primary mt-2">Add More</button>
                     </div>
-                     <div class="form-group d-flex align-items-center gap-4">
+                
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="edit_enable_cbta" name="edit_enable_cbta">
-                            <label class="form-check-label" for="edit_enable_cbta"> Enable CBTA</label>
+                            <label class="form-check-label" for="edit_enable_cbta"> Enable Pilot Competencies </label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="edit_instructor" name="edit_instructor_cbta">
-                            <label class="form-check-label" for="instructor"> Instructor </label>
+                            <label class="form-check-label" for="instructor"> Enable Instructor Competencies </label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="edit_examiner" name="edit_examiner_cbta">
-                            <label class="form-check-label" for="examiner"> Examiner </label>
+                            <label class="form-check-label" for="examiner"> Enable Examiner Competencies </label>
                         </div>
-                    </div>
+                    
             
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button> 

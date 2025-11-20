@@ -869,14 +869,14 @@ class TrainingEventsController extends Controller
     {
         $currentUser = auth()->user();
         $trainingEvent = TrainingEvents::with([
-            'course:id,course_name,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num,instructor_cbta,examiner_cbta,enable_mp_lifus',
+            'course:id,course_name,enable_mp_lifus,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num,instructor_cbta,examiner_cbta,enable_mp_lifus',
             'course.documents',
             'group:id,name,user_ids',
             'instructor:id,fname,lname',
             'student:id,fname,lname,licence',
             'resource:id,name',
             'eventLessons' => function ($q) {
-                $q->orderBy('position', 'asc'); // 👈 enforce ordering here
+                $q->orderBy('position', 'asc'); 
             },
             'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id,position,instructor_cbta,examiner_cbta',
             'eventLessons.instructor:id,fname,lname', 
@@ -1126,7 +1126,7 @@ class TrainingEventsController extends Controller
                         
 
         $grouped_customLogs = $training_custom_logs->groupBy('lesson_id');
-
+      
         return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs'));
     }
 
