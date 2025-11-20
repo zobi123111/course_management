@@ -168,15 +168,14 @@ Route::group(['middleware' => ['auth']], function () {
 Route::middleware(['auth', 'role.permission'])->group(function () { 
     //Dashboard Route
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
-    Route::post('/settings', [SettingController::class, 'store'])->name('settings.store');
+  
     Route::get('/users/document-data', [UserController::class, 'userData'])->name('users.document.data');
     
     //Users Route
     Route::get('/users', [UserController::class, 'getData'])->name('user.index'); 
     Route::post('/users/save', [UserController::class, 'save_user'])->name('user.store');
-    Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.get'); 
-    Route::post('/users/update', [UserController::class, 'update'])->name('user.update');
+    Route::post('/users/edit', [UserController::class, 'getUserById'])->name('user.get');  
+    Route::post('/users/update', [UserController::class, 'update'])->name('user.update'); 
     Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
     Route::post('/users/verify', [UserController::class, 'docsVerify'])->name('user.verify');
     Route::post('/users/verify_rating', [UserController::class, 'verify_rating'])->name('user.verify_rating');
@@ -204,6 +203,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/course/delete', [CourseController::class, 'deleteCourse'])->name('course.delete'); 
     Route::get('/course/show/{course_id}', [LessonController::class, 'showCourse'])->name('course.show');
     Route::post('/courses/reorder', [CourseController::class, 'reorder'])->name('courses.reorder');
+    Route::post('/copy_lesson', [CourseController::class, 'copy_lesson'])->name('copy_lesson.index');
 
     //Lesson 
     Route::post('/lesson/create', [LessonController::class, 'createLesson'])->name('lesson.store');
@@ -300,7 +300,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
 
     // Reporting section Routes
     Route::get('/reports', [ReportsController::class, 'index'])->name('reports.index');
-    Route::get('/reports/course/{hashedId}', [ReportsController::class, 'showCourse'])->name('reports.course');
+    Route::get('/reports/course/{hashedId}', [ReportsController::class, 'showCourse'])->name('reports.course'); 
     Route::post('/students/archive', [ReportsController::class, 'updateStudentArchiveStatus'])->name('students.archive.ajax'); 
 
     // Student specific reporting section Routes
@@ -352,6 +352,8 @@ Route::get('/lessons-by-course', [QuizController::class, 'getLessonsByCourse'])-
 
 Route::post('/import-csv', [QuizController::class, 'importCsv'])->name('import.csv');
 Route::get('/export-csv', [QuizController::class, 'exportCsv'])->name('export.csv');
+Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+Route::post('/settings', [SettingController::class, 'store'])->name('settings.store');
 
 Route::post('/review_store', [TrainingEventsController::class, 'review_store'])->name('review.store');
 
@@ -361,6 +363,12 @@ Route::get('/training/unarchieveUser', [TrainingEventsController::class, 'unarch
 
 Route::post('/unarchive-user', [TrainingEventsController::class, 'unarchive'])->name('unarchive.index');
 
+Route::post('/copy_course', [CourseController::class, 'copy_course'])->name('copy_course.index');
+
+Route::get('/calender', [TrainingEventsController::class, 'calender'])->name('calender.index');
+
+
+    
 Route::get('/clear-cache', function() {
     Artisan::call('optimize:clear');
     return 'Application cache has been cleared';

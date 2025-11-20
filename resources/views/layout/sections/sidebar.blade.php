@@ -4,6 +4,7 @@
 
       <ul class="sidebar-nav" id="sidebar-nav">
           @foreach(getAllowedPages() as $page)
+          <?php // dump($page); ?>
             <!-- {{$page->modules}} -->
                 <li class="nav-item" style="list-style: none;">
                     <a class="nav-link {{ Request::is($page->route_name) ? 'active' : '' }}" href="{{ url($page->route_name) }}">
@@ -25,7 +26,7 @@
             @endphp
 
             @if(isset($setting->site_image))
-                <img src="{{ asset('storage/' . $setting->site_image) }}" alt="" class="site_logo">
+                <img src="{{ asset('storage/' . $setting->site_image) }}" alt="" class="site_logo" style="width:108px;height:65px">
             @else
                 <img src="{{env('SITE_LOGO')}}" alt="" class="avms_logo">
             @endif

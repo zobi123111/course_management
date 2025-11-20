@@ -23,7 +23,11 @@ class TrainingEventLessons extends Model
         'departure_airfield',
         'destination_airfield',
         'instructor_license_number',
-        'is_locked'
+        'is_locked',
+        'operation1',
+        'role1',
+        'operation2',
+        'role2'
     ];
 
     // protected $dates = ['lesson_date', 'start_time', 'end_time', 'total_time', 'deleted_at'];

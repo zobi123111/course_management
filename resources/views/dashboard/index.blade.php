@@ -1,5 +1,6 @@
 @section('title', 'Dashboard')
 
+
 @php
 $currentUser = Auth()->user();
 if (empty($currentUser->is_admin) && empty($currentUser->is_owner)) {
@@ -23,9 +24,6 @@ $user = Auth::user();
 
 // Check for Admin
 if ($user->is_admin == "1") {
-
-
-
     foreach ($users as $u) {
         if ($u->is_activated == 0 && $u->status == 1) {
             $userDoc = $u->documents;
@@ -200,29 +198,27 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
     </thead>
     <tbody>
         @php
-
         if (!function_exists('getTooltip')) {
-        function getTooltip($status, $type) {
-        return match ($status) {
-        'Red' => "This {type} has expired.",
-        'Yellow' => "This {type} will expire soon.",
-        'Green' => "This {type} is valid.",
-        'Non-Expiring' => "This {type} does not expire.",
-        default => "Status unknown.",
-        };
+
+     function getTooltip($status, $type) {
+            return match ($status) {
+                'Red' => "This {$type} has expired.",
+                'Yellow' => "This {$type} will expire soon.",
+                'Green' => "This {$type} is valid.",
+                'Non-Expiring' => "This {$type} does not expire.",
+                default => "Status unknown for {$type}.",
+            };
         }
         }
-
-
         @endphp
-
         @foreach($users as $user)
+        @if($user->is_activated == 0 && $user->status == 1)
         <tr>
             <td>{{ $user->fname }} {{ $user->lname }}</td>
-
             @php
             $doc = $user->documents;
             $ratingsByLicence = $user->usrRatings->groupBy('linked_to');
+           
 
             @endphp
 
@@ -236,11 +232,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 $date = 'Non-Expiring';
                 } else {
                 $status = $doc->licence_status;
+              
                 $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
                 $date = $doc->licence_expiry_date ? date('d/m/Y', strtotime($doc->licence_expiry_date)) : 'N/A';
                 }
                 $tooltip = getTooltip($status, 'UK License');
                 @endphp
+                
                 <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
                 @else
                 <span class="text-muted">Not Uploaded</span>
@@ -253,7 +251,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     @php
                     $r = $ur->rating;
                     $expiry = $ur->expiry_date ? \Carbon\Carbon::parse($ur->expiry_date)->format('d/m/Y') : 'N/A';
-                    $status = $ur->expiry_status; // Uses accessor from model
+                    $status = $ur->expiry_status;
                     $color = match($status) {
                     'Red' => 'danger',
                     'Orange' => 'warning',
@@ -267,6 +265,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
                         {{ $r->name ?? '' }}
                     </span>
+                    
 
                     {{-- Nested (child) ratings --}}
                     @if($r->children && $r->children->count())
@@ -281,7 +280,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 @endif
             </td>
 
-            <!-- <td>
+        
                 <?php
                 $groupedEASA = [];
                 if (isset($ratingsByLicence['licence_1'])) {
@@ -290,6 +289,11 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         $child_id = $ratings->rating_id;
                         $parent_id = $ratings->parent_id;
                         // echo "parent $parent_id  child $child_id <br>";
+                         $parentExpiry = $ratings->expiry_date ?? null;
+                       
+                          $parentStatus = getExpiryStatus($parentExpiry, $parent->non_expiring ?? false);
+                         // dump($parentStatus);
+                           
 
                         if ($parent_id === null && $ratings->rating) {
 
@@ -321,19 +325,8 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 }
                 ?>
 
-                @foreach ($groupedEASA as $entry)
-                <strong>{{ $entry['parent'] }}</strong><br>
-                @if (!empty($entry['children']))
-                <ul style="margin-left: 15px;">
-                    @foreach ($entry['children'] as $child)
-                    <li>{{ $child }}</li>
-                    @endforeach
-                </ul>
-                @endif
-                <br>
-                @endforeach
-            </td> -->
-            <td class="lic_rating_td">
+       
+ <td class="lic_rating_td">
                 <?php
                 $groupedEASA = [];
                 if (isset($ratingsByLicence['licence_1'])) {
@@ -436,10 +429,6 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 @endif
                 @endforeach
             </td>
-
-
-
-
 
 
             {{-- Licence 2 --}}
@@ -614,11 +603,6 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
             </td>
 
 
-
-
-
-
-
             {{-- Medical 1 --}}
             <td>
                 @if($doc && $doc->medical_file_uploaded)
@@ -671,6 +655,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 </a>
             </td>
         </tr>
+        @endif
         @endforeach
     </tbody>
 </table>

@@ -15,7 +15,7 @@ class CourseGroup extends Pivot
     protected $table = 'courses_group';
 
     protected $fillable = [
-        'course_id',
+        'courses_id',
         'group_id',
     ];
 }

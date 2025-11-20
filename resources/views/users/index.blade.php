@@ -516,6 +516,9 @@
                         <div id="edit_licence_error_up" class="text-danger error_e"></div>
                         <input type="file" name="edit_licence_file" id="edit_licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
                         <div id="edit_licence_file_error_up" class="text-danger error_e"></div>
+                        <div class="col-md-6 mt-2" id="uk_licence_file" style="display: none;" >
+                            <a  target="_blank" class="btn btn-sm btn-outline-primary">View Uploaded File</a>
+                        </div>
 
                         <div id="edit_licence_rating_section" class="mt-3" style="display: none;">
                             <label class="form-label">Select Ratings for UK Licence</label>
@@ -533,7 +536,8 @@
 
                             <label for="edit_licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
                             <input type="checkbox" name="edit_licence_2_verification_required" id="edit_licence_2_verification_required" class="ms-2" value="1">
-                        </div>
+                    </div>
+                   
                         <div id="edit_second_licence_section" style="display: none;" class="mt-3">
                             <input type="text" name="edit_licence_2" id="edit_licence_2" class="form-control edit_licence_2" placeholder="Enter EASA Licence Number">
                             <div id="edit_licence_2_error" class="text-danger error_e"></div>
@@ -541,6 +545,9 @@
                             <input type="file" name="edit_licence_file_2" id="edit_licence_file_2" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
                             <div id="edit_licence_file_2_error" class="text-danger error_e"></div>
                         </div>
+                        <div class="col-md-6 mt-2" id="easa_licence_file" style="display:none;" >
+                            <a  target="_blank" class="btn btn-sm btn-outline-primary">View Uploaded File</a>
+                         </div>
 
                            <div id="edit_licence_2_rating_section" class="mt-3">
                                 <label class="form-label">Select Ratings for EASA Licence</label>
@@ -740,7 +747,7 @@
                         </select>
                         <div id="status_error_up" class="text-danger error_e"></div>
                     </div>
-                    <div class="col-md-6" style="display:none" id="archiveStatus_col">
+                    <div class="col-md-6"  id="archiveStatus_col">
                         <label for="archive_status" class="form-label">Archive Status</label>
                         <select class="form-select" name="archive_status" id="archive_status" aria-label="Default select example">
                             <option value="0" selected>UnArchive</option>
@@ -1546,6 +1553,7 @@
                 $('#edit_licence_file').show().prop('required', true);
                 // $('#edit_license2').show();
                 $('#edit_licence_rating_section').show();
+                $('#uk_licence_file').show();
                 if (!$('#edit_licence_rating_value').hasClass("select2-hidden-accessible")) {
                     $('#edit_licence_rating_value').select2({
                         width: '100%'
@@ -1558,7 +1566,7 @@
                 $('#edit_licence_rating').val(null); // clear selection
                 //  $('#edit_licence_2').val('');
                 $('#edit_licence_file_2').val('');
-                // $('#edit_license2').hide();
+                $('#uk_licence_file').hide();
             }
         });
 
@@ -1568,12 +1576,15 @@
                 $('#edit_licence_2').prop('required', true);
                 $('#edit_licence_file_2').prop('required', true);
                 $('#edit_licence_2_rating_section').show();
+                $('#easa_licence_file').show();
+
             } else {
                 $('#edit_licence_2').prop('required', false).val('');
                 $('#edit_licence_file_2').prop('required', false).val('');
                 $('#edit_licence_2_rating_section').hide();
                 $('#edit_licence_2_rating').val(null); // clear selection
                 $('#edit_second_licence_section').hide();
+                $('#easa_licence_file').hide();
             }
         });
 
@@ -1653,7 +1664,7 @@
                     $('#edit_ou_id').val(response.user.ou_id);
                     $('#edit_status').val(response.user.status);
                     $('#archive_status').val(response.user.is_activated);
-
+                    console.log(response);
                     edit_selectBoxIndex = response.userRatings_licence_1.length || 0;
                     if (response.licence1 == 1) {
                         $('#edit_licence_rating_section').show();
@@ -1850,11 +1861,11 @@
                     var userRoleId = response.user.role;
                     $('#role_id option').removeAttr('selected');
                     $('#edit_role option[value="' + userRoleId + '"]').attr('selected','selected');
-                    if(userRoleId == 18){
-                       $('#archiveStatus_col').show();
-                    }else{
-                       $('#archiveStatus_col').hide(); 
-                    }
+                    // if(userRoleId == 18){
+                    //    $('#archiveStatus_col').show();  
+                    // }else{
+                    //    $('#archiveStatus_col').hide(); 
+                    // }
                     const document = response.user.documents ?? {};
                     const ratings = response.user_ratings || {};
 
@@ -1895,9 +1906,11 @@
                         } else {
                             $('#edit_licence').val('');
                         }
-                    } else {
-                        $('#edit_licence_checkbox').prop('checked', false).trigger('change');
-                    }
+                        } else {
+                            $('#edit_licence_checkbox').prop('checked', false).trigger('change');
+                        }
+
+            
 
                   
                     if (response.user.licence_2_required) {
@@ -1990,6 +2003,26 @@
                         }
                     } else {
                         $('#edit_licence_checkbox').prop('checked', false).trigger('change');
+                    }
+                    if(document.licence_file){
+                                console.log(document.licence_file);
+                                 $('#uk_licence_file a').attr('href', '/storage/' + document.licence_file);
+                                $('#uk_licence_file').show()
+                                 $('#uk_licence_file a').show()
+                        }
+                        else{
+                            $('#uk_licence_file').hide()
+                            $('#uk_licence_file a').hide()
+                        }
+                    if(document.licence_file_2){
+                        console.log(document.licence_file_2);
+                        $('#easa_licence_file a').attr('href', '/storage/' + document.licence_file_2);
+                         $('#easa_licence_file').show();
+                        $('#easa_licence_file a').show();
+                    }else{
+                       
+                          $('#easa_licence_file a').hide();
+                         $('#easa_licence_file').hide();
                     }
 
                     if (response.user.medical_2_required == 1) {

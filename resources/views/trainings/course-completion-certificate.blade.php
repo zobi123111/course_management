@@ -51,11 +51,11 @@
       @endif
     </div>
     <h3 style="text-align: center; font-weight: bold; color: #35a1e1; margin-bottom: 0px; padding: bottom 0;">{{ $event->orgUnit?->org_unit_name }} ATO COURSE COMPLETION CERTIFICATE</h3>
-    <h4 style="text-align: center; color: #083d5d; font-weight: 600; margin-bottom: 0px; margin: top 0; font-size:20px;">{{ $event->course?->course_name }}</h4>
+   
 
     <div style="text-align: center; margin: 0px 0 30px;">
       <p>This is to certify that:</p>
-      <h5 style="font-weight: bold; margin: 10px 0;">{{ $student->fname }} {{ $student->lname }}</h5> 
+      <h3 style="font-weight: bold; margin: 10px 0;">{{ $student->fname }} {{ $student->lname }}</h3> 
       <p>has successfully Completed: <strong style="color: #35a1e1;">{{ $event->course?->course_name }}:</strong></p>
     </div>
 
@@ -92,20 +92,21 @@
           <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">15/11/2023</td>
         </tr> -->
         <tr>
-          <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Hours, flight:</th>
+          <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Hours TK:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">{{ $flightTime ?? 'N/A' }}</td>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Hours, simulator:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">{{ $simulatorTime ? "$simulatorTime (OTD)" : '' }}</td>
         </tr>
         <tr style="background-color: #f8f9fa;">
-          <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Recommended for LST by:</th>
+          <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;"> Instructor (Recommendation):</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">@if ($recommendedBy)
             {{ $recommendedBy->fname }} {{ $recommendedBy->lname }}
+            <?php// dump($recommendedBy); ?>
         @else
             &nbsp;
         @endif</td>
-          <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Licence No:</th>
-          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">{{ $student->documents->licence ?? 'N/A' }}</td>
+          <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Licence Number:</th>
+          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">{{ $licence1 ?? 'N/A' }}</td>
         </tr>
       </tbody>
     </table>
@@ -113,7 +114,7 @@
     <div style="text-align: center; margin-top: 60px;">
       <img src="images/AvMS_Logo.png" alt="Signature" style="height: 50px; margin-bottom: 5px;">
       <p style="font-weight: 600;">{{ $event->instructor->fname ?? '' }} {{ $event->instructor->lname ?? '' }}</p>
-      <p style="color: #6c757d;">Accountable Manager<br>{{ $event->orgUnit?->org_unit_name }}</p>
+      <p style="color: #6c757d;"> Head of Training <br>{{ $event->orgUnit?->org_unit_name }}</p>
     </div>
 
   <!-- <div style="font-size: 0.75rem; margin-top: 50px;">

@@ -38,7 +38,7 @@
     <table width="100%" style="border: none; border-collapse: collapse;">
         <tr>
             <td style="border: none; text-align: left; vertical-align: top;">
-                <h1 style="display: inline-block; margin: 0;">Lesson Report -</h1>
+                <h1 style="display: inline-block; margin: 0;">Lesson Report -</h1> 
                 <h2 style="display: inline-block; margin: 0 0 3px 9px;">{{ $lesson->lesson_title }}</h2>
             </td>
             <td style="border: none; text-align: right; vertical-align: top;">
@@ -49,6 +49,7 @@
         </tr>
     </table>
     <hr>
+   
     <div class="section">
         <strong>Date:</strong> {{ date('M d, Y', strtotime($eventLesson?->lesson_date)) }}<br>
         <strong>Student Name:</strong> {{ $event?->student?->fname }} {{ $event?->student?->lname }}<br>
@@ -70,6 +71,43 @@
         <strong>Aircraft:</strong> N/A<br>
         <strong>Reg:</strong> N/A<br>
         @endif
+        @if(!empty($eventLesson->operation1))
+
+           <strong>Operation :</strong>  
+               @if($eventLesson->operation1 == 1)
+                    PF in LHS
+                @elseif($eventLesson->operation1 == 2)
+                    PM in LHS
+                @elseif($eventLesson->operation1 == 3)
+                    PF in RHS
+                @elseif($eventLesson->operation1 == 4) 
+                    PM in RHS
+                @endif
+            <br>
+        @endif
+        <!-- // Rank -->
+        @if(!empty($event->rank))
+        <strong>Rank :</strong>    
+                @if($event->rank == 1)
+                    Captain
+                @elseif($event->rank == 2)
+                    First Officer
+                @elseif($event->rank == 3)
+                    Second Officer
+                @endif<br>
+        @endif
+        <!-- ATO Num -->
+        
+      @if(!empty($event->course->ato_num)) 
+        @php
+            $atoNum = $event->course->ato_num;
+            // Remove prefixes "easa-" or "uk-" (case-insensitive)
+            $atoNum = preg_replace('/^(easa-|uk-)/i', '', $atoNum);
+        @endphp
+        <strong>ATO Num:</strong> {{ strtoupper($atoNum) }}
+    @endif
+
+  
     </div>
 
     <div class="section">
@@ -85,8 +123,7 @@
             </thead>
             <tbody>
                 @foreach($event->taskGradings as $task)
-                <?php // dump($task); 
-                ?>
+             
                 <tr>
                     <td>{{ $task->subLesson->title ?? 'N/A' }}</td>
                     <td>
@@ -140,7 +177,7 @@
 
 
     <!-- // Examiner competency grading  -->
-
+   @if($event->course->examiner_cbta == 1) 
     <div class="section">
         <h2>Examiner Competency</h2>
         <table>
@@ -184,12 +221,15 @@
             </tbody>
         </table>
     </div>
+    @endif
+  
 
 
     <!-- // End Examiner competency grading  -->
 
     <!-- // Instructor competency grading  -->
-
+   
+     @if($event->course->instructor_cbta == 1) 
     <div class="section">
         <h2>Instructor Competency</h2>
         <table>
@@ -233,6 +273,7 @@
             </tbody>
         </table>
     </div>
+    @endif
 
 
     <!-- // End Instructor competency grading  -->
@@ -248,15 +289,17 @@
 
     {{-- Lesson Summary Section --}}
     <div class="section">
-        <h2>Lesson Summary</h2>
+        <h2>Lesson Comment</h2>
         <p><strong>Result:</strong> {{ $event->eventLessons[0]->lesson_summary ?? '' }}</p>
     </div>
 
     {{-- Instructor Comment Section --}}
+     @if($event->course->instructor_cbta == 1) 
     <div class="section">
         <h2>Instructor Comment</h2>
         <p><strong>Result:</strong> {{ $event->eventLessons[0]->instructor_comment ?? '' }}</p>
     </div>
+    @endif
 
 
 

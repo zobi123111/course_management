@@ -51,7 +51,7 @@ class UnarchiveUser extends Command
                 // Check if last event ended at least 1 month ago
                 if ($latestEndDate && $today->diffInMonths($latestEndDate) >= 1) {
                     $user = User::find($student->student_id);
-                    if ($user && $user->role == 3) {   
+                    if ($user && $user->role == 3 && $user->unarchived_by ==NULL) {   
                         $user->update(['is_activated' => 1]);
                     }
                 }

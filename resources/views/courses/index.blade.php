@@ -176,6 +176,10 @@
                                 <i class="fa-solid fa-trash"></i> Delete
                             </a>
                             @endif
+                            <!-- <a href="javascript:void(0)" class="btn btn-light course-copy-icon"
+                                data-course-id="{{ encode_id($val->id) }}">
+                                <i class="fa fa-copy"></i> Copy
+                            </a> --> 
                         </div>
                     </div>
                 </div>
@@ -319,6 +323,31 @@
                         </div>
                         <button type="button" class="btn btn-sm btn-outline-primary" id="add_another_time_btn">Add More</button>
                     </div>
+                    <!-- <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="enable_mp_lifus"  value="1">
+                            <label class="form-check-label" for="enable_mp_lifus">
+                                Enable MP LIFUS
+                            </label>
+                        </div>
+                    </div> -->
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="enable_more_mp">
+                            <label class="form-check-label" for="enable_more_mp">
+                                MP Event
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="course_type" class="form-label">Enable MP Event</label>
+                        <select class="form-select" name="enable_mp_lifus" id="enable_mp_lifus">
+                            <option value="1">SP Event</option>
+                            <option value="2">MP Event</option>
+                            <option value="3">SP+MP Event</option>
+                        </select>
+                    </div>
+                 
 
                     <div class="form-group">
                         <label for="groups" class="form-label">Assigned Resource<span
@@ -394,12 +423,19 @@
                         </div>
                         <button type="button" id="addDocumentsContainer" class="btn btn-primary mt-2">Add More</button>
                     </div>
-                     <div class="form-group">
+                    <div class="form-group d-flex align-items-center gap-4">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="enable_cbta" name="enable_cbta">
                             <label class="form-check-label" for="enable_cbta"> Enable CBTA</label>
                         </div>
-                
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="instructor" name="instructor_cbta">
+                            <label class="form-check-label" for="instructor"> Instructor </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="examiner" name="examiner_cbta">
+                            <label class="form-check-label" for="examiner"> Examiner </label>
+                        </div>
                     </div>
 
                     <div class="modal-footer">
@@ -531,6 +567,7 @@
                             </label>
                         </div>
                     </div>
+                
                     <div id="editCustomTimeConfigSection" style="display:none; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-top: 15px;">
                         <div id="edit_custom_time_tracking_container">
                             <div class="custom-time mb-3">
@@ -544,6 +581,32 @@
                         </div>
                         <button type="button" class="btn btn-sm btn-outline-primary" id="edit_add_another_time_btn">Add More</button>
                     </div>
+                    <!-- <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="enable_mp_lifus" id="enable_mp_lifus" value="1">
+                            <label class="form-check-label" for="enable_mp_lifus">
+                                Enable MP Lifus
+                            </label>
+                        </div>
+                    </div> --> 
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="edit_enable_more_mp">
+                            <label class="form-check-label" for="edit_enable_more_mp">
+                                MP Event
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="course_type" class="form-label">Enable MP Event</label>
+                        <select class="form-select" name="enable_mp_lifus" id="edit_enable_mp_lifus">
+                            <option value="1">SP Event</option>
+                            <option value="2">MP Event</option>
+                            <option value="3">SP+MP Event</option>
+                        </select>
+                    </div>
+
                     <div class="form-group">
                         <label for="groups" class="form-label">Assigned Resource<span
                                 class="text-danger"></span></label>
@@ -651,10 +714,18 @@
                         </div>
                         <button type="button" id="editAddDocumentsContainer" class="btn btn-primary mt-2">Add More</button>
                     </div>
-                    <div class="form-group">
+                     <div class="form-group d-flex align-items-center gap-4">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="edit_enable_cbta" name="edit_enable_cbta">
                             <label class="form-check-label" for="edit_enable_cbta"> Enable CBTA</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="edit_instructor" name="edit_instructor_cbta">
+                            <label class="form-check-label" for="instructor"> Instructor </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="edit_examiner" name="edit_examiner_cbta">
+                            <label class="form-check-label" for="examiner"> Examiner </label>
                         </div>
                     </div>
             
@@ -719,8 +790,6 @@
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {
-                        console.log('Sublesson order updated');
-
                         let $msg = $('#reoderMessage');
                         if ($msg.length) {
                             $msg.removeClass('d-none')
@@ -879,9 +948,36 @@
                        
                     } else {
                         $('#edit_enable_cbta').prop('checked', false);
+                        
+                    } 
+                    if (response.course.instructor_cbta == 1) {
+                        $('#edit_instructor').prop('checked', true);
                        
-                    }
+                    } else {
+                        $('#edit_instructor').prop('checked', false);
+                        
+                    } 
+                    if (response.course.examiner_cbta == 1) {
+                        $('#edit_examiner').prop('checked', true);
+                       
+                    } else {
+                        $('#edit_examiner').prop('checked', false);
+                        
+                    } 
 
+                 if (response.course.enable_mp_lifus == 1) {
+                        // 🔹 Only SP Event
+                        $('#edit_enable_more_mp').prop('checked', false);
+                        $('#edit_enable_mp_lifus').val(1);
+                        $('#edit_enable_mp_lifus option[value="2"], #edit_enable_mp_lifus option[value="3"]').hide();
+                    } 
+                    else if (response.course.enable_mp_lifus == 2 || response.course.enable_mp_lifus == 3) {
+                        // 🔹 MP Event or SP+MP Event
+                        $('#edit_enable_more_mp').prop('checked', true);
+                        $('#edit_enable_mp_lifus').val(response.course.enable_mp_lifus);
+                        $('#edit_enable_mp_lifus option[value="2"], #edit_enable_mp_lifus option[value="3"]').show();
+                    }
+                  
 
                     // Populate Resources
                     if (response.resources) {
@@ -909,7 +1005,7 @@
                             }
                             if (value.easa_ato_number) {
                                 ato_number += "<option value='easa-" + value.easa_ato_number + "'>EASA ATO Number - " + value.easa_ato_number + "</option>";
-                                hasData = true;
+                                hasData = true; 
                             }
                         });
 
@@ -1014,7 +1110,7 @@
 
                     $('#edit_instructor_documents_items').empty(); // Clear existing containers
                     let instructor_documents = response.course.documents;
-                    // console.log(instructor_documents);
+                   
                     if (instructor_documents.length > 0) {
                         instructor_documents.forEach((instructor_documents, index) => {
                             let instructorDocumentHtml = generateDocumentsContainerHtml(
@@ -1033,7 +1129,7 @@
 
                     //Training Feedback
                     const questions = response.course.training_feedback_questions || [];
-                    // console.log('feedback questions:', questions);
+                 
                     if (questions.length > 0) {
                         $('#edit_enable_feedback').prop('checked', true);
                         $('#edit_feedbackConfigSection').show();
@@ -1448,7 +1544,7 @@
 
 
     function generateDocumentsContainerHtml(instructor_documents, index) {
-        console.log(instructor_documents.id);
+       
         let documentName = instructor_documents.document_name || '';
         let filePath = instructor_documents.file_path ? `/storage/${instructor_documents.file_path}` : '';
         let existingFilePath = instructor_documents.file_path || '';
@@ -1611,6 +1707,96 @@
             }
         });
     });
+
+$(document).ready(function() {
+    // 🔹 Function to toggle MP options
+    function toggleMPOpions(checkboxSelector, selectSelector) {
+        const checkbox = $(checkboxSelector);
+        const select = $(selectSelector);
+        
+        function updateVisibility() {
+            if (checkbox.is(":checked")) {
+                select.find("option[value='2'], option[value='3']").show();
+            } else {
+                select.find("option[value='2'], option[value='3']").hide();
+                select.val("1"); // Reset to SP Event
+            }
+        }
+
+        // Run once on page load (for edit mode)
+        updateVisibility();
+
+        // Run every time checkbox changes
+        checkbox.on("change", updateVisibility);
+    }
+
+    // 🔹 Initialize for both Add & Edit sections
+    toggleMPOpions("#enable_more_mp", "#enable_mp_lifus");
+    toggleMPOpions("#edit_enable_more_mp", "#edit_enable_mp_lifus");
+});
+
+// Course Copy
+
+$('.course-copy-icon').click(function () {
+
+    let course_id = $(this).data("course-id");
+    
+     if (!course_id || course_id === "" || course_id === undefined) {
+        alert("Invalid Course ID.");
+        return;
+    }
+
+     if (!confirm("Are you sure you want to duplicate this Course ?")) {
+        return;
+    }
+
+      let btn = $(this);
+        btn.css("pointer-events", "none"); 
+
+    $.ajax({
+        url: "{{ url('copy_course') }}",
+        type: "POST",
+        data: {
+            course_id: course_id,
+            _token: "{{ csrf_token() }}"
+        },
+
+        success: function (response) {
+
+            btn.css("pointer-events", "auto"); // re-enable
+
+            // Validate server response
+            if (!response || typeof response !== "object") {
+                alert("Unexpected server response.");
+                return;
+            }
+
+            // Laravel returns boolean true/false (not "true")
+            if (response.status === true || response.status === "true") { 
+                alert(response.message);
+                window.location.reload();
+                return;
+            }
+
+            // Error from server
+            alert(response.error || "Unable to copy Course.");
+        },
+
+        error: function (xhr) {
+            btn.css("pointer-events", "auto");
+
+            let msg = "Server error: " + xhr.status;
+
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+                msg = xhr.responseJSON.error;
+            }
+
+            alert(msg);
+        }
+    });
+
+
+});
 </script>
 
 @endsection

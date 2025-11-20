@@ -19,13 +19,24 @@
 
     .status-group .status-box {
         padding: 8px 16px;
-        border: 1px solid #dee2e6;
+        border: 1px solid #dee2e6; 
         border-right: none;
         display: flex;
         align-items: center;
         justify-content: center;
         min-width: 50px;
         font-weight: bold;
+    }
+    .archived-row {
+        background-color: #d19898 !important; /* Light red for non-archived when showing archived */
+    }
+
+    .archived-row:hover {
+        background-color: #ffcccc !important; /* Slightly darker red on hover */
+    }
+
+    .row-alert {
+        background-color: #fff3cd !important; /* Keep alert yellow styling */
     }
 </style>
 
@@ -48,12 +59,12 @@
                         Show Archived Students
                     </label></strong>
                 </div>
-                <div class="form-check">
+                <!-- <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="toggleFailing" {{ request('show_failing') == '1' ? 'checked' : '' }}>
                     <strong><label class="form-check-label" for="toggleFailing">
                         Show Failing Students
                     </label><strong>
-                </div>
+                </div> -->
             </div>
 
             <!-- Pie Chart + Legend Section Styled Like Example -->
@@ -74,25 +85,28 @@
                     <div class="col-auto">
                         <span class="badge text-white" style="background-color: #ffc107;" title="Active">Active: {{ $chartData['active'] }}</span>
                     </div>
+                     <div class="col-auto">
+                        <span class="badge text-white" style="background-color: #d33d4b; color: #ffffff;" title="Active">Archive: {{ $chartData['is_activated'] }}</span>
+                    </div>
 
-                    @if ($showArchived)
+                    <!-- @if ($showArchived)
                     <div class="col-auto">
                         <span class="badge text-white" style="background-color: #6c757d;" title="Archived">
                             Archived: {{ $chartData['archived'] }}
                         </span>
                     </div>
-                    @endif
+                    @endif -->
 
 
-                    @if ($showFailing)
+                    <!-- @if ($showFailing)
                     <div class="col-auto">
                         <span class="badge text-white" style="background-color: #dc3545;" title="Failing">Failing: {{ $chartData['failing'] }}</span>
                     </div>
-                    @endif
+                    @endif -->
                 </div>
             </div>
 
-            @if($students->count())
+            @if($employees->count())
             <div class="table-responsive">
                 <table class="table table-hover" id="studentsTable">
                     <thead>
@@ -101,14 +115,15 @@
                             <th scope="col">Email</th>
                             <th scope="col">Start Date</th>
                             <th scope="col">End Date</th>
-                            <th scope="col">Archive</th>
+                            <!-- <th scope="col">Archive</th> -->
                             <th scope="col">Progress</th>
                             <th scope="col">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($students as $student)
-                       <tr class="clickable-row {{ $student->show_alert ? 'row-alert' : '' }}" 
+                        @foreach ($employees as $student)
+                        <?php // dump($student); ?>
+                      <tr class="clickable-row {{ $student->show_alert ? 'row-alert' : '' }}  {{ ($showArchived && $student->is_activated != 0) ? 'archived-row' : '' }}" 
                             data-href="{{ route('training.grading-list', ['event_id' => encode_id($student->event_id)]) }}" 
                             style="cursor: pointer;">
                             <td class="expiry">
@@ -120,12 +135,12 @@
                             <td>{{ $student->email ?? 'N/A' }}</td>
                             <td>{{ $student->event_date ? \Carbon\Carbon::parse($student->event_date)->format('d-m-Y') : '--' }}</td>
                             <td>{{ $student->course_end_date ? \Carbon\Carbon::parse($student->course_end_date)->format('d-m-Y') : '--' }}</td>
-                            <td class="no-click">
+                            <!-- <td class="no-click">
                                 <input type="checkbox" class="archive-checkbox"
                                     data-id="{{ $student->id }}"
                                     data-event="{{ $student->event_id }}"
                                     {{ $student->is_archived ? 'checked' : '' }}>
-                            </td>
+                            </td> -->
                             <td class="no-click"> 
                                 @php
                                     $progress = $student->progress;
@@ -159,12 +174,16 @@
                                             title="Competent">
                                             {{ $competentPercent . '%' }}
                                         </div>
-                                    @endif
+                                    @endif 
                                 </div>
                             </td>
                             <td>
+                                <?php // dump($student->event_id); ?>
                                 <a href="{{ route('training.grading-list', ['event_id' =>  encode_id($student->event_id)]) }}" class="view-icon" title="View Record" style="font-size:18px; cursor: pointer;">
                                     <i class="fa fa-eye text-danger"></i>
+                                </a>
+                                 <a href="{{ route('training.certificate', ['event' => encode_id($student->event_id)]) }}" style="font-size:18px; cursor: pointer;">
+                                    <i class="bi bi-card-heading"></i> 
                                 </a>
                             </td>
                         </tr>
@@ -190,29 +209,24 @@ $(document).ready(function () {
             search: "Search:",
             lengthMenu: "Show _MENU_ entries",
             info: "Showing _START_ to _END_ of _TOTAL_ students",
-            paginate: {
-                previous: "Prev",
-                next: "Next"
-            }
+            paginate: { previous: "Prev", next: "Next" }
         }
     });
 
     $('#studentsTable tbody').on('click', 'tr.clickable-row', function (e) {
-        // Prevent redirection if clicked element is a checkbox, label, or inside a td with class 'no-click'
         if (
             $(e.target).is('input[type="checkbox"]') ||
             $(e.target).is('label') ||
             $(e.target).closest('td').hasClass('no-click')
-        ) {
-            return;
-        }
+        ) return;
+
         if (!$(e.target).closest('a').length) {
             window.location = $(this).data('href');
         }
     });
 
     // Toggle archived filter
-    $('#toggleArchived').on('change', function () {
+    $('#toggleArchived').on('change', function () { 
         const showArchived = $(this).is(':checked') ? 1 : 0;
         const url = new URL(window.location.href);
         url.searchParams.set('show_archived', showArchived);
@@ -223,26 +237,21 @@ $(document).ready(function () {
         const showFailing = $(this).is(':checked') ? '1' : '';
         const url = new URL(window.location.href);
 
-        if (showFailing) {
-            url.searchParams.set('show_failing', showFailing);
-        } else {
-            url.searchParams.delete('show_failing');
-        }
+        if (showFailing) url.searchParams.set('show_failing', showFailing);
+        else url.searchParams.delete('show_failing');
 
         window.location.href = url.toString();
     });
 
-        $('.archive-checkbox').on('change', function () {
+    $('.archive-checkbox').on('change', function () {
         const checkbox = $(this);
         const studentId = checkbox.data('id');
         const eventId = checkbox.data('event');
         const isArchived = checkbox.is(':checked') ? 1 : 0;
 
-        if (isArchived === 0) {
-            if (!confirm("Are you sure you want to unarchive this student?")) {
-                checkbox.prop('checked', true);
-                return;
-            }
+        if (isArchived === 0 && !confirm("Are you sure you want to unarchive this student?")) {
+            checkbox.prop('checked', true);
+            return;
         }
 
         $.ajax({
@@ -259,61 +268,40 @@ $(document).ready(function () {
                     checkbox.closest('tr').fadeOut();
                 }
 
-                const msg = res.message;
-                showFlashMessage(msg, 'success');
+                showFlashMessage(res.message, 'success');
+                console.log(res);
 
                 if (res.chartData) {
                     const updatedData = [
                         res.chartData.enrolled,
                         res.chartData.completed,
-                        res.chartData.active
+                        res.chartData.active,
+                        res.chartData.archived
                     ];
 
-                    let labels = ['Enrolled', 'Completed', 'Active'];
-                    let colors = ['#007bff', '#28a745', '#ffc107'];
-
-                    if ($('#toggleArchived').is(':checked')) {
-                        updatedData.push(res.chartData.archived);
-                        labels.push('Archived');
-                        colors.push('#6c757d');
-
-                        // Update badge
-                        $('span[title="Archived"]').text('Archived: ' + res.chartData.archived);
-                    }
+                    const labels = ['Enrolled', 'Completed', 'Active', 'Archived'];
+                    const colors = ['#007bff', '#28a745', '#ffc107', '#d33d4b'];
 
                     if ($('#toggleFailing').is(':checked')) {
                         updatedData.push(res.chartData.failing || 0);
                         labels.push('Failing');
                         colors.push('#dc3545');
-
-                        // Update badge
-                        $('span[title="Failing"]').text('Failing: ' + res.chartData.failing);
                     }
 
-                    // Always update all other badges
                     $('span[title="Enrolled"]').text('Enrolled: ' + res.chartData.enrolled);
                     $('span[title="Completed"]').text('Completed: ' + res.chartData.completed);
                     $('span[title="Active"]').text('Active: ' + res.chartData.active);
+                    $('span[title="Archived"]').text('Archived: ' + res.chartData.archived);
+
+                    if ($('#toggleFailing').is(':checked')) {
+                        $('span[title="Failing"]').text('Failing: ' + res.chartData.failing);
+                    }
 
                     const isAllZero = updatedData.every(val => val === 0);
 
-                    if (isAllZero) {
-                        studentChart.data = {
-                            labels: ['No Data (0)'],
-                            datasets: [{
-                                data: [0.0001],
-                                backgroundColor: ['#d6d6d6']
-                            }]
-                        };
-                    } else {
-                        studentChart.data = {
-                            labels: labels,
-                            datasets: [{
-                                data: updatedData,
-                                backgroundColor: colors
-                            }]
-                        };
-                    }
+                    studentChart.data = isAllZero
+                        ? { labels: ['No Data (0)'], datasets: [{ data: [0.0001], backgroundColor: ['#d6d6d6'] }] }
+                        : { labels, datasets: [{ data: updatedData, backgroundColor: colors }] };
 
                     studentChart.update();
                 }
@@ -326,15 +314,8 @@ $(document).ready(function () {
 
     function showFlashMessage(message, type = 'success') {
         const flash = $('#flash-message');
-        flash
-            .removeClass()
-            .addClass('alert alert-' + type)
-            .text(message)
-            .fadeIn();
-
-        setTimeout(() => {
-            flash.fadeOut();
-        }, 3000);
+        flash.removeClass().addClass('alert alert-' + type).text(message).fadeIn();
+        setTimeout(() => flash.fadeOut(), 3000);
     }
 
     const ctx = document.getElementById('studentChart').getContext('2d');
@@ -342,52 +323,37 @@ $(document).ready(function () {
     const rawData = {
         enrolled: {{ $chartData['enrolled'] }},
         completed: {{ $chartData['completed'] }},
-        active: {{ $chartData['active'] }},
-        @if($showArchived) archived: {{ $chartData['archived'] }}, @endif
+        archived: {{ $chartData['is_activated'] ?? 0 }},
+        active: {{ $chartData['active'] ?? 0 }},
         @if($showFailing) failing: {{ $chartData['failing'] }} @endif
     };
 
-    let chartValues = Object.values(rawData).filter(val => typeof val === 'number' && !isNaN(val));
+    const chartValues = Object.values(rawData).filter(val => typeof val === 'number' && !isNaN(val));
     const isAllZero = chartValues.length === 0 || chartValues.every(val => val === 0);
 
-    let pieData;
-
-    if (isAllZero) {
-        pieData = {
-            labels: ['No Data'],
-            datasets: [{
-                data: [0.0001], // simulate 0 so chart renders something
-                backgroundColor: ['#d6d6d6'],
-            }]
-        };
-    }else {
-        pieData = {
-            labels: [
-                'Enrolled',
-                'Completed',
-                'Active',
-                @if($showArchived) 'Archived', @endif
-                @if($showFailing) 'Failing' @endif
+    const pieData = isAllZero ? {
+        labels: ['No Data'],
+        datasets: [{ data: [0.0001], backgroundColor: ['#d6d6d6'] }]
+    } : {
+        labels: ['Enrolled', 'Completed', 'Active', 'Archived', @if($showFailing) 'Failing' @endif],
+        datasets: [{
+            data: [
+                rawData.enrolled,
+                rawData.completed,
+                rawData.active,
+                rawData.archived,
+                @if($showFailing) rawData.failing @endif
             ],
-            datasets: [{
-                data: [
-                    rawData.enrolled,
-                    rawData.completed,
-                    rawData.active,
-                    @if($showArchived) rawData.archived, @endif
-                    @if($showFailing) rawData.failing @endif
-                ],
-                backgroundColor: [
-                    '#007bff',
-                    '#28a745',
-                    '#ffc107',
-                    @if($showArchived) '#6c757d', @endif
-                    @if($showFailing) '#dc3545' @endif
-                ],
-                hoverOffset: 5
-            }]
-        };
-    }
+            backgroundColor: [
+                '#007bff',  // Enrolled
+                '#28a745',  // Completed
+                '#ffc107',  // Active
+                '#d33d4b',  // Archived
+                @if($showFailing) '#dc3545' @endif // Failing
+            ],
+            hoverOffset: 5
+        }]
+    };
 
     studentChart = new Chart(ctx, {
         type: 'pie',
@@ -395,19 +361,13 @@ $(document).ready(function () {
         options: {
             responsive: true,
             plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    enabled: true
-                }
+                legend: { display: false },
+                tooltip: { enabled: true }
             },
-            animation: {
-                animateScale: true,
-                animateRotate: true
-            }
+            animation: { animateScale: true, animateRotate: true }
         }
     });
 });
 </script>
+
 @endsection

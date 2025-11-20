@@ -15,7 +15,8 @@ class TrainingEventLog extends Model
         'course_id',
         'lesson_id',
         'user_id',
-        'is_locked'
+        'is_locked',
+        'lesson_type'
    
     ];
 

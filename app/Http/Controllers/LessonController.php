@@ -74,7 +74,7 @@ class LessonController extends Controller
             ]);
         }
     
-        CourseLesson::create([
+        CourseLesson::create([ 
             'course_id' => $request->course_id,
             'lesson_title' => $request->lesson_title,
             'description' => $request->description,

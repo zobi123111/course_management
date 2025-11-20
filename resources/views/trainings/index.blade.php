@@ -49,7 +49,7 @@
             <?php // dump($event);  ?>
                 @php
                     $lesson = $event->firstLesson;
-                @endphp 
+                @endphp   
                 
             <tr>
                 <td class="eventName">{{ $event->course?->course_name }}</td>
@@ -143,7 +143,7 @@
     </table>
 </div>
 </div>
-  <h4>Instructor  Training events</h4>
+  <h4>Instructor  Training events</h4> 
 <div class="card pt-4">
         <div class="card-body">
     <table class="table table-hover" id="trainingEventTable">
@@ -335,6 +335,17 @@
                         <div id="event_date_error" class="text-danger error_e"></div>
                     </div>
                 </div>
+
+                
+                <!-- // Rank -->
+                <div class="col-md-6" id="add_rank_col" >
+                  <label class="form-label">Rank<span class="text-danger">*</span></label>
+                    <select class="form-select" name="rank" id="addRankSelectBox">
+                        <option value="1">Captain</option>
+                        <option value="2">First Officer</option>
+                        <option value="3">Second Officer</option>
+                    </select>
+                </div>
                 <div id="lessonDetailsContainer" class="lesson-box mt-3"></div> 
                 
                 <!-- Total Time (Calculated) -->
@@ -351,9 +362,9 @@
                     <div id="total_simulator_time_error" class="text-danger error_e"></div>
                 </div>
 
-                <!-- License Number (Extracted from user profile) -->
+                <!-- Licence Number (Extracted from user profile) -->
                 <div class="col-md-6">
-                    <label class="form-label">Student License Number</label>    
+                    <label class="form-label">Student Licence Number</label>    
                     <input type="text" name="std_licence_number" class="form-control" id="std_licence_number" value="">
                     <div id="std_licence_number_error" class="text-danger error_e"></div>
                 </div>
@@ -434,6 +445,18 @@
                         <div id="event_date_error_up" class="text-danger error_e"></div>
                     </div>
                 </div>
+
+                <!-- // Rank -->
+                <div class="col-md-6" id="edit_rank_col">
+                  <label class="form-label">Rank<span class="text-danger">*</span></label>
+                    <select class="form-select" name="rank" id="edit_rank" >
+                        <option value="0">Select Rank</option>
+                        <option value="1">Captain</option>
+                        <option value="2">First Officer</option>
+                        <option value="3">Second Officer</option>
+                    </select>
+                </div>
+
                 <div id="editLessonDetailsContainer" class="mt-3"></div>
 
                 <!-- Total Simulator Time (Calculated) -->
@@ -584,7 +607,7 @@ $(document).on('change', 'select[name^="lesson_data"][name$="[instructor_id]"]',
                 if (response.success) {
                     licenseInput.val(response.instructor_licence_number || '');
                     if (!response.instructor_licence_number) {
-                        alert("Instructor license number not found.");
+                        alert("Instructor Licence number not found.");
                     }
                 } else {
                     licenseInput.val('');
@@ -593,8 +616,8 @@ $(document).on('change', 'select[name^="lesson_data"][name$="[instructor_id]"]',
             },
             error: function () {
                 licenseInput.val('');
-                console.error("Failed to fetch license number");
-                alert("An error occurred while fetching the license number.");
+                console.error("Failed to fetch Licence  number");
+                alert("An error occurred while fetching the Licence number.");
             }
         });
     } else {
@@ -616,7 +639,7 @@ $(document).ready(function() {
     $('#groupTable').DataTable();
     initializeSelect2();
     
-    $("#createTrainingEvent").on('click', function() {  
+    $("#createTrainingEvent").on('click', function() {
         $(".error_e").html('');
         $("#trainingEventForm")[0].reset();
         $('#total_time').val('');
@@ -710,11 +733,8 @@ $(document).ready(function() {
                     var instructorOptions = '<option value="">Select Instructor</option>';
                     if (response.instructors && response.instructors.length > 0) {  
                         instructorsdata = response.instructors;
-                        console.log(instructorsdata);
-                       
-                     
+                        
                         $.each(instructorsdata, function(index, instructor) {
-                              
                             var selected = instructor.id == selectedInstructor ? 'selected' : '';
                             instructorOptions += '<option value="' + instructor.id + '" ' + selected + '>' + instructor.fname + ' ' + instructor.lname + '</option>';
                         });
@@ -775,11 +795,11 @@ $(document).ready(function() {
                 success: function(response) { 
                     if (response.success) {
                         var instructorCheckbox = isEditModal ? $('#edit_is_instructor_checkbox') : $('#is_instructor_checkbox');
-                        // Update license number if available
+                        // Update Licence number if available
                         if (response.licence_number) {
                             licenceNumberField.val(response.licence_number);
                         } else {
-                            alert('Student License number not found!');
+                            alert('Student Licence number not found!');
                             licenceNumberField.val('');
                         }
                         // Store the previously selected course (if available)
@@ -798,7 +818,7 @@ $(document).ready(function() {
                         courseDropdown.html(courseOptions); // Update dropdown
                     } else {
                         licenceNumberField.val('');
-                        alert('License number not found!');
+                        alert('Licence number not found!');
                         courseDropdown.html('<option value="">Select Course</option>'); // Clear courses
                     }
                 },
@@ -820,9 +840,11 @@ $(document).ready(function() {
 
         // For edit mode, map saved lessons by lesson_id for quick lookup
         var lessonPrefillMap = {};
+
+
         if (isEditForm && typeof existingEventLessons !== 'undefined') {  
-            existingEventLessons.forEach(lesson => { 
-                lessonPrefillMap[lesson.lesson_id] = {
+             existingEventLessons.forEach(lesson => { 
+                lessonPrefillMap[lesson.lesson_id] = { 
                     instructor_id: lesson.instructor_id || '',
                     resource_id: lesson.resource_id || '',
                     lesson_date: lesson.lesson_date || '',
@@ -832,36 +854,56 @@ $(document).ready(function() {
                     destination_airfield: lesson.destination_airfield || '',
                     instructor_license_number: lesson.instructor_license_number || '',
                     hours_credited: lesson.hours_credited || '',
-
+                    operation1: lesson.operation1 || '',
+                    role1: lesson.role1 || '',
+                    operation2: lesson.operation2 || '',
+                    role2: lesson.role2 || '',
                 }; 
-            });
-        }
-     
-            
-  
-        let selectedStudentId = $('#select_user').val() || $('#edit_select_user').val();
-        var edit_ou_id = $('#edit_ou_id').val();
-       
-
+    });
+}
    
+        let selectedStudentId = $('#select_user').val() || $('#edit_select_user').val();
+        var edit_ou_id = isEditForm ? $('#edit_ou_id').val() : $('#select_org_unit').val(); 
+     //   var edit_ou_id = $('#edit_ou_id').val();
         $.ajax({
             url: '{{ url("/training/get_course_lessons") }}',
             type: 'GET', 
             data: { course_id: courseId , selectedStudentId:selectedStudentId, ou_id:edit_ou_id},
             success: function (response) {
                 lessonContainer.empty(); // Clear existing lesson boxes
-
+             
                 if (response.success && response.lessons.length > 0) {
                     let lessons = response.lessons;
                     resourcesdata = response.resources; 
                      instructorsdata = response.instructors;
-                     all_instructors = response.all_ou_instructor;
                     
+                     all_instructors = response.all_ou_instructor;
+                     course = response.course;
+
+                        // 🔹 Function to handle rank visibility
+                        function toggleRankOptions(selectSelector, enableValue) {
+                            const rankSelect = $(selectSelector);
+
+                            if (enableValue == 0 || enableValue == 1) {
+                                // Single Pilot (SP Event)
+                                rankSelect.find("option[value='2'], option[value='3']").hide(); // Hide FO & SO
+                                rankSelect.val("1"); // Default to Captain
+                            } 
+                            else if (enableValue == 2 || enableValue == 3) {
+                                // Multi Pilot (MP or SP+MP Event)
+                                rankSelect.find("option[value='2'], option[value='3']").show(); // Show FO & SO
+                            }
+                        }
+
+                        // 🔹 Apply logic to both Add & Edit rank dropdowns
+                        toggleRankOptions("#addRankSelectBox", course.enable_mp_lifus);
+                        toggleRankOptions("#edit_rank", course.enable_mp_lifus);
+
                         response.lessons.forEach(function (lesson, idx) {
                             let prefillData = isEditForm && lessonPrefillMap[lesson.id] ? lessonPrefillMap[lesson.id] : {};
-                            renderLessonBox(lesson, lessonContainer, prefillData, idx, mode, all_instructors);  
+                            renderLessonBox(lesson, lessonContainer, prefillData, idx, mode, all_instructors, course);  
                         });
-                } 
+                                } 
                 else {
                     alert('No lessons found for the selected course.');
                 }
@@ -914,31 +956,38 @@ $(document).ready(function() {
 
     })
 
-    $(document).on('click', '.edit-event-icon', function () {
+    $(document).on('click', '.edit-event-icon', function () {  
         $('.error_e').html('');
         var eventId = $(this).data('event-id');
         $.ajax({
-            url: "{{ url('/training/edit') }}", 
+            url: "{{ url('/training/edit') }}",  
             type: 'GET',
             data: { eventId: eventId },
-            success: async function (response) { 
+            success: async function (response) {  
                 if (response.success) {
-                    const event = response.trainingEvent;
-                  
+
+                   const event = response.trainingEvent;
+                   
                    let ato_num = event.course.ato_num;
                    let prefix = "", value = "";
                      if (ato_num) {
                             [prefix, value] = ato_num.split('-', 2);
                         }
-                 
                 
                     // Store values temporarily
                     const selectedOU = event.ou_id;
                     const selectedStudent = event.student_id;
-                   
                     const selectedInstructor = event.student_id;
                     const selectedResource = event.resource_id;
                     const selectedCourse = event.course_id;
+                    const rank = event.rank;
+                 
+                    if(rank == null){
+                        $('#edit_rank').val(0);
+
+                     }else{
+                        $('#edit_rank').val(rank);
+                     }
                   
                      
                     // Set static values
@@ -948,22 +997,13 @@ $(document).ready(function() {
                     $('#edit_total_time').val(moment(event.total_time, 'HH:mm:ss').format('HH:mm'));
                       if (event.entry_source === 'instructor') 
                         { 
-                         // $('#edit_is_instructor_checkbox').prop('checked', true);
-                         // $('#edit_is_instructor_checkbox').trigger('click');
-                         $('#edit_is_instructor_checkbox').prop('checked', true).trigger('change');
-                         
-    
+                           $('#edit_is_instructor_checkbox').prop('checked', true).trigger('change');
                            $('#edit_ou_id').val(selectedOU).trigger('change'); 
-
-
                         }
-                 
 
                     // Set OU and wait for dependent dropdowns.
-                  
                     $('#edit_ou_id').val(selectedOU).trigger('change');
                     await new Promise(resolve => setTimeout(resolve, 500));
-
                     // Set dropdown values
                
                     $('#edit_select_user').val(selectedStudent).data("selected-value", selectedStudent);
@@ -971,44 +1011,13 @@ $(document).ready(function() {
                     $('#edit_select_resource').val(selectedResource).data("selected-value", selectedResource);
                     await new Promise(resolve => setTimeout(resolve, 500));
                 //----------------------------------------------------------------------
-                 
-
-                //  var userId = selectedStudent;
-                //  var ouDropdown = $('#edit_ou_id').length ? $('#edit_ou_id') : $('#select_org_unit');
-                //   var ou_id = ouDropdown.length ? ouDropdown.val() : '{{ auth()->user()->ou_id }}';
-            
-                //      var courseDropdown = $('#edit_select_course').length ? $('#edit_select_course') : $('#select_course');
-             
-                    //   $.ajax({
-                    //         url: "{{ url('/training/get_licence_number_and_courses') }}/" + userId + '/' + ou_id, 
-                    //         type: "GET",
-                    //         success: function(response) { 
-                    //             if (response.success) {
-                    //                 var courseOptions = '<option value="">Select Course</option>'; // Default option
-                    //                 if (response.courses && response.courses.length > 0) {
-                                       
-                    //                   $.each(response.courses, function(index, course) {
-                    //                         var selected = (course.id == selectedCourse) ? 'selected="selected"' : '';
-                    //                         courseOptions += '<option value="' + course.id + '" ' + selected + '>' + course.course_name + '</option>';
-                    //                     });
-                    //                 } else {
-                    //                     alert('No courses found!'); // Notify user
-                    //                 }
-                    //                 courseDropdown.html(courseOptions); // Update dropdown
-                    //             } else {
-                    //                 courseDropdown.html('<option value="">Select Course</option>'); // Clear courses
-                    //             }
-                    //         },
-                    //         error: function(xhr) {
-                    //             console.error(xhr.responseText);
-                    //         }
-                    //     });
+       
 
                 //-----------------------------------------------------------------------
-                    $('#edit_select_course').val(selectedCourse).data("selected-value", selectedCourse);   
-                     window.existingEventLessons = (event.event_lessons || []).map(l => {  
-                           let licenceValue = '';
+                    $('#edit_select_course').val(selectedCourse).data("selected-value", selectedCourse);  
 
+                     window.existingEventLessons = (event.event_lessons || []).map(l => {  
+                        let licenceValue = '';
                         if (l.instructor_documents && l.instructor_documents.length > 0) {
                             if (prefix === "uk") {
                                 licenceValue = l.instructor_documents[0].licence;
@@ -1025,8 +1034,6 @@ $(document).ready(function() {
                             }
                         }
                     
-                        
-                     
                          let hoursCredited = '';
                         if (l.hours_credited) { 
                             const parts = l.hours_credited.split(':');
@@ -1045,6 +1052,12 @@ $(document).ready(function() {
                             destination_airfield: l.destination_airfield || '',
                             instructor_license_number: licenceValue || '',
                             hours_credited: hoursCredited || '',
+                            operation1:l.operation1 || '',
+                            role1:l.role1 || '',
+                            operation2:l.operation2 || '',
+                            role2:l.role2 || '',
+
+
                         };
                     }); 
 
@@ -1136,7 +1149,7 @@ $(document).ready(function() {
                                 <div id="lesson_data_${lessonId}_destination_airfield_error" class="text-danger error_e"></div>
                             </div>  
                             <div class="col-md-6">
-                                <label class="form-label">Instructor License Number</label>
+                                <label class="form-label">Instructor Licence Number</label>
                                 <input type="text" name="lesson_data[${lessonId}][instructor_license_number]" class="form-control" id="instructor_license_number" value="" readonly>
                                 <div id="lesson_data_${lessonId}_instructor_license_number_error" class="text-danger error_e"></div>
                             </div>
@@ -1223,7 +1236,7 @@ $(document).ready(function() {
 
     let lessonIndex = 0;
 
-    function renderLessonBox(lesson, container, prefillData = {}, index = null, mode, instructor) { 
+    function renderLessonBox(lesson, container, prefillData = {}, index = null, mode, instructor, course) { 
         const errorSuffix = mode === 'update' ? '_error_up' : '_error';
         const currentIndex = index !== null ? index : lessonIndex++;
         const isFirstLesson = currentIndex === 0;
@@ -1242,27 +1255,50 @@ $(document).ready(function() {
             departure_airfield = '',
             destination_airfield = '',
             instructor_license_number = '',
-            hours_credited = ''
+            hours_credited = '',
+            operation1 = '',
+            role1 = '',
+            operation2 = '',
+            role2 = ''
         } = prefillData;
-       
-         
+
+        operation1 = operation1 ? String(operation1) : '';
+        role1 = role1 ? String(role1) : '';
+
+        operation2 = operation2 ? String(operation2) : '';
+        role2 = role2 ? String(role2) : '';
 
         let isCurrentUserInstructor = currentUser.role === 'instructor';
+     
+        // instructorOptions  = instructor.filter(i => i.id != excludedInstructorId) 
+        //                         .map(i => {
+        //                             let selected = '', disabled = '';
+        //                             if (isCurrentUserInstructor && i.id == currentUser.id) selected = 'selected';
+        //                             else if (isCurrentUserInstructor) disabled = 'disabled';
+        //                             else if (i.id == instructor_id) selected = 'selected';
+        //                             return `<option value="${i.id}" ${selected} ${disabled}>${i.fname} ${i.lname}</option>`;
+        //                         }).join('');
 
-        
-        instructorOptions  = instructor.filter(i => i.id != excludedInstructorId) 
-                                .map(i => {
-                                    let selected = '', disabled = '';
-                                    if (isCurrentUserInstructor && i.id == currentUser.id) selected = 'selected';
-                                    else if (isCurrentUserInstructor) disabled = 'disabled';
-                                    else if (i.id == instructor_id) selected = 'selected';
-                                    return `<option value="${i.id}" ${selected} ${disabled}>${i.fname} ${i.lname}</option>`;
-                                }).join('');
-                              
+    instructorOptions = instructor
+                        .filter(i => i.id != excludedInstructorId)
+                        .map(i => {
+                            let selected = '';
 
+                            // Auto-select current user if instructor AND no other selection exists
+                            if (isCurrentUserInstructor && !instructor_id && i.id == currentUser.id) {
+                                selected = 'selected';
+                            } 
+                            // OR preserve previously selected instructor
+                            else if (i.id == instructor_id) {
+                                selected = 'selected';
+                            }
 
-        let resourceOptions = resourcesdata
-            .filter(r => {
+                            return `<option value="${i.id}" ${selected}>${i.fname} ${i.lname}</option>`;
+                        })
+                        .join('');
+                                                        
+                            
+        let resourceOptions = resourcesdata.filter(r => { 
                 if (lessonType === 'groundschool') {
                     return ['Classroom', 'Homestudy'].includes(r.name);
                 }
@@ -1284,11 +1320,11 @@ $(document).ready(function() {
                     <div class="col-md-6">
                         <label class="form-label">Instructor${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <select class="form-select" name="lesson_data[${currentIndex}][instructor_id]"
-                                ${isCurrentUserInstructor ? 'disabled' : ''}>
+                               >
                             <option value="">Select Instructor</option>
                             ${instructorOptions}
                         </select>
-                        ${isCurrentUserInstructor ? `<input type="hidden" name="lesson_data[${currentIndex}][instructor_id]" value="${currentUser.id}">` : ''}
+                    
                         <div id="lesson_data_${currentIndex}_instructor_id${errorSuffix}" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-6">
@@ -1333,10 +1369,71 @@ $(document).ready(function() {
                         <div id="lesson_data_${currentIndex}_destination_airfield${errorSuffix}" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Instructor License Number</label>
+                        <label class="form-label">Instructor Licence Number</label>
                         <input type="text" name="lesson_data[${currentIndex}][instructor_license_number]" class="form-control" value="${instructor_license_number}" readonly>
                         <div id="lesson_data_${currentIndex}_instructor_license_number${errorSuffix}" class="text-danger error_e"></div>
                     </div>
+              ${lessonType == 'flight' ? (
+                course.enable_mp_lifus == 2 || course.enable_mp_lifus == 3 ?  `
+                    <!-- Single Pilot -->
+                    <div class="col-md-6">
+                        <label class="form-label">Operation<span class="text-danger">*</span></label>
+                        <select class="form-select" name="lesson_data[${currentIndex}][operation_1]">
+                            <option value="">Select Operation</option>
+                            <option value="1" ${operation1 === '1' ? 'selected' : ''}>PF in LHS</option>
+                            <option value="2" ${operation1 === '2' ? 'selected' : ''}>PM in LHS</option>
+                            <option value="3" ${operation1 === '3' ? 'selected' : ''}>PF in RHS</option>
+                            <option value="4" ${operation1 === '4' ? 'selected' : ''}>PM in RHS</option>
+                        </select>
+                        <div id="lesson_data_${currentIndex}_operation${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+              
+                ` : (course.enable_mp_lifus == 4 || course.enable_mp_lifus == 5) ? `
+                    <!-- Multi Pilot -->
+                    <div class="col-md-6">
+                        <label class="form-label">Operation (Pilot 1)<span class="text-danger">*</span></label>
+                        <select class="form-select" name="lesson_data[${currentIndex}][operation_1]">
+                            <option value="">Select Operation</option>
+                            <option value="1" ${operation1 === '1' ? 'selected' : ''}>PF in LHS</option>
+                            <option value="2" ${operation1 === '2' ? 'selected' : ''}>PM in LHS</option>
+                            <option value="3" ${operation1 === '3' ? 'selected' : ''}>PF in RHS</option>
+                            <option value="4" ${operation1 === '4' ? 'selected' : ''}>PM in RHS</option>
+                        </select>
+                        <div id="lesson_data_${currentIndex}_operation_1${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Role (Pilot 1)<span class="text-danger">*</span></label>
+                        <select class="form-select" name="lesson_data[${currentIndex}][role_1]">
+                            <option value="">Select Role</option>
+                            <option value="1" ${role1 === '1' ? 'selected' : ''}>PF-Pilot Flying</option> 
+                            <option value="2" ${role1 === '2' ? 'selected' : ''}>PM-Pilot Monitoring</option>
+                        </select>
+                        <div id="lesson_data_${currentIndex}_rank_1${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Operation (Pilot 2)<span class="text-danger">*</span></label>
+                        <select class="form-select" name="lesson_data[${currentIndex}][operation_2]">
+                            <option value="">Select Operation</option>
+                            <option value="1" ${operation2 === '1' ? 'selected' : ''}>PF in LHS</option>
+                            <option value="2" ${operation2 === '2' ? 'selected' : ''}>PM in LHS</option>
+                            <option value="3" ${operation2 === '3' ? 'selected' : ''}>PF in RHS</option>
+                            <option value="4" ${operation2 === '4' ? 'selected' : ''}>PM in RHS</option>
+                        </select>
+                        <div id="lesson_data_${currentIndex}_operation_2${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Role (Pilot 2)<span class="text-danger">*</span></label>
+                        <select class="form-select" name="lesson_data[${currentIndex}][role_2]">
+                            <option value="">Select Role</option>
+                            <option value="1" ${role2 === '1' ? 'selected' : ''}>PF-Pilot Flying</option>
+                            <option value="2" ${role2 === '2' ? 'selected' : ''}>PM-Pilot Monitoring</option>
+                        </select>
+                        <div id="lesson_data_${currentIndex}_rank_2${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                ` : ''
+            ) : ''}
+
+
                 </div>
             </div>
         `;
@@ -1427,8 +1524,8 @@ $(document).ready(function() {
             //         }
             //     },
             //     error: function () {
-            //         $licenseInput.val('');
-            //         alert("Error fetching license number.");
+            //         $licenseInput.val(''); 
+            //         alert("Error fetching Licence number.");
             //     }
             // });
         }
@@ -1554,7 +1651,6 @@ $(document).on('change', '#edit_is_instructor_checkbox', function () {
     let userOptions = '<option value="">Select ' + (isChecked ? 'Instructor' : 'Student') + '</option>';
     
     const dataList = isChecked ? instructorsdata : studentsdata;
-    console.log(dataList);
     
     dataList.forEach(user => {
         userOptions += `<option value="${user.id}">${user.fname} ${user.lname}</option>`;
