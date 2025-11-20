@@ -326,7 +326,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
 
 });
 
-Route::get('/quiz', [QuizController::class, 'quizzes'])->name('quizzes.index');
+Route::get('/quiz', [QuizController::class, 'quizzes'])->name('quiz.index');
 Route::get('/quiz/topic-questions', [QuizController::class, 'getTopicQuestions'])->name('quiz.getTopicQuestions');
 Route::get('/lessons-by-course', [QuizController::class, 'getLessonsByCourse'])->name('lessons.byCourse');
 
