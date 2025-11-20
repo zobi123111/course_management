@@ -234,4 +234,10 @@ class TrainingEvents extends Model
             return $this->hasMany(DeferredGrading::class, 'event_id', 'id');
         }
 
+        public function quizzes()
+        {
+            return $this->hasMany(Quiz::class, 'course_id', 'course_id');
+        }
+
+
 }
