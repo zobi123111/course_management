@@ -1,5 +1,6 @@
 @section('title', 'Dashboard')
 
+
 @php
 $currentUser = Auth()->user();
 if (empty($currentUser->is_admin) && empty($currentUser->is_owner)) {
@@ -23,9 +24,6 @@ $user = Auth::user();
 
 // Check for Admin
 if ($user->is_admin == "1") {
-
-
-
     foreach ($users as $u) {
         if ($u->is_activated == 0 && $u->status == 1) {
             $userDoc = $u->documents;
@@ -200,29 +198,27 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
     </thead>
     <tbody>
         @php
-
         if (!function_exists('getTooltip')) {
+
         function getTooltip($status, $type) {
         return match ($status) {
-        'Red' => "This {type} has expired.",
-        'Yellow' => "This {type} will expire soon.",
-        'Green' => "This {type} is valid.",
-        'Non-Expiring' => "This {type} does not expire.",
-        default => "Status unknown.",
+        'Red' => "This {$type} has expired.",
+        'Yellow' => "This {$type} will expire soon.",
+        'Green' => "This {$type} is valid.",
+        'Non-Expiring' => "This {$type} does not expire.",
+        default => "Status unknown for {$type}.",
         };
         }
         }
-
-
         @endphp
-
         @foreach($users as $user)
+        @if($user->is_activated == 0 && $user->status == 1)
         <tr>
             <td>{{ $user->fname }} {{ $user->lname }}</td>
-
             @php
             $doc = $user->documents;
             $ratingsByLicence = $user->usrRatings->groupBy('linked_to');
+
 
             @endphp
 
@@ -236,11 +232,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 $date = 'Non-Expiring';
                 } else {
                 $status = $doc->licence_status;
+
                 $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
                 $date = $doc->licence_expiry_date ? date('d/m/Y', strtotime($doc->licence_expiry_date)) : 'N/A';
                 }
                 $tooltip = getTooltip($status, 'UK License');
                 @endphp
+
                 <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
                 @else
                 <span class="text-muted">Not Uploaded</span>
@@ -253,7 +251,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     @php
                     $r = $ur->rating;
                     $expiry = $ur->expiry_date ? \Carbon\Carbon::parse($ur->expiry_date)->format('d/m/Y') : 'N/A';
-                    $status = $ur->expiry_status; // Uses accessor from model
+                    $status = $ur->expiry_status;
                     $color = match($status) {
                     'Red' => 'danger',
                     'Orange' => 'warning',
@@ -268,6 +266,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         {{ $r->name ?? '' }}
                     </span>
 
+
                     {{-- Nested (child) ratings --}}
                     @if($r->children && $r->children->count())
                     @foreach($r->children as $child)
@@ -281,58 +280,49 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 @endif
             </td>
 
-            <!-- <td>
-                <?php
-                $groupedEASA = [];
-                if (isset($ratingsByLicence['licence_1'])) {
-                    //   print_r($ratingsByLicence['licence_1']);
-                    foreach ($ratingsByLicence['licence_1'] as $ratings) {
-                        $child_id = $ratings->rating_id;
-                        $parent_id = $ratings->parent_id;
-                        // echo "parent $parent_id  child $child_id <br>";
 
-                        if ($parent_id === null && $ratings->rating) {
+            <?php
+            $groupedEASA = [];
+            if (isset($ratingsByLicence['licence_1'])) {
+                //   print_r($ratingsByLicence['licence_1']);
+                foreach ($ratingsByLicence['licence_1'] as $ratings) {
+                    $child_id = $ratings->rating_id;
+                    $parent_id = $ratings->parent_id;
+                    // echo "parent $parent_id  child $child_id <br>";
+                    $parentExpiry = $ratings->expiry_date ?? null;
 
-                            $groupedEASA[$child_id] = [
-                                'parent' => $ratings->rating->name,
-                                'children' => [],
-                            ];
-                        } elseif ($ratings->rating) {
-                            $parentRating = $ratings->parentRating;
-                            $childRating = $ratings->rating;
+                    $parentStatus = getExpiryStatus($parentExpiry, $parent->non_expiring ?? false);
+                    if ($parent_id === null && $ratings->rating) {
 
-                            if (!isset($groupedEASA[$parent_id])) {
+                        $groupedEASA[$child_id] = [
+                            'parent' => $ratings->rating->name,
+                            'children' => [],
+                        ];
+                    } elseif ($ratings->rating) {
+                        $parentRating = $ratings->parentRating;
+                        $childRating = $ratings->rating;
 
-                                $groupedEASA[$parent_id] = [
-                                    'parent' => $parentRating?->name ?? '',
-                                    'children' => [],
-                                ];
-                            }
+                        if (!isset($groupedEASA[$parent_id])) {
 
-                            $groupedEASA[$parent_id]['children'][] = $childRating->name;
-                        } else {
-                            $parentRating = $ratings->parentRating;
                             $groupedEASA[$parent_id] = [
                                 'parent' => $parentRating?->name ?? '',
-                                'children' => [],  // No children here
+                                'children' => [],
                             ];
                         }
+
+                        $groupedEASA[$parent_id]['children'][] = $childRating->name;
+                    } else {
+                        $parentRating = $ratings->parentRating;
+                        $groupedEASA[$parent_id] = [
+                            'parent' => $parentRating?->name ?? '',
+                            'children' => [],  // No children here
+                        ];
                     }
                 }
-                ?>
+            }
+            ?>
 
-                @foreach ($groupedEASA as $entry)
-                <strong>{{ $entry['parent'] }}</strong><br>
-                @if (!empty($entry['children']))
-                <ul style="margin-left: 15px;">
-                    @foreach ($entry['children'] as $child)
-                    <li>{{ $child }}</li>
-                    @endforeach
-                </ul>
-                @endif
-                <br>
-                @endforeach
-            </td> -->
+
             <td class="lic_rating_td">
                 <?php
                 $groupedEASA = [];
@@ -340,11 +330,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     foreach ($ratingsByLicence['licence_1'] as $ratings) {
                         $child_id = $ratings->rating_id;
                         $parent_id = $ratings->parent_id;
+                        $expiry_date = $ratings->expiry_date;
 
                         if ($parent_id === null && $ratings->rating) {
                             $groupedEASA[$child_id] = [
                                 'parent' => $ratings->rating,
                                 'children' => [],
+                                'parent_expiry' => $expiry_date,
                             ];
                         } elseif ($ratings->rating) {
                             $parentRating = $ratings->parentRating;
@@ -354,6 +346,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                 $groupedEASA[$parent_id] = [
                                     'parent' => $parentRating,
                                     'children' => [],
+                                    'parent_expiry' => $expiry_date,
                                 ];
                             }
                             $groupedEASA[$parent_id]['children'][] = $childRating;
@@ -362,6 +355,177 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                             $groupedEASA[$parent_id] = [
                                 'parent' => $parentRating,
                                 'children' => [],
+                                'parent_expiry' => $expiry_date,
+                            ];
+                        }
+                    }
+                }
+
+                // -------------------------
+                // Sorting logic (same as controller)
+                // -------------------------
+                $getPriority = function ($rating) {
+                    if (!$rating) return 999;
+
+                    $r = $rating;
+
+                    if (($r->is_fixed_wing || $r->is_rotary) && !$r->is_instructor && !$r->is_examiner) {
+                        return 1;
+                    }
+                    if ($r->is_instructor) {
+                        return 2;
+                    }
+                    if ($r->is_examiner) {
+                        return 3;
+                    }
+                    return 999;
+                };
+
+                // Sort parent ratings
+                uasort($groupedEASA, function ($a, $b) use ($getPriority) {
+                    $prioA = $getPriority($a['parent'] ?? null);
+                    $prioB = $getPriority($b['parent'] ?? null);
+
+                    if ($prioA !== $prioB) {
+                        return $prioA <=> $prioB;
+                    }
+
+                    $nameA = strtolower($a['parent']->name ?? '');
+                    $nameB = strtolower($b['parent']->name ?? '');
+                    return $nameA <=> $nameB;
+                });
+
+                // Sort children under each parent
+                foreach ($groupedEASA as &$entry) {
+                    if (!empty($entry['children'])) {
+                        usort($entry['children'], function ($a, $b) use ($getPriority) {
+                            $prioA = $getPriority($a ?? null);
+                            $prioB = $getPriority($b ?? null);
+
+                            if ($prioA !== $prioB) {
+                                return $prioA <=> $prioB;
+                            }
+
+                            $nameA = strtolower($a->name ?? '');
+                            $nameB = strtolower($b->name ?? '');
+                            return $nameA <=> $nameB;
+                        });
+                    }
+                }
+                unset($entry);
+
+                ?>
+
+                @foreach ($groupedEASA as $entry)
+                @if (!empty($entry['children']))
+                <?php
+                $expirty_date = $entry['parent_expiry'];
+                $color = getExpiryStatus($expirty_date);
+
+                if ($color == "Red") {
+                    $color = "#dc3545";
+                    $tooltip = "This rating has expired";
+                } elseif ($color == "Yellow") {
+                    $color = "#ffc107";
+                    $tooltip = "This rating will expire soon";
+                } elseif ($color == "Green") {
+                    $color =  "#198754";
+                    $tooltip = "This rating does not expire";
+                }
+                ?>
+                <div class="collapsible">
+                    <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
+                </div>
+                <div class="content">
+                    <ul>
+                        @foreach ($entry['children'] as $child)
+                        <li>{{ $child->name }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                @else
+                <?php
+                $expirty_date = $entry['parent_expiry'];
+                $color = getExpiryStatus($expirty_date);
+
+                if ($color == "Red") {
+                    $color = "#dc3545";
+                    $tooltip = "This rating has expired";
+                } elseif ($color == "Yellow") {
+                    $color = "#ffc107";
+                    $tooltip = "This rating will expire soon";
+                } else {
+                    $color =  "#198754";
+                    $tooltip = "This rating does not expire";
+                }
+                ?>
+                <div class="parent_rate">
+                    <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
+                </div>
+
+                @endif
+                @endforeach
+            </td>
+
+
+            {{-- Licence 2 --}}
+            <td>
+                @if($doc && $doc->licence_file_uploaded_2)
+                @php
+                if ($doc->licence_non_expiring_2) {
+                $status = 'Non-Expiring';
+                $color = 'success';
+                $date = 'Non-Expiring';
+                } else {
+                $status = $doc->licence_2_status;
+                $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                $date = $doc->licence_expiry_date_2 ? date('d/m/Y', strtotime($doc->licence_expiry_date_2)) : 'N/A';
+                }
+                $tooltip = getTooltip($status, 'EASA Licence');
+                @endphp
+                <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
+                @else
+                <span class="text-muted">Not Uploaded</span>
+                @endif
+            </td>
+
+            {{-- Associated Ratings (Licence 2) --}}
+
+            <td class="lic_rating_td">
+                <?php
+                $groupedEASA = [];
+
+                if (isset($ratingsByLicence['licence_2'])) {
+                    foreach ($ratingsByLicence['licence_2'] as $ratings) {
+                        $child_id = $ratings->rating_id;
+                        $parent_id = $ratings->parent_id;
+                        $expiry_date = $ratings->expiry_date;
+
+                        if ($parent_id === null && $ratings->rating) {
+                            $groupedEASA[$child_id] = [
+                                'parent' => $ratings->rating,
+                                'children' => [],
+                                'parent_expiry' => $expiry_date,
+                            ];
+                        } elseif ($ratings->rating) {
+                            $parentRating = $ratings->parentRating;
+                            $childRating = $ratings->rating;
+
+                            if (!isset($groupedEASA[$parent_id])) {
+                                $groupedEASA[$parent_id] = [
+                                    'parent' => $parentRating,
+                                    'children' => [],
+                                    'parent_expiry' => $expiry_date,
+                                ];
+                            }
+
+                            $groupedEASA[$parent_id]['children'][] = $childRating;
+                        } else {
+                            $parentRating = $ratings->parentRating;
+                            $groupedEASA[$parent_id] = [
+                                'parent' => $parentRating,
+                                'children' => [],
+                                'parent_expiry' => $expiry_date,
                             ];
                         }
                     }
@@ -423,7 +587,24 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
                 @foreach ($groupedEASA as $entry)
                 @if (!empty($entry['children']))
-                <div class="collapsible">{{ $entry['parent']->name ?? '' }}</div>
+                <?php
+                $expirty_date = $entry['parent_expiry'];
+                $color = getExpiryStatus($expirty_date);
+
+                if ($color == "Red") {
+                    $color = "#dc3545";
+                    $tooltip = "This rating has expired";
+                } elseif ($color == "Yellow") {
+                    $color = "#ffc107";
+                    $tooltip = "This rating will expire soon";
+                } elseif ($color == "Green") {
+                    $color =  "#198754";
+                    $tooltip = "This rating does not expire";
+                }
+                ?>
+                <div class="collapsible">
+                    <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
+                </div>
                 <div class="content">
                     <ul>
                         @foreach ($entry['children'] as $child)
@@ -432,191 +613,27 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     </ul>
                 </div>
                 @else
-                <div class="parent_rate"><strong>{{ $entry['parent']->name ?? '' }}</strong></div>
+                <?php
+                $expirty_date = $entry['parent_expiry'];
+                $color = getExpiryStatus($expirty_date);
+
+                if ($color == "Red") {
+                    $color = "#dc3545";
+                    $tooltip = "This rating has expired";
+                } elseif ($color == "Yellow") {
+                    $color = "#ffc107";
+                    $tooltip = "This rating will expire soon";
+                } else {
+                    $color =  "#198754";
+                    $tooltip = "This rating does not expire";
+                }
+                ?>
+                <div class="parent_rate">
+                    <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
+                </div>
                 @endif
                 @endforeach
             </td>
-
-
-
-
-
-
-            {{-- Licence 2 --}}
-            <td>
-                @if($doc && $doc->licence_file_uploaded_2)
-                @php
-                if ($doc->licence_non_expiring_2) {
-                $status = 'Non-Expiring';
-                $color = 'success';
-                $date = 'Non-Expiring';
-                } else {
-                $status = $doc->licence_2_status;
-                $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
-                $date = $doc->licence_expiry_date_2 ? date('d/m/Y', strtotime($doc->licence_expiry_date_2)) : 'N/A';
-                }
-                $tooltip = getTooltip($status, 'EASA Licence');
-                @endphp
-                <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
-                @else
-                <span class="text-muted">Not Uploaded</span>
-                @endif
-            </td>
-
-            {{-- Associated Ratings (Licence 2) --}}
-            <!-- <td>
-                @php
-                $groupedEASA = [];
-
-                if (isset($ratingsByLicence['licence_2'])) {
-                foreach ($ratingsByLicence['licence_2'] as $ratings) {
-                $child_id = $ratings->rating_id;
-                $parent_id = $ratings->parent_id;
-
-                if ($parent_id === null && $ratings->rating) {
-                $groupedEASA[$child_id] = [
-                'parent' => $ratings->rating->name,
-                'children' => [],
-                ];
-                } elseif ($ratings->rating) {
-                $parentRating = $ratings->parentRating;
-                $childRating = $ratings->rating;
-
-                if (!isset($groupedEASA[$parent_id])) {
-                $groupedEASA[$parent_id] = [
-                'parent' => $parentRating?->name ?? 'Unknown Parent',
-                'children' => [],
-                ];
-                }
-
-                $groupedEASA[$parent_id]['children'][] = $childRating->name;
-                }
-                }
-                }
-                @endphp
-
-                @foreach ($groupedEASA as $entry)
-                <strong>{{ $entry['parent'] }}</strong><br>
-                @if (!empty($entry['children']))
-                <ul style="margin-left: 15px;">
-                    @foreach ($entry['children'] as $child)
-                    <li>{{ $child }}</li>
-                    @endforeach
-                </ul>
-                @endif
-                <br>
-                @endforeach
-            </td> -->
-            <td class="lic_rating_td">
-                @php
-                $groupedEASA = [];
-
-                if (isset($ratingsByLicence['licence_2'])) {
-                foreach ($ratingsByLicence['licence_2'] as $ratings) {
-                $child_id = $ratings->rating_id;
-                $parent_id = $ratings->parent_id;
-
-                if ($parent_id === null && $ratings->rating) {
-                $groupedEASA[$child_id] = [
-                'parent' => $ratings->rating,
-                'children' => [],
-                ];
-                } elseif ($ratings->rating) {
-                $parentRating = $ratings->parentRating;
-                $childRating = $ratings->rating;
-
-                if (!isset($groupedEASA[$parent_id])) {
-                $groupedEASA[$parent_id] = [
-                'parent' => $parentRating,
-                'children' => [],
-                ];
-                }
-
-                $groupedEASA[$parent_id]['children'][] = $childRating;
-                } else {
-                $parentRating = $ratings->parentRating;
-                $groupedEASA[$parent_id] = [
-                'parent' => $parentRating,
-                'children' => [],
-                ];
-                }
-                }
-                }
-
-                // -------------------------
-                // Sorting logic (same as controller)
-                // -------------------------
-                $getPriority = function ($rating) {
-                if (!$rating) return 999;
-
-                $r = $rating;
-
-                if (($r->is_fixed_wing || $r->is_rotary) && !$r->is_instructor && !$r->is_examiner) {
-                return 1;
-                }
-                if ($r->is_instructor) {
-                return 2;
-                }
-                if ($r->is_examiner) {
-                return 3;
-                }
-                return 999;
-                };
-
-                // Sort parent ratings
-                uasort($groupedEASA, function ($a, $b) use ($getPriority) {
-                $prioA = $getPriority($a['parent'] ?? null);
-                $prioB = $getPriority($b['parent'] ?? null);
-
-                if ($prioA !== $prioB) {
-                return $prioA <=> $prioB;
-                    }
-
-                    $nameA = strtolower($a['parent']->name ?? '');
-                    $nameB = strtolower($b['parent']->name ?? '');
-                    return $nameA <=> $nameB;
-                        });
-
-                        // Sort children under each parent
-                        foreach ($groupedEASA as &$entry) {
-                        if (!empty($entry['children'])) {
-                        usort($entry['children'], function ($a, $b) use ($getPriority) {
-                        $prioA = $getPriority($a ?? null);
-                        $prioB = $getPriority($b ?? null);
-
-                        if ($prioA !== $prioB) {
-                        return $prioA <=> $prioB;
-                            }
-
-                            $nameA = strtolower($a->name ?? '');
-                            $nameB = strtolower($b->name ?? '');
-                            return $nameA <=> $nameB;
-                                });
-                                }
-                                }
-                                unset($entry);
-                                @endphp
-
-                                @foreach ($groupedEASA as $entry)
-                                @if (!empty($entry['children']))
-                                <div class="collapsible">{{ $entry['parent']->name ?? '' }}</div>
-                                <div class="content">
-                                    <ul>
-                                        @foreach ($entry['children'] as $child)
-                                        <li>{{ $child->name }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                                @else
-                                <div class="parent_rate"><strong>{{ $entry['parent']->name ?? '' }}</strong></div>
-                                @endif
-                                @endforeach
-            </td>
-
-
-
-
-
 
 
             {{-- Medical 1 --}}
@@ -671,6 +688,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 </a>
             </td>
         </tr>
+        @endif
         @endforeach
     </tbody>
 </table>
@@ -750,7 +768,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     </div>
                 </div>
             </a>
-        </div> 
+        </div>
         <!-- End Group Card -->
 
         <!-- Folder Card -->
@@ -792,8 +810,8 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     <canvas id="pieChart" style="max-height: 400px;"></canvas>
 
                     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                    <script>
-                          document.addEventListener("DOMContentLoaded", () => {
+                   <script>
+                        document.addEventListener("DOMContentLoaded", () => {
                             let ctx = document.querySelector('#pieChart').getContext('2d');
 
                             new Chart(ctx, {
@@ -804,8 +822,8 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                         label: 'Document Statistics',
                                         data: [{{ $readDocuments }}, {{ $unreadDocuments }}],
                                         backgroundColor: [
-                                            'rgb(75, 192, 192)', // Green (Read)
-                                            'rgb(255, 99, 132)'  // Red (Unread)
+                                            'rgb(75, 192, 192)', // Green
+                                            'rgb(255, 99, 132)'  // Red
                                         ],
                                         hoverOffset: 4
                                     }]
@@ -830,6 +848,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                             });
                         });
                     </script>
+
                     <!-- End Pie Chart -->
                 </div>
             </div>
@@ -971,42 +990,54 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
                     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                     <script>
-                         document.addEventListener("DOMContentLoaded", () => {
-                        let ctx = document.querySelector('#pieChart').getContext('2d');
+                        document.addEventListener("DOMContentLoaded", () => {
+                            let ctx = document.querySelector('#pieChart').getContext('2d');
 
-                        new Chart(ctx, {
-                            type: 'pie',
-                            data: {
-                                labels: ['Read Documents', 'Unread Documents'],
-                                datasets: [{
-                                    label: 'Document Statistics',
-                                    data: [{{ $readDocuments }}, {{ $unreadDocuments }}],
-                                    backgroundColor: [
-                                        'rgb(75, 192, 192)', // Green (Read)
-                                        'rgb(255, 99, 132)'  // Red (Unread)
-                                    ],
-                                    hoverOffset: 4
-                                }]
-                            },
-                            options: {
-                                plugins: {
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(tooltipItem) {
-                                                let value = tooltipItem.raw;
-                                                let total = {{ $totalDocuments }};
-                                                let percentage = ((value / total) * 100).toFixed(2);
-                                                return `${tooltipItem.label}: ${value} (${percentage}%)`;
+                            new Chart(ctx, {
+                                type: 'pie',
+                                data: {
+                                    labels: ['Read Documents', 'Unread Documents'],
+                                    datasets: [{
+                                        label: 'Document Statistics',
+                                        data: [{
+                                            {
+                                                $readDocuments
                                             }
+                                        }, {
+                                            {
+                                                $unreadDocuments
+                                            }
+                                        }],
+                                        backgroundColor: [
+                                            'rgb(75, 192, 192)', // Green (Read)
+                                            'rgb(255, 99, 132)' // Red (Unread)
+                                        ],
+                                        hoverOffset: 4
+                                    }]
+                                },
+                                options: {
+                                    plugins: {
+                                        tooltip: {
+                                            callbacks: {
+                                                label: function(tooltipItem) {
+                                                    let value = tooltipItem.raw;
+                                                    let total = {
+                                                        {
+                                                            $totalDocuments
+                                                        }
+                                                    };
+                                                    let percentage = ((value / total) * 100).toFixed(2);
+                                                    return `${tooltipItem.label}: ${value} (${percentage}%)`;
+                                                }
+                                            }
+                                        },
+                                        legend: {
+                                            position: 'bottom'
                                         }
-                                    },
-                                    legend: {
-                                        position: 'bottom'
                                     }
                                 }
-                            }
+                            });
                         });
-                    });
                     </script>
                     <!-- End Pie Chart -->
                 </div>
@@ -1121,7 +1152,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
                     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                     <script>
-                         document.addEventListener("DOMContentLoaded", () => {
+                        document.addEventListener("DOMContentLoaded", () => {
                             let ctx = document.querySelector('#pieChart').getContext('2d');
 
                             new Chart(ctx, {
@@ -1130,10 +1161,18 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     labels: ['Read Documents', 'Unread Documents'],
                                     datasets: [{
                                         label: 'Document Statistics',
-                                        data: [{{ $readDocuments }}, {{ $unreadDocuments }}],
+                                        data: [{
+                                            {
+                                                $readDocuments
+                                            }
+                                        }, {
+                                            {
+                                                $unreadDocuments
+                                            }
+                                        }],
                                         backgroundColor: [
                                             'rgb(75, 192, 192)', // Green (Read)
-                                            'rgb(255, 99, 132)'  // Red (Unread)
+                                            'rgb(255, 99, 132)' // Red (Unread)
                                         ],
                                         hoverOffset: 4
                                     }]
@@ -1144,7 +1183,11 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                             callbacks: {
                                                 label: function(tooltipItem) {
                                                     let value = tooltipItem.raw;
-                                                    let total = {{ $totalDocuments }};
+                                                    let total = {
+                                                        {
+                                                            $totalDocuments
+                                                        }
+                                                    };
                                                     let percentage = ((value / total) * 100).toFixed(2);
                                                     return `${tooltipItem.label}: ${value} (${percentage}%)`;
                                                 }
