@@ -363,7 +363,7 @@
                 text: 'All answers have been saved.',
                 confirmButtonText: 'OK'
             }).then(() => {
-                window.location.href = '{{ route("quizzes.index") }}';
+                window.location.href = '{{ route("quiz.index") }}';
             });
         });
 
@@ -637,8 +637,8 @@
                     text: 'Your answers have been saved successfully.',
                     confirmButtonText: 'OK'
                 }).then(() => {
-                    // Redirect to quizzes.index
-                    window.location.href = '{{ route("quizzes.index") }}';
+                    // Redirect to quiz.index
+                    window.location.href = '{{ route("quiz.index") }}';
                 });
             })
             .catch(err => {

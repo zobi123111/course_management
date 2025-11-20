@@ -135,7 +135,7 @@ class QuizController extends Controller
         $quiz->delete();
 
         // return response()->json(['success' => true, 'message' => 'Quiz deleted successfully!']);
-        return redirect()->route('quizzes.index')->with('message', 'Quiz deleted successfully');
+        return redirect()->route('quiz.index')->with('message', 'Quiz deleted successfully');
     }
 
     public function importCsv(Request $request)

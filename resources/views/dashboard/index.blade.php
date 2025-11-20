@@ -1099,7 +1099,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
             <!-- Quiz  Card -->
             <div class="col-xxl-3 col-md-6">
-                <a href="{{ route('quizzes.index') }}" class="text-decoration-none">
+                <a href="{{ route('quiz.index') }}" class="text-decoration-none">
                     <div class="card info-card customers-card">
                         <div class="card-body">
                             <h5 class="card-title">Quiz</h5>
