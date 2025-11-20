@@ -494,7 +494,7 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link " id="Lesson-tab" data-bs-toggle="tab" data-bs-target="#Lesson" type="button" role="tab" aria-controls="Lesson" aria-selected="true">Lesson Plan</button>
                 </li>
-                @if(($trainingEvent?->course?->course_type === 'one_event' || $trainingEvent?->course?->course_type === 'multi_lesson') && $student)
+                @if($trainingEvent?->course?->course_type === 'one_event' && $student)
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="student-tab-{{ $student->id ?? ''}}" data-bs-toggle="tab" data-bs-target="#student-{{ $student->id ?? '' }}" type="button" role="tab" aria-controls="student-{{ $student->id ?? '' }}" aria-selected="false">
                         Overall Assessment
@@ -1541,17 +1541,19 @@
                                                 </select>
                                                 <div id="resource_id_error" class="text-danger error_e"></div>
                                             </div>
-                                            <div class="mb-2">
-                                                <label class="form-label">Opeartion </label>
+                                           
+                                            @if($trainingEvent->course->enable_mp_lifus == 2)
+                                            <div class="mb-2" >
+                                                <label class="form-label"> Operation </label>
                                                 <select class="form-select" name="operation">
                                                     <option value="0">Select Opeartion</option>
                                                     <option value="1">PF in LHS</option>
                                                     <option value="2">PM in LHS</option>
                                                     <option value="3">PF in RHS</option>
                                                     <option value="4">PM in RHS</option>
-
                                                 </select>
                                             </div>
+                                            @endif
                                             <div class="mb-2 select_task" style="display:none">
                                                 <label class="form-label">Select Tasks <span class="text-danger">*</span></label>
                                                 {{-- TaskGrading items --}}
@@ -1726,6 +1728,7 @@
                                                 <div id="resource_id_uperror" class="text-danger error_e"></div>
                                             </div>
 
+                                            @if($trainingEvent->course->enable_mp_lifus == 2)
                                             <div class="mb-2">
                                                 <label class="form-label">Opeartion </label>
                                                 <select class="form-select" name="edit_operation" id="edit_operation">
@@ -1735,7 +1738,8 @@
                                                     <option value="3">PF in RHS</option>
                                                     <option value="4">PM in RHS</option>
                                                 </select>
-                                            </div>  
+                                            </div> 
+                                            @endif 
                                             <div class="mb-2 select_task" id="select_task">
                                                 <label class="form-label">Select Tasks <span class="text-danger">*</span></label>
                                                 {{-- TaskGrading items --}}
