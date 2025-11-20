@@ -104,7 +104,7 @@ $(document).ready(function() {
         $('#append_name').html(fname);
         $(this).closest('td').find('.btn-danger').removeClass('disabled');
     });
-    @endif
+    @endif 
 
     $('#role_table').DataTable();
 

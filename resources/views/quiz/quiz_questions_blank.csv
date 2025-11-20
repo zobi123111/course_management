@@ -1,0 +1,5 @@
+type,question,option_A,option_B,option_C,option_D,correct_answers
+single_choice,Which number is the largest?,2,9,4,7,B
+multiple_choice,What is less than 10,Dog,Car,Cat,Chair,"a,c"
+sequence,Arrange steps for planting,Dig soil,Cover soil,Place seed,Water plant,"a,c,b,d"
+text,Explain gravity,,,,,

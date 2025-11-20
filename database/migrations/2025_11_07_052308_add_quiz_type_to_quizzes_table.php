@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('training_events', function (Blueprint $table) {
-            $table->softDeletes();
+        Schema::table('quizs', function (Blueprint $table) {
+            $table->string('quiz_type')->default('normal')->after('passing_score'); 
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('training_events', function (Blueprint $table) {
-            $table->dropSoftDeletes();
+        Schema::table('quizs', function (Blueprint $table) {
+             $table->dropColumn('quiz_type');
         });
     }
 };

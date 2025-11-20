@@ -22,6 +22,8 @@ use App\Http\Controllers\UserActivityLogController;
 use App\Http\Controllers\TrainingFeedbackController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\CbtaControlller;
+use App\Http\Controllers\QuizController;
+use App\Http\Controllers\TopicController;
 
 
 
@@ -305,17 +307,51 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/user-reporting', [ReportsController::class, 'getStudentReports'])->name('user.reporting');
 
     // Custom CBTA
-     
     Route::get('/custom-cbta', [CbtaControlller::class, 'index'])->name('custom-cbta.show');
     Route::post('/custom-cbta-add', [CbtaControlller::class, 'save'])->name('custom-cbta.add');
     Route::post('/custom-cbta-edit', [CbtaControlller::class, 'edit'])->name('custom-cbta.edit');
     Route::post('/custom-cbta-update', [CbtaControlller::class, 'update'])->name('custom-cbta.update');
     Route::post('/custom-cbta-delete', [CbtaControlller::class, 'delete'])->name('custom-cbta.delete');
     
+    // Quiz Routes
+    Route::get('/quiz', [QuizController::class, 'quizzes'])->name('quiz.index');
+    Route::post('/quiz/create', [QuizController::class, 'store'])->name('quiz.store');
+    Route::get('/quiz/edit', [QuizController::class, 'edit'])->name('quiz.edit');
+    Route::get('/quiz/view/{id}', [QuizController::class, 'view'])->name('quiz.view');
+    Route::post('/quiz/update', [QuizController::class, 'update'])->name('quiz.update');
+    Route::post('/quiz/delete', [QuizController::class, 'destroy'])->name('quiz.destroy');
+    Route::post('/quiz/update-status', [QuizController::class, 'updateStatus'])->name('quiz.updateStatus');
+
+    Route::get('/quiz/start/{id}', [QuizController::class, 'startQuiz'])->name('quiz.start');
+    Route::get('/quiz/view-result/{id}', [QuizController::class, 'viewResult'])->name('quiz.result');
+    Route::post('/quiz/save-answer', [QuizController::class, 'saveAnswer'])->name('quiz.saveAnswer');
     
+
+    // Quiz Topic Routes
+    Route::get('/topic', [TopicController::class, 'index'])->name('topic.index');
+    Route::post('/topic/create', [TopicController::class, 'store'])->name('topic.store');
+    Route::get('/topic/edit', [TopicController::class, 'edit'])->name('topic.edit');
+    Route::get('/topic/view/{id}', [TopicController::class, 'view'])->name('topic.view');
+    Route::post('/topic/update', [TopicController::class, 'update'])->name('topic.update');
+    Route::post('/topic/delete', [TopicController::class, 'destroy'])->name('topic.destroy');
+
+    Route::post('/quiz/{id}/add-topic', [QuizController::class, 'addTopic'])->name('quiz.addTopic');
+    Route::post('/quiz/deleteTopic', [QuizController::class, 'deleteTopic'])->name('quiz.deleteTopic');
+
+     // Topic Question Routes
+    Route::post('/question/create', [QuizController::class, 'createQuestion'])->name('question.create');
+    Route::get('/question/edit', [QuizController::class, 'editQuestion'])->name('question.edit');
+    Route::post('/question/update', [QuizController::class, 'updateQuestion'])->name('question.update');
+    Route::post('/question/delete', [QuizController::class, 'destroyQuestion'])->name('question.destroy');
 
 });
 
+
+Route::get('/quiz/topic-questions', [QuizController::class, 'getTopicQuestions'])->name('quiz.getTopicQuestions');
+Route::get('/lessons-by-course', [QuizController::class, 'getLessonsByCourse'])->name('lessons.byCourse');
+
+Route::post('/import-csv', [QuizController::class, 'importCsv'])->name('import.csv');
+Route::get('/export-csv', [QuizController::class, 'exportCsv'])->name('export.csv');
 Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
 Route::post('/settings', [SettingController::class, 'store'])->name('settings.store');
 
