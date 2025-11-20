@@ -289,13 +289,14 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     foreach ($ratingsByLicence['licence_1'] as $ratings) {
                         $child_id = $ratings->rating_id;
                         $parent_id = $ratings->parent_id;
-                        // echo "parent $parent_id  child $child_id <br>";
+                         $expiry_date = $ratings->expiry_date;
 
                         if ($parent_id === null && $ratings->rating) {
 
                             $groupedEASA[$child_id] = [
                                 'parent' => $ratings->rating->name,
                                 'children' => [],
+                                'parent_expiry' => $expiry_date,
                             ];
                         } elseif ($ratings->rating) {
                             $parentRating = $ratings->parentRating;
@@ -306,6 +307,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                 $groupedEASA[$parent_id] = [
                                     'parent' => $parentRating?->name ?? '',
                                     'children' => [],
+                                    'parent_expiry' => $expiry_date,
                                 ];
                             }
 
@@ -314,7 +316,8 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                             $parentRating = $ratings->parentRating;
                             $groupedEASA[$parent_id] = [
                                 'parent' => $parentRating?->name ?? '',
-                                'children' => [],  // No children here
+                                'children' => [],
+                                'parent_expiry' => $expiry_date,
                             ];
                         }
                     }
@@ -340,11 +343,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     foreach ($ratingsByLicence['licence_1'] as $ratings) {
                         $child_id = $ratings->rating_id;
                         $parent_id = $ratings->parent_id;
+                         $expiry_date = $ratings->expiry_date;
 
                         if ($parent_id === null && $ratings->rating) {
                             $groupedEASA[$child_id] = [
                                 'parent' => $ratings->rating,
                                 'children' => [],
+                                'parent_expiry' => $expiry_date,
                             ];
                         } elseif ($ratings->rating) {
                             $parentRating = $ratings->parentRating;
@@ -354,6 +359,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                 $groupedEASA[$parent_id] = [
                                     'parent' => $parentRating,
                                     'children' => [],
+                                    'parent_expiry' => $expiry_date,
                                 ];
                             }
                             $groupedEASA[$parent_id]['children'][] = $childRating;
@@ -362,6 +368,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                             $groupedEASA[$parent_id] = [
                                 'parent' => $parentRating,
                                 'children' => [],
+                                'parent_expiry' => $expiry_date,
                             ];
                         }
                     }
@@ -423,7 +430,24 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
                 @foreach ($groupedEASA as $entry)
                 @if (!empty($entry['children']))
-                <div class="collapsible">{{ $entry['parent']->name ?? '' }}</div>
+                     <?php
+                $expirty_date = $entry['parent_expiry'];
+                $color = getExpiryStatus($expirty_date);
+
+                if ($color == "Red") {
+                    $color = "#dc3545";
+                    $tooltip = "This rating has expired";
+                } elseif ($color == "Yellow") {
+                    $color = "#ffc107";
+                    $tooltip = "This rating will expire soon";
+                } elseif ($color == "Green") {
+                    $color =  "#198754";
+                    $tooltip = "This rating does not expire";
+                }
+                ?>
+                <div class="collapsible">
+                    <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
+                </div>
                 <div class="content">
                     <ul>
                         @foreach ($entry['children'] as $child)
@@ -432,7 +456,24 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     </ul>
                 </div>
                 @else
-                <div class="parent_rate"><strong>{{ $entry['parent']->name ?? '' }}</strong></div>
+                    <?php
+                $expirty_date = $entry['parent_expiry'];
+                $color = getExpiryStatus($expirty_date);
+
+                if ($color == "Red") {
+                    $color = "#dc3545";
+                    $tooltip = "This rating has expired";
+                } elseif ($color == "Yellow") {
+                    $color = "#ffc107";
+                    $tooltip = "This rating will expire soon";
+                } else {
+                    $color =  "#198754";
+                    $tooltip = "This rating does not expire";
+                }
+                ?>
+                <div class="parent_rate">
+                    <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
+                </div>
                 @endif
                 @endforeach
             </td>
@@ -464,49 +505,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
             </td>
 
             {{-- Associated Ratings (Licence 2) --}}
-            <!-- <td>
-                @php
-                $groupedEASA = [];
-
-                if (isset($ratingsByLicence['licence_2'])) {
-                foreach ($ratingsByLicence['licence_2'] as $ratings) {
-                $child_id = $ratings->rating_id;
-                $parent_id = $ratings->parent_id;
-
-                if ($parent_id === null && $ratings->rating) {
-                $groupedEASA[$child_id] = [
-                'parent' => $ratings->rating->name,
-                'children' => [],
-                ];
-                } elseif ($ratings->rating) {
-                $parentRating = $ratings->parentRating;
-                $childRating = $ratings->rating;
-
-                if (!isset($groupedEASA[$parent_id])) {
-                $groupedEASA[$parent_id] = [
-                'parent' => $parentRating?->name ?? 'Unknown Parent',
-                'children' => [],
-                ];
-                }
-
-                $groupedEASA[$parent_id]['children'][] = $childRating->name;
-                }
-                }
-                }
-                @endphp
-
-                @foreach ($groupedEASA as $entry)
-                <strong>{{ $entry['parent'] }}</strong><br>
-                @if (!empty($entry['children']))
-                <ul style="margin-left: 15px;">
-                    @foreach ($entry['children'] as $child)
-                    <li>{{ $child }}</li>
-                    @endforeach
-                </ul>
-                @endif
-                <br>
-                @endforeach
-            </td> -->
+         
             <td class="lic_rating_td">
                 @php
                 $groupedEASA = [];
@@ -515,11 +514,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 foreach ($ratingsByLicence['licence_2'] as $ratings) {
                 $child_id = $ratings->rating_id;
                 $parent_id = $ratings->parent_id;
+                $expiry_date = $ratings->expiry_date;
 
                 if ($parent_id === null && $ratings->rating) {
                 $groupedEASA[$child_id] = [
                 'parent' => $ratings->rating,
                 'children' => [],
+                'parent_expiry' => $expiry_date,
                 ];
                 } elseif ($ratings->rating) {
                 $parentRating = $ratings->parentRating;
@@ -529,6 +530,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 $groupedEASA[$parent_id] = [
                 'parent' => $parentRating,
                 'children' => [],
+                'parent_expiry' => $expiry_date,
                 ];
                 }
 
@@ -538,6 +540,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 $groupedEASA[$parent_id] = [
                 'parent' => $parentRating,
                 'children' => [],
+                'parent_expiry' => $expiry_date,
                 ];
                 }
                 }
@@ -599,7 +602,24 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
                                 @foreach ($groupedEASA as $entry)
                                 @if (!empty($entry['children']))
-                                <div class="collapsible">{{ $entry['parent']->name ?? '' }}</div>
+                                    <?php
+                                    $expirty_date = $entry['parent_expiry'];
+                                    $color = getExpiryStatus($expirty_date);
+
+                                    if ($color == "Red") {
+                                        $color = "#dc3545";
+                                        $tooltip = "This rating has expired";
+                                    } elseif ($color == "Yellow") {
+                                        $color = "#ffc107";
+                                        $tooltip = "This rating will expire soon";
+                                    } elseif ($color == "Green") {
+                                        $color =  "#198754";
+                                        $tooltip = "This rating does not expire";
+                                    }
+                                    ?>
+                                    <div class="collapsible">
+                                        <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
+                                    </div>
                                 <div class="content">
                                     <ul>
                                         @foreach ($entry['children'] as $child)
@@ -608,7 +628,24 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     </ul>
                                 </div>
                                 @else
-                                <div class="parent_rate"><strong>{{ $entry['parent']->name ?? '' }}</strong></div>
+                                <?php
+                                        $expirty_date = $entry['parent_expiry'];
+                                        $color = getExpiryStatus($expirty_date);
+
+                                        if ($color == "Red") {
+                                            $color = "#dc3545";
+                                            $tooltip = "This rating has expired";
+                                        } elseif ($color == "Yellow") {
+                                            $color = "#ffc107";
+                                            $tooltip = "This rating will expire soon";
+                                        } else {
+                                            $color =  "#198754";
+                                            $tooltip = "This rating does not expire";
+                                        }
+                                ?>
+                                        <div class="parent_rate">
+                                            <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
+                                        </div>
                                 @endif
                                 @endforeach
             </td>
