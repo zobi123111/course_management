@@ -2037,7 +2037,7 @@
                                                         </div>
                                                         <div class="grade_here_cont">
                                                             <input type="hidden" name="tg_user_id" value="{{ $student->id ?? '' }}">
-                                                            <h5>{{ $student->fname ?? '' }} {{ $student->lname ?? '' }}</h5>
+                                                            <!-- <h5>{{ $student->fname ?? '' }} {{ $student->lname ?? '' }}</h5> -->
                                                             <table>
                                                                 <tbody>
                                                                     @if($sublesson->grade_type == 'pass_fail')
@@ -2571,7 +2571,7 @@
                                             </div>
                                             <div class="table-container">
                                                 <div class="main-tabledesign">
-                                                    <h5>{{ $task->user->fname }} {{ $task->user->lname }}</h5>
+                                                    <!-- <h5>{{ $task->user->fname }} {{ $task->user->lname }}</h5> -->
                                                     @php
                                                     $selectedGrade = $task->task_grade;
                                                     $selectedComment = $task->task_comment;
@@ -2852,7 +2852,7 @@
                                             </div>
                                             <div class="table-container">
                                                 <div class="main-tabledesign">
-                                                    <h5>{{ $task->user->fname }} {{ $task->user->lname }}</h5>
+                                                    <!-- <h5>{{ $task->user->fname }} {{ $task->user->lname }}</h5> -->
                                                     @php
                                                     $selectedGrade = $task->task_grade;
                                                     $selectedComment = $task->task_comment;
