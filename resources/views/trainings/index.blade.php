@@ -27,7 +27,7 @@
  <h4>Student Training events</h4>
 <div class="card pt-4">
         <div class="card-body">
-    <table class="table table-hover" id="trainingEventTable">
+    <table class="table table-hover" id="trainingEventTable"> 
         <thead>
             <tr>
                 <th scope="col">Event</th>
@@ -881,19 +881,24 @@ $(document).ready(function() {
                      course = response.course;
 
                         // 🔹 Function to handle rank visibility
-                        function toggleRankOptions(selectSelector, enableValue) {
+                 function toggleRankOptions(selectSelector, enableValue) {
                             const rankSelect = $(selectSelector);
+                           
 
                             if (enableValue == 0 || enableValue == 1) {
                                 // Single Pilot (SP Event)
-                                rankSelect.find("option[value='2'], option[value='3']").hide(); // Hide FO & SO
+                                rankSelect.find("option[value='2'], option[value='3']").hide();
+                                rankSelect.find("option[value='1']").show();
                                 rankSelect.val("1"); // Default to Captain
                             } 
                             else if (enableValue == 2 || enableValue == 3) {
                                 // Multi Pilot (MP or SP+MP Event)
-                                rankSelect.find("option[value='2'], option[value='3']").show(); // Show FO & SO
+                                rankSelect.find("option[value='1']").hide();   // Hide Captain
+                                rankSelect.find("option[value='2'], option[value='3']").show();
+                              //  rankSelect.val("2"); // Default to First Officer
                             }
                         }
+
 
                         // 🔹 Apply logic to both Add & Edit rank dropdowns
                         toggleRankOptions("#addRankSelectBox", course.enable_mp_lifus);

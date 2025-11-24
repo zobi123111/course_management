@@ -663,6 +663,7 @@ class TrainingEventsController extends Controller
 
     public function updateTrainingEvent(Request $request)
     {
+        
         // Convert nested lesson times to H:i format
         $lessonData = $request->input('lesson_data', []);
         foreach ($lessonData as $key => $lesson) {
@@ -692,42 +693,7 @@ class TrainingEventsController extends Controller
                 }
             ],
             'lesson_data' => 'required|array|min:1',
-            // Validate ONLY the first lesson (index 0)
-            // 'lesson_data.0.lesson_id' => 'required|exists:course_lessons,id',
-            // 'lesson_data.0.instructor_id' => 'required|exists:users,id',
-            // 'lesson_data.0.resource_id' => 'required|exists:resources,id',
-            // 'lesson_data.0.lesson_date' => 'required|date_format:Y-m-d',
-            // 'lesson_data.*.start_time' => [
-            //         'nullable',
-            //         'date_format:H:i',
-            //     ],
-            // 'lesson_data.*.end_time' => [
-            //         'nullable',
-            //         'date_format:H:i',
-            //         function ($attribute, $value, $fail) use ($request) {
-            //             preg_match('/lesson_data\.(\d+)\.end_time/', $attribute, $matches);
-            //             if (!isset($matches[1])) return;
-
-            //             $index = (int) $matches[1];
-            //             $startTime = $request->input("lesson_data.$index.start_time");
-
-            //             if ($index === 0) {
-            //                 if (empty($startTime) || empty($value)) {
-            //                     return $fail("Start time and end time are required for the first lesson.");
-            //                 }
-            //             }
-
-            //             // Validate only if both times exist
-            //             if (!empty($startTime) && !empty($value)) {
-            //                 if (strtotime($value) <= strtotime($startTime)) {
-            //                     $fail("End time must be after start time.");
-            //                 }
-            //             }
-            //         },
-            //     ],
-            // 'lesson_data.0.departure_airfield' => 'required|string|size:4',
-            // 'lesson_data.0.destination_airfield' => 'required|string|size:4',
-            // 'lesson_data.0.instructor_license_number' => 'nullable|string',
+       
         ], [], [
             'event_date' => 'Course start date',
             'lesson_data.0.instructor_id' => 'instructor',
