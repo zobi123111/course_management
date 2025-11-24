@@ -199,6 +199,7 @@
                 padding: 7px 6px;
                 overflow: hidden;
                 white-space: nowrap;
+               
             }
         }
 
@@ -268,6 +269,8 @@
             /* Yellow */
             color: black;
             font-weight: bold;
+            width: 100%;
+            padding: 7px
         }
 
         .radio-label input:checked+.custom-radio.ftr {
@@ -276,6 +279,7 @@
             color: black;
             font-weight: bold;
             width: 100%;
+            padding: 7px
         }
 
         .radio-label input:checked+.custom-radio.competent {
@@ -283,6 +287,8 @@
             /* green */
             color: black;
             font-weight: bold;
+            width: 100%;
+            padding: 7px
         }
 
         .btn-container {
@@ -477,7 +483,7 @@
             {{ session()->get('message') }}
         </div>
         @endif
-      
+
         <div class="loader" style="display: none;"></div>
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
@@ -494,6 +500,7 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link " id="Lesson-tab" data-bs-toggle="tab" data-bs-target="#Lesson" type="button" role="tab" aria-controls="Lesson" aria-selected="true">Lesson Plan</button>
                 </li>
+                
                 @if($trainingEvent?->course?->course_type === 'one_event' && $student)
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="student-tab-{{ $student->id ?? ''}}" data-bs-toggle="tab" data-bs-target="#student-{{ $student->id ?? '' }}" type="button" role="tab" aria-controls="student-{{ $student->id ?? '' }}" aria-selected="false">
@@ -892,7 +899,7 @@
                             </div>
                             <div class="col-md-2 mt-2">
                                 <strong><i class="fas fa-clock"></i> Lesson Type:</strong><br>
-                            
+
                                 {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
 
                             </div>
@@ -900,22 +907,22 @@
                                 <strong><i class="fas fa-hourglass-half"></i> Credited Hours:</strong><br>
                                 {{ $def->defLesson->hours_credited ?? '00:00' }}
                             </div>
-                               @if($def->operation != 0)
+                            @if($def->operation != 0)
                             <div class="col-md-2 mt-2">
                                 <strong><i class="fas fa-hourglass-half"></i> Operation:</strong><br>
-                                    @if($def->operation == 1)
-                                        PF in LHS
-                                    @elseif($def->operation == 2)
-                                        PM in LHS
-                                    @elseif($def->operation == 3)
-                                        PF in RHS
-                                    @elseif($def->operation == 4)
-                                        PM in RHS
-                                    @else
-                                        N/A
-                                    @endif
-                                </div>
-                             @endif
+                                @if($def->operation == 1)
+                                PF in LHS
+                                @elseif($def->operation == 2)
+                                PM in LHS
+                                @elseif($def->operation == 3)
+                                PF in RHS
+                                @elseif($def->operation == 4)
+                                PM in RHS
+                                @else
+                                N/A
+                                @endif
+                            </div>
+                            @endif
 
                             <!-- {{-- Lesson Summary --}} -->
                             @if(!empty($def->lesson_summary))
@@ -1044,21 +1051,21 @@
                             </div>
                             @if($def->operation != 0)
                             <div class="col-md-2 mt-2">
-                            <strong><i class="fas fa-hourglass-half"></i> Operation:</strong><br>
+                                <strong><i class="fas fa-hourglass-half"></i> Operation:</strong><br>
                                 @if($def->operation == 1)
-                                    PF in LHS
+                                PF in LHS
                                 @elseif($def->operation == 2)
-                                    PM in LHS
+                                PM in LHS
                                 @elseif($def->operation == 3)
-                                    PF in RHS
+                                PF in RHS
                                 @elseif($def->operation == 4)
-                                    PM in RHS
+                                PM in RHS
                                 @else
-                                    N/A
+                                N/A
                                 @endif
-                             </div>
-                             @endif
-                           
+                            </div>
+                            @endif
+
                             <!-- {{-- Lesson Summary --}} -->
                             @if(!empty($def->lesson_summary))
                             <div class="col-md-12 mt-3">
@@ -1541,12 +1548,12 @@
                                                 </select>
                                                 <div id="resource_id_error" class="text-danger error_e"></div>
                                             </div>
-                                           
-                                            @if($trainingEvent->course->enable_mp_lifus == 2)
-                                            <div class="mb-2" >
+
+                                            @if($trainingEvent->course->enable_mp_lifus == 2 || $trainingEvent->course->enable_mp_lifus == 3)
+                                            <div class="mb-2">
                                                 <label class="form-label"> Operation </label>
                                                 <select class="form-select" name="operation">
-                                                    <option value="0">Select Opeartion</option>
+                                                    <option value="0">Select Operation</option>
                                                     <option value="1">PF in LHS</option>
                                                     <option value="2">PM in LHS</option>
                                                     <option value="3">PF in RHS</option>
@@ -1728,18 +1735,18 @@
                                                 <div id="resource_id_uperror" class="text-danger error_e"></div>
                                             </div>
 
-                                            @if($trainingEvent->course->enable_mp_lifus == 2)
+                                            @if($trainingEvent->course->enable_mp_lifus == 2 || $trainingEvent->course->enable_mp_lifus == 3)
                                             <div class="mb-2">
-                                                <label class="form-label">Opeartion </label>
+                                                <label class="form-label">Operation </label>
                                                 <select class="form-select" name="edit_operation" id="edit_operation">
-                                                    <option value="0">Select Opeartion</option>
+                                                    <option value="0">Select Operation</option>
                                                     <option value="1">PF in LHS</option>
                                                     <option value="2">PM in LHS</option>
                                                     <option value="3">PF in RHS</option>
                                                     <option value="4">PM in RHS</option>
                                                 </select>
-                                            </div> 
-                                            @endif 
+                                            </div>
+                                            @endif
                                             <div class="mb-2 select_task" id="select_task">
                                                 <label class="form-label">Select Tasks <span class="text-danger">*</span></label>
                                                 {{-- TaskGrading items --}}
@@ -1904,7 +1911,7 @@
                             <input type="hidden" name="event_id" id="event_id" value="{{ $trainingEvent->id }}">
                             <div class="accordion accordion-flush" id="faq-group-2">
                                 <?php
-                                $hours_credited = $eventLesson->hours_credited; 
+                                $hours_credited = $eventLesson->hours_credited;
                                 $hours_credited = "08:02:00"; // example
 
                                 list($hours, $minutes, $seconds) = explode(':', $eventLesson->hours_credited);
@@ -2010,9 +2017,9 @@
                                                     $selectedComment = $taskGrade->task_comment ?? null;
                                                     $isDeferred = in_array($sublesson->id, $deferredTaskIds);
                                                     $is_my_lesson = $eventLesson->is_my_lesson;
-                                                    $isDisabled =  !$is_my_lesson;
+                                                    $isDisabled = !$is_my_lesson;
                                                     @endphp
-                                                
+
 
                                                     <div class="main-tabledesign">
                                                         <div class="back_deffered">
@@ -2035,7 +2042,7 @@
                                                                     @if($sublesson->grade_type == 'pass_fail')
 
                                                                     <tr>
-                                                                        
+
                                                                         <td>
                                                                             <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
                                                                                 <input type="radio" class="deselectable-radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
@@ -2199,7 +2206,6 @@
                                         <!-- Examiner CBTA -->
                                         <div class="accordion-item">
                                             @if($lesson->examiner_cbta == 1)
-
                                             <h2 class="accordion-header">
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <button type="button" class="accordion-button" data-bs-toggle="collapse"
@@ -2360,6 +2366,84 @@
                                                 @endforeach
                                             </div>
                                         </div>
+                                        <!-- ////------------------------------------Overall assessment for multi lesson------------------------------------------------- -->
+                                        @if($trainingEvent?->course?->course_type == "multi_lesson")
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <button type="button" class="accordion-button" data-bs-toggle="collapse"
+                                                        data-bs-target="#overall-{{ $eventLesson->id }}" aria-expanded="false">
+                                                        Overall Assessment
+                                                    </button>
+                                                </div>
+                                            </h2>
+                                        </div>
+                                        @endif
+                                        <div id="overall-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                            <input type="hidden" name="lesson_id" value="{{ $eventLesson->id }}">
+                                            <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
+                                            <input type="hidden" name="user_id" value="{{ $student->id }}">
+
+                                            <div class="assessment-wrapper">
+                                                <!-- Result -->
+                                                <div class="row mb-3">
+
+                                                   <?php
+                                                        $lessonData = $eventLessons->firstWhere('lesson_id', $eventLesson->lesson_id);
+                                                    ?>
+                                                    <label class="col-sm-2 col-form-label">Result</label>
+                                                    <div class="col-sm-6  buttons">
+                                                        <table>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td class="overall_td">
+                                                                        <label class="radio-label">
+                                                                            <input type="radio"
+                                                                                name="overall_result[{{ $eventLesson->id }}]"
+                                                                                value="Competent"
+                                                                                {{ $lessonData->overall_result == 'Competent' ? 'checked' : '' }} style="width:100%">
+                                                                            <span class="custom-radio competent">Competent</span>
+                                                                        </label>
+                                                                    </td>
+
+                                                                    <td class="overall_td">
+                                                                        <label class="radio-label">
+                                                                            <input type="radio"
+                                                                                name="overall_result[{{ $eventLesson->id }}]"
+                                                                                value="Further training required"
+                                                                                {{ $lessonData->overall_result == 'Further training required' ? 'checked' : '' }}>
+                                                                            <span class="custom-radio ftr">FTR</span>
+                                                                        </label>
+                                                                    </td>
+
+                                                                    <td class="overall_td">
+                                                                        <label class="radio-label">
+                                                                            <input type="radio"
+                                                                                name="overall_result[{{ $eventLesson->id }}]"
+                                                                                value="Incomplete"
+                                                                                {{ $lessonData->overall_result == 'Incomplete' ? 'checked' : '' }}>
+                                                                            <span class="custom-radio incomplete">Incomplete</span>
+                                                                        </label>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Remark -->
+                                                <div class="row mb-3 remark-section">
+                                                    <label class="col-sm-2 col-form-label">Remark</label>
+                                                    <div class="col-sm-10">
+                                                        <textarea class="form-control remark"
+                                                            name="overall_remark[{{ $eventLesson->id }}]"
+                                                            style="height: 100px"
+                                                            placeholder="Enter your remarks here...">{{ $lessonData->overall_remark ?? '' }}</textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         @if(!empty($groupedLogs[$eventLesson->lesson_id]))
                                         @php
                                         $lessonLogs = $groupedLogs[$eventLesson->lesson_id];
@@ -2372,7 +2456,7 @@
                                             <table class="table table-striped table-bordered align-middle mb-0">
                                                 <thead class="table-light text-center">
                                                     <tr>
-                                                        <th scope="col">User</th> 
+                                                        <th scope="col">User</th>
                                                         <th scope="col">Lesson</th>
                                                         <th scope="col">Status</th>
                                                         <th scope="col">Date</th>
@@ -2394,22 +2478,15 @@
                                         <div class="d-flex align-items-center justify-content-end">
                                             @if($isDisabled)
                                             <div>
-                                            <span style="color:red"> You are not eligible to perform any action on this lesson </span>
+                                                <span style="color:red"> You are not eligible to perform any action on this lesson </span>
                                             </div>
                                             @endif
-                                            <div class="btn-container ms-3">
-                                                <button type="submit" class="btn btn-save" id="submitGrading"  {{ $isDisabled ? 'disabled' : '' }}>Save</button>
+                                            <div class="btn-container ms-3 mt-3">
+                                                <button type="submit" class="btn btn-save" id="submitGrading" {{ $isDisabled ? 'disabled' : '' }}>Save Lesson</button>
                                             </div>
-
                                         </div>
-                                      
-
                                     </div>
-
                                 </div>
-
-
-
                             </div>
                         </form>
                         @endforeach
@@ -3678,10 +3755,10 @@
                     type: 'POST',
                     data: vdata,
                     success: function(response) {
-                        if(response.deferredLessons[0].operation){
-                             $('#edit_operation').val(response.deferredLessons[0].operation);
+                        if (response.deferredLessons[0].operation) {
+                            $('#edit_operation').val(response.deferredLessons[0].operation);
                         }
-                         console.log(response.deferredLessons[0].operation);
+                        console.log(response.deferredLessons[0].operation);
                         $('#deferredLessons_id').val(response.deferredLessons[0].id);
 
                         if (lesson_type === "custom") {
@@ -3709,7 +3786,7 @@
                         $("input[name='select_courseTask[]']").prop("checked", false);
 
                         if (lesson_type === "custom") {
-                           
+
                             if (response.defLessonTasks && response.defLessonTasks.length > 0) {
                                 $.each(response.defLessonTasks, function(index, value) {
                                     $("input[name='select_courseTask[]'][value='" + value.task_id + "']").prop("checked", true);
@@ -3717,7 +3794,7 @@
 
                                 let selectedCourses = response.defLessonTasks.map(item => item.task.title);
                                 $(".course-dropdown .dropdown-label").text(selectedCourses.join(", "));
-                            } else {  
+                            } else {
                                 $(".course-dropdown .dropdown-label").text("Select Courses");
                             }
 
