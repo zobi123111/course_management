@@ -975,6 +975,7 @@
                         // 🔹 MP Event or SP+MP Event
                         $('#edit_enable_more_mp').prop('checked', true);
                         $('#edit_enable_mp_lifus').val(response.course.enable_mp_lifus);
+                        $('#edit_enable_mp_lifus option[value="1"]').hide();
                         $('#edit_enable_mp_lifus option[value="2"], #edit_enable_mp_lifus option[value="3"]').show();
                     }
                   
@@ -1710,18 +1711,36 @@
 
 $(document).ready(function() {
     // 🔹 Function to toggle MP options
-    function toggleMPOpions(checkboxSelector, selectSelector) {
+    function toggleMPOpions(checkboxSelector, selectSelector) { 
         const checkbox = $(checkboxSelector);
         const select = $(selectSelector);
         
-        function updateVisibility() {
-            if (checkbox.is(":checked")) {
-                select.find("option[value='2'], option[value='3']").show();
-            } else {
-                select.find("option[value='2'], option[value='3']").hide();
-                select.val("1"); // Reset to SP Event
+      function updateVisibility() {
+
+        if (checkbox.is(":checked")) {
+
+            // Show MP Event + SP+MP Event
+            select.find("option[value='2'], option[value='3']").show();
+
+            // Hide SP Event
+            select.find("option[value='1']").hide();
+
+            // If currently selected SP Event → change to MP Event
+            if (select.val() === "1") {
+                select.val("2");
             }
+
+        } else {
+            // Hide options 2 & 3
+            select.find("option[value='2'], option[value='3']").hide();
+
+            // Show back SP Event
+            select.find("option[value='1']").show();
+
+            // Reset selection back to SP Event
+            select.val("1");
         }
+    }
 
         // Run once on page load (for edit mode)
         updateVisibility();

@@ -740,16 +740,17 @@
 
 
                             <!-- // Operation -->
-                            @if(!empty($lesson->operation))
+                          <?php // dump($lesson->operation1); ?>
+                            @if(!empty($lesson->operation1))    
                             <div class="col-md-2 mt-2">
                                 <strong><i class="fas fa-hourglass-half"></i> Operation:</strong><br>
-                                @if($lesson->operation == 1)
+                                @if($lesson->operation1 == 1)
                                 PF in LHS
-                                @elseif($lesson->operation == 2)
+                                @elseif($lesson->operation1 == 2)
                                 PM in LHS
-                                @elseif($lesson->operation == 3)
+                                @elseif($lesson->operation1 == 3)
                                 PF in RHS
-                                @elseif($lesson->operation == 4)
+                                @elseif($lesson->operation1 == 4)
                                 PM in RHS
                                 @endif
                             </div>
