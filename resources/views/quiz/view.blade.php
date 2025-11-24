@@ -224,7 +224,7 @@
     </div>
 
     <!-- Delete Quiz Modal -->
-    <form action="{{ url('quiz/deleteTopic') }}" id="deletetopicForm" method="POST">
+    <form action="{{ route('quiz.deleteTopic') }}" id="deletetopicForm" method="POST">
         @csrf
         <div class="modal fade" id="deleteTopic" tabindex="-1" aria-labelledby="deleteTopicLabel" aria-hidden="true"
             data-bs-backdrop="static" data-bs-keyboard="false">

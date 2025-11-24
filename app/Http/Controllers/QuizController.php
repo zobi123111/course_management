@@ -265,15 +265,12 @@ class QuizController extends Controller
             $attempt = QuizAttempt::create([
                     'quiz_id'        => $quiz_id,
                     'student_id'  => $currentUser->id,
+                    'started_at'  => now(),
                 ]);
         }
        
         $quiz = Quiz::with('quizQuestions.question')->findOrFail($quiz_id);
 
-        // echo "<pre>";
-        //     print_r($quiz);
-        // echo "</pre>";
-        // dd();
 
         return view('quiz.quiz_start', compact('quiz'));
     }
@@ -287,6 +284,11 @@ class QuizController extends Controller
 
         $quizAttempt = $quiz->quizAttempts()->where('student_id', $currentUser->id)->first();
 
+        // echo "<pre>";
+        //     print_r($quizAttempt);
+        // echo "</pre>";
+        // dd();
+
         $answers = QuizAnswer::where('quiz_id', $quiz_id)
             ->where('user_id', $currentUser->id)
             ->get()
@@ -297,7 +299,6 @@ class QuizController extends Controller
 
     public function saveAnswer(Request $request)
     {
-
         $validated = $request->validate([
             'quiz_id'      => 'required|integer',
             'question_id'  => 'required|integer',
@@ -307,7 +308,9 @@ class QuizController extends Controller
         $user = auth()->user();
         $userId = $user->id;
 
-        $question = QuizQuestion::findOrFail($validated['question_id']);
+        $quiz = QuizQuestion::findOrFail($validated['question_id']);
+
+        $question = TopicQuestion::findOrFail($quiz->question_id);
 
         $isCorrect = false;
 
@@ -320,15 +323,23 @@ class QuizController extends Controller
             }
         }
         elseif ($question->question_type === 'single_choice') {
-            $isCorrect = strtoupper($question->correct_option) === strtoupper($validated['answer']);
+            $correctanswer = strtoupper($question->correct_option);
+            $useranswer = strtoupper($validated['answer']);
+
+            if ($correctanswer === $useranswer) {
+                $isCorrect = true;
+            }
         } 
         elseif ($question->question_type === 'multiple_choice') {
             $correct = collect(explode(',', strtoupper($question->correct_option)))->sort()->values()->implode(',');
             $answer = collect(explode(',', strtoupper($validated['answer'])))->sort()->values()->implode(',');
-            $isCorrect = $correct === $answer;
+            // $isCorrect = $correct === $answer;
+            if ($correct === $answer) {
+                $isCorrect = true;
+            }
         }
 
-       QuizAnswer::updateOrCreate(
+        QuizAnswer::updateOrCreate(
             [
                 'quiz_id'  => $validated['quiz_id'],
                 'user_id'  => $userId,
@@ -336,9 +347,53 @@ class QuizController extends Controller
             ],
             [
                 'selected_option' => $validated['answer'],
-                'is_correct'      => $isCorrect ?? 0,
+                'is_correct'      => $isCorrect,
             ]
         );
+               
+        if ($request->answertype === 'submitquiz') {
+            
+            $questionIds = QuizQuestion::where('quiz_id', $validated['quiz_id'])->pluck('question_id');
+
+            $hastextquestion = TopicQuestion::whereIn('id', $questionIds)->where('question_type', 'text')->get();
+            
+            $quiz = Quiz::findOrFail($validated['quiz_id']);
+            $totalCorrect = QuizAnswer::where('quiz_id', $quiz->id)->where('user_id', $userId)->where('is_correct', 1)->count();
+            $totalQuestions = QuizTopic::where('quiz_id', $quiz->id)->sum('question_quantity');
+
+            $percentage = round(($totalCorrect / $totalQuestions) * 100, 2);
+
+            $result = ($percentage >= $quiz->passing_score) ? 'pass' : 'fail';
+
+            if ($hastextquestion->isEmpty()) {
+
+                QuizAttempt::updateOrCreate(
+                    [
+                        'quiz_id'    => $quiz->id,
+                        'student_id' => $userId,
+                        'status'     => 'in_progress',
+                    ],
+                    [
+                        'submitted_at' => now(),
+                        'score'        => $percentage,
+                        'status'       => 'completed',
+                        'result'       => $result,
+                    ]
+                );
+            }
+            else{
+                QuizAttempt::updateOrCreate(
+                    [
+                        'quiz_id'    => $quiz->id,
+                        'student_id' => $userId,
+                    ],
+                    [
+                        'status'       => 'completed',
+                        'submitted_at' => now(),
+                    ]
+                );
+            }
+        }
 
         return response()->json(['success' => true]);
     }

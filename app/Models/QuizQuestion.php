@@ -23,12 +23,6 @@ class QuizQuestion extends Model
         return $this->belongsTo(Quiz::class);
     }
 
-    // Relationship: A quiz question has many quiz answers
-    public function quizAnswers()
-    {
-        return $this->hasMany(QuizAnswer::class);
-    }
-
     public function topic()
     {
         return $this->belongsTo(Topic::class);
