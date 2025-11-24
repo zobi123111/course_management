@@ -27,7 +27,9 @@ class TrainingEventLessons extends Model
         'operation1',
         'role1',
         'operation2',
-        'role2'
+        'role2',
+        'overall_result',
+        'overall_remark'
     ];
 
     // protected $dates = ['lesson_date', 'start_time', 'end_time', 'total_time', 'deleted_at'];

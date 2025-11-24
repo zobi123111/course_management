@@ -885,6 +885,7 @@ class TrainingEventsController extends Controller
             'documents',
             'studentDocument'
         ])->find(decode_id($event_id));
+       // dd($trainingEvent);
 
 
         if (!$trainingEvent) {
@@ -1126,7 +1127,7 @@ class TrainingEventsController extends Controller
                         
 
         $grouped_customLogs = $training_custom_logs->groupBy('lesson_id');
-      
+          
         return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs'));
     }
 
@@ -1583,7 +1584,10 @@ class TrainingEventsController extends Controller
 
     public function createGrading(Request $request)
     {
-      
+        // ================================
+  
+
+   
         //Validate the incoming data:
         $request->validate([
             'event_id'             => 'required|integer|exists:training_events,id',
@@ -1800,6 +1804,19 @@ class TrainingEventsController extends Controller
                             $compData
                         );
                     }
+                }
+            }
+
+         // SAVE OVERALL LESSON ASSESSMENT
+            // ================================
+            if ($request->has('overall_result')) { 
+                foreach ($request->overall_result as $lesson_id => $resultValue) {
+                    $remarkValue = $request->overall_remark[$lesson_id] ?? null;
+                    $update_assessment = array(
+                             'overall_result'   => $resultValue,
+                             'overall_remark'   => $remarkValue,
+                    );
+                    TrainingEventLessons::where('id', $lesson_id)->update($update_assessment);
                 }
             }
 
