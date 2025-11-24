@@ -65,4 +65,10 @@ class Quiz extends Model
         return $this->hasMany(QuizTopic::class, 'quiz_id');
     }
 
+    public function topicQuestions()
+    {
+        return $this->hasManyThrough(TopicQuestion::class, QuizQuestion::class, 'quiz_id', 'id', 'id', 'question_id');
+    }
+
+
 }

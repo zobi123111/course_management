@@ -24,8 +24,8 @@ class QuizAnswer extends Model
     }
 
     // Relationship: A quiz answer belongs to a quiz question
-    public function quizQuestion()
+    public function topicQuestion()
     {
-        return $this->belongsTo(QuizQuestion::class);
+        return $this->belongsTo(TopicQuestion::class);
     }
 }

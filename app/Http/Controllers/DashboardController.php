@@ -129,7 +129,7 @@ class DashboardController extends Controller
         $courseIds = TrainingEvents::where('student_id', $user->id)
             ->pluck('course_id');
 
-        $quizzes = Quiz::whereIn('course_id', $courseIds)->get();
+        $quizzes = Quiz::whereIn('course_id', $courseIds)->where('status', 'published')->get();
 
         $totalDocuments = $documents->count();
         $quizscount = $quizzes->count();

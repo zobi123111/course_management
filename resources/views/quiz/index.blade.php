@@ -163,16 +163,20 @@
                             @endif
                             
                             @if(checkAllowedModule('quiz','quiz.start')->isNotEmpty())
-                                @if(auth()->user()->role == 3)
-                                    @if($quiz->quizAttempts->contains('student_id', auth()->user()->id))
-                                        <button class="start-quiz-btn action-btn view-result-icon btn btn-primary" style="cursor: pointer; color: white;" 
-                                            data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}"> View
-                                        </button>
-                                    @else
-                                        <button class="start-quiz-btn action-btn start-quiz-icon" style="cursor: pointer; background: #198754; color: white; border-radius: .25rem; border: none;" 
-                                            data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}"> Start Quiz
-                                        </button>
+                                @if($quiz->topics->isNotEmpty())
+                                    @if(auth()->user()->role == 3)
+                                        @if($quiz->quizAttempts->contains('student_id', auth()->user()->id))
+                                            <button class="start-quiz-btn action-btn view-result-icon btn btn-primary" style="cursor: pointer; color: white;" 
+                                                data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}"> View
+                                            </button>
+                                        @else
+                                            <button class="start-quiz-btn action-btn start-quiz-icon" style="cursor: pointer; background: #198754; color: white; border-radius: .25rem; border: none;" 
+                                                data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}" data-duration="{{ $quiz->duration }}"> Start Quiz
+                                            </button>
+                                        @endif
                                     @endif
+                                @else
+                                    <span class="text-danger">You can't started yet</span>
                                 @endif
                             @endif
                         </td>
@@ -353,6 +357,31 @@
             </div>
         </div>
     </form>
+    <!-- Start Quiz Instructions Modal -->
+    <div class="modal fade" id="startQuizModal" tabindex="-1" aria-labelledby="startQuizLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="startQuizLabel">Quiz Instructions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 id="startQuizTitle" class="mb-2"></h6>
+                    <p id="startQuizDetails" class="mb-2"></p>
+                    <ul>
+                        <li id="startQuizDurationLine"></li>
+                        <li>Your quiz will start when you click <strong>Start</strong>.</li>
+                        <li>If you close the tab or the browser while taking the quiz, your answers will be automatically submitted.</li>
+                    </ul>
+                    <p class="text-muted small">Make sure you have a stable connection before starting.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="confirmStartQuiz" class="btn btn-primary">Start Quiz</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('js_scripts')
@@ -492,6 +521,21 @@
             });
 
             $(document).on('click', '.start-quiz-icon', function () {
+                let quizId = $(this).data('quiz-id');
+                let quizName = $(this).data('quiz-name') || '';
+                let duration = $(this).data('duration');
+                $('#startQuizTitle').text(quizName);
+                $('#startQuizDetails').text('You are about to start this quiz. Please review the details and ensure you have a stable connection.');
+                if (duration && duration > 0) {
+                    $('#startQuizDurationLine').text('Duration: ' + duration + ' minutes');
+                } else {
+                    $('#startQuizDurationLine').text('Duration: Not specified');
+                }
+                $('#confirmStartQuiz').data('quiz-id', quizId);
+                $('#startQuizModal').modal('show');
+            });
+
+            $('#confirmStartQuiz').on('click', function () {
                 let quizId = $(this).data('quiz-id');
                 window.location.href = `/quiz/start/${quizId}`;
             });

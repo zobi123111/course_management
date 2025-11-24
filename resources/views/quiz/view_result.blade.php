@@ -18,6 +18,10 @@
                             <td>{{ $quiz->course->course_name ?? 'N/A' }}</td>
                         </tr>
                         <tr>
+                            <th>Duration</th>
+                            <td>{{ $quiz->duration }} mins</td>
+                        </tr>
+                        <tr>
                             <th>Status</th>
                             <td><span class="badge bg-{{ $quiz->status == 'published' ? 'success' : 'secondary' }}">{{ ucfirst($quiz->status) }}</span></td>
                         </tr>
@@ -27,14 +31,42 @@
             <div class="col-md-4 mt-3">
                 <div class="card-body">
                     <table class="table table-borderless">
-                        <tr>
-                            <th>Duration</th>
-                            <td>{{ $quiz->duration }} mins</td>
-                        </tr>
+                        
                         <tr>
                             <th>Passing Score</th>
                             <td>{{ $quiz->passing_score }}%</td>
                         </tr>
+                        <tr>
+                            <th> Marks Obtained </th>
+                            @if(!empty($quizAttempt->score))
+                                <td>{{ $quizAttempt->score }}%</td>
+                            @endif
+                        </tr>
+                        <tr>
+                            <th>Result</th>
+                            <td>{{ strtoupper($quizAttempt->result) }}</td>
+                        </tr>
+                        <tr>
+                            <th>Time Taken</th>
+                            @if(!empty($quizAttempt->submitted_at))
+                            <td>
+                                @php
+                                    $seconds = \Carbon\Carbon::parse($quizAttempt->started_at)
+                                                ->diffInSeconds(\Carbon\Carbon::parse($quizAttempt->submitted_at));
+
+                                    $minutes = floor($seconds / 60);
+                                    $remainingSeconds = $seconds % 60;
+                                @endphp
+
+                                @if($minutes > 0)
+                                    {{ $minutes }} mins {{ $remainingSeconds }} secs
+                                @else
+                                    {{ $remainingSeconds }} secs
+                                @endif
+                            </td>
+                            @endif
+                        </tr>
+
                     </table>
                 </div>
             </div>

@@ -70,7 +70,14 @@
         background-color: #007bff !important;
         color: #fff !important;
     }
-
+    .quiz_type_box {
+        color: red;
+        background: beige;
+        margin-top: 45px;
+        margin-right: 60px;
+        margin-left: 10px;
+        padding: 10px;
+    }
 
 
 </style>
@@ -84,7 +91,6 @@
 
 <div class="card mb-3 shadow-sm">
     <div class="row g-0">
-        <!-- <div class="col-md-2"></div> -->
         <div class="col-md-4 mt-3">
             <div class="card-body">
                 <table class="table table-borderless">
@@ -130,6 +136,11 @@
         <div class="col-md-2 timer_div">
             <div id="quiz-timer"></div>
         </div>
+        @if($quiz->quiz_type != 'normal')
+            <div class="col-md-2">
+                <div><h3 class="quiz_type_box">{{ ucfirst($quiz->quiz_type) }} Quiz </h3></div>
+            </div>
+        @endif
     </div>
 </div>
 
@@ -139,7 +150,7 @@
             <h2 class="m-0">Quiz Questions</h2>
         </div>
 
-        <form id="quizForm" method="POST" action="">
+        <form id="quizForm" method="POST" action="{{ route('quiz.saveAnswer') }}">
             @csrf
             <div class="quiz-container position-relative">
                @foreach($quiz->quizQuestions as $index => $quizQuestion)
@@ -160,11 +171,13 @@
                 @php $optionValue = $q->{'option_' . $option}; @endphp
 
                 @if(!empty($optionValue))
+                    @php $inputId = 'q-' . $quizQuestion->id . '-opt-' . $option; @endphp
                     <div class="form-check">
                         <input class="form-check-input" type="radio"
+                            id="{{ $inputId }}"
                             name="questions[{{ $quizQuestion->id }}][answer]"
                             value="{{ $option }}">
-                        <label class="form-check-label">{{ $optionValue }}</label>
+                        <label class="form-check-label" for="{{ $inputId }}">{{ $optionValue }}</label>
                     </div>
                 @endif
             @endforeach
@@ -177,11 +190,13 @@
                 @php $optionValue = $q->{'option_' . $option}; @endphp
 
                 @if(!empty($optionValue))
+                    @php $inputId = 'q-' . $quizQuestion->id . '-opt-' . $option; @endphp
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox"
+                            id="{{ $inputId }}"
                             name="questions[{{ $quizQuestion->id }}][answer][]"
                             value="{{ $option }}">
-                        <label class="form-check-label">{{ $optionValue }}</label>
+                        <label class="form-check-label" for="{{ $inputId }}">{{ $optionValue }}</label>
                     </div>
                 @endif
             @endforeach
@@ -253,6 +268,8 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // global flag to indicate we're intentionally submitting/navigating
+        window.quizSubmitting = window.quizSubmitting || false;
         let currentIndex = 0;
         const form = document.getElementById('quizForm');
         const questions = document.querySelectorAll('.question-box');
@@ -350,22 +367,25 @@
         // });
 
         // Submit button
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
+        // form.addEventListener('submit', function (e) {
+        //     e.preventDefault();
 
-            questions.forEach(currentQuestionBox => {
-                saveAnswer(currentQuestionBox, 'submit');
-            });
+        //     questions.forEach(currentQuestionBox => {
+        //         saveAnswer(currentQuestionBox, 'submit');
+        //     });
 
-            Swal.fire({
-                icon: 'success',
-                title: 'Quiz Submitted!',
-                text: 'All answers have been saved.',
-                confirmButtonText: 'OK'
-            }).then(() => {
-                window.location.href = '{{ route("quiz.index") }}';
-            });
-        });
+        //     Swal.fire({
+        //         icon: 'success',
+        //         title: 'Quiz Submitted!',
+        //         text: 'All answers have been saved.',
+        //         confirmButtonText: 'OK'
+        //     }).then(() => {
+        //         // Prevent beforeunload from showing when we intentionally redirect
+        //         window.quizSubmitting = true;
+        //         try { localStorage.removeItem(`quiz_{{ $quiz->id }}_start_time`); } catch(e){}
+        //         window.location.href = '{{ route("quiz.index") }}';
+        //     });
+        // });
 
         // document.querySelectorAll('.next-btn').forEach(btn => {
         //     btn.addEventListener('click', () => {
@@ -489,6 +509,9 @@
 @if($quiz->quiz_type == 'normal')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // ensure global flag exists in this scope too
+            window.quizSubmitting = window.quizSubmitting || false;
+
             const quizDuration = {{ $quiz->duration }} * 60; // convert minutes to seconds
             const quizId = "{{ $quiz->id }}";
             const form = document.getElementById('quizForm');
@@ -531,9 +554,12 @@
 
                 if (remaining <= 0) {
                     clearInterval(timerInterval);
-                    localStorage.removeItem(`quiz_${quizId}_start_time`);
+                    // mark as intentionally submitting so beforeunload doesn't prompt
+                    window.quizSubmitting = true;
+                    try { localStorage.removeItem(`quiz_${quizId}_start_time`); } catch(e){}
                     alert("Time is up! Your quiz will now be submitted.");
-                    form.submit();
+                    // Dispatch the submit event so our JS handler runs (prevents real POST to start route)
+                    form.dispatchEvent(new Event('submit', { cancelable: true }));
                 } else {
                     timerDisplay.textContent = `⏱ Time Left: ${formatTime(remaining)}`;
                 }
@@ -541,6 +567,9 @@
 
             // Warn before closing tab
             window.addEventListener('beforeunload', function (e) {
+                // don't show prompt when we're intentionally submitting/navigating
+                if (window.quizSubmitting) return;
+
                 const remaining = getRemainingTime();
 
                 if (remaining > 0) {
@@ -551,8 +580,11 @@
                     // If they click OK, auto-submit
                     setTimeout(() => {
                         if (confirm(message)) {
-                            localStorage.removeItem(`quiz_${quizId}_start_time`);
-                            form.submit();
+                            try { localStorage.removeItem(`quiz_${quizId}_start_time`); } catch(e){}
+                            // mark submitting so we don't re-prompt
+                            window.quizSubmitting = true;
+                            // Dispatch submit event to trigger AJAX submit handler instead of native submit
+                            form.dispatchEvent(new Event('submit', { cancelable: true }));
                         }
                     }, 0);
 
@@ -574,49 +606,37 @@
     document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('quizForm');
 
-        // Intercept form submission
+
         form.addEventListener('submit', function (e) {
             e.preventDefault();
 
             const questions = document.querySelectorAll('.question-box');
-            const answersData = [];
+            const lastQuestionBox = questions[questions.length - 1];
 
-            questions.forEach(currentQuestionBox => {
-                const questionIdInput = currentQuestionBox.querySelector('input[name$="[id]"]');
-                const questionId = questionIdInput ? questionIdInput.value : null;
-                if (!questionId) return;
+            let answer = null;
+            const questionIdInput = lastQuestionBox.querySelector('input[name$="[id]"]');
+            const questionId = questionIdInput ? questionIdInput.value : null;
 
-                let answer = null;
+            if (!questionId) return;
 
-                // Single choice (radio)
-                const selectedRadio = currentQuestionBox.querySelector('input[type="radio"]:checked');
-                if (selectedRadio) answer = selectedRadio.value;
+            const selectedRadio = lastQuestionBox.querySelector('input[type="radio"]:checked');
+            if (selectedRadio) answer = selectedRadio.value;
 
-                // Multiple choice (checkbox)
-                else if (currentQuestionBox.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
-                    const selectedCheckboxes = currentQuestionBox.querySelectorAll('input[type="checkbox"]:checked');
-                    answer = Array.from(selectedCheckboxes).map(cb => cb.value).join(',');
-                }
+            else if (lastQuestionBox.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
+                const selectedCheckboxes = lastQuestionBox.querySelectorAll('input[type="checkbox"]:checked');
+                answer = Array.from(selectedCheckboxes).map(cb => cb.value).join(',');
+            }
 
-                // Text input
-                else if (currentQuestionBox.querySelector('textarea')) {
-                    const textarea = currentQuestionBox.querySelector('textarea');
-                    answer = textarea.value.trim() || null;
-                }
+            else if (lastQuestionBox.querySelector('textarea')) {
+                const textarea = lastQuestionBox.querySelector('textarea');
+                answer = textarea.value.trim() || null;
+            }
 
-                // Sequence / drag & drop
-                else if (currentQuestionBox.querySelector('ul[id^="sequence-"]')) {
-                    const sequenceInput = currentQuestionBox.querySelector('input[id^="sequence-input-"]');
-                    answer = sequenceInput ? sequenceInput.value : null;
-                }
+            else if (lastQuestionBox.querySelector('ul[id^="sequence-"]')) {
+                const sequenceInput = lastQuestionBox.querySelector('input[id^="sequence-input-"]');
+                answer = sequenceInput ? sequenceInput.value : null;
+            }
 
-                answersData.push({
-                    question_id: questionId,
-                    answer: answer
-                });
-            });
-
-            // Send all answers via AJAX
             fetch('{{ route("quiz.saveAnswer") }}', {
                 method: 'POST',
                 headers: {
@@ -624,25 +644,27 @@
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({
-                    attempt_id: '{{ $attempt_id ?? "1" }}',
-                    answers: answersData
+                    quiz_id: '{{ $quiz->id }}',
+                    question_id: questionId,
+                    answer: answer,
+                    answertype: 'submitquiz'
                 })
             })
             .then(res => res.json())
             .then(data => {
-                // Show SweetAlert success
                 Swal.fire({
                     icon: 'success',
                     title: 'Quiz Submitted!',
-                    text: 'Your answers have been saved successfully.',
+                    text: 'Your last answer has been saved.',
                     confirmButtonText: 'OK'
                 }).then(() => {
-                    // Redirect to quiz.index
+                    window.quizSubmitting = true;
+                    try { localStorage.removeItem(`quiz_{{ $quiz->id }}_start_time`); } catch(e){}
                     window.location.href = '{{ route("quiz.index") }}';
                 });
             })
             .catch(err => {
-                console.error('Error saving answers:', err);
+                console.error('Error saving answer:', err);
                 Swal.fire({
                     icon: 'error',
                     title: 'Submission Failed',
@@ -650,6 +672,86 @@
                 });
             });
         });
+
+        // Intercept form submission
+        // form.addEventListener('submit', function (e) {
+        //     e.preventDefault();
+
+        //     const questions = document.querySelectorAll('.question-box');
+        //     const answersData = [];
+
+        //     questions.forEach(currentQuestionBox => {
+        //         const questionIdInput = currentQuestionBox.querySelector('input[name$="[id]"]');
+        //         const questionId = questionIdInput ? questionIdInput.value : null;
+        //         if (!questionId) return;
+
+        //         let answer = null;
+
+        //         // Single choice (radio)
+        //         const selectedRadio = currentQuestionBox.querySelector('input[type="radio"]:checked');
+        //         if (selectedRadio) answer = selectedRadio.value;
+
+        //         // Multiple choice (checkbox)
+        //         else if (currentQuestionBox.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
+        //             const selectedCheckboxes = currentQuestionBox.querySelectorAll('input[type="checkbox"]:checked');
+        //             answer = Array.from(selectedCheckboxes).map(cb => cb.value).join(',');
+        //         }
+
+        //         // Text input
+        //         else if (currentQuestionBox.querySelector('textarea')) {
+        //             const textarea = currentQuestionBox.querySelector('textarea');
+        //             answer = textarea.value.trim() || null;
+        //         }
+
+        //         // Sequence / drag & drop
+        //         else if (currentQuestionBox.querySelector('ul[id^="sequence-"]')) {
+        //             const sequenceInput = currentQuestionBox.querySelector('input[id^="sequence-input-"]');
+        //             answer = sequenceInput ? sequenceInput.value : null;
+        //         }
+
+        //         answersData.push({
+        //             question_id: questionId,
+        //             answer: answer
+        //         });
+        //     });
+
+        //     // Send all answers via AJAX
+        //     fetch('{{ route("quiz.saveAnswer") }}', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //             'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        //         },
+        //         body: JSON.stringify({
+        //             attempt_id: '{{ $attempt_id ?? "1" }}',
+        //             answers: answersData
+        //         })
+        //     })
+        //     .then(res => res.json())
+        //     .then(data => {
+        //         // Show SweetAlert success
+        //         Swal.fire({
+        //             icon: 'success',
+        //             title: 'Quiz Submitted!',
+        //             text: 'Your answers have been saved successfully.',
+        //             confirmButtonText: 'OK'
+        //         }).then(() => {
+        //             // Prevent beforeunload prompt and clear timer start time, then redirect
+        //             window.quizSubmitting = true;
+        //             try { localStorage.removeItem(`quiz_{{ $quiz->id }}_start_time`); } catch(e){}
+        //             // Redirect to quiz.index
+        //             window.location.href = '{{ route("quiz.index") }}';
+        //         });
+        //     })
+        //     .catch(err => {
+        //         console.error('Error saving answers:', err);
+        //         Swal.fire({
+        //             icon: 'error',
+        //             title: 'Submission Failed',
+        //             text: 'There was an error submitting your quiz. Please try again.'
+        //         });
+        //     });
+        // });
     });
 </script>
 
