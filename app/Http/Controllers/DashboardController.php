@@ -135,7 +135,7 @@ class DashboardController extends Controller
         $groups = Group::where('status', 1)->whereJsonContains('user_ids', (string)$currentUser->id)->pluck('id');
         $courseIds = CourseGroup::whereIn('group_id', $groups)->pluck('courses_id');
 
-        $quizzes = Quiz::where('status', 'published')->whereIn('course_id', $courseIds)->get();
+        $quizzes = Quiz::where('status', 'published')->whereIn('course_id', $courseIds)->get(); 
 
         $totalDocuments = $documents->count();
         $quizscount = $quizzes->count();

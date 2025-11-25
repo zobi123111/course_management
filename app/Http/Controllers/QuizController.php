@@ -42,6 +42,7 @@ class QuizController extends Controller
             $quizs = Quiz::with('course', 'lesson', 'quizAttempts')->where('status', 'published')
                         ->whereIn('course_id', $courseIds)->get();
         }
+        
 
         // dd($quizs);
         $courses = Courses::where("status", 1)->get();
