@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CourseGroup;
 use App\Models\CourseLesson;
 use App\Models\Courses;
+use App\Models\Group;
 use App\Models\Quiz;
 use App\Models\QuizAnswer;
 use App\Models\QuizAttempt;
@@ -28,11 +30,17 @@ class QuizController extends Controller
             $quizs = Quiz::with('course', 'lesson')->get();
         }
         else{
-            $courseIds = TrainingEvents::where('student_id', $currentUser->id)
-            ->pluck('course_id');
+            // $courseIds = TrainingEvents::where('student_id', $currentUser->id)
+            // ->pluck('course_id');
+
+            // $quizs = Quiz::with('course', 'lesson', 'quizAttempts')->where('status', 'published')
+            // ->whereIn('course_id', $courseIds)->get();  
+
+            $groups = Group::where('status', 1)->whereJsonContains('user_ids', (string)$currentUser->id)->pluck('id');
+            $courseIds = CourseGroup::whereIn('group_id', $groups)->pluck('courses_id');
 
             $quizs = Quiz::with('course', 'lesson', 'quizAttempts')->where('status', 'published')
-            ->whereIn('course_id', $courseIds)->get();  
+                        ->whereIn('course_id', $courseIds)->get();
         }
 
         // dd($quizs);
@@ -131,10 +139,16 @@ class QuizController extends Controller
     public function destroy(Request $request)
     {
         $quizId = decode_id($request->quiz_id);
+
+         $quizTopics = QuizTopic::where('quiz_id', $quizId)->get();
+
+        foreach ($quizTopics as $quizTopic) {
+            $quizTopic->delete();
+        }
+
         $quiz = Quiz::findOrFail($quizId);
         $quiz->delete();
 
-        // return response()->json(['success' => true, 'message' => 'Quiz deleted successfully!']);
         return redirect()->route('quiz.index')->with('message', 'Quiz deleted successfully');
     }
 
