@@ -44,7 +44,7 @@
                         </tr>
                         <tr>
                             <th>Result</th>
-                            <td>{{ strtoupper($quizAttempt->result) }}</td>
+                            <td><span class="badge bg-{{ $quizAttempt->result == 'pass' ? 'success' : 'danger' }}">{{ strtoupper($quizAttempt->result) }}</span></td>
                         </tr>
                         <tr>
                             <th>Time Taken</th>
@@ -145,12 +145,17 @@
 
                 <p>
                     <strong>Result:</strong>
-                    @if(!$userAnswer)
-                        <span class="badge bg-secondary">Not Answered</span>
-                    @elseif($isCorrect)
-                        <span class="badge bg-success">Correct </span>
+                    @if($question->question->question_type == 'text')
+                        <span class="badge bg-warning text-dark">Instructor has not yet reviewed this answer</span>
+
                     @else
-                        <span class="badge bg-danger">Wrong </span>
+                        @if(!$userAnswer)
+                            <span class="badge bg-secondary">Not Answered</span>
+                        @elseif($isCorrect)
+                            <span class="badge bg-success">Correct</span>
+                        @else
+                            <span class="badge bg-danger">Wrong</span>
+                        @endif
                     @endif
                 </p>
             </div>
