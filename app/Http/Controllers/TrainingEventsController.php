@@ -1551,9 +1551,6 @@ class TrainingEventsController extends Controller
     public function createGrading(Request $request)
     {
         // ================================
-  
-
-   
         //Validate the incoming data:
         $request->validate([
             'event_id'             => 'required|integer|exists:training_events,id',
@@ -1580,6 +1577,7 @@ class TrainingEventsController extends Controller
 
         try {
             $event_id = $request->input('event_id');
+          
             //Get the student ID being graded from the hidden fields:
             $gradedStudentId = $request->input('tg_user_id');
             $gradedStudentIdForComp = $request->input('cg_user_id');
@@ -1588,8 +1586,20 @@ class TrainingEventsController extends Controller
             //DeferredItem::where('event_id', $event_id)->where('created_by', $evaluatorId)->delete();
 
             // Store or update Task Grading (for sublessons):
-            
-            if ($request->has('task_grade')) {
+                 // SAVE OVERALL LESSON ASSESSMENT
+            // ================================
+            if ($request->has('overall_result')) { 
+                foreach ($request->overall_result as $lesson_id => $resultValue) {
+                    $remarkValue = $request->overall_remark[$lesson_id] ?? null;
+                    $update_assessment = array(
+                             'overall_result'   => $resultValue,
+                             'overall_remark'   => $remarkValue,
+                    );
+                    TrainingEventLessons::where('id', $lesson_id)->update($update_assessment);
+                }
+            }
+
+            if ($request->has('task_grade')) { 
                 foreach ($request->input('task_grade') as $lesson_id => $subLessons) {
                     foreach ($subLessons as $sub_lesson_id => $task_grade) {
                         // Update or create the normal task grade
@@ -1609,6 +1619,31 @@ class TrainingEventsController extends Controller
                                 'lesson_type'   => 1
                             ]
                         );
+                           $grades = TaskGrading::where([
+                                    'event_id'  => $event_id,
+                                    'lesson_id' => $lesson_id,
+                                    'user_id'   => $gradedStudentId,
+                                ])->pluck('task_grade')->toArray();
+                       
+                                $finalResult = null;
+
+                            // RULE 1: If any Incomplete → Incomplete
+                            if (in_array('Incomplete', $grades)) {
+                                $finalResult = 'Incomplete';
+
+                            // RULE 2: If any Further training required → Further training required
+                            } elseif (in_array('Further training required', $grades)) {
+                                $finalResult = 'Further training required';
+
+                            // RULE 3: All competent → Competent
+                            } else {
+                                $finalResult = 'Competent';
+                            }  
+                        TrainingEventLessons::where('training_event_id', $event_id)
+                            ->where('lesson_id', $lesson_id)
+                            ->update([
+                                'overall_result' => $finalResult
+                            ]); 
 
 
                         $lessonSummary = $request->input("lesson_summary.$lesson_id");
@@ -1741,7 +1776,6 @@ class TrainingEventsController extends Controller
 
             // Instructor Grading 
             if ($request->has('instructor_grade')) {
-             
                 foreach ($request->input('instructor_grade') as $lesson_id => $competencyGrades) {
                     foreach ($competencyGrades as $competency_id => $grade) {
 
@@ -1773,18 +1807,7 @@ class TrainingEventsController extends Controller
                 }
             }
 
-         // SAVE OVERALL LESSON ASSESSMENT
-            // ================================
-            if ($request->has('overall_result')) { 
-                foreach ($request->overall_result as $lesson_id => $resultValue) {
-                    $remarkValue = $request->overall_remark[$lesson_id] ?? null;
-                    $update_assessment = array(
-                             'overall_result'   => $resultValue,
-                             'overall_remark'   => $remarkValue,
-                    );
-                    TrainingEventLessons::where('id', $lesson_id)->update($update_assessment);
-                }
-            }
+ 
 
 
             // Commit the transaction on success    

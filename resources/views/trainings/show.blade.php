@@ -460,6 +460,9 @@
             color: black;
             font-weight: bold;
         }
+        td.overall_td {
+            width: 33%;
+        }
     </style>
 
     <head>
@@ -2372,15 +2375,15 @@
                                         <div class="accordion-item">
                                             <h2 class="accordion-header">
                                                 <div class="d-flex justify-content-between align-items-center">
-                                                    <button type="button" class="accordion-button" data-bs-toggle="collapse"
-                                                        data-bs-target="#overall-{{ $eventLesson->id }}" aria-expanded="false">
+                                                   <button type="button" class="accordion-button" style="cursor: default;">
                                                         Overall Assessment
                                                     </button>
+
                                                 </div>
                                             </h2>
                                         </div>
                                         @endif
-                                        <div id="overall-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                        <div id="overall-{{ $eventLesson->id }}" class="accordion-collapse show">
                                             <input type="hidden" name="lesson_id" value="{{ $eventLesson->id }}">
                                             <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
                                             <input type="hidden" name="user_id" value="{{ $student->id }}">
@@ -2401,9 +2404,9 @@
                                                                         <label class="radio-label">
                                                                             <input type="radio"
                                                                                 name="overall_result[{{ $eventLesson->id }}]"
-                                                                                value="Competent"
-                                                                                {{ $lessonData->overall_result == 'Competent' ? 'checked' : '' }} style="width:100%">
-                                                                            <span class="custom-radio competent">Competent</span>
+                                                                                value="Incomplete"
+                                                                                {{ $lessonData->overall_result == 'Incomplete' ? 'checked' : '' }}>
+                                                                            <span class="custom-radio incomplete">Incomplete</span>
                                                                         </label>
                                                                     </td>
 
@@ -2416,14 +2419,13 @@
                                                                             <span class="custom-radio ftr">FTR</span>
                                                                         </label>
                                                                     </td>
-
-                                                                    <td class="overall_td">
+                                                                         <td class="overall_td">
                                                                         <label class="radio-label">
                                                                             <input type="radio"
                                                                                 name="overall_result[{{ $eventLesson->id }}]"
-                                                                                value="Incomplete"
-                                                                                {{ $lessonData->overall_result == 'Incomplete' ? 'checked' : '' }}>
-                                                                            <span class="custom-radio incomplete">Incomplete</span>
+                                                                                value="Competent"
+                                                                                {{ $lessonData->overall_result == 'Competent' ? 'checked' : '' }} style="width:100%">
+                                                                            <span class="custom-radio competent">Competent</span>
                                                                         </label>
                                                                     </td>
                                                                 </tr>
@@ -2743,7 +2745,7 @@
                                     @endif
                                     <!-- // End Logs -->
                                     <div class="btn-container mt-4">
-                                        <button type="submit" class="btn btn-save" id="submitDefGrading">Save</button>
+                                        <button type="submit" class="btn btn-save" id="submitDefGrading">Save Lesson</button>
                                     </div>
                                 </div>
                             </div>
@@ -3027,7 +3029,7 @@
                                     @endif
                                     <!-- // End Logs -->
                                     <div class="btn-container">
-                                        <button type="submit" class="btn btn-save" id="submitDefGrading">Save</button>
+                                        <button type="submit" class="btn btn-save" id="submitDefGrading">Save Lesson</button>
                                     </div>
                                 </div>
                             </div>
