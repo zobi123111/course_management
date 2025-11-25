@@ -10,6 +10,7 @@ use App\Models\Folder;
 use App\Models\Document;
 use App\Models\TrainingEvents;
 use App\Models\BookedResource;
+use App\Models\CourseGroup;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ParentRating;
 use App\Models\Quiz;
@@ -126,10 +127,15 @@ class DashboardController extends Controller
         // $quizs = TrainingEvents::where('student_id', $user->id)
         //                         ->with('quizzes')
         //                         ->get();
-        $courseIds = TrainingEvents::where('student_id', $user->id)
-            ->pluck('course_id');
+        // $courseIds = TrainingEvents::where('student_id', $user->id)
+        //     ->pluck('course_id');
 
-        $quizzes = Quiz::whereIn('course_id', $courseIds)->where('status', 'published')->get();
+        // $quizzes = Quiz::whereIn('course_id', $courseIds)->where('status', 'published')->get();
+
+        $groups = Group::where('status', 1)->whereJsonContains('user_ids', (string)$currentUser->id)->pluck('id');
+        $courseIds = CourseGroup::whereIn('group_id', $groups)->pluck('courses_id');
+
+        $quizzes = Quiz::where('status', 'published')->whereIn('course_id', $courseIds)->get(); 
 
         $totalDocuments = $documents->count();
         $quizscount = $quizzes->count();
