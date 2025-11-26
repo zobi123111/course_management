@@ -869,8 +869,10 @@
                         {{ date('h:i A', strtotime($event->start_time)) }} - {{ date('h:i A', strtotime($event->end_time)) }}
                     </span>
                 </div> -->
+        
 
             @auth
+            @if($allLessonsGraded == true)
             @if(auth()->user()->id  === $event->student_id) 
             <div class="card-footer bg-white border-top">
                 @if($event->student_acknowledged)
@@ -891,7 +893,7 @@
                     <button type="button"
                         class="btn btn-outline-primary acknowledge-btn"
                         data-event-id="{{ encode_id($event->id) }}">
-                        <i class="bi bi-check2-square me-1"></i> Acknowledge
+                        <i class="bi bi-check2-square me-1"></i> Acknowledge Lesson
                     </button>
                 </form>
                 @endif
@@ -915,6 +917,7 @@
                     @endif
                 </div>
             </div>
+            @endif
             @endif
             @endif
             @endauth
