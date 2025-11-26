@@ -2003,9 +2003,28 @@ class TrainingEventsController extends Controller
             // abort(404, 'Training Event not found.'); 
         }
         $reviews = TrainingEventReview::with('users')->where('event_id', $eventId)->get();
-     
+        
+            $lessonIds = json_decode($event->lesson_ids, true);
+            $allLessonsGraded = true;  // assume true unless a lesson fails the condition
+            foreach ($lessonIds as $id) {
+                $totalSubLessons = SubLesson::where('lesson_id', $id)->count();
 
-        return view('trainings.grading-list', compact('event', 'defLessonGrading', 'CustomLessonGrading', 'examinerGrouped', 'instructorGrouped', 'reviews'));
+                $gradedSubLessons = TaskGrading::where([
+                        'event_id'  => $eventId,
+                        'lesson_id' => $id,
+                        'user_id'   => $userId,
+                    ])
+                    ->whereNotNull('task_grade')
+                    ->where('task_grade', '!=', '')
+                    ->count();
+                
+              if ($gradedSubLessons == 0 || $gradedSubLessons != $totalSubLessons) {
+                        $allLessonsGraded = false;
+                        break;
+                    }
+            }
+
+        return view('trainings.grading-list', compact('event', 'defLessonGrading', 'CustomLessonGrading', 'examinerGrouped', 'instructorGrouped', 'reviews','allLessonsGraded'));
     }
 
     // public function unlockEventGarding(Request $request, $event_id)
