@@ -6,6 +6,7 @@ use App\Models\CourseGroup;
 use App\Models\CourseLesson;
 use App\Models\Courses;
 use App\Models\Group;
+use App\Models\OrganizationUnits;
 use App\Models\Quiz;
 use App\Models\QuizAnswer;
 use App\Models\QuizAttempt;
@@ -25,9 +26,13 @@ class QuizController extends Controller
     public function quizzes()
     {
         $currentUser = auth()->user();
+        $organizationUnits = OrganizationUnits::all();
 
         if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) {
             $quizs = Quiz::with('course', 'lesson')->get();
+        }
+        elseif ($currentUser->is_admin == 1 && !empty($currentUser->ou_id)) {
+            $quizs = Quiz::with('course', 'lesson')->where('ou_id', $currentUser->ou_id)->get();
         }
         else{
             // $courseIds = TrainingEvents::where('student_id', $currentUser->id)
@@ -43,11 +48,10 @@ class QuizController extends Controller
                         ->whereIn('course_id', $courseIds)->get();
         }
         
-
         // dd($quizs);
         $courses = Courses::where("status", 1)->get();
 
-        return view('quiz.index', compact('quizs', 'courses'));
+        return view('quiz.index', compact('quizs', 'courses', 'organizationUnits'));
     }
 
     public function store(Request $request)
@@ -60,6 +64,13 @@ class QuizController extends Controller
             'duration'      => 'required|numeric|min:1',
             'passing_score' => 'required|numeric|min:0|max:100',
             'status'        => 'required|string|in:draft,published',
+            'ou_id' => [
+                function ($attribute, $value, $fail) {
+                    if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
+                        $fail('The Organizational Unit (OU) is required for Super Admin.');
+                    }
+                }
+            ],
         ]);
 
         if ($validator->fails()) {
@@ -74,6 +85,7 @@ class QuizController extends Controller
         $quiz->passing_score = $request->passing_score;
         $quiz->quiz_type = $request->quiz_type;
         $quiz->status = $request->status;
+        $quiz->ou_id = (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id;
         $quiz->created_by = Auth::id();
         $quiz->save();
 
@@ -84,7 +96,7 @@ class QuizController extends Controller
     {
         $quizId = decode_id($request->id);
         $quiz = Quiz::with('topics.topic')->findOrFail($quizId);
-        $topics = Topic::get();
+        $topics = Topic::withCount('questions')->get();
         $quizQuestions = QuizQuestion::with('question')->where('quiz_id', $quizId)->get();
         
         return view('quiz.view', compact('quiz', 'topics', 'quizQuestions'));
@@ -106,9 +118,16 @@ class QuizController extends Controller
         return response()->json($lessons);
     }
 
+    public function getCourseByOu(Request $request)
+    {
+        // dd($request->all());
+
+        $courses = Courses::where('ou_id', $request->ou_id)->get();
+        return response()->json($courses);
+    }
+
     public function update(Request $request)
     {
-
         $validator = Validator::make($request->all(), [
             'quiz_id'       => 'required|numeric',
             'title'         => 'required|string|max:255',
@@ -117,13 +136,23 @@ class QuizController extends Controller
             'duration'      => 'required|numeric|min:1',
             'passing_score' => 'required|numeric|min:0|max:100',
             'status'        => 'required|string|in:draft,published',
+            'ou_id' => [
+                function ($attribute, $value, $fail) {
+                    if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
+                        $fail('The Organizational Unit (OU) is required for Super Admin.');
+                    }
+                }
+            ],
         ]);
+
+        
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
         $quiz = Quiz::findOrFail($request->quiz_id);
+
         $quiz->update([
             'title' => $request->title,
             'course_id' => $request->course_id,
@@ -132,6 +161,7 @@ class QuizController extends Controller
             'passing_score' => $request->passing_score,
             'quiz_type' => $request->quiz_type,
             'status' => $request->status,
+            'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id,
         ]);
 
         return response()->json(['success' => true, 'message' => 'Quiz updated successfully.']);
@@ -236,12 +266,69 @@ class QuizController extends Controller
         return back()->with('message', 'Topic added & questions assigned successfully!');
     }
 
+    public function editTopic(Request $request)
+    {
+        $request->validate([
+            'topic_id'          => 'required',
+            'quiz_id'           => 'required',
+            'question_quantity' => 'required|integer|min:1'
+        ]);
+
+        $topic_id = decode_id($request->topic_id);
+        $quiz_id  = decode_id($request->quiz_id);
+
+        $topic = QuizTopic::where('topic_id', $topic_id)->where('quiz_id', $quiz_id)->firstOrFail();
+
+        $oldQty = $topic->question_quantity;
+        $newQty = $request->question_quantity;
+
+        $allQuestions = QuizQuestion::where('topic_id', $topic_id)
+                                    ->where('quiz_id', $quiz_id)
+                                    ->get();
+        $assignedQuestions = QuizQuestion::where('topic_id', $topic_id)->where('quiz_id', $quiz_id)->pluck('question_id');
+
+        if ($newQty > $oldQty) {
+
+            $increaseBy = $newQty - $oldQty;
+
+            $extraQuestions = $allQuestions
+                                ->whereNotIn('id', $assignedQuestions)
+                                ->shuffle()
+                                ->take($increaseBy);
+
+            foreach ($extraQuestions as $q) {
+                QuizQuestion::create([
+                    'quiz_id' => $quiz_id,
+                    'topic_id' => $topic_id,
+                    'question_id'   => $q->id,
+                ]);
+            }
+        }
+
+        if ($newQty < $oldQty) {
+
+            $decreaseBy = $oldQty - $newQty;
+
+            $randomAssigned = $assignedQuestions->shuffle()->take($decreaseBy);
+
+            QuizQuestion::where('quiz_id', $quiz_id)->where('topic_id', $topic_id)
+                ->whereIn('question_id', $randomAssigned)
+                ->delete();
+        }
+
+        $topic->question_quantity = $newQty;
+        $topic->save();
+
+        return back()->with('message', 'Topic quantity updated successfully!');
+    }
+
     public function deleteTopic(Request $request)
     {
         $id = decode_id($request->topic_id);
         $quiz_id = decode_id($request->quiz_id);
 
-        $quizTopic = QuizTopic::findOrFail($id);
+        $quizTopic = QuizTopic::where('topic_id', $id)
+        ->where('quiz_id', $quiz_id)->first();
 
         $quizQuestions = QuizQuestion::where('topic_id', $id)
         ->where('quiz_id', $quiz_id)

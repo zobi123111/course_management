@@ -14,5 +14,12 @@ class Topic extends Model
     protected $fillable = [
         'title',
         'description',
+        'ou_id',
     ];
+
+    public function questions()
+    {
+        return $this->hasMany(TopicQuestion::class, 'topic_id');
+    }
+
 }

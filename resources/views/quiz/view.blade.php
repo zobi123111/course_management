@@ -80,20 +80,21 @@
                     <tr>
                         <th>#</th>
                         <th>Topic</th>
+                        <th>Total Questions</th>
                         <th>Question Quantity</th>
                         <th width="120">Actions</th>
                     </tr>
                 </thead>
-
                 <tbody>
-                    @forelse($quiz->topics as $index => $topic)
+                    @forelse($quiz->topics as $index => $topic)                 
                     <tr>
                         <td>{{ $index + 1 }}</td>
                         <td class="topicTitle">{{ $topic->topic->title }}</td>
-                        <td>{{ $topic->question_quantity }}</td>
+                        <td>{{ $topic->topic->questions->count() }} questions in bank</td>
+                        <td>{{ $topic->question_quantity }} questions assigned</td>
                         <td>
                             <i class="fa fa-eye action-btn" data-bs-toggle="modal" data-bs-target="#viewQuestionsModal_{{ $topic->id }}" style="font-size:25px; cursor:pointer;"></i>
-
+                            <i class="fa-solid fa-pen-to-square edit-topic-icon action-btn" style="font-size:25px; cursor:pointer;" data-topic-id="{{ encode_id($topic->topic->id) }}" data-topic-name="{{ $topic->topic->title }}" data-quiz-id="{{ encode_id($quiz->id) }}" data-quantity="{{ $topic->question_quantity }}"></i>
                             <i class="fa-solid fa-trash delete-topic-icon action-btn" style="font-size:25px; cursor: pointer;" data-topic-id="{{ encode_id($topic->topic->id) }}" data-quiz-id="{{ encode_id($quiz->id) }}" data-topic-name="{{ $topic->topic->title }}"></i>
                         </td>
                     </tr>
@@ -200,7 +201,7 @@
                             <label class="form-label">Select Topic</label>
                             <select name="topic_id" class="form-select" required>
                                 <option value="" disabled selected>-- Select Topic --</option>
-                                @foreach($topics as $topic)
+                                @foreach($topics->where('ou_id', auth()->user()->ou_id) as $topic)
                                     @unless($quiz->topics->pluck('topic_id')->contains($topic->id))
                                         <option value="{{ $topic->id }}">{{ $topic->title }}</option>
                                     @endunless
@@ -217,6 +218,42 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary">Add Topic</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Topic Quantity Modal -->
+
+    <div class="modal fade" id="editTopicModal" tabindex="-1" aria-labelledby="addTopicModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form action="{{ route('quiz.editTopic', $quiz->id) }}" id="editTopicForm" method="POST">
+                @csrf
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Question Quantity</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <input type="hidden" name="topic_id" id="edit_topic_id">
+                        <input type="hidden" name="quiz_id" id="edit_quiz_id">
+
+                        <div class="mb-3">
+                            <label class="form-label">Topic</label>
+                            <input type="text" id="edit_topic_name" class="form-control" disabled>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Question Quantity</label>
+                            <input type="number" name="question_quantity" id="edit_question_quantity" class="form-control" min="1" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
                     </div>
                 </div>
             </form>
@@ -269,6 +306,21 @@
             $('#topicId').val(topicId);
             $('#quizId').val(quizId);
         });
+
+        $(document).on('click', '.edit-topic-icon', function () {
+            let id = $(this).data('topic-id');
+            let quizId = $(this).data('quiz-id');
+            let name = $(this).data('topic-name');
+            let quantity = $(this).data('quantity');
+
+            $('#edit_topic_id').val(id);
+            $('#edit_topic_name').val(name);
+            $('#edit_question_quantity').val(quantity);
+            $('#edit_quiz_id').val(quizId);
+
+            $('#editTopicModal').modal('show');
+        });
+
     });
 
 </script>

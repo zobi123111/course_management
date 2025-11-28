@@ -1,4 +1,4 @@
-@include('layout.includes.head')
+@include('quiz_layout.includes.head')
 
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -20,9 +20,9 @@
         </div>
     </main>
 
-    @include('layout.sections.footer')
+    @include('quiz_layout.sections.footer')
 
-    @include('layout.includes.js')
+    @include('quiz_layout.includes.js')
     <script type="text/javascript">
     $(document).ready(function() {
         $(document).on('change', '#switch_role', function() {

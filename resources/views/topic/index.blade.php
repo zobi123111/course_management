@@ -159,6 +159,21 @@
                             <input type="text" name="description" class="form-control">
                             <div id="description_error" class="text-danger error_e"></div>
                         </div>
+
+                        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                            <div class="form-group">
+                                <label for="ou_id" class="form-label">Select Org Unit<span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select" name="ou_id" id="ou_id"
+                                    aria-label="Default select example">
+                                    <option value="">Select Org Unit</option>
+                                    @foreach($organizationUnits as $val)
+                                    <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                                    @endforeach
+                                </select>
+                                <div id="ou_id_error_up" class="text-danger error_e"></div>
+                            </div>
+                        @endif
                         
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -194,6 +209,19 @@
                             <input type="text" name="description" id="edit_description" class="form-control">
                             <div id="description_error_up" class="text-danger error_e"></div>
                         </div>
+                        
+                        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                            <div class="form-group">
+                                <label for="ou_id" class="form-label">Select Org Unit</label>
+                                <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
+                                    <option value="">Select Org Unit</option>
+                                    @foreach($organizationUnits as $val)
+                                    <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                                    @endforeach
+                                </select>
+                                <div id="ou_id_error_up" class="text-danger error_e"></div>
+                            </div>
+                        @endif
 
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -316,6 +344,7 @@
                         $('#edit_topic_id').val(response.topic.id);
                         $('#edit_title').val(response.topic.title);
                         $('#edit_description').val(response.topic.description);
+                        $('#edit_ou_id').val(response.topic.ou_id);
                         $('#edittopicModal').modal('show');
                         $(".loader").fadeOut("slow");
                     }

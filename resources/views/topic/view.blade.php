@@ -64,7 +64,7 @@
                     </button>
 
                     <a href="{{ url('/export-csv') }}" class="btn btn-warning">
-                        <i class="fa fa-download"></i>Download Demo CSV
+                        <i class="fa fa-download"></i>Download Sample CSV
                     </a>
                 </div>
             </div>
