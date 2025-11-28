@@ -23,9 +23,6 @@ $user = Auth::user();
 
 // Check for Admin
 if ($user->is_admin == "1") {
-
-
-
     foreach ($users as $u) {
         if ($u->is_activated == 0 && $u->status == 1) {
             $userDoc = $u->documents;
@@ -201,6 +198,11 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
         <tbody>
             @php
 
+        @foreach($users as $user)
+      
+        @if ($user->is_activated == 0 && $user->status == 1) 
+        <tr>
+            <td>{{ $user->fname }} {{ $user->lname }}</td>
             if (!function_exists('getTooltip')) {
             function getTooltip($status, $type) {
             return match ($status) {
@@ -686,6 +688,17 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     @endif
                 </td>
 
+            {{-- View Link --}}
+            <td>
+                <a href="{{ route('user.show', ['user_id' => encode_id($user->id)]) }}" class="view-icon" title="View User" style="font-size:18px; cursor: pointer;">
+                    <i class="fa fa-eye text-danger me-2"></i>
+                </a>
+            </td>
+        </tr>
+        @endif
+        @endforeach
+    </tbody>
+</table>
                 {{-- Passport --}}
                 <td>
                     @if($doc && $doc->passport_file_uploaded)
