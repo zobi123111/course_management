@@ -71,12 +71,11 @@
         color: #fff !important;
     }
     .quiz_type_box {
-        color: red;
-        background: beige;
-        margin-top: 45px;
-        margin-right: 60px;
-        margin-left: 10px;
+        color: #000000;
+        background: #d4e9ff;
         padding: 10px;
+        font-size: 20px;
+        text-align: center;
     }
 
 

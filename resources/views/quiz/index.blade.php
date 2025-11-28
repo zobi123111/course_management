@@ -163,8 +163,8 @@
                             @endif
                             
                             @if(checkAllowedModule('quiz','quiz.start')->isNotEmpty())
-                                @if($quiz->topics->isNotEmpty())
-                                    @if(auth()->user()->role == 3)
+                                @if(auth()->user()->role == 3)
+                                    @if($quiz->topics->isNotEmpty())
                                         @if($quiz->quizAttempts->contains('student_id', auth()->user()->id))
                                             <button class="start-quiz-btn action-btn view-result-icon btn btn-primary" style="cursor: pointer; color: white;" 
                                                 data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}"> View
@@ -174,9 +174,9 @@
                                                 data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}" data-duration="{{ $quiz->duration }}"> Start Quiz
                                             </button>
                                         @endif
+                                    @else
+                                        <span class="text-danger">You can't started yet</span>
                                     @endif
-                                @else
-                                    <span class="text-danger">You can't started yet</span>
                                 @endif
                             @endif
                         </td>
