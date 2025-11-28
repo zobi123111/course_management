@@ -80,8 +80,8 @@
                     <tr>
                         <th>#</th>
                         <th>Topic</th>
+                        <th>Assigned Questions</th>
                         <th>Total Questions</th>
-                        <th>Question Quantity</th>
                         <th width="120">Actions</th>
                     </tr>
                 </thead>
@@ -90,8 +90,8 @@
                     <tr>
                         <td>{{ $index + 1 }}</td>
                         <td class="topicTitle">{{ $topic->topic->title }}</td>
-                        <td>{{ $topic->topic->questions->count() }} questions in bank</td>
-                        <td>{{ $topic->question_quantity }} questions assigned</td>
+                        <td>{{ $topic->question_quantity }}</td>
+                        <td>{{ $topic->topic->questions->count() }}</td>
                         <td>
                             <i class="fa fa-eye action-btn" data-bs-toggle="modal" data-bs-target="#viewQuestionsModal_{{ $topic->id }}" style="font-size:25px; cursor:pointer;"></i>
                             <i class="fa-solid fa-pen-to-square edit-topic-icon action-btn" style="font-size:25px; cursor:pointer;" data-topic-id="{{ encode_id($topic->topic->id) }}" data-topic-name="{{ $topic->topic->title }}" data-quiz-id="{{ encode_id($quiz->id) }}" data-quantity="{{ $topic->question_quantity }}"></i>
