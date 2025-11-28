@@ -23,6 +23,9 @@ $user = Auth::user();
 
 // Check for Admin
 if ($user->is_admin == "1") {
+
+
+
     foreach ($users as $u) {
         if ($u->is_activated == 0 && $u->status == 1) {
             $userDoc = $u->documents;
