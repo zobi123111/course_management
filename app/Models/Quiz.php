@@ -23,6 +23,7 @@ class Quiz extends Model
         'quiz_type',
         'status',
         'created_by',
+        'ou_id',
     ];
 
     public function quizQuestions()

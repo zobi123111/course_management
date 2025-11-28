@@ -336,6 +336,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/topic/delete', [TopicController::class, 'destroy'])->name('topic.destroy');
 
     Route::post('/quiz/{id}/add-topic', [QuizController::class, 'addTopic'])->name('quiz.addTopic');
+    Route::post('/quiz/edit-topic', [QuizController::class, 'editTopic'])->name('quiz.editTopic');
     Route::post('/quiz/deleteTopic', [QuizController::class, 'deleteTopic'])->name('quiz.deleteTopic');
 
      // Topic Question Routes
@@ -349,6 +350,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
 
 Route::get('/quiz/topic-questions', [QuizController::class, 'getTopicQuestions'])->name('quiz.getTopicQuestions');
 Route::get('/lessons-by-course', [QuizController::class, 'getLessonsByCourse'])->name('lessons.byCourse');
+Route::get('/courses-by-ou', [QuizController::class, 'getCourseByOu'])->name('courses.byOu');
 
 Route::post('/import-csv', [QuizController::class, 'importCsv'])->name('import.csv');
 Route::get('/export-csv', [QuizController::class, 'exportCsv'])->name('export.csv');

@@ -204,6 +204,20 @@
                             <input type="text" name="title" class="form-control">
                             <div id="title_error" class="text-danger error_e"></div>
                         </div>
+                        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                            <div class="form-group">
+                                <label for="ou_id" class="form-label">Select Org Unit<span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select" name="ou_id" id="ou_id"
+                                    aria-label="Default select example">
+                                    <option value="">Select Org Unit</option>
+                                    @foreach($organizationUnits as $val)
+                                    <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                                    @endforeach
+                                </select>
+                                <div id="ou_id_error_up" class="text-danger error_e"></div>
+                            </div>
+                        @endif
                         <div class="form-group">
                             <label for="course_id" class="form-label">Course<span class="text-danger">*</span></label>
                             <select name="course_id" class="form-select" id="course_id_create">
@@ -278,6 +292,20 @@
                             <input type="text" name="title" id="edit_title" class="form-control">
                             <div id="title_error_up" class="text-danger error_e"></div>
                         </div>
+
+                        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                            <div class="form-group">
+                                <label for="ou_id" class="form-label">Select Org Unit</label>
+                                <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
+                                    <option value="">Select Org Unit</option>
+                                    @foreach($organizationUnits as $val)
+                                    <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                                    @endforeach
+                                </select>
+                                <div id="ou_id_error_up" class="text-danger error_e"></div>
+                            </div>
+                        @endif
+
                         <div class="form-group">
                             <label for="course_id" class="form-label">Course</label>
                             <select name="course_id" id="edit_course_id" class="form-select">
@@ -395,6 +423,27 @@
                 $("#createQuizModal").modal('show');
             });
 
+            $('#ou_id').on('change', function() {
+                let ouId = $(this).val();
+                $('#course_id_create').html('<option value="">Loading...</option>');
+                if (ouId) {
+                    $.ajax({
+                        url: "{{ route('courses.byOu') }}",
+                        type: 'GET',
+                        data: { ou_id: ouId },
+                        success: function(res) {
+                            let options = '<option value="">Select course</option>';
+                            res.forEach(course => {
+                                options += `<option value="${course.id}">${course.course_name}</option>`;
+                            });
+                            $('#course_id_create').html(options);
+                        }
+                    });
+                } else {
+                    $('#course_id_create').html('<option value="">Select course</option>');
+                }
+            });
+
             $('#course_id_create').on('change', function() {
                 let courseId = $(this).val();
                 $('#lesson_id_create').html('<option value="">Loading...</option>');
@@ -436,7 +485,27 @@
                     $('#edit_lesson_id').html('<option value="">Select Lesson</option>');
                 }
             });
-
+            
+            $('#edit_ou_id').on('change', function() {
+                let ouId = $(this).val();
+                $('#edit_course_id').html('<option value="">Loading...</option>');
+                if (ouId) {
+                    $.ajax({
+                        url: "{{ route('courses.byOu') }}",
+                        type: 'GET',
+                        data: { ou_id: ouId },
+                        success: function(res) {
+                            let options = '<option value="">Select course</option>';
+                            res.forEach(course => {
+                                options += `<option value="${course.id}">${course.course_name}</option>`;
+                            });
+                            $('#edit_course_id').html(options);
+                        }
+                    });
+                } else {
+                    $('#edit_course_id').html('<option value="">Select course</option>');
+                }
+            });
 
             $("#submitQuiz").on('click', function(e) {
                 e.preventDefault();
@@ -473,6 +542,7 @@
                         $('#edit_passing_score').val(response.quiz.passing_score);
                         $('#edit_quiz_type').val(response.quiz.quiz_type);
                         $('#edit_status').val(response.quiz.status);
+                        $('#edit_ou_id').val(response.quiz.ou_id);
 
                         $.ajax({
                             url: "{{ route('lessons.byCourse') }}",

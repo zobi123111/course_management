@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\OrganizationUnits;
 use App\Models\QuizQuestion;
 use App\Models\Topic;
 use App\Models\TopicQuestion;
@@ -15,8 +16,8 @@ class TopicController extends Controller
     {
 
         $topics = Topic::get();
-        
-        return view('topic.index', compact('topics'));
+        $organizationUnits = OrganizationUnits::all();
+        return view('topic.index', compact('topics', 'organizationUnits'));
     }
 
     public function store(Request $request)
@@ -32,6 +33,7 @@ class TopicController extends Controller
         $topic = new Topic();
         $topic->title = $request->title;
         $topic->description = $request->description;
+        $topic->ou_id = (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id;
         $topic->save();
 
         return response()->json(['success' => true, 'message' => 'Topic created successfully.']);
@@ -68,6 +70,7 @@ class TopicController extends Controller
         $topic->update([
             'title' => $request->title,
             'description' => $request->description,
+            'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id,
         ]);
 
         return response()->json(['success' => true, 'message' => 'Topic updated successfully.']);

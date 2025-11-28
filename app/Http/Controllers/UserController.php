@@ -2163,12 +2163,7 @@ class UserController extends Controller
             'grouped'
         ));
     }
-
-
-
-
-
-
+    
     public function docsVerify(Request $request)
     {
 
