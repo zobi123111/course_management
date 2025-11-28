@@ -23,9 +23,6 @@ $user = Auth::user();
 
 // Check for Admin
 if ($user->is_admin == "1") {
-
-
-
     foreach ($users as $u) {
         if ($u->is_activated == 0 && $u->status == 1) {
             $userDoc = $u->documents;
@@ -217,6 +214,8 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
         @endphp
 
         @foreach($users as $user)
+      
+        @if ($user->is_activated == 0 && $user->status == 1) 
         <tr>
             <td>{{ $user->fname }} {{ $user->lname }}</td>
 
@@ -708,6 +707,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 </a>
             </td>
         </tr>
+        @endif
         @endforeach
     </tbody>
 </table>
