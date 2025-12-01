@@ -893,9 +893,8 @@ $(document).ready(function() {
                             } 
                             else if (enableValue == 2 || enableValue == 3) {
                                 // Multi Pilot (MP or SP+MP Event)
-                                rankSelect.find("option[value='1']").hide();   // Hide Captain
+                               // rankSelect.find("option[value='1']").hide();   
                                 rankSelect.find("option[value='2'], option[value='3']").show();
-                              //  rankSelect.val("2"); // Default to First Officer
                             }
                         }
 
