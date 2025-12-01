@@ -1323,6 +1323,90 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     </div>
                 </div>
             </div>
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title"> Pending Quizzes</h5>
+                            <table class="table table-hover" id="pendingquizTable">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Title</th>
+                                        <th scope="col">Course</th>
+                                        <th scope="col">Lesson</th>
+                                        <th scope="col">Duration</th>
+                                        <th scope="col">Passing Score</th>
+                                        <th scope="col">Type</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($quizs as $quiz)
+                                        <tr>
+                                            <td class="quizTitle">{{ $quiz->title }}</td>
+                                            <td>{{ $quiz->course->course_name ?? 'N/A' }}</td>
+                                            <td>{{ $quiz->lesson->lesson_title ?? 'N/A' }}</td>
+                                            <td>{{ $quiz->duration }} mins</td>
+                                            <td>{{ $quiz->passing_score }}%</td>
+                                            <td>{{ ucfirst($quiz->quiz_type) }}</td>
+                                            <!-- <td>{{ ucfirst($quiz->status) }}</td> -->
+                                            @if(get_user_role(auth()->user()->role) == 'administrator')  
+                                                <td>
+                                                    <label class="switch">
+                                                        <input type="checkbox" 
+                                                            class="switch-input toggle-status" 
+                                                            data-id="{{ $quiz->id }}"
+                                                            {{ $quiz->status == 'published' ? 'checked' : '' }}>
+                                                        <div class="switch-button">
+                                                            <span class="switch-button-left">Draft</span>
+                                                            <span class="switch-button-right">Published</span>
+                                                        </div>
+                                                    </label>
+                                                </td>
+                                            @else
+                                                <td>{{ ucfirst($quiz->status) }}</td>
+                                            @endif
+                                            <td>
+                                                @if(checkAllowedModule('quiz','quiz.view')->isNotEmpty())
+                                                    <i class="fa fa-eye action-btn" style="font-size:25px; cursor: pointer;" onclick="window.location.href='{{ route('quiz.view', ['id' => encode_id($quiz->id)]) }}'"></i>
+                                                @endif
+                                                
+                                                @if(checkAllowedModule('quiz','quiz.edit')->isNotEmpty())
+                                                    <i class="fa fa-edit edit-quiz-icon action-btn" style="font-size:25px; cursor: pointer;" data-quiz-id="{{ encode_id($quiz->id) }}"></i>
+                                                @endif
+
+                                                @if(checkAllowedModule('quiz','quiz.destroy')->isNotEmpty())
+                                                    <i class="fa-solid fa-trash delete-quiz-icon action-btn" style="font-size:25px; cursor: pointer;" data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}"></i>
+                                                @endif
+                                                
+                                                @if(checkAllowedModule('quiz','quiz.start')->isNotEmpty())
+                                                    @if(auth()->user()->role == 3)
+                                                        @if($quiz->topics->isNotEmpty())
+                                                            @if($quiz->quizAttempts->contains('student_id', auth()->user()->id))
+                                                                <button class="start-quiz-btn action-btn view-result-icon btn btn-primary" style="cursor: pointer; color: white;" 
+                                                                    data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}"> View
+                                                                </button>
+                                                            @else
+                                                                <button class="start-quiz-btn action-btn start-quiz-icon" style="cursor: pointer; background: #198754; color: white; border-radius: .25rem; border: none;" 
+                                                                    data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}" data-duration="{{ $quiz->duration }}"> Start Quiz
+                                                                </button>
+                                                            @endif
+                                                        @else
+                                                            <span class="text-danger">You can't started yet</span>
+                                                        @endif
+                                                    @endif
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         @endif
     </section>
 
@@ -1347,7 +1431,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
             }
         });
 
-
+        $('#pendingquizTable').DataTable({
+            searching: true,
+            pageLength: 10,
+            language: {
+                emptyTable: "No pending quizzes"
+            }
+        });
 
         $('#document_table').on("click", ".collapsible", function() {
             $(this).toggleClass("active");

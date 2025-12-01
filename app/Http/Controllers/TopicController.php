@@ -14,13 +14,17 @@ class TopicController extends Controller
 {
     public function index()
     {
+
         $currentUser = auth()->user();
         $organizationUnits = OrganizationUnits::all();
+
         if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) {
-            $topics = Topic::orderBy('id', 'DESC')->get();
-        } else {
-            $topics = Topic::where('ou_id', $currentUser->ou_id)->orderBy('id', 'DESC')->get();
+            $topics = Topic::with('organizationUnit')->orderBy('id', 'desc')->get();
         }
+        elseif ($currentUser->is_admin == 1 && !empty($currentUser->ou_id)) {
+            $topics = Topic::with('organizationUnit')->orderBy('id', 'desc')->where('ou_id', $currentUser->ou_id)->get();
+        }
+
         return view('topic.index', compact('topics', 'organizationUnits'));
     }
 

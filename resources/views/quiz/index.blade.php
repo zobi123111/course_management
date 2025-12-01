@@ -115,6 +115,9 @@
                     <tr>
                         <th scope="col">Title</th>
                         <th scope="col">Course</th>
+                        @if(auth()->user()->is_admin != 1)
+                            <th scope="col">Organizational Unit</th>
+                        @endif
                         <th scope="col">Lesson</th>
                         @if(auth()->user()->is_owner == 1)
                         <th scope="col">OU</th>
@@ -128,65 +131,65 @@
                 </thead>
                 <tbody>
                     @foreach($quizs as $quiz)
-                    <tr>
-                        <td class="quizTitle">{{ $quiz->title }}</td>
-                        <td>{{ $quiz->course->course_name ?? 'N/A' }}</td>
-                        <td>{{ $quiz->lesson->lesson_title ?? 'N/A' }}</td>
-                        @if(auth()->user()->is_owner == 1)
-                        <td>{{ $quiz->organizationUnit->org_unit_name ?? 'N/A' }}</td>
-                        @endif
-                        <td>{{ $quiz->duration }} mins</td>
-                        <td>{{ $quiz->passing_score }}%</td>
-                        <td>{{ ucfirst($quiz->quiz_type) }}</td>
-                        <!-- <td>{{ ucfirst($quiz->status) }}</td> -->
-                        @if(get_user_role(auth()->user()->role) == 'administrator')  
+                        <tr>
+                            <td class="quizTitle">{{ $quiz->title }}</td>
+                            <td>{{ $quiz->course->course_name ?? 'N/A' }}</td>
+                            @if(auth()->user()->is_admin != 1)
+                                <td>{{ $quiz->quizOu->org_unit_name ?? 'N/A' }}</td>
+                            @endif
+                            <td>{{ $quiz->lesson->lesson_title ?? 'N/A' }}</td>
+                            <td>{{ $quiz->duration }} mins</td>
+                            <td>{{ $quiz->passing_score }}%</td>
+                            <td>{{ ucfirst($quiz->quiz_type) }}</td>
+                            <!-- <td>{{ ucfirst($quiz->status) }}</td> -->
+                            @if(get_user_role(auth()->user()->role) == 'administrator')  
+                                <td>
+                                    <label class="switch">
+                                        <input type="checkbox" 
+                                            class="switch-input toggle-status" 
+                                            data-id="{{ $quiz->id }}"
+                                            {{ $quiz->status == 'published' ? 'checked' : '' }}>
+                                        <div class="switch-button">
+                                            <span class="switch-button-left">Draft</span>
+                                            <span class="switch-button-right">Published</span>
+                                        </div>
+                                    </label>
+                                </td>
+                            @else
+                                <td>{{ ucfirst($quiz->status) }}</td>
+                            @endif
                             <td>
-                                <label class="switch">
-                                    <input type="checkbox" 
-                                        class="switch-input toggle-status" 
-                                        data-id="{{ $quiz->id }}"
-                                        {{ $quiz->status == 'published' ? 'checked' : '' }}>
-                                    <div class="switch-button">
-                                        <span class="switch-button-left">Draft</span>
-                                        <span class="switch-button-right">Published</span>
-                                    </div>
-                                </label>
-                            </td>
-                        @else
-                            <td>{{ ucfirst($quiz->status) }}</td>
-                        @endif
-                        <td>
-                            @if(checkAllowedModule('quiz','quiz.view')->isNotEmpty())
-                                <i class="fa fa-eye action-btn" style="font-size:25px; cursor: pointer;" onclick="window.location.href='{{ route('quiz.view', ['id' => encode_id($quiz->id)]) }}'"></i>
-                            @endif
-                            
-                            @if(checkAllowedModule('quiz','quiz.edit')->isNotEmpty())
-                                <i class="fa fa-edit edit-quiz-icon action-btn" style="font-size:25px; cursor: pointer;" data-quiz-id="{{ encode_id($quiz->id) }}"></i>
-                            @endif
+                                @if(checkAllowedModule('quiz','quiz.view')->isNotEmpty())
+                                    <i class="fa fa-eye action-btn" style="font-size:25px; cursor: pointer;" onclick="window.location.href='{{ route('quiz.view', ['id' => encode_id($quiz->id)]) }}'"></i>
+                                @endif
+                                
+                                @if(checkAllowedModule('quiz','quiz.edit')->isNotEmpty())
+                                    <i class="fa fa-edit edit-quiz-icon action-btn" style="font-size:25px; cursor: pointer;" data-quiz-id="{{ encode_id($quiz->id) }}"></i>
+                                @endif
 
-                            @if(checkAllowedModule('quiz','quiz.destroy')->isNotEmpty())
-                                <i class="fa-solid fa-trash delete-quiz-icon action-btn" style="font-size:25px; cursor: pointer;" data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}"></i>
-                            @endif
-                            
-                            @if(checkAllowedModule('quiz','quiz.start')->isNotEmpty())
-                                @if(auth()->user()->role == 3)
-                                    @if($quiz->topics->isNotEmpty())
-                                        @if($quiz->quizAttempts->contains('student_id', auth()->user()->id))
-                                            <button class="start-quiz-btn action-btn view-result-icon btn btn-primary" style="cursor: pointer; color: white;" 
-                                                data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}"> View
-                                            </button>
+                                @if(checkAllowedModule('quiz','quiz.destroy')->isNotEmpty())
+                                    <i class="fa-solid fa-trash delete-quiz-icon action-btn" style="font-size:25px; cursor: pointer;" data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}"></i>
+                                @endif
+                                
+                                @if(checkAllowedModule('quiz','quiz.start')->isNotEmpty())
+                                    @if(auth()->user()->role == 3)
+                                        @if($quiz->topics->isNotEmpty())
+                                            @if($quiz->quizAttempts->contains('student_id', auth()->user()->id))
+                                                <button class="start-quiz-btn action-btn view-result-icon btn btn-primary" style="cursor: pointer; color: white;" 
+                                                    data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}"> View
+                                                </button>
+                                            @else
+                                                <button class="start-quiz-btn action-btn start-quiz-icon" style="cursor: pointer; background: #198754; color: white; border-radius: .25rem; border: none;" 
+                                                    data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}" data-duration="{{ $quiz->duration }}"> Start Quiz
+                                                </button>
+                                            @endif
                                         @else
-                                            <button class="start-quiz-btn action-btn start-quiz-icon" style="cursor: pointer; background: #198754; color: white; border-radius: .25rem; border: none;" 
-                                                data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}" data-duration="{{ $quiz->duration }}"> Start Quiz
-                                            </button>
+                                            <span class="text-danger">You can't started yet</span>
                                         @endif
-                                    @else
-                                        <span class="text-danger">You can't started yet</span>
                                     @endif
                                 @endif
-                            @endif
-                        </td>
-                    </tr>
+                            </td>
+                        </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -261,6 +264,16 @@
                             </select>
                             <div id="quiz_type_error" class="text-danger error_e"></div>
                         </div>
+                        
+                        <div class="form-group">
+                            <label for="show_result" class="form-label">Show Quiz Result<span class="text-danger">*</span></label>
+                            <select name="show_result" class="form-select">
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                            <div id="show_result_error" class="text-danger error_e"></div>
+                        </div>
+
                         <div class="form-group">
                             <label for="status" class="form-label">Status<span class="text-danger">*</span></label>
                             <select name="status" class="form-select">
@@ -357,6 +370,14 @@
                             </select>
                             <div id="status_error_up" class="text-danger error_e"></div>
                         </div>
+                        <div class="form-group">
+                            <label for="show_result" class="form-label">Show Quiz Result<span class="text-danger">*</span></label>
+                            <select name="show_result" class="form-select" id="edit_show_result">
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                            <div id="show_result_error" class="text-danger error_e"></div>
+                        </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             <button type="button" id="updateQuiz" class="btn btn-primary sbt_btn">Update</button>
@@ -421,7 +442,9 @@
 @section('js_scripts')
     <script>
         $(document).ready(function() {
-            $('#quizTable').DataTable();
+            $('#quizTable').DataTable({
+                "ordering": false
+            });
 
             $("#createQuiz").on('click', function() {
                 $(".error_e").html('');
@@ -548,6 +571,7 @@
                         $('#edit_passing_score').val(response.quiz.passing_score);
                         $('#edit_quiz_type').val(response.quiz.quiz_type);
                         $('#edit_status').val(response.quiz.status);
+                        $('#edit_show_result').val(response.quiz.show_result);
                         $('#edit_ou_id').val(response.quiz.ou_id);
 
                         $.ajax({

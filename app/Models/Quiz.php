@@ -22,6 +22,7 @@ class Quiz extends Model
         'passing_score',
         'quiz_type',
         'status',
+        'show_result',
         'created_by',
         'ou_id',
     ];
@@ -54,6 +55,11 @@ class Quiz extends Model
     public function course()
     {
         return $this->belongsTo(Courses::class);
+    }
+
+    public function quizOu()
+    {
+        return $this->belongsTo(OrganizationUnits::class, 'ou_id');
     }
 
     public function lesson()

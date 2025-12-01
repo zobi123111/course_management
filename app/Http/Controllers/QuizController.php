@@ -29,10 +29,10 @@ class QuizController extends Controller
         $organizationUnits = OrganizationUnits::all();
 
         if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) {
-            $quizs = Quiz::with('course', 'lesson')->orderBy('id', 'DESC')->get();
+            $quizs = Quiz::with('course', 'lesson', 'quizOu')->orderBy('id', 'desc')->get();
         }
         elseif ($currentUser->is_admin == 1 && !empty($currentUser->ou_id)) {
-            $quizs = Quiz::with('course', 'lesson')->where('ou_id', $currentUser->ou_id)->orderBy('id', 'DESC')->get();
+            $quizs = Quiz::with('course', 'lesson', 'quizOu')->where('ou_id', $currentUser->ou_id)->orderBy('id', 'desc')->get();
         }
         else{
             // $courseIds = TrainingEvents::where('student_id', $currentUser->id)
@@ -44,8 +44,8 @@ class QuizController extends Controller
             $groups = Group::where('status', 1)->whereJsonContains('user_ids', (string)$currentUser->id)->pluck('id');
             $courseIds = CourseGroup::whereIn('group_id', $groups)->pluck('courses_id');
 
-            $quizs = Quiz::with('course', 'lesson', 'quizAttempts')->where('status', 'published')
-                        ->whereIn('course_id', $courseIds)->orderBy('id', 'DESC')->get();
+            $quizs = Quiz::with('course', 'lesson', 'quizOu', 'quizAttempts')->where('status', 'published')
+                        ->whereIn('course_id', $courseIds)->orderBy('id', 'desc')->get();
         }
         
         // dd($quizs);
@@ -64,6 +64,7 @@ class QuizController extends Controller
             'duration'      => 'required|numeric|min:1',
             'passing_score' => 'required|numeric|min:0|max:100',
             'status'        => 'required|string|in:draft,published',
+            'show_result'   => 'required|string|in:yes,no',
             'ou_id' => [
                 function ($attribute, $value, $fail) {
                     if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
@@ -85,6 +86,7 @@ class QuizController extends Controller
         $quiz->passing_score = $request->passing_score;
         $quiz->quiz_type = $request->quiz_type;
         $quiz->status = $request->status;
+        $quiz->show_result = $request->show_result;
         $quiz->ou_id = (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id;
         $quiz->created_by = Auth::id();
         $quiz->save();
@@ -96,7 +98,7 @@ class QuizController extends Controller
     {
         $quizId = decode_id($request->id);
         $quiz = Quiz::with('topics.topic')->findOrFail($quizId);
-        $topics = Topic::withCount('questions')->get();
+        $topics = Topic::withCount('questions')->where("ou_id", $quiz->ou_id)->get();
         $quizQuestions = QuizQuestion::with('question')->where('quiz_id', $quizId)->get();
         
         return view('quiz.view', compact('quiz', 'topics', 'quizQuestions'));
@@ -136,6 +138,7 @@ class QuizController extends Controller
             'duration'      => 'required|numeric|min:1',
             'passing_score' => 'required|numeric|min:0|max:100',
             'status'        => 'required|string|in:draft,published',
+            'show_result'   => 'required|string|in:yes,no',
             'ou_id' => [
                 function ($attribute, $value, $fail) {
                     if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
@@ -161,6 +164,7 @@ class QuizController extends Controller
             'passing_score' => $request->passing_score,
             'quiz_type' => $request->quiz_type,
             'status' => $request->status,
+            'show_result' => $request->show_result,
             'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id,
         ]);
 

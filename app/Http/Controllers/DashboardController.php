@@ -137,6 +137,15 @@ class DashboardController extends Controller
 
         $quizzes = Quiz::where('status', 'published')->whereIn('course_id', $courseIds)->get(); 
 
+        $groups = Group::where('status', 1)->whereJsonContains('user_ids', (string)$user->id)->pluck('id');
+        $courseIds = CourseGroup::whereIn('group_id', $groups)->pluck('courses_id');
+
+        $quizs = Quiz::with('course', 'lesson', 'quizAttempts')
+                        ->where('status', 'published')
+                        ->whereIn('course_id', $courseIds)
+                        ->whereDoesntHave('quizAttempts', function ($q) use ($user) {
+                        $q->where('student_id', $user->id); })->get();
+
         $totalDocuments = $documents->count();
         $quizscount = $quizzes->count();
         $readDocuments = countAcknowledgedDocuments($documents, $user);
@@ -157,7 +166,7 @@ class DashboardController extends Controller
                     ->get();
             
 
-        return view('dashboard.index', compact('user_count', 'course_count', 'group_count', 'folder_count','totalDocuments', 'quizscount', 'readDocuments', 'unreadDocuments', 'requestCount', 'users', 'trainingEvents'
+        return view('dashboard.index', compact('user_count', 'course_count', 'group_count', 'folder_count','totalDocuments', 'quizscount', 'quizs', 'readDocuments', 'unreadDocuments', 'requestCount', 'users', 'trainingEvents'
         ));
     }
     

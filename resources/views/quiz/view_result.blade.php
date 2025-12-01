@@ -36,16 +36,18 @@
                             <th>Passing Score</th>
                             <td>{{ $quiz->passing_score }}%</td>
                         </tr>
-                        <tr>
-                            <th> Marks Obtained </th>
-                            @if(!empty($quizAttempt->score))
-                                <td>{{ $quizAttempt->score }}%</td>
-                            @endif
-                        </tr>
-                        <tr>
-                            <th>Result</th>
-                            <td><span class="badge bg-{{ $quizAttempt->result == 'pass' ? 'success' : 'danger' }}">{{ strtoupper($quizAttempt->result) }}</span></td>
-                        </tr>
+                        @if($quiz->show_result == 'yes')
+                            <tr>
+                                <th> Marks Obtained </th>
+                                @if(!empty($quizAttempt->score))
+                                    <td>{{ $quizAttempt->score }}%</td>
+                                @endif
+                            </tr>
+                            <tr>
+                                <th>Result</th>
+                                <td><span class="badge bg-{{ $quizAttempt->result == 'pass' ? 'success' : 'danger' }}">{{ strtoupper($quizAttempt->result) }}</span></td>
+                            </tr>
+                        @endif
                         <tr>
                             <th>Time Taken</th>
                             @if(!empty($quizAttempt->submitted_at))
