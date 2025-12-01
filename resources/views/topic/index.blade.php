@@ -118,6 +118,9 @@
                             <th scope="col">Organizational Unit</th>
                         @endif
                         <th scope="col">Description</th>
+                        @if(auth()->user()->is_owner == 1)
+                        <th scope="col">OU</th>
+                        @endif
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
@@ -129,6 +132,9 @@
                             <td>{{ $topic->organizationUnit->org_unit_name ?? 'N/A' }}</td>
                         @endif
                         <td>{{ $topic->description ?? 'N/A' }}</td>
+                        @if(auth()->user()->is_owner == 1)
+                        <td>{{ $topic->organizationUnit->org_unit_name ?? 'N/A' }}</td>
+                        @endif
                         <td>
                             <i class="fa fa-eye action-btn" style="font-size:25px; cursor: pointer;" onclick="window.location.href='{{ route('topic.view', ['id' => encode_id($topic->id)]) }}'"></i>
                             

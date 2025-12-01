@@ -119,6 +119,9 @@
                             <th scope="col">Organizational Unit</th>
                         @endif
                         <th scope="col">Lesson</th>
+                        @if(auth()->user()->is_owner == 1)
+                        <th scope="col">OU</th>
+                        @endif
                         <th scope="col">Duration</th>
                         <th scope="col">Passing Score</th>
                         <th scope="col">Type</th>

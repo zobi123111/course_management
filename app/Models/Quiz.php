@@ -77,5 +77,9 @@ class Quiz extends Model
         return $this->hasManyThrough(TopicQuestion::class, QuizQuestion::class, 'quiz_id', 'id', 'id', 'question_id');
     }
 
+    public function organizationUnit()
+    {
+        return $this->belongsTo(OrganizationUnits::class, 'ou_id');
+    }
 
 }
