@@ -955,6 +955,9 @@ $(document).ready(function() {
                     var formattedKey = key.replace(/\./g, '_') + '_error';
                     var errorMsg = '<p>' + value[0] + '</p>';
                     $('#' + formattedKey).html(errorMsg);
+                    if(key == "lesson_data"){
+                        alert("No Lesson Found");
+                    }
                 });
             }
         });
@@ -1191,6 +1194,9 @@ $(document).ready(function() {
                     var formattedKey = key.replace(/\./g, '_') + '_error_up';
                     var errorMsg = '<p>' + value[0] + '</p>';
                     $('#' + formattedKey).html(errorMsg);
+                    if(key == "lesson_data"){
+                      alert("No Lesson found");
+                    }
                 });
             }
         })

@@ -505,11 +505,11 @@
                 </li>
                 
                 @if($trainingEvent?->course?->course_type === 'one_event' && $student)
-                <li class="nav-item" role="presentation">
+                <!-- <li class="nav-item" role="presentation">
                     <button class="nav-link" id="student-tab-{{ $student->id ?? ''}}" data-bs-toggle="tab" data-bs-target="#student-{{ $student->id ?? '' }}" type="button" role="tab" aria-controls="student-{{ $student->id ?? '' }}" aria-selected="false">
                         Overall Assessment
                     </button>
-                </li>
+                </li> -->
                 @endif
             </ul>
             <div class="tab-content pt-2" id="myTabContent">
@@ -2371,7 +2371,7 @@
                                             </div>
                                         </div>
                                         <!-- ////------------------------------------Overall assessment for multi lesson------------------------------------------------- -->
-                                        @if($trainingEvent?->course?->course_type == "multi_lesson")
+                                      
                                         <div class="accordion-item">
                                             <h2 class="accordion-header">
                                                 <div class="d-flex justify-content-between align-items-center">
@@ -2446,7 +2446,11 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        @endif
+
+
+                                        <!-- ////------------------------------------End Overall assessment for multi lesson------------------------------------------------- -->
+
+                                       
 
                                         @if(!empty($groupedLogs[$eventLesson->lesson_id]))
                                         @php
