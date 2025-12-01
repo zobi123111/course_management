@@ -33,4 +33,14 @@ class OrganizationUnits extends Model
         return $this->hasMany(OuRating::class, 'ou_id', 'id');
     }
 
+    public function quizzes()
+    {
+        return $this->hasMany(Quiz::class);
+    }
+
+    public function topics()
+    {
+        return $this->hasMany(Topic::class);
+    }
+
 }

@@ -114,6 +114,9 @@
                 <thead>
                     <tr>
                         <th scope="col">Title</th>
+                        @if(auth()->user()->is_admin != 1)
+                            <th scope="col">Organizational Unit</th>
+                        @endif
                         <th scope="col">Description</th>
                         <th scope="col">Actions</th>
                     </tr>
@@ -122,6 +125,9 @@
                     @foreach($topics as $topic)
                     <tr>
                         <td class="topicTitle">{{ $topic->title }}</td>
+                        @if(auth()->user()->is_admin != 1)
+                            <td>{{ $topic->organizationUnit->org_unit_name ?? 'N/A' }}</td>
+                        @endif
                         <td>{{ $topic->description ?? 'N/A' }}</td>
                         <td>
                             <i class="fa fa-eye action-btn" style="font-size:25px; cursor: pointer;" onclick="window.location.href='{{ route('topic.view', ['id' => encode_id($topic->id)]) }}'"></i>
@@ -262,7 +268,9 @@
 @section('js_scripts')
     <script>
         $(document).ready(function() {
-            $('#topicTable').DataTable();
+            $('#topicTable').DataTable({
+                "ordering": false
+            });
 
             $("#createtopic").on('click', function() {
                 $(".error_e").html('');

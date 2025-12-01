@@ -22,10 +22,11 @@
 </style>
 
     @if(session()->has('message'))
-    <div id="successMessage" class="alert alert-success fade show" role="alert">
-        <i class="bi bi-check-circle me-1"></i>
-        {{ session()->get('message') }}
-    </div>
+        <div id="successMessage" class="alert alert-success fade show" role="alert">
+            <i class="bi bi-check-circle me-1"></i>
+            {{ session()->get('message') }}
+        </div>
+        {{ session()->forget('message') }}
     @endif
 
     <div class="card mb-3 shadow-sm">
@@ -94,7 +95,7 @@
                         <td>{{ $topic->topic->questions->count() }}</td>
                         <td>
                             <i class="fa fa-eye action-btn" data-bs-toggle="modal" data-bs-target="#viewQuestionsModal_{{ $topic->id }}" style="font-size:25px; cursor:pointer;"></i>
-                            <i class="fa-solid fa-pen-to-square edit-topic-icon action-btn" style="font-size:25px; cursor:pointer;" data-topic-id="{{ encode_id($topic->topic->id) }}" data-topic-name="{{ $topic->topic->title }}" data-quiz-id="{{ encode_id($quiz->id) }}" data-quantity="{{ $topic->question_quantity }}"></i>
+                            <i class="fa-solid fa-pen-to-square edit-topic-icon action-btn" style="font-size:25px; cursor:pointer;" data-topic-id="{{ encode_id($topic->topic->id) }}" data-topic-name="{{ $topic->topic->title }}" data-quiz-id="{{ encode_id($quiz->id) }}" data-total="{{ $topic->topic->questions->count() }}" data-quantity="{{ $topic->question_quantity }}"></i>
                             <i class="fa-solid fa-trash delete-topic-icon action-btn" style="font-size:25px; cursor: pointer;" data-topic-id="{{ encode_id($topic->topic->id) }}" data-quiz-id="{{ encode_id($quiz->id) }}" data-topic-name="{{ $topic->topic->title }}"></i>
                         </td>
                     </tr>
@@ -199,11 +200,14 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label">Select Topic</label>
-                            <select name="topic_id" class="form-select" required>
+                            <select name="topic_id" id="add_topic_select" class="form-select" required>
                                 <option value="" disabled selected>-- Select Topic --</option>
-                                @foreach($topics->where('ou_id', auth()->user()->ou_id) as $topic)
+
+                                @foreach($topics as $topic)
                                     @unless($quiz->topics->pluck('topic_id')->contains($topic->id))
-                                        <option value="{{ $topic->id }}">{{ $topic->title }}</option>
+                                        <option value="{{ $topic->id }}" data-total="{{ $topic->questions_count }}">
+                                            {{ $topic->title }}
+                                        </option>
                                     @endunless
                                 @endforeach
                             </select>
@@ -212,6 +216,11 @@
                         <div class="mb-3">
                             <label class="form-label">Number of Questions</label>
                             <input type="number" name="question_quantity" class="form-control" min="1" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Total Number of Questions</label>
+                            <span id="total_question_quantity" class="fw-bold">0</span>
                         </div>
                     </div>
 
@@ -250,6 +259,12 @@
                             <label class="form-label">Question Quantity</label>
                             <input type="number" name="question_quantity" id="edit_question_quantity" class="form-control" min="1" required>
                         </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Total Available Questions</label>
+                            <span id="edit_total_question" class="fw-bold">0</span>
+                        </div>
+
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -292,7 +307,9 @@
     
 <script>
     setTimeout(function() {
-        $('#successMessage').fadeOut('slow');
+        $('#successMessage').fadeOut('slow', function(){
+            $(this).remove();
+        });
     }, 2000);
 
     $(document).ready(function() {
@@ -307,21 +324,40 @@
             $('#quizId').val(quizId);
         });
 
+        $(document).on('change', '#add_topic_select', function() {
+            let total = $('option:selected', this).data('total') || 0;
+            $('#total_question_quantity').text(total);
+
+            $('input[name="question_quantity"]').attr("max", total);
+        });
+
+
         $(document).on('click', '.edit-topic-icon', function () {
             let id = $(this).data('topic-id');
             let quizId = $(this).data('quiz-id');
             let name = $(this).data('topic-name');
             let quantity = $(this).data('quantity');
+            let total = $(this).data('total');
 
             $('#edit_topic_id').val(id);
             $('#edit_topic_name').val(name);
             $('#edit_question_quantity').val(quantity);
+            $('#edit_total_question').text(total);
+            $('#edit_question_quantity').attr("max", total);
             $('#edit_quiz_id').val(quizId);
-
             $('#editTopicModal').modal('show');
         });
 
+        $('input[type="number"]').on('input', function() {
+            let max = parseInt($(this).attr("max"));
+            let value = parseInt($(this).val());
+
+            if (value > max) {
+                $(this).val(max);
+            }
+        });
     });
+
 
 </script>
 
