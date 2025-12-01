@@ -83,7 +83,7 @@
                         <th>Topic</th>
                         <th>Assigned Questions</th>
                         <th>Total Questions</th>
-                        <th width="120">Actions</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>

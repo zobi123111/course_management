@@ -114,12 +114,9 @@
                 <thead>
                     <tr>
                         <th scope="col">Title</th>
-                        @if(auth()->user()->is_admin != 1)
-                            <th scope="col">Organizational Unit</th>
-                        @endif
                         <th scope="col">Description</th>
-                        @if(auth()->user()->is_owner == 1)
-                        <th scope="col">OU</th>
+                         @if(auth()->user()->is_owner == 1)
+                            <th scope="col">Organizational Unit</th>
                         @endif
                         <th scope="col">Actions</th>
                     </tr>
@@ -128,9 +125,6 @@
                     @foreach($topics as $topic)
                     <tr>
                         <td class="topicTitle">{{ $topic->title }}</td>
-                        @if(auth()->user()->is_admin != 1)
-                            <td>{{ $topic->organizationUnit->org_unit_name ?? 'N/A' }}</td>
-                        @endif
                         <td>{{ $topic->description ?? 'N/A' }}</td>
                         @if(auth()->user()->is_owner == 1)
                         <td>{{ $topic->organizationUnit->org_unit_name ?? 'N/A' }}</td>
