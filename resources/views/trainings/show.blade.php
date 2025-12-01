@@ -2382,7 +2382,7 @@
                                                 </div>
                                             </h2>
                                         </div>
-                                        @endif
+                                        
                                         <div id="overall-{{ $eventLesson->id }}" class="accordion-collapse show">
                                             <input type="hidden" name="lesson_id" value="{{ $eventLesson->id }}">
                                             <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
@@ -2446,6 +2446,7 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        @endif
 
                                         @if(!empty($groupedLogs[$eventLesson->lesson_id]))
                                         @php
@@ -3092,7 +3093,7 @@
                     </div>
                 </form>
             </div>
-        </div><!-- End Default Tabs -->
+        </div><!-- End Default Tabs --> 
     </div>
     </div>
     @endsection
