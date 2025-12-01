@@ -14,9 +14,13 @@ class TopicController extends Controller
 {
     public function index()
     {
-
-        $topics = Topic::get();
+        $currentUser = auth()->user();
         $organizationUnits = OrganizationUnits::all();
+        if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) {
+            $topics = Topic::orderBy('id', 'DESC')->get();
+        } else {
+            $topics = Topic::where('ou_id', $currentUser->ou_id)->orderBy('id', 'DESC')->get();
+        }
         return view('topic.index', compact('topics', 'organizationUnits'));
     }
 

@@ -116,6 +116,9 @@
                         <th scope="col">Title</th>
                         <th scope="col">Course</th>
                         <th scope="col">Lesson</th>
+                        @if(auth()->user()->is_owner == 1)
+                        <th scope="col">OU</th>
+                        @endif
                         <th scope="col">Duration</th>
                         <th scope="col">Passing Score</th>
                         <th scope="col">Type</th>
@@ -129,6 +132,9 @@
                         <td class="quizTitle">{{ $quiz->title }}</td>
                         <td>{{ $quiz->course->course_name ?? 'N/A' }}</td>
                         <td>{{ $quiz->lesson->lesson_title ?? 'N/A' }}</td>
+                        @if(auth()->user()->is_owner == 1)
+                        <td>{{ $quiz->organizationUnit->org_unit_name ?? 'N/A' }}</td>
+                        @endif
                         <td>{{ $quiz->duration }} mins</td>
                         <td>{{ $quiz->passing_score }}%</td>
                         <td>{{ ucfirst($quiz->quiz_type) }}</td>

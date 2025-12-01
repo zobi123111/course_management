@@ -48,6 +48,10 @@
                             <th>Description</th>
                             <td>{{ $topic->description ?? 'N/A' }}</td>
                         </tr>
+                        <tr>
+                            <th>OU</th>
+                            <td>{{ $topic->organizationUnit->org_unit_name ?? 'N/A' }}</td>
+                        </tr>
                     </table>
                 </div>
             </div>

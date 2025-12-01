@@ -22,4 +22,9 @@ class Topic extends Model
         return $this->hasMany(TopicQuestion::class, 'topic_id');
     }
 
+    public function organizationUnit()
+    {
+        return $this->belongsTo(OrganizationUnits::class, 'ou_id');
+    }
+
 }
