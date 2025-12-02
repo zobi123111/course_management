@@ -35,5 +35,11 @@ class QuizQuestion extends Model
         return $this->belongsTo(TopicQuestion::class, 'question_id');
     }
 
+    public function userAnswer()
+    {
+        return $this->hasOne(QuizAnswer::class, 'question_id', 'id')
+                    ->where('user_id', auth()->id());
+    }
+
 
 }

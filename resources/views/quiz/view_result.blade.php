@@ -76,80 +76,49 @@
         </div>
     </div>
 
-    @foreach($quiz->quizQuestions as $index => $question)
+    @foreach($quizDetails as $index => $question)
         @php
-            $isCorrect = false;
-            $userAnswer = $answers[$question->id] ?? null;
-            if($userAnswer){
-                $user = strtolower($userAnswer->selected_option);
-                $correct = strtolower($question->question->correct_option);
+            $userAnswer = $question['user_answer'] ?? null;
+            $correctAnswer = $question['correct_option'] ?? null;
 
-                $userArr = array_map('trim', explode(',', $user));
-                $correctArr = array_map('trim', explode(',', $correct));
+            $userArr = $userAnswer ? array_map('trim', explode(',', strtolower($userAnswer))) : [];
+            $correctArr = $correctAnswer ? array_map('trim', explode(',', strtolower($correctAnswer))) : [];
 
-                sort($userArr);
-                sort($correctArr);
+            sort($userArr);
+            sort($correctArr);
 
-                $isCorrect = ($userArr == $correctArr);
-            }
+            $isCorrect = ($userArr == $correctArr);
         @endphp
 
         <div class="card mb-4 shadow-sm">
             <div class="card-body">
                 <h5 class="card-title">
-                    {{ $loop->iteration }}. {{ $question->question->question_text }}
+                    {{ $index + 1 }}. {{ $question['question_text'] }}
                 </h5>
 
-                @if(in_array($question->question->question_type, ['single_choice', 'multiple_choice', 'sequence']))
+                @if(in_array($question['question_type'], ['single_choice', 'multiple_choice', 'sequence']))
                     <ul class="list-group mb-3">
-                        @foreach(['A', 'B', 'C', 'D'] as $opt)
-                            @php $optKey = 'option_' . $opt; @endphp
-                            @if($question->question->$optKey)
-                                <li class="list-group-item
-                                    @if($question->correct_option == $opt) list-group-item-success @endif
-                                    @if($userAnswer && $userAnswer->answer_text == $opt && !$isCorrect) list-group-item-danger @endif
-                                ">
-                                    <strong>{{ $opt }}:</strong> {{ $question->question->$optKey }}
-                                </li>
+                        @foreach(['A','B','C','D'] as $opt)
+                            @if(isset($question['option_' . $opt]))
+                            <li class="list-group-item
+                                @if(in_array($opt, explode(',', $correctAnswer))) list-group-item-success @endif
+                                @if(in_array($opt, explode(',', $userAnswer)) && !$isCorrect) list-group-item-danger @endif
+                            ">
+                                <strong>{{ $opt }}:</strong> {{ $question['option_' . $opt] }}
+                            </li>
                             @endif
                         @endforeach
                     </ul>
                 @endif
 
-                <p class="text-muted"><strong>Type:</strong> {{ $question->question->question_type }}</p>
-
-                <p><strong>Your Answer:</strong>
-                    @if(in_array($question->question_type, ['multiple_choice', 'sequence']))
-                        @if($userAnswer)
-                            @php
-                                $decoded = $userAnswer->selected_option;
-                            @endphp
-                            {{ $decoded }}
-                        @else
-                            <span class="text-muted">No Answer</span>
-                        @endif
-                    @else
-                        {{ $userAnswer->selected_option ?? 'No Answer' }}
-                    @endif
-                </p>
-
-                <p><strong>Correct Answer:</strong>
-                    @if(in_array($question->question->question_type, ['multiple_choice', 'sequence']))
-                        @php
-                            $decodedCorrect = $question->question->correct_option;
-                        @endphp
-                        {{ $decodedCorrect }}
-                    @else
-                        {{ $question->question->correct_option }}
-                    @endif
-                </p>
-
+                <p><strong>Type:</strong> {{ $question['question_type'] }}</p>
+                <p><strong>Correct Answer:</strong> {{ $correctAnswer ?? 'N/A' }}</p>
+                <p><strong>Your Answer:</strong> {{ $userAnswer ?? 'No Answer' }}</p>
 
                 <p>
                     <strong>Result:</strong>
-                    @if($question->question->question_type == 'text')
+                    @if($question['question_type'] == 'text')
                         <span class="badge bg-warning text-dark">Instructor has not yet reviewed this answer</span>
-
                     @else
                         @if(!$userAnswer)
                             <span class="badge bg-secondary">Not Answered</span>
@@ -163,6 +132,7 @@
             </div>
         </div>
     @endforeach
+
 
 <!-- </div> -->
 @endsection

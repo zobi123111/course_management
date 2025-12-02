@@ -16,6 +16,7 @@ use App\Models\TopicQuestion;
 use App\Models\TrainingEvents;
 use App\Models\User;
 use App\Models\QuizTopic;
+use App\Models\UserQuiz;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -30,8 +31,7 @@ class QuizController extends Controller
 
         if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) {
             $quizs = Quiz::with('course', 'lesson', 'quizOu')->orderBy('id', 'desc')->get();
-            $courses = Courses::where("status", 1)->get(); 
-
+            $courses = Courses::where("status", 1)->get();
         }
         elseif ($currentUser->is_admin == 1 && !empty($currentUser->ou_id)) {
             $quizs = Quiz::with('course', 'lesson', 'quizOu')->where('ou_id', $currentUser->ou_id)->orderBy('id', 'desc')->get();
@@ -50,11 +50,11 @@ class QuizController extends Controller
             $quizs = Quiz::with('course', 'lesson', 'quizOu', 'quizAttempts')->where('status', 'published')
                         ->whereIn('course_id', $courseIds)->orderBy('id', 'desc')->get();
 
-        $courses = Courses::where("status", 1)->get(); 
-
+            $courses = Courses::where("status", 1)->get();
         }
         
         // dd($quizs);
+
         return view('quiz.index', compact('quizs', 'courses', 'organizationUnits'));
     }
 
@@ -385,6 +385,28 @@ class QuizController extends Controller
         return view('quiz.quiz_start', compact('quiz'));
     }
 
+    // public function viewResult(Request $request)
+    // {
+    //     $currentUser = auth()->user();
+    //     $quiz_id = decode_id($request->id);
+
+    //     $quiz = Quiz::with('quizQuestions.question')->findOrFail($quiz_id);
+
+    //     $quizAttempt = $quiz->quizAttempts()->where('student_id', $currentUser->id)->first();
+
+    //     // echo "<pre>";
+    //     //     print_r($quizAttempt);
+    //     // echo "</pre>";
+    //     // dd();
+
+    //     $answers = QuizAnswer::where('quiz_id', $quiz_id)
+    //         ->where('user_id', $currentUser->id)
+    //         ->get()
+    //         ->keyBy('question_id');
+
+    //     return view('quiz.view_result', compact('quiz', 'answers', 'quizAttempt'));
+    // }
+
     public function viewResult(Request $request)
     {
         $currentUser = auth()->user();
@@ -394,17 +416,13 @@ class QuizController extends Controller
 
         $quizAttempt = $quiz->quizAttempts()->where('student_id', $currentUser->id)->first();
 
-        // echo "<pre>";
-        //     print_r($quizAttempt);
-        // echo "</pre>";
-        // dd();
+        $userQuiz = UserQuiz::where('quiz_id', $quiz_id)
+                            ->where('user_id', $currentUser->id)
+                            ->firstOrFail();
 
-        $answers = QuizAnswer::where('quiz_id', $quiz_id)
-            ->where('user_id', $currentUser->id)
-            ->get()
-            ->keyBy('question_id');
+        $quizDetails = json_decode($userQuiz->quiz_details, true);
 
-        return view('quiz.view_result', compact('quiz', 'answers', 'quizAttempt'));
+        return view('quiz.view_result', compact('quiz', 'quizDetails', 'userQuiz', 'quizAttempt'));
     }
 
     public function saveAnswer(Request $request)
@@ -507,6 +525,49 @@ class QuizController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    public function saveFinalQuizData(Request $request)
+    {
+        $quiz = Quiz::with('quizQuestions.question')->find($request->quiz_id);
+
+        if (!$quiz) {
+            return response()->json(['status' => false, 'message' => 'Quiz not found'], 404);
+        }
+
+        $userId = auth()->id();
+
+        $finalData = [];
+
+        foreach ($quiz->quizQuestions as $qq) {
+            $q = $qq->question;
+
+            $userAnswer = $qq->userAnswer ? $qq->userAnswer->selected_option : null;
+
+            $finalData[] = [
+                'question_id'    => $q->id,
+                'question_text'  => $q->question_text,
+                'question_type'  => $q->question_type,
+                'option_A'       => $q->option_A,
+                'option_B'       => $q->option_B,
+                'option_C'       => $q->option_C,
+                'option_D'       => $q->option_D,
+                'correct_option' => $q->correct_option,
+                'user_answer'    => $userAnswer,
+            ];
+        }
+
+        UserQuiz::create([
+            'quiz_id'   => $quiz->id,
+            'user_id'   => $userId,
+            'quiz_details' => json_encode($finalData),
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Final quiz data saved successfully!'
+        ]);
+    }
+
 
     // Question functions 
 

@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use App\Models\LessonPrerequisite;
 use App\Models\LessonPrerequisiteDetail;
+use App\Models\OrganizationUnits;
+use App\Models\Quiz;
 use PDF;
 
 class LessonController extends Controller 
@@ -113,6 +115,21 @@ class LessonController extends Controller
 
         $course = $lesson->course;
 
+        $quizs = Quiz::where('lesson_id', $lesson->id)->get();
+        $currentUser = auth()->user();
+
+        $organizationUnits = OrganizationUnits::all();
+
+        if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) {
+            $courses = Courses::where("status", 1)->get();
+        }
+        elseif ($currentUser->is_admin == 1 && !empty($currentUser->ou_id)) {
+            $courses = Courses::where("status", 1)->where('ou_id', $currentUser->ou_id)->get();
+        }
+        else{
+            $courses = Courses::where("status", 1)->get();
+        }
+
         $breadcrumbs = [
             ['title' => 'Courses', 'url' => route('course.index')],
             ['title' => $course->course_name, 'url' => route('course.show', encode_id($course->id))],
@@ -123,7 +140,7 @@ class LessonController extends Controller
         ->get()
         ->groupBy('created_by'); // grouped by student
 
-        return view('lesson.show', compact('lesson', 'breadcrumbs', 'lessonPrerequisiteDetails'));
+        return view('lesson.show', compact('lesson', 'quizs', 'organizationUnits', 'courses', 'breadcrumbs', 'lessonPrerequisiteDetails'));
     }
 
 
