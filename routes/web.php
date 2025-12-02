@@ -348,6 +348,9 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
 });
 
 
+Route::post('/quiz/save-final-data', [QuizController::class, 'saveFinalQuizData'])->name('quiz.saveFinalData');
+
+
 Route::get('/quiz/topic-questions', [QuizController::class, 'getTopicQuestions'])->name('quiz.getTopicQuestions');
 Route::get('/lessons-by-course', [QuizController::class, 'getLessonsByCourse'])->name('lessons.byCourse');
 Route::get('/courses-by-ou', [QuizController::class, 'getCourseByOu'])->name('courses.byOu');

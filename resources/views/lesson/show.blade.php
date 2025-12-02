@@ -148,7 +148,7 @@
                 <h3>Tasks</h3>
                 <div class="row" id="{{ $disableDragDrop }}">
                     @foreach($lesson->subLessons as $val)
-                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3 sublesson-card" data-id="{{ $val->id }}">
+                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3" data-id="{{ $val->id }}">
                             <div class="sublesson_card course-card">
             
                                 <div class="course-image-container" style="position: relative;">
@@ -194,6 +194,96 @@
         </div>
     </div>
 </div>
+
+<div class="card pt-4">
+    <div class="card-body">
+        <div class="list-group">
+            <div class="container-fluid">
+                <h3>Quiz</h3>
+                <div class="row" id="quizTable">
+                    @foreach($quizs as $quiz)
+                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3" id="quizTable{{ $quiz->id }}" data-id="{{ $quiz->id }}">
+                            <div class="sublesson_card course-card">
+
+                                <div class="course-image-container" style="position: relative;">
+                                    <span class="status-label"
+                                          style="position: absolute; top: 10px; right: 10px;
+                                          background-color: {{ $quiz->status == 'published' ? 'green' : 'red' }};
+                                          color: white; padding: 5px 10px; border-radius: 5px;">
+                                        {{ $quiz->status == 'published' ? 'Published' : 'Draft' }}
+                                    </span>
+                                </div>
+
+                                <div class="card-body">
+                                    <h5 class="card-title SublessonName">{{ $quiz->title }}</h5>
+
+                                    <p class="card-text">
+                                        <b>Course:</b> {{ $quiz->course->course_name }} <br>
+                                        <b>Passing Score:</b> {{ $quiz->passing_score }} <br>
+                                        <b>Duration:</b> {{ $quiz->duration }} minutes <br>
+                                        <b>Type:</b> {{ ucfirst($quiz->quiz_type) }}
+                                    </p>
+                                </div>
+
+                                <div class="card-footer d-flex justify-content-between">
+
+                                    {{-- View --}}
+                                    @if(checkAllowedModule('quiz','quiz.view')->isNotEmpty())
+                                        <a href="{{ route('quiz.view', ['id' => encode_id($quiz->id)]) }}"
+                                           class="btn btn-light">
+                                            <i class="fa fa-eye"></i> View
+                                        </a>
+                                    @endif
+
+                                    {{-- Edit --}}
+                                    @if(checkAllowedModule('quiz','quiz.edit')->isNotEmpty())
+                                        <a href="javascript:void(0)"
+                                           class="btn btn-light edit-quiz-icon"
+                                           data-quiz-id="{{ encode_id($quiz->id) }}">
+                                            <i class="fa fa-edit"></i> Edit
+                                        </a>
+                                    @endif
+
+                                    {{-- Delete --}}
+                                    @if(checkAllowedModule('quiz','quiz.destroy')->isNotEmpty())
+                                        <a href="javascript:void(0)"
+                                           class="btn btn-light delete-quiz-icon"
+                                           data-quiz-id="{{ encode_id($quiz->id) }}"
+                                           data-quiz-name="{{ $quiz->title }}">
+                                            <i class="fa-solid fa-trash"></i> Delete
+                                        </a>
+                                    @endif
+
+                                    @if(checkAllowedModule('quiz','quiz.start')->isNotEmpty())
+                                        @if(auth()->user()->role == 3)
+                                            @if($quiz->topics->isNotEmpty())
+                                                @if($quiz->quizAttempts->contains('student_id', auth()->user()->id))
+                                                    <button class="start-quiz-btn action-btn view-result-icon btn btn-primary" style="cursor: pointer; color: white;" 
+                                                        data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}"> View
+                                                    </button>
+                                                @else
+                                                    <button class="start-quiz-btn action-btn start-quiz-icon" style="cursor: pointer; background: #198754; color: white; border-radius: .25rem; padding: 7px; border: none;" 
+                                                        data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}" data-duration="{{ $quiz->duration }}"> Start Quiz
+                                                    </button>
+                                                @endif
+                                            @else
+                                                <span class="text-danger">You can't started yet</span>
+                                            @endif
+                                        @endif
+                                    @endif
+
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
 @if ($lesson->prerequisites->count() > 0)
     <div class="card pt-4">
         <div class="card-body">
@@ -477,6 +567,152 @@
 </form>
 <!-- End Sub-Lesson Delete Modal -->
 
+    <!-- Edit Quiz Modal -->
+    <div class="modal fade" id="editQuizModal" tabindex="-1" aria-labelledby="editQuizLabel" aria-hidden="true"
+        data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editQuizLabel">Edit Quiz</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editQuizForm" class="row g-3 needs-validation">
+                        @csrf
+                        <input type="hidden" name="quiz_id" id="edit_quiz_id">
+                        <div class="form-group">
+                            <label class="form-label">Quiz Title</label>
+                            <input type="text" name="title" id="edit_title" class="form-control">
+                            <div id="title_error_up" class="text-danger error_e"></div>
+                        </div>
+
+                        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                            <div class="form-group">
+                                <label for="ou_id" class="form-label">Select Org Unit</label>
+                                <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
+                                    <option value="">Select Org Unit</option>
+                                    @foreach($organizationUnits as $val)
+                                    <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                                    @endforeach
+                                </select>
+                                <div id="ou_id_error_up" class="text-danger error_e"></div>
+                            </div>
+                        @endif
+
+                        <div class="form-group">
+                            <label for="course_id" class="form-label">Course</label>
+                            <select name="course_id" id="edit_course_id" class="form-select">
+                                <option value="">Select Course</option>
+                                @foreach($courses as $course)
+                                    <option value="{{ $course->id }}">{{ $course->course_name }}</option>
+                                @endforeach
+                            </select>
+                            <div id="course_id_error_up" class="text-danger error_e"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lesson_id" class="form-label">Lesson</label>
+                            <select name="lesson_id" id="edit_lesson_id" class="form-select">
+                                <option value="">Select Lesson</option>
+                            </select>
+                            <div id="lesson_id_error_up" class="text-danger error_e"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Duration</label>
+                            <input type="number" name="duration" id="edit_duration" class="form-control">
+                            <div id="duration_error_up" class="text-danger error_e"></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Passing Score</label>
+                            <input type="number" name="passing_score" id="edit_passing_score" class="form-control">
+                            <div id="passing_score_error_up" class="text-danger error_e"></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Quiz Type</label>
+                            <select name="quiz_type" id="edit_quiz_type" class="form-select">
+                                <option value="normal">Normal</option>
+                                <option value="training">Training</option>
+                            </select>
+                            <div id="quiz_type_error_up" class="text-danger error_e"></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status" id="edit_status">
+                                <option value="draft">Draft</option>
+                                <option value="published">Published</option>
+                            </select>
+                            <div id="status_error_up" class="text-danger error_e"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="show_result" class="form-label">Show Quiz Result<span class="text-danger">*</span></label>
+                            <select name="show_result" class="form-select" id="edit_show_result">
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                            <div id="show_result_error" class="text-danger error_e"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" id="updateQuiz" class="btn btn-primary sbt_btn">Update</button>
+                        </div>
+                        <div class="loader" style="display:none;"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Quiz Modal -->
+    <form action="{{ url('quiz/delete') }}" id="deleteQuizForm" method="POST">
+        @csrf
+        <div class="modal fade" id="deleteQuiz" tabindex="-1" aria-labelledby="deleteQuizLabel" aria-hidden="true"
+            data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteQuizLabel">Delete Quiz</h5>
+                        <input type="hidden" name="quiz_id" id="quizId">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete this quiz "<strong><span id="append_title"></span></strong>"?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" id="confirmDeleteQuiz" class="btn btn-danger delete_quiz">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- Start Quiz Instructions Modal -->
+    <div class="modal fade" id="startQuizModal" tabindex="-1" aria-labelledby="startQuizLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="startQuizLabel">Quiz Instructions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 id="startQuizTitle" class="mb-2"></h6>
+                    <p id="startQuizDetails" class="mb-2"></p>
+                    <ul>
+                        <li id="startQuizDurationLine"></li>
+                        <li>Your quiz will start when you click <strong>Start</strong>.</li>
+                        <li>If you close the tab or the browser while taking the quiz, your answers will be automatically submitted.</li>
+                    </ul>
+                    <p class="text-muted small">Make sure you have a stable connection before starting.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="confirmStartQuiz" class="btn btn-primary">Start Quiz</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @section('js_scripts')
@@ -645,6 +881,97 @@
         $('#subLessonId').val(subLessonId);
         
         console.log("Sub-Lesson Title: " + subLessonTitle);
+    });
+
+
+    $('#quizTable').on('click', '.edit-quiz-icon', function() {
+        $('.error_e').html('');
+        var quizId = $(this).data('quiz-id');
+        $(".loader").fadeIn();
+        $.ajax({
+            url: "{{ url('/quiz/edit') }}",
+            type: 'GET',
+            data: { id: quizId },
+            success: function(response) {
+                $('#edit_quiz_id').val(response.quiz.id);
+                $('#edit_title').val(response.quiz.title);
+                $('#edit_course_id').val(response.quiz.course_id);
+                $('#edit_duration').val(response.quiz.duration);
+                $('#edit_passing_score').val(response.quiz.passing_score);
+                $('#edit_quiz_type').val(response.quiz.quiz_type);
+                $('#edit_status').val(response.quiz.status);
+                $('#edit_show_result').val(response.quiz.show_result);
+                $('#edit_ou_id').val(response.quiz.ou_id);
+
+                $.ajax({
+                    url: "{{ route('lessons.byCourse') }}",
+                    type: 'GET',
+                    data: { course_id: response.quiz.course_id },
+                    success: function(res) {
+                        let options = '<option value="">Select Lesson</option>';
+                        res.forEach(lesson => {
+                            options += `<option value="${lesson.id}" ${lesson.id == response.quiz.lesson_id ? 'selected' : ''}>${lesson.lesson_title}</option>`;
+                        });
+                        $('#edit_lesson_id').html(options);
+                    }
+                });
+
+                $('#editQuizModal').modal('show');
+                $(".loader").fadeOut("slow");
+            }
+        });
+    });
+
+    $('#updateQuiz').on('click', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: "{{ url('/quiz/update') }}",
+            type: "POST",
+            data: $("#editQuizForm").serialize(),
+            success: function(response) {
+                $('#editQuizModal').modal('hide');
+                location.reload();
+            },
+            error: function(xhr) {
+                var errors = xhr.responseJSON.errors;
+                $.each(errors, function(key, value) {
+                    $('#' + key + '_error_up').html('<p>' + value + '</p>');
+                });
+            }
+        });
+    });
+
+    $(document).on('click', '.delete-quiz-icon', function() {
+        $('#deleteQuiz').modal('show');
+        var quizId = $(this).data('quiz-id');
+        var quizName = $(this).closest('tr').find('.quizTitle').text();
+        $('#append_title').html(quizName);
+        $('#quizId').val(quizId);
+    });
+
+    $(document).on('click', '.start-quiz-icon', function () {
+        let quizId = $(this).data('quiz-id');
+        let quizName = $(this).data('quiz-name') || '';
+        let duration = $(this).data('duration');
+        $('#startQuizTitle').text(quizName);
+        $('#startQuizDetails').text('You are about to start this quiz. Please review the details and ensure you have a stable connection.');
+        if (duration && duration > 0) {
+            $('#startQuizDurationLine').text('Duration: ' + duration + ' minutes');
+        } else {
+            $('#startQuizDurationLine').text('Duration: Not specified');
+        }
+        $('#confirmStartQuiz').data('quiz-id', quizId);
+        $('#startQuizModal').modal('show');
+    });
+
+    $('#confirmStartQuiz').on('click', function () {
+        let quizId = $(this).data('quiz-id');
+        window.location.href = `/quiz/start/${quizId}`;
+    });
+
+    $(document).on('click', '.view-result-icon', function () {
+        let quizId = $(this).data('quiz-id');
+        window.location.href = `/quiz/view-result/${quizId}`;
     });
 
     setTimeout(function() {

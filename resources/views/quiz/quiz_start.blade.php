@@ -651,6 +651,20 @@
             })
             .then(res => res.json())
             .then(data => {
+                return fetch('{{ route("quiz.saveFinalData") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        quiz_id: '{{ $quiz->id }}'
+                    })
+                });
+
+            })
+            .then(res => res.json())
+            .then(data => {
                 Swal.fire({
                     icon: 'success',
                     title: 'Quiz Submitted!',
