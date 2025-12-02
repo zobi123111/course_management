@@ -30,9 +30,12 @@ class QuizController extends Controller
 
         if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) {
             $quizs = Quiz::with('course', 'lesson', 'quizOu')->orderBy('id', 'desc')->get();
+            $courses = Courses::where("status", 1)->get(); 
+
         }
         elseif ($currentUser->is_admin == 1 && !empty($currentUser->ou_id)) {
             $quizs = Quiz::with('course', 'lesson', 'quizOu')->where('ou_id', $currentUser->ou_id)->orderBy('id', 'desc')->get();
+            $courses = Courses::where("status", 1)->where('ou_id', $currentUser->ou_id)->get();
         }
         else{
             // $courseIds = TrainingEvents::where('student_id', $currentUser->id)
@@ -46,11 +49,12 @@ class QuizController extends Controller
 
             $quizs = Quiz::with('course', 'lesson', 'quizOu', 'quizAttempts')->where('status', 'published')
                         ->whereIn('course_id', $courseIds)->orderBy('id', 'desc')->get();
+
+        $courses = Courses::where("status", 1)->get(); 
+
         }
         
         // dd($quizs);
-        $courses = Courses::where("status", 1)->get();
-
         return view('quiz.index', compact('quizs', 'courses', 'organizationUnits'));
     }
 
