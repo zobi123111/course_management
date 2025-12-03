@@ -2027,7 +2027,7 @@ class TrainingEventsController extends Controller
                     }
             }
 
-        return view('trainings.grading-list', compact('event', 'defLessonGrading', 'CustomLessonGrading', 'examinerGrouped', 'instructorGrouped', 'reviews','allLessonsGraded'));
+        return view('trainings.grading-list', compact('event', 'userId', 'defLessonGrading', 'CustomLessonGrading', 'examinerGrouped', 'instructorGrouped', 'reviews','allLessonsGraded'));
     }
 
     // public function unlockEventGarding(Request $request, $event_id)
