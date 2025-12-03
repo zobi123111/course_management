@@ -407,22 +407,123 @@ class QuizController extends Controller
     //     return view('quiz.view_result', compact('quiz', 'answers', 'quizAttempt'));
     // }
 
+    // public function viewResult(Request $request)
+    // {
+    //     $currentUser = auth()->user();
+    //     $quiz_id = decode_id($request->id);
+
+    //     $quiz = Quiz::with('quizQuestions.question')->findOrFail($quiz_id);
+
+    //     $quizAttempt = $quiz->quizAttempts()->where('student_id', $currentUser->id)->first();
+
+    //     $userQuiz = UserQuiz::where('quiz_id', $quiz_id)
+    //                         ->where('user_id', $currentUser->id)
+    //                         ->firstOrFail();
+
+    //     $quizDetails = json_decode($userQuiz->quiz_details, true);
+
+    //     return view('quiz.view_result', compact('quiz', 'quizDetails', 'userQuiz', 'quizAttempt'));
+    // }
+
+    // public function viewSingleAttempt(Request $request)
+    // {
+
+    //     $quiz_id = decode_id($request->quiz_id);
+    //     $user_id = decode_id($request->user_id);
+
+    //     $quiz = Quiz::with('quizQuestions.question')->findOrFail($quiz_id);
+
+    //     $quizAttempt = $quiz->quizAttempts()->where('student_id', $user_id)->first();
+
+    //     $userQuiz = UserQuiz::where('quiz_id', $quiz_id)
+    //                         ->where('user_id', $user_id)
+    //                         ->firstOrFail();
+
+    //     $quizDetails = json_decode($userQuiz->quiz_details, true);
+
+    //     return view('quiz.view_result', compact('quiz', 'quizDetails', 'userQuiz', 'quizAttempt'));
+    // }
+
     public function viewResult(Request $request)
     {
         $currentUser = auth()->user();
         $quiz_id = decode_id($request->id);
 
+        return redirect()->route('quiz.showResultPage', [
+            'quiz_id' => encode_id($quiz_id),
+            'user_id' => encode_id($currentUser->id)
+        ]);
+    }
+
+    public function viewSingleAttempt(Request $request)
+    {
+        $quiz_id = decode_id($request->quiz_id);
+        $user_id = decode_id($request->user_id);
+
+        return response()->json([
+            'redirect_url' => route('quiz.showResultPage', [
+                'quiz_id' => encode_id($quiz_id),
+                'user_id' => encode_id($user_id)
+            ])
+        ]);
+    }
+
+    public function showResultPage(Request $request)
+    {
+        $quiz_id = decode_id($request->quiz_id);
+        $user_id = decode_id($request->user_id);
+
         $quiz = Quiz::with('quizQuestions.question')->findOrFail($quiz_id);
 
-        $quizAttempt = $quiz->quizAttempts()->where('student_id', $currentUser->id)->first();
+        $quizAttempt = QuizAttempt::where('quiz_id', $quiz_id)
+                                ->where('student_id', $user_id)
+                                ->first();
 
         $userQuiz = UserQuiz::where('quiz_id', $quiz_id)
-                            ->where('user_id', $currentUser->id)
+                            ->where('user_id', $user_id)
                             ->firstOrFail();
 
         $quizDetails = json_decode($userQuiz->quiz_details, true);
 
-        return view('quiz.view_result', compact('quiz', 'quizDetails', 'userQuiz', 'quizAttempt'));
+        return view('quiz.view_result', compact('quiz', 'quizAttempt', 'quizDetails', 'userQuiz'));
+    }
+
+    public function viewAttempts(Request $request)
+    {
+        $currentUser = auth()->user();
+        $quiz_id = decode_id($request->id);
+
+        $quiz = Quiz::findOrFail($quiz_id);
+
+        $Attempt = QuizAttempt::with('student')->where('quiz_id', $quiz_id)->get();
+
+        return view('quiz.view_attempts', compact('Attempt', 'quiz'));
+    }
+
+    public function resetAttempt(Request $request)
+    {
+        $quiz_id = decode_id($request->quiz_id);
+        $user_id = decode_id($request->user_id);
+        $attempt_id = decode_id($request->attempt_id);
+
+        $attempt = QuizAttempt::where('id', $attempt_id)
+                            ->where('quiz_id', $quiz_id)
+                            ->where('student_id', $user_id)
+                            ->first();
+
+        if (!$attempt) {
+            return response()->json(['message' => 'Attempt not found'], 404);
+        }
+
+        $answers = QuizAnswer::where('quiz_id', $quiz_id)->where('user_id', $user_id)->get();
+
+        foreach ($answers as $answer) {
+            $answer->delete();
+        }
+
+        $attempt->delete();
+
+        return response()->json(['message' => 'Attempt reset successfully']);
     }
 
     public function saveAnswer(Request $request)

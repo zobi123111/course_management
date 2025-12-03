@@ -1932,8 +1932,11 @@ class TrainingEventsController extends Controller
                 'instructor:id,fname,lname',
                 'documents:id,training_event_id,course_document_id,file_path',
                 'documents.courseDocument:id,document_name',
-                'eventLessons' => function ($query) {   // 👈 added this
-                    $query->with(['lesson:id,lesson_title,enable_cbta', 'instructor:id,fname,lname']);
+                'eventLessons' => function ($query) {   
+                    $query->with(['lesson:id,lesson_title,enable_cbta', 'instructor:id,fname,lname'])
+                        ->with(['quizzes' => function($q) {
+                            $q->select('id', 'lesson_id', 'title');
+                        }]);
                 }
             ])
             ->first();

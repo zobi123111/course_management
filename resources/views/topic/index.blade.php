@@ -162,7 +162,7 @@
                         
                         <div class="form-group">
                             <label for="description" class="form-label">Topic Description<span class="text-danger">*</span></label>
-                            <input type="text" name="description" class="form-control">
+                            <textarea name="description" class="form-control"></textarea>
                             <div id="description_error" class="text-danger error_e"></div>
                         </div>
 
@@ -212,7 +212,7 @@
 
                         <div class="form-group">
                             <label class="form-label">Topic Description</label>
-                            <input type="text" name="description" id="edit_description" class="form-control">
+                            <textarea name="description" id="edit_description" class="form-control"></textarea>
                             <div id="description_error_up" class="text-danger error_e"></div>
                         </div>
                         
