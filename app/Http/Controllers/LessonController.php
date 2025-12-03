@@ -115,7 +115,7 @@ class LessonController extends Controller
 
         $course = $lesson->course;
 
-        $quizs = Quiz::where('lesson_id', $lesson->id)->get();
+        $quizs = Quiz::where('lesson_id', $lesson->id)->where('status', 'published')->get();
         $currentUser = auth()->user();
 
         $organizationUnits = OrganizationUnits::all();
