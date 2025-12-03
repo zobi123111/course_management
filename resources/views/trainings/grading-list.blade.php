@@ -851,16 +851,21 @@
                                             <i class="bi bi-book me-1"></i>{{ $quiz->title }}
                                         </span>
 
-                                        @if($quiz->quizAttempts->isNotEmpty())
+                                        @php
+                                            $firstAttempt = $quiz->quizAttempts()->where('student_id', $userId)->first();
+                                        @endphp
 
-                                            @php
-                                                $firstAttempt = $quiz->quizAttempts->first();
-                                            @endphp
-
-                                            <a href="javascript:void(0);" class="btn btn-primary btn-sm view-attempt-icon" data-quiz-id="{{ encode_id($quiz->id) }}" data-user-id="{{ encode_id($firstAttempt->student_id) }}"> View </a>
+                                        @if($firstAttempt)
+                                            <a href="javascript:void(0);" 
+                                            class="btn btn-primary btn-sm view-attempt-icon" 
+                                            data-quiz-id="{{ encode_id($quiz->id) }}" 
+                                            data-user-id="{{ encode_id($firstAttempt->student_id) }}">
+                                            View
+                                            </a>
                                         @else
                                             <span class="text-warning">Quiz not attempted yet</span>
                                         @endif
+
                                     </li>
                                 @endforeach
                             @endforeach
