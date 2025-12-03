@@ -836,6 +836,39 @@
                     </ul>
                 </div>
                 @endif
+
+                @if($event->eventLessons->pluck('quizzes')->flatten()->isNotEmpty()) 
+                    <div class="mb-4">
+                        <h5 class="text-primary">
+                            <i class="bi bi-question-circle me-2"></i> Quiz Lesson Report
+                        </h5>
+
+                        <ul class="list-group shadow-sm">
+                            @foreach($event->eventLessons as $eventLesson)
+                                @foreach($eventLesson->quizzes as $quiz)
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <i class="bi bi-book me-1"></i>{{ $quiz->title }}
+                                        </span>
+
+                                        @if($quiz->quizAttempts->isNotEmpty())
+
+                                            @php
+                                                $firstAttempt = $quiz->quizAttempts->first();
+                                            @endphp
+
+                                            <a href="javascript:void(0);" class="btn btn-primary btn-sm view-attempt-icon" data-quiz-id="{{ encode_id($quiz->id) }}" data-user-id="{{ encode_id($firstAttempt->student_id) }}"> View </a>
+                                        @else
+                                            <span class="text-warning">Quiz not attempted yet</span>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+
                 <!-- // Deferred lesson -->
                 @if($event->defLessonTasks->isNotEmpty())
 
@@ -984,6 +1017,25 @@
                 }
             });
         });
+
+        $(document).on('click', '.view-attempt-icon', function () {
+            let quizId = $(this).data('quiz-id');
+            let userId = $(this).data('user-id');
+
+            $.ajax({
+                url: "{{ route('quiz.viewSingleAttempt') }}",
+                type: "POST",
+                data: {
+                    quiz_id: quizId,
+                    user_id: userId,
+                    _token: "{{ csrf_token() }}"
+                },
+                success: function (response) {
+                    window.location.href = response.redirect_url;
+                }
+            });
+        });
+
 
   $('#review_form').on('submit', function(e) {
         e.preventDefault(); // Prevent default form submission

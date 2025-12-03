@@ -43,8 +43,8 @@
                             <td>{{ $quiz->course->course_name ?? 'N/A' }}</td>
                         </tr>
                         <tr>
-                            <th>Status</th>
-                            <td><span class="badge bg-{{ $quiz->status == 'published' ? 'success' : 'secondary' }}">{{ ucfirst($quiz->status) }}</span></td>
+                            <th>OU</th>
+                            <td>{{ $quiz->quizOu->org_unit_name ?? 'N/A' }}</td>
                         </tr>
                     </table>
                 </div>
@@ -59,6 +59,10 @@
                         <tr>
                             <th>Passing Score</th>
                             <td>{{ $quiz->passing_score }}%</td>
+                        </tr>
+                        <tr>
+                            <th>Status</th>
+                            <td><span class="badge bg-{{ $quiz->status == 'published' ? 'success' : 'secondary' }}">{{ ucfirst($quiz->status) }}</span></td>
                         </tr>
                     </table>
                 </div>

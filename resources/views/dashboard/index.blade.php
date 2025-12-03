@@ -1328,7 +1328,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title"> Pending Quizzes</h5>
+                            <h5 class="card-title"> Pending Items</h5>
                             <table class="table table-hover" id="pendingquizTable">
                                 <thead>
                                     <tr>

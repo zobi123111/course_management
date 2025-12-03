@@ -326,7 +326,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/quiz/view-result/{id}', [QuizController::class, 'viewResult'])->name('quiz.result');
     Route::post('/quiz/save-answer', [QuizController::class, 'saveAnswer'])->name('quiz.saveAnswer');
     
-
+    
     // Quiz Topic Routes
     Route::get('/topic', [TopicController::class, 'index'])->name('topic.index');
     Route::post('/topic/create', [TopicController::class, 'store'])->name('topic.store');
@@ -334,22 +334,25 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/topic/view/{id}', [TopicController::class, 'view'])->name('topic.view');
     Route::post('/topic/update', [TopicController::class, 'update'])->name('topic.update');
     Route::post('/topic/delete', [TopicController::class, 'destroy'])->name('topic.destroy');
-
+    
     Route::post('/quiz/{id}/add-topic', [QuizController::class, 'addTopic'])->name('quiz.addTopic');
     Route::post('/quiz/edit-topic', [QuizController::class, 'editTopic'])->name('quiz.editTopic');
     Route::post('/quiz/deleteTopic', [QuizController::class, 'deleteTopic'])->name('quiz.deleteTopic');
-
-     // Topic Question Routes
+    
+    // Topic Question Routes
     Route::post('/question/create', [QuizController::class, 'createQuestion'])->name('question.create');
     Route::get('/question/edit', [QuizController::class, 'editQuestion'])->name('question.edit');
     Route::post('/question/update', [QuizController::class, 'updateQuestion'])->name('question.update');
     Route::post('/question/delete', [QuizController::class, 'destroyQuestion'])->name('question.destroy');
-
+    
 });
 
-
+Route::get('/quiz/view-attempts/{id}', [QuizController::class, 'viewAttempts'])->name('quiz.viewAttempts');
+Route::post('/quiz/single-attempt', [QuizController::class, 'viewSingleAttempt'])->name('quiz.viewSingleAttempt');
+Route::post('/quiz/attempt-reset', [QuizController::class, 'resetAttempt'])->name('quiz.resetAttempt');
 Route::post('/quiz/save-final-data', [QuizController::class, 'saveFinalQuizData'])->name('quiz.saveFinalData');
 
+Route::get('/quiz/result-page', [QuizController::class, 'showResultPage'])->name('quiz.showResultPage');
 
 Route::get('/quiz/topic-questions', [QuizController::class, 'getTopicQuestions'])->name('quiz.getTopicQuestions');
 Route::get('/lessons-by-course', [QuizController::class, 'getLessonsByCourse'])->name('lessons.byCourse');

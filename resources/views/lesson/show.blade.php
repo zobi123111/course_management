@@ -134,154 +134,160 @@
 <!-- End Card with an image on left -->
 
 
- <!-- List group with Advanced Contents -->
- <div class="card pt-4">
-    <div class="card-body">
-        <div class="list-group">
-            <div class="container-fluid">
-                @php
-                    $disableDragDrop = '';
-                    if (Auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1) {
-                        $disableDragDrop = 'sortable-tasks';
-                    }
-                @endphp
-                <h3>Tasks</h3>
-                <div class="row" id="{{ $disableDragDrop }}">
-                    @foreach($lesson->subLessons as $val)
-                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3" data-id="{{ $val->id }}">
-                            <div class="sublesson_card course-card">
-            
-                                <div class="course-image-container" style="position: relative;">
-                                    <span class="status-label" style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
-                                        {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
-                                    </span>
-                                </div>
-            
-                                <div class="card-body">
-                                    <h5 class="card-title SublessonName" data-sublesson-title="{{ $val->title }}">{{ $val->title}}</h5>
-            
-                                    <p class="card-text">
-                                        {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
-                                    </p>
-                                </div>
-            
-                                <div class="card-footer d-flex justify-content-between">
-            
-                                    {{-- @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
-                                        <a href="javascript:void(0)" class="btn btn-light show-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
-                                            <i class="fa fa-edit"></i> Show
-                                        </a>
-                                    @endif --}}
-            
-                                    @if(checkAllowedModule('courses', 'sub-lesson.edit')->isNotEmpty())
-                                        <a href="javascript:void(0)" class="btn btn-light edit-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
-                                            <i class="fa fa-edit"></i> Edit
-                                        </a>
-                                    @endif
-            
-                                    @if(checkAllowedModule('courses', 'sub-lesson.delete')->isNotEmpty())
-                                        <a href="javascript:void(0)" class="btn btn-light delete-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
-                                            <i class="fa-solid fa-trash"></i> Delete
-                                        </a>
-                                    @endif
-            
+@if($lesson->subLessons->isNotEmpty())
+    <!-- List group with Advanced Contents -->
+    <div class="card pt-4">
+        <div class="card-body">
+            <div class="list-group">
+                <div class="container-fluid">
+                    @php
+                        $disableDragDrop = '';
+                        if (Auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1) {
+                            $disableDragDrop = 'sortable-tasks';
+                        }
+                    @endphp
+                    <h3>Tasks</h3>
+                    <div class="row" id="{{ $disableDragDrop }}">
+                        @foreach($lesson->subLessons as $val)
+                            <div class="col-lg-4 col-md-6 col-sm-12 mb-3" data-id="{{ $val->id }}">
+                                <div class="sublesson_card course-card">
+                
+                                    <div class="course-image-container" style="position: relative;">
+                                        <span class="status-label" style="position: absolute; top: 10px; right: 10px; background-color: {{ $val->status == 1 ? 'green' : 'red' }}; color: white; padding: 5px 10px; border-radius: 5px;">
+                                            {{ ($val->status == 1) ? 'Active' : 'Inactive' }}
+                                        </span>
+                                    </div>
+                
+                                    <div class="card-body">
+                                        <h5 class="card-title SublessonName" data-sublesson-title="{{ $val->title }}">{{ $val->title}}</h5>
+                
+                                        <p class="card-text">
+                                            {{ \Illuminate\Support\Str::words($val->description, 50, '...') }}
+                                        </p>
+                                    </div>
+                
+                                    <div class="card-footer d-flex justify-content-between">
+                
+                                        {{-- @if(checkAllowedModule('courses', 'lesson.show')->isNotEmpty())
+                                            <a href="javascript:void(0)" class="btn btn-light show-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
+                                                <i class="fa fa-edit"></i> Show
+                                            </a>
+                                        @endif --}}
+                
+                                        @if(checkAllowedModule('courses', 'sub-lesson.edit')->isNotEmpty())
+                                            <a href="javascript:void(0)" class="btn btn-light edit-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
+                                                <i class="fa fa-edit"></i> Edit
+                                            </a>
+                                        @endif
+                
+                                        @if(checkAllowedModule('courses', 'sub-lesson.delete')->isNotEmpty())
+                                            <a href="javascript:void(0)" class="btn btn-light delete-lesson-icon" data-lesson-id="{{ encode_id($val->id) }}">
+                                                <i class="fa-solid fa-trash"></i> Delete
+                                            </a>
+                                        @endif
+                
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+    <!-- End List group Advanced Content -->
+@endif
 
-<div class="card pt-4">
-    <div class="card-body">
-        <div class="list-group">
-            <div class="container-fluid">
-                <h3>Quiz</h3>
-                <div class="row" id="quizTable">
-                    @foreach($quizs as $quiz)
-                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3" id="quizTable{{ $quiz->id }}" data-id="{{ $quiz->id }}">
-                            <div class="sublesson_card course-card">
+@if($quizs->isNotEmpty())
+    <div class="card pt-4">
+        <div class="card-body">
+            <div class="list-group">
+                <div class="container-fluid">
+                    <h3>Quiz</h3>
+                    <div class="row" id="quizTable">
+                        @foreach($quizs as $quiz)
+                            <div class="col-lg-4 col-md-6 col-sm-12 mb-3" data-id="{{ $quiz->id }}">
+                                <div class="sublesson_card course-card">
 
-                                <div class="course-image-container" style="position: relative;">
-                                    <span class="status-label"
-                                          style="position: absolute; top: 10px; right: 10px;
-                                          background-color: {{ $quiz->status == 'published' ? 'green' : 'red' }};
-                                          color: white; padding: 5px 10px; border-radius: 5px;">
-                                        {{ $quiz->status == 'published' ? 'Published' : 'Draft' }}
-                                    </span>
-                                </div>
+                                    <div class="course-image-container" style="position: relative;">
+                                        <span class="status-label"
+                                            style="position: absolute; top: 10px; right: 10px;
+                                            background-color: {{ $quiz->status == 'published' ? 'green' : 'red' }};
+                                            color: white; padding: 5px 10px; border-radius: 5px;">
+                                            {{ $quiz->status == 'published' ? 'Published' : 'Draft' }}
+                                        </span>
+                                    </div>
 
-                                <div class="card-body">
-                                    <h5 class="card-title SublessonName">{{ $quiz->title }}</h5>
+                                    <div class="card-body">
+                                        <h5 class="card-title SublessonName">{{ $quiz->title }}</h5>
 
-                                    <p class="card-text">
-                                        <b>Course:</b> {{ $quiz->course->course_name }} <br>
-                                        <b>Passing Score:</b> {{ $quiz->passing_score }} <br>
-                                        <b>Duration:</b> {{ $quiz->duration }} minutes <br>
-                                        <b>Type:</b> {{ ucfirst($quiz->quiz_type) }}
-                                    </p>
-                                </div>
+                                        <p class="card-text">
+                                            <b>Course:</b> {{ $quiz->course->course_name }} <br>
+                                            <b>Passing Score:</b> {{ $quiz->passing_score }} <br>
+                                            <b>Duration:</b> {{ $quiz->duration }} minutes <br>
+                                            <b>Type:</b> {{ ucfirst($quiz->quiz_type) }}
+                                        </p>
+                                    </div>
 
-                                <div class="card-footer d-flex justify-content-between">
+                                    <div class="card-footer d-flex justify-content-between">
 
-                                    {{-- View --}}
-                                    @if(checkAllowedModule('quiz','quiz.view')->isNotEmpty())
-                                        <a href="{{ route('quiz.view', ['id' => encode_id($quiz->id)]) }}"
-                                           class="btn btn-light">
-                                            <i class="fa fa-eye"></i> View
-                                        </a>
-                                    @endif
+                                        {{-- View --}}
+                                        @if(checkAllowedModule('quiz','quiz.view')->isNotEmpty())
+                                            <a href="{{ route('quiz.view', ['id' => encode_id($quiz->id)]) }}"
+                                            class="btn btn-light">
+                                                <i class="fa fa-eye"></i> View
+                                            </a>
+                                        @endif
 
-                                    {{-- Edit --}}
-                                    @if(checkAllowedModule('quiz','quiz.edit')->isNotEmpty())
-                                        <a href="javascript:void(0)"
-                                           class="btn btn-light edit-quiz-icon"
-                                           data-quiz-id="{{ encode_id($quiz->id) }}">
-                                            <i class="fa fa-edit"></i> Edit
-                                        </a>
-                                    @endif
+                                        {{-- Edit --}}
+                                        @if(checkAllowedModule('quiz','quiz.edit')->isNotEmpty())
+                                            <a href="javascript:void(0)"
+                                            class="btn btn-light edit-quiz-icon"
+                                            data-quiz-id="{{ encode_id($quiz->id) }}">
+                                                <i class="fa fa-edit"></i> Edit
+                                            </a>
+                                        @endif
 
-                                    {{-- Delete --}}
-                                    @if(checkAllowedModule('quiz','quiz.destroy')->isNotEmpty())
-                                        <a href="javascript:void(0)"
-                                           class="btn btn-light delete-quiz-icon"
-                                           data-quiz-id="{{ encode_id($quiz->id) }}"
-                                           data-quiz-name="{{ $quiz->title }}">
-                                            <i class="fa-solid fa-trash"></i> Delete
-                                        </a>
-                                    @endif
+                                        {{-- Delete --}}
+                                        @if(checkAllowedModule('quiz','quiz.destroy')->isNotEmpty())
+                                            <a href="javascript:void(0)"
+                                            class="btn btn-light delete-quiz-icon"
+                                            data-quiz-id="{{ encode_id($quiz->id) }}"
+                                            data-quiz-name="{{ $quiz->title }}">
+                                                <i class="fa-solid fa-trash"></i> Delete
+                                            </a>
+                                        @endif
 
-                                    @if(checkAllowedModule('quiz','quiz.start')->isNotEmpty())
-                                        @if(auth()->user()->role == 3)
-                                            @if($quiz->topics->isNotEmpty())
-                                                @if($quiz->quizAttempts->contains('student_id', auth()->user()->id))
-                                                    <button class="start-quiz-btn action-btn view-result-icon btn btn-primary" style="cursor: pointer; color: white;" 
-                                                        data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}"> View
-                                                    </button>
+                                        @if(checkAllowedModule('quiz','quiz.start')->isNotEmpty())
+                                            @if(auth()->user()->role == 3)
+                                                @if($quiz->topics->isNotEmpty())
+                                                    @if($quiz->quizAttempts->contains('student_id', auth()->user()->id))
+                                                        <button class="start-quiz-btn action-btn view-result-icon btn btn-primary" style="cursor: pointer; color: white;" 
+                                                            data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}"> View
+                                                        </button>
+                                                    @else
+                                                        <button class="start-quiz-btn action-btn start-quiz-icon" style="cursor: pointer; background: #198754; color: white; border-radius: .25rem; padding: 7px; border: none;" 
+                                                            data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}" data-duration="{{ $quiz->duration }}"> Start Quiz
+                                                        </button>
+                                                    @endif
                                                 @else
-                                                    <button class="start-quiz-btn action-btn start-quiz-icon" style="cursor: pointer; background: #198754; color: white; border-radius: .25rem; padding: 7px; border: none;" 
-                                                        data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}" data-duration="{{ $quiz->duration }}"> Start Quiz
-                                                    </button>
+                                                    <span class="text-danger">You can't started yet</span>
                                                 @endif
-                                            @else
-                                                <span class="text-danger">You can't started yet</span>
                                             @endif
                                         @endif
-                                    @endif
 
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    @endforeach
-                </div>
+                        @endforeach
+                    </div>
 
+                </div>
             </div>
         </div>
     </div>
-</div>
+@endif
+
 
 
 @if ($lesson->prerequisites->count() > 0)

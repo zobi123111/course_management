@@ -164,10 +164,14 @@
                                     <i class="fa fa-edit edit-quiz-icon action-btn" style="font-size:25px; cursor: pointer;" data-quiz-id="{{ encode_id($quiz->id) }}"></i>
                                 @endif
 
+                                @if(checkAllowedModule('quiz','quiz.edit')->isNotEmpty())
+                                    <i class="fa fa-list quiz-attempt-icon" aria-hidden="true" style="font-size:25px; cursor: pointer;" data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}"></i>
+                                @endif
+
                                 @if(checkAllowedModule('quiz','quiz.destroy')->isNotEmpty())
                                     <i class="fa-solid fa-trash delete-quiz-icon action-btn" style="font-size:25px; cursor: pointer;" data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}"></i>
                                 @endif
-                                
+
                                 @if(checkAllowedModule('quiz','quiz.start')->isNotEmpty())
                                     @if(auth()->user()->role == 3)
                                         @if($quiz->topics->isNotEmpty())
@@ -635,6 +639,11 @@
             $('#confirmStartQuiz').on('click', function () {
                 let quizId = $(this).data('quiz-id');
                 window.location.href = `/quiz/start/${quizId}`;
+            });
+
+            $(document).on('click', '.quiz-attempt-icon', function () {
+                let quizId = $(this).data('quiz-id');
+                window.location.href = `/quiz/view-attempts/${quizId}`;
             });
 
             $(document).on('click', '.view-result-icon', function () {

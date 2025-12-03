@@ -60,4 +60,10 @@ class TrainingEventLessons extends Model
     {
         return $this->hasMany(UserDocument::class, 'user_id', 'instructor_id');
     }
+
+    public function quizzes()
+    {
+        return $this->hasMany(Quiz::class, 'lesson_id', 'lesson_id');
+    }
+
 }
