@@ -159,10 +159,50 @@
                                         @endswitch
                                     </td>
 
-                                    <td>{{ $q->question->option_A ?? '-' }}</td>
+                                    <!-- <td>{{ $q->question->option_A ?? '-' }}</td>
                                     <td>{{ $q->question->option_B ?? '-' }}</td>
                                     <td>{{ $q->question->option_C ?? '-' }}</td>
                                     <td>{{ $q->question->option_D ?? '-' }}</td>
+                                    <td>{{ $q->question->correct_option ?? '-' }}</td> -->
+
+                                    @if($q->question->option_type == 'text')
+                                        <td>{{ $q->question->option_A ? $q->question->option_A : '-' }}</td>
+                                        <td>{{ $q->question->option_B ? $q->question->option_B : '-' }}</td>
+                                        <td>{{ $q->question->option_C ? $q->question->option_C : '-' }}</td>
+                                        <td>{{ $q->question->option_D ? $q->question->option_D : '-' }}</td>
+                                    @else
+                                        <td>
+                                            @if($q->question->option_A)
+                                                <img src="{{ Storage::url($q->question->option_A) }}" alt="Option A" width="100">
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+
+                                        <td>
+                                            @if($q->question->option_B)
+                                            <img src="{{ Storage::url($q->question->option_B) }}" alt="Option B" width="100">
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+
+                                        <td>
+                                            @if($q->question->option_C)
+                                                <img src="{{ Storage::url($q->question->option_C) }}" alt="Option C" width="100">
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+
+                                        <td>
+                                            @if($q->question->option_D)
+                                                <img src="{{ Storage::url($q->question->option_D) }}" alt="Option D" width="100">
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+                                    @endif
                                     <td>{{ $q->question->correct_option ?? '-' }}</td>
                                 </tr>
                             @empty
