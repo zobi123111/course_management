@@ -165,13 +165,19 @@
             <div class="quiz-container position-relative">
                 @foreach($quiz->quizQuestions as $index => $quizQuestion)
                     @php
-                        $q = $quizQuestion->question; // Shortcut for TopicQuestion
+                        $q = $quizQuestion->question;
                     @endphp
 
                     <div class="question-box {{ $index === 0 ? 'active' : 'd-none' }}" data-index="{{ $index }}">
 
                         <!-- Question Text -->
                         <h5>Q{{ $index + 1 }}. {{ $q->question_text }}</h5>
+
+                        @if($q->question_image)
+                            <div style="text-align: center;">
+                                <img src="{{ Storage::url($q->question_image) }}" alt="question image" class="img-fluid rounded mb-3" style="min-height:100px; max-height:150px">
+                            </div>
+                        @endif
 
                         <input type="hidden" name="questions[{{ $quizQuestion->id }}][id]" value="{{ $quizQuestion->id }}">
 
@@ -193,7 +199,7 @@
                                                 <img src="{{ Storage::url($optionValue) }}"
                                                     alt="Option {{ $option }}"
                                                     class="img-fluid rounded"
-                                                    style="max-height:120px">
+                                                    style="max-height:100px">
                                             @else
                                                 {{ $optionValue }}
                                             @endif
@@ -224,7 +230,7 @@
                                                 <img src="{{ Storage::url($optionValue) }}"
                                                     alt="Option {{ $option }}"
                                                     class="img-fluid rounded"
-                                                    style="max-height:120px">
+                                                    style="max-height:100px">
                                             @else
                                                 {{ $optionValue }}
                                             @endif
@@ -252,13 +258,13 @@
                                     @php $optionValue = $q->{'option_' . $option}; @endphp
 
                                     @if(!empty($optionValue))
-                                        <li class="list-group-item d-flex justify-content-center"
+                                        <li class="list-group-item d-flex"
                                             data-option="{{ $option }}">
 
                                             @if($q->option_type === 'image')
                                                 <img src="{{ Storage::url($optionValue) }}"
                                                     class="img-fluid"
-                                                    style="max-height:120px">
+                                                    style="max-height:100px">
                                             @else
                                                 {{ $optionValue }}
                                             @endif

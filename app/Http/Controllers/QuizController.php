@@ -647,6 +647,7 @@ class QuizController extends Controller
             $finalData[] = [
                 'question_id'    => $q->id,
                 'question_text'  => $q->question_text,
+                'question_image' => $q->question_image,
                 'question_type'  => $q->question_type,
                 'option_type'    => $q->option_type,
                 'option_A'       => $q->option_A,

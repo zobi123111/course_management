@@ -124,6 +124,13 @@
                     {{ $index + 1 }}. {{ $question['question_text'] }}
                 </h5>
 
+                @if(!empty($question['question_image']))
+                    <div style="text-align: center;">
+                        <img src="{{ Storage::url($question['question_image']) }}" alt="question image" class="img-fluid rounded mb-3" style="max-height:120px">
+                    </div>
+                @endif
+
+
                 @if(in_array($question['question_type'], ['single_choice', 'multiple_choice', 'sequence']))
                     <ul class="list-group mb-3">
                         @foreach(['A','B','C','D'] as $opt)
