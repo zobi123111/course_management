@@ -110,10 +110,45 @@
                                         @break
                                 @endswitch
                             </td>
-                            <td>{{ $question->option_A ? $question->option_A : '-' }}</td>
-                            <td>{{ $question->option_B ? $question->option_B : '-' }}</td>
-                            <td>{{ $question->option_C ? $question->option_C : '-' }}</td>
-                            <td>{{ $question->option_D ? $question->option_D : '-' }}</td>
+                            @if($question->option_type == 'text')
+                                <td>{{ $question->option_A ? $question->option_A : '-' }}</td>
+                                <td>{{ $question->option_B ? $question->option_B : '-' }}</td>
+                                <td>{{ $question->option_C ? $question->option_C : '-' }}</td>
+                                <td>{{ $question->option_D ? $question->option_D : '-' }}</td>
+                            @else
+                                <td>
+                                    @if($question->option_A)
+                                        <img src="{{ Storage::url($question->option_A) }}" alt="Option A" width="100">
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+
+                                <td>
+                                    @if($question->option_B)
+                                       <img src="{{ Storage::url($question->option_B) }}" alt="Option B" width="100">
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+
+                                <td>
+                                    @if($question->option_C)
+                                        <img src="{{ Storage::url($question->option_C) }}" alt="Option C" width="100">
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+
+                                <td>
+                                    @if($question->option_D)
+                                        <img src="{{ Storage::url($question->option_D) }}" alt="Option D" width="100">
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                            @endif
+
                             <td>{{ $question->correct_option ? $question->correct_option : '-' }}</td>
                             <td>
                                 <i class="fa fa-edit edit-quiz-icon action-btn" style="font-size:25px; cursor: pointer;" data-quiz-id="{{ encode_id($question->id) }}"></i>
@@ -274,28 +309,74 @@
                     type: 'GET',
                     data: { id: quizId },
                     success: function(response) {
-                        $('#edit_question_id').val(response.question.id);
-                        $('#edit_question_text').val(response.question.question_text);
-                        $('#edit_option_A').val(response.question.option_A);
-                        $('#edit_option_B').val(response.question.option_B);
-                        $('#edit_option_C').val(response.question.option_C);
-                        $('#edit_option_D').val(response.question.option_D);
-                        $('#edit_correct_option').val(response.question.correct_option);
+                        let question = response.question;
 
-                        if (response.question.question_type === 'text') {
+                        $('#edit_question_id').val(question.id);
+                        $('#edit_question_text').val(question.question_text);
+
+                        if (question.question_type === 'text') {
                             $('#edit_option_A').closest('.form-group').hide();
                             $('#edit_option_B').closest('.form-group').hide();
                             $('#edit_option_C').closest('.form-group').hide();
                             $('#edit_option_D').closest('.form-group').hide();
                             $('#edit_correct_option').closest('.form-group').hide();
                         } else {
+                            $('#edit_correct_option').closest('.form-group').show();
+
+                            if(question.option_type === 'text') {
+                                $('#edit_option_A').attr('type', 'text').val(question.option_A);
+                                $('#edit_option_B').attr('type', 'text').val(question.option_B);
+                                $('#edit_option_C').attr('type', 'text').val(question.option_C);
+                                $('#edit_option_D').attr('type', 'text').val(question.option_D);
+                            } else if(question.option_type === 'image') {
+                                $('#edit_option_A').attr('type', 'file').val('');
+                                $('#edit_option_B').attr('type', 'file').val('');
+                                $('#edit_option_C').attr('type', 'file').val('');
+                                $('#edit_option_D').attr('type', 'file').val('');
+
+                                $('.option-preview').remove();
+                                
+                                const storageBaseUrl = "{{ asset('storage') }}/";
+
+
+                                if (question.option_A) {
+                                    $('#edit_option_A').after(
+                                        `<img src="${storageBaseUrl}${question.option_A}" 
+                                            alt="Option A" width="100" class="mt-2 mb-2 option-preview">`
+                                    );
+                                }
+
+                                if (question.option_B) {
+                                    $('#edit_option_B').after(
+                                        `<img src="${storageBaseUrl}${question.option_B}" 
+                                            alt="Option B" width="100" class="mt-2 mb-2 option-preview">`
+                                    );
+                                }
+
+                                if (question.option_C) {
+                                    $('#edit_option_C').after(
+                                        `<img src="${storageBaseUrl}${question.option_C}" 
+                                            alt="Option C" width="100" class="mt-2 mb-2 option-preview">`
+                                    );
+                                }
+
+                                if (question.option_D) {
+                                    $('#edit_option_D').after(
+                                        `<img src="${storageBaseUrl}${question.option_D}" 
+                                            alt="Option D" width="100" class="mt-2 mb-2 option-preview">`
+                                    );
+                                }
+
+                                
+                            }
+
                             $('#edit_option_A').closest('.form-group').show();
                             $('#edit_option_B').closest('.form-group').show();
                             $('#edit_option_C').closest('.form-group').show();
                             $('#edit_option_D').closest('.form-group').show();
-                            $('#edit_correct_option').closest('.form-group').show();
+                            $('#edit_correct_option').val(question.correct_option);
                         }
-                        
+
                         $('#editQuestionModal').modal('show');
                         $(".loader").fadeOut("slow");
                     },
@@ -310,20 +391,19 @@
             $('#updateQuestion').on('click', function(e) {
                 e.preventDefault();
 
-                if ($('#editQuestionForm')[0].checkValidity() === false) {
-                    e.stopPropagation();
-                    return;
-                }
+                var form = document.getElementById('editQuestionForm');
+                var formData = new FormData(form);
 
                 $(".loader").fadeIn();
 
                 $.ajax({
                     url: "{{ url('/question/update') }}",
                     type: "POST",
-                    data: $("#editQuestionForm").serialize(),
+                    data: formData,
+                    processData: false,
+                    contentType: false,
                     success: function(response) {
                         $('#editQuestionModal').modal('hide');
-                        
                         location.reload();
                         $(".loader").fadeOut("slow");
                     },
@@ -355,151 +435,148 @@
             }, 2000);
         });
 
-        // function addQuestion(questionType) {
-        //     let questionCount = document.querySelectorAll('#questions-container .form-group').length;
-        //     questionCount++;
-        //     const questionContainer = document.getElementById('questions-container');
-        //     const newQuestionDiv = document.createElement('div');
-        //     newQuestionDiv.classList.add('form-group', 'mb-3');
-        //     newQuestionDiv.innerHTML = `
-        //         <label for="question">Question ${questionCount}</label> <button type="button" class="btn custom-btn" onclick="removeQuestion(this)"><i class="fa fa-trash" aria-hidden="true"></i></button>
-        //         <input type="text" name="questions[${questionCount}][question]" class="form-control mb-2 mt-3" placeholder="Enter text" required>
-        //         <input type="hidden" name="questions[${questionCount}][type]" value="${questionType}" required>
-        //     `;
-            
-        //     if (questionType === 'single_choice' || questionType === 'multiple_choice' || questionType === 'sequence') {
-        //         newQuestionDiv.innerHTML += `
-        //             <div class="options-container">
-        //                 <label for="options_${questionCount}">Options:</label>
-        //                 <input type="text" name="questions[${questionCount}][options][]" class="form-control mb-2" placeholder="Option 1" required>
-        //                 <input type="text" name="questions[${questionCount}][options][]" class="form-control mb-2" placeholder="Option 2" required>
-        //                 <div id="additionalOptions_${questionCount}"></div>
-        //                 <button type="button" class="btn btn-secondary mt-2" onclick="addOption(${questionCount})" id="addOptionButton_${questionCount}">Add Option</button>
-        //             </div>
-
-        //             <div class="options-container mt-3">
-        //                 <label for="options_${questionCount}">Correct Answer: (add correct answer like A,B,C)</label>
-        //                 <input type="text" name="questions[${questionCount}][correct_answer]" class="form-control mb-2" placeholder="Correct Answer" required>
-        //             </div>
-        //         `;
-        //     }
-
-        //     questionContainer.appendChild(newQuestionDiv);
-        // }
         function addQuestion(questionType) {
-            let questionCount = document.querySelectorAll('#questions-container .form-group').length;
-            questionCount++;
+            let questionCount = document.querySelectorAll('#questions-container .question-block').length + 1;
 
-            // readable label
-            let typeLabel = '';
-            if (questionType === 'text') typeLabel = 'Text';
-            if (questionType === 'single_choice') typeLabel = 'Single Choice';
-            if (questionType === 'multiple_choice') typeLabel = 'Multiple Choice';
-            if (questionType === 'sequence') typeLabel = 'Sequence';
+            const container = document.getElementById('questions-container');
 
-            const questionContainer = document.getElementById('questions-container');
-            const newQuestionDiv = document.createElement('div');
-            newQuestionDiv.classList.add('form-group', 'mb-3');
-            
-            newQuestionDiv.innerHTML = `
-                <label for="question">Question ${questionCount} (${typeLabel})</label>
-                <button type="button" class="btn custom-btn" onclick="removeQuestion(this)">
-                    <i class="fa fa-trash question_delete" aria-hidden="true"></i>
-                </button>
+            const block = document.createElement('div');
+            block.classList.add('question-block', 'border', 'p-3', 'mb-3');
+            block.setAttribute('id', `question_block_${questionCount}`);
 
-                <input type="text" name="questions[${questionCount}][question]" class="form-control mb-2 mt-3" placeholder="Enter text" required>
-                <input type="hidden" name="questions[${questionCount}][type]" value="${questionType}" required>
-            `;
-            
-            // if (questionType === 'single_choice' || questionType === 'multiple_choice' || questionType === 'sequence') {
-            //     newQuestionDiv.innerHTML += `
-            //         <div class="options-container">
-            //             <label>Options:</label>
-            //             <input type="text" name="questions[${questionCount}][options][]" class="form-control mb-2" placeholder="Option 1" required>
-            //             <input type="text" name="questions[${questionCount}][options][]" class="form-control mb-2" placeholder="Option 2" required>
-            //             <div id="additionalOptions_${questionCount}"></div>
-            //             <button type="button" class="btn btn-secondary mt-2" onclick="addOption(${questionCount})" id="addOptionButton_${questionCount}">Add Option</button>
-            //         </div>
+            let optionsHTML = "";
 
-            //         <div class="options-container mt-3">
-            //             <label>Correct Answer: (A,B,C)</label>
-            //             <input type="text" name="questions[${questionCount}][correct_answer]" class="form-control mb-2" placeholder="Correct Answer" required>
-            //         </div>
-            //     `;
-            // }
+            if (questionType !== "text") {
+                optionsHTML = `
+                    <label>Option Type</label>
+                    <select name="questions[${questionCount}][option_type]" 
+                            class="form-control mb-3"
+                            onchange="toggleOptionType(${questionCount}, this.value)">
+                        <option value="text">Text Options</option>
+                        <option value="image">Image Options</option>
+                    </select>
 
-           if (
-                questionType === 'single_choice' ||
-                questionType === 'multiple_choice' ||
-                questionType === 'sequence'
-            ) {
-                let html = `
-                    <div class="options-container">
-                        <label>Options:</label>
+                    <!-- TEXT OPTIONS -->
+                    <div id="text_options_${questionCount}" class="option-section">
+                        <label class="mt-2">Options (Text):</label>
 
                         <div class="mb-2">
                             <label>A</label>
-                            <input type="text" name="questions[${questionCount}][options][]" class="form-control" placeholder="Option A" required>
+                            <input type="text" name="questions[${questionCount}][options_text][]" class="form-control">
                         </div>
-
                         <div class="mb-2">
                             <label>B</label>
-                            <input type="text" name="questions[${questionCount}][options][]" class="form-control" placeholder="Option B" required>
+                            <input type="text" name="questions[${questionCount}][options_text][]" class="form-control">
                         </div>
+                        <div id="more_text_options_${questionCount}"></div>
 
-                        <div id="additionalOptions_${questionCount}"></div>
-
-                        <button type="button" class="btn btn-secondary mt-2" onclick="addOption(${questionCount})" id="addOptionButton_${questionCount}">
+                        <button type="button" class="btn btn-secondary mt-2" 
+                                onclick="addTextOption(${questionCount})">
                             Add Option
                         </button>
                     </div>
+
+                    <!-- IMAGE OPTIONS -->
+                    <div id="image_options_${questionCount}" class="option-section" style="display:none;">
+                        <label class="mt-2">Options (Images):</label>
+
+                        <div class="mb-2">
+                            <label>A</label>
+                            <input type="file" name="questions[${questionCount}][options_image][]" class="form-control" accept="image/*">
+                        </div>
+                        <div class="mb-2">
+                            <label>B</label>
+                            <input type="file" name="questions[${questionCount}][options_image][]" class="form-control" accept="image/*">
+                        </div>
+                        <div id="more_image_options_${questionCount}"></div>
+
+                        <button type="button" class="btn btn-secondary mt-2" 
+                                onclick="addImageOption(${questionCount})">
+                            Add Option
+                        </button>
+                    </div>
+
+                    <label class="mt-3">Correct Answer</label>
+                    <input type="text" name="questions[${questionCount}][correct_answer]" 
+                        class="form-control mb-2" placeholder="Correct Answer (e.g. A or A,B)">
                 `;
-
-                // Add correct answer section based on type
-                if (questionType === 'single_choice') {
-                    html += `
-                        <div class="options-container mt-3">
-                            <label>Correct Answer (e.g., A)</label>
-                            <input type="text" name="questions[${questionCount}][correct_answer]" class="form-control mb-2" placeholder="Correct Answer" required>
-                        </div>
-                    `;
-                }
-
-                if (questionType === 'multiple_choice' || questionType === 'sequence') {
-                    html += `
-                        <div class="options-container mt-3">
-                            <label>Correct Answers (e.g., A,B,C)</label>
-                            <input type="text" name="questions[${questionCount}][correct_answer]" class="form-control mb-2" placeholder="Correct Answers" required>
-                        </div>
-                    `;
-                }
-
-                newQuestionDiv.innerHTML += html;
             }
 
-            questionContainer.appendChild(newQuestionDiv);
+            block.innerHTML = `
+                <div class="d-flex justify-content-between">
+                    <h5>Question ${questionCount} (${questionType.replace('_',' ')})</h5>
+                    <button type="button" class="btn custom-btn" onclick="removeQuestion(this)">
+                        <i class="fa fa-trash question_delete"></i>
+                    </button>
+                </div>
+
+                <label>Question Text</label>
+                <input type="text" name="questions[${questionCount}][question]" 
+                    class="form-control mb-2" placeholder="Enter question text">
+
+                <label>Upload Question Image</label>
+                <input type="file" name="questions[${questionCount}][question_image]" 
+                    class="form-control mb-3" accept="image/*">
+
+                <input type="hidden" name="questions[${questionCount}][type]" value="${questionType}">
+
+                ${optionsHTML}
+            `;
+
+
+            container.appendChild(block);
         }
 
-        // function addOption(questionCount) {
-        //     const additionalOptionsContainer = document.getElementById(`additionalOptions_${questionCount}`);
-        //     const addOptionButton = document.getElementById(`addOptionButton_${questionCount}`);
-            
-        //     const currentAdditionalCount = additionalOptionsContainer.querySelectorAll('input').length;
+        function toggleOptionType(qNum, type) {
+            if (type === 'text') {
+                document.getElementById(`text_options_${qNum}`).style.display = 'block';
+                document.getElementById(`image_options_${qNum}`).style.display = 'none';
+            } else {
+                document.getElementById(`text_options_${qNum}`).style.display = 'none';
+                document.getElementById(`image_options_${qNum}`).style.display = 'block';
+            }
+        }
 
-        //     if (currentAdditionalCount < 2) {
-        //         const newOptionInput = document.createElement('input');
-        //         newOptionInput.type = 'text';
-        //         newOptionInput.name = `questions[${questionCount}][options][]`;
-        //         newOptionInput.className = 'form-control mb-2';
-        //         newOptionInput.placeholder = `Option ${currentAdditionalCount + 3}`;
-        //         newOptionInput.required = true;
-        //         additionalOptionsContainer.appendChild(newOptionInput);
+        function addTextOption(qNum) {
+            const container = document.getElementById(`more_text_options_${qNum}`);
+            const count = container.querySelectorAll('.option-field').length;
 
-        //         if (currentAdditionalCount + 1 === 2) {
-        //             addOptionButton.style.display = 'none';
-        //         }
-        //     }
-        // }
+            const labels = ['C', 'D'];
+
+            if (count < labels.length) {
+                const label = labels[count];
+
+                container.insertAdjacentHTML("beforeend", `
+                    <div class="mb-2 option-field">
+                        <label>${label}</label>
+                        <input type="text" name="questions[${qNum}][options_text][]" class="form-control">
+                    </div>
+                `);
+            }
+        }
+
+        function addImageOption(qNum) {
+            const container = document.getElementById(`more_image_options_${qNum}`);
+            const count = container.querySelectorAll('.option-field').length;
+
+            const labels = ['C', 'D'];
+
+            if (count < labels.length) {
+                const label = labels[count];
+
+                container.insertAdjacentHTML("beforeend", `
+                    <div class="mb-2 option-field">
+                        <label>${label}</label>
+                        <input type="file" name="questions[${qNum}][options_image][]" class="form-control" accept="image/*">
+                    </div>
+                `);
+            }
+        }
+
+        function removeQuestion(button) {
+            const block = button.closest(".question-block");
+            if (block) block.remove();
+        }
 
         function addOption(questionCount) {
             const additionalOptionsContainer = document.getElementById(`additionalOptions_${questionCount}`);
@@ -527,11 +604,6 @@
             }
         }
 
-        function removeQuestion(button) {
-            const questionDiv = button.parentElement;
-            questionDiv.remove();
-        }
-
         $('#questionForm').on('submit', function(e) {
             e.preventDefault();
             var formData = new FormData(this);
@@ -551,7 +623,28 @@
             });
         });
 
+        function createOrUpdatePreview(input) {
+            const $input = $(input);
+            let $preview = $input.siblings('.option-preview');
 
+            if ($preview.length === 0) {
+                $preview = $('<img class="option-preview mt-2 mb-2" width="100">');
+                $input.after($preview);
+            }
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    $preview.attr('src', e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Attach change listeners dynamically
+        $('#editQuestionModal').on('change', 'input[type="file"]', function() {
+            createOrUpdatePreview(this);
+        });
 
     </script>
 @endsection

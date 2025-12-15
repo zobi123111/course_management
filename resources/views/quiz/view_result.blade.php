@@ -3,7 +3,16 @@
 @section('sub-title', 'Quiz Section')
 @section('content')
 
+<style>
+    .list-group-item-success img {
+    border: 3px solid #198754;
+}
 
+.list-group-item-danger img {
+    border: 3px solid #dc3545;
+}
+
+</style>
 <div class="card mb-3 shadow-sm">
         <div class="row g-0">
             <div class="col-md-4 mt-3">
@@ -78,16 +87,35 @@
 
     @foreach($quizDetails as $index => $question)
         @php
+
+            $isCorrect = false;
+
             $userAnswer = $question['user_answer'] ?? null;
             $correctAnswer = $question['correct_option'] ?? null;
 
-            $userArr = $userAnswer ? array_map('trim', explode(',', strtolower($userAnswer))) : [];
-            $correctArr = $correctAnswer ? array_map('trim', explode(',', strtolower($correctAnswer))) : [];
+            if($question['question_type'] === 'sequence'){
+                $userArr    = $userAnswer ? explode(',', $userAnswer) : [];
+                $correctArr = $correctAnswer ? explode(',', $correctAnswer) : [];
 
-            sort($userArr);
-            sort($correctArr);
+                $userArr    = array_map('trim', $userArr);
+                $correctArr = array_map('trim', $correctArr);
 
-            $isCorrect = ($userArr == $correctArr);
+                $isCorrect = ($userArr === $correctArr);
+
+            }else{
+                $userArr = $userAnswer
+                    ? array_map('trim', explode(',', strtolower($userAnswer)))
+                    : [];
+
+                $correctArr = $correctAnswer
+                    ? array_map('trim', explode(',', strtolower($correctAnswer)))
+                    : [];
+
+                sort($userArr);
+                sort($correctArr);
+
+                $isCorrect = ($userArr == $correctArr);
+            }
         @endphp
 
         <div class="card mb-4 shadow-sm">
@@ -96,20 +124,43 @@
                     {{ $index + 1 }}. {{ $question['question_text'] }}
                 </h5>
 
+                @if(!empty($question['question_image']))
+                    <div style="text-align: center;">
+                        <img src="{{ Storage::url($question['question_image']) }}" alt="question image" class="img-fluid rounded mb-3" style="max-height:120px">
+                    </div>
+                @endif
+
+
                 @if(in_array($question['question_type'], ['single_choice', 'multiple_choice', 'sequence']))
                     <ul class="list-group mb-3">
                         @foreach(['A','B','C','D'] as $opt)
-                            @if(isset($question['option_' . $opt]))
-                            <li class="list-group-item
-                                @if(in_array($opt, explode(',', $correctAnswer))) list-group-item-success @endif
-                                @if(in_array($opt, explode(',', $userAnswer)) && !$isCorrect) list-group-item-danger @endif
-                            ">
-                                <strong>{{ $opt }}:</strong> {{ $question['option_' . $opt] }}
-                            </li>
+                            @php
+                                $optionValue = $question['option_' . $opt] ?? null;
+                            @endphp
+
+                            @if(!empty($optionValue))
+                                <li class="list-group-item
+                                    @if(in_array($opt, explode(',', $correctAnswer))) list-group-item-success @endif
+                                    @if(in_array($opt, explode(',', $userAnswer ?? '')) && !$isCorrect) list-group-item-danger @endif
+                                ">
+                                    <strong>{{ $opt }}:</strong>
+
+                                    @if(($question['option_type'] ?? 'text') === 'image')
+                                        <div class="mt-2">
+                                            <img src="{{ Storage::url($optionValue) }}"
+                                                alt="Option {{ $opt }}"
+                                                class="img-fluid rounded"
+                                                style="max-height:100px">
+                                        </div>
+                                    @else
+                                        {{ $optionValue }}
+                                    @endif
+                                </li>
                             @endif
                         @endforeach
                     </ul>
                 @endif
+
 
                 <p><strong>Type:</strong> {{ $question['question_type'] }}</p>
                 <p><strong>Correct Answer:</strong> {{ $correctAnswer ?? 'N/A' }}</p>

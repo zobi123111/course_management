@@ -647,7 +647,9 @@ class QuizController extends Controller
             $finalData[] = [
                 'question_id'    => $q->id,
                 'question_text'  => $q->question_text,
+                'question_image' => $q->question_image,
                 'question_type'  => $q->question_type,
+                'option_type'    => $q->option_type,
                 'option_A'       => $q->option_A,
                 'option_B'       => $q->option_B,
                 'option_C'       => $q->option_C,
@@ -672,49 +674,130 @@ class QuizController extends Controller
 
     // Question functions 
 
+    // public function createQuestion(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'topic_id'   => 'required|integer|exists:topics,id',
+    //         'questions' => 'required|array|min:1',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json(['errors' => $validator->errors()], 422);
+    //     }
+
+    //     $createdQuestions = [];
+
+    //     foreach ($request->questions as $q) {
+
+    //         $questionValidator = Validator::make($q, [
+    //             'question' => 'required|string|max:1000',
+    //             'type'     => 'required|string|in:text,single_choice,multiple_choice,sequence',
+    //             'options'  => 'nullable|array',
+    //         ]);
+
+    //         if ($questionValidator->fails()) {
+    //             return response()->json(['errors' => $questionValidator->errors()], 422);
+    //         }
+
+    //         $options = [
+    //             'option_A' => $q['options'][0] ?? null,
+    //             'option_B' => $q['options'][1] ?? null,
+    //             'option_C' => $q['options'][2] ?? null,
+    //             'option_D' => $q['options'][3] ?? null,
+    //         ];
+
+    //         $correct_option = $q['correct_answer'] ?? null;
+
+    //         $createdQuestions[] = TopicQuestion::create([
+    //             'topic_id'        => $request->topic_id,
+    //             'question_text'  => $q['question'],
+    //             'question_type'  => $q['type'],
+    //             'option_A'       => $options['option_A'],
+    //             'option_B'       => $options['option_B'],
+    //             'option_C'       => $options['option_C'],
+    //             'option_D'       => $options['option_D'],
+    //             'correct_option' => $correct_option,
+    //         ]);
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Questions created successfully.',
+    //     ]);
+    // }
+
     public function createQuestion(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'topic_id'   => 'required|integer|exists:topics,id',
-            'questions' => 'required|array|min:1',
+            'questions'  => 'required|array|min:1',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $createdQuestions = [];
-
-        foreach ($request->questions as $q) {
+        foreach ($request->questions as $index => $q) {
 
             $questionValidator = Validator::make($q, [
-                'question' => 'required|string|max:1000',
-                'type'     => 'required|string|in:text,single_choice,multiple_choice,sequence',
-                'options'  => 'nullable|array',
+                'question'        => 'nullable|string|max:1000',
+                'question_image'  => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+                'type'            => 'required|string|in:text,single_choice,multiple_choice,sequence',
+                'option_type'     => 'nullable|string|in:text,image',
+                'options_text'    => 'nullable|array',
+                'options_image'   => 'nullable|array',
+                'correct_answer'  => 'nullable|string|max:255',
             ]);
 
             if ($questionValidator->fails()) {
                 return response()->json(['errors' => $questionValidator->errors()], 422);
             }
 
-            $options = [
-                'option_A' => $q['options'][0] ?? null,
-                'option_B' => $q['options'][1] ?? null,
-                'option_C' => $q['options'][2] ?? null,
-                'option_D' => $q['options'][3] ?? null,
-            ];
+            $questionImagePath = null;
 
-            $correct_option = $q['correct_answer'] ?? null;
+            if (isset($q['question_image']) && $q['question_image']) {
+                $questionImagePath = $q['question_image']->store('question_images', 'public');
+            }
 
-            $createdQuestions[] = TopicQuestion::create([
+            $optionType = $q['option_type'] ?? 'text';
+
+            $option_A = null;
+            $option_B = null;
+            $option_C = null;
+            $option_D = null;
+
+            if ($optionType === 'text') {
+                $option_A = $q['options_text'][0] ?? null;
+                $option_B = $q['options_text'][1] ?? null;
+                $option_C = $q['options_text'][2] ?? null;
+                $option_D = $q['options_text'][3] ?? null;
+
+            } else {
+                if (!empty($q['options_image'][0])) {
+                    $option_A = $q['options_image'][0]->store('option_images', 'public');
+                }
+                if (!empty($q['options_image'][1])) {
+                    $option_B = $q['options_image'][1]->store('option_images', 'public');
+                }
+                if (!empty($q['options_image'][2])) {
+                    $option_C = $q['options_image'][2]->store('option_images', 'public');
+                }
+                if (!empty($q['options_image'][3])) {
+                    $option_D = $q['options_image'][3]->store('option_images', 'public');
+                }
+            }
+
+            TopicQuestion::create([
                 'topic_id'        => $request->topic_id,
-                'question_text'  => $q['question'],
-                'question_type'  => $q['type'],
-                'option_A'       => $options['option_A'],
-                'option_B'       => $options['option_B'],
-                'option_C'       => $options['option_C'],
-                'option_D'       => $options['option_D'],
-                'correct_option' => $correct_option,
+                'question_text'   => $q['question'] ?? null,
+                'question_image'  => $questionImagePath,
+                'question_type'   => $q['type'],
+                'option_type'     => $optionType,
+                'option_A'        => $option_A,
+                'option_B'        => $option_B,
+                'option_C'        => $option_C,
+                'option_D'        => $option_D,
+                'correct_option'  => $q['correct_answer'] ?? null,
             ]);
         }
 
@@ -724,6 +807,7 @@ class QuizController extends Controller
         ]);
     }
 
+
     public function editQuestion(Request $request)
     {
         $questionId = decode_id($request->id);
@@ -732,37 +816,94 @@ class QuizController extends Controller
         return response()->json(['question' => $question]);
     }
 
+
     public function updateQuestion(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'question_id'   => 'required|numeric',
-            'question_text' => 'required|string|max:1000',
+            'question_id'      => 'required|numeric|exists:topic_questions,id',
+            'question_text'    => 'nullable|string|max:1000',
+            'question_image'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'option_type'      => 'nullable|string|in:text,image',
+            'options_text'     => 'nullable|array',
+            'options_image'    => 'nullable|array',
+            'correct_option'   => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $option_A = $request->option_A ? $request->option_A : null;
-        $option_B = $request->option_B ? $request->option_B : null;
-        $option_C = $request->option_C ? $request->option_C : null;
-        $option_D = $request->option_D ? $request->option_D : null;
-
-        $correct_option = $request->correct_option ? $request->correct_option : null;
-
         $question = TopicQuestion::findOrFail($request->question_id);
 
+        if ($request->hasFile('question_image')) {
+            $questionImagePath = $request->file('question_image')->store('question_images', 'public');
+        } else {
+            $questionImagePath = $question->question_image;
+        }
+
+        $option_A = $option_B = $option_C = $option_D = null;
+
+        if ($question->option_type === 'text') {
+            $option_A = $request->option_A ?? $question->option_A;
+            $option_B = $request->option_B ?? $question->option_B;
+            $option_C = $request->option_C ?? $question->option_C;
+            $option_D = $request->option_D ?? $question->option_D;
+        } else {
+            $option_A = isset($request->option_A) ? $request->option_A->store('option_images', 'public') : $question->option_A;
+            $option_B = isset($request->option_B) ? $request->option_B->store('option_images', 'public') : $question->option_B;
+            $option_C = isset($request->option_C) ? $request->option_C->store('option_images', 'public') : $question->option_C;
+            $option_D = isset($request->option_D) ? $request->option_D->store('option_images', 'public') : $question->option_D;
+        }
+
         $question->update([
-            'question_text' => $request->question_text,
-            'option_A' => $option_A,
-            'option_B' => $option_B,
-            'option_C' => $option_C,
-            'option_D' => $option_D,
-            'correct_option' => $correct_option,
+            'question_text'  => $request->question_text ?? $question->question_text,
+            'question_image' => $questionImagePath,
+            'option_A'       => $option_A,
+            'option_B'       => $option_B,
+            'option_C'       => $option_C,
+            'option_D'       => $option_D,
+            'correct_option' => $request->correct_option ?? $question->correct_option,
         ]);
 
-        return response()->json(['success' => true, 'message' => 'Question updated successfully.']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Question updated successfully.',
+            'question' => $question
+        ]);
     }
+
+
+    // public function updateQuestion(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'question_id'   => 'required|numeric',
+    //         'question_text' => 'required|string|max:1000',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json(['errors' => $validator->errors()], 422);
+    //     }
+
+    //     $option_A = $request->option_A ? $request->option_A : null;
+    //     $option_B = $request->option_B ? $request->option_B : null;
+    //     $option_C = $request->option_C ? $request->option_C : null;
+    //     $option_D = $request->option_D ? $request->option_D : null;
+
+    //     $correct_option = $request->correct_option ? $request->correct_option : null;
+
+    //     $question = TopicQuestion::findOrFail($request->question_id);
+
+    //     $question->update([
+    //         'question_text' => $request->question_text,
+    //         'option_A' => $option_A,
+    //         'option_B' => $option_B,
+    //         'option_C' => $option_C,
+    //         'option_D' => $option_D,
+    //         'correct_option' => $correct_option,
+    //     ]);
+
+    //     return response()->json(['success' => true, 'message' => 'Question updated successfully.']);
+    // }
 
     public function destroyQuestion(Request $request)
     {
@@ -771,7 +912,7 @@ class QuizController extends Controller
         $question = TopicQuestion::findOrFail($questionId);
         $question->delete();
 
-        return redirect()->route('quiz.view', ['id' => $request->quiz_id])->with('message', 'Question deleted successfully');
+        return redirect()->route('topic.view', ['id' => $request->quiz_id])->with('message', 'Question deleted successfully');
     }
 
     // public function submit(Request $request, $id)

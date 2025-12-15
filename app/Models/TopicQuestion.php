@@ -15,7 +15,9 @@ class TopicQuestion extends Model
     protected $fillable = [
         'topic_id',
         'question_text',
+        'question_image',
         'question_type',
+        'option_type',
         'option_A',
         'option_B',
         'option_C',
