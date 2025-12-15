@@ -41,6 +41,11 @@ class Resource extends Model
     {
         return $this->belongsToMany(Group::class, 'group_resource', 'resource_id', 'group_id');
     }
+
+    public function booking()
+    {
+        return $this->belongsToMany(Booking::class, 'resource', 'id');
+    }
 }
 
 

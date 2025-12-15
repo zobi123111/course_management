@@ -241,5 +241,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(TrainingEventReview::class, 'user_id', 'id');
     }
+
+    public function booking()
+    {
+        return $this->hasMany(Booking::class, 'std_id', 'id');
+    }
+
+
     
 }
