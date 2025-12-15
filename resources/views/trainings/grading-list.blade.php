@@ -820,8 +820,6 @@
                     });
                 @endphp
 
-
-
                 @if($lessonReports->isNotEmpty())
                     <div class="mb-4">
                         <h5 class="text-primary">
@@ -856,32 +854,45 @@
                         <h5 class="text-primary">
                             <i class="bi bi-question-circle me-2"></i> Quiz Lesson Report
                         </h5>
-
                         <ul class="list-group shadow-sm">
                             @foreach($event->eventLessons as $eventLesson)
                                 @foreach($eventLesson->quizzes as $quiz)
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>
-                                            <i class="bi bi-book me-1"></i>{{ $quiz->title }}
-                                        </span>
+                                    <li class="list-group-item">
 
-                                        @php
-                                            $firstAttempt = $quiz->quizAttempts()->where('student_id', $userId)->first();
-                                        @endphp
+                                        <div class="fw-semibold text-primary mb-2">
+                                            <i class="bi bi-book me-1"></i>
+                                            {{ $quiz->lesson->lesson_title ?? 'N/A' }}
+                                        </div>
 
-                                        @if($firstAttempt)
-                                            <a href="javascript:void(0);" 
-                                            class="btn btn-primary btn-sm view-attempt-icon" 
-                                            data-quiz-id="{{ encode_id($quiz->id) }}" 
-                                            data-user-id="{{ encode_id($firstAttempt->student_id) }}">
-                                            View
-                                            </a>
-                                        @else
-                                            <span class="text-warning">Quiz not attempted yet</span>
-                                        @endif
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <i class="bi bi-question-circle me-1"></i>
+                                                {{ $quiz->title }}
+                                            </span>
+
+                                            @php
+                                                $firstAttempt = $quiz->quizAttempts()
+                                                    ->where('student_id', $userId)
+                                                    ->first();
+                                            @endphp
+
+                                            @if($firstAttempt)
+                                                <a href="javascript:void(0);"
+                                                class="btn btn-outline-primary btn-sm view-attempt-icon"
+                                                data-quiz-id="{{ encode_id($quiz->id) }}"
+                                                data-user-id="{{ encode_id($firstAttempt->student_id) }}">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                            @else
+                                                <span class="badge bg-warning text-dark">
+                                                    Not attempted
+                                                </span>
+                                            @endif
+                                        </div>
 
                                     </li>
                                 @endforeach
+
                             @endforeach
                         </ul>
                     </div>

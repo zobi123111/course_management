@@ -886,7 +886,7 @@
                                                         <strong>{{ $quiz->title ?? 'Quiz' }}</strong>
 
                                                         <div class="col-md-2 mt-2">
-                                                            <strong><i class="fas fa-chalkboard-teacher"></i> course:</strong>
+                                                            <strong><i class="fas fa-chalkboard-teacher"></i> Course:</strong>
                                                             {{ $quiz->course->course_name ?? 'N/A' }}
                                                         </div>
 
