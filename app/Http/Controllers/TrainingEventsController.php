@@ -3185,7 +3185,8 @@ class TrainingEventsController extends Controller
 
     public function calender()
     {
-        return view('trainings.calender');
+        $resources  = Resource::all();
+        return view('trainings.calender', compact('resources'));
     }
 
 }

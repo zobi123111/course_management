@@ -1617,3 +1617,21 @@ display: flex;
     text-transform: capitalize;
     padding: 5px 10px;
 }
+
+.toast-error {
+    background-color: #dc3545 !important;
+    /* Bootstrap danger red */
+    color: #fff !important;
+}
+
+.toast-error .toast-message {
+    color: #fff !important;
+}
+
+.toast-error .toast-close-button {
+    color: #fff !important;
+    opacity: 1;
+}
+span.fc-title {
+    color: black;
+}
