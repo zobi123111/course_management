@@ -658,6 +658,10 @@ h6 {
     left: -300px;
   }
 }
+.sidebar .sidebar-nav {
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+}
 
 .sidebar-nav {
   padding: 0;
