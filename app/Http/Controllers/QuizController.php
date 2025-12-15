@@ -444,16 +444,31 @@ class QuizController extends Controller
     //     return view('quiz.view_result', compact('quiz', 'quizDetails', 'userQuiz', 'quizAttempt'));
     // }
 
+    // public function viewResult(Request $request)
+    // {
+    //     $currentUser = auth()->user();
+    //     $quiz_id = decode_id($request->id);
+
+    //     return redirect()->route('quiz.showResultPage', [
+    //         'quiz_id' => encode_id($quiz_id),
+    //         'user_id' => encode_id($currentUser->id)
+    //     ]);
+    // }
     public function viewResult(Request $request)
     {
-        $currentUser = auth()->user();
-        $quiz_id = decode_id($request->id);
+        $quizId = decode_id($request->id);
+
+        $userId = $request->filled('user_id')
+            ? $request->query('user_id')
+            : auth()->id();
 
         return redirect()->route('quiz.showResultPage', [
-            'quiz_id' => encode_id($quiz_id),
-            'user_id' => encode_id($currentUser->id)
+            'quiz_id' => encode_id($quizId),
+            'user_id' => encode_id($userId),
         ]);
     }
+
+
 
     public function viewSingleAttempt(Request $request)
     {
@@ -470,8 +485,17 @@ class QuizController extends Controller
 
     public function showResultPage(Request $request)
     {
-        $quiz_id = decode_id($request->quiz_id);
-        $user_id = decode_id($request->user_id);
+        $quiz_id = decode_id($request->query('quiz_id'));
+        $user_id = decode_id($request->query('user_id'));
+
+        
+        // echo "<pre>";
+        //     print_r($quiz_id);
+        // echo "<br>";
+        //     print_r($user_id);
+        // echo "</pre>";
+
+        // dd();
 
         $quiz = Quiz::with('quizQuestions.question')->findOrFail($quiz_id);
 

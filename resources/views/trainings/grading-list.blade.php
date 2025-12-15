@@ -814,60 +814,85 @@
                 </div>
                 <hr>
 
-                @if($event->eventLessons->isNotEmpty())
-                <div class="mb-4">
-                    <h5 class="text-primary">
-                        <i class="bi bi-file-earmark-pdf me-2"></i>Download Lesson Reports
+                @php
+                    $lessonReports = $event->eventLessons->reject(function ($eventLesson) {
+                        return $eventLesson?->lesson?->quizzes?->isNotEmpty();
+                    });
+                @endphp
 
-                    </h5>
-                    <ul class="list-group shadow-sm">
-                        @foreach($event->eventLessons as $eventLesson)
+                @if($lessonReports->isNotEmpty())
+                    <div class="mb-4">
+                        <h5 class="text-primary">
+                            <i class="bi bi-file-earmark-pdf me-2"></i>Download Lesson Reports
+                        </h5>
 
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>
-                                <i class="bi bi-book me-1"></i>{{ $eventLesson->lesson->lesson_title ?? 'N/A' }}
-                            </span>
-                            <a href="{{ route('lesson.report.download', ['event_id' => $event->id, 'lesson_id' => $eventLesson->lesson_id, 'userID' => $event->student_id]) }}"
-                                class="btn btn-outline-secondary btn-sm">
-                                <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
-                            </a>
-                        </li>
-                        @endforeach
-                    </ul>
-                </div>
+                        <ul class="list-group shadow-sm">
+                            @foreach($lessonReports as $eventLesson)
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <i class="bi bi-book me-1"></i>
+                                        {{ $eventLesson->lesson->lesson_title ?? 'N/A' }}
+                                    </span>
+
+                                    <a href="{{ route('lesson.report.download', [
+                                        'event_id' => $event->id,
+                                        'lesson_id' => $eventLesson->lesson_id,
+                                        'userID' => $event->student_id
+                                    ]) }}"
+                                    class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
                 @endif
+
 
                 @if($event->eventLessons->pluck('quizzes')->flatten()->isNotEmpty()) 
                     <div class="mb-4">
                         <h5 class="text-primary">
                             <i class="bi bi-question-circle me-2"></i> Quiz Lesson Report
                         </h5>
-
                         <ul class="list-group shadow-sm">
                             @foreach($event->eventLessons as $eventLesson)
                                 @foreach($eventLesson->quizzes as $quiz)
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>
-                                            <i class="bi bi-book me-1"></i>{{ $quiz->title }}
-                                        </span>
+                                    <li class="list-group-item">
 
-                                        @php
-                                            $firstAttempt = $quiz->quizAttempts()->where('student_id', $userId)->first();
-                                        @endphp
+                                        <div class="fw-semibold text-primary mb-2">
+                                            <i class="bi bi-book me-1"></i>
+                                            {{ $quiz->lesson->lesson_title ?? 'N/A' }}
+                                        </div>
 
-                                        @if($firstAttempt)
-                                            <a href="javascript:void(0);" 
-                                            class="btn btn-primary btn-sm view-attempt-icon" 
-                                            data-quiz-id="{{ encode_id($quiz->id) }}" 
-                                            data-user-id="{{ encode_id($firstAttempt->student_id) }}">
-                                            View
-                                            </a>
-                                        @else
-                                            <span class="text-warning">Quiz not attempted yet</span>
-                                        @endif
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <i class="bi bi-question-circle me-1"></i>
+                                                {{ $quiz->title }}
+                                            </span>
+
+                                            @php
+                                                $firstAttempt = $quiz->quizAttempts()
+                                                    ->where('student_id', $userId)
+                                                    ->first();
+                                            @endphp
+
+                                            @if($firstAttempt)
+                                                <a href="javascript:void(0);"
+                                                class="btn btn-outline-primary btn-sm view-attempt-icon"
+                                                data-quiz-id="{{ encode_id($quiz->id) }}"
+                                                data-user-id="{{ encode_id($firstAttempt->student_id) }}">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                            @else
+                                                <span class="badge bg-warning text-dark">
+                                                    Not attempted
+                                                </span>
+                                            @endif
+                                        </div>
 
                                     </li>
                                 @endforeach
+
                             @endforeach
                         </ul>
                     </div>

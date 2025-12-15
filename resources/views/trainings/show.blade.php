@@ -209,6 +209,11 @@
             width: 100%;
         }
 
+        .action-view {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+        }
 
         td {
             padding: 0;
@@ -636,19 +641,29 @@
 
                         <!-- <pre> -->
                         @if($trainingEvent?->course?->course_type === 'one_event' && $trainingEvent->eventLessons->count())
-                        @php
-                        $eventLesson = $trainingEvent->eventLessons->first() ?? null;
-                        $lessons = collect([$eventLesson]);
-                        @endphp
+                            @php
+                                $eventLesson = $trainingEvent->eventLessons->first() ?? null;
+                                $lessons = collect([$eventLesson]);
+                            @endphp
 
                         @else
-                        @php
-                        $lessons = $trainingEvent->eventLessons;
-                        @endphp
+                            @php
+                                $lessons = $trainingEvent->eventLessons;
+                            @endphp
                         @endif
 
-                        @if($lessons && $lessons->count())
-                        @foreach($lessons as $lesson)
+                        @php
+                            $quizLessons = $lessons->filter(function ($lesson) {
+                                return $lesson?->lesson?->quizzes?->count() > 0;
+                            });
+
+                            $normalLessons = $lessons->reject(function ($lesson) {
+                                return $lesson?->lesson?->quizzes?->count() > 0;
+                            });
+                        @endphp
+
+                        @if($normalLessons->count())
+                        @foreach($normalLessons as $lesson)
                         <div class="row mb-3 p-3 border rounded bg-light">
                             <div class="col-md-12">
                                 <strong><i class="fas fa-book"></i> Lesson Name:</strong>
@@ -829,6 +844,117 @@
                             @endif
                         </div>
                         @endforeach
+
+                        @if($quizLessons->count())
+                        <div class="mt-4">
+                            <h4 class="mb-3 text-success">
+                                <i class="bi bi-patch-question-fill me-2"></i>
+                                Lessons with Quiz
+                            </h4>
+
+                            @foreach($quizLessons as $lesson)
+                            <div class="row mb-3 p-3 border rounded bg-light">
+
+                                <div class="col-md-12">
+                                    <strong><i class="fas fa-book"></i> Lesson Name:</strong>
+                                    <span class="text-primary">
+                                        {{ $lesson->lesson->lesson_title ?? 'Untitled Lesson' }}
+                                    </span>
+                                </div>
+
+                                <div class="col-md-4 mt-2">
+                                    <strong>Instructor:</strong>
+                                    {{ optional($lesson->instructor)->fname }}
+                                    {{ optional($lesson->instructor)->lname }}
+                                </div>
+
+                                <div class="col-md-12 mt-3">
+                                    <div class="card border-success shadow-sm">
+                                        <div class="card-header bg-success text-white py-1">
+                                            <i class="bi bi-patch-question-fill me-2"></i> Quizzes
+                                        </div>
+
+                                        <div class="card-body p-2">
+                                            @foreach($lesson->lesson->quizzes as $quiz)
+
+                                                @php
+                                                    $attempt = $quiz->quizAttempts->where('student_id', $trainingEvent->student->id)->first();
+                                                @endphp
+
+                                                <div class="justify-content-between align-items-center border-bottom py-2">
+                                                    <div class="row mb-3 p-3 border rounded bg-light">
+                                                        <strong>{{ $quiz->title ?? 'Quiz' }}</strong>
+
+                                                        <div class="col-md-2 mt-2">
+                                                            <strong><i class="fas fa-chalkboard-teacher"></i> Course:</strong>
+                                                            {{ $quiz->course->course_name ?? 'N/A' }}
+                                                        </div>
+
+                                                        <div class="col-md-2 mt-2">
+                                                            <strong><i class="fas fa-book"></i> Duration:</strong>
+                                                            <span>{{ $quiz->duration ?? 'N/A' }}</span>
+                                                        </div>
+
+                                                        <div class="col-md-2 mt-2">
+                                                            <strong><i class="fas fa-chalkboard-teacher"></i> Passing Score:</strong>
+                                                            {{ $quiz->passing_score ?? 'N/A' }}
+                                                        </div>
+
+                                                        <div class="col-md-2 mt-2">
+                                                            <strong><i class="fas fa-clock"></i> Time Taken:</strong>
+                                                            <span>
+                                                                @if($attempt && $attempt->started_at && $attempt->submitted_at)
+                                                                    {{ \Carbon\Carbon::parse($attempt->started_at)
+                                                                        ->diff(\Carbon\Carbon::parse($attempt->submitted_at))
+                                                                        ->format('%i min %s sec') }}
+                                                                @else
+                                                                    N/A
+                                                                @endif
+                                                            </span>
+                                                        </div>
+
+                                                        <div class="col-md-2 mt-2">
+                                                            <strong><i class="fas fa-percentage"></i> Score:</strong>
+                                                            <span>
+                                                                {{ ($attempt && $attempt->score !== null) ? $attempt->score . ' %' : 'N/A' }}
+                                                            </span>
+                                                        </div>
+
+                                                        <div class="col-md-2 mt-2">
+                                                            <strong>Result:</strong>
+                                                            @if($attempt && $attempt->result)
+                                                                <span class="badge bg-{{ $attempt->result === 'pass' ? 'success' : 'danger' }}">
+                                                                    {{ strtoupper($attempt->result) }}
+                                                                </span>
+                                                            @else
+                                                                <span class="badge bg-secondary">N/A</span>
+                                                            @endif
+                                                        </div>
+                                                        
+                                                        @if($quiz->quizAttempts->contains('student_id', $trainingEvent->student->id))
+                                                        <div class="col-md-2 mt-2 action-view">
+                                                            <button class="start-quiz-btn action-btn view-result-icon btn btn-primary" style="cursor: pointer; color: white;" 
+                                                                data-quiz-id="{{ encode_id($quiz->id) }}" data-user-id="{{ $trainingEvent->student->id }}"> View
+                                                            </button>
+                                                        </div>
+                                                        @else
+                                                        <div class="col-md-3 mt-2 action-view">
+                                                            <span class="badge bg-warning text-dark">Student not attempt this quiz yet</span>
+                                                        </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            @endforeach
+                        </div>
+                        @endif
+
+
 
                         @if($deferredLessons->isNotEmpty())
                         <strong><i class="fas fa-exclamation-circle"></i> Deferred Lessons:</strong>
@@ -3956,6 +4082,13 @@
                 $('#def_id').val(def_id);
                 $('#add_title').html(title);
                 $('#normalLessonModel').modal('show');
+            });
+
+            $(document).on('click', '.view-result-icon', function () {
+                let quizId = $(this).data('quiz-id');
+                let userId = $(this).data('user-id');
+
+                window.location.href = `/quiz/view-result/${quizId}?user_id=${userId}`;
             });
 
             $(document).on('click', '.backToDeferredLesson', function() {

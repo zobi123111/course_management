@@ -1067,7 +1067,7 @@ class TrainingEventsController extends Controller
      
 
 
-       $training_logs = TrainingEventLog::with('users', 'lesson')
+       $training_logs = TrainingEventLog::with('users', 'lesson.quizzes')
                         ->where('event_id', $trainingEvent->id)
                         ->where('lesson_type', 1)
                         ->orderBy('id', 'asc')
@@ -1075,7 +1075,7 @@ class TrainingEventsController extends Controller
 
         $groupedLogs = $training_logs->groupBy('lesson_id');
 
-        $training_deferred_logs = TrainingEventLog::with('users', 'lesson')
+        $training_deferred_logs = TrainingEventLog::with('users', 'lesson.quizzes')
                         ->where('event_id', $trainingEvent->id)
                         ->where('lesson_type', 2)
                         ->orderBy('id', 'asc')
@@ -1085,7 +1085,7 @@ class TrainingEventsController extends Controller
      
        
 
-        $training_custom_logs = TrainingEventLog::with('users', 'lesson')
+        $training_custom_logs = TrainingEventLog::with('users', 'lesson.quizzes')
                         ->where('event_id', $trainingEvent->id)
                         ->where('lesson_type', 3)
                         ->orderBy('id', 'asc')
@@ -1932,11 +1932,12 @@ class TrainingEventsController extends Controller
                 'instructor:id,fname,lname',
                 'documents:id,training_event_id,course_document_id,file_path',
                 'documents.courseDocument:id,document_name',
-                'eventLessons' => function ($query) {   
-                    $query->with(['lesson:id,lesson_title,enable_cbta', 'instructor:id,fname,lname'])
-                        ->with(['quizzes' => function($q) {
-                            $q->select('id', 'lesson_id', 'title');
-                        }]);
+                'eventLessons' => function ($query) {
+                    $query->with([
+                        'lesson:id,lesson_title,enable_cbta',
+                        'instructor:id,fname,lname',
+                        'quizzes.lesson:id,lesson_title'
+                    ]);
                 }
             ])
             ->first();
