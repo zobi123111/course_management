@@ -53,4 +53,10 @@ class CourseLesson extends Model
         return $this->hasMany(TrainingEventLog::class, 'lesson_id', 'id');
     }
 
+    public function quizzes()
+    {
+        return $this->hasMany(Quiz::class, 'lesson_id', 'id');
+    }
+
+
 }
