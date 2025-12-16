@@ -8,14 +8,14 @@
 <div class="row mb-3">
     <div class="col-md-4">
         <input type="text" id="studentSearch"
-               class="form-control"
-               placeholder="Search by student name">
+            class="form-control"
+            placeholder="Search by student name">
     </div>
 
     <div class="col-md-4">
         <input type="text" id="resourceSearch"
-               class="form-control"
-               placeholder="Search by resource">
+            class="form-control"
+            placeholder="Search by resource">
     </div>
 </div>
 
@@ -163,16 +163,18 @@
             time_24hr: true,
             minuteIncrement: 15,
 
-            onChange: function(selectedDates, dateStr) {
-                if (!dateStr) return;
-
-                // Add 1 day using moment (keeps time intact)
-                let endStr = moment(dateStr, "YYYY-MM-DD HH:mm")
-                .add(1, 'days')
-                .format("YYYY-MM-DD HH:mm");
-                endPicker.setDate(endStr, true); 
+            onChange: function(selectedDates) {
+                if (!selectedDates.length) return;
+                let start = moment(selectedDates[0]);
+                let end = start.clone().set({
+                    hour: 23,
+                    minute: 59
+                });
+                endPicker.setDate(end.format("YYYY-MM-DD HH:mm"), true);
             }
+
         });
+
 
 
 
@@ -187,24 +189,24 @@
         // ---------------------------
         // FullCalendar
         // ---------------------------
-    $('#calendar').fullCalendar({
+        $('#calendar').fullCalendar({
             editable: false,
             selectable: true,
             displayEventTime: false,
             selectOverlap: false,
             events: SITEURL + "/fullcalendar",
             events: function(start, end, timezone, callback) {
-            $.ajax({
-                url: SITEURL + "/fullcalendar",
-                 data: {
-                student: $('#studentSearch').val(),
-                resource: $('#resourceSearch').val()
+                $.ajax({
+                    url: SITEURL + "/fullcalendar",
+                    data: {
+                        student: $('#studentSearch').val(),
+                        resource: $('#resourceSearch').val()
+                    },
+                    success: function(data) {
+                        callback(data);
+                    }
+                });
             },
-                success: function(data) {
-                    callback(data);
-                }
-            });
-        },
 
             eventRender: function(event, element) {
                 if (event.status === 'pending') element.css('background', '#f1c40f');
@@ -213,17 +215,21 @@
                 if (event.status === 'standby') element.css('background', '#e67e22');
             },
             select: function(start) {
-                $('#newBookingModal').modal('show');
+                resetBookingForm();
+                $('#newBookingModal').modal('show'); 
+
                 let startStr = moment(start).format("YYYY-MM-DD HH:mm");
-                let endStr = moment(start).add(1, 'days').format("YYYY-MM-DD HH:mm");
+
+                // Let flatpickr onChange calculate end = 23:59
                 startPicker.setDate(startStr, true);
-                endPicker.setDate(endStr, true);
             },
+
+
             eventClick: function(event) {
-                var user_id =  {{ auth()->user()->id }};
-               if(event.can_access == true){
-                 $('#viewBookingModal').modal('show');
-               }
+                var user_id = {{ auth() -> user() -> id }};
+                if (event.can_access == true) { 
+                    $('#viewBookingModal').modal('show');
+                }
                 $('#booking_student').text(event.student);
                 $('#booking_resource').text(event.resource);
                 $('#start_date').text(moment(event.start).format("DD-MM-YYYY HH:mm"));
@@ -238,26 +244,52 @@
                 }
 
                 $('#view_type').text(typeText);
-                $('#view_status').text(event.status || '');
+                let status = event.status ?
+                    event.status.charAt(0).toUpperCase() + event.status.slice(1) :
+                    '';
+                $('#view_status')
+                    .removeClass('text-warning text-success text-danger')
+                    .text(status);
+
+                //$('#view_status').text(status);
+                if (event.status === 'pending') {
+                    $('#view_status').addClass('text-warning'); // yellow
+                } else if (event.status === 'approved') {
+                    $('#view_status').addClass('text-success'); // green
+                } else if (event.status === 'rejected') {
+                    $('#view_status').addClass('text-danger'); // red
+                }
 
                 $('#approve_booking_id').val(event.id);
                 $('#reject_booking_id').val(event.id);
 
-                if (!event.can_approve) {
-                    // $('#approveBtn').hide();
-                    // $('#rejectBtn').hide();
-                } else {
+                if (event.status == "pending") {
                     $('#approveBtn').show();
                     $('#rejectBtn').show();
+                } else {
+                    $('#approveBtn').hide();
+                    $('#rejectBtn').hide();
                 }
             }
 
         });
 
+        function resetBookingForm()
+        {
+            $('#resource').val('');
+            $('#organizationUnits').val('');
+            $('#student').val('');
+            $('#booking_type').val('1');
 
-$('#studentSearch, #resourceSearch').on('keyup', function () {
-    $('#calendar').fullCalendar('refetchEvents');
-});
+            // Clear flatpickr values
+            startPicker.clear();
+            endPicker.clear();
+        }
+
+
+        $('#studentSearch, #resourceSearch').on('keyup', function() {
+            $('#calendar').fullCalendar('refetchEvents');
+        });
 
 
         // ---------------------------
@@ -272,9 +304,7 @@ $('#studentSearch, #resourceSearch').on('keyup', function () {
             var group = $("#group").val();
 
             var start = $('#booking_start').val();
-            var end = moment($('#booking_end').val(), "YYYY-MM-DD HH:mm")
-                .add(1, 'days')
-                .format("YYYY-MM-DD HH:mm");
+            var end = $('#booking_end').val();
 
             if (!resource_id) {
                 toastr.error('Please select a resource');
