@@ -16,6 +16,13 @@ $subTitle = "Welcome to Admin Dashboard";
 
 @extends('layout.app')
 @section('content')
+
+<style>
+    div#document_table_filter,
+    div#document_table_length {
+        margin-bottom: 15px;
+    }
+</style>
 <?php
 
 $messages = [];
@@ -714,7 +721,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
         </tbody>
     </table>
 @endif
-    <section class="section dashboard">
+    <section class="section dashboard mt-3">
         @if(!empty(auth()->user()->is_owner))
         <div class="row">
 
@@ -1409,53 +1416,51 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
             </div>
         @endif
     </section>
-
 @endsection
 
 @section('js_scripts')
-<script>
-    $(document).ready(function() {
-        $('#document_table').DataTable({
-            searching: true,
-            pageLength: 10,
-            language: {
-                emptyTable: "No records found"
-            }
+    <script>
+        $(document).ready(function() {
+            $('#document_table').DataTable({
+                searching: true,
+                pageLength: 10,
+                language: {
+                    emptyTable: "No records found"
+                }
+            });
+
+            $('#trainingEventTable').DataTable({
+                searching: true,
+                pageLength: 10,
+                language: {
+                    emptyTable: "No previous training events completed"
+                }
+            });
+
+            $('#pendingquizTable').DataTable({
+                searching: true,
+                pageLength: 10,
+                language: {
+                    emptyTable: "No pending quizzes"
+                }
+            });
+
+            $('#document_table').on("click", ".collapsible", function() {
+                $(this).toggleClass("active");
+                $(this).next(".content").slideToggle();
+            });
+
         });
 
-        $('#trainingEventTable').DataTable({
-            searching: true,
-            pageLength: 10,
-            language: {
-                emptyTable: "No previous training events completed"
-            }
+        setTimeout(function() {
+            $('#successMessage').fadeOut('fast');
+        }, 3000);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.forEach(function(tooltipTriggerEl) {
+                new bootstrap.Tooltip(tooltipTriggerEl);
+            });
         });
-
-        $('#pendingquizTable').DataTable({
-            searching: true,
-            pageLength: 10,
-            language: {
-                emptyTable: "No pending quizzes"
-            }
-        });
-
-        $('#document_table').on("click", ".collapsible", function() {
-            $(this).toggleClass("active");
-            $(this).next(".content").slideToggle();
-        });
-
-    });
-
-    setTimeout(function() {
-        $('#successMessage').fadeOut('fast');
-    }, 3000);
-
-    document.addEventListener('DOMContentLoaded', function() {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.forEach(function(tooltipTriggerEl) {
-            new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-    });
-</script>
-
+    </script>
 @endsection

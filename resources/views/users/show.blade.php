@@ -50,9 +50,20 @@
                 $document = $user->documents;
                 @endphp
 
+
+                <div class="col-md-6">
+                    <h5 class="text-muted mb-2">
+                        <i class="bi bi-building text-secondary me-2"></i><strong> Organization Unit : </strong>  {{ $user->organization->org_unit_name ?? 'N/A' }}
+                    </h5>
+                    <!-- <div class="p-3 border rounded bg-light">
+                        {{ $user->organization->org_unit_name ?? 'N/A' }}
+                    </div> -->
+                </div>
+                <hr class="my-4">
+
                 <!-- Additional Details: Passport & License -->
 
-                <div class="row g-4">
+                <div class="row g-4 mt-3">
                     @if(!empty($document?->passport))
                     <div class="col-md-12 mb-4">
                         <h5 class="text-muted mb-3">
@@ -93,382 +104,383 @@
                     <div class="row mb-4">
                         <!-- License Details -->
                         @if(!empty($document) && !empty($document->licence))
-                        <div class="col-md-6 mb-4 license-six-cont">
-                            <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>UK License Details</h5>
-                            @if($document && $document->licence)
-                            <div class="validate-inner-cont">
-                                <div class="licensefile">
-                                    <p class="mb-0"><strong>Number:</strong> {{ $document->licence }}</p>
-                                    @if(!empty($document->licence_file))
-                                       <a href="{{ Storage::url($document->licence_file) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
-                                    @else  
-                                     <span style="color:#c52020"> ( No Licence uploaded )</span>
-                                     @endif
+                            <div class="col-md-6 mb-4 license-six-cont">
+                                <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>UK License Details</h5>
+                                @if($document && $document->licence)
+                                <div class="validate-inner-cont">
+                                    <div class="licensefile">
+                                        <p class="mb-0"><strong>Number:</strong> {{ $document->licence }}</p>
+                                        @if(!empty($document->licence_file))
+                                        <a href="{{ Storage::url($document->licence_file) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
+                                        @else  
+                                        <span style="color:#c52020"> ( No Licence uploaded )</span>
+                                        @endif
 
-                                    @if($user->licence_admin_verification_required == 1)
-                                    
-                                </div>
-                                <div class="licensevalidate">
-                                    <div class="form-check form-switch mb-0">
-                                        <input class="form-check-input verify-toggle" type="checkbox" id="licence_verify"
-                                            data-user-id="{{ encode_id($user->id) }}" data-type="licence"
-                                            {{ $document->licence_verified ? 'checked disabled' : '' }}>
-                                        <label class="form-check-label" for="licence_verify">{{ $document->licence_verified ? 'Verified' : 'Mark as Verified' }}</label>
+                                        @if($user->licence_admin_verification_required == 1)
+                                        
                                     </div>
-                                    @endif
+                                    <div class="licensevalidate">
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input verify-toggle" type="checkbox" id="licence_verify"
+                                                data-user-id="{{ encode_id($user->id) }}" data-type="licence"
+                                                {{ $document->licence_verified ? 'checked disabled' : '' }}>
+                                            <label class="form-check-label" for="licence_verify">{{ $document->licence_verified ? 'Verified' : 'Mark as Verified' }}</label>
+                                        </div>
+                                        @endif
 
-                                    @if($document->licence_verified)
-                                    <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="licence">Invalidate</button>
-                                    @endif
+                                        @if($document->licence_verified)
+                                        <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="licence">Invalidate</button>
+                                        @endif
+                                    </div>
                                 </div>
-                            </div>
-                            @else
-                            <p class="text-muted">No license details available.</p>
-                            @endif
+                                @else
+                                <p class="text-muted">No license details available.</p>
+                                @endif
 
-                            @php
-                            // Group all parent-child relationships
-                            $parentChildMap = \App\Models\ParentRating::all()->groupBy('parent_id');
+                                @php
+                                // Group all parent-child relationships
+                                $parentChildMap = \App\Models\ParentRating::all()->groupBy('parent_id');
 
-                            // All ratings (for names, IDs, etc.)
-                            $allRatings = \App\Models\Rating::all()->keyBy('id');
+                                // All ratings (for names, IDs, etc.)
+                                $allRatings = \App\Models\Rating::all()->keyBy('id');
 
-                            // User ratings mapped by rating_id
-                            $userRatingsMap = $user->usrRatings->keyBy('rating_id');
-                            @endphp
+                                // User ratings mapped by rating_id
+                                $userRatingsMap = $user->usrRatings->keyBy('rating_id');
+                                @endphp
 
-                            @if($user->usrRatings->where('linked_to', 'licence_1')->count())
-                            <div class="row mt-3">
-                                <div class="col-md-12">
-                                    <h6 class="text-secondary mb-3">
-                                        <i class="bi bi-star-fill text-warning me-2"></i>Ratings Linked to UK Licence
-                                    </h6>
+                                @if($user->usrRatings->where('linked_to', 'licence_1')->count())
+                                <div class="row mt-3">
+                                    <div class="col-md-12">
+                                        <h6 class="text-secondary mb-3">
+                                            <i class="bi bi-star-fill text-warning me-2"></i>Ratings Linked to UK Licence
+                                        </h6>
 
-                                    <div class="d-flex flex-wrap license-lists">
-                                        @foreach($grouped['licence_1'] ?? [] as $group)
-                                        @php
-                                        $parent = $group['parent'];
-                                        @endphp
+                                        <div class="d-flex flex-wrap license-lists">
+                                            @foreach($grouped['licence_1'] ?? [] as $group)
+                                            @php
+                                            $parent = $group['parent'];
+                                            @endphp
 
-                                        <div class="card mb-3 me-3">
-                                            <div class="card-body">
-                                                <h6 class="card-title text-primary">{{ $parent->rating->name }}</h6>
+                                            <div class="card mb-3 me-3">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-primary">{{ $parent->rating->name }}</h6>
 
-                                                <!-- Parent info -->
-                                                <div class="form-check form-switch mb-0">
-                                                    <input class="form-check-input verify-rating" type="checkbox" id="rating_verify" data-linkedTo="{{ $group['children'][0]['linked_to'] }}" data-userId="{{  $group['children'][0]['user_id'] }}" data-parent_id="{{ $group['children'][0]['parent_id'] }}"
-                                                        {{ $group['children'][0]['admin_verified'] ? 'checked disabled' : '' }}>
-                                                    @if($group['children'][0]['admin_verified'] == 1)
-                                                    <button class="btn btn-danger btn-sm invalidate-rating" data-linkedTo="{{ $group['children'][0]['linked_to'] }}"
-                                                        data-userId="{{  $group['children'][0]['user_id'] }}" data-parent_id="{{ $group['children'][0]['parent_id'] }}">
-                                                        Invalidate
-                                                    </button>
+                                                    <!-- Parent info -->
+                                                    <div class="form-check form-switch mb-0">
+                                                        <input class="form-check-input verify-rating" type="checkbox" id="rating_verify" data-linkedTo="{{ $group['children'][0]['linked_to'] }}" data-userId="{{  $group['children'][0]['user_id'] }}" data-parent_id="{{ $group['children'][0]['parent_id'] }}"
+                                                            {{ $group['children'][0]['admin_verified'] ? 'checked disabled' : '' }}>
+                                                        @if($group['children'][0]['admin_verified'] == 1)
+                                                        <button class="btn btn-danger btn-sm invalidate-rating" data-linkedTo="{{ $group['children'][0]['linked_to'] }}"
+                                                            data-userId="{{  $group['children'][0]['user_id'] }}" data-parent_id="{{ $group['children'][0]['parent_id'] }}">
+                                                            Invalidate
+                                                        </button>
+                                                        @endif
+
+                                                    </div>
+                                                    <ul>
+                                                        <li><strong>Issue Date:</strong> {{ $group['children'][0]['issue_date'] ?? 'N/A' }}</li>
+                                                        <li><strong>Expiry Date:</strong> {{ $group['children'][0]['expiry_date'] ?? 'N/A' }}</li>
+                                                    </ul>
+                                                    @if(!empty($group['children'][0]['file_path']))
+                                                    <a href="{{ asset('storage/' . $group['children'][0]['file_path']) }}" target="_blank"
+                                                        class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-file-earmark-text me-1"></i> View File
+                                                    </a>
                                                     @endif
+                                                    <?php
+                                                    $children = collect($group['children']);
 
-                                                </div>
-                                                <ul>
-                                                    <li><strong>Issue Date:</strong> {{ $group['children'][0]['issue_date'] ?? 'N/A' }}</li>
-                                                    <li><strong>Expiry Date:</strong> {{ $group['children'][0]['expiry_date'] ?? 'N/A' }}</li>
-                                                </ul>
-                                                @if(!empty($group['children'][0]['file_path']))
-                                                <a href="{{ asset('storage/' . $group['children'][0]['file_path']) }}" target="_blank"
-                                                    class="btn btn-sm btn-outline-primary">
-                                                    <i class="bi bi-file-earmark-text me-1"></i> View File
-                                                </a>
-                                                @endif
-                                                <?php
-                                                $children = collect($group['children']);
+                                                    // Get first child with valid issue and expiry date
+                                                    $referenceChild = $children->first(function ($child) {
+                                                        return !empty($child->issue_date) && !empty($child->expiry_date);
+                                                    });
 
-                                                // Get first child with valid issue and expiry date
-                                                $referenceChild = $children->first(function ($child) {
-                                                    return !empty($child->issue_date) && !empty($child->expiry_date);
-                                                });
-
-                                                // If valid dates exist, assign to all children
-                                                if ($referenceChild) {
-                                                    foreach ($children as $child) {
-                                                        $child->issue_date = $referenceChild->issue_date;
-                                                        $child->expiry_date = $referenceChild->expiry_date;
+                                                    // If valid dates exist, assign to all children
+                                                    if ($referenceChild) {
+                                                        foreach ($children as $child) {
+                                                            $child->issue_date = $referenceChild->issue_date;
+                                                            $child->expiry_date = $referenceChild->expiry_date;
+                                                        }
                                                     }
-                                                }
 
-                                                // Remove children if no rating_id exists in any
-                                                $hasValidChildren = $children->contains(function ($child) {
-                                                    return !is_null($child->rating_id);
-                                                });
+                                                    // Remove children if no rating_id exists in any
+                                                    $hasValidChildren = $children->contains(function ($child) {
+                                                        return !is_null($child->rating_id);
+                                                    });
 
-                                                if (!$hasValidChildren) {
-                                                    $group['children'] = [];
-                                                } else {
-                                                    $group['children'] = $children;
-                                                }
-                                                ?>
+                                                    if (!$hasValidChildren) {
+                                                        $group['children'] = [];
+                                                    } else {
+                                                        $group['children'] = $children;
+                                                    }
+                                                    ?>
 
 
-                                                <!-- Child Ratings -->
-                                                @if (!empty($group['children']))
-                                                <hr>
-                                                <h6>Privileges:</h6>
-                                                <ul class="list-unstyled small">
-                                                    @foreach($group['children'] as $childRating)
-                                                    <li class="mb-2">
-                                                        <div class="d-flex align-items-start">
-                                                            <i class="bi bi-chevron-right text-muted mt-1 me-2"></i>
-                                                            <div>
-                                                                <strong class="text-dark">{{ $childRating->rating->name ?? 'N/A' }}</strong>
-                                                                <div class="ms-1 mt-1 small text-secondary">
-                                                                    <div>
-                                                                        <strong>Issue Date:</strong>
-                                                                        {{ $childRating->issue_date ?? 'N/A' }}
-                                                                    </div>
-                                                                    <div>
-                                                                        <strong>Expiry Date:</strong>
-                                                                        {{ $childRating->expiry_date ?? 'N/A' }}
-                                                                        @if($childRating->admin_verified)
-                                                                        <i class="bi bi-check-circle-fill text-success ms-1" title="Verified"></i>
-                                                                        @endif
+                                                    <!-- Child Ratings -->
+                                                    @if (!empty($group['children']))
+                                                    <hr>
+                                                    <h6>Privileges:</h6>
+                                                    <ul class="list-unstyled small">
+                                                        @foreach($group['children'] as $childRating)
+                                                        <li class="mb-2">
+                                                            <div class="d-flex align-items-start">
+                                                                <i class="bi bi-chevron-right text-muted mt-1 me-2"></i>
+                                                                <div>
+                                                                    <strong class="text-dark">{{ $childRating->rating->name ?? 'N/A' }}</strong>
+                                                                    <div class="ms-1 mt-1 small text-secondary">
+                                                                        <div>
+                                                                            <strong>Issue Date:</strong>
+                                                                            {{ $childRating->issue_date ?? 'N/A' }}
+                                                                        </div>
+                                                                        <div>
+                                                                            <strong>Expiry Date:</strong>
+                                                                            {{ $childRating->expiry_date ?? 'N/A' }}
+                                                                            @if($childRating->admin_verified)
+                                                                            <i class="bi bi-check-circle-fill text-success ms-1" title="Verified"></i>
+                                                                            @endif
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    </li>
-                                                    @endforeach
-                                                </ul>
-                                                @endif
+                                                        </li>
+                                                        @endforeach
+                                                    </ul>
+                                                    @endif
+                                                </div>
                                             </div>
-                                        </div>
-                                        @endforeach
+                                            @endforeach
 
+                                        </div>
                                     </div>
                                 </div>
+                                @endif
                             </div>
-                            @endif
-                        </div>
                         @endif
 
                         <!-- Second License Details -->
 
-                        <div class="col-md-6 mb-4 license-six-cont">
-                            @if(!empty($document->licence_2))
-                            <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>EASA License Details</h5>
-                            <div class="validate-inner-cont">
-                                <div class="licensefile">
-                                    <p class="mb-0"><strong>Number:</strong> {{ $document->licence_2 }}</p>
-                                    @if(!empty($document->licence_file_2))
-                                    <a href="{{ Storage::url($document->licence_file_2) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
-                                    @else
-                                    <span style="color:#c52020"> ( No Licence Uploaded )</span>   
-                                    @endif
-                               
-                                   
-                                </div>
-                                  @if($user->licence_2_admin_verification_required == 1)
-                                <div class="licensevalidate">
-                                    <div class="form-check form-switch mb-0">
-                                        <input class="form-check-input verify-toggle" type="checkbox" id="licence2_verify"
-                                            data-user-id="{{ encode_id($user->id) }}" data-type="licence_2"
-                                            {{ $document->licence_verified_2 ? 'checked disabled' : '' }}>
-                                        <label class="form-check-label" for="licence2_verify">{{ $document->licence_verified_2 ? 'Verified' : 'Mark as Verified' }}</label>
+                        @if(!empty($document->licence_2))
+                            <div class="col-md-6 mb-4 license-six-cont">
+                                    <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>EASA License Details</h5>
+                                    <div class="validate-inner-cont">
+                                        <div class="licensefile">
+                                            <p class="mb-0"><strong>Number:</strong> {{ $document->licence_2 }}</p>
+                                            @if(!empty($document->licence_file_2))
+                                            <a href="{{ Storage::url($document->licence_file_2) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
+                                            @else
+                                            <span style="color:#c52020"> ( No Licence Uploaded )</span>   
+                                            @endif
+                                    
+                                        
+                                        </div>
+                                        @if($user->licence_2_admin_verification_required == 1)
+                                        <div class="licensevalidate">
+                                            <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input verify-toggle" type="checkbox" id="licence2_verify"
+                                                    data-user-id="{{ encode_id($user->id) }}" data-type="licence_2"
+                                                    {{ $document->licence_verified_2 ? 'checked disabled' : '' }}>
+                                                <label class="form-check-label" for="licence2_verify">{{ $document->licence_verified_2 ? 'Verified' : 'Mark as Verified' }}</label>
+                                            </div>
+                                            @endif
+
+                                            @if($document->licence_verified_2)
+                                            <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="licence_2">Invalidate</button>
+                                            @endif
+                                        </div>
                                     </div>
-                                    @endif
+                                @if($user->usrRatings->where('linked_to', 'licence_2')->count())
+                                    <div class="row mt-3">
+                                        <div class="col-md-12">
+                                            <h6 class="text-secondary mb-3">
+                                                <i class="bi bi-star-fill text-warning me-2"></i>Ratings Linked to EASA Licence
+                                            </h6>
+                                            <div class="d-flex flex-wrap license-lists">
+                                                @foreach($grouped['licence_2'] ?? [] as $group)
+                                                @php
+                                                $parent = $group['parent'];
+                                                @endphp
 
-                                    @if($document->licence_verified_2)
-                                    <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="licence_2">Invalidate</button>
-                                    @endif
-                                </div>
-                            </div>
-                            @endif
-                            @if($user->usrRatings->where('linked_to', 'licence_2')->count())
-                            <div class="row mt-3">
-                                <div class="col-md-12">
-                                    <h6 class="text-secondary mb-3">
-                                        <i class="bi bi-star-fill text-warning me-2"></i>Ratings Linked to EASA Licence
-                                    </h6>
-                                    <div class="d-flex flex-wrap license-lists">
-                                        @foreach($grouped['licence_2'] ?? [] as $group)
-                                        @php
-                                        $parent = $group['parent'];
-                                        @endphp
+                                                <div class="card mb-3 me-3">
+                                                    <div class="card-body">
+                                                        <h6 class="card-title text-primary">{{ $parent->rating->name ?? 'N/A' }}</h6>
+                                                        <div class="form-check form-switch mb-0">
+                                                            <input class="form-check-input verify-rating" type="checkbox" id="rating_verify" data-linkedTo="{{ $group['children'][0]['linked_to'] }}" data-userId="{{  $group['children'][0]['user_id'] }}" data-parent_id="{{ $group['children'][0]['parent_id'] }}"
+                                                                {{ $group['children'][0]['admin_verified'] ? 'checked disabled' : '' }}>
+                                                            @if($group['children'][0]['admin_verified'] == 1)
+                                                            <button class="btn btn-danger btn-sm invalidate-rating" data-linkedTo="{{ $group['children'][0]['linked_to'] }}"
+                                                                data-userId="{{  $group['children'][0]['user_id'] }}" data-parent_id="{{ $group['children'][0]['parent_id'] }}">
+                                                                Invalidate
+                                                            </button>
+                                                            @endif
 
-                                        <div class="card mb-3 me-3">
-                                            <div class="card-body">
-                                                <h6 class="card-title text-primary">{{ $parent->rating->name ?? 'N/A' }}</h6>
-                                                <div class="form-check form-switch mb-0">
-                                                    <input class="form-check-input verify-rating" type="checkbox" id="rating_verify" data-linkedTo="{{ $group['children'][0]['linked_to'] }}" data-userId="{{  $group['children'][0]['user_id'] }}" data-parent_id="{{ $group['children'][0]['parent_id'] }}"
-                                                        {{ $group['children'][0]['admin_verified'] ? 'checked disabled' : '' }}>
-                                                    @if($group['children'][0]['admin_verified'] == 1)
-                                                    <button class="btn btn-danger btn-sm invalidate-rating" data-linkedTo="{{ $group['children'][0]['linked_to'] }}"
-                                                        data-userId="{{  $group['children'][0]['user_id'] }}" data-parent_id="{{ $group['children'][0]['parent_id'] }}">
-                                                        Invalidate
-                                                    </button>
-                                                    @endif
+                                                        </div>
+                                                        <ul class="">
+                                                            <li><strong>Issue Date:</strong> {{ $group['children'][0]['issue_date'] ?? 'N/A' }}</li>
+                                                            <li><strong>Expiry Date:</strong> {{ $group['children'][0]['expiry_date'] ?? 'N/A' }}</li>
+                                                        </ul>
 
-                                                </div>
-                                                <ul class="">
-                                                    <li><strong>Issue Date:</strong> {{ $group['children'][0]['issue_date'] ?? 'N/A' }}</li>
-                                                    <li><strong>Expiry Date:</strong> {{ $group['children'][0]['expiry_date'] ?? 'N/A' }}</li>
-                                                </ul>
+                                                        @if(!empty($group['children'][0]['file_path']))
+                                                        <a href="{{ Storage::url($group['children'][0]['file_path']) }}" target="_blank" class="btn btn-outline-primary btn-sm me-2">
+                                                            <i class="bi bi-file-earmark-arrow-down"></i> View File
+                                                        </a>
+                                                        @endif
 
-                                                @if(!empty($group['children'][0]['file_path']))
-                                                <a href="{{ Storage::url($group['children'][0]['file_path']) }}" target="_blank" class="btn btn-outline-primary btn-sm me-2">
-                                                    <i class="bi bi-file-earmark-arrow-down"></i> View File
-                                                </a>
-                                                @endif
+                                                        {{-- Verification toggle --}}
+                                                        @if($parent->file_path)
+                                                        <div class="form-check form-switch mt-3">
+                                                            <input class="form-check-input verify-toggle" type="checkbox"
+                                                                id="rating_verify_{{ $parent->id }}"
+                                                                data-user-id="{{ encode_id($user->id) }}"
+                                                                data-type="user_rating"
+                                                                data-rating-id="{{ encode_id($parent->id) }}"
+                                                                {{ $parent->admin_verified ? 'checked disabled' : '' }}>
+                                                            <label class="form-check-label" for="rating_verify_{{ $parent->id }}">
+                                                                {{ $parent->admin_verified ? 'Verified' : 'Mark as Verified' }}
+                                                            </label>
+                                                        </div>
+                                                        @endif
 
-                                                {{-- Verification toggle --}}
-                                                @if($parent->file_path)
-                                                <div class="form-check form-switch mt-3">
-                                                    <input class="form-check-input verify-toggle" type="checkbox"
-                                                        id="rating_verify_{{ $parent->id }}"
-                                                        data-user-id="{{ encode_id($user->id) }}"
-                                                        data-type="user_rating"
-                                                        data-rating-id="{{ encode_id($parent->id) }}"
-                                                        {{ $parent->admin_verified ? 'checked disabled' : '' }}>
-                                                    <label class="form-check-label" for="rating_verify_{{ $parent->id }}">
-                                                        {{ $parent->admin_verified ? 'Verified' : 'Mark as Verified' }}
-                                                    </label>
-                                                </div>
-                                                @endif
+                                                        <?php
+                                                        $children = collect($group['children']);
 
-                                                <?php
-                                                $children = collect($group['children']);
+                                                        // Get first child with valid issue and expiry date
+                                                        $referenceChild = $children->first(function ($child) {
+                                                            return !empty($child->issue_date) && !empty($child->expiry_date);
+                                                        });
 
-                                                // Get first child with valid issue and expiry date
-                                                $referenceChild = $children->first(function ($child) {
-                                                    return !empty($child->issue_date) && !empty($child->expiry_date);
-                                                });
+                                                        // If valid dates exist, assign to all children
+                                                        if ($referenceChild) {
+                                                            foreach ($children as $child) {
+                                                                $child->issue_date = $referenceChild->issue_date;
+                                                                $child->expiry_date = $referenceChild->expiry_date;
+                                                            }
+                                                        }
 
-                                                // If valid dates exist, assign to all children
-                                                if ($referenceChild) {
-                                                    foreach ($children as $child) {
-                                                        $child->issue_date = $referenceChild->issue_date;
-                                                        $child->expiry_date = $referenceChild->expiry_date;
-                                                    }
-                                                }
+                                                        // Remove children if no rating_id exists in any
+                                                        $hasValidChildren = $children->contains(function ($child) {
+                                                            return !is_null($child->rating_id);
+                                                        });
 
-                                                // Remove children if no rating_id exists in any
-                                                $hasValidChildren = $children->contains(function ($child) {
-                                                    return !is_null($child->rating_id);
-                                                });
+                                                        if (!$hasValidChildren) {
+                                                            $group['children'] = [];
+                                                        } else {
+                                                            $group['children'] = $children;
+                                                        }
+                                                        ?>
 
-                                                if (!$hasValidChildren) {
-                                                    $group['children'] = [];
-                                                } else {
-                                                    $group['children'] = $children;
-                                                }
-                                                ?>
+                                                        {{-- Child Ratings --}}
+                                                        @if(!empty($group['children']))
+                                                        <hr>
+                                                        <h6>Privileges:</h6>
+                                                        <ul class="list-unstyled small">
+                                                            @foreach($group['children'] as $childRating)
 
-                                                {{-- Child Ratings --}}
-                                                @if(!empty($group['children']))
-                                                <hr>
-                                                <h6>Privileges:</h6>
-                                                <ul class="list-unstyled small">
-                                                    @foreach($group['children'] as $childRating)
-
-                                                    <li class="mb-2">
-                                                        <div class="d-flex align-items-start">
-                                                            <i class="bi bi-chevron-right text-muted mt-1 me-2"></i>
-                                                            <div>
-                                                                <strong class="text-dark">{{ $childRating->rating->name ?? 'N/A' }}</strong>
-                                                                <div class="ms-1 mt-1 small text-secondary">
+                                                            <li class="mb-2">
+                                                                <div class="d-flex align-items-start">
+                                                                    <i class="bi bi-chevron-right text-muted mt-1 me-2"></i>
                                                                     <div>
-                                                                        <strong>Issue Date:</strong>
-                                                                        {{ $childRating->issue_date ?? 'N/A' }}
-                                                                    </div>
-                                                                    <div>
-                                                                        <strong>Expiry Date:</strong>
-                                                                        {{ $childRating->expiry_date ?? 'N/A' }}
-                                                                        @if($childRating->admin_verified)
-                                                                        <i class="bi bi-check-circle-fill text-success ms-1" title="Verified"></i>
-                                                                        @endif
+                                                                        <strong class="text-dark">{{ $childRating->rating->name ?? 'N/A' }}</strong>
+                                                                        <div class="ms-1 mt-1 small text-secondary">
+                                                                            <div>
+                                                                                <strong>Issue Date:</strong>
+                                                                                {{ $childRating->issue_date ?? 'N/A' }}
+                                                                            </div>
+                                                                            <div>
+                                                                                <strong>Expiry Date:</strong>
+                                                                                {{ $childRating->expiry_date ?? 'N/A' }}
+                                                                                @if($childRating->admin_verified)
+                                                                                <i class="bi bi-check-circle-fill text-success ms-1" title="Verified"></i>
+                                                                                @endif
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                    @endforeach
-                                                </ul>
-                                                @endif
+                                                            </li>
+                                                            @endforeach
+                                                        </ul>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                @endforeach
                                             </div>
                                         </div>
-                                        @endforeach
                                     </div>
-                                </div>
+                                @endif
                             </div>
-                            @endif
-                        </div>
+                        @endif
 
                     </div>
 
                     <!-- Medical Details -->
 
                     @if($document && $document->medical && !empty($document->medical_issuedby) && !empty($document->medical_class) && !empty($document->medical_issuedate))
-                    <div class="col-md-12 mb-4">
-                        <h5 class="text-muted mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>UK Medical Details</h5>
-                        @if($document && $document->medical && !empty($document->medical_issuedby) && !empty($document->medical_class) && !empty($document->medical_issuedate))
-                        <div class="d-flex flex-wrap align-items-center gap-3">
-                            <p class="mb-0"><strong>Issued By:</strong> {{ $document->medical_issuedby }}</p>
-                            <p class="mb-0"><strong>Class:</strong> {{ $document->medical_class }}</p>
-                            <p class="mb-0"><strong>Issue Date:</strong> {{ $document->medical_issuedate }}</p>
-                            <p class="mb-0"><strong>Expiry Date:</strong> {{ $document->medical_expirydate }}</p>
+                        <div class="col-md-12 mb-4">
+                            <h5 class="text-muted mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>UK Medical Details</h5>
+                            @if($document && $document->medical && !empty($document->medical_issuedby) && !empty($document->medical_class) && !empty($document->medical_issuedate))
+                            <div class="d-flex flex-wrap align-items-center gap-3">
+                                <p class="mb-0"><strong>Issued By:</strong> {{ $document->medical_issuedby }}</p>
+                                <p class="mb-0"><strong>Class:</strong> {{ $document->medical_class }}</p>
+                                <p class="mb-0"><strong>Issue Date:</strong> {{ $document->medical_issuedate }}</p>
+                                <p class="mb-0"><strong>Expiry Date:</strong> {{ $document->medical_expirydate }}</p>
 
-                            @if($user->medical_adminRequired == 1 && $document->medical_file || $document->medical_file == null)
-                            @if($document->medical_file != null)
-                            <a href="{{ Storage::url($document->medical_file) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
-                            @endif
+                                @if($user->medical_adminRequired == 1 && $document->medical_file || $document->medical_file == null)
+                                @if($document->medical_file != null)
+                                <a href="{{ Storage::url($document->medical_file) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
+                                @endif
 
-                            <div class="form-check form-switch mb-0">
-                                <input class="form-check-input verify-toggle" type="checkbox" id="medical_verify"
-                                    data-user-id="{{ encode_id($user->id) }}" data-type="medical"
-                                    {{ $document->medical_verified ? 'checked disabled' : '' }}>
-                                <label class="form-check-label" for="medical_verify">{{ $document->medical_verified ? 'Verified' : 'Mark as Verified' }}</label>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input verify-toggle" type="checkbox" id="medical_verify"
+                                        data-user-id="{{ encode_id($user->id) }}" data-type="medical"
+                                        {{ $document->medical_verified ? 'checked disabled' : '' }}>
+                                    <label class="form-check-label" for="medical_verify">{{ $document->medical_verified ? 'Verified' : 'Mark as Verified' }}</label>
+                                </div>
+                                @endif
+
+                                @if($document->medical_verified)
+                                <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="medical">Invalidate</button>
+                                @endif
                             </div>
-                            @endif
-
-                            @if($document->medical_verified)
-                            <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="medical">Invalidate</button>
+                            @else
+                            <p class="text-muted">No medical details available.</p>
                             @endif
                         </div>
-                        @else
-                        <p class="text-muted">No medical details available.</p>
-                        @endif
-                    </div>
                     @endif
 
                     <!-- Second Medical Details -->
 
                     @if($user->medical_2_required == 1)
-                    <div class="col-md-12 mb-4">
-                        <h5 class="text-muted mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>EASA Medical Details</h5>
-                        <div class="d-flex flex-wrap align-items-center gap-3">
-                            <p class="mb-0"><strong>Issued By:</strong> {{ $document->medical_issuedby_2 }}</p>
-                            <p class="mb-0"><strong>Class:</strong> {{ $document->medical_class_2 }}</p>
-                            <p class="mb-0"><strong>Issue Date:</strong> {{ $document->medical_issuedate_2 }}</p>
-                            <p class="mb-0"><strong>Expiry Date:</strong> {{ $document->medical_expirydate_2 }}</p>
+                        <div class="col-md-12 mb-4">
+                            <h5 class="text-muted mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>EASA Medical Details</h5>
+                            <div class="d-flex flex-wrap align-items-center gap-3">
+                                <p class="mb-0"><strong>Issued By:</strong> {{ $document->medical_issuedby_2 }}</p>
+                                <p class="mb-0"><strong>Class:</strong> {{ $document->medical_class_2 }}</p>
+                                <p class="mb-0"><strong>Issue Date:</strong> {{ $document->medical_issuedate_2 }}</p>
+                                <p class="mb-0"><strong>Expiry Date:</strong> {{ $document->medical_expirydate_2 }}</p>
 
-                            @if($user->medical_2_adminRequired == 1 && $document->medical_file_2)
-                            <a href="{{ Storage::url($document->medical_file_2) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
+                                @if($user->medical_2_adminRequired == 1 && $document->medical_file_2)
+                                <a href="{{ Storage::url($document->medical_file_2) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
 
-                            <div class="form-check form-switch mb-0">
-                                <input class="form-check-input verify-toggle" type="checkbox" id="medical2_verify"
-                                    data-user-id="{{ encode_id($user->id) }}" data-type="medical_2"
-                                    {{ $document->medical_verified_2 ? 'checked disabled' : '' }}>
-                                <label class="form-check-label" for="medical2_verify">{{ $document->medical_verified_2 ? 'Verified' : 'Mark as Verified' }}</label>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input verify-toggle" type="checkbox" id="medical2_verify"
+                                        data-user-id="{{ encode_id($user->id) }}" data-type="medical_2"
+                                        {{ $document->medical_verified_2 ? 'checked disabled' : '' }}>
+                                    <label class="form-check-label" for="medical2_verify">{{ $document->medical_verified_2 ? 'Verified' : 'Mark as Verified' }}</label>
+                                </div>
+                                @endif
+
+                                @if($document->medical_verified_2)
+                                <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="medical_2">Invalidate</button>
+                                @endif
                             </div>
-                            @endif
-
-                            @if($document->medical_verified_2)
-                            <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="medical_2">Invalidate</button>
-                            @endif
                         </div>
-                    </div>
+                        
+                        <hr class="my-4">
                     @endif
 
-                    <hr class="my-4">
 
                     <!-- Ratings & Organization -->
-                    <div class="row g-4">
-                        <!-- <div class="col-md-12 mt-4">
+                    <!-- <div class="row g-4 mt-3">
+                        <div class="col-md-12 mt-4">
                             <h4 class="text-dark mb-4">
                                 <i class="bi bi-award-fill text-warning me-2"></i> User Rating Files
                             </h4>
@@ -515,17 +527,8 @@
                                 </div>
                                 @endif
                             </div>
-                        </div> -->
-
-                        <div class="col-md-6">
-                            <h5 class="text-muted mb-2">
-                                <i class="bi bi-building text-secondary me-2"></i> Organization Unit
-                            </h5>
-                            <div class="p-3 border rounded bg-light">
-                                {{ $user->organization->org_unit_name ?? 'N/A' }}
-                            </div>
                         </div>
-                    </div>
+                    </div> -->
 
 
 
