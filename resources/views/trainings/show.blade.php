@@ -468,6 +468,20 @@
         td.overall_td {
             width: 33%;
         }
+
+        .custom-shadow {
+            box-shadow: 0 0px 24px rgba(0, 0, 0, 0.12);
+            border-radius: 10px;
+        }
+
+        .accordion-button.collapsed::after {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23212529'%3e%3cpath d='M8 1.5a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5a.5.5 0 0 1 .5-.5z'/%3e%3c/svg%3e");
+        }
+
+        .accordion-button:not(.collapsed)::after {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23212529'%3e%3cpath d='M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8z'/%3e%3c/svg%3e");
+            transform: none;
+        }
     </style>
 
     <head>
@@ -520,36 +534,39 @@
             <div class="tab-content pt-2" id="myTabContent">
                 <div class="tab-pane fade p-3 active show" id="overview" role="tabpanel" aria-labelledby="overview-tab">
                     <div class="card shadow-sm p-4 border-0">
-                        <h4 class="mb-3 text-primary">
-                            <i class="fas fa-calendar-alt"></i> Training Event Overview
-                        </h4>
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <strong><i class="fas fa-book"></i> Course Name:</strong>
-                                <span class="badge bg-info text-white">{{ $trainingEvent->course->course_name ?? 'N/A' }}</span>
+
+                        <div class="custom-shadow mb-3 p-4">
+
+                            <h4 class="mb-3 text-primary">
+                                <i class="fas fa-calendar-alt"></i> Training Event Overview
+                            </h4>
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <strong><i class="fas fa-book"></i> Course Name:</strong>
+                                    <span class="badge bg-info text-white">{{ $trainingEvent->course->course_name ?? 'N/A' }}</span>
+                                </div>
                             </div>
-                        </div>
-                        @if($trainingEvent->course?->duration_value && $trainingEvent->course?->duration_type)
-                        <div class="mb-3">
-                            <strong><i class="fas fa-hourglass-half"></i> Course Total Duration:</strong>
-                            @php
-                            $value = $trainingEvent->course->duration_value;
-                            $type = $trainingEvent->course->duration_type;
+                        
+                            @if($trainingEvent->course?->duration_value && $trainingEvent->course?->duration_type)
+                                <div class="mb-3">
+                                    <strong><i class="fas fa-hourglass-half"></i> Course Total Duration:</strong>
+                                    @php
+                                    $value = $trainingEvent->course->duration_value;
+                                    $type = $trainingEvent->course->duration_type;
 
-                            if ($type === 'hours') {
-                            $label = $value == 1 ? 'hour' : 'hours';
-                            } elseif ($type === 'events') {
-                            $label = $value == 1 ? 'event' : 'events';
-                            } else {
-                            $label = '';
-                            }
-                            @endphp
-                            <span class="badge bg-success text-white">{{ $value }} {{ $label }}</span>
-                        </div>
-                        @endif
-
-                        <div class="card border-0 shadow-sm mb-4">
-                            <div class="card-body">
+                                    if ($type === 'hours') {
+                                    $label = $value == 1 ? 'hour' : 'hours';
+                                    } elseif ($type === 'events') {
+                                    $label = $value == 1 ? 'event' : 'events';
+                                    } else {
+                                    $label = '';
+                                    }
+                                    @endphp
+                                    <span class="badge bg-success text-white">{{ $value }} {{ $label }}</span>
+                                </div>
+                            @endif
+                        
+                            <div class="card-body mt-3">
                                 <div class="row g-4 align-items-center">
                                     <div class="col-md-4">
                                         <h6 class="text-muted mb-1"><i class="fas fa-user me-1"></i>Student</h6>
@@ -662,445 +679,452 @@
                             });
                         @endphp
 
+                        <h4 class="mb-3 text-success">
+                            <i class="bi bi-patch-question-fill me-2"></i>
+                            Lessons
+                        </h4>
+
                         @if($normalLessons->count())
-                        @foreach($normalLessons as $lesson)
-                        <div class="row mb-3 p-3 border rounded bg-light">
-                            <div class="col-md-12">
-                                <strong><i class="fas fa-book"></i> Lesson Name:</strong>
-                                <span class="text-primary">{{ $lesson->lesson->lesson_title ?? 'Untitled' }}</span>
-                            </div>
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-chalkboard-teacher"></i> Instructor:</strong>
-                                {{ optional($lesson->instructor)->fname }} {{ optional($lesson->instructor)->lname }}
-                            </div>
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="bi bi-card-text"></i> License:</strong>
-                                {{ $lesson->instructor_license_number ?? 'N/A' }}
-                            </div>
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-toolbox"></i> Resource:</strong><br>
-                                {{ optional($lesson->resource)->name ?? 'N/A' }}
-                            </div>
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-calendar-day"></i> Date:</strong><br>
-
-                                @if(!empty($lesson->lesson_date))
-                                {{ date('d-m-Y', strtotime($lesson->lesson_date)) }}
-                                @endif
-                            </div>
-
-                            <!-- <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-clock"></i> Start:</strong><br>
-                                {{ date('h:i A', strtotime($lesson->start_time)) }}
-                            </div> -->
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-clock"></i> Start:</strong><br>
-                                @if(!empty($lesson->start_time) && $lesson->start_time !== '00:00:00')
-                                {{ date('h:i A', strtotime($lesson->start_time)) }}
-                                @elseif($lesson->start_time === '00:00:00')
-                                {{ $lesson->start_time }}
-                                @else
-                                -
-                                @endif
-                            </div>
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-clock"></i> End:</strong><br>
-                                @if(!empty($lesson->end_time) && $lesson->end_time !== '00:00:00')
-                                {{ date('h:i A', strtotime($lesson->end_time)) }}
-                                @elseif($lesson->end_time === '00:00:00')
-                                {{ $lesson->end_time }}
-                                @else
-                                -
-                                @endif
-                            </div>
-
-                            <!-- <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-clock"></i> End:</strong><br>
-                                {{ date('h:i A', strtotime($lesson->end_time)) }}
-                            </div> -->
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-plane-departure"></i> Departure:</strong><br>
-                                {{ $lesson->departure_airfield ?? 'N/A' }}
-                            </div>
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-plane-arrival"></i> Destination:</strong><br>
-                                {{ $lesson->destination_airfield ?? 'N/A' }}
-                            </div>
-
-                            <div class="col-md-2 mt-2">
-                                @php $lessonType = $lesson?->lesson?->lesson_type ?? null; @endphp
-                                <strong><i class="fas fa-clock"></i> Lesson Type:</strong><br>
-                                {{ ucfirst($lessonType) ?? 'N/A' }}
-                            </div>
-
-                            @if($lessonType === 'groundschool')
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-hourglass-half"></i> Duration:</strong><br>
-                                {{ $trainingEvent->course->groundschool_hours ?? 'N/A' }}
-                            </div>
-                            @elseif($lessonType === 'simulator')
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-hourglass-half"></i> Duration:</strong><br>
-                                {{ $trainingEvent->course->simulator_hours ?? 'N/A' }}
-                            </div>
-                            @endif
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-hourglass-half"></i> Credited Hours:</strong><br>
-                                {{ $lesson->hours_credited ?? '00:00' }}
-                            </div>
-
-
-                            <!-- // Operation -->
-                          <?php // dump($lesson->operation1); ?>
-                            @if(!empty($lesson->operation1))    
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-hourglass-half"></i> Operation:</strong><br>
-                                @if($lesson->operation1 == 1)
-                                PF in LHS
-                                @elseif($lesson->operation1 == 2)
-                                PM in LHS
-                                @elseif($lesson->operation1 == 3)
-                                PF in RHS
-                                @elseif($lesson->operation1 == 4)
-                                PM in RHS
-                                @endif
-                            </div>
-                            @endif
-
-                            <!-- // Rank -->
-                            @if(!empty($lesson->rank))
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-hourglass-half"></i> Rank:</strong><br>
-                                @if($lesson->rank == 1)
-                                Captain
-                                @elseif($lesson->rank == 2)
-                                First Officer
-                                @elseif($lesson->rank == 3)
-                                Second Officer
-                                @endif
-                            </div>
-                            @endif
-
-
-                            @php
-                            $customTime = $lesson->lesson->customTime ?? null;
-                            @endphp
-
-                            @if($customTime)
-                            <div class="col-md-6 mt-2">
-                                <strong><i class="fas fa-clock"></i> Custom Time:</strong><br>
-                                <span>Name: {{ $customTime->name }}</span><br>
-                                <span>Allotted: {{ $customTime->given_hours }}</span><br>
-                                <span>Credited: {{ $lesson->custom_hours_credited ?? '00:00' }}</span>
-                            </div>
-                            @endif
-
-                            <!-- {{-- Lesson Summary --}} -->
-                            @if(!empty($lesson->lesson_summary))
-                            <div class="col-md-12 mt-3">
-                                <div class="card shadow-sm border-0">
-                                    <div class="card-header bg-primary text-white py-0">
-                                        <i class="bi bi-journal-text me-2"></i> Lesson Summary
+                            @foreach($normalLessons as $lesson)
+                                <div class="row mb-3 p-3 border rounded bg-light">
+                                    <div class="col-md-12">
+                                        <strong><i class="fas fa-book"></i> Lesson Name:</strong>
+                                        <span class="text-primary">{{ $lesson->lesson->lesson_title ?? 'Untitled' }}</span>
                                     </div>
-                                    <div class="card-body">
-                                        @if(!empty($lesson->lesson_summary))
-                                        <p class="mb-0 text-muted">
-                                            {{ $lesson->lesson_summary }}
-                                        </p>
-                                        @else
-                                        <p class="mb-0 text-muted fst-italic">No Lesson summary provided.</p>
+
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="fas fa-chalkboard-teacher"></i> Instructor:</strong>
+                                        {{ optional($lesson->instructor)->fname }} {{ optional($lesson->instructor)->lname }}
+                                    </div>
+
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="bi bi-card-text"></i> License:</strong>
+                                        {{ $lesson->instructor_license_number ?? 'N/A' }}
+                                    </div>
+
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="fas fa-toolbox"></i> Resource:</strong><br>
+                                        {{ optional($lesson->resource)->name ?? 'N/A' }}
+                                    </div>
+
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="fas fa-calendar-day"></i> Date:</strong><br>
+
+                                        @if(!empty($lesson->lesson_date))
+                                        {{ date('d-m-Y', strtotime($lesson->lesson_date)) }}
                                         @endif
                                     </div>
-                                </div>
-                            </div>
-                            @endif
-                            @if(Auth::user()->role == "1")
-                            <!-- //  Instructor Comment -->
-                            @if(!empty($lesson->instructor_comment))
-                            <div class="col-md-12 mt-3">
-                                <div class="card shadow-sm border-0">
-                                    <div class="card-header bg-primary text-white py-0">
-                                        <i class="bi bi-journal-text me-2"></i> Instructor Comment
-                                    </div>
-                                    <div class="card-body">
-                                        @if(!empty($lesson->instructor_comment ))
-                                        <p class="mb-0 text-muted">
-                                            {{ $lesson->instructor_comment }}
-                                        </p>
+
+                                    <!-- <div class="col-md-2 mt-3">
+                                        <strong><i class="fas fa-clock"></i> Start:</strong><br>
+                                        {{ date('h:i A', strtotime($lesson->start_time)) }}
+                                    </div> -->
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="fas fa-clock"></i> Start:</strong><br>
+                                        @if(!empty($lesson->start_time) && $lesson->start_time !== '00:00:00')
+                                        {{ date('h:i A', strtotime($lesson->start_time)) }}
+                                        @elseif($lesson->start_time === '00:00:00')
+                                        {{ $lesson->start_time }}
                                         @else
-                                        <p class="mb-0 text-muted fst-italic">No Instructor Comment provided.</p>
+                                        -
                                         @endif
                                     </div>
-                                </div>
-                            </div>
-                            @endif
-                            @endif
-                        </div>
-                        @endforeach
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="fas fa-clock"></i> End:</strong><br>
+                                        @if(!empty($lesson->end_time) && $lesson->end_time !== '00:00:00')
+                                        {{ date('h:i A', strtotime($lesson->end_time)) }}
+                                        @elseif($lesson->end_time === '00:00:00')
+                                        {{ $lesson->end_time }}
+                                        @else
+                                        -
+                                        @endif
+                                    </div>
 
-                        @if($quizLessons->count())
-                        <div class="mt-4">
-                            <h4 class="mb-3 text-success">
-                                <i class="bi bi-patch-question-fill me-2"></i>
-                                Lessons with Quiz
-                            </h4>
+                                    <!-- <div class="col-md-2 mt-2">
+                                        <strong><i class="fas fa-clock"></i> End:</strong><br>
+                                        {{ date('h:i A', strtotime($lesson->end_time)) }}
+                                    </div> -->
 
-                            @foreach($quizLessons as $lesson)
-                            <div class="row mb-3 p-3 border rounded bg-light">
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="fas fa-plane-departure"></i> Departure:</strong><br>
+                                        {{ $lesson->departure_airfield ?? 'N/A' }}
+                                    </div>
 
-                                <div class="col-md-12">
-                                    <strong><i class="fas fa-book"></i> Lesson Name:</strong>
-                                    <span class="text-primary">
-                                        {{ $lesson->lesson->lesson_title ?? 'Untitled Lesson' }}
-                                    </span>
-                                </div>
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="fas fa-plane-arrival"></i> Destination:</strong><br>
+                                        {{ $lesson->destination_airfield ?? 'N/A' }}
+                                    </div>
 
-                                <div class="col-md-4 mt-2">
-                                    <strong>Instructor:</strong>
-                                    {{ optional($lesson->instructor)->fname }}
-                                    {{ optional($lesson->instructor)->lname }}
-                                </div>
+                                    <div class="col-md-2 mt-3">
+                                        @php $lessonType = $lesson?->lesson?->lesson_type ?? null; @endphp
+                                        <strong><i class="fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
+                                        {{ ucfirst($lessonType) ?? 'N/A' }}
+                                    </div>
 
-                                <div class="col-md-12 mt-3">
-                                    <div class="card border-success shadow-sm">
-                                        <div class="card-header bg-success text-white py-1">
-                                            <i class="bi bi-patch-question-fill me-2"></i> Quizzes
-                                        </div>
+                                    @if($lessonType === 'groundschool')
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="fas fa-hourglass-half"></i> Duration:</strong><br>
+                                        {{ $trainingEvent->course->groundschool_hours ?? 'N/A' }}
+                                    </div>
+                                    @elseif($lessonType === 'simulator')
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="fas fa-hourglass-half"></i> Duration:</strong><br>
+                                        {{ $trainingEvent->course->simulator_hours ?? 'N/A' }}
+                                    </div>
+                                    @endif
 
-                                        <div class="card-body p-2">
-                                            @foreach($lesson->lesson->quizzes as $quiz)
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="fas fa-hourglass-half"></i> Credited Hours:</strong><br>
+                                        {{ $lesson->hours_credited ?? '00:00' }}
+                                    </div>
 
-                                                @php
-                                                    $attempt = $quiz->quizAttempts->where('student_id', $trainingEvent->student->id)->first();
-                                                @endphp
 
-                                                <div class="justify-content-between align-items-center border-bottom py-2">
-                                                    <div class="row mb-3 p-3 border rounded bg-light">
-                                                        <strong>{{ $quiz->title ?? 'Quiz' }}</strong>
+                                    <!-- // Operation -->
+                                <?php // dump($lesson->operation1); ?>
+                                    @if(!empty($lesson->operation1))    
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="fas fa-hourglass-half"></i> Operation:</strong><br>
+                                        @if($lesson->operation1 == 1)
+                                        PF in LHS
+                                        @elseif($lesson->operation1 == 2)
+                                        PM in LHS
+                                        @elseif($lesson->operation1 == 3)
+                                        PF in RHS
+                                        @elseif($lesson->operation1 == 4)
+                                        PM in RHS
+                                        @endif
+                                    </div>
+                                    @endif
 
-                                                        <div class="col-md-2 mt-2">
-                                                            <strong><i class="fas fa-chalkboard-teacher"></i> Course:</strong>
-                                                            {{ $quiz->course->course_name ?? 'N/A' }}
-                                                        </div>
+                                    <!-- // Rank -->
+                                    @if(!empty($lesson->rank))
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="fas fa-hourglass-half"></i> Rank:</strong><br>
+                                        @if($lesson->rank == 1)
+                                        Captain
+                                        @elseif($lesson->rank == 2)
+                                        First Officer
+                                        @elseif($lesson->rank == 3)
+                                        Second Officer
+                                        @endif
+                                    </div>
+                                    @endif
 
-                                                        <div class="col-md-2 mt-2">
-                                                            <strong><i class="fas fa-book"></i> Duration:</strong>
-                                                            <span>{{ $quiz->duration ?? 'N/A' }}</span>
-                                                        </div>
 
-                                                        <div class="col-md-2 mt-2">
-                                                            <strong><i class="fas fa-chalkboard-teacher"></i> Passing Score:</strong>
-                                                            {{ $quiz->passing_score ?? 'N/A' }}
-                                                        </div>
+                                    @php
+                                    $customTime = $lesson->lesson->customTime ?? null;
+                                    @endphp
 
-                                                        <div class="col-md-2 mt-2">
-                                                            <strong><i class="fas fa-clock"></i> Time Taken:</strong>
-                                                            <span>
-                                                                @if($attempt && $attempt->started_at && $attempt->submitted_at)
-                                                                    {{ \Carbon\Carbon::parse($attempt->started_at)
-                                                                        ->diff(\Carbon\Carbon::parse($attempt->submitted_at))
-                                                                        ->format('%i min %s sec') }}
-                                                                @else
-                                                                    N/A
-                                                                @endif
-                                                            </span>
-                                                        </div>
+                                    @if($customTime)
+                                    <div class="col-md-6 mt-2">
+                                        <strong><i class="fas fa-clock"></i> Custom Time:</strong><br>
+                                        <span>Name: {{ $customTime->name }}</span><br>
+                                        <span>Allotted: {{ $customTime->given_hours }}</span><br>
+                                        <span>Credited: {{ $lesson->custom_hours_credited ?? '00:00' }}</span>
+                                    </div>
+                                    @endif
 
-                                                        <div class="col-md-2 mt-2">
-                                                            <strong><i class="fas fa-percentage"></i> Score:</strong>
-                                                            <span>
-                                                                {{ ($attempt && $attempt->score !== null) ? $attempt->score . ' %' : 'N/A' }}
-                                                            </span>
-                                                        </div>
-
-                                                        <div class="col-md-2 mt-2">
-                                                            <strong>Result:</strong>
-                                                            @if($attempt && $attempt->result)
-                                                                <span class="badge bg-{{ $attempt->result === 'pass' ? 'success' : 'danger' }}">
-                                                                    {{ strtoupper($attempt->result) }}
-                                                                </span>
-                                                            @else
-                                                                <span class="badge bg-secondary">N/A</span>
-                                                            @endif
-                                                        </div>
-                                                        
-                                                        @if($quiz->quizAttempts->contains('student_id', $trainingEvent->student->id))
-                                                        <div class="col-md-2 mt-2 action-view">
-                                                            <button class="start-quiz-btn action-btn view-result-icon btn btn-primary" style="cursor: pointer; color: white;" 
-                                                                data-quiz-id="{{ encode_id($quiz->id) }}" data-user-id="{{ $trainingEvent->student->id }}"> View
-                                                            </button>
-                                                        </div>
-                                                        @else
-                                                        <div class="col-md-3 mt-2 action-view">
-                                                            <span class="badge bg-warning text-dark">Student not attempt this quiz yet</span>
-                                                        </div>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            @endforeach
+                                    <!-- {{-- Lesson Summary --}} -->
+                                    @if(!empty($lesson->lesson_summary))
+                                    <div class="col-md-12 mt-3">
+                                        <div class="card shadow-sm border-0">
+                                            <div class="card-header bg-primary text-white py-0">
+                                                <i class="bi bi-journal-text me-2"></i> Lesson Summary
+                                            </div>
+                                            <div class="card-body">
+                                                @if(!empty($lesson->lesson_summary))
+                                                <p class="mb-0 text-muted">
+                                                    {{ $lesson->lesson_summary }}
+                                                </p>
+                                                @else
+                                                <p class="mb-0 text-muted fst-italic">No Lesson summary provided.</p>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
+                                    @endif
+                                    @if(Auth::user()->role == "1")
+                                    <!-- //  Instructor Comment -->
+                                    @if(!empty($lesson->instructor_comment))
+                                    <div class="col-md-12 mt-3">
+                                        <div class="card shadow-sm border-0">
+                                            <div class="card-header bg-primary text-white py-0">
+                                                <i class="bi bi-journal-text me-2"></i> Instructor Comment
+                                            </div>
+                                            <div class="card-body">
+                                                @if(!empty($lesson->instructor_comment ))
+                                                <p class="mb-0 text-muted">
+                                                    {{ $lesson->instructor_comment }}
+                                                </p>
+                                                @else
+                                                <p class="mb-0 text-muted fst-italic">No Instructor Comment provided.</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endif
+                                    @endif
                                 </div>
-
-                            </div>
                             @endforeach
-                        </div>
-                        @endif
 
+                            @if($quizLessons->count())
+                                <div class="mt-4">
+                                    <h4 class="mb-3 text-success">
+                                        <i class="bi bi-patch-question-fill me-2"></i>
+                                        Lessons with Quiz
+                                    </h4>
 
+                                    @foreach($quizLessons as $lesson)
+                                    <div class="row mb-3 p-3 border rounded bg-light">
 
-                        @if($deferredLessons->isNotEmpty())
-                        <strong><i class="fas fa-exclamation-circle"></i> Deferred Lessons:</strong>
-                        @foreach($deferredLessons as $def)
-                        @php
-                        $start = strtotime($def->start_time);
-                        $end = strtotime($def->end_time);
-                        $duration = max(0, $end - $start);
+                                        <div class="col-md-12">
+                                            <strong><i class="fas fa-book"></i> Lesson Name:</strong>
+                                            <span class="text-primary">
+                                                {{ $lesson->lesson->lesson_title ?? 'Untitled Lesson' }}
+                                            </span>
+                                        </div>
 
-                        $documents = $def?->instructor?->documents;
+                                        <div class="col-md-4 mt-2">
+                                            <strong>Instructor:</strong>
+                                            {{ optional($lesson->instructor)->fname }}
+                                            {{ optional($lesson->instructor)->lname }}
+                                        </div>
 
-                        if ($documents && !empty($documents->licence_2)) {
-                        $instructor_lic_no = $documents->licence_2;
-                        } elseif ($documents && !empty($documents->licence)) {
-                        $instructor_lic_no = $documents->licence;
-                        } else {
-                        $instructor_lic_no = 'N/A';
-                        }
-                        @endphp
-                        <div class="row mb-3 p-3 border rounded bg-light shadow-sm">
-                            <div class="col-md-6 mb-2">
-                                <strong><i class="fas fa-book"></i> Lesson Name:</strong>
-                                <span class="text-primary">{{ $def->lesson_title ?? 'Untitled' }}</span>
-                            </div>
+                                        <div class="col-md-12 mt-3">
+                                            <div class="border-success">
+                                                <div class="card-body">
+                                                    @foreach($lesson->lesson->quizzes as $quiz)
 
-                            @if(Auth::user()->role == "1")
-                            <div class="col-md-6 mb-2" style="text-align:end">
-                                <button id="edit_deferred_lesson" class="btn btn-primary" data-event_id="{{ $def->event_id }}" data-deferred-lesson-id="{{$def->id }}" data-lesson-Type="deferred">Edit</button>
+                                                        @php
+                                                            $attempt = $quiz->quizAttempts->where('student_id', $trainingEvent->student->id)->first();
+                                                        @endphp
 
-                                <button id="delete_deferred_lesson" class="btn btn-danger" data-event_id="{{ $def->event_id }}" data-deferred-lesson-id="{{$def->id }}" data-lesson-Type="deferred">Delete</button>
-                            </div>
-                            @endif
+                                                        <div class="card-body border rounded mt-3 mb-3">
 
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-chalkboard-teacher"></i> Instructor:</strong>
-                                {{ optional($def->instructor)->fname }} {{ optional($def->instructor)->lname }}
-                            </div>
+                                                            <div class="card-header bg-success text-white mt-3 py-1">
+                                                                <i class="bi bi-patch-question-fill me-2"></i> {{ $quiz->title ?? 'Quiz' }}
+                                                            </div>
 
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="bi bi-card-text"></i> License:</strong>
-                                {{ $instructor_lic_no }}
-                            </div>
+                                                            <div class="justify-content-between align-items-center">
+                                                                <div class="row p-3 bg-light">
+                                                                    <!-- <strong>{{ $quiz->title ?? 'Quiz' }}</strong> -->
 
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-toolbox"></i> Resource:</strong><br>
-                                {{ $def->resource->name ?? 'N/A' }}
-                            </div>
+                                                                    <div class="col-md-2 mt-3">
+                                                                        <strong><i class="fas fa-chalkboard-teacher"></i> Course:</strong>
+                                                                        {{ $quiz->course->course_name ?? 'N/A' }}
+                                                                    </div>
 
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-calendar-day"></i> Date:</strong><br>
-                                {{ date('d-m-Y', strtotime($def->lesson_date)) }}
-                            </div>
+                                                                    <div class="col-md-2 mt-3">
+                                                                        <strong><i class="fas fa-book"></i> Duration:</strong>
+                                                                        <span>{{ $quiz->duration ?? 'N/A' }}</span>
+                                                                    </div>
 
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-clock"></i> Start:</strong><br>
-                                {{ date('h:i A', strtotime($def->start_time)) }}
-                            </div>
+                                                                    <div class="col-md-2 mt-3">
+                                                                        <strong><i class="fas fa-chalkboard-teacher"></i> Passing Score:</strong>
+                                                                        {{ $quiz->passing_score ?? 'N/A' }}
+                                                                    </div>
 
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-clock"></i> End:</strong><br>
-                                {{ date('h:i A', strtotime($def->end_time)) }}
-                            </div>
+                                                                    <div class="col-md-2 mt-2">
+                                                                        <strong><i class="fas fa-clock"></i> Time Taken:</strong>
+                                                                        <span>
+                                                                            @if($attempt && $attempt->started_at && $attempt->submitted_at)
+                                                                                {{ \Carbon\Carbon::parse($attempt->started_at)
+                                                                                    ->diff(\Carbon\Carbon::parse($attempt->submitted_at))
+                                                                                    ->format('%i min %s sec') }}
+                                                                            @else
+                                                                                N/A
+                                                                            @endif
+                                                                        </span>
+                                                                    </div>
 
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-plane-departure"></i> Departure:</strong><br>
-                                {{ strtoupper($def->departure_airfield) ?? 'N/A' }}
-                            </div>
+                                                                    <div class="col-md-2 mt-3">
+                                                                        <strong><i class="fas fa-percentage"></i> Score:</strong>
+                                                                        <span>
+                                                                            {{ ($attempt && $attempt->score !== null) ? $attempt->score . ' %' : 'N/A' }}
+                                                                        </span>
+                                                                    </div>
 
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-plane-arrival"></i> Destination:</strong><br>
-                                {{ strtoupper($def->destination_airfield) ?? 'N/A' }}
-                            </div>
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-clock"></i> Lesson Type:</strong><br>
+                                                                    <div class="col-md-2 mt-3">
+                                                                        <strong>Result:</strong>
+                                                                        @if($attempt && $attempt->result)
+                                                                            <span class="badge bg-{{ $attempt->result === 'pass' ? 'success' : 'danger' }}">
+                                                                                {{ strtoupper($attempt->result) }}
+                                                                            </span>
+                                                                        @else
+                                                                            <span class="badge bg-secondary">N/A</span>
+                                                                        @endif
+                                                                    </div>
+                                                                    
+                                                                    @if($quiz->quizAttempts->contains('student_id', $trainingEvent->student->id))
+                                                                    <div class="col-md-2 mt-3 action-view">
+                                                                        <button class="start-quiz-btn action-btn view-result-icon btn btn-primary" style="cursor: pointer; color: white;" 
+                                                                            data-quiz-id="{{ encode_id($quiz->id) }}" data-user-id="{{ $trainingEvent->student->id }}"> View
+                                                                        </button>
+                                                                    </div>
+                                                                    @else
+                                                                    <div class="col-md-3 mt-3 action-view">
+                                                                        <span class="badge bg-warning text-dark">Student not attempt this quiz yet</span>
+                                                                    </div>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
 
-                                {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
+                                                        </div>
 
-                            </div>
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-hourglass-half"></i> Credited Hours:</strong><br>
-                                {{ $def->defLesson->hours_credited ?? '00:00' }}
-                            </div>
-                            @if($def->operation != 0)
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-hourglass-half"></i> Operation:</strong><br>
-                                @if($def->operation == 1)
-                                PF in LHS
-                                @elseif($def->operation == 2)
-                                PM in LHS
-                                @elseif($def->operation == 3)
-                                PF in RHS
-                                @elseif($def->operation == 4)
-                                PM in RHS
-                                @else
-                                N/A
-                                @endif
-                            </div>
-                            @endif
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        </div>
 
-                            <!-- {{-- Lesson Summary --}} -->
-                            @if(!empty($def->lesson_summary))
-                            <div class="col-md-12 mt-3">
-                                <div class="card shadow-sm border-0">
-                                    <div class="card-header bg-primary text-white py-0">
-                                        <i class="bi bi-journal-text me-2"></i> Lesson Summary
                                     </div>
-                                    <div class="card-body">
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            @if($deferredLessons->isNotEmpty())
+                                <strong><i class="fas fa-exclamation-circle"></i> Deferred Lessons:</strong>
+                                @foreach($deferredLessons as $def)
+
+                                    @php
+                                        $start = strtotime($def->start_time);
+                                        $end = strtotime($def->end_time);
+                                        $duration = max(0, $end - $start);
+
+                                        $documents = $def?->instructor?->documents;
+
+                                        if ($documents && !empty($documents->licence_2)) {
+                                        $instructor_lic_no = $documents->licence_2;
+                                        } elseif ($documents && !empty($documents->licence)) {
+                                        $instructor_lic_no = $documents->licence;
+                                        } else {
+                                        $instructor_lic_no = 'N/A';
+                                        }
+                                    @endphp
+                                    <div class="row mb-3 p-3 border rounded bg-light shadow-sm">
+                                        <div class="col-md-6 mb-2">
+                                            <strong><i class="fas fa-book"></i> Lesson Name:</strong>
+                                            <span class="text-primary">{{ $def->lesson_title ?? 'Untitled' }}</span>
+                                        </div>
+
+                                        @if(Auth::user()->role == "1")
+                                        <div class="col-md-6 mb-2" style="text-align:end">
+                                            <button id="edit_deferred_lesson" class="btn btn-primary" data-event_id="{{ $def->event_id }}" data-deferred-lesson-id="{{$def->id }}" data-lesson-Type="deferred">Edit</button>
+
+                                            <button id="delete_deferred_lesson" class="btn btn-danger" data-event_id="{{ $def->event_id }}" data-deferred-lesson-id="{{$def->id }}" data-lesson-Type="deferred">Delete</button>
+                                        </div>
+                                        @endif
+
+                                        <div class="col-md-2 mt-2">
+                                            <strong><i class="fas fa-chalkboard-teacher"></i> Instructor:</strong>
+                                            {{ optional($def->instructor)->fname }} {{ optional($def->instructor)->lname }}
+                                        </div>
+
+                                        <div class="col-md-2 mt-2">
+                                            <strong><i class="bi bi-card-text"></i> License:</strong>
+                                            {{ $instructor_lic_no }}
+                                        </div>
+
+                                        <div class="col-md-2 mt-2">
+                                            <strong><i class="fas fa-toolbox"></i> Resource:</strong><br>
+                                            {{ $def->resource->name ?? 'N/A' }}
+                                        </div>
+
+                                        <div class="col-md-2 mt-2">
+                                            <strong><i class="fas fa-calendar-day"></i> Date:</strong><br>
+                                            {{ date('d-m-Y', strtotime($def->lesson_date)) }}
+                                        </div>
+
+                                        <div class="col-md-2 mt-2">
+                                            <strong><i class="fas fa-clock"></i> Start:</strong><br>
+                                            {{ date('h:i A', strtotime($def->start_time)) }}
+                                        </div>
+
+                                        <div class="col-md-2 mt-2">
+                                            <strong><i class="fas fa-clock"></i> End:</strong><br>
+                                            {{ date('h:i A', strtotime($def->end_time)) }}
+                                        </div>
+
+                                        <div class="col-md-2 mt-2">
+                                            <strong><i class="fas fa-plane-departure"></i> Departure:</strong><br>
+                                            {{ strtoupper($def->departure_airfield) ?? 'N/A' }}
+                                        </div>
+
+                                        <div class="col-md-2 mt-2">
+                                            <strong><i class="fas fa-plane-arrival"></i> Destination:</strong><br>
+                                            {{ strtoupper($def->destination_airfield) ?? 'N/A' }}
+                                        </div>
+                                        <div class="col-md-2 mt-2">
+                                            <strong><i class="fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
+
+                                            {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
+
+                                        </div>
+                                        <div class="col-md-2 mt-2">
+                                            <strong><i class="fas fa-hourglass-half"></i> Credited Hours:</strong><br>
+                                            {{ $def->defLesson->hours_credited ?? '00:00' }}
+                                        </div>
+                                        @if($def->operation != 0)
+                                        <div class="col-md-2 mt-2">
+                                            <strong><i class="fas fa-hourglass-half"></i> Operation:</strong><br>
+                                            @if($def->operation == 1)
+                                            PF in LHS
+                                            @elseif($def->operation == 2)
+                                            PM in LHS
+                                            @elseif($def->operation == 3)
+                                            PF in RHS
+                                            @elseif($def->operation == 4)
+                                            PM in RHS
+                                            @else
+                                            N/A
+                                            @endif
+                                        </div>
+                                        @endif
+
+                                        <!-- {{-- Lesson Summary --}} -->
                                         @if(!empty($def->lesson_summary))
-                                        <p class="mb-0 text-muted">
-                                            {{ $def->lesson_summary }}
-                                        </p>
-                                        @else
-                                        <p class="mb-0 text-muted fst-italic">No Lesson summary provided.</p>
+                                        <div class="col-md-12 mt-3">
+                                            <div class="card shadow-sm border-0">
+                                                <div class="card-header bg-primary text-white py-0">
+                                                    <i class="bi bi-journal-text me-2"></i> Lesson Summary
+                                                </div>
+                                                <div class="card-body">
+                                                    @if(!empty($def->lesson_summary))
+                                                    <p class="mb-0 text-muted">
+                                                        {{ $def->lesson_summary }}
+                                                    </p>
+                                                    @else
+                                                    <p class="mb-0 text-muted fst-italic">No Lesson summary provided.</p>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @endif
+
+                                        <!-- //  Instructor Comment -->
+                                        @if(!empty($def->instructor_comment))
+                                        <div class="col-md-12 mt-3">
+                                            <div class="card shadow-sm border-0">
+                                                <div class="card-header bg-primary text-white py-0">
+                                                    <i class="bi bi-journal-text me-2"></i> Instructor Comment
+                                                </div>
+                                                <div class="card-body">
+                                                    @if(!empty($def->instructor_comment ))
+                                                    <p class="mb-0 text-muted">
+                                                        {{ $def->instructor_comment }}
+                                                    </p>
+                                                    @else
+                                                    <p class="mb-0 text-muted fst-italic">No Instructor Comment provided.</p>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
                                         @endif
                                     </div>
-                                </div>
-                            </div>
+                                @endforeach
                             @endif
-
-                            <!-- //  Instructor Comment -->
-                            @if(!empty($def->instructor_comment))
-                            <div class="col-md-12 mt-3">
-                                <div class="card shadow-sm border-0">
-                                    <div class="card-header bg-primary text-white py-0">
-                                        <i class="bi bi-journal-text me-2"></i> Instructor Comment
-                                    </div>
-                                    <div class="card-body">
-                                        @if(!empty($def->instructor_comment ))
-                                        <p class="mb-0 text-muted">
-                                            {{ $def->instructor_comment }}
-                                        </p>
-                                        @else
-                                        <p class="mb-0 text-muted fst-italic">No Instructor Comment provided.</p>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
-                        </div>
-                        @endforeach
-                        @endif
-
                         @endif
 
                         <!--  -- Custom Lesson   -->
-
 
                         @if($customLessons->isNotEmpty())
                         <strong><i class="fas fa-exclamation-circle"></i> Custom Lessons:</strong>
@@ -1171,7 +1195,7 @@
                                 {{ strtoupper($def->destination_airfield) ?? 'N/A' }}
                             </div>
                             <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-clock"></i> Lesson Type:</strong><br>
+                                <strong><i class="fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
                                 {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
 
                             </div>
@@ -1246,9 +1270,12 @@
                         {{-- Event Summary Section --}}
                         <div class="card shadow-sm mt-4 border-primary">
                             <div class="card-header bg-primary text-white">
-                                <strong><i class="fas fa-clock"></i> Event Summary</strong>
+                                <strong>
+                                    <!-- <i class="fas fa-clock"></i>  -->
+                                    Event Summary
+                                </strong>
                             </div>
-                            <div class="card-body">
+                            <div class="card-body mt-3">
 
                                 {{-- Total Course Duration --}}
                                 @if($trainingEvent->course?->duration_value && $trainingEvent->course?->duration_type)
@@ -1985,7 +2012,7 @@
 
                         @if($isGradingCompleted && $trainingEvent->course->documents->isNotEmpty())
                         <div class="mt-4">
-                            <h5><i class="fas fa-file-upload"></i>Instructor Document Uploads</h5>
+                            <h5><i class="fas fa-file-upload p-2"></i>Instructor Document Uploads</h5>
                             <form action="{{ route('training.upload-documents', $trainingEvent->id) }}" method="POST" enctype="multipart/form-data">
                                 @csrf
                                 <div class="row">
@@ -2243,7 +2270,7 @@
                                             @if($lesson->enable_cbta==1)
                                             <h2 class="accordion-header">
                                                 <div class="d-flex justify-content-between align-items-center">
-                                                    <button type="button" class="accordion-button" data-bs-toggle="collapse"
+                                                    <button type="button" class="accordion-button {{ $isLocked ? 'collapsed' : 'collapsed' }}" data-bs-toggle="collapse"
                                                         data-bs-target="#comptency-{{ $eventLesson->id }}" aria-expanded="false">
                                                         Overall Competency Grading
                                                     </button>
@@ -2322,13 +2349,13 @@
                                             </div>
                                         </div>
                                         <div>
-                                            <label>Lesson Summary</label>
+                                            <label class="mt-3 mb-3">Lesson Summary</label>
                                             <textarea name="lesson_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Write Lesson Summary">{{ old("lesson_summary.$lesson->id", $eventLesson->lesson_summary ?? '') }}</textarea>
                                         </div>
 
                                         @if(Auth::user()->role == "1")
                                         <div>
-                                            <label>Instructor Comment</label>
+                                            <label class="mt-3 mb-3">Instructor Comment</label>
                                             <textarea name="instructor_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Instructor Comment">{{ old("lesson_summary.$lesson->id", $eventLesson->instructor_comment ?? '') }}</textarea>
                                         </div>
                                         @endif
@@ -2501,7 +2528,7 @@
                                         <div class="accordion-item">
                                             <h2 class="accordion-header">
                                                 <div class="d-flex justify-content-between align-items-center">
-                                                   <button type="button" class="accordion-button" style="cursor: default;">
+                                                   <button type="button" class="accordion-button {{ $isLocked ? 'collapsed' : '' }}" style="cursor: default;">
                                                         Overall Assessment
                                                     </button>
 
@@ -2615,7 +2642,7 @@
                                                 <span style="color:red"> You are not eligible to perform any action on this lesson </span>
                                             </div>
                                             @endif
-                                            <div class="btn-container ms-3 mt-3">
+                                            <div class="btn-container ms-3 mt-3 mb-3">
                                                 <button type="submit" class="btn btn-save" id="submitGrading" {{ $isDisabled ? 'disabled' : '' }}>Save Lesson</button>
                                             </div>
                                         </div>

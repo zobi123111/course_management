@@ -1388,7 +1388,7 @@ img#courseresource_img {
 
 .folder-actions {
   position: absolute;
-  bottom: 50px;
+  bottom: 30px;
   left: 35%;
   transform: translateX(-50%) scale(0);
   display: flex;

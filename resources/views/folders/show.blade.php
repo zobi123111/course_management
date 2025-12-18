@@ -42,7 +42,7 @@
                 @if ($subfolders->isNotEmpty())
                     <div class="row">                    
                         @foreach ($subfolders as $folder)
-                        <div class="col-md-3 col-sm-4 mb-4">
+                        <div class="col-md-2 col-sm-4 mb-4 mt-3 d-flex justify-content-center align-items-center">
                             <div class="folder-wrapper" onclick="openFolder('{{ $folder->id }}')">
                                 <div class="folder-visual">
                                     <div class="folder-container" title="{{ $folder->folder_name }}">
@@ -90,7 +90,7 @@
                         @if(count($documents))
                         <div class="row mt-2">
                             @foreach ($documents as $doc)
-                            <div class="col-md-3 col-sm-4 mb-4">
+                            <div class="col-md-2 col-sm-4 mb-4 mt-3 d-flex justify-content-center align-items-center">
                                 <div class="folder-wrapper">
                                     <div class="folder-visual">
                                         <div class="file-container" style="background-color: #60a5fa;" title="{{ $doc->original_filename }}">

@@ -197,11 +197,11 @@ class TrainingEvents extends Model
         // C. Check overall assessment for one_event courses
         $assessmentOk = true;
       
-        if ($this->course?->course_type === 'one_event') { 
-            $assessmentOk = $this->overallAssessments()
-                ->where('user_id', $studentId)
-                ->exists();
-        }
+        // if ($this->course?->course_type === 'one_event') { 
+        //     $assessmentOk = $this->overallAssessments()
+        //         ->where('user_id', $studentId)
+        //         ->exists();
+        // }
       
        // return $allTasksGraded && $competencyOk && $assessmentOk && !$this->is_locked;
            return $allTasksGraded && $assessmentOk && !$this->is_locked;

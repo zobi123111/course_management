@@ -29,7 +29,7 @@
                 @if ($folders->isNotEmpty())
                     <div class="row">
                         @foreach ($folders as $folder)
-                            <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="col-lg-2 col-md-6 mb-4 mt-3 d-flex justify-content-center align-items-center">
                                 <div class="folder-wrapper" onclick="openFolder('{{ $folder->id }}')">
                                     <div class="folder-visual">
                                         <div class="folder-container" title="{{ $folder->folder_name }}">
