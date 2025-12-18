@@ -671,7 +671,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     $status = $doc->medical_status;
                     $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
                     $date = $doc->medical_expirydate ? date('d/m/Y', strtotime($doc->medical_expirydate)) : 'N/A';
-                    $tooltip = getTooltip($status, 'medical 1');
+                    $tooltip = getTooltip($status, 'UK Medical Status');
                     @endphp
                     <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
                     @else
@@ -686,7 +686,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     $status = $doc->medical_2_status;
                     $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
                     $date = $doc->medical_expirydate_2 ? date('d/m/Y', strtotime($doc->medical_expirydate_2)) : 'N/A';
-                    $tooltip = getTooltip($status, 'medical 2');
+                    $tooltip = getTooltip($status, 'EASA Medical Status');
                     @endphp
                     <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
                     @else
