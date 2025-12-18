@@ -211,10 +211,10 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
             if (!function_exists('getTooltip')) {
             function getTooltip($status, $type) {
             return match ($status) {
-            'Red' => "This {type} has expired.",
-            'Yellow' => "This {type} will expire soon.",
-            'Green' => "This {type} is valid.",
-            'Non-Expiring' => "This {type} does not expire.",
+            'Red' => "This {$type} has expired.",
+            'Yellow' => "This {$type} will expire soon.",
+            'Green' => "This {$type} is valid.",
+            'Non-Expiring' => "This {$type} does not expire.",
             default => "Status unknown.",
             };
             }
