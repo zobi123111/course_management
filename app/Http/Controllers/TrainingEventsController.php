@@ -2286,6 +2286,38 @@ class TrainingEventsController extends Controller
         $course = $event->course;
         $firstLesson = $event->firstLesson;
 
+        $lessons = $event->eventLessons;
+        $deferredLessons = DefLesson::where('event_id', $eventId)->get();
+
+        $totals = [
+            'flight' => 0,
+            'deferred' => 0,
+        ];
+
+        foreach ($lessons as $lesson) {
+            $lessonType = $lesson->lesson?->lesson_type ?? null;
+
+            if ($lessonType === 'flight') {
+                $credited = strtotime("1970-01-01 {$lesson->hours_credited}") ?: 0;
+                $totals['flight'] += $credited;
+            }
+        }
+
+        foreach ($deferredLessons as $defLesson) {
+            $start = strtotime($defLesson->start_time);
+            $end = strtotime($defLesson->end_time);
+            $duration = max(0, $end - $start);
+            $totals['deferred'] += $duration;
+        }
+
+        $totalFlightTimeSeconds = $totals['flight'] + $totals['deferred'];
+
+        $hours = floor($totalFlightTimeSeconds / 3600);
+        $minutes = floor(($totalFlightTimeSeconds % 3600) / 60);
+        $totalFlightTimeFormatted = "{$hours}h {$minutes}m";
+
+
+
         // Calculate Hours of Groundschool (sum of hours_credited where lesson type is groundschool)
         $hoursOfGroundschoolMinutes = $event->eventLessons
             ->filter(function ($lesson) {
@@ -2305,25 +2337,29 @@ class TrainingEventsController extends Controller
         $flightTime = $event->total_time ?? 0; // e.g., "10:00"
         $simulatorTime = $event->simulator_time ?? 0; // e.g., "2.00"
 
-         $recommendedBy = $event->recommendedInstructor; 
-           $licence1 = null;
+        $recommendedBy = $event->recommendedInstructor; 
+        $licence1 = null;
+        $licence2 = null;
 
-            if (!empty($event) && !empty($event->recommendedInstructor)) {
-                $recommendedBy = $event->recommendedInstructor;
+        if (!empty($event) && !empty($event->recommendedInstructor)) {
+            $recommendedBy = $event->recommendedInstructor;
 
-                if (!empty($recommendedBy->id)) {
-                    $document_info = UserDocument::where('user_id', $recommendedBy->id)->get();
+            if (!empty($recommendedBy->id)) {
+                $document_info = UserDocument::where('user_id', $recommendedBy->id)->get();
 
-                    if ($document_info && $document_info->count() > 0) {
-                        // safely access first record and its property
-                        $firstDocument = $document_info->first();
+                if ($document_info && $document_info->count() > 0) {
+                    // safely access first record and its property
+                    $firstDocument = $document_info->first();
 
-                        if (!empty($firstDocument->licence)) {
-                            $licence1 = $firstDocument->licence;
-                        }
+                    if (!empty($firstDocument->licence)) {
+                        $licence1 = $firstDocument->licence;
+                    }
+                    if (!empty($firstDocument->licence_2)) {
+                        $licence2 = $firstDocument->licence_2;
                     }
                 }
             }
+        }
 
         // Progress breakdown from task_grading
        
@@ -2387,6 +2423,9 @@ class TrainingEventsController extends Controller
             'flightTime' => $flightTime,
             'simulatorTime' => $simulatorTime, 
             'recommendedBy' => $event->recommendedInstructor,
+            'licence1' => $licence1,
+            'licence2' => $licence2,
+            'totalFlightTimeFormatted' => $totalFlightTimeFormatted,
         ]);
 
         $filename = 'Certificate_' . Str::slug($student->fname . ' ' . $student->lname) . '.pdf';
