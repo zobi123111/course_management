@@ -65,7 +65,16 @@
           <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Name:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">{{ $student->fname }} {{ $student->lname }}</td>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Licence Number:</th>
-          <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">{{ $student->documents->licence ?? 'N/A' }}</td>
+          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">
+            @if ($student->documents->licence)
+                {{ $student->documents->licence }}
+            @elseif ($student->documents->licence_2)
+                {{ $student->documents->licence_2 }}
+            @else
+                N/A
+            @endif
+        </td>
+          <!-- <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">{{ $student->documents->licence ?? 'N/A' }}</td> -->
         </tr>
         <tr>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Training commenced:</th>
@@ -99,14 +108,23 @@
         </tr>
         <tr style="background-color: #f8f9fa;">
           <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;"> Instructor (Recommendation):</th>
-          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">@if ($recommendedBy)
-            {{ $recommendedBy->fname }} {{ $recommendedBy->lname }}
-            <?php// dump($recommendedBy); ?>
-        @else
-            &nbsp;
-        @endif</td>
+          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">
+            @if ($recommendedBy)
+              {{ $recommendedBy->fname }} {{ $recommendedBy->lname }}
+            @else
+                &nbsp;
+            @endif
+          </td>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Licence Number:</th>
-          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">{{ $licence1 ?? 'N/A' }}</td>
+          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">
+              {{ !empty($licence1) ? $licence1 : (!empty($licence2) ? $licence2 : 'N/A') }}
+          </td>
+        </tr>
+        <tr style="background-color: #f8f9fa;">
+          <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Total Flight Time:</th>
+          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">
+              {{ $totalFlightTimeFormatted }}
+          </td>
         </tr>
       </tbody>
     </table>
