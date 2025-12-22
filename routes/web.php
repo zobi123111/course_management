@@ -381,6 +381,7 @@ Route::post('/copy_course', [CourseController::class, 'copy_course'])->name('cop
 Route::get('/calendar', [BookingController::class, 'index'])->name('calender.index');
 Route::get('/fullcalendar', [BookingController::class, 'loadEvents']);
 Route::post('/booking/store', [BookingController::class, 'store']);
+Route::post('/booking/update', [BookingController::class, 'update']);
 Route::post('/booking/approve', [BookingController::class, 'approve']);
 Route::post('/booking/reject', [BookingController::class, 'reject']);
 Route::get('/group/students/', [BookingController::class, 'getstudents'])->name('getstudents'); 

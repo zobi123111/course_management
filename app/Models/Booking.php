@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 class Booking extends Model
 {
     protected $fillable = [
-        'resource', 'start', 'end', 'booking_type', 'resource_type', 'instructor_id', 'status','ou_id','group_id','std_id'
+        'resource', 'start', 'end', 'booking_type', 'resource_type', 'instructor_id', 'status','ou_id','group_id','std_id', 'send_email'
     ]; 
 
 
@@ -17,5 +17,13 @@ class Booking extends Model
     public function users()
     {
         return $this->belongsTo(User::class,'std_id', 'id'); 
+    }
+
+    public function instructor() {
+        return $this->belongsTo(User::class, 'instructor_id');
+    }
+
+    public function organizationUnit() {
+        return $this->belongsTo(OrganizationUnits::class, 'ou_id');
     }
 }
