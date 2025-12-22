@@ -64,42 +64,55 @@
                 <!-- Additional Details: Passport & License -->
 
                 <div class="row g-4 mt-3">
-                    @if(!empty($document?->passport))
+                    @if(!empty($document?->passport) || !empty($document?->passport_file))
                     <div class="col-md-12 mb-4">
                         <h5 class="text-muted mb-3">
                             <i class="bi bi-passport text-primary me-2"></i>Passport Details
                         </h5>
-                        @if($document?->passport)
+
                         <div class="d-flex flex-wrap align-items-center gap-3">
-                            <p class="mb-0"><strong>Number:</strong> {{ $document->passport }}</p>
 
-                            @if($user->passport_admin_verification_required==1 && $document?->passport_file)
-                            <a href="{{ Storage::url($document->passport_file) }}" class="btn btn-outline-primary btn-sm" target="_blank">
-                                View File
-                            </a>
-
-                            <div class="form-check form-switch mb-0">
-                                <input class="form-check-input verify-toggle" type="checkbox" id="passport_verify"
-                                    data-user-id="{{ encode_id($user->id) }}" data-type="passport"
-                                    {{ $document->passport_verified ? 'checked disabled' : '' }}>
-                                <label class="form-check-label" for="passport_verify">
-                                    {{ $document->passport_verified ? 'Verified' : 'Mark as Verified' }}
-                                </label>
-                            </div>
+                            {{-- Passport Number --}}
+                            @if(!empty($document->passport))
+                                <p class="mb-0"><strong>Number:</strong> {{ $document->passport }}</p>
                             @endif
 
+                            {{-- Passport File --}}
+                            @if($document?->passport_file)
+                                <a href="{{ Storage::url($document->passport_file) }}"
+                                class="btn btn-outline-primary btn-sm" target="_blank">
+                                    View File
+                                </a>
+                            @endif
+
+                            {{-- Verification --}}
+                            @if($user->passport_admin_verification_required == 1 && $document?->passport_file)
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input verify-toggle"
+                                        type="checkbox"
+                                        id="passport_verify"
+                                        data-user-id="{{ encode_id($user->id) }}"
+                                        data-type="passport"
+                                        {{ $document->passport_verified ? 'checked disabled' : '' }}>
+                                    <label class="form-check-label" for="passport_verify">
+                                        {{ $document->passport_verified ? 'Verified' : 'Mark as Verified' }}
+                                    </label>
+                                </div>
+                            @endif
+
+                            {{-- Invalidate --}}
                             @if($document->passport_verified)
-                            <button class="btn btn-danger btn-sm invalidate-btn"
-                                data-user-id="{{ $user->id }}" data-type="passport">
-                                Invalidate
-                            </button>
+                                <button class="btn btn-danger btn-sm invalidate-btn"
+                                        data-user-id="{{ $user->id }}"
+                                        data-type="passport">
+                                    Invalidate
+                                </button>
                             @endif
+
                         </div>
-                        @else
-                        <p class="text-muted">No passport details available.</p>
-                        @endif
                     </div>
                     @endif
+
 
                     <div class="row mb-4">
                         <!-- License Details -->
