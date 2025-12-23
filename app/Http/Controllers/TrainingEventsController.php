@@ -238,7 +238,7 @@ class TrainingEventsController extends Controller
                 $query->where('role_name', 'like', '%Student%');
             })->with('roles')->get();
 
-        $instructors = User::where('ou_id', $ou_id)
+        $instructors = User::where('ou_id', $ou_id)->where('is_activated', 0)
             ->where(function ($query) {
                 $query->whereNull('is_admin')->orWhere('is_admin', false);
             })
@@ -328,7 +328,7 @@ class TrainingEventsController extends Controller
         $ato_num = strtolower($course->ato_num) ?? null;
 
         if (str_contains($ato_num, 'uk')) {
-            $instructors = User::with(['documents', 'roles'])
+            $instructors = User::with(['documents', 'roles'])->where('is_activated', 0)
                 ->whereHas('documents', function ($query) {
                     $query->whereNotNull('licence')->where('licence', '!=', '');
                 })
@@ -393,7 +393,7 @@ class TrainingEventsController extends Controller
             ]);
         }
 
-        $all_ou_instructor = User::where('ou_id', $ou_id)
+        $all_ou_instructor = User::where('ou_id', $ou_id)->where('is_activated', 0)
                             ->where(function ($query) {
                                 $query->whereNull('is_admin')->orWhere('is_admin', false);
                             })
