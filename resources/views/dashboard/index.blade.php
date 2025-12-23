@@ -22,6 +22,11 @@ $subTitle = "Welcome to Admin Dashboard";
     div#document_table_length {
         margin-bottom: 15px;
     }
+
+    .booking-btn {
+        border-radius: 25px;
+    }
+
 </style>
 <?php
 
@@ -437,52 +442,57 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     ?>
 
                     @foreach ($groupedEASA as $entry)
-                    @if (!empty($entry['children']))
-                        <?php
-                    $expirty_date = $entry['parent_expiry'];
-                    $color = getExpiryStatus($expirty_date);
+                        @if (!empty($entry['children']))
+                            <?php
+                                $expirty_date = $entry['parent_expiry'];
+                                $color = getExpiryStatus($expirty_date);
 
-                    if ($color == "Red") {
-                        $color = "#dc3545";
-                        $tooltip = "This rating has expired";
-                    } elseif ($color == "Yellow") {
-                        $color = "#ffc107";
-                        $tooltip = "This rating will expire soon";
-                    } elseif ($color == "Green") {
-                        $color =  "#198754";
-                        $tooltip = "This rating does not expire";
-                    }
-                    ?>
-                    <div class="collapsible">
-                        <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
-                    </div>
-                    <div class="content">
-                        <ul>
-                            @foreach ($entry['children'] as $child)
-                            <li>{{ $child->name }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                    @else
-                        <?php
-                    $expirty_date = $entry['parent_expiry'];
-                    $color = getExpiryStatus($expirty_date);
+                                if (is_null($expirty_date)) {
+                                    $color = "#198754";
+                                    $tooltip = "This rating does not expire";
+                                } elseif ($color == "Red") {
+                                    $color = "#dc3545";
+                                    $tooltip = "This rating has expired";
+                                } elseif ($color == "Yellow") {
+                                    $color = "#ffc107";
+                                    $tooltip = "This rating will expire soon";
+                                } else {
+                                    $color = "#198754";
+                                    $tooltip = "This rating is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                }
+                            ?>
 
-                    if ($color == "Red") {
-                        $color = "#dc3545";
-                        $tooltip = "This rating has expired";
-                    } elseif ($color == "Yellow") {
-                        $color = "#ffc107";
-                        $tooltip = "This rating will expire soon";
-                    } else {
-                        $color =  "#198754";
-                        $tooltip = "This rating does not expire";
-                    }
-                    ?>
-                    <div class="parent_rate">
-                        <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
-                    </div>
-                    @endif
+                            <div class="collapsible">
+                                <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
+                            </div>
+
+                            <div class="content">
+                                <ul>
+                                    @foreach ($entry['children'] as $child)
+                                    <li>{{ $child->name }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @else
+                            <?php
+                                $expirty_date = $entry['parent_expiry'];
+                                $color = getExpiryStatus($expirty_date);
+
+                                if ($color == "Red") {
+                                    $color = "#dc3545";
+                                    $tooltip = "This rating has expired";
+                                } elseif ($color == "Yellow") {
+                                    $color = "#ffc107";
+                                    $tooltip = "This rating will expire soon";
+                                } else {
+                                    $color =  "#198754";
+                                    $tooltip = "This rating does not expire";
+                                }
+                            ?>
+                            <div class="parent_rate">
+                                <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
+                            </div>
+                        @endif
                     @endforeach
                 </td>
 
@@ -1229,7 +1239,9 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     </div>
                 </div>
             </div>
-            <div class="row">
+            
+            <!-- Last Training Event -->
+            <!-- <div class="row">
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-body">
@@ -1329,9 +1341,10 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
-            <div class="row">
+            <!-- Pending Items -->
+            <!-- <div class="row">
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-body">
@@ -1358,7 +1371,6 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                             <td>{{ $quiz->duration }} mins</td>
                                             <td>{{ $quiz->passing_score }}%</td>
                                             <td>{{ ucfirst($quiz->quiz_type) }}</td>
-                                            <!-- <td>{{ ucfirst($quiz->status) }}</td> -->
                                             @if(get_user_role(auth()->user()->role) == 'administrator')  
                                                 <td>
                                                     <label class="switch">
@@ -1413,12 +1425,160 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         </div>
                     </div>
                 </div>
+            </div> -->
+
+            <!-- merge table  -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title"> Pending Items</h5>
+                            <table class="table table-hover" id="pendingquizTable">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Course</th>
+                                        <th>Lesson</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if($outstandingItems->isEmpty())
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted">
+                                                No outstanding items
+                                            </td>
+                                        </tr>
+                                    @else
+                                        @foreach($outstandingItems as $item)
+                                            <tr>
+                                                <td>{{ $item['title'] }}</td>
+                                                <td>{{ $item['course'] }}</td>
+                                                <td>{{ $item['lesson'] }}</td>
+                                                <td>{{ ucfirst(str_replace('_',' ', $item['type'])) }}</td>
+                                                <td>{{ $item['status'] }}</td>
+                                                <td>
+                                                @if($item['type'] == 'TrainingEvents')
+                                                    @if(get_user_role(auth()->user()->role) == 'instructor')
+                                                        @if(empty($event->is_locked))
+                                                            @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                                                                <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                                                                    <i class="fa fa-eye text-danger me-2"></i>
+                                                                </a>
+                                                            @endif
+                                                        @else
+                                                            {{-- This event is already locked/ended --}}
+                                                            <span class="badge bg-secondary" data-bs-toggle="tooltip"
+                                                                title="This course has been ended and is locked from editing">
+                                                                <i class="bi bi-lock-fill me-1"></i>Ended
+                                                            </span>
+                                                        @endif
+            
+                                                    @else
+            
+                                                        @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
+                                                            <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
+                                                                <i class="fa fa-list text-danger me-2"></i>
+                                                            </a>
+                                                        @endif
+            
+                                                    @endif
+                                                @else
+                                                    <a href="{{ $item['action_url'] }}" class="btn btn-primary btn-sm">
+                                                        {{ $item['action_text'] }}
+                                                    </a>
+                                                @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            @if(auth()->user()->role == 18)
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title"> Pending Bookings</h5>
+                                <table class="table table-hover" id="pendingbookingTable">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">OU Unit</th>
+                                            <th scope="col">Student</th>
+                                            <th scope="col">Resource</th>
+                                            <th scope="col">Start</th>
+                                            <th scope="col">End</th>
+                                            <th scope="col">Booking Type</th>
+                                            <th scope="col">Resource Type</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($bookings as $booking)
+                                            <tr>
+                                                <td class="quizTitle">{{ $booking->organizationUnit->org_unit_name }}</td>
+                                                <td>{{ $booking->users->fname. " " . $booking->users->lname ?? 'N/A' }}</td>
+                                                <td>{{ $booking->resources->name ?? 'N/A' }}</td>
+                                                <td>{{ $booking->start }}</td>
+                                                <td>{{ $booking->end }}</td>
+                                                <td>
+                                                    @if($booking->booking_type == 1)
+                                                        Solo
+                                                    @elseif($booking->booking_type == 2)
+                                                        Lesson
+                                                    @elseif($booking->booking_type == 3)
+                                                        Standby
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($booking->resource_type == 1)
+                                                        Plane
+                                                    @elseif($booking->resource_type == 2)
+                                                        Simulator
+                                                    @elseif($booking->resource_type == 3)
+                                                        Classroom
+                                                    @endif
+                                                </td>
+                                                <td>{{ $booking->status }}</td>
+                                                <td>
+                                                    @if(auth()->user()->role == 18)
+                                                        <button class="btn btn-success booking-btn approve-btn"
+                                                            data-id="{{ $booking->id }}">
+                                                            Approve
+                                                        </button>
+
+                                                        <button class="btn btn-danger booking-btn reject-btn"
+                                                            data-id="{{ $booking->id }}">
+                                                            Reject
+                                                        </button>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
         @endif
+        <div class="loader" style="display: none;"></div>
+
     </section>
 @endsection
 
 @section('js_scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         $(document).ready(function() {
             $('#document_table').DataTable({
@@ -1444,11 +1604,85 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     emptyTable: "No pending quizzes"
                 }
             });
+            $('#pendingbookingTable').DataTable({
+                searching: true,
+                pageLength: 10,
+                language: {
+                    emptyTable: "No pending bookings"
+                }
+            });
 
             $('#document_table').on("click", ".collapsible", function() {
                 $(this).toggleClass("active");
                 $(this).next(".content").slideToggle();
             });
+
+            $(document).on('click', '.approve-btn', function () {
+                let id = $(this).data('id');
+
+                Swal.fire({
+                    title: 'Approve Booking?',
+                    text: "Are you sure you want to approve this booking?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, Approve'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $(".loader").fadeIn();
+
+                        $.post("{{ url('/booking/approve') }}", {
+                            _token: "{{ csrf_token() }}",
+                            id: id
+                        })
+                        .done(function () {
+                            // Swal.fire('Approved!', 'Booking has been approved.', 'success');
+                            location.reload();
+                        })
+                        .fail(function () {
+                            Swal.fire('Error!', 'Something went wrong.', 'error');
+                        })
+                        .always(function () {
+                            $(".loader").fadeOut('slow');
+                        });
+                    }
+                });
+            });
+
+            $(document).on('click', '.reject-btn', function () {
+                let id = $(this).data('id');
+
+                Swal.fire({
+                    title: 'Reject Booking?',
+                    text: "This action cannot be undone.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, Reject'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $(".loader").fadeIn();
+
+                        $.post("{{ url('/booking/reject') }}", {
+                            _token: "{{ csrf_token() }}",
+                            id: id
+                        })
+                        .done(function () {
+                            // Swal.fire('Rejected!', 'Booking has been rejected.', 'success');
+                            location.reload();
+                        })
+                        .fail(function () {
+                            Swal.fire('Error!', 'Something went wrong.', 'error');
+                        })
+                        .always(function () {
+                            $(".loader").fadeOut('slow');
+                        });
+                    }
+                });
+            });
+
 
         });
 

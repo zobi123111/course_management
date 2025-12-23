@@ -9,6 +9,8 @@ use App\Models\OrganizationUnits;
 use App\Models\Group;
 use App\Models\User;
 use Auth;
+use Illuminate\Support\Facades\Mail;
+
 
 class BookingController extends Controller
 {
@@ -41,55 +43,56 @@ class BookingController extends Controller
         return view('calender.index', compact('resources', 'organizationUnits', 'groups', 'students'));
     }
 
+    public function loadEvents(Request $request)
+    {
+        $student = $request->student;
+        $resource = $request->resource;
 
-  public function loadEvents(Request $request)
-{
-    
+        $events = Booking::with('resources', 'users')
+            ->when($student, function ($q) use ($student) {
+                $q->whereHas('users', function ($u) use ($student) {
+                    $u->where('fname', 'like', "%$student%")
+                    ->orWhere('lname', 'like', "%$student%");
+                });
+            })
+            ->when($resource, function ($q) use ($resource) {
+                $q->whereHas('resources', function ($r) use ($resource) {
+                    $r->where('name', 'like', "%$resource%");
+                });
+            })
+            ->get();
 
-     $student = $request->student;
-    $resource = $request->resource;
+        $user_id = Auth::id();
+        $data = [];
 
-    $events = Booking::with('resources', 'users')
-        ->when($student, function ($q) use ($student) {
-            $q->whereHas('users', function ($u) use ($student) {
-                $u->where('fname', 'like', "%$student%")
-                  ->orWhere('lname', 'like', "%$student%");
-            });
-        })
-        ->when($resource, function ($q) use ($resource) {
-            $q->whereHas('resources', function ($r) use ($resource) {
-                $r->where('name', 'like', "%$resource%");
-            });
-        })
-        ->get();
+        foreach ($events as $event) {
 
-    $user_id = Auth::id();
-    $data = [];
+            $canAccess = false;
 
-    foreach ($events as $event) {
+            if ($event->users->id == $user_id || Auth::user()->role == 1) {
+                $canAccess = true;
+            }
 
-        $canAccess = false;
-
-        if ($event->users->id == $user_id || Auth::user()->role == 1) {
-            $canAccess = true;
+            $data[] = [
+                'id'           => $event->id,
+                'student'      => $event->users->fname . ' ' . $event->users->lname,
+                'title'        => $event->users->fname . ' ' . $event->users->lname,
+                'resource'     => $event->resources->name ?? '',
+                'start'        => $event->start,
+                'end'          => $event->end,
+                'booking_type' => $event->booking_type,
+                'status'       => $event->status,
+                'can_access'   => $canAccess,
+                'std_id'       => $event->std_id,
+                'resource_id'  => $event->resource,
+                'ou_id'        => $event->ou_id,
+                'send_email'   => $event->send_email,
+                'instructor_id'=> $event->instructor_id,
+            ];
         }
 
-        $data[] = [
-            'id'           => $event->id,
-            'student'      => $event->users->fname . ' ' . $event->users->lname,
-            'title'        => $event->users->fname . ' ' . $event->users->lname,
-            'resource'     => $event->resources->name ?? '',
-            'start'        => $event->start,
-            'end'          => $event->end,
-            'booking_type' => $event->booking_type,
-            'status'       => $event->status,
-            'can_access'   => $canAccess
-        ];
+        return response()->json($data);
     }
-
-    return response()->json($data);
-}
-
 
     public function store(Request $request)
     {
@@ -102,17 +105,66 @@ class BookingController extends Controller
         $booking->end = $request->end;
         $booking->booking_type = $request->booking_type;
         $booking->resource_type = $request->resource_type;
-        $booking->instructor_id = $request->instructor_id;
+        $booking->instructor_id = $request->instructor;
         $booking->status = "pending";
+        $booking->send_email = $request->boolean('send_email') ? 1 : 0;
         $booking->save();
+
+        $studentEmail = User::find($booking->std_id)->email;
+        $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
+
+        $allEmails = array_merge([$studentEmail], $ouEmails);
+
+        if ($booking->send_email == 1) {
+            Mail::send('emailtemplates.create_booking_email', ['booking' => $booking], function ($message) use ($allEmails) {
+                $message->to($allEmails)
+                        ->subject('New Booking Created');
+            });
+        }
+
         return response()->json(['success' => true]);
     }
+
+    public function update(Request $request)
+    {
+        $booking = Booking::findOrFail($request->id);
+
+        $booking->ou_id = $request->organizationUnits;
+        $booking->std_id = $request->student ?? Auth::user()->id;
+        $booking->resource = $request->resource_id;
+        $booking->start = $request->start;
+        $booking->end = $request->end;
+        $booking->booking_type = $request->booking_type ?? $booking->booking_type;
+        $booking->resource_type = $request->resource_type ?? $booking->resource_type;
+        $booking->instructor_id = $request->instructor_id ?? $booking->instructor_id;
+        $booking->send_email = $request->boolean('send_email') ? 1 : 0;
+        $booking->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking updated successfully',
+            'booking' => $booking
+        ]);
+    }
+
 
     public function approve(Request $request)
     {
         $booking = Booking::find($request->id);
         $booking->status = "approved";
         $booking->save();
+
+        $studentEmail = User::find($booking->std_id)->email;
+        $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
+
+        $allEmails = array_merge([$studentEmail], $ouEmails);
+
+        if ($booking->send_email == 1) {
+            Mail::send('emailtemplates.approved_booking_email', ['booking' => $booking], function ($message) use ($allEmails) {
+                $message->to($allEmails)
+                        ->subject('Booking Approved');
+            });
+        }
 
         return response()->json(['success' => true]);
     }
@@ -122,6 +174,18 @@ class BookingController extends Controller
         $booking = Booking::find($request->id);
         $booking->status = "rejected";
         $booking->save();
+
+        $studentEmail = User::find($booking->std_id)->email;
+        $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
+
+        $allEmails = array_merge([$studentEmail], $ouEmails);
+
+        if ($booking->send_email == 1) {
+            Mail::send('emailtemplates.rejected_booking_email', ['booking' => $booking], function ($message) use ($allEmails) {
+                $message->to($allEmails)
+                        ->subject('Booking Rejected');
+            });
+        }
 
         return response()->json(['success' => true]);
     }
@@ -139,15 +203,18 @@ class BookingController extends Controller
             }
         }
 
+        $instructors = User::where('ou_id', $request->ou_id)->where('role', 18)->get(['id', 'fname', 'lname']);
+
         // remove duplicate users (if any)
         $students = $students->unique('id')->values(); 
 
-        $bookedResourceIds = Booking::pluck('resource')->unique();
-
+        $bookedResourceIds = Booking::where('status','approved')->pluck('resource')->unique();
+        
         $org_resource = Resource::whereNotIn('id', $bookedResourceIds)->where('ou_id', $request->ou_id)->get();
+
         $ato_num = OrganizationUnits::where('id', $request->ou_id)->get();
         if ($org_group) {
-            return response()->json(['org_group' => $org_group, 'org_resource' => $org_resource, 'ato_num' => $ato_num, 'students' => $students]);
+            return response()->json(['org_group' => $org_group, 'org_resource' => $org_resource, 'ato_num' => $ato_num, 'students' => $students, 'instructors' => $instructors]);
         } else {
             return response()->json(['error' => 'No group Found']);
         }

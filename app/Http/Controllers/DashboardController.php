@@ -10,6 +10,7 @@ use App\Models\Folder;
 use App\Models\Document;
 use App\Models\TrainingEvents;
 use App\Models\BookedResource;
+use App\Models\Booking;
 use App\Models\CourseGroup;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ParentRating;
@@ -30,6 +31,7 @@ class DashboardController extends Controller
         $group_count = 0;
         $folder_count = 0;
         $requestCount = 0;
+        $outstandingItems = collect();
     
         if ($user->is_owner) {
             $user_count = User::count();
@@ -120,8 +122,17 @@ class DashboardController extends Controller
                                         ->get();
             // dd($trainingEvents_instructor);
 
-           
-                        
+            foreach ($trainingEvents as $event) {
+                $outstandingItems->push([
+                    'type'        => 'TrainingEvents',
+                    'title'       => 'Course Feedback Required',
+                    'course'      => $event->course?->course_name ?? 'N/A',
+                    'lesson'      => $event->firstLesson?->lesson?->title ?? '—',
+                    'status'      => 'Pending',
+                    'action_url'  => route('training.show', ['event_id' => encode_id($event->id)]),
+                    'action_text' => 'Submit Feedback',
+                ]);
+            }              
         }
 
         // $quizs = TrainingEvents::where('student_id', $user->id)
@@ -146,10 +157,27 @@ class DashboardController extends Controller
                         ->whereDoesntHave('quizAttempts', function ($q) use ($user) {
                         $q->where('student_id', $user->id); })->get();
 
+            foreach ($quizs as $quiz) {
+                $outstandingItems->push([
+                    'type'        => 'quiz',
+                    'title'       => $quiz->title,
+                    'course'      => $quiz->course->course_name ?? 'N/A',
+                    'lesson'      => $quiz->lesson->lesson_title ?? 'N/A',
+                    'duration'    => $quiz->duration . ' mins',
+                    'passing'     => $quiz->passing_score . '%',
+                    'status'      => 'Pending',
+                    'action_url'  => route('quiz.view', ['id' => encode_id($quiz->id)]),
+                    'action_text' => 'Start Quiz',
+                ]);
+            }
+
         $totalDocuments = $documents->count();
         $quizscount = $quizzes->count();
         $readDocuments = countAcknowledgedDocuments($documents, $user);
         $unreadDocuments = $totalDocuments - $readDocuments;
+
+
+        $bookings = Booking::where('instructor_id', $userId)->where('status', 'pending')->get();
 
         $users = User::where('ou_id', $ou_id)
                     ->whereNull('is_admin')
@@ -166,7 +194,7 @@ class DashboardController extends Controller
                     ->get();
             
 
-        return view('dashboard.index', compact('user_count', 'course_count', 'group_count', 'folder_count','totalDocuments', 'quizscount', 'quizs', 'readDocuments', 'unreadDocuments', 'requestCount', 'users', 'trainingEvents'
+        return view('dashboard.index', compact('user_count', 'course_count', 'group_count', 'folder_count','totalDocuments', 'quizscount', 'quizs', 'readDocuments', 'unreadDocuments', 'requestCount', 'users', 'trainingEvents', 'bookings', 'outstandingItems'
         ));
     }
     

@@ -149,7 +149,7 @@
                     <h3>Tasks</h3>
                     <div class="row" id="{{ $disableDragDrop }}">
                         @foreach($lesson->subLessons as $val)
-                            <div class="col-lg-4 col-md-6 col-sm-12 mb-3" data-id="{{ $val->id }}">
+                            <div class="col-lg-4 col-md-6 col-sm-12 mb-3 sublesson-card" data-id="{{ $val->id }}">
                                 <div class="sublesson_card course-card">
                 
                                     <div class="course-image-container" style="position: relative;">

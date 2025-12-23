@@ -1001,7 +1001,13 @@ $(document).ready(function() {
                     $('#edit_event_id').val(event.id); 
                     $('#edit_std_licence_number').val(response.licence_number);
                     $('#edit_event_date').val(event.event_date);
-                    $('#edit_total_time').val(moment(event.total_time, 'HH:mm:ss').format('HH:mm'));
+                    // $('#edit_total_time').val(moment(event.total_time, 'HH:mm:ss').format('HH:mm'));
+                    const duration = moment.duration(event.total_time);
+                    $('#edit_total_time').val(
+                        String(Math.floor(duration.asHours())).padStart(2, '0') + ':' +
+                        String(duration.minutes()).padStart(2, '0')
+                    );
+
                       if (event.entry_source === 'instructor') 
                         { 
                            $('#edit_is_instructor_checkbox').prop('checked', true).trigger('change');
@@ -1541,7 +1547,6 @@ $(document).ready(function() {
         }
     }
 
-
     function calculateTotalSimulatorTime() { 
         let totalMinutes = 0;
 
@@ -1572,54 +1577,46 @@ $(document).ready(function() {
         $('#edit_total_simulator_time').val(totalFormatted);
     }
 
-    
+    // Open Course End Modal
+    $(document).on('click', '.end-course-btn', function () {
+        const eventId = $(this).data('event-id');
+        const today = new Date().toISOString().split('T')[0];
 
-   // Open Course End Modal
-$(document).on('click', '.end-course-btn', function () {
-    const eventId = $(this).data('event-id');
-    const today = new Date().toISOString().split('T')[0];
+        // Open modal and set fields
+        $('#endCourseModal').modal('show');
+        $('#courseEndEventId').val(eventId);
+        $('#courseEndDate').val(today);
+        $('#modalErrorContainer').html('');
+        
+        const $instructorSelect = $('select[name="recommended_by_instructor_id"]');
+        $instructorSelect.html('<option value="">Loading...</option>');
 
-    // Open modal and set fields
-    $('#endCourseModal').modal('show');
-    $('#courseEndEventId').val(eventId);
-    $('#courseEndDate').val(today);
-    $('#modalErrorContainer').html('');
-    
-    const $instructorSelect = $('select[name="recommended_by_instructor_id"]');
-    $instructorSelect.html('<option value="">Loading...</option>');
-
-    // Fetch instructor list
-    $.ajax({
-        url: `/training/get-recom-instructors/${eventId}`,
-        method: 'GET',
-        success: function (response) {
-            $instructorSelect.empty().append('<option value="">-- Select Instructor --</option>');
-            response.instructors.forEach(instructor => {
-                const selected = instructor.id == response.last_instructor_id ? 'selected' : '';
-                $instructorSelect.append(
-                    `<option value="${instructor.id}" ${selected}>${instructor.fname} ${instructor.lname}</option>`
-                );
-            });
-        },
-        error: function () {
-            $instructorSelect.html('<option value="">Failed to load instructors</option>');
-        }
+        // Fetch instructor list
+        $.ajax({
+            url: `/training/get-recom-instructors/${eventId}`,
+            method: 'GET',
+            success: function (response) {
+                $instructorSelect.empty().append('<option value="">-- Select Instructor --</option>');
+                response.instructors.forEach(instructor => {
+                    const selected = instructor.id == response.last_instructor_id ? 'selected' : '';
+                    $instructorSelect.append(
+                        `<option value="${instructor.id}" ${selected}>${instructor.fname} ${instructor.lname}</option>`
+                    );
+                });
+            },
+            error: function () {
+                $instructorSelect.html('<option value="">Failed to load instructors</option>');
+            }
+        });
     });
-});
-
-
-
-
 
     setTimeout(function() {
-        $('#successMessage').fadeOut('slow');
-    }, 2000);
+            $('#successMessage').fadeOut('slow');
+        }, 2000);
+    });
 
-});
+    const studentsdata = @json($students);   
 
-</script>
-<script>
-    const studentsdata = @json($students);       
     $('#is_instructor_checkbox').on('change', function() {
         let isChecked = $(this).is(':checked');
         let dropdown = $('#select_user');
@@ -1642,68 +1639,68 @@ $(document).on('click', '.end-course-btn', function () {
             label.text('Select Student');
             $('#entry_source').val('');
         }
-});
-</script>
-<script>
-document.getElementById('is_instructor_checkbox').addEventListener('change', function () {
-    const entrySourceInput = document.getElementById('entry_source');
-    entrySourceInput.value = this.checked ? 'instructor' : '';
-});
-$(document).on('change', '#edit_is_instructor_checkbox', function () { 
-    const isChecked = $(this).is(':checked');
-    const label = $('#edit_student_label');
-    const userDropdown = $('#edit_select_user');
-    const hiddenInput = $('#edit_entry_source');
-
-    label.text(isChecked ? 'Select Instructor, Student' : 'Select Student');
-    hiddenInput.val(isChecked ? 'instructor' : '');
-    userDropdown.empty();
-    let userOptions = '<option value="">Select ' + (isChecked ? 'Instructor' : 'Student') + '</option>';
-    
-    const dataList = isChecked ? instructorsdata : studentsdata;
-    
-    dataList.forEach(user => {
-        userOptions += `<option value="${user.id}">${user.fname} ${user.lname}</option>`;
     });
 
-    userDropdown.html(userOptions);
-});
-
-function generateInstructorOptions(instructorsdata, selectedId = '', excludeId = '') {
-    let options = '<option value="">Select Instructor</option>';
-    instructorsdata.forEach(i => {
-        if (excludeId && i.id == excludeId) return; // ⛔ skip the excluded instructor
-        let selected = (i.id == selectedId) ? 'selected' : '';
-        options += `<option value="${i.id}" ${selected}>${i.fname} ${i.lname}</option>`;
+    document.getElementById('is_instructor_checkbox').addEventListener('change', function () {
+        const entrySourceInput = document.getElementById('entry_source');
+        entrySourceInput.value = this.checked ? 'instructor' : '';
     });
-    return options;
-}
 
-$(document).on("click", ".unlocked", function () {
-    var training_event_id = $(this).data("id");
+    $(document).on('change', '#edit_is_instructor_checkbox', function () { 
+        const isChecked = $(this).is(':checked');
+        const label = $('#edit_student_label');
+        const userDropdown = $('#edit_select_user');
+        const hiddenInput = $('#edit_entry_source');
 
-    if (confirm("Are you sure you want to unlock this training event?")) {
-        $.ajax({
-            type: "POST",
-            url: "{{ url('training/unlocked') }}",
-            data: {
-                training_id: training_event_id,
-                "_token": "{{ csrf_token() }}"
-            }, 
-            success: function (response) {
-                if (response.status === "success") {
-                    alert(response.message);
-                    location.reload();
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function (xhr) {
-                alert(xhr.responseJSON?.message || "Something went wrong.");
-            }
+        label.text(isChecked ? 'Select Instructor, Student' : 'Select Student');
+        hiddenInput.val(isChecked ? 'instructor' : '');
+        userDropdown.empty();
+        let userOptions = '<option value="">Select ' + (isChecked ? 'Instructor' : 'Student') + '</option>';
+        
+        const dataList = isChecked ? instructorsdata : studentsdata;
+        
+        dataList.forEach(user => {
+            userOptions += `<option value="${user.id}">${user.fname} ${user.lname}</option>`;
         });
+
+        userDropdown.html(userOptions);
+    });
+
+    function generateInstructorOptions(instructorsdata, selectedId = '', excludeId = '') {
+        let options = '<option value="">Select Instructor</option>';
+        instructorsdata.forEach(i => {
+            if (excludeId && i.id == excludeId) return; // ⛔ skip the excluded instructor
+            let selected = (i.id == selectedId) ? 'selected' : '';
+            options += `<option value="${i.id}" ${selected}>${i.fname} ${i.lname}</option>`;
+        });
+        return options;
     }
-});
+
+    $(document).on("click", ".unlocked", function () {
+        var training_event_id = $(this).data("id");
+
+        if (confirm("Are you sure you want to unlock this training event?")) {
+            $.ajax({
+                type: "POST",
+                url: "{{ url('training/unlocked') }}",
+                data: {
+                    training_id: training_event_id,
+                    "_token": "{{ csrf_token() }}"
+                }, 
+                success: function (response) {
+                    if (response.status === "success") {
+                        alert(response.message);
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function (xhr) {
+                    alert(xhr.responseJSON?.message || "Something went wrong.");
+                }
+            });
+        }
+    });
 
 
 </script>
