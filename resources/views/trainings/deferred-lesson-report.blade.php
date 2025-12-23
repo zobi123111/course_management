@@ -87,7 +87,7 @@
         </div>
       
 
-         @if($event->defLessons->isNotEmpty() && $event->defLessons[0]->deferredGradings->isNotEmpty())
+         
             <div class="section">
                 <h2>Competencies</h2>
                 <table>
@@ -99,6 +99,7 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @if($event->defLessons->isNotEmpty() && $event->defLessons[0]->deferredGradings->isNotEmpty())
                         @foreach($event->defLessons[0]->deferredGradings as $competency)
                             @foreach(['kno','pro','com','fpa','fpm','ltw','psd','saw','wlm'] as $comp)
                                 <tr>
@@ -108,10 +109,14 @@
                                 </tr>
                             @endforeach
                         @endforeach
+                        @else
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">No Competency Grading Found</td>
+                        </tr>
+                        @endif
                     </tbody>
                 </table>
             </div>
-        @endif
 
         
         <div class="section">
