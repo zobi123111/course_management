@@ -1433,7 +1433,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     <div class="card">
                         <div class="card-body">
                             <h5 class="card-title"> Pending Items</h5>
-                            <table class="table table-hover" id="pendingquizTable">
+                            <table class="table table-hover" id="pendingitemTable">
                                 <thead>
                                     <tr>
                                         <th>Item</th>
@@ -1589,21 +1589,30 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 }
             });
 
-            $('#trainingEventTable').DataTable({
-                searching: true,
-                pageLength: 10,
-                language: {
-                    emptyTable: "No previous training events completed"
-                }
-            });
+            // $('#trainingEventTable').DataTable({
+            //     searching: true,
+            //     pageLength: 10,
+            //     language: {
+            //         emptyTable: "No previous training events completed"
+            //     }
+            // });
 
-            $('#pendingquizTable').DataTable({
-                searching: true,
-                pageLength: 10,
-                language: {
-                    emptyTable: "No pending quizzes"
-                }
-            });
+            // $('#pendingquizTable').DataTable({
+            //     searching: true,
+            //     pageLength: 10,
+            //     language: {
+            //         emptyTable: "No pending quizzes"
+            //     }
+            // });
+
+            // $('#pendingitemTable').DataTable({
+            //     searching: true,
+            //     pageLength: 10,
+            //     language: {
+            //         emptyTable: "No pending items"
+            //     }
+            // });
+
             $('#pendingbookingTable').DataTable({
                 searching: true,
                 pageLength: 10,
