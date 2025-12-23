@@ -683,8 +683,8 @@ class TrainingEventsController extends Controller
             'course_id' => 'required|exists:courses,id',
             'event_date' => 'required|date_format:Y-m-d',
             'std_license_number' => 'nullable|string',
-            'total_time' => 'nullable|date_format:H:i',
-            'total_simulator_time' => 'nullable|date_format:H:i',
+            'total_time' => 'nullable',
+            'total_simulator_time' => 'nullable',
             'ou_id' => [
                 function ($attribute, $value, $fail) {
                     if (auth()->user()->is_owner == 1 && empty($value)) {

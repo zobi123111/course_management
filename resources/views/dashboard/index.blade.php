@@ -442,52 +442,57 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     ?>
 
                     @foreach ($groupedEASA as $entry)
-                    @if (!empty($entry['children']))
-                        <?php
-                    $expirty_date = $entry['parent_expiry'];
-                    $color = getExpiryStatus($expirty_date);
+                        @if (!empty($entry['children']))
+                            <?php
+                                $expirty_date = $entry['parent_expiry'];
+                                $color = getExpiryStatus($expirty_date);
 
-                    if ($color == "Red") {
-                        $color = "#dc3545";
-                        $tooltip = "This rating has expired";
-                    } elseif ($color == "Yellow") {
-                        $color = "#ffc107";
-                        $tooltip = "This rating will expire soon";
-                    } elseif ($color == "Green") {
-                        $color =  "#198754";
-                        $tooltip = "This rating does not expire";
-                    }
-                    ?>
-                    <div class="collapsible">
-                        <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
-                    </div>
-                    <div class="content">
-                        <ul>
-                            @foreach ($entry['children'] as $child)
-                            <li>{{ $child->name }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                    @else
-                        <?php
-                    $expirty_date = $entry['parent_expiry'];
-                    $color = getExpiryStatus($expirty_date);
+                                if (is_null($expirty_date)) {
+                                    $color = "#198754";
+                                    $tooltip = "This rating does not expire";
+                                } elseif ($color == "Red") {
+                                    $color = "#dc3545";
+                                    $tooltip = "This rating has expired";
+                                } elseif ($color == "Yellow") {
+                                    $color = "#ffc107";
+                                    $tooltip = "This rating will expire soon";
+                                } else {
+                                    $color = "#198754";
+                                    $tooltip = "This rating is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                }
+                            ?>
 
-                    if ($color == "Red") {
-                        $color = "#dc3545";
-                        $tooltip = "This rating has expired";
-                    } elseif ($color == "Yellow") {
-                        $color = "#ffc107";
-                        $tooltip = "This rating will expire soon";
-                    } else {
-                        $color =  "#198754";
-                        $tooltip = "This rating does not expire";
-                    }
-                    ?>
-                    <div class="parent_rate">
-                        <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
-                    </div>
-                    @endif
+                            <div class="collapsible">
+                                <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
+                            </div>
+
+                            <div class="content">
+                                <ul>
+                                    @foreach ($entry['children'] as $child)
+                                    <li>{{ $child->name }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @else
+                            <?php
+                                $expirty_date = $entry['parent_expiry'];
+                                $color = getExpiryStatus($expirty_date);
+
+                                if ($color == "Red") {
+                                    $color = "#dc3545";
+                                    $tooltip = "This rating has expired";
+                                } elseif ($color == "Yellow") {
+                                    $color = "#ffc107";
+                                    $tooltip = "This rating will expire soon";
+                                } else {
+                                    $color =  "#198754";
+                                    $tooltip = "This rating does not expire";
+                                }
+                            ?>
+                            <div class="parent_rate">
+                                <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
+                            </div>
+                        @endif
                     @endforeach
                 </td>
 
