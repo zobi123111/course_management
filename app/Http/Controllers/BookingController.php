@@ -110,12 +110,14 @@ class BookingController extends Controller
         $booking->send_email = $request->boolean('send_email') ? 1 : 0;
         $booking->save();
 
-        $studentEmail = User::find($booking->std_id)->email;
-        $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
-
-        $allEmails = array_merge([$studentEmail], $ouEmails);
-
         if ($booking->send_email == 1) {
+
+            $studentEmail = User::find($booking->std_id)->email;
+            $instructor = User::find($booking->instructor_id)->email;
+            $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
+
+            $allEmails = array_merge([$studentEmail], $ouEmails, [$instructor]);
+
             Mail::send('emailtemplates.create_booking_email', ['booking' => $booking], function ($message) use ($allEmails) {
                 $message->to($allEmails)
                         ->subject('New Booking Created');
@@ -165,9 +167,10 @@ class BookingController extends Controller
         if ($booking->send_email == 1) {
 
             $studentEmail = User::find($booking->std_id)->email;
+            $instructor = User::find($booking->instructor_id)->email;
             $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
 
-            $allEmails = array_merge([$studentEmail], $ouEmails);
+            $allEmails = array_merge([$studentEmail], $ouEmails, [$instructor]);
 
             Mail::send('emailtemplates.approved_booking_email',['booking' => $booking],function ($message) use ($allEmails) {
                     $message->to($allEmails)->subject('Booking Approved');
@@ -184,12 +187,14 @@ class BookingController extends Controller
         $booking->status = "rejected";
         $booking->save();
 
-        $studentEmail = User::find($booking->std_id)->email;
-        $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
-
-        $allEmails = array_merge([$studentEmail], $ouEmails);
-
         if ($booking->send_email == 1) {
+
+            $studentEmail = User::find($booking->std_id)->email;
+            $instructor = User::find($booking->instructor_id)->email;
+            $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
+
+            $allEmails = array_merge([$studentEmail], $ouEmails, [$instructor]);
+
             Mail::send('emailtemplates.rejected_booking_email', ['booking' => $booking], function ($message) use ($allEmails) {
                 $message->to($allEmails)
                         ->subject('Booking Rejected');
