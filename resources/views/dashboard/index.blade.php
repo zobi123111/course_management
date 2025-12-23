@@ -1445,55 +1445,47 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @if($outstandingItems->isEmpty())
+                                    @foreach($outstandingItems as $item)
                                         <tr>
-                                            <td colspan="6" class="text-center text-muted">
-                                                No outstanding items
-                                            </td>
-                                        </tr>
-                                    @else
-                                        @foreach($outstandingItems as $item)
-                                            <tr>
-                                                <td>{{ $item['title'] }}</td>
-                                                <td>{{ $item['course'] }}</td>
-                                                <td>{{ $item['lesson'] }}</td>
-                                                <td>{{ ucfirst(str_replace('_',' ', $item['type'])) }}</td>
-                                                <td>{{ $item['status'] }}</td>
-                                                <td>
-                                                @if($item['type'] == 'TrainingEvents')
-                                                    @if(get_user_role(auth()->user()->role) == 'instructor')
-                                                        @if(empty($event->is_locked))
-                                                            @if(checkAllowedModule('training','training.show')->isNotEmpty())
-                                                                <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
-                                                                    <i class="fa fa-eye text-danger me-2"></i>
-                                                                </a>
-                                                            @endif
-                                                        @else
-                                                            {{-- This event is already locked/ended --}}
-                                                            <span class="badge bg-secondary" data-bs-toggle="tooltip"
-                                                                title="This course has been ended and is locked from editing">
-                                                                <i class="bi bi-lock-fill me-1"></i>Ended
-                                                            </span>
-                                                        @endif
-            
-                                                    @else
-            
-                                                        @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
-                                                            <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
-                                                                <i class="fa fa-list text-danger me-2"></i>
+                                            <td>{{ $item['title'] }}</td>
+                                            <td>{{ $item['course'] }}</td>
+                                            <td>{{ $item['lesson'] }}</td>
+                                            <td>{{ ucfirst(str_replace('_',' ', $item['type'])) }}</td>
+                                            <td>{{ $item['status'] }}</td>
+                                            <td>
+                                            @if($item['type'] == 'TrainingEvents')
+                                                @if(get_user_role(auth()->user()->role) == 'instructor')
+                                                    @if(empty($event->is_locked))
+                                                        @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                                                            <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                                                                <i class="fa fa-eye text-danger me-2"></i>
                                                             </a>
                                                         @endif
-            
+                                                    @else
+                                                        {{-- This event is already locked/ended --}}
+                                                        <span class="badge bg-secondary" data-bs-toggle="tooltip"
+                                                            title="This course has been ended and is locked from editing">
+                                                            <i class="bi bi-lock-fill me-1"></i>Ended
+                                                        </span>
                                                     @endif
+        
                                                 @else
-                                                    <a href="{{ $item['action_url'] }}" class="btn btn-primary btn-sm">
-                                                        {{ $item['action_text'] }}
-                                                    </a>
+        
+                                                    @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
+                                                        <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
+                                                            <i class="fa fa-list text-danger me-2"></i>
+                                                        </a>
+                                                    @endif
+        
                                                 @endif
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    @endif
+                                            @else
+                                                <a href="{{ $item['action_url'] }}" class="btn btn-primary btn-sm">
+                                                    {{ $item['action_text'] }}
+                                                </a>
+                                            @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
@@ -1605,13 +1597,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
             //     }
             // });
 
-            // $('#pendingitemTable').DataTable({
-            //     searching: true,
-            //     pageLength: 10,
-            //     language: {
-            //         emptyTable: "No pending items"
-            //     }
-            // });
+            $('#pendingitemTable').DataTable({
+                searching: true,
+                pageLength: 10,
+                language: {
+                    emptyTable: "No outstanding items"
+                }
+            });
 
             $('#pendingbookingTable').DataTable({
                 searching: true,
