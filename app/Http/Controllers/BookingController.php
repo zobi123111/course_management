@@ -147,27 +147,36 @@ class BookingController extends Controller
         ]);
     }
 
-
     public function approve(Request $request)
     {
-        $booking = Booking::find($request->id);
-        $booking->status = "approved";
+        $booking = Booking::findOrFail($request->id);
+
+        $booking->status = 'approved';
         $booking->save();
 
-        $studentEmail = User::find($booking->std_id)->email;
-        $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
-
-        $allEmails = array_merge([$studentEmail], $ouEmails);
+        Booking::where('id', '!=', $booking->id)
+            ->where('resource', $booking->resource)
+            ->where(function ($q) use ($booking) {
+                $q->where('start', '<', $booking->end)
+                ->where('end', '>', $booking->start);
+            })
+            ->update(['status' => 'rejected']);
 
         if ($booking->send_email == 1) {
-            Mail::send('emailtemplates.approved_booking_email', ['booking' => $booking], function ($message) use ($allEmails) {
-                $message->to($allEmails)
-                        ->subject('Booking Approved');
-            });
+
+            $studentEmail = User::find($booking->std_id)->email;
+            $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
+
+            $allEmails = array_merge([$studentEmail], $ouEmails);
+
+            Mail::send('emailtemplates.approved_booking_email',['booking' => $booking],function ($message) use ($allEmails) {
+                    $message->to($allEmails)->subject('Booking Approved');
+                });
         }
 
         return response()->json(['success' => true]);
     }
+
 
     public function reject(Request $request)
     {
