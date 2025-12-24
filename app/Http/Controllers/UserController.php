@@ -370,6 +370,8 @@ class UserController extends Controller
 
     public function profileUpdate(Request $request)
     {
+
+        // dd($request->all());
         $issueDates = $request->input('issue_date', []);
         $expiry_date = $request->input('expiry_date', []);
 
@@ -467,6 +469,11 @@ class UserController extends Controller
 
         $userToUpdate = User::find($request->id);
         $document = UserDocument::where('user_id', $userToUpdate->id)->first();
+
+        $orgUnit = OrganizationUnits::findOrFail($userToUpdate->ou_id);
+        
+        $orgUnit->update(['send_email' => $request->send_email ?? 0, ]);
+        
         // dd($request->has('non_expiring_licence'));
         if ($userToUpdate) {
             $rules = [];
