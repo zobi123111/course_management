@@ -2068,34 +2068,34 @@
                             <input type="hidden" name="event_id" id="event_id" value="{{ $trainingEvent->id }}">
                             <div class="accordion accordion-flush" id="faq-group-2">
                                 <?php
-                                $hours_credited = $eventLesson->hours_credited;
-                                $hours_credited = "08:02:00"; // example
+                                    $hours_credited = $eventLesson->hours_credited;
+                                    $hours_credited = "08:02:00"; // example
 
-                                list($hours, $minutes, $seconds) = explode(':', $eventLesson->hours_credited);
+                                    list($hours, $minutes, $seconds) = explode(':', $eventLesson->hours_credited);
 
-                                $hours = (int) $hours;
-                                $minutes = (int) $minutes;
+                                    $hours = (int) $hours;
+                                    $minutes = (int) $minutes;
 
-                                $hours_credited = $minutes > 0
-                                    ? "{$hours}hrs {$minutes}min"
-                                    : "{$hours}hrs";
+                                    $hours_credited = $minutes > 0
+                                        ? "{$hours}hrs {$minutes}min"
+                                        : "{$hours}hrs";
 
-                                $lesson = $eventLesson->lesson;
-                                $isLocked = $eventLesson->is_locked == 1;
+                                    $lesson = $eventLesson->lesson;
+                                    $isLocked = $eventLesson->is_locked == 1;
                                 ?>
 
 
                                 <?php
-                                if ($lesson->lesson_type == "groundschool") {
-                                    $duration = $trainingEvent->course->groundschool_hours ?? 0;
-                                } elseif ($lesson->lesson_type == "simulator") {
-                                    $duration = $trainingEvent->course->simulator_hours ?? 0;
-                                } else {
-                                    $duration = 0;
-                                }
+                                    if ($lesson && $lesson->lesson_type == "groundschool") {
+                                        $duration = $trainingEvent->course->groundschool_hours ?? 0;
+                                    } elseif ($lesson && $lesson->lesson_type == "simulator") {
+                                        $duration = $trainingEvent->course->simulator_hours ?? 0;
+                                    } else {
+                                        $duration = 0;
+                                    }
 
-                                $formattedDuration = number_format($duration, 2);
-                                $hourLabel = ($formattedDuration == 1.00) ? 'hour' : 'hours';
+                                    $formattedDuration = number_format($duration, 2);
+                                    $hourLabel = ($formattedDuration == 1.00) ? 'hour' : 'hours';
                                 ?>
                                 <div class="accordion-item">
                                     <input type="hidden" name="tg_lesson_id[]" value="{{ $eventLesson->id }}">
@@ -2267,7 +2267,7 @@
                                         </div>
 
                                         <div class="accordion-item">
-                                            @if($lesson->enable_cbta==1)
+                                            @if($lesson && $lesson->enable_cbta==1)
                                             <h2 class="accordion-header">
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <button type="button" class="accordion-button {{ $isLocked ? 'collapsed' : 'collapsed' }}" data-bs-toggle="collapse"
@@ -2285,21 +2285,23 @@
                                             </div>
                                             <div class="accordion-body">
                                                 @php
-                                                $competencies = [
-                                                'KNO' => 'Application of knowledge',
-                                                'PRO' => 'Application of Procedures and compliance with regulations',
-                                                'COM' => 'Communication',
-                                                'FPA' => 'Aeroplane flight path management - automation',
-                                                'FPM' => 'Aeroplane flight path management - Manual Control',
-                                                'LTW' => 'Leadership & Teamwork',
-                                                'PSD' => 'Problem-solving - decision-making',
-                                                'SAW' => 'Situation awareness and management of information',
-                                                'WLM' => 'Workload Management',
+                                                    $competencies = [
+                                                    'KNO' => 'Application of knowledge',
+                                                    'PRO' => 'Application of Procedures and compliance with regulations',
+                                                    'COM' => 'Communication',
+                                                    'FPA' => 'Aeroplane flight path management - automation',
+                                                    'FPM' => 'Aeroplane flight path management - Manual Control',
+                                                    'LTW' => 'Leadership & Teamwork',
+                                                    'PSD' => 'Problem-solving - decision-making',
+                                                    'SAW' => 'Situation awareness and management of information',
+                                                    'WLM' => 'Workload Management',
                                                 ];
-                                                $lessonCompetencies = $competencyGrades[$lesson->id] ?? collect();
+                                                $lessonCompetencies = $$eventLesson ?? collect();
+
                                                 @endphp
-                                                @foreach($competencies as $code => $title)
+                                                    @foreach($competencies as $code => $title)
                                                 @php
+
                                                 $code = strtolower($code); // make sure it's lowercase
                                                 $grading = $lessonCompetencies->first();
 

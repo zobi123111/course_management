@@ -212,6 +212,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/lesson/{id}', [LessonController::class, 'showLesson'])->name('lesson.show');
     Route::post('/lesson/update', [LessonController::class, 'updateLesson'])->name('lesson.update');
     Route::post('/lesson/delete', [LessonController::class, 'deleteLesson'])->name('lesson.delete');
+    Route::post('/lesson/check-used', [LessonController::class, 'checkLessonUsed']);
     Route::post('/lessons/reorder', [LessonController::class, 'reorder'])->name('lessons.reorder');
 
     //Sub-Lesson 

@@ -216,20 +216,67 @@ class LessonController extends Controller
     }
     
 
-    public function deleteLesson(Request $request)
-    {        
-        $lesson = CourseLesson::findOrFail(decode_id($request->lesson_id));
-        if ($lesson) {
-            $course_id = $lesson->course_id;
-            $lesson->delete();
-            return redirect()->route('course.show',['course_id' => encode_id($course_id)])->with('message', 'This lesson deleted successfully');
-        }
+    // public function deleteLesson(Request $request)
+    // {        
+    //     $lesson = CourseLesson::findOrFail(decode_id($request->lesson_id));
+    //     if ($lesson) {
+    //         $course_id = $lesson->course_id;
+    //         $lesson->delete();
+    //         return redirect()->route('course.show',['course_id' => encode_id($course_id)])->with('message', 'This lesson deleted successfully');
+    //     }
+    // }
+
+    public function checkLessonUsed(Request $request)
+    {
+        $lessonId = decode_id($request->lesson_id);
+
+        $isUsed = TrainingEvents::whereJsonContains('lesson_ids', (string) $lessonId)->exists();
+
+        return response()->json([
+            'used' => $isUsed
+        ]);
     }
 
-     
+    public function deleteLesson(Request $request)
+    {
+        $lessonId = decode_id($request->lesson_id);
 
+        $lesson = CourseLesson::findOrFail($lessonId);
 
-    
+        $course_id = $lesson->course_id;
+        $lesson->delete();
+
+        return response()->json([
+            'deleted' => true,
+            'redirect' => route('course.show', ['course_id' => encode_id($course_id)])
+        ]);
+    }
+
+    // public function deleteLesson(Request $request)
+    // {
+    //     $lessonId = decode_id($request->lesson_id);
+
+    //     $lesson = CourseLesson::findOrFail($lessonId);
+
+    //     $isUsed = TrainingEvents::whereJsonContains('lesson_ids', (string) $lessonId)->exists();
+
+    //     if ($isUsed) {
+    //         return response()->json([
+    //             'used' => true,
+    //             'message' => 'You can’t delete this lesson because it is already assigned to a training event.'
+    //         ]);
+    //     }
+
+    //     $course_id = $lesson->course_id;
+    //     $lesson->delete();
+
+    //     return response()->json([
+    //         'used' => false,
+    //         'deleted' => true,
+    //         'redirect' => route('course.show', ['course_id' => encode_id($course_id)])
+    //     ]);
+    // }
+
     /**
      * Store a newly created resource in storage.
      */
