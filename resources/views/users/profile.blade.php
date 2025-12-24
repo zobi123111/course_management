@@ -117,6 +117,96 @@
     .close_btn {
         background-color: #0d6efd;
     }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 110px;
+        height: 30px;
+    }
+
+    .switch-input {
+        display: none;
+    }
+
+    .switch-button {
+        position: absolute;
+        cursor: pointer;
+        background-color: #dc3545; /* OFF - red */
+        border-radius: 30px;
+        inset: 0;
+        transition: background-color 0.3s ease;
+        overflow: hidden;
+    }
+
+    .switch-button-left,
+    .switch-button-right {
+        position: absolute;
+        width: 70%;
+        text-align: center;
+        line-height: 30px;
+        font-size: 11px;
+        font-weight: bold;
+        color: #fff;
+        transition: all 0.3s ease;
+    }
+
+    /* OFF text */
+    .switch-button-left {
+        left: 30px;
+    }
+
+    /* ON text (hidden initially) */
+    .switch-button-right {
+        right: 30px;
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    /* Knob */
+    .switch-button::before {
+        content: "";
+        position: absolute;
+        height: 26px;
+        width: 26px;
+        left: 2px;
+        top: 2px;
+        background-color: #fff;
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+    }
+
+    /* ON state */
+    .switch-input:checked + .switch-button {
+        background-color: #28a745; /* green */
+    }
+
+    .switch-input:checked + .switch-button::before {
+        transform: translateX(78px);
+    }
+
+    .switch-input:checked + .switch-button .switch-button-left {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+
+    .switch-input:checked + .switch-button .switch-button-right {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    .email-switch {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: 15px;
+    }
+
+    .switch-text {
+        margin: 0;
+        cursor: pointer;
+        font-weight: 500;
+    }
 </style>
 
 <div class="main_cont_outer">
@@ -684,6 +774,7 @@
                                 </div>
                                 @endif
                             </div>
+                            
                             <div class="row">
                                
                                 <div class="col-md-12">
@@ -859,26 +950,54 @@
                               
                             </div>
 
+                            <div class="row">
 
-                            @if ($user->custom_field_required == 1)
-                            <div class="col-6">
-                                <label for="custom_field_checkbox" class="form-label"><strong>Custom Fields </strong></label>
-                                <label for="customfield_filelabel" id="customfield_filelabel" class="form-label">Date</label>
-                                <input type="checkbox" name="custom_date_checkbox" id="custom_date_checkbox" class="m-2" {{ ($user->custom_field_date)? 'checked': '' }}>
-                                <label for="customfield_textlabel" id="customfield_textlabel" class="form-label">Text</label>
-                                <input type="checkbox" name="custom_text_checkbox" id="custom_text_checkbox" class="ms-2" {{ ($user->custom_field_text)? 'checked': '' }}>
-                                <div class="">
-                                    <input type="date" name="custom_field_date" id="custom_date" class="form-control mt-3"
-                                        style="display: none;" value="{{ ($user->custom_field_date)? $user->custom_field_date: '' }}">
-                                    <div id="custom_field_date_error_up" class="text-danger error_e"></div>
-                                    <input type="text" name="custom_field_text" id="custom_text" class="form-control mt-3"
-                                        placeholder="Enter the Text" style="display: none;" value="{{ ($user->custom_field_text)? $user->custom_field_text: '' }}">
-                                    <div id="custom_field_text_error_up" class="text-danger error_e"></div>
-                                </div>
+                                @if ($user->custom_field_required == 1)
+                                    <div class="col-6">
+                                        <label for="custom_field_checkbox" class="form-label"><strong>Custom Fields </strong></label>
+                                        <label for="customfield_filelabel" id="customfield_filelabel" class="form-label">Date</label>
+                                        <input type="checkbox" name="custom_date_checkbox" id="custom_date_checkbox" class="m-2" {{ ($user->custom_field_date)? 'checked': '' }}>
+                                        <label for="customfield_textlabel" id="customfield_textlabel" class="form-label">Text</label>
+                                        <input type="checkbox" name="custom_text_checkbox" id="custom_text_checkbox" class="ms-2" {{ ($user->custom_field_text)? 'checked': '' }}>
+                                        <div class="">
+                                            <input type="date" name="custom_field_date" id="custom_date" class="form-control mt-3"
+                                                style="display: none;" value="{{ ($user->custom_field_date)? $user->custom_field_date: '' }}">
+                                            <div id="custom_field_date_error_up" class="text-danger error_e"></div>
+                                            <input type="text" name="custom_field_text" id="custom_text" class="form-control mt-3"
+                                                placeholder="Enter the Text" style="display: none;" value="{{ ($user->custom_field_text)? $user->custom_field_text: '' }}">
+                                            <div id="custom_field_text_error_up" class="text-danger error_e"></div>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                <?php 
+                                    $user = auth()->user(); 
+                                    $isAdmin = $user->is_admin == 1;
+                                    $email = $user->organization->send_email ?? 0;
+                                ?>
+
+                                @if($isAdmin)
+                                    <div class="col-md-6">
+                                        <div class="email-switch">
+                                            <label for="send_email" class="switch-text">
+                                                Send Email Notification
+                                            </label>
+
+                                            <input type="hidden" name="send_email" value="0">
+
+                                            <label class="switch mt-2">
+                                                <input type="checkbox" id="send_email" name="send_email" value="1" class="switch-input" {{ $email == 1 ? 'checked' : '' }} >
+                                                <div class="switch-button">
+                                                    <span class="switch-button-left">Send Email</span>
+                                                    <span class="switch-button-right">Not Send Email</span>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                @endif
+
                             </div>
-                            @endif
                         </div>
-
                     </div>
 
                     <div class="text-center" style="display: flex; justify-content: center;">

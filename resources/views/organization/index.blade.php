@@ -3,6 +3,100 @@
 @extends('layout.app')
 @section('content')
 
+
+<style>
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 110px;
+        height: 30px;
+    }
+
+    .switch-input {
+        display: none;
+    }
+
+    .switch-button {
+        position: absolute;
+        cursor: pointer;
+        background-color: #dc3545; /* OFF - red */
+        border-radius: 30px;
+        inset: 0;
+        transition: background-color 0.3s ease;
+        overflow: hidden;
+    }
+
+    .switch-button-left,
+    .switch-button-right {
+        position: absolute;
+        width: 70%;
+        text-align: center;
+        line-height: 30px;
+        font-size: 11px;
+        font-weight: bold;
+        color: #fff;
+        transition: all 0.3s ease;
+    }
+
+    /* OFF text */
+    .switch-button-left {
+        left: 30px;
+    }
+
+    /* ON text (hidden initially) */
+    .switch-button-right {
+        right: 30px;
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    /* Knob */
+    .switch-button::before {
+        content: "";
+        position: absolute;
+        height: 26px;
+        width: 26px;
+        left: 2px;
+        top: 2px;
+        background-color: #fff;
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+    }
+
+    /* ON state */
+    .switch-input:checked + .switch-button {
+        background-color: #28a745; /* green */
+    }
+
+    .switch-input:checked + .switch-button::before {
+        transform: translateX(78px);
+    }
+
+    .switch-input:checked + .switch-button .switch-button-left {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+
+    .switch-input:checked + .switch-button .switch-button-right {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    .email-switch {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .switch-text {
+        margin: 0;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+
+</style>
+
 @if(session()->has('message'))
 <div id="alertMessage" class="alert alert-success fade show" role="alert">
     <i class="bi bi-check-circle me-1"></i>
@@ -217,10 +311,37 @@
                         <input type="password" name="password_confirmation" class="form-control" id="confirmpassword">
                         <div id="password_confirmation_error" class="text-danger error_e"></div>
                     </div>
+
+                    <div class="form-group">
+                        <div class="email-switch">
+                            <label for="create_send_email" class="switch-text">
+                                Send Email Notification
+                            </label>
+
+                            <!-- Hidden input ensures 0 is sent if unchecked -->
+                            <input type="hidden" name="send_email" value="0">
+
+                            <label class="switch mt-2">
+                                <input
+                                    type="checkbox"
+                                    id="create_send_email"
+                                    name="send_email"
+                                    value="1"
+                                    class="switch-input"
+                                >
+                                <div class="switch-button">
+                                    <span class="switch-button-left">Send Email</span>
+                                    <span class="switch-button-right">Not Send Email</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="modal-footer"> 
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
                         <a href="#" type="button" id="submitOrgUnit" class="btn btn-primary sbt_btn">Save </a>
                     </div>
+
                     <div class="loader" style="display: none;"></div>
                 </form>
             </div>
@@ -316,6 +437,31 @@
                             <div id="password_confirmation_error_up" class="text-danger error_e"></div>
                         </div>
                     </div>
+
+                    <div class="email-switch">
+                        <label for="edit_send_email" class="switch-text">
+                            Send Email Notification
+                        </label>
+
+                        <!-- This ensures 0 is sent when unchecked -->
+                        <input type="hidden" name="send_email" value="0">
+
+                        <label class="switch mt-2">
+                            <input
+                                type="checkbox"
+                                id="edit_send_email"
+                                name="send_email"
+                                value="1"
+                                class="switch-input"
+                            >
+                            <div class="switch-button">
+                                <span class="switch-button-left">Send Email</span>
+                                <span class="switch-button-right">Not Send Email</span>
+                            </div>
+                        </label>
+                    </div>
+
+
                     <div class="modal-footer">
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
                         <a href="#" type="button" id="updateOrgUnit" class="btn btn-primary sbt_btn">Update</a>
@@ -437,6 +583,7 @@ $(document).ready(function() {
                     $('#edit_description').val(response.organizationUnit.description || '');
                     $('#edit_status').val(response.organizationUnit.status || '').trigger('change'); // Useful for select fields
                     $('#edit_org_logo').val(response.organizationUnit.org_logo || '');
+                    $('#edit_send_email').prop('checked', response.organizationUnit.send_email == 1);
                     if (response.organizationUnit.org_logo) {
                         let fileName = response.organizationUnit.org_logo;
                         let imagePath = '/storage/organization_logo/' + fileName; // Adjust the path as per your storage setup 

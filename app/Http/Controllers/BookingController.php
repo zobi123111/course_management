@@ -9,6 +9,7 @@ use App\Models\OrganizationUnits;
 use App\Models\Group;
 use App\Models\User;
 use Auth;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 
 
@@ -79,7 +80,7 @@ class BookingController extends Controller
                 'title'        => $event->users->fname . ' ' . $event->users->lname,
                 'resource'     => $event->resources->name ?? '',
                 'start'        => $event->start,
-                'end'          => $event->end,
+                'end'          => Carbon::parse($event->end)->addDay(),
                 'booking_type' => $event->booking_type,
                 'status'       => $event->status,
                 'can_access'   => $canAccess,
@@ -110,7 +111,9 @@ class BookingController extends Controller
         $booking->send_email = $request->boolean('send_email') ? 1 : 0;
         $booking->save();
 
-        if ($booking->send_email == 1) {
+        $sendemail = organizationUnits::where('id', $request->organizationUnits)->first();
+
+        if ($sendemail->send_email == 1) {
 
             $studentEmail = User::find($booking->std_id)->email;
             $instructor = User::find($booking->instructor_id)->email;
@@ -164,7 +167,9 @@ class BookingController extends Controller
             })
             ->update(['status' => 'rejected']);
 
-        if ($booking->send_email == 1) {
+        $sendemail = organizationUnits::where('id', $request->organizationUnits)->first();
+
+        if ($sendemail->send_email == 1) {
 
             $studentEmail = User::find($booking->std_id)->email;
             $instructor = User::find($booking->instructor_id)->email;
@@ -187,7 +192,10 @@ class BookingController extends Controller
         $booking->status = "rejected";
         $booking->save();
 
-        if ($booking->send_email == 1) {
+
+        $sendemail = organizationUnits::where('id', $request->organizationUnits)->first();
+        
+        if ($sendemail->send_email == 1) {
 
             $studentEmail = User::find($booking->std_id)->email;
             $instructor = User::find($booking->instructor_id)->email;

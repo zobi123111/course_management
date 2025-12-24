@@ -186,7 +186,7 @@
                     <option value="">Select Instructor</option>
                 </select>
 
-                <div class="email-switch">
+                <!-- <div class="email-switch">
                     <label for="create_send_email" class="switch-text">
                         Send Email Notification
                     </label>
@@ -202,7 +202,7 @@
                             <span class="switch-button-right">Send Email</span>
                         </div>
                     </label>
-                </div>
+                </div> -->
 
             </div>
 
@@ -307,7 +307,7 @@
                 </select>
 
 
-                <div class="email-switch">
+                <!-- <div class="email-switch">
                     <label for="edit_send_email" class="switch-text">
                         Send Email Notification
                     </label>
@@ -322,7 +322,7 @@
                             <span class="switch-button-right">Not Send Email</span>
                         </div>
                     </label>
-                </div>
+                </div> -->
 
                 <!-- <label class="switch mt-2">
                     <input type="checkbox"
@@ -404,6 +404,12 @@
             selectable: true,
             displayEventTime: false,
             //selectOverlap: false,
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'basicDay,basicWeek,month'
+            },
+            defaultView: 'basicDay',
             events: SITEURL + "/fullcalendar",
             events: function(start, end, timezone, callback) {
                 $.ajax({
@@ -419,6 +425,12 @@
             },
 
             eventRender: function(event, element) {
+
+                element.find('.fc-title').html(`
+                    <div style="font-weight:600;">Resource: ${event.resource}</div>
+                    <div style="font-size:14px;">Booked for: ${event.title}</div>
+                `);
+
                 if (event.status === 'pending') element.css('background', '#f1c40f');
                 if (event.status === 'approved') element.css('background', '#2ecc71');
                 if (event.status === 'rejected') element.css('background', '#9b4747');
@@ -444,8 +456,9 @@
                 }
                 $('#booking_student').text(event.student);
                 $('#booking_resource').text(event.resource);
-                $('#start_date').text(moment(event.start).format("DD-MM-YYYY HH:mm"));
-                $('#end_date').text(moment(event.end).format("DD-MM-YYYY HH:mm"));
+                $('#start_date').text(moment(event.start).format("DD-MM-YYYY"));
+                $('#end_date').text(moment(event.end).format("DD-MM-YYYY"));
+
                 let typeText = '';
                 if (event.booking_type == 1) {
                     typeText = 'Solo';
@@ -517,7 +530,7 @@
             var group = $("#group").val();
             var start = $('#booking_start').val();
             var end = $('#booking_end').val();
-            var send_email = $("#create_send_email").is(":checked");
+            // var send_email = $("#create_send_email").is(":checked");
 
             let bookingType = $("#booking_type").val();
             let instructor  = $("#booking_instructor").val();
@@ -542,7 +555,7 @@
                 end: end,
                 organizationUnits: organizationUnits,
                 group: group,
-                send_email: send_email,
+                // send_email: send_email,
                 booking_type: $("#booking_type").val(),
                 resource_type: $("#resource_type").val(),
                 instructor: $("#booking_instructor").val(),
@@ -663,7 +676,7 @@
 
             $('#edit_booking_type').val(selectedEvent.booking_type);
 
-            $('#edit_send_email').prop('checked', selectedEvent.send_email == 1 ? true : false);
+            // $('#edit_send_email').prop('checked', selectedEvent.send_email == 1 ? true : false);
 
             editStartPicker.setDate(
                 moment(selectedEvent.start).format("YYYY-MM-DD HH:mm"),
@@ -743,7 +756,7 @@
                 start: $('#edit_booking_start').val(),
                 end: $('#edit_booking_end').val(),
                 instructor_id: $('#edit_instructor').val(),
-                send_email: $('#edit_send_email').is(':checked') ? 1 : 0
+                // send_email: $('#edit_send_email').is(':checked') ? 1 : 0
             }, function () {
                 toastr.success("Booking Updated");
                 $('#editBookingModal').modal('hide');

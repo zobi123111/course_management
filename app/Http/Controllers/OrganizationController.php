@@ -120,14 +120,9 @@ class OrganizationController extends Controller
         return response()->json(['permissions' => $organizationUnit->permission]);
     }
 
-
-
-    
-
-
     public function saveOrgUnit(Request $request)
     {
-        //dd($request->all());
+        // dd($request->all());
         $rules = [
             'org_unit_name' => 'required|unique:organization_units,org_unit_name,NULL,id,deleted_at,NULL',
             'description' => 'required',
@@ -181,6 +176,7 @@ class OrganizationController extends Controller
                 'org_logo' => $logo_name[0] ?? null,
                 'uk_ato_number'    => $request->uk_ato_num ?? null,
                 'easa_ato_number'  => $request->easa_ato_num ?? null,
+                'send_email'       => $request->send_email ?? 0,
             ]);
     
             // Step 2: Store the user data only if email is provided
@@ -254,7 +250,6 @@ class OrganizationController extends Controller
 
     public function updateOrgUnit(Request $request)
     {
-      //  dd($request->all());
         $rules = [
             'org_unit_name' => 'required|unique:organization_units,org_unit_name,' . $request->org_unit_id . ',id,deleted_at,NULL',
             'description' => 'required',
@@ -313,9 +308,10 @@ class OrganizationController extends Controller
                 'org_unit_name' => $request->org_unit_name,
                 'description' => $request->description,
                 'status' => $request->status,
-               'org_logo' => $logo_name[0] ?? $request->existing_org_logo,
-               'uk_ato_number'   => $request->uk_ato_number,
-              'easa_ato_number'  => $request->easa_ato_number
+                'org_logo' => $logo_name[0] ?? $request->existing_org_logo,
+                'uk_ato_number'   => $request->uk_ato_number,
+                'easa_ato_number'  => $request->easa_ato_number,
+                'send_email'       => $request->send_email ?? 0,
             ]);
 
             // Step 2: Update existing user
