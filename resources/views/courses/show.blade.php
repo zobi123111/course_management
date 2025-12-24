@@ -647,6 +647,7 @@
 @endsection
 
 @section('js_scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
 
@@ -898,25 +899,106 @@ $(document).ready(function() {
     //     $('#lessonId').val(lessonId);
 
     // });
-    $('.delete-lesson-icon').click(function(e) {
+    
+    $('.delete-lesson-icon').on('click', function (e) {
         e.preventDefault();
-        $('#deleteLesson').modal('show');
-        var lessonId = $(this).data('lesson-id');
 
-        // var lessonTitle = $(this).closest('.list-group-item').find('.lessontitle').text().trim();
-        var lessonTitle = $(this).closest('.lesson_card').find('.lessonName').text();
+        let lessonId = $(this).data('lesson-id');
+        let lessonTitle = $(this).closest('.lesson_card')
+                                .find('.lessonName')
+                                .text()
+                                .trim();
 
+        $.post("{{ url('/lesson/check-used') }}", {
+            _token: "{{ csrf_token() }}",
+            lesson_id: lessonId
+        }, function (res) {
 
-        console.log("Lesson Title: " + lessonTitle);
+            if (res.used) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Cannot Delete',
+                    text: `This lesson "${lessonTitle}" is already used in a training event.`
+                });
+                return;
+            }
 
-        if (!lessonTitle) {
-            lessonTitle = "Unknown Lesson";
-        }
+            Swal.fire({
+                title: 'Are you sure?',
+                text: `Do you really want to delete "${lessonTitle}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
 
-        $('#append_name').html(lessonTitle);
+                if (result.isConfirmed) {
+                    $.post("{{ url('/lesson/delete') }}", {
+                        _token: "{{ csrf_token() }}",
+                        lesson_id: lessonId
+                    }, function (delRes) {
 
-        $('#lessonId').val(lessonId);
+                        if (delRes.deleted) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted',
+                                text: 'Lesson deleted successfully'
+                            }).then(() => {
+                                window.location.href = delRes.redirect;
+                            });
+                        }
+
+                    });
+                }
+            });
+        });
     });
+
+    // $('.delete-lesson-icon').on('click', function (e) {
+    //     e.preventDefault();
+
+    //     let lessonId = $(this).data('lesson-id');
+    //     let lessonTitle = $(this).closest('.lesson_card')
+    //                             .find('.lessonName')
+    //                             .text()
+    //                             .trim();
+
+    //     $.post("{{ url('/lesson/delete') }}", {
+    //         _token: "{{ csrf_token() }}",
+    //         lesson_id: lessonId
+    //     })
+    //     .done(function (res) {
+
+    //         if (res.used) {
+    //             Swal.fire({
+    //                 icon: 'warning',
+    //                 title: 'Cannot Delete',
+    //                 text: 'This lesson "' + lessonTitle + '" is already used in a training event.'
+    //             });
+    //         } else if (res.deleted) {
+    //             Swal.fire({
+    //                 icon: 'success',
+    //                 title: 'Deleted',
+    //                 text: 'Lesson deleted successfully'
+    //             }).then(() => {
+    //                 window.location.href = res.redirect;
+    //             });
+    //         }
+
+    //     })
+    //     .fail(function () {
+    //         Swal.fire({
+    //             icon: 'error',
+    //             title: 'Error',
+    //             text: 'Something went wrong while deleting the lesson.'
+    //         });
+    //     });
+    // });
+
+
+
 
 
 
