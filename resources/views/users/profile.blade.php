@@ -453,7 +453,7 @@
                                                 <div class="licence1_file">
                                                     @if(!empty($entry['children'][0]['file_path']))
                                                     <a href="{{ asset('storage/' . $entry['children'][0]['file_path']) }}" target="_blank"
-                                                        class="btn btn-sm btn-outline-primary">
+                                                        class="btn btn-sm btn-outline-primary" style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
                                                         <i class="bi bi-file-earmark-text me-1"></i> View File
                                                     </a>
                                                     @endif
@@ -641,7 +641,7 @@
                                             <div class="licence2_file">
                                                 @if(!empty($entry['children'][0]['file_path']))
                                                 <a href="{{ asset('storage/' . $entry['children'][0]['file_path']) }}" target="_blank"
-                                                    class="btn btn-sm btn-outline-primary">
+                                                    class="btn btn-sm btn-outline-primary" style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
                                                     <i class="bi bi-file-earmark-text me-1"></i> View File
                                                 </a>
                                                 @endif
