@@ -64,7 +64,7 @@
                 <!-- Additional Details: Passport & License -->
 
                 <div class="row g-4 mt-3">
-                    
+                    @if($user->passport_required == 1)
                     <div class="col-md-12 mb-4">
                         <h5 class="text-muted mb-3">
                             <i class="bi bi-passport text-primary me-2"></i>Passport Details
@@ -114,10 +114,11 @@
                         <p class="text-muted">No Passport details available.</p>
                         @endif
                     </div>
-
+                    @endif
 
                     <div class="row">
                         <!-- License Details -->
+                         @if($user->licence_required == 1)
                             <div class="col-md-6 mb-4 license-six-cont">
                                 <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>UK License Details</h5>
                                 @if($document && $document->licence)
@@ -269,12 +270,12 @@
                                 </div>
                                 @endif
                             </div>
-
+                            @endif
                         <!-- Second License Details -->
-
+                            @if($user->licence_2_required == 1)
                             <div class="col-md-6 mb-4 license-six-cont">
                                     <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>EASA License Details</h5>
-                        @if(!empty($document->licence_2))
+                                @if(!empty($document->licence_2))
                                     <div class="validate-inner-cont">
                                         <div class="licensefile">
                                             <p class="mb-0"><strong>Number:</strong> {{ $document->licence_2 }}</p>
@@ -418,15 +419,16 @@
                                             </div>
                                         </div>
                                     </div>
-                                @endif
-                             @else
+                                    @endif
+                                 @else
                                 <p class="text-muted">No license details available.</p>
                                 @endif
                             </div>
+                            @endif
                     </div>
 
                     <!-- Medical Details -->
-
+                        @if($user->medical == 1)
                         <div class="col-md-12 mb-4">
                             <h5 class="text-muted mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>UK Medical Details</h5>
                             @if($document && $document->medical && !empty($document->medical_issuedby) && !empty($document->medical_class) && !empty($document->medical_issuedate))
@@ -457,13 +459,13 @@
                             <p class="text-muted">No medical details available.</p>
                             @endif
                         </div>
-
+                        @endif
                     <!-- Second Medical Details -->
 
-                   
+                        @if($user->medical_2_required == 1)
                         <div class="col-md-12 mb-4">
                             <h5 class="text-muted mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>EASA Medical Details</h5>
-                             @if($user->medical_2_required == 1)
+                            @if($document && $document->medical_2 && !empty($document->medical_issuedby_2) && !empty($document->medical_class_2) && !empty($document->medical_issuedate_2))
                             <div class="d-flex flex-wrap align-items-center gap-3">
                                 <p class="mb-0"><strong>Issued By:</strong> {{ $document->medical_issuedby_2 }}</p>
                                 <p class="mb-0"><strong>Class:</strong> {{ $document->medical_class_2 }}</p>
@@ -485,10 +487,11 @@
                                 <button class="btn btn-danger btn-sm invalidate-btn" data-user-id="{{ $user->id }}" data-type="medical_2">Invalidate</button>
                                 @endif
                             </div>
-                             @else
+                            @else
                             <p class="text-muted">No medical details available.</p>
                             @endif
                         </div>
+                        @endif
                         
                         <hr class="my-4">
 
