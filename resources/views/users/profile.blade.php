@@ -313,7 +313,8 @@
                         @if ($user->licence_required == 1)
                         <div class="col-md-12">
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-lg-6 col-md-12" id="first_licence_section">
+                                    {{-- Licence Fields --}}
                                     <label for="licence_checkbox" class="form-label">
                                         <strong>UK Licence <span class="text-danger">*</span>
                                             @if($document?->licence_invalidate == 1)
@@ -373,11 +374,11 @@
                                         </a>
                                     </div>
                                     @endif
-                                    <div class="row mt-4">
+                                    <div class="row">
                                         {{-- Licence 1 (UK) Section --}}
                                         @if(isset($grouped['licence_1']) && count($grouped['licence_1']))
                                         <!-- <div class="col-lg-6 col-md-12"> -->
-                                        <h4>Ratings linked to UK Licence</h4>
+                                        <h4 class="mt-2">Ratings linked to UK Licence</h4>
                                         @foreach($grouped['licence_1'] as $parentId => $entry)
                                         @php $i = $loop->index; @endphp
                                         @php
@@ -396,7 +397,6 @@
                                         <div class="card shadow-sm border rounded mb-4">
                                             <div class="card-body">
                                                 <h5 class="card-title">{{ $rating->name ?? ' ' }}</h5>
-                                                <h3>Verification</h3>
                                                 <div class="row">
                                                     <div class="col-md-6">
                                                         <label class="form-label mt-2"><strong>Issue Date</strong></label>
@@ -457,11 +457,7 @@
                                                         <i class="bi bi-file-earmark-text me-1"></i> View File
                                                     </a>
                                                     @endif
-
                                                 </div>
-
-
-
 
                                                 @if($parent->file_path)
                                                 <a href="{{ asset('storage/' . $parent->file_path) }}" target="_blank"
@@ -552,12 +548,16 @@
                                     <div class="text-danger error_e" id="licence_file_2_error_up"></div>
 
                                     @if ($document?->licence_file_2)
-                                    <a href="{{ asset('storage/' . $document->licence_file_2) }}" target="_blank"
-                                        class="btn btn-outline-primary btn-sm mt-3 d-flex align-items-center" style="width: fit-content;">
-                                        <i class="bi bi-file-earmark-text me-1"></i> View Licence
-                                    </a>
+                                    <div class="mt-3">
+                                        <a href="{{ asset('storage/' . $document->licence_file_2) }}" target="_blank"
+                                            class="btn btn-outline-primary btn-sm d-flex align-items-center"
+                                            style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
+                                            <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View
+                                            Licence
+                                        </a>
+                                    </div>
                                     @endif
-
+                                
                                     {{-- Ratings --}}
                                     @if(isset($grouped['licence_2']) && count($grouped['licence_2']))
                                     <h4 class="mt-2">Ratings linked to EASA Licence</h4>
@@ -582,10 +582,7 @@
 
 
                                     <?php
-                                    //echo $entry['children'][0]['user_id'] . "<br>";
-                                    // echo $entry['children'][0]['rating_id'] . "<br>";
-                                    // echo $entry['children'][0]['parent_id'] . "<br>";
-                                    // echo $entry['children'][0]['linked_to'] . "<br>";
+                                    
                                     ?>
                                     <div class="card shadow-sm border rounded mb-4">
                                         <div class="card-body">
@@ -776,7 +773,6 @@
                             </div>
                             
                             <div class="row">
-                               
                                 <div class="col-md-12">
                                     <div class="row">
                                       <!-- // -->@if ($user->medical == 1)

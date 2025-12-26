@@ -35,12 +35,13 @@
 
                 <li class="nav-item">
                     <select class="form-select" aria-label="Default select example" id="switch_role">
-                        <option disabled>Change Role To</option>
+                        <!-- <option disabled>Change Role To</option> -->
                         @foreach(getMultipleRoles() as $val)
-                            <option value="{{ $val->id }}" 
-                                {{ session('current_role', auth()->user()->role) == $val->id ? 'selected' : '' }}>
-                                {{ $val->role_name }}
-                            </option>
+                             @if(session('current_role', auth()->user()->role) == $val->id)
+                                <option value="{{ $val->id }}" selected>
+                                    {{ $val->role_name }}
+                                </option>
+                            @endif
                         @endforeach
                     </select>
                 </li>
