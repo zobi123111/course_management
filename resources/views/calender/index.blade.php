@@ -141,31 +141,14 @@
                 </select>
                 @endif
 
-                <label>Resource</label>
-                <select id="resource" name="resource" class="form-control mb-2">
-                    <option value="">Select Resource</option>
-                    @foreach ($resources as $val)
-                    <option value="{{ $val->id }}">{{ $val->name }}</option>
-                    @endforeach
-                </select>
                 @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                @endif
-
-                @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                <label>Select Student</label>
-                <select id="student" name="student" class="form-control mb-2">
-                    <option value="">Select Student</option>
-                    @foreach ($students as $val)
-                    <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
-                    @endforeach
-                </select>
                 @endif
 
                 <label>Start Date & Time</label>
-                <input type="text" id="booking_start" class="form-control mb-2" readonly>
+                <input type="date" id="booking_start" class="form-control mb-2" readonly>
 
                 <label>End Date & Time</label>
-                <input type="text" id="booking_end" class="form-control mb-2" readonly>
+                <input type="date" id="booking_end" class="form-control mb-2" readonly>
 
                 <label>Booking Type</label>
                 <select id="booking_type" name="booking_type" class="form-control mb-2">
@@ -181,10 +164,33 @@
                     <option value="3">Classroom</option>
                 </select>
 
-                <label>Instructor (optional)</label>
-                <select id="booking_instructor" class="form-control mb-2">
-                    <option value="">Select Instructor</option>
+                @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                <label>Select Student</label>
+                <select id="student" name="student" class="form-control mb-2">
+                    <option value="">Select Student</option>
+                    @foreach ($students as $val)
+                    <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
+                    @endforeach
                 </select>
+                @endif
+
+                <div id="create_resource_wrapper">
+                    <label>Resource</label>
+                    <select id="resource" name="resource" class="form-control mb-2">
+                        <option value="">Select Resource</option>
+                        @foreach ($resources as $val)
+                            <option value="{{ $val->id }}">{{ $val->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div id="create_instructor_wrapper">
+                    <label>Instructor</label>
+                    <select id="booking_instructor" class="form-control mb-2">
+                        <option value="">Select Instructor</option>
+                    </select>
+                </div>
+
 
                 <!-- <div class="email-switch">
                     <label for="create_send_email" class="switch-text">
@@ -274,20 +280,6 @@
                     @endforeach
                 </select>
 
-                <label>Resource</label>
-                <select id="edit_resource" class="form-control mb-2">
-                    @foreach ($resources as $val)
-                        <option value="{{ $val->id }}">{{ $val->name }}</option>
-                    @endforeach
-                </select>
-
-                <label>Student</label>
-                <select id="edit_student" class="form-control mb-2">
-                    @foreach ($students as $val)
-                        <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
-                    @endforeach
-                </select>
-
                 <label>Start Date & Time</label>
                 <input type="text" id="edit_booking_start" class="form-control mb-2">
 
@@ -301,10 +293,30 @@
                     <option value="3">Standby</option>
                 </select>
 
-                <label>Instructor</label>
-                <select id="edit_instructor" class="form-control mb-2">
-                    <option value="">Select Instructor</option>
+                <label>Student</label>
+                <select id="edit_student" class="form-control mb-2">
+                    @foreach ($students as $val)
+                        <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
+                    @endforeach
                 </select>
+
+                
+                <div id="edit_resource_wrapper">
+                    <label>Resource</label>
+                    <select id="edit_resource" class="form-control mb-2">
+                        @foreach ($resources as $val)
+                            <option value="{{ $val->id }}">{{ $val->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div id="edit_instructor_wrapper">
+                    <label>Instructor</label>
+                    <select id="edit_instructor" class="form-control mb-2">
+                        <option value="">Select Instructor</option>
+                    </select>
+                </div>
+
 
 
                 <!-- <div class="email-switch">
@@ -372,7 +384,7 @@
         // Important: initialize after Tempus Dominus script is loaded
         let startPicker = flatpickr("#booking_start", {
             enableTime: true,
-            dateFormat: "Y-m-d H:i",
+            dateFormat: "Y-m-d",
             time_24hr: true,
             minuteIncrement: 15,
 
@@ -390,7 +402,7 @@
 
         let endPicker = flatpickr("#booking_end", {
             enableTime: true,
-            dateFormat: "Y-m-d H:i",
+            dateFormat: "Y-m-d",
             time_24hr: true,
             minuteIncrement: 15
         });
@@ -409,7 +421,7 @@
                 center: 'title',
                 right: 'basicDay,basicWeek,month'
             },
-            defaultView: 'basicDay',
+            defaultView: 'month',
             events: SITEURL + "/fullcalendar",
             events: function(start, end, timezone, callback) {
                 $.ajax({
@@ -511,6 +523,39 @@
             endPicker.clear();
         }
 
+        function handleBookingType(
+            bookingTypeSelector,
+            resourceWrapper,
+            resourceSelector,
+            instructorWrapper,
+            instructorSelector
+        ) {
+            let type = $(bookingTypeSelector).val();
+
+            if (type == 1) { // SOLO
+                $(instructorWrapper).hide();
+                $(instructorSelector).val('').prop('required', false);
+
+                $(resourceWrapper).show();
+                $(resourceSelector).prop('required', true);
+
+            } else if (type == 2) { // LESSON
+                $(instructorWrapper).show();
+                $(instructorSelector).prop('required', true);
+
+                $(resourceWrapper).show();
+                $(resourceSelector).prop('required', true);
+
+            } else if (type == 3) { // STANDBY
+                $(instructorWrapper).show();
+                $(instructorSelector).prop('required', false);
+
+                $(resourceWrapper).show();
+                $(resourceSelector).prop('required', false);
+            }
+        }
+
+
 
         $('#studentSearch, #resourceSearch').on('keyup', function() {
             $('#calendar').fullCalendar('refetchEvents');
@@ -544,8 +589,8 @@
                 return;
             }
 
-            if ((bookingType == 2 || bookingType == 3) && !instructor) {
-                toastr.error('Instructor is required for Lesson or Standby booking');
+            if ((bookingType == 2) && !instructor) {
+                toastr.error('Instructor is required for Lesson booking');
                 return;
             }
 
@@ -648,13 +693,13 @@
 
         let editStartPicker = flatpickr("#edit_booking_start", {
             enableTime: true,
-            dateFormat: "Y-m-d H:i",
+            dateFormat: "Y-m-d",
             time_24hr: true
         });
 
         let editEndPicker = flatpickr("#edit_booking_end", {
             enableTime: true,
-            dateFormat: "Y-m-d H:i",
+            dateFormat: "Y-m-d",
             time_24hr: true
         });
 
@@ -782,7 +827,33 @@
         // On change
         $('#booking_type').on('change', function () {
             toggleInstructorRequirement('#booking_type', '#booking_instructor');
+            handleBookingType(
+                '#booking_type',
+                '#create_resource_wrapper',
+                '#resource',
+                '#create_instructor_wrapper',
+                '#booking_instructor'
+            );
         });
+
+        handleBookingType(
+            '#booking_type',
+            '#create_resource_wrapper',
+            '#resource',
+            '#create_instructor_wrapper',
+            '#booking_instructor'
+        );
+
+        $('#edit_booking_type').on('change', function () {
+            handleBookingType(
+                '#edit_booking_type',
+                '#edit_resource_wrapper',
+                '#edit_resource',
+                '#edit_instructor_wrapper',
+                '#edit_instructor'
+            );
+        });
+
 
         // On page load
         toggleInstructorRequirement('#booking_type', '#booking_instructor');

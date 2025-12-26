@@ -586,11 +586,42 @@ var instructorsdata;
 instructorsdata = @json($instructors);
 var resourcesdata;
 resourcesdata = @json($resources);
+var lastOUData = null;
 
 const currentUser = {
     id: {{ auth()->user()->id }},
     role: "{{ get_user_role(auth()->user()->role) }}"
 };
+
+function populateUserDropdown(isEditModal, isInstructorSelected) {
+    var studentDropdown = isEditModal ? $('#edit_select_user') : $('#select_user');
+    var studentLabel = isEditModal ? $('#edit_student_label') : $('#student_label');
+    var entrySource = isEditModal ? $('#edit_entry_source') : $('#entry_source');
+    var selectedValue = studentDropdown.data("selected-value") || '';
+
+    if (isInstructorSelected) {
+        var instructorOptions = '<option value="">Select Instructor</option>';
+        var instructors = lastOUData ? lastOUData.instructors : instructorsdata;
+        $.each(instructors, function(index, instructor) {
+            var selected = instructor.id == selectedValue ? 'selected' : '';
+            instructorOptions += '<option value="' + instructor.id + '" ' + selected + '>' + instructor.fname + ' ' + instructor.lname + '</option>';
+        });
+        studentDropdown.html(instructorOptions);
+        studentLabel.text('Select Instructor');
+        entrySource.val('instructor');
+    } else {
+        var studentOptions = '<option value="">Select Student</option>';
+        if (lastOUData && lastOUData.students) {
+            $.each(lastOUData.students, function(index, student) {
+                var selected = student.id == selectedValue ? 'selected' : '';
+                studentOptions += '<option value="' + student.id + '" ' + selected + '>' + student.fname + ' ' + student.lname + '</option>';
+            });
+        }
+        studentDropdown.html(studentOptions);
+        studentLabel.text('Select Student');
+        entrySource.val('');
+    }
+}
 
 // Delegate change event to dynamically added instructor selects
 $(document).on('change', 'select[name^="lesson_data"][name$="[instructor_id]"]', function () { 
@@ -713,65 +744,34 @@ $(document).ready(function() {
             type: "GET",
             dataType: "json",
            success: function (response) {
-               // var isInstructorSelected = $('#is_instructor_checkbox').is(':checked');
-                var isInstructorSelected = isEditModal ? $('#edit_is_instructor_checkbox').is(':checked') : $('#is_instructor_checkbox').is(':checked');
-            
-
+               lastOUData = response;
+               instructorsdata = response.instructors; // keep for compatibility
+               resourcesdata = response.resources;
                
+               var isInstructorSelected = isEditModal ? $('#edit_is_instructor_checkbox').is(':checked') : $('#is_instructor_checkbox').is(':checked');
+               populateUserDropdown(isEditModal, isInstructorSelected);
 
-                // Store selected values before clearing
-                var selectedStudent = studentDropdown.data("selected-value") || [];
-             
-                var selectedInstructor = instructorDropdown.data("selected-value") || [];
-                    
-                var selectedResource = resourceDropdown.data("selected-value") || [];
-                 
-
-                // -- Handle dropdown based on checkbox state --
-                if (isInstructorSelected) {
-                    // Populate Instructors into #select_user
-                    var instructorOptions = '<option value="">Select Instructor</option>';
-                    if (response.instructors && response.instructors.length > 0) {  
-                        instructorsdata = response.instructors;
-                        
-                        $.each(instructorsdata, function(index, instructor) {
-                            var selected = instructor.id == selectedInstructor ? 'selected' : '';
-                            instructorOptions += '<option value="' + instructor.id + '" ' + selected + '>' + instructor.fname + ' ' + instructor.lname + '</option>';
-                        });
-                    }
-                    studentDropdown.html(instructorOptions); // Replace with instructors
-                    $('#student_label').text('Select Instructor');
-                    $('#entry_source').val('instructor');
-                } else {
-                    // Populate Students into #select_user
-                    var studentOptions = '<option value="">Select Student</option>';
-                    if (response.students && response.students.length > 0) {
-                        $.each(response.students, function(index, student) {
-                            var selected = student.id == selectedStudent ? 'selected' : '';
-                            studentOptions += '<option value="' + student.id + '" ' + selected + '>' + student.fname + ' ' + student.lname + '</option>';
-                        });
-                    }
-                    studentDropdown.html(studentOptions); // Replace with students
-                    $('#student_label').text('Select Student');
-                    $('#entry_source').val('');
-                }
-
-                // Populate Resources
-                var resourceOptions = '<option value="">Select Resource</option>';
-                if (response.resources && response.resources.length > 0) {
-                    resourcesdata = response.resources;
-                    $.each(resourcesdata, function(index, resource) {
-                        var selected = resource.id == selectedResource ? 'selected' : '';
-                        resourceOptions += '<option value="' + resource.id + '" ' + selected + '>' + resource.name + '</option>';
-                    });
-                }
-                resourceDropdown.html(resourceOptions); // Update dropdown
-            },
+               // Populate Resources
+               var resourceOptions = '<option value="">Select Resource</option>';
+               if (response.resources && response.resources.length > 0) {
+                   $.each(response.resources, function(index, resource) {
+                       var selected = resource.id == selectedResource ? 'selected' : '';
+                       resourceOptions += '<option value="' + resource.id + '" ' + selected + '>' + resource.name + '</option>';
+                   });
+               }
+               resourceDropdown.html(resourceOptions); // Update dropdown
+           },
             error: function(xhr) {
                 console.error(xhr.responseText);
                 alert('Error fetching data. Please try again.');
             }
         });
+    });
+
+    $(document).on('change', '#is_instructor_checkbox, #edit_is_instructor_checkbox', function() {
+        var isEditModal = $(this).attr('id') === 'edit_is_instructor_checkbox';
+        var isInstructorSelected = $(this).is(':checked');
+        populateUserDropdown(isEditModal, isInstructorSelected);
     });
 
     $(document).on('change', '#select_user, #edit_select_user', function() {
@@ -1639,31 +1639,6 @@ $(document).ready(function() {
             label.text('Select Student');
             $('#entry_source').val('');
         }
-    });
-
-    document.getElementById('is_instructor_checkbox').addEventListener('change', function () {
-        const entrySourceInput = document.getElementById('entry_source');
-        entrySourceInput.value = this.checked ? 'instructor' : '';
-    });
-
-    $(document).on('change', '#edit_is_instructor_checkbox', function () { 
-        const isChecked = $(this).is(':checked');
-        const label = $('#edit_student_label');
-        const userDropdown = $('#edit_select_user');
-        const hiddenInput = $('#edit_entry_source');
-
-        label.text(isChecked ? 'Select Instructor, Student' : 'Select Student');
-        hiddenInput.val(isChecked ? 'instructor' : '');
-        userDropdown.empty();
-        let userOptions = '<option value="">Select ' + (isChecked ? 'Instructor' : 'Student') + '</option>';
-        
-        const dataList = isChecked ? instructorsdata : studentsdata;
-        
-        dataList.forEach(user => {
-            userOptions += `<option value="${user.id}">${user.fname} ${user.lname}</option>`;
-        });
-
-        userDropdown.html(userOptions);
     });
 
     function generateInstructorOptions(instructorsdata, selectedId = '', excludeId = '') {
