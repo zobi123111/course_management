@@ -334,6 +334,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/topic/create', [TopicController::class, 'store'])->name('topic.store');
     Route::get('/topic/edit', [TopicController::class, 'edit'])->name('topic.edit');
     Route::get('/topic/view/{id}', [TopicController::class, 'view'])->name('topic.view');
+    Route::get('/topic/topicview/{id}', [TopicController::class, 'topicView'])->name('topic.topic_view');
     Route::post('/topic/update', [TopicController::class, 'update'])->name('topic.update');
     Route::post('/topic/delete', [TopicController::class, 'destroy'])->name('topic.destroy');
     

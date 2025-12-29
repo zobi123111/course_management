@@ -1,6 +1,6 @@
 @extends('layout.app')
-@section('title', 'Topic Section')
-@section('sub-title', 'Topic Section')
+@section('title', 'Course Topic Section')
+@section('sub-title', 'Course Topic Section')
 @section('content')
 
 <div class="container">
@@ -11,86 +11,24 @@
     .action-btn {
         padding: 0px 10px;
     }
+    .one-line {
+        white-space: nowrap;
+    }
 
-    .switch {
-        position: relative;
+    .actions-cell {
+        white-space: nowrap;
+    }
+
+    .actions-cell i {
         display: inline-block;
-        width: 100px;
-        height: 30px;
+        vertical-align: middle;
     }
 
-    .switch-input {
-        display: none;
+    .tooltip-inner {
+        max-width: 300px;
+        text-align: left;
     }
 
-    .switch-button {
-        position: absolute;
-        cursor: pointer;
-        background-color: #dc3545; /* red for OFF */
-        border-radius: 30px;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        transition: background-color 0.3s ease;
-        overflow: hidden;
-    }
-
-    .switch-button-left,
-    .switch-button-right {
-        position: absolute;
-        width: 60%;
-        text-align: center;
-        line-height: 30px;
-        font-size: 12px;
-        font-weight: bold;
-        color: #fff;
-        transition: all 0.3s ease;
-    }
-
-    /* Left side (OFF) */
-    .switch-button-left {
-        left: 25px;
-    }
-
-    /* Right side (ON) */
-    .switch-button-right {
-        right: 34px;
-        transform: translateX(100%);
-        opacity: 0;
-    }
-
-    /* Knob */
-    .switch-button::before {
-        content: "";
-        position: absolute;
-        height: 26px;
-        width: 26px;
-        left: 2px;
-        top: 2px;
-        background-color: white;
-        border-radius: 50%;
-        transition: transform 0.3s ease;
-    }
-
-    /* When checked (ON) */
-    .switch-input:checked + .switch-button {
-        background-color: #28a745; /* green for ON */
-    }
-
-    .switch-input:checked + .switch-button::before {
-        transform: translateX(68px);
-    }
-
-    .switch-input:checked + .switch-button .switch-button-left {
-        transform: translateX(-100%);
-        opacity: 0;
-    }
-
-    .switch-input:checked + .switch-button .switch-button-right {
-        transform: translateX(0);
-        opacity: 1;
-    }
 </style>
 
     @if(session()->has('message'))
@@ -100,7 +38,7 @@
     </div>
     @endif
 
-   
+
     <div class="create_btn">
         <button class="btn btn-primary create-button" id="createtopic" data-toggle="modal"
             data-target="#createtopicModal">Create Topic</button>
@@ -113,28 +51,44 @@
             <table class="table table-hover" id="topicTable">
                 <thead>
                     <tr>
-                        <th scope="col">Title</th>
-                        <th scope="col">Description</th>
-                         @if(auth()->user()->is_owner == 1)
-                            <th scope="col">Organizational Unit</th>
+                        <th scope="col">Course</th>
+                        <th class="one-line" scope="col">Course Type</th>
+                        <!-- <th class="one-line" scope="col">Description</th> -->
+                        @if(auth()->user()->is_owner == 1)
+                            <th class="one-line" scope="col">Organizational Unit</th>
                         @endif
+                        <th class="one-line" scope="col">Topics Count</th>
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($topics as $topic)
+                    @foreach($coursestopics as $course)
                     <tr>
-                        <td class="topicTitle">{{ $topic->title }}</td>
-                        <td>{{ $topic->description ?? 'N/A' }}</td>
+                        <td class="topicTitle">{{ $course->course_name }}</td>
+                        <td class="one-line" >{{ $course->course_type ?? 'N/A' }}</td>
+                        <!-- <td>{{ $course->description ?? 'N/A' }}</td> -->
                         @if(auth()->user()->is_owner == 1)
-                        <td>{{ $topic->organizationUnit->org_unit_name ?? 'N/A' }}</td>
+                        <td class="one-line" >{{ $course->organizationUnit->org_unit_name ?? 'N/A' }}</td>
                         @endif
-                        <td>
-                            <i class="fa fa-eye action-btn" style="font-size:25px; cursor: pointer;" onclick="window.location.href='{{ route('topic.view', ['id' => encode_id($topic->id)]) }}'"></i>
-                            
-                            <i class="fa fa-edit edit-topic-icon action-btn" style="font-size:25px; cursor: pointer;" data-topic-id="{{ encode_id($topic->id) }}"></i>
+                        <td class="topicTitle"
+                            data-bs-toggle="tooltip"
+                            data-bs-html="true"
+                            title="
+                                <ul class='mb-0 ps-3'>
+                                    @foreach($course->topics as $topic)
+                                        <li>{{ $topic->title }}</li>
+                                    @endforeach
+                                </ul>
+                            ">
+                            {{ $course->topics->count() }}
+                        </td>
 
-                            <i class="fa-solid fa-trash delete-topic-icon action-btn" style="font-size:25px; cursor: pointer;" data-topic-id="{{ encode_id($topic->id) }}" data-topic-name="{{ $topic->title }}"></i>
+                        <td class="actions-cell">
+                            <i class="fa fa-eye action-btn" style="font-size:25px; cursor: pointer;" onclick="window.location.href='{{ route('topic.view', ['id' => encode_id($course->id)]) }}'"></i>
+                            
+                            <!-- <i class="fa fa-edit edit-topic-icon action-btn" style="font-size:25px; cursor: pointer;" data-topic-id="{{ encode_id($course->id) }}"></i>
+
+                            <i class="fa-solid fa-trash delete-topic-icon action-btn" style="font-size:25px; cursor: pointer;" data-topic-id="{{ encode_id($course->id) }}" data-topic-name="{{ $course->title }}"></i> -->
                         </td>
                     </tr>
                     @endforeach
@@ -154,6 +108,31 @@
                 <div class="modal-body">
                     <form id="topicForm" method="POST" class="row g-3 needs-validation">
                         @csrf
+
+                        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                            <div class="form-group">
+                                <label for="ou_id" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                                <select class="form-select" name="ou_id" id="ou_id" aria-label="Default select example">
+                                    <option value="">Select Org Unit</option>
+                                    @foreach($organizationUnits as $val)
+                                    <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                                    @endforeach
+                                </select>
+                                <div id="ou_id_error_up" class="text-danger error_e"></div>
+                            </div>
+                        @endif
+
+                        <div class="form-group">
+                            <label for="course_id" class="form-label">Course<span class="text-danger">*</span></label>
+                            <select name="course_id" class="form-select" id="course_id_create">
+                                <option value="">Select Course</option>
+                                @foreach($courses as $course)
+                                    <option value="{{ $course->id }}">{{ $course->course_name }}</option>
+                                @endforeach
+                            </select>
+                            <div id="course_id_error" class="text-danger error_e"></div>
+                        </div>
+                        
                         <div class="form-group">
                             <label for="title" class="form-label">Topic Title<span class="text-danger">*</span></label>
                             <input type="text" name="title" class="form-control">
@@ -165,21 +144,6 @@
                             <textarea name="description" class="form-control"></textarea>
                             <div id="description_error" class="text-danger error_e"></div>
                         </div>
-
-                        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                            <div class="form-group">
-                                <label for="ou_id" class="form-label">Select Org Unit<span
-                                        class="text-danger">*</span></label>
-                                <select class="form-select" name="ou_id" id="ou_id"
-                                    aria-label="Default select example">
-                                    <option value="">Select Org Unit</option>
-                                    @foreach($organizationUnits as $val)
-                                    <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                                    @endforeach
-                                </select>
-                                <div id="ou_id_error_up" class="text-danger error_e"></div>
-                            </div>
-                        @endif
                         
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -203,19 +167,7 @@
                 <div class="modal-body">
                     <form id="edittopicForm" class="row g-3 needs-validation">
                         @csrf
-                        <input type="hidden" name="topic_id" id="edit_topic_id">
-                        <div class="form-group">
-                            <label class="form-label">Topic Title</label>
-                            <input type="text" name="title" id="edit_title" class="form-control">
-                            <div id="title_error_up" class="text-danger error_e"></div>
-                        </div>
 
-                        <div class="form-group">
-                            <label class="form-label">Topic Description</label>
-                            <textarea name="description" id="edit_description" class="form-control"></textarea>
-                            <div id="description_error_up" class="text-danger error_e"></div>
-                        </div>
-                        
                         @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                             <div class="form-group">
                                 <label for="ou_id" class="form-label">Select Org Unit</label>
@@ -229,6 +181,35 @@
                             </div>
                         @endif
 
+                        <div class="form-group">
+                            <label for="course_id" class="form-label">Course</label>
+                            <select name="course_id" id="edit_course_id" class="form-select">
+                                <option value="">Select Course</option>
+                                @foreach($courses as $course)
+                                    <option value="{{ $course->id }}">{{ $course->course_name }}</option>
+                                @endforeach
+                            </select>
+                            <div id="course_id_error_up" class="text-danger error_e"></div>
+                        </div>
+
+                        <div id="topicAssignedMsg" class="alert alert-warning mt-3" style="display:none;">
+                            <i class="fa fa-info-circle me-1"></i>
+                            You can't change Org Unit and Course fields because this topic is already assigned to quizzes.
+                        </div>
+                        
+                        <input type="hidden" name="topic_id" id="edit_topic_id">
+                        <div class="form-group">
+                            <label class="form-label">Topic Title</label>
+                            <input type="text" name="title" id="edit_title" class="form-control">
+                            <div id="title_error_up" class="text-danger error_e"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Topic Description</label>
+                            <textarea name="description" id="edit_description" class="form-control"></textarea>
+                            <div id="description_error_up" class="text-danger error_e"></div>
+                        </div>
+
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             <button type="button" id="updatetopic" class="btn btn-primary sbt_btn">Update</button>
@@ -240,33 +221,12 @@
         </div>
     </div>
 
-    <!-- Delete topic Modal -->
-    <form action="{{ url('topic/delete') }}" id="deletetopicForm" method="POST">
-        @csrf
-        <div class="modal fade" id="deletetopic" tabindex="-1" aria-labelledby="deletetopicLabel" aria-hidden="true"
-            data-bs-backdrop="static" data-bs-keyboard="false">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="deletetopicLabel">Delete topic</h5>
-                        <input type="hidden" name="topic_id" id="topicId">
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        Are you sure you want to delete this Topic "<strong><span id="append_title"></span></strong>"?
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" id="confirmDeletetopic" class="btn btn-danger delete_topic">Delete</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </form>
+    
 @endsection
 
 @section('js_scripts')
-    <script>
+
+<script>
         $(document).ready(function() {
             $('#topicTable').DataTable({
                 "ordering": false
@@ -276,6 +236,27 @@
                 $(".error_e").html('');
                 $("#topicForm")[0].reset();
                 $("#createtopicModal").modal('show');
+            });
+
+            $('#ou_id').on('change', function() {
+                let ouId = $(this).val();
+                $('#course_id_create').html('<option value="">Loading...</option>');
+                if (ouId) {
+                    $.ajax({
+                        url: "{{ route('courses.byOu') }}",
+                        type: 'GET',
+                        data: { ou_id: ouId },
+                        success: function(res) {
+                            let options = '<option value="">Select course</option>';
+                            res.forEach(course => {
+                                options += `<option value="${course.id}">${course.course_name}</option>`;
+                            });
+                            $('#course_id_create').html(options);
+                        }
+                    });
+                } else {
+                    $('#course_id_create').html('<option value="">Select course</option>');
+                }
             });
 
             $('#course_id_create').on('change', function() {
@@ -340,65 +321,16 @@
                 });
             });
 
-            $('#topicTable').on('click', '.edit-topic-icon', function() {
-                $('.error_e').html('');
-                var topicId = $(this).data('topic-id');
-                $(".loader").fadeIn();
-                $.ajax({
-                    url: "{{ url('/topic/edit') }}",
-                    type: 'GET',
-                    data: { id: topicId },
-                    success: function(response) {
-                        $('#edit_topic_id').val(response.topic.id);
-                        $('#edit_title').val(response.topic.title);
-                        $('#edit_description').val(response.topic.description);
-                        $('#edit_ou_id').val(response.topic.ou_id);
-                        $('#edittopicModal').modal('show');
-                        $(".loader").fadeOut("slow");
-                    }
-                });
-            });
-
-            $('#updatetopic').on('click', function(e) {
-                e.preventDefault();
-                $.ajax({
-                    url: "{{ url('/topic/update') }}",
-                    type: "POST",
-                    data: $("#edittopicForm").serialize(),
-                    success: function(response) {
-                        $('#edittopicModal').modal('hide');
-                        location.reload();
-                    },
-                    error: function(xhr) {
-                        var errors = xhr.responseJSON.errors;
-                        $.each(errors, function(key, value) {
-                            $('#' + key + '_error_up').html('<p>' + value + '</p>');
-                        });
-                    }
-                });
-            });
-
-            $(document).on('click', '.delete-topic-icon', function() {
-                $('#deletetopic').modal('show');
-                var topicId = $(this).data('topic-id');
-                var topicName = $(this).closest('tr').find('.topicTitle').text();
-                $('#append_title').html(topicName);
-                $('#topicId').val(topicId);
-            });
-
-            $(document).on('click', '.start-topic-icon', function () {
-                let topicId = $(this).data('topic-id');
-                window.location.href = `/topic/start/${topicId}`;
-            });
-
-            $(document).on('click', '.view-result-icon', function () {
-                let topicId = $(this).data('topic-id');
-                window.location.href = `/topic/view-result/${topicId}`;
-            });
-
             setTimeout(function() {
                 $('#successMessage').fadeOut('slow');
             }, 2000);
+
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
         });
     </script>
+
 @endsection

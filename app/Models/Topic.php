@@ -18,6 +18,7 @@ class Topic extends Model
         'title',
         'description',
         'ou_id',
+        'course_id',
     ];
 
     public function questions()
@@ -30,4 +31,8 @@ class Topic extends Model
         return $this->belongsTo(OrganizationUnits::class, 'ou_id');
     }
 
+    public function course()
+    {
+        return $this->belongsTo(Courses::class, 'course_id');
+    }
 }
