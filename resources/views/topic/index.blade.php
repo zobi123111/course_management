@@ -52,7 +52,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Course</th>
-                        <th class="one-line" scope="col">Course Type</th>
+                        <!-- <th class="one-line" scope="col">Course Type</th> -->
                         <!-- <th class="one-line" scope="col">Description</th> -->
                         @if(auth()->user()->is_owner == 1)
                             <th class="one-line" scope="col">Organizational Unit</th>
@@ -65,7 +65,7 @@
                     @foreach($coursestopics as $course)
                     <tr>
                         <td class="topicTitle">{{ $course->course_name }}</td>
-                        <td class="one-line" >{{ $course->course_type ?? 'N/A' }}</td>
+                        <!-- <td class="one-line" >{{ $course->course_type ?? 'N/A' }}</td> -->
                         <!-- <td>{{ $course->description ?? 'N/A' }}</td> -->
                         @if(auth()->user()->is_owner == 1)
                         <td class="one-line" >{{ $course->organizationUnit->org_unit_name ?? 'N/A' }}</td>

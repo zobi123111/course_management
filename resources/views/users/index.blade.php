@@ -538,7 +538,7 @@
                             <input type="checkbox" name="edit_licence_2_verification_required" id="edit_licence_2_verification_required" class="ms-2" value="1">
                     </div>
                    
-                        <div id="edit_second_licence_section" style="display: none;" class="mt-3">
+                        <div id="edit_second_licence_section" style="display: none;">
                             <input type="text" name="edit_licence_2" id="edit_licence_2" class="form-control edit_licence_2" placeholder="Enter EASA Licence Number">
                             <div id="edit_licence_2_error" class="text-danger error_e"></div>
 
