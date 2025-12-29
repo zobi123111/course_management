@@ -104,6 +104,12 @@ class Courses extends Model
         return $this->hasMany(Quiz::class);
     }
 
+    public function topics()
+    {
+        return $this->hasMany(Topic::class, 'course_id');
+    }
+
+
 
 }
 

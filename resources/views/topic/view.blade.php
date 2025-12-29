@@ -1,31 +1,96 @@
 @extends('layout.app')
-
-@section('title', 'View Topic')
-@section('sub-title', 'Topic Details')
-
+@section('title', 'Topic Section')
+@section('sub-title', 'Topic Section')
 @section('content')
+
+<div class="container">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+</div>
 
 <style>
     .action-btn {
         padding: 0px 10px;
     }
-    .custom-btn {
-        background-color: transparent;
-        border: none;
-        padding: 5px 10px;
-        margin-left: 10px;
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 100px;
+        height: 30px;
     }
 
-    .custom-btn:hover {
-        background-color: White;
+    .switch-input {
+        display: none;
     }
 
-    .question_delete {
-        color: rgba(253, 13, 13, 1);
+    .switch-button {
+        position: absolute;
         cursor: pointer;
-        font-size: 18px;
+        background-color: #dc3545; /* red for OFF */
+        border-radius: 30px;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        transition: background-color 0.3s ease;
+        overflow: hidden;
     }
 
+    .switch-button-left,
+    .switch-button-right {
+        position: absolute;
+        width: 60%;
+        text-align: center;
+        line-height: 30px;
+        font-size: 12px;
+        font-weight: bold;
+        color: #fff;
+        transition: all 0.3s ease;
+    }
+
+    /* Left side (OFF) */
+    .switch-button-left {
+        left: 25px;
+    }
+
+    /* Right side (ON) */
+    .switch-button-right {
+        right: 34px;
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    /* Knob */
+    .switch-button::before {
+        content: "";
+        position: absolute;
+        height: 26px;
+        width: 26px;
+        left: 2px;
+        top: 2px;
+        background-color: white;
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+    }
+
+    /* When checked (ON) */
+    .switch-input:checked + .switch-button {
+        background-color: #28a745; /* green for ON */
+    }
+
+    .switch-input:checked + .switch-button::before {
+        transform: translateX(68px);
+    }
+
+    .switch-input:checked + .switch-button .switch-button-left {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+
+    .switch-input:checked + .switch-button .switch-button-right {
+        transform: translateX(0);
+        opacity: 1;
+    }
 </style>
 
     @if(session()->has('message'))
@@ -35,224 +100,187 @@
     </div>
     @endif
 
-    <div class="card mb-3 shadow-sm">
-        <div class="row g-0">
-            <div class="col-md-4 mt-3">
-                <div class="card-body">
-                    <table class="table table-borderless">
-                        <tr>
-                            <th>Topic Title</th>
-                            <td>{{ $topic->title ?? 'N/A' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Description</th>
-                            <td>{{ $topic->description ?? 'N/A' }}</td>
-                        </tr>
-                        <tr>
-                            <th>OU</th>
-                            <td>{{ $topic->organizationUnit->org_unit_name ?? 'N/A' }}</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+   
+    <!-- <div class="create_btn">
+        <button class="btn btn-primary create-button" id="createtopic" data-toggle="modal"
+            data-target="#createtopicModal">Create Topic</button>
+    </div> -->
 
-    <div class="card pt-4 mt-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            @foreach($breadcrumbs as $breadcrumb)
+                @if($breadcrumb['url']) 
+                    <li class="breadcrumb-item active-link"><a href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['title'] }}</a></li>
+                @else
+                    <li class="breadcrumb-item active" aria-current="page">{{ $breadcrumb['title'] }}</li>
+                @endif
+            @endforeach
+        </ol>
+    </nav>
+    <!-- End Breadcrumb -->
+
+    <!-- <div class="create_btn">
+        <a href="{{ route('topic.index') }}" class="btn btn-primary">
+            Back
+        </a>
+    </div> -->
+    
+    <br>
+
+    <div class="card pt-4">
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="m-0">Topic Questions</h2>
-                <div>
-                    <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#importModal">
-                        <i class="fa fa-upload"></i> Import CSV
-                    </button>
-
-                    <a href="{{ url('/export-csv') }}" class="btn btn-warning">
-                        <i class="fa fa-download"></i>Download Sample CSV
-                    </a>
-                </div>
-            </div>
-
-            <table class="table table-hover mt-3" id="questionTable">
+            <table class="table table-hover" id="topicTable">
                 <thead>
                     <tr>
-                    <th>Question Text</th>
-                    <th>Question Type</th>
-                    <th>Options A</th>
-                    <th>Options B</th>
-                    <th>Options C</th>
-                    <th>Options D</th>
-                    <th>Correct Option</th>
-                    <th>Actions</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Course</th>
+                         @if(auth()->user()->is_owner == 1)
+                            <th scope="col">Organizational Unit</th>
+                        @endif
+                        <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($topicQuestions as $question)
-                        <tr>
-                            <td class="quizTitle">{{ $question->question_text }}</td>
-                            <!-- <td>{{ $question->question_type }}</td> -->
-                             <td>
-                                @switch($question->question_type)
-                                    @case('single_choice')
-                                        Single Choice
-                                        @break
+                    @foreach($topics as $topic)
+                    <tr>
+                        <td class="topicTitle">{{ $topic->title }}</td>
+                        <td>{{ $topic->description ?? 'N/A' }}</td>
+                        <td>{{ $topic->course->course_name ?? 'N/A' }}</td>
+                        @if(auth()->user()->is_owner == 1)
+                        <td>{{ $topic->organizationUnit->org_unit_name ?? 'N/A' }}</td>
+                        @endif
+                        <td>
+                            <i class="fa fa-eye action-btn" style="font-size:25px; cursor: pointer;" onclick="window.location.href='{{ route('topic.topic_view', ['id' => encode_id($topic->id)]) }}'"></i>
+                            
+                            <i class="fa fa-edit edit-topic-icon action-btn" style="font-size:25px; cursor: pointer;" data-topic-id="{{ encode_id($topic->id) }}"></i>
 
-                                    @case('multiple_choice')
-                                        Multiple Choice
-                                        @break
-
-                                    @case('sequence')
-                                        Sequence
-                                        @break
-
-                                    @case('text')
-                                        Text
-                                        @break
-                                @endswitch
-                            </td>
-                            @if($question->option_type == 'text')
-                                <td>{{ $question->option_A ? $question->option_A : '-' }}</td>
-                                <td>{{ $question->option_B ? $question->option_B : '-' }}</td>
-                                <td>{{ $question->option_C ? $question->option_C : '-' }}</td>
-                                <td>{{ $question->option_D ? $question->option_D : '-' }}</td>
-                            @else
-                                <td>
-                                    @if($question->option_A)
-                                        <img src="{{ Storage::url($question->option_A) }}" alt="Option A" width="100">
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-
-                                <td>
-                                    @if($question->option_B)
-                                       <img src="{{ Storage::url($question->option_B) }}" alt="Option B" width="100">
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-
-                                <td>
-                                    @if($question->option_C)
-                                        <img src="{{ Storage::url($question->option_C) }}" alt="Option C" width="100">
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-
-                                <td>
-                                    @if($question->option_D)
-                                        <img src="{{ Storage::url($question->option_D) }}" alt="Option D" width="100">
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                            @endif
-
-                            <td>{{ $question->correct_option ? $question->correct_option : '-' }}</td>
-                            <td>
-                                <i class="fa fa-edit edit-quiz-icon action-btn" style="font-size:25px; cursor: pointer;" data-quiz-id="{{ encode_id($question->id) }}"></i>
-                                <i class="fa-solid fa-trash delete-quiz-icon action-btn" style="font-size:25px; cursor: pointer;" data-quiz-id="{{ encode_id($topic->id) }}" data-quiz-name="{{ $question->title }}" data-question-id="{{ encode_id($question->id) }}"></i>
-                            </td>
-                        </tr>
+                            <i class="fa-solid fa-trash delete-topic-icon action-btn" style="font-size:25px; cursor: pointer;" data-topic-id="{{ encode_id($topic->id) }}" data-topic-name="{{ $topic->title }}"></i>
+                        </td>
+                    </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
     </div>
 
-    <div class="x_content">
-        <form action="{{ route('question.create') }}" method="post" id="questionForm" onsubmit="showLoader()" enctype="multipart/form-data">
-            @csrf
-            <div id="questions-container"></div>
-
-            <input type="hidden" name="topic_id" value="{{ $topic->id }}" required>
-
-            <div class="question-btn">
-                <button type="button" class="btn btn-primary mt-3" onclick="addQuestion('text')">Add Text Question</button>
-                <button type="button" class="btn btn-primary mt-3" onclick="addQuestion('single_choice')">Add Single Choice Question</button>
-                <button type="button" class="btn btn-primary mt-3" onclick="addQuestion('multiple_choice')">Add Multiple Choice Question</button>
-                <button type="button" class="btn btn-primary mt-3" onclick="addQuestion('sequence')">Add Sequence Question</button>
-            </div>
-
-            <div class="loader" id="custom_loader" style="display: none;"></div>
-            
-            <button type="submit" class="btn btn-primary mt-5" style="display: block;" title="Submit">Submit</button>
-        </form>
-    </div>
-
-    <!-- Import Modal -->
-    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+     <!-- Create topic Modal -->
+    <div class="modal fade" id="createtopicModal" tabindex="-1" role="dialog" aria-labelledby="createtopicLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog" role="document">
             <div class="modal-content">
-                <form action="{{ url('/import-csv') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="importModalLabel">Import CSV</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="csvFile" class="form-label">Choose CSV File</label>
-                            <input type="hidden" name="topic_id" value="{{ $topic->id }}">
-                            <input type="file" class="form-control" id="csvFile" name="csv_file" accept=".csv" required>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createtopicLabel">Create New Topic</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="topicForm" method="POST" class="row g-3 needs-validation">
+                        @csrf
+
+                        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                            <div class="form-group">
+                                <label for="ou_id" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
+                                <select class="form-select" name="ou_id" id="ou_id" aria-label="Default select example">
+                                    <option value="">Select Org Unit</option>
+                                    @foreach($organizationUnits as $val)
+                                    <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                                    @endforeach
+                                </select>
+                                <div id="ou_id_error_up" class="text-danger error_e"></div>
+                            </div>
+                        @endif
+
+                        <div class="form-group">
+                            <label for="course_id" class="form-label">Course<span class="text-danger">*</span></label>
+                            <select name="course_id" class="form-select" id="course_id_create">
+                                <option value="">Select Course</option>
+                                @foreach($courses as $course)
+                                    <option value="{{ $course->id }}">{{ $course->course_name }}</option>
+                                @endforeach
+                            </select>
+                            <div id="course_id_error" class="text-danger error_e"></div>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Upload</button>
-                    </div>
-                </form>
+                        
+                        <div class="form-group">
+                            <label for="title" class="form-label">Topic Title<span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control">
+                            <div id="title_error" class="text-danger error_e"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="description" class="form-label">Topic Description<span class="text-danger">*</span></label>
+                            <textarea name="description" class="form-control"></textarea>
+                            <div id="description_error" class="text-danger error_e"></div>
+                        </div>
+                        
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" id="submittopic" class="btn btn-primary sbt_btn">Save</button>
+                        </div>
+                        <div class="loader" style="display:none;"></div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
     
-     <!-- Edit Question Modal -->
-    <div class="modal fade" id="editQuestionModal" tabindex="-1" aria-labelledby="editQuestionLabel" aria-hidden="true"
-        data-bs-backdrop="static" data-bs-keyboard="false">
+    <!-- Edit topic Modal -->
+    <div class="modal fade" id="edittopicModal" tabindex="-1" aria-labelledby="edittopicLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editQuestionLabel">Edit Question</h5>
+                    <h5 class="modal-title" id="edittopicLabel">Edit topic</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="editQuestionForm" class="row g-3 needs-validation">
+                    <form id="edittopicForm" class="row g-3 needs-validation">
                         @csrf
-                        <input type="hidden" name="question_id" id="edit_question_id">
+
+                        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                            <div class="form-group">
+                                <label for="ou_id" class="form-label">Select Org Unit</label>
+                                <select class="form-select" name="ou_id" id="edit_ou_id" aria-label="Default select example">
+                                    <option value="">Select Org Unit</option>
+                                    @foreach($organizationUnits as $val)
+                                    <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                                    @endforeach
+                                </select>
+                                <div id="ou_id_error_up" class="text-danger error_e"></div>
+                            </div>
+                        @endif
+
                         <div class="form-group">
-                            <label class="form-label">Question Text</label>
-                            <input type="text" name="question_text" id="edit_question_text" class="form-control">
-                            <div id="question_text_error_up" class="text-danger error_e"></div>
+                            <label for="course_id" class="form-label">Course</label>
+                            <select name="course_id" id="edit_course_id" class="form-select">
+                                <option value="">Select Course</option>
+                                @foreach($courses as $course)
+                                    <option value="{{ $course->id }}">{{ $course->course_name }}</option>
+                                @endforeach
+                            </select>
+                            <div id="course_id_error_up" class="text-danger error_e"></div>
                         </div>
+
+                        <div id="topicAssignedMsg" class="alert alert-warning mt-3" style="display:none;">
+                            <i class="fa fa-info-circle me-1"></i>
+                            You can't change above fields because this topic is already assigned to quizzes.
+                        </div>
+                        
+                        <input type="hidden" name="topic_id" id="edit_topic_id">
                         <div class="form-group">
-                            <label class="form-label">Option A</label>
-                            <input type="text" name="option_A" id="edit_option_A" class="form-control">
-                            <div id="option_A_error_up" class="text-danger error_e"></div>
+                            <label class="form-label">Topic Title</label>
+                            <input type="text" name="title" id="edit_title" class="form-control">
+                            <div id="title_error_up" class="text-danger error_e"></div>
                         </div>
+
                         <div class="form-group">
-                            <label class="form-label">Option B</label>
-                            <input type="text" name="option_B" id="edit_option_B" class="form-control">
-                            <div id="option_B_error_up" class="text-danger error_e"></div>
+                            <label class="form-label">Topic Description</label>
+                            <textarea name="description" id="edit_description" class="form-control"></textarea>
+                            <div id="description_error_up" class="text-danger error_e"></div>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Option C</label>
-                            <input type="text" name="option_C" id="edit_option_C" class="form-control">
-                            <div id="option_C_error_up" class="text-danger error_e"></div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Option D</label>
-                            <input type="text" name="option_D" id="edit_option_D" class="form-control">
-                            <div id="option_D_error_up" class="text-danger error_e"></div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Correct Answer</label>
-                            <input type="text" name="correct_option" id="edit_correct_option" class="form-control">
-                            <div id="correct_option_error_up" class="text-danger error_e"></div>
-                        </div>
+
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" id="updateQuestion" class="btn btn-primary sbt_btn">Update</button>
+                            <button type="button" id="updatetopic" class="btn btn-primary sbt_btn">Update</button>
                         </div>
                         <div class="loader" style="display:none;"></div>
                     </form>
@@ -261,390 +289,263 @@
         </div>
     </div>
 
-    <!-- Delete Quiz Modal -->
-    <form action="{{ route('question.destroy') }}" id="deleteQuizForm" method="POST">
+    <!-- Delete topic Modal -->
+    <form action="{{ url('topic/delete') }}" id="deletetopicForm" method="POST">
         @csrf
-        <div class="modal fade" id="deleteQuiz" tabindex="-1" aria-labelledby="deleteQuizLabel" aria-hidden="true"
+        <div class="modal fade" id="deletetopic" tabindex="-1" aria-labelledby="deletetopicLabel" aria-hidden="true"
             data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="deleteQuizLabel">Delete Quiz</h5>
-                        <input type="hidden" name="question_id" id="questionId">
-                        <input type="hidden" name="quiz_id" id="quizId">
+                        <h5 class="modal-title" id="deletetopicLabel">Delete topic</h5>
+                        <input type="hidden" name="topic_id" id="topicId">
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        Are you sure you want to delete this quiz "<strong><span id="append_title"></span></strong>"?
+                        Are you sure you want to delete this Topic "<strong><span id="append_title"></span></strong>"?
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" id="confirmDeleteQuiz" class="btn btn-danger delete_quiz">Delete</button>
+                        <button type="submit" id="confirmDeletetopic" class="btn btn-danger delete_topic">Delete</button>
                     </div>
                 </div>
             </div>
         </div>
     </form>
-
 @endsection
 
 @section('js_scripts')
     <script>
-        setTimeout(function() {
-            $('#successMessage').fadeOut('slow');
-        }, 2000);
-
         $(document).ready(function() {
-            $('#questionTable').DataTable({
-                "order": []
+            $('#topicTable').DataTable({
+                "ordering": false
             });
 
-            $('#questionTable').on('click', '.edit-quiz-icon', function() {
+            $("#createtopic").on('click', function() {
+                $(".error_e").html('');
+                $("#topicForm")[0].reset();
+                $("#createtopicModal").modal('show');
+            });
+
+            $('#ou_id').on('change', function() {
+                let ouId = $(this).val();
+                $('#course_id_create').html('<option value="">Loading...</option>');
+                if (ouId) {
+                    $.ajax({
+                        url: "{{ route('courses.byOu') }}",
+                        type: 'GET',
+                        data: { ou_id: ouId },
+                        success: function(res) {
+                            let options = '<option value="">Select course</option>';
+                            res.forEach(course => {
+                                options += `<option value="${course.id}">${course.course_name}</option>`;
+                            });
+                            $('#course_id_create').html(options);
+                        }
+                    });
+                } else {
+                    $('#course_id_create').html('<option value="">Select course</option>');
+                }
+            });
+
+            $('#edit_ou_id').on('change', function() {
+                let ouId = $(this).val();
+                $('#edit_course_id').html('<option value="">Loading...</option>');
+                if (ouId) {
+                    $.ajax({
+                        url: "{{ route('courses.byOu') }}",
+                        type: 'GET',
+                        data: { ou_id: ouId },
+                        success: function(res) {
+                            let options = '<option value="">Select course</option>';
+                            res.forEach(course => {
+                                options += `<option value="${course.id}">${course.course_name}</option>`;
+                            });
+                            $('#edit_course_id').html(options);
+                        }
+                    });
+                } else {
+                    $('#edit_course_id').html('<option value="">Select course</option>');
+                }
+            });
+
+            $('#course_id_create').on('change', function() {
+                let courseId = $(this).val();
+                $('#lesson_id_create').html('<option value="">Loading...</option>');
+                if (courseId) {
+                    $.ajax({
+                        url: "{{ route('lessons.byCourse') }}",
+                        type: 'GET',
+                        data: { course_id: courseId },
+                        success: function(res) {
+                            let options = '<option value="">Select Lesson</option>';
+                            res.forEach(lesson => {
+                                options += `<option value="${lesson.id}">${lesson.lesson_title}</option>`;
+                            });
+                            $('#lesson_id_create').html(options);
+                        }
+                    });
+                } else {
+                    $('#lesson_id_create').html('<option value="">Select Lesson</option>');
+                }
+            });
+
+            $('#edit_course_id').on('change', function() {
+                let courseId = $(this).val();
+                $('#edit_lesson_id').html('<option value="">Loading...</option>');
+                if (courseId) {
+                    $.ajax({
+                        url: "{{ route('lessons.byCourse') }}",
+                        type: 'GET',
+                        data: { course_id: courseId },
+                        success: function(res) {
+                            let options = '<option value="">Select Lesson</option>';
+                            res.forEach(lesson => {
+                                options += `<option value="${lesson.id}">${lesson.lesson_title}</option>`;
+                            });
+                            $('#edit_lesson_id').html(options);
+                        }
+                    });
+                } else {
+                    $('#edit_lesson_id').html('<option value="">Select Lesson</option>');
+                }
+            });
+
+
+            $("#submittopic").on('click', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '{{ url("/topic/create") }}',
+                    type: 'POST',
+                    data: $("#topicForm").serialize(),
+                    success: function(response) {
+                        $('#createtopicModal').modal('hide');
+                        // location.reload();
+                    },
+                    error: function(xhr) {
+                        var errors = xhr.responseJSON.errors;
+                        $.each(errors, function(key, value) {
+                            $('#' + key + '_error').html('<p>' + value + '</p>');
+                        });
+                    }
+                });
+            });
+
+            // $('#topicTable').on('click', '.edit-topic-icon', function() {
+            //     $('.error_e').html('');
+            //     var topicId = $(this).data('topic-id');
+            //     $(".loader").fadeIn();
+            //     $.ajax({
+            //         url: "{{ url('/topic/edit') }}",
+            //         type: 'GET',
+            //         data: { id: topicId },
+            //         success: function(response) {
+            //             $('#edit_topic_id').val(response.topic.id);
+            //             $('#edit_title').val(response.topic.title);
+            //             $('#edit_description').val(response.topic.description);
+            //             $('#edit_ou_id').val(response.topic.ou_id);
+            //             $('#edittopicModal').modal('show');
+            //             $(".loader").fadeOut("slow");
+            //         }
+            //     });
+            // });
+
+            $('#topicTable').on('click', '.edit-topic-icon', function () {
                 $('.error_e').html('');
-                var quizId = $(this).data('quiz-id');
+                var topicId = $(this).data('topic-id');
                 $(".loader").fadeIn();
 
                 $.ajax({
-                    url: "{{ url('/question/edit') }}",
+                    url: "{{ url('/topic/edit') }}",
                     type: 'GET',
-                    data: { id: quizId },
-                    success: function(response) {
-                        let question = response.question;
+                    data: { id: topicId },
+                    success: function (response) {
 
-                        $('#edit_question_id').val(question.id);
-                        $('#edit_question_text').val(question.question_text);
+                        const topic = response.topic;
 
-                        if (question.question_type === 'text') {
-                            $('#edit_option_A').closest('.form-group').hide();
-                            $('#edit_option_B').closest('.form-group').hide();
-                            $('#edit_option_C').closest('.form-group').hide();
-                            $('#edit_option_D').closest('.form-group').hide();
-                            $('#edit_correct_option').closest('.form-group').hide();
-                        } else {
-                            $('#edit_correct_option').closest('.form-group').show();
+                        $('#edit_topic_id').val(topic.id);
+                        $('#edit_title').val(topic.title);
+                        $('#edit_description').val(topic.description);
 
-                            if(question.option_type === 'text') {
-                                $('#edit_option_A').attr('type', 'text').val(question.option_A);
-                                $('#edit_option_B').attr('type', 'text').val(question.option_B);
-                                $('#edit_option_C').attr('type', 'text').val(question.option_C);
-                                $('#edit_option_D').attr('type', 'text').val(question.option_D);
-                            } else if(question.option_type === 'image') {
-                                $('#edit_option_A').attr('type', 'file').val('');
-                                $('#edit_option_B').attr('type', 'file').val('');
-                                $('#edit_option_C').attr('type', 'file').val('');
-                                $('#edit_option_D').attr('type', 'file').val('');
+                        $('#edit_ou_id').val(topic.ou_id);
 
-                                $('.option-preview').remove();
-                                
-                                const storageBaseUrl = "{{ asset('storage') }}/";
+                        if (topic.ou_id) {
+                            $('#edit_course_id').html('<option value="">Loading...</option>');
 
+                            $.ajax({
+                                url: "{{ route('courses.byOu') }}",
+                                type: 'GET',
+                                data: { ou_id: topic.ou_id },
+                                success: function (courses) {
 
-                                if (question.option_A) {
-                                    $('#edit_option_A').after(
-                                        `<img src="${storageBaseUrl}${question.option_A}" 
-                                            alt="Option A" width="100" class="mt-2 mb-2 option-preview">`
-                                    );
+                                    let options = '<option value="">Select Course</option>';
+                                    courses.forEach(course => {
+                                        options += `<option value="${course.id}">${course.course_name}</option>`;
+                                    });
+
+                                    $('#edit_course_id').html(options);
+                                    $('#edit_course_id').val(topic.course_id);
                                 }
-
-                                if (question.option_B) {
-                                    $('#edit_option_B').after(
-                                        `<img src="${storageBaseUrl}${question.option_B}" 
-                                            alt="Option B" width="100" class="mt-2 mb-2 option-preview">`
-                                    );
-                                }
-
-                                if (question.option_C) {
-                                    $('#edit_option_C').after(
-                                        `<img src="${storageBaseUrl}${question.option_C}" 
-                                            alt="Option C" width="100" class="mt-2 mb-2 option-preview">`
-                                    );
-                                }
-
-                                if (question.option_D) {
-                                    $('#edit_option_D').after(
-                                        `<img src="${storageBaseUrl}${question.option_D}" 
-                                            alt="Option D" width="100" class="mt-2 mb-2 option-preview">`
-                                    );
-                                }
-
-                                
-                            }
-
-                            $('#edit_option_A').closest('.form-group').show();
-                            $('#edit_option_B').closest('.form-group').show();
-                            $('#edit_option_C').closest('.form-group').show();
-                            $('#edit_option_D').closest('.form-group').show();
-                            $('#edit_correct_option').val(question.correct_option);
+                            });
                         }
 
-                        $('#editQuestionModal').modal('show');
-                        $(".loader").fadeOut("slow");
-                    },
-                    error: function(xhr) {
-                        console.log(xhr.responseJSON);
-                        alert("Error fetching question details!");
+                        if (response.topicassigned && response.topicassigned.length > 0) {
+                            $('#edit_ou_id').prop('disabled', true);
+                            $('#edit_course_id').prop('disabled', true);
+                            $('#topicAssignedMsg').show();
+                        } else {
+                            $('#edit_ou_id').prop('disabled', false);
+                            $('#edit_course_id').prop('disabled', false);
+                            $('#topicAssignedMsg').hide();
+                        }
+
+                        $('#edittopicModal').modal('show');
                         $(".loader").fadeOut("slow");
                     }
                 });
             });
 
-            $('#updateQuestion').on('click', function(e) {
+
+            $('#updatetopic').on('click', function(e) {
                 e.preventDefault();
-
-                var form = document.getElementById('editQuestionForm');
-                var formData = new FormData(form);
-
-                $(".loader").fadeIn();
-
                 $.ajax({
-                    url: "{{ url('/question/update') }}",
+                    url: "{{ url('/topic/update') }}",
                     type: "POST",
-                    data: formData,
-                    processData: false,
-                    contentType: false,
+                    data: $("#edittopicForm").serialize(),
                     success: function(response) {
-                        $('#editQuestionModal').modal('hide');
+                        $('#edittopicModal').modal('hide');
                         location.reload();
-                        $(".loader").fadeOut("slow");
                     },
                     error: function(xhr) {
                         var errors = xhr.responseJSON.errors;
                         $.each(errors, function(key, value) {
                             $('#' + key + '_error_up').html('<p>' + value + '</p>');
                         });
-                        $(".loader").fadeOut("slow");
                     }
                 });
             });
 
-            $(document).on('click', '.delete-quiz-icon', function() {
-                $('#deleteQuiz').modal('show');
-                var questionId = $(this).data('question-id');
-                var quizId = $(this).data('quiz-id');
+            $(document).on('click', '.delete-topic-icon', function() {
+                $('#deletetopic').modal('show');
+                var topicId = $(this).data('topic-id');
+                var topicName = $(this).closest('tr').find('.topicTitle').text();
+                $('#append_title').html(topicName);
+                $('#topicId').val(topicId);
+            });
 
-                console.log("Question ID:", questionId);
-                console.log("Quiz ID:", quizId);
-                var quizName = $(this).closest('tr').find('.quizTitle').text();
-                $('#append_title').html(quizName);
-                $('#questionId').val(questionId);
-                $('#quizId').val(quizId);
+            $(document).on('click', '.start-topic-icon', function () {
+                let topicId = $(this).data('topic-id');
+                window.location.href = `/topic/start/${topicId}`;
+            });
+
+            $(document).on('click', '.view-result-icon', function () {
+                let topicId = $(this).data('topic-id');
+                window.location.href = `/topic/view-result/${topicId}`;
             });
 
             setTimeout(function() {
                 $('#successMessage').fadeOut('slow');
             }, 2000);
         });
-
-        function addQuestion(questionType) {
-            let questionCount = document.querySelectorAll('#questions-container .question-block').length + 1;
-
-            const container = document.getElementById('questions-container');
-
-            const block = document.createElement('div');
-            block.classList.add('question-block', 'border', 'p-3', 'mb-3');
-            block.setAttribute('id', `question_block_${questionCount}`);
-
-            let optionsHTML = "";
-
-            if (questionType !== "text") {
-                optionsHTML = `
-                    <label>Option Type</label>
-                    <select name="questions[${questionCount}][option_type]" 
-                            class="form-control mb-3"
-                            onchange="toggleOptionType(${questionCount}, this.value)">
-                        <option value="text">Text Options</option>
-                        <option value="image">Image Options</option>
-                    </select>
-
-                    <!-- TEXT OPTIONS -->
-                    <div id="text_options_${questionCount}" class="option-section">
-                        <label class="mt-2">Options (Text):</label>
-
-                        <div class="mb-2">
-                            <label>A</label>
-                            <input type="text" name="questions[${questionCount}][options_text][]" class="form-control">
-                        </div>
-                        <div class="mb-2">
-                            <label>B</label>
-                            <input type="text" name="questions[${questionCount}][options_text][]" class="form-control">
-                        </div>
-                        <div id="more_text_options_${questionCount}"></div>
-
-                        <button type="button" class="btn btn-secondary mt-2" 
-                                onclick="addTextOption(${questionCount})">
-                            Add Option
-                        </button>
-                    </div>
-
-                    <!-- IMAGE OPTIONS -->
-                    <div id="image_options_${questionCount}" class="option-section" style="display:none;">
-                        <label class="mt-2">Options (Images):</label>
-
-                        <div class="mb-2">
-                            <label>A</label>
-                            <input type="file" name="questions[${questionCount}][options_image][]" class="form-control" accept="image/*">
-                        </div>
-                        <div class="mb-2">
-                            <label>B</label>
-                            <input type="file" name="questions[${questionCount}][options_image][]" class="form-control" accept="image/*">
-                        </div>
-                        <div id="more_image_options_${questionCount}"></div>
-
-                        <button type="button" class="btn btn-secondary mt-2" 
-                                onclick="addImageOption(${questionCount})">
-                            Add Option
-                        </button>
-                    </div>
-
-                    <label class="mt-3">Correct Answer</label>
-                    <input type="text" name="questions[${questionCount}][correct_answer]" 
-                        class="form-control mb-2" placeholder="Correct Answer (e.g. A or A,B)">
-                `;
-            }
-
-            block.innerHTML = `
-                <div class="d-flex justify-content-between">
-                    <h5>Question ${questionCount} (${questionType.replace('_',' ')})</h5>
-                    <button type="button" class="btn custom-btn" onclick="removeQuestion(this)">
-                        <i class="fa fa-trash question_delete"></i>
-                    </button>
-                </div>
-
-                <label>Question Text</label>
-                <input type="text" name="questions[${questionCount}][question]" 
-                    class="form-control mb-2" placeholder="Enter question text">
-
-                <label>Upload Question Image</label>
-                <input type="file" name="questions[${questionCount}][question_image]" 
-                    class="form-control mb-3" accept="image/*">
-
-                <input type="hidden" name="questions[${questionCount}][type]" value="${questionType}">
-
-                ${optionsHTML}
-            `;
-
-
-            container.appendChild(block);
-        }
-
-        function toggleOptionType(qNum, type) {
-            if (type === 'text') {
-                document.getElementById(`text_options_${qNum}`).style.display = 'block';
-                document.getElementById(`image_options_${qNum}`).style.display = 'none';
-            } else {
-                document.getElementById(`text_options_${qNum}`).style.display = 'none';
-                document.getElementById(`image_options_${qNum}`).style.display = 'block';
-            }
-        }
-
-        function addTextOption(qNum) {
-            const container = document.getElementById(`more_text_options_${qNum}`);
-            const count = container.querySelectorAll('.option-field').length;
-
-            const labels = ['C', 'D'];
-
-            if (count < labels.length) {
-                const label = labels[count];
-
-                container.insertAdjacentHTML("beforeend", `
-                    <div class="mb-2 option-field">
-                        <label>${label}</label>
-                        <input type="text" name="questions[${qNum}][options_text][]" class="form-control">
-                    </div>
-                `);
-            }
-        }
-
-        function addImageOption(qNum) {
-            const container = document.getElementById(`more_image_options_${qNum}`);
-            const count = container.querySelectorAll('.option-field').length;
-
-            const labels = ['C', 'D'];
-
-            if (count < labels.length) {
-                const label = labels[count];
-
-                container.insertAdjacentHTML("beforeend", `
-                    <div class="mb-2 option-field">
-                        <label>${label}</label>
-                        <input type="file" name="questions[${qNum}][options_image][]" class="form-control" accept="image/*">
-                    </div>
-                `);
-            }
-        }
-
-        function removeQuestion(button) {
-            const block = button.closest(".question-block");
-            if (block) block.remove();
-        }
-
-        function addOption(questionCount) {
-            const additionalOptionsContainer = document.getElementById(`additionalOptions_${questionCount}`);
-            const addOptionButton = document.getElementById(`addOptionButton_${questionCount}`);
-
-            const existing = additionalOptionsContainer.querySelectorAll('.option-field').length;
-
-            const optionLabels = ['C', 'D'];
-            
-            if (existing < optionLabels.length) {
-                const label = optionLabels[existing];
-
-                const newOption = document.createElement('div');
-                newOption.className = 'mb-2 option-field';
-                newOption.innerHTML = `
-                    <label>${label}</label>
-                    <input type="text" name="questions[${questionCount}][options][]" class="form-control" placeholder="Option ${label}" required>
-                `;
-                
-                additionalOptionsContainer.appendChild(newOption);
-
-                if (existing + 1 === optionLabels.length) {
-                    addOptionButton.style.display = 'none';
-                }
-            }
-        }
-
-        $('#questionForm').on('submit', function(e) {
-            e.preventDefault();
-            var formData = new FormData(this);
-
-            $.ajax({
-                url: $(this).attr('action'),
-                method: 'POST',
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function(response) {
-                    location.reload();
-                },
-                error: function(response) {
-                    console.log(response.errors);
-                }
-            });
-        });
-
-        function createOrUpdatePreview(input) {
-            const $input = $(input);
-            let $preview = $input.siblings('.option-preview');
-
-            if ($preview.length === 0) {
-                $preview = $('<img class="option-preview mt-2 mb-2" width="100">');
-                $input.after($preview);
-            }
-
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    $preview.attr('src', e.target.result);
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        // Attach change listeners dynamically
-        $('#editQuestionModal').on('change', 'input[type="file"]', function() {
-            createOrUpdatePreview(this);
-        });
-
     </script>
 @endsection
