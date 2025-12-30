@@ -870,7 +870,9 @@ class TrainingEventsController extends Controller
                     $lesson->is_my_lesson = true;
                     return $lesson;
                 });
-         }
+        }
+
+        $courselessons = CourseLesson::where('course_id', $trainingEvent->course_id)->get();
 
         // if (hasUserRole($currentUser, 'Instructor') && empty($currentUser->is_admin)) { 
         //     $eventLessons = $trainingEvent->eventLessons->filter(function ($lesson) use ($currentUser) {
@@ -1094,7 +1096,7 @@ class TrainingEventsController extends Controller
 
         $grouped_customLogs = $training_custom_logs->groupBy('lesson_id');
           
-        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs'));
+        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs'));
     }
 
     public function edit_customLesson(Request $request)
