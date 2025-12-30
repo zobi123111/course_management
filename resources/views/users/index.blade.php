@@ -630,7 +630,7 @@
 
 
                         <!-- Second Medical Fields -->
-                        <div id="edit_second_medical_section" style="display: none;" class="mt-3">
+                        <div id="edit_second_medical_section" style="display: none;">
 
                             <!-- <div class="no-left-margin">
                                 <label for="licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
