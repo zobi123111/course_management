@@ -1045,6 +1045,7 @@
 
         // Handle parent select change (load child ratings)
         $(document).on('change', '.parent-rating', function() {
+            if ($(this).data('skipChange')) return;
             let $group = $(this).closest('.rating-select-group');
             let $childSelect = $group.find('.child-rating');
             let parentId = $(this).val();
@@ -1735,13 +1736,8 @@
                             $('#edit_rating_select_boxes_container').append(selectBoxHtml);
 
                             // Set selected parent
+                            $(`select[name="licence_1_ratings[${index}][parent]"]`).data('skipChange', true);
                             $(`select[name="licence_1_ratings[${index}][parent]"]`).val(parentId);
-                            $(`.child-rating[data-index="${index}"]`).select2({
-                                placeholder: 'Select the Privileges',
-                                allowClear: true,
-                                width: '100%',
-                                dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible')
-                            });
 
                             // Load and set children
                             $.ajax({
@@ -1754,10 +1750,30 @@
                                 success: function(res) {
                                     const $childSelect = $(`select[name="licence_1_ratings[${index}][child][]"]`);
                                     $childSelect.empty();
-                                    res.children.forEach(child => {
-                                        const selected = childIds.includes(child.id) ? 'selected' : '';
+                                    let seen = new Set();
+                                    let uniqueChildren = res.children.filter(child => {
+                                        if (seen.has(child.id)) return false;
+                                        seen.add(child.id);
+                                        return true;
+                                    });
+                                    uniqueChildren.forEach(child => {
+                                        const selected = childIds.some(id => id == child.id) ? 'selected' : '';
                                         $childSelect.append(`<option value="${child.id}" ${selected}>${child.name}</option>`);
                                     });
+                                    $(`select[name="licence_1_ratings[${index}][parent]"]`).data('skipChange', false);
+                                    $childSelect.data('loaded', true);
+                                    $childSelect.data('loadedParentId', parentId);
+                                    if ($childSelect.hasClass("select2-hidden-accessible")) {
+                                        $childSelect.select2('destroy');
+                                    }
+                                    setTimeout(() => {
+                                        $childSelect.select2({
+                                            placeholder: 'Select the Privileges',
+                                            allowClear: true,
+                                            width: '100%',
+                                            dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible')
+                                        });
+                                    }, 100);
 
                                 }
                             });
@@ -1821,14 +1837,8 @@
                             $('#licence_2_ratings_container').append(selectBoxHtml);
 
                             // Set selected parent
+                            $(`select[name="licence_2_ratings[${index}][parent]"]`).data('skipChange', true);
                             $(`select[name="licence_2_ratings[${index}][parent]"]`).val(parentId);
-                            $(`select[name="licence_2_ratings[${index}][parent]"]`).val(parentId);
-                            $(`.child-rating[data-index="${index}"]`).select2({
-                                placeholder: 'Select the Privileges',
-                                allowClear: true,
-                                width: '100%',
-                                dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible')
-                            });
 
                             // Load and set children
                             $.ajax({
@@ -1841,10 +1851,30 @@
                                 success: function(res) {
                                     const $childSelect = $(`select[name="licence_2_ratings[${index}][child][]"]`);
                                     $childSelect.empty();
-                                    res.children.forEach(child => {
-                                        const selected = childIds.includes(child.id) ? 'selected' : '';
+                                    let seen = new Set();
+                                    let uniqueChildren = res.children.filter(child => {
+                                        if (seen.has(child.id)) return false;
+                                        seen.add(child.id);
+                                        return true;
+                                    });
+                                    uniqueChildren.forEach(child => {
+                                        const selected = childIds.some(id => id == child.id) ? 'selected' : '';
                                         $childSelect.append(`<option value="${child.id}" ${selected}>${child.name}</option>`);
                                     });
+                                    $(`select[name="licence_2_ratings[${index}][parent]"]`).data('skipChange', false);
+                                    $childSelect.data('loaded', true);
+                                    $childSelect.data('loadedParentId', parentId);
+                                    if ($childSelect.hasClass("select2-hidden-accessible")) {
+                                        $childSelect.select2('destroy');
+                                    }
+                                    setTimeout(() => {
+                                        $childSelect.select2({
+                                            placeholder: 'Select the Privileges',
+                                            allowClear: true,
+                                            width: '100%',
+                                            dropdownParent: $('#userModal .modal-content:visible, #editUserDataModal .modal-content:visible')
+                                        });
+                                    }, 100);
                                 }
                             });
                         });

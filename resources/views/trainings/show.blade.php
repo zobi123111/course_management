@@ -1744,21 +1744,19 @@
                                                         <div class="dropdown-list">
                                                             <a href="#" id="check-all-courses" data-toggle="check-all" class="dropdown-option">Check All</a>
 
-                                                            @foreach($eventLessons as $eventLesson)
-                                                            @php $lesson = $eventLesson->lesson; @endphp
-                                                            @if($lesson && $lesson->subLessons->isNotEmpty())
-                                                            <div class="dropdown-option fw-bold">{{ $lesson->lesson_title }}</div>
-                                                            @foreach($lesson->subLessons as $sublesson)
+                                                            @foreach($courselessons as $lesson)
+                                                                @if($lesson && $lesson->subLessons->isNotEmpty())
 
-                                                            <label class="dropdown-option ps-3" for="sublesson-{{ $sublesson->id }}">
-                                                                <input type="checkbox"
-                                                                    name="select_courseTask[]"
-                                                                    value="{{ $sublesson->id }}"
-                                                                    id="sublesson-{{ $sublesson->id }}">
-                                                                {{ $sublesson->title }}
-                                                            </label>
-                                                            @endforeach
-                                                            @endif
+                                                                    <div class="dropdown-option fw-bold">{{ $lesson->lesson_title }}</div>
+                                                                    
+                                                                    @foreach($lesson->subLessons as $sublesson)
+                                                                        <label class="dropdown-option ps-3" for="sublesson-{{ $sublesson->id }}">
+                                                                            <input type="checkbox" name="select_courseTask[]" value="{{ $sublesson->id }}" id="sublesson-{{ $sublesson->id }}">
+                                                                            {{ $sublesson->title }}
+                                                                        </label>
+                                                                    @endforeach
+
+                                                                @endif
                                                             @endforeach
                                                         </div>
                                                     </div>

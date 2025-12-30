@@ -1187,7 +1187,7 @@ class UserController extends Controller
         $childRatings = Rating::whereIn('id', function ($query) use ($parentId) {
             $query->select('rating_id')
                 ->from('parent_rating')
-                ->where('parent_id', $parentId);
+                ->where('parent_id', $parentId)->whereNull('deleted_at');
         })->distinct()->get();
 
         return response()->json($childRatings);
@@ -1199,7 +1199,7 @@ class UserController extends Controller
         $childRatings = Rating::whereIn('id', function ($query) use ($parentId) {
             $query->select('rating_id')
                 ->from('parent_rating')
-                ->where('parent_id', $parentId);
+                ->where('parent_id', $parentId)->whereNull('deleted_at');
         })->distinct()->get();
         return response()->json(['children' => $childRatings]);
     }
