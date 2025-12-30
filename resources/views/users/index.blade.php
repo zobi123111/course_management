@@ -580,7 +580,7 @@
                             </select>
                         </div>
                         <div class="editmedical_class_div" style="display:none">
-                            <label for="extra_roles" class="form-label">Medical Class<span
+                            <label for="extra_roles" class="form-label mt-2">Medical Class<span
                                     class="text-danger"></span></label>
                             <select class="form-select " name="editmedical_class" id="editmedical_class">
                                 <option value="">Select the Class</option>
@@ -588,26 +588,26 @@
                                 <option value="class2">Class 2</option>
                             </select>
                             <div id="editmedical_issue_date_div">
-                                <label for="extra_roles" class="form-label">Medical Issue Date<span
+                                <label for="extra_roles" class="form-label mt-2">Medical Issue Date<span
                                         class="text-danger"></span></label>
                                 <input type="date" name="editmedical_issue_date" id="editmedical_issue_date"
                                     class="form-control" placeholder="Medical Issue Date">
                             </div>
                             <div id="editmedical_expiry_date_div">
-                                <label for="extra_roles" class="form-label">Medical Expiry Date<span
+                                <label for="extra_roles" class="form-label mt-2">Medical Expiry Date<span
                                         class="text-danger"></span></label>
                                 <input type="date" name="editmedical_expiry_date" id="editmedical_expiry_date"
                                     class="form-control" placeholder="Medical Expiry Date">
                             </div>
                             <div id="editmedical_detail_div">
-                                <label for="extra_roles" class="form-label">Medical Detail <span
+                                <label for="extra_roles" class="form-label mt-2">Medical Detail <span
                                         class="text-danger"></span></label>
                                 <!-- <input type="text" name="editmedical_detail" id="editmedical_detail"
                                         class="form-control" placeholder="Enter the Detail"> -->
                                 <textarea name="editmedical_detail" id="editmedical_detail" class="form-control" placeholder="Enter the Detail"></textarea>
                             </div>
                             <div id="editmedical_detail_div">
-                                <label for="extra_roles" class="form-label">Medical Upload <span
+                                <label for="extra_roles" class="form-label mt-2">Medical Upload <span
                                         class="text-danger"></span></label>
                                 <input type="file" name="editmedical_file" id="editmedical_file"
                                     class="form-control" placeholder="Enter the Detail">
