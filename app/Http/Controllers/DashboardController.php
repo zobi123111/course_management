@@ -48,7 +48,7 @@ class DashboardController extends Controller
             $documents = Document::where('ou_id', $ou_id)->with('groups')->get();
             $requestCount = BookedResource::where('ou_id', $ou_id)->count();
             $trainingEvents = [];
-        } else { 
+        } else {
             
             $groups = Group::all();
             $filteredGroups = $groups->filter(function ($group) use ($userId) {
@@ -146,30 +146,40 @@ class DashboardController extends Controller
         $groups = Group::where('status', 1)->whereJsonContains('user_ids', (string)$user->id)->pluck('id');
         $courseIds = CourseGroup::whereIn('group_id', $groups)->pluck('courses_id');
 
-        $quizzes = Quiz::where('status', 'published')->whereIn('course_id', $courseIds)->get(); 
+        $quizzes = Quiz::with('trainingQuizzes')->where('status', 'published')->whereIn('course_id', $courseIds)
+                    ->whereHas('trainingQuizzes', function ($query) use ($user) {
+                        $query->where('is_active', 1)
+                            ->where('student_id', $user->id);
+                    })
+                    ->get(); 
 
         $groups = Group::where('status', 1)->whereJsonContains('user_ids', (string)$user->id)->pluck('id');
         $courseIds = CourseGroup::whereIn('group_id', $groups)->pluck('courses_id');
 
-        $quizs = Quiz::with('course', 'lesson', 'quizAttempts')
+        $quizs = Quiz::with('course', 'lesson', 'quizAttempts', 'trainingQuizzes')
                         ->where('status', 'published')
                         ->whereIn('course_id', $courseIds)
+                        ->whereHas('trainingQuizzes', function ($query) use ($user) {
+                            $query->where('is_active', 1)
+                                ->where('student_id', $user->id);
+                        })
+                        ->whereHas('topics')
                         ->whereDoesntHave('quizAttempts', function ($q) use ($user) {
                         $q->where('student_id', $user->id); })->get();
 
-            foreach ($quizs as $quiz) {
-                $outstandingItems->push([
-                    'type'        => 'quiz',
-                    'title'       => $quiz->title,
-                    'course'      => $quiz->course->course_name ?? 'N/A',
-                    'lesson'      => $quiz->lesson->lesson_title ?? 'N/A',
-                    'duration'    => $quiz->duration . ' mins',
-                    'passing'     => $quiz->passing_score . '%',
-                    'status'      => 'Pending',
-                    'action_url'  => route('quiz.view', ['id' => encode_id($quiz->id)]),
-                    'action_text' => 'Start Quiz',
-                ]);
-            }
+        foreach ($quizs as $quiz) {
+            $outstandingItems->push([
+                'type'        => 'quiz',
+                'title'       => $quiz->title,
+                'course'      => $quiz->course->course_name ?? 'N/A',
+                'lesson'      => $quiz->lesson->lesson_title ?? 'N/A',
+                'duration'    => $quiz->duration . ' mins',
+                'passing'     => $quiz->passing_score . '%',
+                'status'      => 'Pending',
+                'action_url'  => route('quiz.start', ['id' => encode_id($quiz->id)]),
+                'action_text' => 'Start Quiz',
+            ]);
+        }
 
         $totalDocuments = $documents->count();
         $quizscount = $quizzes->count();

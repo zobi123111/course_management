@@ -323,6 +323,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/quiz/update', [QuizController::class, 'update'])->name('quiz.update');
     Route::post('/quiz/delete', [QuizController::class, 'destroy'])->name('quiz.destroy');
     Route::post('/quiz/update-status', [QuizController::class, 'updateStatus'])->name('quiz.updateStatus');
+    Route::post('/training-quiz/update-status', [QuizController::class, 'trainingquizupdateStatus'])->name('trainingquiz.updateStatus');
 
     Route::get('/quiz/start/{id}', [QuizController::class, 'startQuiz'])->name('quiz.start');
     Route::get('/quiz/view-result/{id}', [QuizController::class, 'viewResult'])->name('quiz.result');

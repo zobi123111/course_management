@@ -840,6 +840,9 @@ class TrainingEventsController extends Controller
             'group:id,name,user_ids',
             'instructor:id,fname,lname',
             'student:id,fname,lname,licence',
+            'trainingQuizzes' => function ($q) {
+                $q->select('id', 'trainingevent_id', 'quiz_id', 'student_id', 'is_active');
+            },
             'resource:id,name',
             'eventLessons' => function ($q) {
                 $q->orderBy('position', 'asc'); 

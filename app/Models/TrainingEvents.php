@@ -208,36 +208,39 @@ class TrainingEvents extends Model
     }
 
 
-        public function defLessonTasks()
-        {
-            return $this->hasMany(DefLessonTask::class, 'event_id', 'id');
-        }
+    public function defLessonTasks()
+    {
+        return $this->hasMany(DefLessonTask::class, 'event_id', 'id');
+    }
 
-        // public function getAllTaskGradingsAttribute()
-        // {
-        //     return $this->taskGradings->merge($this->defLessonTasks);
-        // }
+    // public function getAllTaskGradingsAttribute()
+    // {
+    //     return $this->taskGradings->merge($this->defLessonTasks);
+    // }
 
-         public function defLessons()
-        {
-            return $this->hasMany(DefLesson::class, 'event_id', 'id');
-        }
+        public function defLessons()
+    {
+        return $this->hasMany(DefLesson::class, 'event_id', 'id');
+    }
 
-        public function  def_lesson_tasks()
-        {
-            return $this->hasMany(DefLessonTask::class, 'task_id', 'id');
-        }
-
-
-        public function deferredGradings()
-        {
-            return $this->hasMany(DeferredGrading::class, 'event_id', 'id');
-        }
-
-        public function quizzes()
-        {
-            return $this->hasMany(Quiz::class, 'course_id', 'course_id');
-        }
+    public function  def_lesson_tasks()
+    {
+        return $this->hasMany(DefLessonTask::class, 'task_id', 'id');
+    }
 
 
+    public function deferredGradings()
+    {
+        return $this->hasMany(DeferredGrading::class, 'event_id', 'id');
+    }
+
+    public function quizzes()
+    {
+        return $this->hasMany(Quiz::class, 'course_id', 'course_id');
+    }
+
+    public function trainingQuizzes()
+    {
+        return $this->hasMany(TrainingQuiz::class, 'trainingevent_id');
+    }
 }
