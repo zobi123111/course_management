@@ -635,9 +635,10 @@
                 $('#confirmStartQuiz').data('quiz-id', quizId);
                 $('#startQuizModal').modal('show');
             });
-
+            
             $('#confirmStartQuiz').on('click', function () {
                 let quizId = $(this).data('quiz-id');
+                $('#startQuizModal').modal('hide');
                 window.location.href = `/quiz/start/${quizId}`;
             });
 
