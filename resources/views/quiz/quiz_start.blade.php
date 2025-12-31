@@ -681,54 +681,84 @@
                 answer = sequenceInput ? sequenceInput.value : null;
             }
 
-            fetch('{{ route("quiz.saveAnswer") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    quiz_id: '{{ $quiz->id }}',
-                    question_id: questionId,
-                    answer: answer,
-                    answertype: 'submitquiz'
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
+            if (answer === null || answer === '') {
+                // Directly finalize quiz
                 return fetch('{{ route("quiz.saveFinalData") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
-                    body: JSON.stringify({
-                        quiz_id: '{{ $quiz->id }}'
-                    })
-                });
+                    body: JSON.stringify({ quiz_id: '{{ $quiz->id }}' })
+                })
+                .then(res => res.json())
+                .then(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Quiz Submitted!',
+                        text: 'No answer was given.'
+                    }).then(() => {
+                        window.quizSubmitting = true;
+                        try {
+                            localStorage.removeItem(`quiz_{{ $quiz->id }}_start_time`);
+                        } catch (e) {}
 
-            })
-            .then(res => res.json())
-            .then(data => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Quiz Submitted!',
-                    text: 'Your last answer has been saved.',
-                    confirmButtonText: 'OK'
-                }).then(() => {
-                    window.quizSubmitting = true;
-                    try { localStorage.removeItem(`quiz_{{ $quiz->id }}_start_time`); } catch(e){}
-                    window.location.href = '{{ route("quiz.index") }}';
+                        window.location.href = '{{ route("quiz.index") }}';
+                    });
+
                 });
-            })
-            .catch(err => {
-                console.error('Error saving answer:', err);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Submission Failed',
-                    text: 'There was an error submitting your quiz. Please try again.'
+            }
+            else{
+                fetch('{{ route("quiz.saveAnswer") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        quiz_id: '{{ $quiz->id }}',
+                        question_id: questionId,
+                        answer: answer,
+                        answertype: 'submitquiz'
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    return fetch('{{ route("quiz.saveFinalData") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            quiz_id: '{{ $quiz->id }}'
+                        })
+                    });
+
+                })
+                .then(res => res.json())
+                .then(data => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Quiz Submitted!',
+                        text: 'Your last answer has been saved.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.quizSubmitting = true;
+                        try { localStorage.removeItem(`quiz_{{ $quiz->id }}_start_time`); } catch(e){}
+                        window.location.href = '{{ route("quiz.index") }}';
+                    });
+                })
+                .catch(err => {
+                    console.error('Error saving answer:', err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Submission Failed',
+                        text: 'There was an error submitting your quiz. Please try again.'
+                    });
                 });
-            });
+            }
+
         });
 
         // Intercept form submission
