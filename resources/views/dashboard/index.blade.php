@@ -452,10 +452,10 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     $tooltip = "This rating does not expire";
                                 } elseif ($color == "Red") {
                                     $color = "#dc3545";
-                                    $tooltip = "This rating has expired";
+                                    $tooltip = "This rating has expired on" . date('d/m/Y', strtotime($expirty_date));
                                 } elseif ($color == "Yellow") {
                                     $color = "#ffc107";
-                                    $tooltip = "This rating will expire soon";
+                                    $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
                                 } else {
                                     $color = "#198754";
                                     $tooltip = "This rating is valid until " . date('d/m/Y', strtotime($expirty_date));
@@ -483,10 +483,10 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     $tooltip = "This rating does not expire";
                                 } elseif ($color == "Red") {
                                     $color = "#dc3545";
-                                    $tooltip = "This rating has expired";
+                                    $tooltip = "This rating has expired on" . date('d/m/Y', strtotime($expirty_date));
                                 } elseif ($color == "Yellow") {
                                     $color = "#ffc107";
-                                    $tooltip = "This rating will expire soon";
+                                    $tooltip = "This rating will expire soon on" . date('d/m/Y', strtotime($expirty_date));
                                 } else {
                                     $color = "#198754";
                                     $tooltip = "This rating is valid until " . date('d/m/Y', strtotime($expirty_date));
@@ -632,10 +632,10 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                             $tooltip = "This rating does not expire";
                                         } elseif ($color == "Red") {
                                             $color = "#dc3545";
-                                            $tooltip = "This rating has expired";
+                                            $tooltip = "This rating has expired on" . date('d/m/Y', strtotime($expirty_date));
                                         } elseif ($color == "Yellow") {
                                             $color = "#ffc107";
-                                            $tooltip = "This rating will expire soon";
+                                            $tooltip = "This rating will expire soon on" . date('d/m/Y', strtotime($expirty_date));
                                         } else {
                                             $color = "#198754";
                                             $tooltip = "This rating is valid until " . date('d/m/Y', strtotime($expirty_date));
@@ -661,10 +661,10 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                                 $tooltip = "This rating does not expire";
                                             } elseif ($color == "Red") {
                                                 $color = "#dc3545";
-                                                $tooltip = "This rating has expired";
+                                                $tooltip = "This rating has expired on" . date('d/m/Y', strtotime($expirty_date));
                                             } elseif ($color == "Yellow") {
                                                 $color = "#ffc107";
-                                                $tooltip = "This rating will expire soon";
+                                                $tooltip = "This rating will expire soon on" . date('d/m/Y', strtotime($expirty_date));
                                             } else {
                                                 $color = "#198754";
                                                 $tooltip = "This rating is valid until " . date('d/m/Y', strtotime($expirty_date));
