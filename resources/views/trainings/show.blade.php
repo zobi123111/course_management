@@ -762,6 +762,7 @@
                         @endif
 
                         @php
+                        
                             $quizLessons = $lessons->filter(function ($lesson) {
                                 return $lesson?->lesson?->quizzes?->count() > 0;
                             });
@@ -769,14 +770,17 @@
                             $normalLessons = $lessons->reject(function ($lesson) {
                                 return $lesson?->lesson?->quizzes?->count() > 0;
                             });
+
+                            
                         @endphp
 
-                        <h4 class="mb-3 text-success">
-                            <i class="bi bi-patch-question-fill me-2"></i>
-                            Lessons
-                        </h4>
+                      
 
                         @if($normalLessons->count())
+                              <h4 class="mb-3 text-success">
+                                <i class="bi bi-patch-question-fill me-2"></i>
+                                Lessons
+                            </h4>
                             @foreach($normalLessons as $lesson)
                                 <div class="row mb-3 p-3 border rounded bg-light">
                                     <div class="col-md-12">
@@ -958,14 +962,15 @@
                                     @endif
                                 </div>
                             @endforeach
-
+                        @endif
+                            
                             @if($quizLessons->count())
                                 <div class="mt-4">
                                     <h4 class="mb-3 text-success">
                                         <i class="bi bi-patch-question-fill me-2"></i>
                                         Lessons with Quiz
                                     </h4>
-
+                                    
                                     @foreach($quizLessons as $lesson)
                                     <div class="row mb-3 p-3 border rounded bg-light">
 
@@ -1236,7 +1241,6 @@
                                     </div>
                                 @endforeach
                             @endif
-                        @endif
 
                         <!--  -- Custom Lesson   -->
 
