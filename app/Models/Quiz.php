@@ -82,4 +82,8 @@ class Quiz extends Model
         return $this->belongsTo(OrganizationUnits::class, 'ou_id');
     }
 
+    public function trainingQuizzes()
+    {
+        return $this->hasMany(TrainingQuiz::class, 'quiz_id');
+    }
 }

@@ -247,6 +247,8 @@ class User extends Authenticatable
         return $this->hasMany(Booking::class, 'std_id', 'id');
     }
 
-
-    
+    public function trainingQuizzes()
+    {
+        return $this->hasMany(TrainingQuiz::class, 'student_id');
+    }    
 }

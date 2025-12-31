@@ -3,6 +3,10 @@
     @extends('layout.app')
     @section('content')
 
+    <div class="container">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+    </div>
+
     <style>
         .course-dropdown .dropdown-list {
             bottom: 100%;
@@ -482,6 +486,94 @@
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23212529'%3e%3cpath d='M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8z'/%3e%3c/svg%3e");
             transform: none;
         }
+
+        .bg-custom-blue {
+            background-color: #2155a1 !important;
+        }
+
+        .action-btn {
+            padding: 0px 10px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 100px;
+            height: 30px;
+        }
+
+        .switch-input {
+            display: none;
+        }
+
+        .switch-button {
+            position: absolute;
+            cursor: pointer;
+            background-color: #dc3545; /* red for OFF */
+            border-radius: 30px;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            transition: background-color 0.3s ease;
+            overflow: hidden;
+        }
+
+        .switch-button-left,
+        .switch-button-right {
+            position: absolute;
+            width: 60%;
+            text-align: center;
+            line-height: 30px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        /* Left side (OFF) */
+        .switch-button-left {
+            left: 25px;
+        }
+
+        /* Right side (ON) */
+        .switch-button-right {
+            right: 34px;
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        /* Knob */
+        .switch-button::before {
+            content: "";
+            position: absolute;
+            height: 26px;
+            width: 26px;
+            left: 2px;
+            top: 2px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        /* When checked (ON) */
+        .switch-input:checked + .switch-button {
+            background-color: #28a745; /* green for ON */
+        }
+
+        .switch-input:checked + .switch-button::before {
+            transform: translateX(68px);
+        }
+
+        .switch-input:checked + .switch-button .switch-button-left {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        .switch-input:checked + .switch-button .switch-button-right {
+            transform: translateX(0);
+            opacity: 1;
+        }
     </style>
 
     <head>
@@ -897,13 +989,35 @@
 
                                                         @php
                                                             $attempt = $quiz->quizAttempts->where('student_id', $trainingEvent->student->id)->first();
+                                                            
+                                                            $trainingQuiz = $trainingEvent->trainingQuizzes->where('quiz_id', $quiz->id)->where('student_id', $trainingEvent->student->id)->first();
                                                         @endphp
 
                                                         <div class="card-body border rounded mt-3 mb-3">
 
-                                                            <div class="card-header bg-success text-white mt-3 py-1">
+                                                            <!-- <div class="card-header bg-success text-white mt-3 py-1">
                                                                 <i class="bi bi-patch-question-fill me-2"></i> {{ $quiz->title ?? 'Quiz' }}
+                                                            </div> -->
+
+                                                           <div class="card-header bg-custom-blue text-white mt-3 py-1 d-flex align-items-center"> 
+                                                                <div> 
+                                                                    <i class="bi bi-patch-question-fill me-2"></i> {{ $quiz->title ?? 'Quiz' }} 
+                                                                </div> 
+                                                                @if(auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1 || $trainingEvent->student->id !== auth()->user()->id)
+                                                                    <div class="ms-auto">
+                                                                        <label class="switch mb-0">
+                                                                            <input type="checkbox" class="switch-input toggle-status" data-student="{{ $trainingEvent->student->id }}" data-trainingevent="{{ $trainingEvent->id }}" data-id="{{ $quiz->id }}" {{ $trainingQuiz && $trainingQuiz->is_active ? 'checked' : '' }} >
+
+                                                                            <div class="switch-button">
+                                                                                <span class="switch-button-left">Inactive</span>
+                                                                                <span class="switch-button-right">Active</span>
+                                                                            </div>
+                                                                        </label>
+                                                                    </div>
+                                                                @endif
                                                             </div>
+
+
 
                                                             <div class="justify-content-between align-items-center">
                                                                 <div class="row p-3 bg-light">
@@ -3300,9 +3414,11 @@
                     $(".select2-container--open").addClass("select2-container--above");
                 });
             });
+
             $(document).on('click', '.course-dropdown .dropdown-label', function() {
                 $(this).closest('.course-dropdown').toggleClass('active');
             });
+
             // When modal is opened, initialize multiselect
             // Check/Uncheck all
             $(document).on('click', '#check-all-courses[data-toggle="check-all"]', function(e) {
@@ -3340,6 +3456,40 @@
                     $dropdown.find('.dropdown-label').text('Select Courses');
                 }
             }
+
+            document.querySelectorAll('.toggle-status').forEach(function (toggle) {
+                toggle.addEventListener('change', function () {
+                    let quizId = this.getAttribute('data-id');
+                    let student = this.getAttribute('data-student');
+                    let trainingEvent = this.getAttribute('data-trainingEvent');
+                    let status = this.checked ? 1 : 0;
+
+                    fetch('{{ route('trainingquiz.updateStatus') }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            id: quizId,
+                            student: student,
+                            trainingEvent: trainingEvent,
+                            status: status
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log(data.message);
+                        } else {
+                            console.error('Failed to update');
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error:', err);
+                    });
+                });
+            });
             // $('.scale-radio').on('change', function() { 
             //     const name = $(this).attr('name');
             //     const wasChecked = $(this).data('waschecked');

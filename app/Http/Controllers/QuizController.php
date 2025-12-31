@@ -17,6 +17,7 @@ use App\Models\TrainingEvents;
 use App\Models\User;
 use App\Models\QuizTopic;
 use App\Models\UserQuiz;
+use App\Models\TrainingQuiz;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -47,8 +48,18 @@ class QuizController extends Controller
             $groups = Group::where('status', 1)->whereJsonContains('user_ids', (string)$currentUser->id)->pluck('id');
             $courseIds = CourseGroup::whereIn('group_id', $groups)->pluck('courses_id');
 
-            $quizs = Quiz::with('course', 'lesson', 'quizOu', 'quizAttempts')->where('status', 'published')
-                        ->whereIn('course_id', $courseIds)->orderBy('id', 'desc')->get();
+            // $quizs = Quiz::with('course', 'lesson', 'quizOu', 'quizAttempts')->where('status', 'published')
+            //             ->whereIn('course_id', $courseIds)->orderBy('id', 'desc')->get();
+
+            $quizs = Quiz::with('course', 'lesson', 'quizOu', 'quizAttempts', 'trainingQuizzes')
+                ->where('status', 'published')
+                ->whereIn('course_id', $courseIds)
+                ->whereHas('trainingQuizzes', function ($query) use ($currentUser) {
+                    $query->where('is_active', 1)
+                        ->where('student_id', $currentUser->id);
+                })
+                ->orderBy('id', 'desc')
+                ->get();
 
             $courses = Courses::where("status", 1)->get();
         }
@@ -365,6 +376,27 @@ class QuizController extends Controller
             'status' => $quiz->status
         ]);
     }
+
+    public function trainingquizupdateStatus(Request $request)
+    {
+        $quiz = TrainingQuiz::updateOrCreate(
+            [
+                'student_id' => $request->student,
+                'trainingevent_id' => $request->trainingEvent,
+                'quiz_id' => $request->id,
+            ],
+            [
+                'is_active' => $request->status ? 1 : 0,
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status saved successfully!',
+            'status' => $quiz->status
+        ]);
+    }
+
 
     public function startQuiz(Request $request)
     {
