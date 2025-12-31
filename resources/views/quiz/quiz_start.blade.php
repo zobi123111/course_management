@@ -11,12 +11,12 @@
         user-select: none;
     }
     .quiz-container {
-        max-height: 80vh; /* or whatever fits your layout */
+        max-height: 80vh;
         overflow-y: auto;
     }
 
     .quiz-nav {
-        border-top: 1px solid #ddd; /* optional separator */
+        border-top: 1px solid #ddd;
     }
 
     #quiz-timer {
@@ -48,16 +48,8 @@
         border-color: #0d6efd;
     }
 
-
-    /* .sidebar-item {
-        transition: background-color 0.3s ease;
-        padding: 6px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-    } */
-
     .sidebar-item {
-        background-color: #ffffff !important; /* default white */
+        background-color: #ffffff !important;
         transition: background-color 0.3s ease;
         padding: 6px 10px;
         border-radius: 4px;
@@ -66,17 +58,14 @@
         display: inline-block;
     }
 
-    /* Light green for answered */
     .sidebar-item.answered {
         background-color: #c8e6c9 !important;
     }
 
-    /* Light yellow for not answered */
     .sidebar-item.unanswered {
         background-color: #fff3cd !important;
     }
 
-    /* Blue for current question */
     .sidebar-item.current-question {
         background-color: #007bff !important;
         color: #fff !important;
@@ -170,7 +159,6 @@
 
                     <div class="question-box {{ $index === 0 ? 'active' : 'd-none' }}" data-index="{{ $index }}">
 
-                        <!-- Question Text -->
                         <h5>Q{{ $index + 1 }}. {{ $q->question_text }}</h5>
 
                         @if($q->question_image)
@@ -182,7 +170,14 @@
                         <input type="hidden" name="questions[{{ $quizQuestion->id }}][id]" value="{{ $quizQuestion->id }}">
 
                         @if($q->question_type === 'single_choice')
-                            @foreach(['A', 'B', 'C', 'D'] as $option)
+                            @php
+                                $options = collect(['A', 'B', 'C', 'D'])
+                                    ->filter(fn($opt) => !empty($q->{'option_'.$opt}))
+                                    ->shuffle();
+                            @endphp
+
+                            @foreach($options as $option)
+
                                 @php $optionValue = $q->{'option_' . $option}; @endphp
 
                                 @if(!empty($optionValue))
@@ -209,11 +204,16 @@
                             @endforeach
                         @endif
 
-
-
                         {{-- Multiple Choice --}}
                         @if($q->question_type === 'multiple_choice')
-                            @foreach(['A', 'B', 'C', 'D'] as $option)
+                            @php
+                                $options = collect(['A', 'B', 'C', 'D'])
+                                    ->filter(fn($opt) => !empty($q->{'option_'.$opt}))
+                                    ->shuffle();
+                            @endphp
+
+                            @foreach($options as $option)
+
                                 @php $optionValue = $q->{'option_' . $option}; @endphp
 
                                 @if(!empty($optionValue))
@@ -248,13 +248,19 @@
                                 placeholder="Type your answer here..."></textarea>
                         @endif
 
-
                         {{-- Sequence Type --}}
                         @if($q->question_type === 'sequence')
                             <p>Drag and drop to arrange the options in correct order:</p>
 
                             <ul id="sequence-{{ $quizQuestion->id }}" class="list-group">
-                                @foreach(['A', 'B', 'C', 'D'] as $option)
+                                @php
+                                    $options = collect(['A', 'B', 'C', 'D'])
+                                        ->filter(fn($opt) => !empty($q->{'option_'.$opt}))
+                                        ->shuffle();
+                                @endphp
+
+                                @foreach($options as $option)
+
                                     @php $optionValue = $q->{'option_' . $option}; @endphp
 
                                     @if(!empty($optionValue))
@@ -277,7 +283,6 @@
                                 name="questions[{{ $quizQuestion->id }}][answer]"
                                 id="sequence-input-{{ $quizQuestion->id }}">
                         @endif
-
 
                         <!-- Navigation -->
                         <div class="mt-4 d-flex justify-content-between">
@@ -312,7 +317,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // global flag to indicate we're intentionally submitting/navigating
+
         window.quizSubmitting = window.quizSubmitting || false;
         let currentIndex = 0;
         const form = document.getElementById('quizForm');
@@ -328,7 +333,6 @@
         function saveAnswer(currentQuestionBox) {
             console.log('Saving answer for current question box:', currentQuestionBox);
 
-            // Get question ID
             const questionIdInput = currentQuestionBox.querySelector('input[name$="[id]"]');
             const questionId = questionIdInput ? questionIdInput.value : null;
 
@@ -382,7 +386,6 @@
                 if (currentIndex < questions.length) {
                     const currentQuestionBox = questions[currentIndex];
 
-                    // saveAnswer(currentQuestionBox);
                     saveAnswer(currentQuestionBox, 'next');
 
                     currentIndex++;
@@ -395,52 +398,6 @@
             });
         });
 
-        // document.querySelectorAll('.next-btn').forEach(btn => {
-        //     btn.addEventListener('click', () => {
-        //         const currentQuestionBox = questions[currentIndex];
-        //         saveAnswer(currentQuestionBox, 'next');
-
-        //         currentIndex++;
-        //         if (currentIndex < questions.length) {
-        //             showQuestion(currentIndex);
-        //         } else {
-        //             // If last question, hide next button
-        //             btn.style.display = 'none';
-        //         }
-        //     });
-        // });
-
-        // Submit button
-        // form.addEventListener('submit', function (e) {
-        //     e.preventDefault();
-
-        //     questions.forEach(currentQuestionBox => {
-        //         saveAnswer(currentQuestionBox, 'submit');
-        //     });
-
-        //     Swal.fire({
-        //         icon: 'success',
-        //         title: 'Quiz Submitted!',
-        //         text: 'All answers have been saved.',
-        //         confirmButtonText: 'OK'
-        //     }).then(() => {
-        //         // Prevent beforeunload from showing when we intentionally redirect
-        //         window.quizSubmitting = true;
-        //         try { localStorage.removeItem(`quiz_{{ $quiz->id }}_start_time`); } catch(e){}
-        //         window.location.href = '{{ route("quiz.index") }}';
-        //     });
-        // });
-
-        // document.querySelectorAll('.next-btn').forEach(btn => {
-        //     btn.addEventListener('click', () => {
-        //         if (currentIndex < questions.length - 1) {
-        //             currentIndex++;
-        //             showQuestion(currentIndex);
-        //             updateSidebar();
-        //         }
-        //     });
-        // });
-
         document.querySelectorAll('.prev-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 if (currentIndex > 0) {
@@ -451,21 +408,7 @@
             });
         });
 
-
         showQuestion(currentIndex);
-
-        // document.querySelectorAll('ul[id^="sequence-"]').forEach(list => {
-        //     const hiddenInput = document.getElementById('sequence-input-' + list.id.split('-')[1]);
-        //     Sortable.create(list, {
-        //         animation: 150,
-        //         onSort: function () {
-        //             const order = Array.from(list.children).map(li => li.getAttribute('data-option'));
-        //             hiddenInput.value = order.join(',');
-        //         }
-        //     });
-
-        //     hiddenInput.value = Array.from(list.children).map(li => li.getAttribute('data-option')).join(',');
-        // });
 
         document.querySelectorAll('ul[id^="sequence-"]').forEach(list => {
             const hiddenInput = document.getElementById('sequence-input-' + list.id.split('-')[1]);
@@ -484,26 +427,6 @@
 
 
         const sidebarItems = document.querySelectorAll('.sidebar-question');
-        // const questions = document.querySelectorAll('.question-box');
-
-        // let currentIndex = 0;
-
-        // function updateSidebar() {
-        //     sidebarItems.forEach((item, i) => {
-        //         item.classList.toggle('current-question', i === currentIndex);
-
-        //         const questionInputs = questions[i].querySelectorAll('input[type="radio"], input[type="checkbox"], textarea');
-        //         let answered = false;
-
-        //         questionInputs.forEach(input => {
-        //             if ((input.type === 'radio' || input.type === 'checkbox') && input.checked) answered = true;
-        //             if (input.tagName === 'TEXTAREA' && input.value.trim() !== '') answered = true;
-        //         });
-
-        //         const tick = item.querySelector('.question-tick');
-        //         tick.style.display = answered ? 'inline' : 'none';
-        //     });
-        // }
 
         function updateSidebar() {
             sidebarItems.forEach((item, i) => {
@@ -527,13 +450,11 @@
                 } else if (i < currentIndex) {
                     item.classList.add('unanswered');
                 }
-                // else → default white (not yet reached)
             });
         }
         
         updateSidebar();
 
-        // Click on sidebar question to jump
         sidebarItems.forEach((item, index) => {
             item.addEventListener('click', () => {
                 currentIndex = index;
@@ -553,15 +474,13 @@
 @if($quiz->quiz_type == 'normal')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // ensure global flag exists in this scope too
             window.quizSubmitting = window.quizSubmitting || false;
 
-            const quizDuration = {{ $quiz->duration }} * 60; // convert minutes to seconds
+            const quizDuration = {{ $quiz->duration }} * 60;
             const quizId = "{{ $quiz->id }}";
             const form = document.getElementById('quizForm');
             const timerDisplay = document.getElementById('quiz-timer');
 
-            // Optional basic styling — remove if you already styled in Blade
             timerDisplay.style.background = "#007bff";
             timerDisplay.style.color = "#fff";
             timerDisplay.style.padding = "8px 15px";
@@ -569,7 +488,6 @@
             timerDisplay.style.display = "inline-block";
             timerDisplay.style.fontWeight = "600";
 
-            // Load or create quiz start time
             let startTime = localStorage.getItem(`quiz_${quizId}_start_time`);
             if (!startTime) {
                 startTime = Date.now();
@@ -578,40 +496,33 @@
                 startTime = parseInt(startTime);
             }
 
-            // Calculate remaining time
             function getRemainingTime() {
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
                 const remaining = quizDuration - elapsed;
                 return remaining > 0 ? remaining : 0;
             }
 
-            // Format time as mm:ss
             function formatTime(seconds) {
                 const mins = Math.floor(seconds / 60);
                 const secs = seconds % 60;
                 return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
             }
 
-            // Update timer every second
             const timerInterval = setInterval(() => {
                 const remaining = getRemainingTime();
 
                 if (remaining <= 0) {
                     clearInterval(timerInterval);
-                    // mark as intentionally submitting so beforeunload doesn't prompt
                     window.quizSubmitting = true;
                     try { localStorage.removeItem(`quiz_${quizId}_start_time`); } catch(e){}
                     alert("Time is up! Your quiz will now be submitted.");
-                    // Dispatch the submit event so our JS handler runs (prevents real POST to start route)
                     form.dispatchEvent(new Event('submit', { cancelable: true }));
                 } else {
                     timerDisplay.textContent = `⏱ Time Left: ${formatTime(remaining)}`;
                 }
             }, 1000);
 
-            // Warn before closing tab
             window.addEventListener('beforeunload', function (e) {
-                // don't show prompt when we're intentionally submitting/navigating
                 if (window.quizSubmitting) return;
 
                 const remaining = getRemainingTime();
@@ -621,13 +532,10 @@
                     e.preventDefault();
                     e.returnValue = message;
 
-                    // If they click OK, auto-submit
                     setTimeout(() => {
                         if (confirm(message)) {
                             try { localStorage.removeItem(`quiz_${quizId}_start_time`); } catch(e){}
-                            // mark submitting so we don't re-prompt
                             window.quizSubmitting = true;
-                            // Dispatch submit event to trigger AJAX submit handler instead of native submit
                             form.dispatchEvent(new Event('submit', { cancelable: true }));
                         }
                     }, 0);
@@ -644,7 +552,6 @@
         });
     </script>
 @endif
-
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -682,7 +589,6 @@
             }
 
             if (answer === null || answer === '') {
-                // Directly finalize quiz
                 return fetch('{{ route("quiz.saveFinalData") }}', {
                     method: 'POST',
                     headers: {
@@ -760,86 +666,6 @@
             }
 
         });
-
-        // Intercept form submission
-        // form.addEventListener('submit', function (e) {
-        //     e.preventDefault();
-
-        //     const questions = document.querySelectorAll('.question-box');
-        //     const answersData = [];
-
-        //     questions.forEach(currentQuestionBox => {
-        //         const questionIdInput = currentQuestionBox.querySelector('input[name$="[id]"]');
-        //         const questionId = questionIdInput ? questionIdInput.value : null;
-        //         if (!questionId) return;
-
-        //         let answer = null;
-
-        //         // Single choice (radio)
-        //         const selectedRadio = currentQuestionBox.querySelector('input[type="radio"]:checked');
-        //         if (selectedRadio) answer = selectedRadio.value;
-
-        //         // Multiple choice (checkbox)
-        //         else if (currentQuestionBox.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
-        //             const selectedCheckboxes = currentQuestionBox.querySelectorAll('input[type="checkbox"]:checked');
-        //             answer = Array.from(selectedCheckboxes).map(cb => cb.value).join(',');
-        //         }
-
-        //         // Text input
-        //         else if (currentQuestionBox.querySelector('textarea')) {
-        //             const textarea = currentQuestionBox.querySelector('textarea');
-        //             answer = textarea.value.trim() || null;
-        //         }
-
-        //         // Sequence / drag & drop
-        //         else if (currentQuestionBox.querySelector('ul[id^="sequence-"]')) {
-        //             const sequenceInput = currentQuestionBox.querySelector('input[id^="sequence-input-"]');
-        //             answer = sequenceInput ? sequenceInput.value : null;
-        //         }
-
-        //         answersData.push({
-        //             question_id: questionId,
-        //             answer: answer
-        //         });
-        //     });
-
-        //     // Send all answers via AJAX
-        //     fetch('{{ route("quiz.saveAnswer") }}', {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-Type': 'application/json',
-        //             'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        //         },
-        //         body: JSON.stringify({
-        //             attempt_id: '{{ $attempt_id ?? "1" }}',
-        //             answers: answersData
-        //         })
-        //     })
-        //     .then(res => res.json())
-        //     .then(data => {
-        //         // Show SweetAlert success
-        //         Swal.fire({
-        //             icon: 'success',
-        //             title: 'Quiz Submitted!',
-        //             text: 'Your answers have been saved successfully.',
-        //             confirmButtonText: 'OK'
-        //         }).then(() => {
-        //             // Prevent beforeunload prompt and clear timer start time, then redirect
-        //             window.quizSubmitting = true;
-        //             try { localStorage.removeItem(`quiz_{{ $quiz->id }}_start_time`); } catch(e){}
-        //             // Redirect to quiz.index
-        //             window.location.href = '{{ route("quiz.index") }}';
-        //         });
-        //     })
-        //     .catch(err => {
-        //         console.error('Error saving answers:', err);
-        //         Swal.fire({
-        //             icon: 'error',
-        //             title: 'Submission Failed',
-        //             text: 'There was an error submitting your quiz. Please try again.'
-        //         });
-        //     });
-        // });
     });
 </script>
 

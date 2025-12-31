@@ -415,6 +415,10 @@ class QuizController extends Controller
        
         $quiz = Quiz::with('quizQuestions.question')->findOrFail($quiz_id);
 
+        $quiz->setRelation(
+            'quizQuestions',
+            $quiz->quizQuestions->shuffle()
+        );
 
         return view('quiz.quiz_start', compact('quiz'));
     }

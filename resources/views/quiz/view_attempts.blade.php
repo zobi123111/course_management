@@ -24,8 +24,8 @@
                         <td>{{ $index + 1 }}</td>
                         <td>{{ $item->student->fname }} {{ $item->student->lname }}</td>
                         <td>{{ $item->score }}%</td>
-                        <td>{{ ucfirst($item->status) }}</td>
-                        <td>{{ ucfirst($item->result) }}</td>
+                        <td>{{ ucwords(str_replace('_', ' ', $item->status)) }}</td>
+                        <td>{{ ucfirst($item->result ?? 'N/A') }}</td>
 
                         <td>
                             <a href="javascript:void(0);" class="btn btn-primary btn-sm view-attempt-icon" data-quiz-id="{{ encode_id($item->quiz_id) }}" data-user-id="{{ encode_id($item->student_id) }}"> View </a>

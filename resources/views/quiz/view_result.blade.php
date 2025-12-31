@@ -30,10 +30,12 @@
                             <th>Duration</th>
                             <td>{{ $quiz->duration }} mins</td>
                         </tr>
-                        <tr>
-                            <th>Status</th>
-                            <td><span class="badge bg-{{ $quiz->status == 'published' ? 'success' : 'secondary' }}">{{ ucfirst($quiz->status) }}</span></td>
-                        </tr>
+                        @if(auth()->check() && auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1)
+                            <tr>
+                                <th>Status</th>
+                                <td><span class="badge bg-{{ $quiz->status == 'published' ? 'success' : 'secondary' }}">{{ ucfirst($quiz->status) }}</span></td>
+                            </tr>
+                        @endif
                     </table>
                 </div>
             </div>
@@ -45,37 +47,48 @@
                             <th>Passing Score</th>
                             <td>{{ $quiz->passing_score }}%</td>
                         </tr>
-                        @if($quiz->show_result == 'yes')
                             <tr>
                                 <th> Marks Obtained </th>
-                                @if(!empty($quizAttempt->score))
-                                    <td>{{ $quizAttempt->score }}%</td>
-                                @endif
+                                <td>{{ $quizAttempt->score !== null ? $quizAttempt->score.'%' : 'N/A' }}</td>
+                                <!-- @if(!empty($quizAttempt->score)) -->
+                                <!-- @endif -->
                             </tr>
                             <tr>
                                 <th>Result</th>
-                                <td><span class="badge bg-{{ $quizAttempt->result == 'pass' ? 'success' : 'danger' }}">{{ strtoupper($quizAttempt->result) }}</span></td>
+                                <td>
+                                    @if ($quizAttempt->result)
+                                        <span class="badge bg-{{ $quizAttempt->result === 'pass' ? 'success' : 'danger' }}">
+                                            {{ ucfirst($quizAttempt->result) }}
+                                        </span>
+                                    @else
+                                        N/A
+                                    @endif
+                                </td>
                             </tr>
-                        @endif
                         <tr>
                             <th>Time Taken</th>
-                            @if(!empty($quizAttempt->submitted_at))
+                            <!-- @if(!empty($quizAttempt->submitted_at)) -->
+                            <!-- @endif -->
                             <td>
-                                @php
-                                    $seconds = \Carbon\Carbon::parse($quizAttempt->started_at)
-                                                ->diffInSeconds(\Carbon\Carbon::parse($quizAttempt->submitted_at));
+                                @if($quizAttempt->started_at && $quizAttempt->submitted_at)
+                                    @php
+                                        $seconds = \Carbon\Carbon::parse($quizAttempt->started_at)
+                                                    ->diffInSeconds(\Carbon\Carbon::parse($quizAttempt->submitted_at));
 
-                                    $minutes = floor($seconds / 60);
-                                    $remainingSeconds = $seconds % 60;
-                                @endphp
+                                        $minutes = floor($seconds / 60);
+                                        $remainingSeconds = $seconds % 60;
+                                    @endphp
 
-                                @if($minutes > 0)
-                                    {{ $minutes }} mins {{ $remainingSeconds }} secs
+                                    @if($minutes > 0)
+                                        {{ $minutes }} mins {{ $remainingSeconds }} secs
+                                    @else
+                                        {{ $remainingSeconds }} secs
+                                    @endif
                                 @else
-                                    {{ $remainingSeconds }} secs
+                                    N/A
                                 @endif
                             </td>
-                            @endif
+
                         </tr>
 
                     </table>
@@ -85,104 +98,106 @@
         </div>
     </div>
 
-    @foreach($quizDetails as $index => $question)
-        @php
+    @if($quiz->show_result === 'yes' || (auth()->check() && auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1))
+        @foreach($quizDetails as $index => $question)
+            @php
 
-            $isCorrect = false;
+                $isCorrect = false;
 
-            $userAnswer = $question['user_answer'] ?? null;
-            $correctAnswer = $question['correct_option'] ?? null;
+                $userAnswer = $question['user_answer'] ?? null;
+                $correctAnswer = $question['correct_option'] ?? null;
 
-            if($question['question_type'] === 'sequence'){
-                $userArr    = $userAnswer ? explode(',', $userAnswer) : [];
-                $correctArr = $correctAnswer ? explode(',', $correctAnswer) : [];
+                if($question['question_type'] === 'sequence'){
+                    $userArr    = $userAnswer ? explode(',', $userAnswer) : [];
+                    $correctArr = $correctAnswer ? explode(',', $correctAnswer) : [];
 
-                $userArr    = array_map('trim', $userArr);
-                $correctArr = array_map('trim', $correctArr);
+                    $userArr    = array_map('trim', $userArr);
+                    $correctArr = array_map('trim', $correctArr);
 
-                $isCorrect = ($userArr === $correctArr);
+                    $isCorrect = ($userArr === $correctArr);
 
-            }else{
-                $userArr = $userAnswer
-                    ? array_map('trim', explode(',', strtolower($userAnswer)))
-                    : [];
+                }else{
+                    $userArr = $userAnswer
+                        ? array_map('trim', explode(',', strtolower($userAnswer)))
+                        : [];
 
-                $correctArr = $correctAnswer
-                    ? array_map('trim', explode(',', strtolower($correctAnswer)))
-                    : [];
+                    $correctArr = $correctAnswer
+                        ? array_map('trim', explode(',', strtolower($correctAnswer)))
+                        : [];
 
-                sort($userArr);
-                sort($correctArr);
+                    sort($userArr);
+                    sort($correctArr);
 
-                $isCorrect = ($userArr == $correctArr);
-            }
-        @endphp
+                    $isCorrect = ($userArr == $correctArr);
+                }
+            @endphp
 
-        <div class="card mb-4 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">
-                    {{ $index + 1 }}. {{ $question['question_text'] }}
-                </h5>
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {{ $index + 1 }}. {{ $question['question_text'] }}
+                    </h5>
 
-                @if(!empty($question['question_image']))
-                    <div style="text-align: center;">
-                        <img src="{{ Storage::url($question['question_image']) }}" alt="question image" class="img-fluid rounded mb-3" style="max-height:120px">
-                    </div>
-                @endif
-
-
-                @if(in_array($question['question_type'], ['single_choice', 'multiple_choice', 'sequence']))
-                    <ul class="list-group mb-3">
-                        @foreach(['A','B','C','D'] as $opt)
-                            @php
-                                $optionValue = $question['option_' . $opt] ?? null;
-                            @endphp
-
-                            @if(!empty($optionValue))
-                                <li class="list-group-item
-                                    @if(in_array($opt, explode(',', $correctAnswer))) list-group-item-success @endif
-                                    @if(in_array($opt, explode(',', $userAnswer ?? '')) && !$isCorrect) list-group-item-danger @endif
-                                ">
-                                    <strong>{{ $opt }}:</strong>
-
-                                    @if(($question['option_type'] ?? 'text') === 'image')
-                                        <div class="mt-2">
-                                            <img src="{{ Storage::url($optionValue) }}"
-                                                alt="Option {{ $opt }}"
-                                                class="img-fluid rounded"
-                                                style="max-height:100px">
-                                        </div>
-                                    @else
-                                        {{ $optionValue }}
-                                    @endif
-                                </li>
-                            @endif
-                        @endforeach
-                    </ul>
-                @endif
-
-
-                <p><strong>Type:</strong> {{ $question['question_type'] }}</p>
-                <p><strong>Correct Answer:</strong> {{ $correctAnswer ?? 'N/A' }}</p>
-                <p><strong>Your Answer:</strong> {{ $userAnswer ?? 'No Answer' }}</p>
-
-                <p>
-                    <strong>Result:</strong>
-                    @if($question['question_type'] == 'text')
-                        <span class="badge bg-warning text-dark">Instructor has not yet reviewed this answer</span>
-                    @else
-                        @if(!$userAnswer)
-                            <span class="badge bg-secondary">Not Answered</span>
-                        @elseif($isCorrect)
-                            <span class="badge bg-success">Correct</span>
-                        @else
-                            <span class="badge bg-danger">Wrong</span>
-                        @endif
+                    @if(!empty($question['question_image']))
+                        <div style="text-align: center;">
+                            <img src="{{ Storage::url($question['question_image']) }}" alt="question image" class="img-fluid rounded mb-3" style="max-height:120px">
+                        </div>
                     @endif
-                </p>
+
+
+                    @if(in_array($question['question_type'], ['single_choice', 'multiple_choice', 'sequence']))
+                        <ul class="list-group mb-3">
+                            @foreach(['A','B','C','D'] as $opt)
+                                @php
+                                    $optionValue = $question['option_' . $opt] ?? null;
+                                @endphp
+
+                                @if(!empty($optionValue))
+                                    <li class="list-group-item
+                                        @if(in_array($opt, explode(',', $correctAnswer))) list-group-item-success @endif
+                                        @if(in_array($opt, explode(',', $userAnswer ?? '')) && !$isCorrect) list-group-item-danger @endif
+                                    ">
+                                        <strong>{{ $opt }}:</strong>
+
+                                        @if(($question['option_type'] ?? 'text') === 'image')
+                                            <div class="mt-2">
+                                                <img src="{{ Storage::url($optionValue) }}"
+                                                    alt="Option {{ $opt }}"
+                                                    class="img-fluid rounded"
+                                                    style="max-height:100px">
+                                            </div>
+                                        @else
+                                            {{ $optionValue }}
+                                        @endif
+                                    </li>
+                                @endif
+                            @endforeach
+                        </ul>
+                    @endif
+
+
+                    <p><strong>Type:</strong> {{ $question['question_type'] }}</p>
+                    <p><strong>Correct Answer:</strong> {{ $correctAnswer ?? 'N/A' }}</p>
+                    <p><strong>Your Answer:</strong> {{ $userAnswer ?? 'No Answer' }}</p>
+
+                    <p>
+                        <strong>Result:</strong>
+                        @if($question['question_type'] == 'text')
+                            <span class="badge bg-warning text-dark">Instructor has not yet reviewed this answer</span>
+                        @else
+                            @if(!$userAnswer)
+                                <span class="badge bg-secondary">Not Answered</span>
+                            @elseif($isCorrect)
+                                <span class="badge bg-success">Correct</span>
+                            @else
+                                <span class="badge bg-danger">Wrong</span>
+                            @endif
+                        @endif
+                    </p>
+                </div>
             </div>
-        </div>
-    @endforeach
+        @endforeach
+    @endif
 
 
 <!-- </div> -->
