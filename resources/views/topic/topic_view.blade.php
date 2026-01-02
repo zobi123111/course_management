@@ -35,14 +35,6 @@
     </div>
     @endif
 
-    @if(session()->has('warning'))
-        <div id="warningMessage" class="alert alert-warning fade show" role="alert">
-            <i class="bi bi-exclamation-triangle me-1"></i>
-            {{ session()->get('warning') }}
-        </div>
-    @endif
-
-
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -317,10 +309,6 @@
         setTimeout(function() {
             $('#successMessage').fadeOut('slow');
         }, 2000);
-
-        setTimeout(function() {
-            $('#warningMessage').fadeOut('slow');
-        }, 3000);
 
         $(document).ready(function() {
             $('#questionTable').DataTable({
@@ -673,5 +661,6 @@
         $('#editQuestionModal').on('change', 'input[type="file"]', function() {
             createOrUpdatePreview(this);
         });
+
     </script>
 @endsection

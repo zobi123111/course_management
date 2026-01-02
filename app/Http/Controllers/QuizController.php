@@ -112,7 +112,7 @@ class QuizController extends Controller
     public function view(Request $request)
     {
         $quizId = decode_id($request->id);
-        $quiz = Quiz::with('topics.topic')->findOrFail($quizId);
+        $quiz = Quiz::with('topics.topic', 'quizQuestions')->findOrFail($quizId);
         $topics = Topic::withCount('questions')->where("ou_id", $quiz->ou_id)
                     ->where("course_id", $quiz->course_id)->get();
                     
@@ -229,13 +229,14 @@ class QuizController extends Controller
 
             TopicQuestion::create([
                 'topic_id'        => $request->topic_id,
-                'question_text'  => $row['question'] ?? null,
-                'question_type'  => $row['type'] ?? null,
-                'option_A'      => $option_A,
-                'option_B'      => $option_B,
-                'option_C'      => $option_C,
-                'option_D'      => $option_D,
-                'correct_option' => $row['correct_answers'] ?? null,
+                'question_text'   => $row['question'] ?? null,
+                'question_type'   => $row['type'] ?? null,
+                'option_type'     => 'text',
+                'option_A'        => $option_A,
+                'option_B'        => $option_B,
+                'option_C'        => $option_C,
+                'option_D'        => $option_D,
+                'correct_option'  => $row['correct_answers'] ?? null,
             ]);
         }
 
@@ -970,11 +971,12 @@ class QuizController extends Controller
     public function destroyQuestion(Request $request)
     {
         $questionId = decode_id($request->question_id);
+        $topicId = decode_id($request->quiz_id);
 
-        $isUsed = QuizQuestion::where('question_id', $questionId)->exists();
+        $quizQuestions = QuizQuestion::where('question_id', $questionId)->where('topic_id', $topicId)->get();
 
-        if ($isUsed) {
-            return redirect()->route('topic.topic_view', ['id' => $request->quiz_id])->with('warning', "You can't delete this question because it is already used in a quiz.");
+        foreach ($quizQuestions as $quizQuestion) {
+            $quizQuestion->delete();
         }
 
         $question = TopicQuestion::findOrFail($questionId);
