@@ -971,10 +971,16 @@ class QuizController extends Controller
     {
         $questionId = decode_id($request->question_id);
 
+        $isUsed = QuizQuestion::where('question_id', $questionId)->exists();
+
+        if ($isUsed) {
+            return redirect()->route('topic.topic_view', ['id' => $request->quiz_id])->with('warning', "You can't delete this question because it is already used in a quiz.");
+        }
+
         $question = TopicQuestion::findOrFail($questionId);
         $question->delete();
 
-        return redirect()->route('topic.view', ['id' => $request->quiz_id])->with('message', 'Question deleted successfully');
+        return redirect()->route('topic.topic_view', ['id' => $request->quiz_id])->with('message', 'Question deleted successfully');
     }
 
     // public function submit(Request $request, $id)
