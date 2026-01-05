@@ -1873,7 +1873,7 @@ $('.course-copy-icon').on('click', function () {
         return;
     }
 
-    if (!confirm("Are you sure you want to duplicate this Course ?")) {
+    if (!confirm("Are you sure you want to copy this Course ?")) {
         return;
     }
 
