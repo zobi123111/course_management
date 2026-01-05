@@ -1799,8 +1799,75 @@ $(document).ready(function() {
 });
 
 // Click on copy icon
+
+// $('.course-copy-icon').on('click', function () { 
+//     let course_id = $(this).data("course-id");
+//     if (!course_id) {
+//         alert("Invalid Course ID.");
+//         return;
+//     }
+
+//     if (!confirm("Are you sure you want to duplicate this Course ?")) {
+//         return;
+//     }
+//       const loggedInOuId = "{{ $ou_id }}";
+//       alert(loggedInOuId);
+
+//     // store course id temporarily
+//     selectedCourseId = course_id;
+//     // open modal
+//     $('#select_ou').modal('show');
+// });
+
+// Course Copy
+// $('#confirm_copy_course').on('click', function () { 
+
+//     let ou_id = $('#select_ou_copy').val();
+ 
+//     if (ou_id == '') {
+//         $('#select_ou_copy_error').text('Please select Org Unit');
+//         return;
+//     }
+
+//     $('#select_ou_copy_error').text('');
+
+//     $.ajax({
+//         url: "{{ url('copy_course') }}",
+//         type: "POST",
+//         data: {
+//             course_id: selectedCourseId,
+//             ou_id: ou_id,
+//             _token: "{{ csrf_token() }}"
+//         },
+//         beforeSend: function () {
+//             $('#confirm_copy_course').prop('disabled', true).text('Processing...');
+//         },
+//         success: function (response) {
+
+//             $('#confirm_copy_course').prop('disabled', false).text('Continue');
+
+//             if (response.status === true || response.status === "true") {
+//                 alert(response.message);
+//                 $('#select_ou').modal('hide');
+//                 window.location.reload();
+//                 return;
+//             }
+
+//             alert(response.error || 'Something went wrong.');
+//         },
+//         error: function (xhr) {
+//             $('#confirm_copy_course').prop('disabled', false).text('Continue');
+//             alert('Server Error: ' + xhr.status);
+//         }
+//     });
+// });
+    const loggedInOuId = "{{ $ou_id ?? '' }}";
+    let selectedCourseId = null;
+
 $('.course-copy-icon').on('click', function () {
+
     let course_id = $(this).data("course-id");
+
     if (!course_id) {
         alert("Invalid Course ID.");
         return;
@@ -1810,38 +1877,51 @@ $('.course-copy-icon').on('click', function () {
         return;
     }
 
-    // store course id temporarily
     selectedCourseId = course_id;
-    // open modal
+
+    // ✅ If OU already exists → Direct copy
+    if (loggedInOuId !== '') {
+        copyCourse(course_id, loggedInOuId);
+        return;
+    }
+
+    // ❌ OU missing → open modal
     $('#select_ou').modal('show');
 });
 
-// Course Copy
-$('#confirm_copy_course').on('click', function () { 
+$('#confirm_copy_course').on('click', function () {
 
     let ou_id = $('#select_ou_copy').val();
- 
-    if (ou_id == '') {
+
+    if (ou_id === '') {
         $('#select_ou_copy_error').text('Please select Org Unit');
         return;
     }
 
     $('#select_ou_copy_error').text('');
 
+    copyCourse(selectedCourseId, ou_id);
+});
+function copyCourse(course_id, ou_id) {
+
     $.ajax({
         url: "{{ url('copy_course') }}",
         type: "POST",
         data: {
-            course_id: selectedCourseId,
+            course_id: course_id,
             ou_id: ou_id,
             _token: "{{ csrf_token() }}"
         },
         beforeSend: function () {
-            $('#confirm_copy_course').prop('disabled', true).text('Processing...');
+            $('#confirm_copy_course')
+                .prop('disabled', true)
+                .text('Processing...');
         },
         success: function (response) {
 
-            $('#confirm_copy_course').prop('disabled', false).text('Continue');
+            $('#confirm_copy_course')
+                .prop('disabled', false)
+                .text('Continue');
 
             if (response.status === true || response.status === "true") {
                 alert(response.message);
@@ -1853,69 +1933,18 @@ $('#confirm_copy_course').on('click', function () {
             alert(response.error || 'Something went wrong.');
         },
         error: function (xhr) {
-            $('#confirm_copy_course').prop('disabled', false).text('Continue');
+            $('#confirm_copy_course')
+                .prop('disabled', false)
+                .text('Continue');
+
             alert('Server Error: ' + xhr.status);
         }
     });
-});
-
-// $('.course-copy-icon').click(function () { 
-//     let course_id = $(this).data("course-id");
-    
-//      if (!course_id || course_id === "" || course_id === undefined) {
-//         alert("Invalid Course ID.");
-//         return;
-//     }
-//      if (!confirm("Are you sure you want to duplicate this Course ?")) {
-//         return;
-//     }
-//       let btn = $(this);
-//         btn.css("pointer-events", "none"); 
-
-//     $.ajax({
-//         url: "{{ url('copy_course') }}",
-//         type: "POST",
-//         data: {
-//             course_id: course_id,
-//             _token: "{{ csrf_token() }}"
-//         },
-
-//         success: function (response) {
-
-//             btn.css("pointer-events", "auto"); // re-enable
-
-//             // Validate server response
-//             if (!response || typeof response !== "object") {
-//                 alert("Unexpected server response.");
-//                 return;
-//             }
-
-//             // Laravel returns boolean true/false (not "true")
-//             if (response.status === true || response.status === "true") { 
-//                 alert(response.message);
-//                 window.location.reload();
-//                 return;
-//             }
-
-//             // Error from server
-//             alert(response.error || "Unable to copy Course.");
-//         },
-
-//         error: function (xhr) {
-//             btn.css("pointer-events", "auto");
-
-//             let msg = "Server error: " + xhr.status;
-
-//             if (xhr.responseJSON && xhr.responseJSON.error) {
-//                 msg = xhr.responseJSON.error;
-//             }
-
-//             alert(msg);
-//         }
-//     });
+}
 
 
-// });
+
+
 </script>
 
 @endsection
