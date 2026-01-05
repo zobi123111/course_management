@@ -175,7 +175,7 @@
                                 <i class="fa-solid fa-trash"></i> Delete
                             </a>
                             @endif
-                           <?php // dump(checkAllowedModule('courses', 'course.delete')); ?>
+                           <?php  dump(checkAllowedModule('courses', 'copy_course.index')); ?>
                             @if(checkAllowedModule('courses', 'copy_course.index')->isNotEmpty())
                             <a href="javascript:void(0)" class="btn btn-light course-copy-icon"
                                 data-course-id="{{ encode_id($val->id) }}">
