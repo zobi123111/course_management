@@ -120,7 +120,6 @@
 <div class="card pt-4">
     <div class="card-body">
         <div class="container-fluid">
-
             @php
             $disableDragDrop = '';
             if (Auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1) {
@@ -176,10 +175,13 @@
                                 <i class="fa-solid fa-trash"></i> Delete
                             </a>
                             @endif
-                            <!-- <a href="javascript:void(0)" class="btn btn-light course-copy-icon"
+                           <?php // dump(checkAllowedModule('courses', 'course.delete')); ?>
+                            @if(checkAllowedModule('courses', 'copy_course.index')->isNotEmpty())
+                            <a href="javascript:void(0)" class="btn btn-light course-copy-icon"
                                 data-course-id="{{ encode_id($val->id) }}">
                                 <i class="fa fa-copy"></i> Copy
-                            </a> --> 
+                            </a> 
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -765,6 +767,49 @@
     </div>
 </form>
 <!-- End Courses Delete Model -->
+
+
+<!-- // -------------------------------------------------------- -->
+ <!-- Select ou Model -->
+ <div class="modal fade" id="select_ou" tabindex="-1" aria-labelledby="select_ouModalLabel"
+     aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="select_ouModalLabel">Select Organization Unit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Select Org Unit <span class="text-danger">*</span></label>
+                        <select class="form-select" id="select_ou_copy">
+                            <option value="">-- Select Org Unit --</option>
+                            @foreach($organizationUnits as $val)
+                                <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        <small id="select_ou_copy_error" class="text-danger"></small>
+                    </div>
+              
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirm_copy_course" class="btn btn-primary">
+                    Continue
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+ <!-- End Select ou Model -->
+
+<!-- //----------------------------------------------------------------------------------------------- -->
 @endsection
 
 @section('js_scripts')
@@ -1754,68 +1799,124 @@ $(document).ready(function() {
     toggleMPOpions("#edit_enable_more_mp", "#edit_enable_mp_lifus");
 });
 
-// Course Copy
-
-$('.course-copy-icon').click(function () {
-
+// Click on copy icon
+$('.course-copy-icon').on('click', function () {
     let course_id = $(this).data("course-id");
-    
-     if (!course_id || course_id === "" || course_id === undefined) {
+    if (!course_id) {
         alert("Invalid Course ID.");
         return;
     }
 
-     if (!confirm("Are you sure you want to duplicate this Course ?")) {
+    if (!confirm("Are you sure you want to duplicate this Course ?")) {
         return;
     }
 
-      let btn = $(this);
-        btn.css("pointer-events", "none"); 
+    // store course id temporarily
+    selectedCourseId = course_id;
+    // open modal
+    $('#select_ou').modal('show');
+});
+
+// Course Copy
+$('#confirm_copy_course').on('click', function () { 
+
+    let ou_id = $('#select_ou_copy').val();
+ 
+    if (ou_id == '') {
+        $('#select_ou_copy_error').text('Please select Org Unit');
+        return;
+    }
+
+    $('#select_ou_copy_error').text('');
 
     $.ajax({
         url: "{{ url('copy_course') }}",
         type: "POST",
         data: {
-            course_id: course_id,
+            course_id: selectedCourseId,
+            ou_id: ou_id,
             _token: "{{ csrf_token() }}"
         },
-
+        beforeSend: function () {
+            $('#confirm_copy_course').prop('disabled', true).text('Processing...');
+        },
         success: function (response) {
 
-            btn.css("pointer-events", "auto"); // re-enable
+            $('#confirm_copy_course').prop('disabled', false).text('Continue');
 
-            // Validate server response
-            if (!response || typeof response !== "object") {
-                alert("Unexpected server response.");
-                return;
-            }
-
-            // Laravel returns boolean true/false (not "true")
-            if (response.status === true || response.status === "true") { 
+            if (response.status === true || response.status === "true") {
                 alert(response.message);
+                $('#select_ou').modal('hide');
                 window.location.reload();
                 return;
             }
 
-            // Error from server
-            alert(response.error || "Unable to copy Course.");
+            alert(response.error || 'Something went wrong.');
         },
-
         error: function (xhr) {
-            btn.css("pointer-events", "auto");
-
-            let msg = "Server error: " + xhr.status;
-
-            if (xhr.responseJSON && xhr.responseJSON.error) {
-                msg = xhr.responseJSON.error;
-            }
-
-            alert(msg);
+            $('#confirm_copy_course').prop('disabled', false).text('Continue');
+            alert('Server Error: ' + xhr.status);
         }
     });
-
-
 });
+
+// $('.course-copy-icon').click(function () { 
+//     let course_id = $(this).data("course-id");
+    
+//      if (!course_id || course_id === "" || course_id === undefined) {
+//         alert("Invalid Course ID.");
+//         return;
+//     }
+//      if (!confirm("Are you sure you want to duplicate this Course ?")) {
+//         return;
+//     }
+//       let btn = $(this);
+//         btn.css("pointer-events", "none"); 
+
+//     $.ajax({
+//         url: "{{ url('copy_course') }}",
+//         type: "POST",
+//         data: {
+//             course_id: course_id,
+//             _token: "{{ csrf_token() }}"
+//         },
+
+//         success: function (response) {
+
+//             btn.css("pointer-events", "auto"); // re-enable
+
+//             // Validate server response
+//             if (!response || typeof response !== "object") {
+//                 alert("Unexpected server response.");
+//                 return;
+//             }
+
+//             // Laravel returns boolean true/false (not "true")
+//             if (response.status === true || response.status === "true") { 
+//                 alert(response.message);
+//                 window.location.reload();
+//                 return;
+//             }
+
+//             // Error from server
+//             alert(response.error || "Unable to copy Course.");
+//         },
+
+//         error: function (xhr) {
+//             btn.css("pointer-events", "auto");
+
+//             let msg = "Server error: " + xhr.status;
+
+//             if (xhr.responseJSON && xhr.responseJSON.error) {
+//                 msg = xhr.responseJSON.error;
+//             }
+
+//             alert(msg);
+//         }
+//     });
+
+
+// });
 </script>
 
 @endsection
