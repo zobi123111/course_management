@@ -124,6 +124,8 @@ class CourseController extends Controller
 
     public function createCourse(Request $request)
     {
+        // dd($request->all());
+
         if (!$request->enable_feedback) {
             $request->merge(['feedback_questions' => null]);
         }
@@ -207,7 +209,9 @@ class CourseController extends Controller
             'enable_cbta' => $request->enable_cbta ?? 0,
             'enable_mp_lifus' => $request->enable_mp_lifus ?? 0,
             'instructor_cbta' => $request->instructor_cbta ?? 0,
-            'examiner_cbta' => $request->examiner_cbta ?? 0
+            'examiner_cbta' => $request->examiner_cbta ?? 0,
+            'opc' => $request->has('enable_opc') ? 1 : 0,
+            'opc_aircraft' => $request->enable_aircraft ?? null,
         ]);
     
         $course->groups()->attach($request->group_ids);
@@ -264,8 +268,12 @@ class CourseController extends Controller
         $courseResources = CourseResources::where('courses_id', decode_id($request->id))->get();
         $resources = Resource::where('ou_id', $ou_id)->get();
 
-         $ato_num = OrganizationUnits::where('id', $ou_id)->get();
+        $ato_num = OrganizationUnits::where('id', $ou_id)->get();
         
+        // echo "<pre>";
+        //     print_r($course);
+        // echo "</pre>";
+        // dd();
         return response()->json([
             'course' => $course,
             'allGroups' => $allGroups,
@@ -357,7 +365,8 @@ class CourseController extends Controller
             'enable_cbta' => $request->edit_enable_cbta ?? 0,
             'enable_mp_lifus' => $request->enable_mp_lifus ?? 0,
             'instructor_cbta' => $request->edit_instructor_cbta ?? 0,
-            'examiner_cbta' => $request->edit_examiner_cbta ?? 0
+            'opc' => $request->has('enable_opc') ? 1 : 0,
+            'opc_aircraft' => $request->enable_aircraft ?? null,
         ]);
     
         // Update groups and resources relationships

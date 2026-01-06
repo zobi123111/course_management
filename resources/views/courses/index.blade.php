@@ -347,8 +347,25 @@
                             <option value="3">SP+MP Event</option>
                         </select>
                     </div>
-                 
 
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="enable_opc" name="enable_opc">
+                            <label class="form-check-label" for="enable_opc">
+                                OPC Event
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group opc-aircraft" style="display:none;">
+                        <label class="form-label">Aircraft Type</label>
+                        <select class="form-select" name="enable_aircraft" id="enable_aircraft">
+                            <option value="">Select Aircraft</option>
+                            <option value="1">EA500</option>
+                        </select>
+                    </div>
+
+                 
                     <div class="form-group">
                         <label for="groups" class="form-label">Assigned Resource<span
                                 class="text-danger"></span></label>
@@ -604,6 +621,23 @@
                             <option value="1">SP Event</option>
                             <option value="2">MP Event</option>
                             <option value="3">SP+MP Event</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="edit_enable_opc" name="enable_opc">
+                            <label class="form-check-label" for="edit_enable_opc">
+                                OPC Event
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group opc-aircraft-edit" style="display:none;">
+                        <label class="form-label">Aircraft Type</label>
+                        <select class="form-select" name="enable_aircraft" id="edit_enable_aircraft">
+                            <option value="">Select Aircraft</option>
+                            <option value="1">EA500</option>
                         </select>
                     </div>
 
@@ -965,7 +999,7 @@
                         
                     } 
 
-                 if (response.course.enable_mp_lifus == 1) {
+                    if (response.course.enable_mp_lifus == 1) {
                         // 🔹 Only SP Event
                         $('#edit_enable_more_mp').prop('checked', false);
                         $('#edit_enable_mp_lifus').val(1);
@@ -978,7 +1012,15 @@
                         $('#edit_enable_mp_lifus option[value="1"]').hide();
                         $('#edit_enable_mp_lifus option[value="2"], #edit_enable_mp_lifus option[value="3"]').show();
                     }
-                  
+
+                    if (response.course.opc == 1) {
+                        $('#edit_enable_opc').prop('checked', true);
+                        toggleOPC('#edit_enable_opc', '.opc-aircraft-edit');
+                        $('#edit_enable_aircraft').val(response.course.opc_aircraft);
+                    } else {
+                        $('#edit_enable_opc').prop('checked', false);
+                        toggleOPC('#edit_enable_opc', '.opc-aircraft-edit');
+                    }
 
                     // Populate Resources
                     if (response.resources) {
@@ -1715,32 +1757,32 @@ $(document).ready(function() {
         const checkbox = $(checkboxSelector);
         const select = $(selectSelector);
         
-      function updateVisibility() {
+        function updateVisibility() {
 
-        if (checkbox.is(":checked")) {
+            if (checkbox.is(":checked")) {
 
-            // Show MP Event + SP+MP Event
-            select.find("option[value='2'], option[value='3']").show();
+                // Show MP Event + SP+MP Event
+                select.find("option[value='2'], option[value='3']").show();
 
-            // Hide SP Event
-            select.find("option[value='1']").hide();
+                // Hide SP Event
+                select.find("option[value='1']").hide();
 
-            // If currently selected SP Event → change to MP Event
-            if (select.val() === "1") {
-                select.val("2");
+                // If currently selected SP Event → change to MP Event
+                if (select.val() === "1") {
+                    select.val("2");
+                }
+
+            } else {
+                // Hide options 2 & 3
+                select.find("option[value='2'], option[value='3']").hide();
+
+                // Show back SP Event
+                select.find("option[value='1']").show();
+
+                // Reset selection back to SP Event
+                select.val("1");
             }
-
-        } else {
-            // Hide options 2 & 3
-            select.find("option[value='2'], option[value='3']").hide();
-
-            // Show back SP Event
-            select.find("option[value='1']").show();
-
-            // Reset selection back to SP Event
-            select.val("1");
         }
-    }
 
         // Run once on page load (for edit mode)
         updateVisibility();
@@ -1753,6 +1795,27 @@ $(document).ready(function() {
     toggleMPOpions("#enable_more_mp", "#enable_mp_lifus");
     toggleMPOpions("#edit_enable_more_mp", "#edit_enable_mp_lifus");
 });
+
+    function toggleOPC(checkbox, container) {
+        if ($(checkbox).is(":checked")) {
+            $(container).stop(true, true).slideDown();
+        } else {
+            $(container).stop(true, true).slideUp();
+            $(container).find("select").prop('selectedIndex', 0);
+        }
+    }
+
+    $(document).ready(function () {
+        $("#enable_opc").on("change", function () {
+            toggleOPC(this, ".opc-aircraft");
+        });
+
+        $("#edit_enable_opc").on("change", function () {
+            toggleOPC(this, ".opc-aircraft-edit");
+        });
+
+    });
+
 
 // Course Copy
 
