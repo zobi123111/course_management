@@ -1840,6 +1840,27 @@ $(document).ready(function() {
     toggleMPOpions("#edit_enable_more_mp", "#edit_enable_mp_lifus");
 });
 
+// Click on copy icon
+
+// $('.course-copy-icon').on('click', function () { 
+//     let course_id = $(this).data("course-id");
+//     if (!course_id) {
+//         alert("Invalid Course ID.");
+//         return;
+//     }
+
+//     if (!confirm("Are you sure you want to duplicate this Course ?")) {
+//         return;
+//     }
+//       const loggedInOuId = "{{ $ou_id }}";
+//       alert(loggedInOuId);
+
+//     // store course id temporarily
+//     selectedCourseId = course_id;
+//     // open modal
+//     $('#select_ou').modal('show');
+// });
+
 // Course Copy
 // $('#confirm_copy_course').on('click', function () { 
 
