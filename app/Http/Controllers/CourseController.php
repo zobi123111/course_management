@@ -87,12 +87,7 @@ class CourseController extends Controller
                 return in_array($userId, $userIds);
             });
             $groupIds = $filteredGroups->pluck('id')->toArray();
-            // $courses = Courses::whereIn('id', function ($query) use ($groupIds) {
-            //     $query->select('courses_id')
-            //             ->from('courses_group')
-            //             ->whereIn('group_id', $groupIds);
-            //             })->where('status', 1)
-            //                 ->get();
+     
             $courses = Courses::whereIn('id', function ($query) use ($groupIds) {
                 $query->select('courses_id')
                         ->from('courses_group')
@@ -111,9 +106,16 @@ class CourseController extends Controller
             $resource  = Resource::where('ou_id', $ouId)->get();
         }
     
-        $organizationUnits = OrganizationUnits::all();
-    
-        return view('courses.index', compact('courses', 'organizationUnits', 'groups', 'resource'));
+        $ou_id = auth()->user()->ou_id;
+        if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+        {
+            $organizationUnits = OrganizationUnits::all();
+        }else{
+          $organizationUnits = OrganizationUnits::where('id', $ou_id)->get();
+        }
+   
+          //  dd($organizationUnits);
+          return view('courses.index', compact('courses', 'organizationUnits', 'groups', 'resource','ou_id'));
     }
 
 
@@ -370,9 +372,11 @@ class CourseController extends Controller
         ]);
     
         // Update groups and resources relationships
-        if ($request->has('group_ids')) {
+       
+        if ($request->has('group_ids')) {  
             $course->groups()->sync($request->group_ids);
         }
+         
         if ($request->has('resources')) {
             $course->resources()->sync($request->resources);
         }
@@ -487,11 +491,9 @@ if ($request->filled('instructor_documents')) {
         }
     }
 }
-
-
-$course->documents()
-    ->whereNotIn('id', $submittedDocIds)
-    ->delete();
+            $course->documents()
+                ->whereNotIn('id', $submittedDocIds)
+                ->delete();
 
 
 
@@ -624,9 +626,8 @@ $course->documents()
 
 
       public function copy_lesson(Request $request)
-        {
+        { 
             try {
-
                 // Validate incoming request
                 $request->validate([
                     'course_id' => 'required',
@@ -770,8 +771,8 @@ $course->documents()
 
    public function copy_course(Request $request)
     { 
+        
         // ----------------------------------Start Copy Course ----------------------------------------------
-
         // ------------ VALIDATION ------------
         $request->validate([
             'course_id' => 'required|string',
@@ -817,7 +818,7 @@ $course->documents()
 
         // ------------ PREPARE COURSE PAYLOAD ------------
         $course = [
-            'ou_id'                      => $course_info->ou_id,
+            'ou_id'                      => $request->ou_id,
             'course_name'                => $newTitle,
             'description'                => $course_info->description,
             'image'                      => $course_info->image,

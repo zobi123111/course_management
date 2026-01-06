@@ -196,14 +196,15 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
 
     
     //Courses 
-    Route::get('/courses', [CourseController::class, 'index'])->name('course.index'); 
+    Route::get('/courses', [CourseController::class, 'index'])->name('course.index');  
     Route::post('/course/create', [CourseController::class, 'createCourse'])->name('course.store');  
     Route::get('/course/edit', [CourseController::class, 'getCourse'])->name('course.edit');
     Route::post('/course/update', [CourseController::class, 'updateCourse'])->name('course.update');
     Route::post('/course/delete', [CourseController::class, 'deleteCourse'])->name('course.delete'); 
-    Route::get('/course/show/{course_id}', [LessonController::class, 'showCourse'])->name('course.show');
+    Route::get('/course/show/{course_id}', [LessonController::class, 'showCourse'])->name('course.show'); 
     Route::post('/courses/reorder', [CourseController::class, 'reorder'])->name('courses.reorder');
     Route::post('/copy_lesson', [CourseController::class, 'copy_lesson'])->name('copy_lesson.index');
+    Route::post('/copy_course', [CourseController::class, 'copy_course'])->name('copy_course.index');
 
     //Lesson 
     Route::post('/lesson/create', [LessonController::class, 'createLesson'])->name('lesson.store');
@@ -374,9 +375,6 @@ Route::get('/training/unarchieveUser', [TrainingEventsController::class, 'unarch
 
 Route::post('/unarchive-user', [TrainingEventsController::class, 'unarchive'])->name('unarchive.index');
 
-Route::post('/copy_course', [CourseController::class, 'copy_course'])->name('copy_course.index');
-
-// Route::get('/calender', [TrainingEventsController::class, 'calender'])->name('calender.index');
 
 
 // Calender

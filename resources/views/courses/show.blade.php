@@ -1136,7 +1136,7 @@ $('.copy-lesson-icon').click(function () {
     }
 
     // Ask confirmation
-    if (!confirm("Are you sure you want to duplicate this lesson ?")) {
+    if (!confirm("Are you sure you want to copy this lesson ?")) {
         return;
     }
 
