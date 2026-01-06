@@ -251,4 +251,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(TrainingQuiz::class, 'student_id');
     }    
+
+    public function opcRatings()
+    {
+        return $this->hasMany(UserOpcRating::class);
+    }
+
 }

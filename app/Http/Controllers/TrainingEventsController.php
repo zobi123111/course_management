@@ -23,6 +23,7 @@ use App\Models\CbtaGrading;
 use App\Models\ExaminerGrading;
 use App\Models\TrainingEventLog;
 use App\Models\TrainingEventReview;
+use App\Models\UserOpcRating;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +31,7 @@ use Illuminate\Validation\Rule;
 use PDF;
 use Illuminate\Support\Str;
 use Auth;
+use Carbon\Carbon;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 
 
@@ -2972,15 +2974,28 @@ class TrainingEventsController extends Controller
     }
 
 
+    private function calculateOpcExpiry(Carbon $completionDate, ?Carbon $currentExpiry = null): Carbon
+    {
+        if ($currentExpiry && $completionDate->between(
+                $currentExpiry->copy()->subMonths(3),
+                $currentExpiry
+            )) {
+
+            return $currentExpiry->copy()->addMonths(6)->endOfMonth();
+        }
+
+        return $completionDate->copy()->addMonths(6)->endOfMonth();
+    }
+
     public function endCourse(Request $request)
     {
         $request->validate([
             'course_end_date' => 'required|date|before_or_equal:today',
-            'recommended_by_instructor_id' => 'nullable|exists:users,id', // validate if provided
+            'recommended_by_instructor_id' => 'nullable|exists:users,id',
         ]);
 
         $id = decode_id($request->event_id);
-        $event = TrainingEvents::findOrFail($id);
+        $event = TrainingEvents::with('course')->findOrFail($id);
 
         if (auth()->user()->is_admin != 1) {
             abort(403, 'Unauthorized action.');
@@ -2996,8 +3011,56 @@ class TrainingEventsController extends Controller
             'is_locked' => 1,
         ]);
 
-        return redirect()->route('training.index')->with('message', 'Course has been ended and locked.');
+        if ($event->course->opc == 1) {
+
+            $completionDate = Carbon::parse($request->course_end_date);
+
+            $opcRating = UserOpcRating::where('user_id', $event->user_id)->where('aircraft_type', 1)->first();
+
+            $currentExpiry = $opcRating?->opc_expiry_date ? Carbon::parse($opcRating->opc_expiry_date) : null;
+
+            $newExpiry = $this->calculateOpcExpiry($completionDate, $currentExpiry);
+
+            UserOpcRating::create([
+                    'user_id' => $event->student_id,
+                    'aircraft_type' => $event->course->opc_aircraft,
+                    'event_id' => $id,
+                    'course_id' => $event->course->id,
+                    'opc_expiry_date' => $newExpiry,
+                ]);
+        }
+
+        return redirect()
+            ->route('training.index')
+            ->with('message', 'Course has been ended and locked.');
     }
+
+    // public function endCourse(Request $request)
+    // {
+    //     $request->validate([
+    //         'course_end_date' => 'required|date|before_or_equal:today',
+    //         'recommended_by_instructor_id' => 'nullable|exists:users,id', // validate if provided
+    //     ]);
+
+    //     $id = decode_id($request->event_id);
+    //     $event = TrainingEvents::findOrFail($id);
+
+    //     if (auth()->user()->is_admin != 1) {
+    //         abort(403, 'Unauthorized action.');
+    //     }
+
+    //     if ($event->is_locked) {
+    //         return back()->withErrors(['error' => 'Course already ended.']);
+    //     }
+
+    //     $event->update([
+    //         'course_end_date' => $request->course_end_date,
+    //         'recommended_by_instructor_id' => $request->recommended_by_instructor_id ?? null,
+    //         'is_locked' => 1,
+    //     ]);
+
+    //     return redirect()->route('training.index')->with('message', 'Course has been ended and locked.');
+    // }
 
     public function getEventInstructors($id)
     {
