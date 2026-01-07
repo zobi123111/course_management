@@ -14,11 +14,16 @@
         @endforeach
     </ul> -->
     <ul class="sidebar-nav grid-layout" id="sidebar-nav">
-        @php $questionCount = count($quiz->quizQuestions); @endphp
+
+        @php
+            // Flatten all question IDs from all quizQuestions
+            $allQuestionIds = $quiz->quizQuestions->pluck('question_id')->flatten();
+            $questionCount = $allQuestionIds->count();
+        @endphp
 
         <h4 class="question-count text-center mb-3">{{ $questionCount }} Questions</h4>
 
-        @foreach($quiz->quizQuestions as $index => $question_)
+        @foreach($allQuestionIds as $index => $qid)
             <li class="sidebar-question {{ $index === 0 ? 'current-question' : '' }}" data-index="{{ $index }}">
                 <div class="left-section">
                     <span class="question-number">{{ $index + 1 }}</span>
@@ -28,6 +33,7 @@
         @endforeach
 
     </ul>
+
 
     <div class="course_logo">
         {{-- Optional: Organization logo --}}

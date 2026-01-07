@@ -75,9 +75,11 @@
         <div class="card-body">
             <div class="card-body d-flex justify-content-between align-items-center">
                 <h3 class="me-3 mt-3">Assigned Topics</h3>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTopicModal">
-                    Add Topic
-                </button>
+                @if($quiz->question_selection == 'manual')
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTopicModal">
+                        Add Topic
+                    </button>
+                @endif
             </div>
 
             <table class="table table-bordered">
@@ -87,7 +89,9 @@
                         <th>Topic</th>
                         <th>Assigned Questions</th>
                         <th>Total Questions</th>
-                        <th>Actions</th>
+                        @if($quiz->question_selection == 'manual')
+                            <th>Actions</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -97,11 +101,14 @@
                         <td class="topicTitle">{{ $topic->topic->title }}</td>
                         <td>{{ $topic->question_quantity }}</td>
                         <td>{{ $topic->topic->questions->count() }}</td>
-                        <td>
-                            <i class="fa fa-eye action-btn" data-bs-toggle="modal" data-bs-target="#viewQuestionsModal_{{ $topic->id }}" style="font-size:25px; cursor:pointer;"></i>
-                            <i class="fa-solid fa-pen-to-square edit-topic-icon action-btn" style="font-size:25px; cursor:pointer;" data-topic-id="{{ encode_id($topic->topic->id) }}" data-topic-name="{{ $topic->topic->title }}" data-quiz-id="{{ encode_id($quiz->id) }}" data-total="{{ $topic->topic->questions->count() }}" data-quantity="{{ $topic->question_quantity }}"></i>
-                            <i class="fa-solid fa-trash delete-topic-icon action-btn" style="font-size:25px; cursor: pointer;" data-topic-id="{{ encode_id($topic->topic->id) }}" data-quiz-id="{{ encode_id($quiz->id) }}" data-topic-name="{{ $topic->topic->title }}"></i>
-                        </td>
+                        @if($quiz->question_selection == 'manual')
+                            <td>
+                                <!-- <i class="fa fa-eye action-btn" data-bs-toggle="modal" data-bs-target="#viewQuestionsModal_{{ $topic->id }}" style="font-size:25px; cursor:pointer;"></i> -->
+                                <i class="fa-solid fa-pen-to-square edit-topic-icon action-btn" style="font-size:25px; cursor:pointer;" data-topic-id="{{ encode_id($topic->topic->id) }}" data-topic-name="{{ $topic->topic->title }}" data-quiz-id="{{ encode_id($quiz->id) }}" data-total="{{ $topic->topic->questions->count() }}" data-quantity="{{ $topic->question_quantity }}"></i>
+                                <i class="fa-solid fa-trash delete-topic-icon action-btn" style="font-size:25px; cursor: pointer;" data-topic-id="{{ encode_id($topic->topic->id) }}" data-quiz-id="{{ encode_id($quiz->id) }}" data-topic-name="{{ $topic->topic->title }}"></i>
+                            </td>
+                        @endif
+
                     </tr>
                     @empty
                     <tr>
@@ -109,6 +116,25 @@
                     </tr>
                     @endforelse
                 </tbody>
+
+                @if($quiz->topics->count())
+                    <tfoot class="table-light fw-bold">
+                        <tr>
+                            <td colspan="2" class="">Total</td>
+                            <td>
+                                {{ $quiz->topics->sum('question_quantity') }}
+                            </td>
+                            <td>
+                                {{ $quiz->topics->sum(fn($t) => $t->topic->questions->count()) }}
+                            </td>
+
+                            @if($quiz->question_selection == 'manual')
+                                <td></td>
+                            @endif
+                        </tr>
+                    </tfoot>
+                @endif
+
             </table>
         </div>
     </div>

@@ -91,6 +91,37 @@
         transform: translateX(0);
         opacity: 1;
     }
+
+    .tab-switch {
+        display: inline-flex;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #f8f9fa;
+    }
+
+    .tab-switch input {
+        display: none;
+    }
+
+    .tab-switch .tab {
+        padding: 8px 22px;
+        cursor: pointer;
+        font-weight: 600;
+        color: #6c757d;
+        background: transparent;
+        transition: all 0.2s ease;
+    }
+
+    .tab-switch .tab:not(:last-child) {
+        border-right: 1px solid #dee2e6;
+    }
+
+    .tab-switch input:checked + .tab {
+        background: #0d6efd;
+        color: #fff;
+    }
+
 </style>
     @if(session()->has('message'))
     <div id="successMessage" class="alert alert-success fade show" role="alert">
@@ -119,6 +150,7 @@
                         @if(auth()->user()->is_owner == 1)
                         <th scope="col">Organizational Unit</th>
                         @endif
+                        <th scope="col">Question Selection</th>
                         <th scope="col">Duration</th>
                         <th scope="col">Passing Score</th>
                         <th scope="col">Type</th>
@@ -135,6 +167,7 @@
                             @if(auth()->user()->is_owner == 1)
                                 <td>{{ $quiz->quizOu->org_unit_name ?? 'N/A' }}</td>
                             @endif
+                            <td>{{ ucfirst($quiz->question_selection) }}</td>
                             <td>{{ $quiz->duration }} mins</td>
                             <td>{{ $quiz->passing_score }}%</td>
                             <td>{{ ucfirst($quiz->quiz_type) }}</td>
@@ -252,6 +285,29 @@
                             <input type="number" name="duration" class="form-control">
                             <div id="duration_error" class="text-danger error_e"></div>
                         </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Question Selection Type <span class="text-danger">*</span>
+                            </label>
+
+                            <div class="tab-switch">
+                                <input type="radio" name="question_selection" id="qs_manual" value="manual" checked>
+                                <label for="qs_manual" class="tab">Manual</label>
+
+                                <input type="radio" name="question_selection" id="qs_random" value="random">
+                                <label for="qs_random" class="tab">Random</label>
+                            </div>
+
+                            <div id="question_selection_error" class="text-danger error_e"></div>
+                        </div>
+
+                        <div class="form-group d-none" id="question_count_div">
+                            <label class="form-label">Total Number of Questions <span class="text-danger">*</span> </label>
+                            <input type="number" name="question_count" class="form-control">
+                            <div id="question_count_error" class="text-danger error_e"></div>
+                        </div>
+
                         <div class="form-group">
                             <label for="passing_score" class="form-label">Passing Score (%)<span class="text-danger">*</span></label>
                             <input type="number" name="passing_score" class="form-control">
@@ -350,6 +406,27 @@
                             <input type="number" name="duration" id="edit_duration" class="form-control">
                             <div id="duration_error_up" class="text-danger error_e"></div>
                         </div>
+
+                        <div class="form-group">
+                            <label class="form-label"> Question Selection Type <span class="text-danger">*</span> </label>
+
+                            <div class="tab-switch">
+                                <input type="radio" name="question_selection" id="edit_qs_manual" value="manual">
+                                <label for="edit_qs_manual" class="tab">Manual</label>
+
+                                <input type="radio" name="question_selection" id="edit_qs_random" value="random">
+                                <label for="edit_qs_random" class="tab">Random</label>
+                            </div>
+
+                            <div id="question_selection_error_up" class="text-danger error_e"></div>
+                        </div>
+
+                        <div class="form-group d-none" id="edit_question_count_div">
+                            <label class="form-label">Total Number of Questions <span class="text-danger">*</span> </label>
+                            <input type="number" name="question_count" id="edit_question_count" class="form-control">
+                            <div id="question_count_error_up" class="text-danger error_e"></div>
+                        </div>
+
                         <div class="form-group">
                             <label class="form-label">Passing Score</label>
                             <input type="number" name="passing_score" id="edit_passing_score" class="form-control">
@@ -495,6 +572,25 @@
                 }
             });
 
+           // CREATE
+            $('#qs_manual, #qs_random').on('change', function () {
+                if (this.id === 'qs_random') {
+                    $('#question_count_div').removeClass('d-none');
+                } else {
+                    $('#question_count_div').addClass('d-none').find('input').val('');
+                }
+            });
+
+            // EDIT
+            $('#edit_qs_manual, #edit_qs_random').on('change', function () {
+                if (this.id === 'edit_qs_random') {
+                    $('#edit_question_count_div').removeClass('d-none');
+                } else {
+                    $('#edit_question_count_div').addClass('d-none');
+                    $('#edit_question_count').val('');
+                }
+            });
+
             $('#edit_course_id').on('change', function() {
                 let courseId = $(this).val();
                 $('#edit_lesson_id').html('<option value="">Loading...</option>');
@@ -574,6 +670,13 @@
                         $('#edit_status').val(response.quiz.status);
                         $('#edit_show_result').val(response.quiz.show_result);
                         $('#edit_ou_id').val(response.quiz.ou_id);
+
+                        if (response.quiz.question_selection === 'random') {
+                            $('#edit_qs_random').prop('checked', true).trigger('change');
+                            $('#edit_question_count').val(response.quiz.question_count);
+                        } else {
+                            $('#edit_qs_manual').prop('checked', true).trigger('change');
+                        }
 
                         $.ajax({
                             url: "{{ route('lessons.byCourse') }}",

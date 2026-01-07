@@ -12,6 +12,32 @@
     border: 3px solid #dc3545;
 }
 
+/* Tabs default (inactive) */
+.nav-tabs .nav-link {
+    color: #000;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    margin-right: 4px;
+}
+
+/* Active tab */
+.nav-tabs .nav-link.active {
+    color: #fff;
+    background-color: #0d6efd; /* Bootstrap primary blue */
+    border-color: #0d6efd #0d6efd #fff;
+}
+
+/* Hover effect */
+.nav-tabs .nav-link:hover {
+    background-color: #e9f2ff;
+    color: #000;
+}
+
+/* Keep tab bottom border aligned */
+.nav-tabs {
+    border-bottom: 1px solid #dee2e6;
+}
+
 </style>
 <div class="card mb-3 shadow-sm">
         <div class="row g-0">
@@ -98,107 +124,107 @@
         </div>
     </div>
 
-    @if($quiz->show_result === 'yes' || (auth()->check() && auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1))
-        @foreach($quizDetails as $index => $question)
+    <ul class="nav nav-tabs mb-4" id="attemptTabs" role="tablist">
+        @foreach($userQuizzes as $index => $attempt)
+            <li class="nav-item" role="presentation">
+                <button
+                    class="nav-link {{ $index === 0 ? 'active' : '' }}"
+                    id="attempt-tab-{{ $index }}"
+                    data-bs-toggle="tab"
+                    data-bs-target="#attempt-{{ $index }}"
+                    type="button"
+                    role="tab"
+                >
+                    {{ $index === 0 ? 'Latest' : 'Attempt ' . $index }}
+                </button>
+            </li>
+        @endforeach
+    </ul>
+
+    <div class="tab-content" id="attemptTabsContent">
+        @foreach($userQuizzes as $index => $attempt)
             @php
-
-                $isCorrect = false;
-
-                $userAnswer = $question['user_answer'] ?? null;
-                $correctAnswer = $question['correct_option'] ?? null;
-
-                if($question['question_type'] === 'sequence'){
-                    $userArr    = $userAnswer ? explode(',', $userAnswer) : [];
-                    $correctArr = $correctAnswer ? explode(',', $correctAnswer) : [];
-
-                    $userArr    = array_map('trim', $userArr);
-                    $correctArr = array_map('trim', $correctArr);
-
-                    $isCorrect = ($userArr === $correctArr);
-
-                }else{
-                    $userArr = $userAnswer
-                        ? array_map('trim', explode(',', strtolower($userAnswer)))
-                        : [];
-
-                    $correctArr = $correctAnswer
-                        ? array_map('trim', explode(',', strtolower($correctAnswer)))
-                        : [];
-
-                    sort($userArr);
-                    sort($correctArr);
-
-                    $isCorrect = ($userArr == $correctArr);
-                }
+                $quizDetails = json_decode($attempt->quiz_details, true);
             @endphp
 
-            <div class="card mb-4 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        {{ $index + 1 }}. {{ $question['question_text'] }}
-                    </h5>
+            <div
+                class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}"
+                id="attempt-{{ $index }}"
+                role="tabpanel"
+            >
 
-                    @if(!empty($question['question_image']))
-                        <div style="text-align: center;">
-                            <img src="{{ Storage::url($question['question_image']) }}" alt="question image" class="img-fluid rounded mb-3" style="max-height:120px">
-                        </div>
-                    @endif
+                @foreach($quizDetails as $qIndex => $question)
+                    @php
+                        $userAnswer    = $question['user_answer'] ?? null;
+                        $correctAnswer = $question['correct_option'] ?? null;
+                        $isCorrect     = false;
 
+                        if ($question['question_type'] === 'sequence') {
+                            $isCorrect = array_map('trim', explode(',', $userAnswer ?? ''))
+                                    === array_map('trim', explode(',', $correctAnswer ?? ''));
+                        } else {
+                            $ua = $userAnswer ? explode(',', strtolower($userAnswer)) : [];
+                            $ca = $correctAnswer ? explode(',', strtolower($correctAnswer)) : [];
+                            sort($ua); sort($ca);
+                            $isCorrect = $ua == $ca;
+                        }
 
-                    @if(in_array($question['question_type'], ['single_choice', 'multiple_choice', 'sequence']))
-                        <ul class="list-group mb-3">
-                            @foreach(['A','B','C','D'] as $opt)
-                                @php
-                                    $optionValue = $question['option_' . $opt] ?? null;
-                                @endphp
+                        $correctOptions = $correctAnswer ? explode(',', strtoupper($correctAnswer)) : [];
+                        $userOptions    = $userAnswer ? explode(',', strtoupper($userAnswer)) : [];
+                    @endphp
 
-                                @if(!empty($optionValue))
-                                    <li class="list-group-item
-                                        @if(in_array($opt, explode(',', $correctAnswer))) list-group-item-success @endif
-                                        @if(in_array($opt, explode(',', $userAnswer ?? '')) && !$isCorrect) list-group-item-danger @endif
-                                    ">
-                                        <strong>{{ $opt }}:</strong>
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                {{ $qIndex + 1 }}. {{ $question['question_text'] }}
+                            </h5>
 
-                                        @if(($question['option_type'] ?? 'text') === 'image')
-                                            <div class="mt-2">
-                                                <img src="{{ Storage::url($optionValue) }}"
-                                                    alt="Option {{ $opt }}"
-                                                    class="img-fluid rounded"
-                                                    style="max-height:100px">
-                                            </div>
-                                        @else
-                                            {{ $optionValue }}
-                                        @endif
-                                    </li>
-                                @endif
-                            @endforeach
-                        </ul>
-                    @endif
-
-
-                    <p><strong>Type:</strong> {{ $question['question_type'] }}</p>
-                    <p><strong>Correct Answer:</strong> {{ $correctAnswer ?? 'N/A' }}</p>
-                    <p><strong>Your Answer:</strong> {{ $userAnswer ?? 'No Answer' }}</p>
-
-                    <p>
-                        <strong>Result:</strong>
-                        @if($question['question_type'] == 'text')
-                            <span class="badge bg-warning text-dark">Instructor has not yet reviewed this answer</span>
-                        @else
-                            @if(!$userAnswer)
-                                <span class="badge bg-secondary">Not Answered</span>
-                            @elseif($isCorrect)
-                                <span class="badge bg-success">Correct</span>
-                            @else
-                                <span class="badge bg-danger">Wrong</span>
+                            @if(!empty($question['question_image']))
+                                <div class="text-center mb-3">
+                                    <img src="{{ Storage::url($question['question_image']) }}"
+                                        class="img-fluid rounded"
+                                        style="max-height:120px">
+                                </div>
                             @endif
-                        @endif
-                    </p>
-                </div>
+
+                            @if(in_array($question['question_type'], ['single_choice','multiple_choice','sequence']))
+                                <ul class="list-group mb-3">
+                                    @foreach(['A','B','C','D'] as $opt)
+                                        @php $val = $question['option_'.$opt] ?? null; @endphp
+                                        @if($val)
+                                            <li class="list-group-item
+                                                @if(in_array($opt,$correctOptions)) list-group-item-success
+                                                @elseif(in_array($opt,$userOptions)) list-group-item-danger
+                                                @endif
+                                            ">
+                                                <strong>{{ $opt }}:</strong>
+                                                {{ $val }}
+                                            </li>
+                                        @endif
+                                    @endforeach
+                                </ul>
+                            @endif
+
+                            <p><strong>Correct:</strong> {{ $correctAnswer ?? 'N/A' }}</p>
+                            <p><strong>Your Answer:</strong> {{ $userAnswer ?? 'No Answer' }}</p>
+
+                            <p>
+                                <strong>Result:</strong>
+                                @if(!$userAnswer)
+                                    <span class="badge bg-secondary">Not Answered</span>
+                                @elseif($isCorrect)
+                                    <span class="badge bg-success">Correct</span>
+                                @else
+                                    <span class="badge bg-danger">Wrong</span>
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+                @endforeach
+
             </div>
         @endforeach
-    @endif
-
+    </div>
 
 <!-- </div> -->
 @endsection
