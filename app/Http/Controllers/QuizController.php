@@ -411,7 +411,7 @@ class QuizController extends Controller
         //     ]);
         // }
 
-        return back()->with('message', 'Topic added & questions assigned successfully!');
+        return back()->with('message', 'Topic assigned successfully!');
     }
 
     public function editTopic(Request $request)
@@ -488,7 +488,7 @@ class QuizController extends Controller
 
         $quizTopic->delete();
 
-       return redirect()->back()->with('message', 'Topic and questions Unassigned successfully.');
+       return redirect()->back()->with('message', 'Topic Unassigned successfully.');
     }
 
     public function updateStatus(Request $request)
