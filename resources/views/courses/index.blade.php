@@ -1840,6 +1840,26 @@ $(document).ready(function() {
     toggleMPOpions("#edit_enable_more_mp", "#edit_enable_mp_lifus");
 });
 
+function toggleOPC(checkbox, container) {
+    if ($(checkbox).is(":checked")) {
+        $(container).stop(true, true).slideDown();
+    } else {
+        $(container).stop(true, true).slideUp();
+        $(container).find("select").prop('selectedIndex', 0);
+    }
+}
+
+$(document).ready(function () {
+    $("#enable_opc").on("change", function () {
+        toggleOPC(this, ".opc-aircraft");
+    });
+
+    $("#edit_enable_opc").on("change", function () {
+        toggleOPC(this, ".opc-aircraft-edit");
+    });
+
+});
+
 // Click on copy icon
 
 // $('.course-copy-icon').on('click', function () { 
