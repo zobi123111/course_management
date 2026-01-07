@@ -1066,6 +1066,27 @@
                         toggleOPC('#edit_enable_opc', '.opc-aircraft-edit');
                     }
 
+                    function toggleOPC(checkbox, container) {
+                                if ($(checkbox).is(":checked")) {
+                                    $(container).stop(true, true).slideDown();
+                                } else {
+                                    $(container).stop(true, true).slideUp();
+                                    $(container).find("select").prop('selectedIndex', 0);
+                                }
+                            }
+                        
+                            $(document).ready(function () {
+                                $("#enable_opc").on("change", function () {
+                                    toggleOPC(this, ".opc-aircraft");
+                                });
+                        
+                                $("#edit_enable_opc").on("change", function () {
+                                    toggleOPC(this, ".opc-aircraft-edit");
+                                });
+                        
+                            });
+ 
+
                     // Populate Resources
                     if (response.resources) {
                         var $resourcesSelect = $('.resources-select');

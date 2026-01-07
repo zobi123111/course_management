@@ -193,6 +193,7 @@ class DashboardController extends Controller
                     ->whereNull('is_admin')
                     ->with([
                         'documents',
+                        'opcRatings',
                         'usrRatings' => function ($query) {
                             $query->whereIn('linked_to', ['licence_1', 'licence_2'])
                                 ->with([
@@ -202,6 +203,7 @@ class DashboardController extends Controller
                         }
                     ])
                     ->get();
+                    // dd($users[2]->opcRatings);
             
 
         return view('dashboard.index', compact('user_count', 'course_count', 'group_count', 'folder_count','totalDocuments', 'quizscount', 'quizs', 'readDocuments', 'unreadDocuments', 'requestCount', 'users', 'trainingEvents', 'bookings', 'outstandingItems'
