@@ -35,14 +35,9 @@ $user = Auth::user();
 
 // Check for Admin
 if ($user->is_admin == "1") {
-
-
-
     foreach ($users as $u) {
         if ($u->is_activated == 0 && $u->status == 1) {
             $userDoc = $u->documents;
-
-
             // Admin Verification Alerts
             if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
                 $messages[] = "📝 <strong>UK Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
@@ -204,6 +199,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 <th>Associated Ratings (UK)</th>
                 <th>EASA Licence Status</th>
                 <th>Associated Ratings (EASA)</th>
+                 <th>OPC</th>
                 <th>UK Medical Status</th>
                 <th>EASA Medical Status</th>
                 <th>Passport Status</th>
@@ -211,7 +207,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
             </tr>
         </thead>
         <tbody>
-            @php
+        <?php
 
             if (!function_exists('getTooltip')) {
             function getTooltip($status, $type) {
@@ -224,20 +220,17 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
             };
             }
             }
-
-
-            @endphp
+            ?>
 
             @foreach($users as $user)
             @if ($user->is_activated == 0 && $user->status == 1) 
             <tr>
                 <td>{{ $user->fname }} {{ $user->lname }}</td>
-
-                @php
-                $doc = $user->documents;
-                $ratingsByLicence = $user->usrRatings->groupBy('linked_to');
-
-                @endphp
+                <?php
+                  $doc = $user->documents; 
+                  $ratingsByLicence = $user->usrRatings->groupBy('linked_to');
+                ?>
+             
 
                 {{-- Licence 1 --}}
                 <td>
@@ -499,11 +492,6 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     @endforeach
                 </td>
 
-
-
-
-
-
                 {{-- Licence 2 --}}
                 <td>
                     @if($doc && $doc->licence_file_uploaded_2)
@@ -625,6 +613,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     @if (!empty($entry['children']))
                                         <?php
                                         $expirty_date = $entry['parent_expiry'];
+                                        
                                         $color = getExpiryStatus($expirty_date);
 
                                         if (is_null($expirty_date)) {
@@ -676,12 +665,27 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     @endif
                                     @endforeach
                 </td>
+            <?php
+                  $opcRatings = $user->opcRatings;
+                  $opcExpiry = $opcRatings->pluck('opc_expiry_date')->first();
+                  $opcExpiry = $user->opcRatings->pluck('opc_expiry_date')->first();
+                    if (!$opcExpiry) {
+                        $opcStatus = 'N/A';
+                        $tooltip = '';
+                    } elseif ($opcExpiry->lt(now())) {
+                        $opcStatus = 'Red';    
+                        $tooltip =  "This opc rating has expired";    
+                    } elseif ($opcExpiry->diffInDays(now()) < 90) {
+                        $opcStatus = 'Yellow'; 
+                        $tooltip = "This opc rating will expire soon";    
+                    } else {
+                        $opcStatus = 'Green';   
+                        $tooltip = "This opc rating is valid";  
+                    }
+                  $opcExpiry = $opcExpiry ? $opcExpiry->format('d/m/Y') : '';
 
-
-
-
-
-
+            ?>        
+              <td> <span class="badge" style="background-color:{{ $opcStatus }}; color:black" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $opcExpiry }}</span></td>
 
                 {{-- Medical 1 --}}
                 <td>
@@ -718,9 +722,11 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     @if($doc && $doc->passport_file_uploaded)
                     @php
                     $status = $doc->passport_status;
+                    
                     $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
                     $date = $doc->passport_expiry_date ? date('d/m/Y', strtotime($doc->passport_expiry_date)) : 'N/A';
                     $tooltip = getTooltip($status, 'passport');
+                    
                     @endphp
                     <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
                     @else
