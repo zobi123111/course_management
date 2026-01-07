@@ -395,21 +395,21 @@ class QuizController extends Controller
             'question_quantity' => $request->question_quantity,
         ]);
 
-        $topicQuestions = TopicQuestion::where('topic_id', $request->topic_id)->pluck('id')->toArray();
+        // $topicQuestions = TopicQuestion::where('topic_id', $request->topic_id)->pluck('id')->toArray();
 
-        if (count($topicQuestions) == 0) {
-            return back()->with('error', 'No questions found for this topic.');
-        }
+        // if (count($topicQuestions) == 0) {
+        //     return back()->with('error', 'No questions found for this topic.');
+        // }
 
-        $selectedQuestions = collect($topicQuestions)->shuffle()->take($request->question_quantity);
+        // $selectedQuestions = collect($topicQuestions)->shuffle()->take($request->question_quantity);
 
-        foreach ($selectedQuestions as $questionId) {
-            QuizQuestion::create([
-                'quiz_id' => $quizId,
-                'topic_id' => $request->topic_id,
-                'question_id' => $questionId,
-            ]);
-        }
+        // foreach ($selectedQuestions as $questionId) {
+        //     QuizTopic::create([
+        //         'quiz_id' => $quizId,
+        //         'topic_id' => $request->topic_id,
+        //         'question_quantity' => $questionId,
+        //     ]);
+        // }
 
         return back()->with('message', 'Topic added & questions assigned successfully!');
     }
