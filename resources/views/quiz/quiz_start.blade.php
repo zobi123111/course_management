@@ -78,7 +78,9 @@
         text-align: center;
     }
 
-
+    .form-check-label {
+        cursor: pointer;
+    }
 </style>
 
 @if(session()->has('message'))
@@ -152,158 +154,128 @@
         <form id="quizForm" method="POST" action="{{ route('quiz.saveAnswer') }}">
             @csrf
             <div class="quiz-container position-relative">
-                @foreach($quiz->quizQuestions as $index => $quizQuestion)
-                    @php
-                        $q = $quizQuestion->question;
-                    @endphp
 
-                    <div class="question-box {{ $index === 0 ? 'active' : 'd-none' }}" data-index="{{ $index }}">
+                @php
+                    $questionIndex = 0;
+                    $totalQuestions = $questions->count();
+                @endphp
 
-                        <h5>Q{{ $index + 1 }}. {{ $q->question_text }}</h5>
+               @foreach($quiz->quizQuestions as $quizQuestion)
+                    @foreach($quizQuestion->question_id as $qid)
 
-                        @if($q->question_image)
-                            <div style="text-align: center;">
-                                <img src="{{ Storage::url($q->question_image) }}" alt="question image" class="img-fluid rounded mb-3" style="min-height:100px; max-height:150px">
-                            </div>
+                        @php
+                            $q = $questions[$qid] ?? null;
+                        @endphp
+
+                        @if(!$q)
+                            @continue
                         @endif
 
-                        <input type="hidden" name="questions[{{ $quizQuestion->id }}][id]" value="{{ $quizQuestion->id }}">
+                        <div class="question-box {{ $questionIndex === 0 ? 'active' : 'd-none' }}"
+                            data-index="{{ $questionIndex }}">
 
-                        @if($q->question_type === 'single_choice')
-                            @php
-                                $options = collect(['A', 'B', 'C', 'D'])
-                                    ->filter(fn($opt) => !empty($q->{'option_'.$opt}))
-                                    ->shuffle();
-                            @endphp
+                            <h5>Q{{ $questionIndex + 1 }}. {{ $q->question_text }}</h5>
 
-                            @foreach($options as $option)
+                            @if($q->question_image)
+                                <div class="text-center mb-3">
+                                    <img src="{{ Storage::url($q->question_image) }}"
+                                        class="img-fluid rounded"
+                                        style="max-height:150px">
+                                </div>
+                            @endif
 
-                                @php $optionValue = $q->{'option_' . $option}; @endphp
+                            <input type="hidden" value="{{ $q->id }}" class="question-id">
 
-                                @if(!empty($optionValue))
-                                    @php $inputId = 'q-' . $quizQuestion->id . '-opt-' . $option; @endphp
-
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="radio"
-                                            id="{{ $inputId }}"
-                                            name="questions[{{ $quizQuestion->id }}][answer]"
-                                            value="{{ $option }}">
-
-                                        <label class="form-check-label" for="{{ $inputId }}">
-                                            @if($q->option_type === 'image')
-                                                <img src="{{ Storage::url($optionValue) }}"
-                                                    alt="Option {{ $option }}"
-                                                    class="img-fluid rounded"
-                                                    style="max-height:100px">
-                                            @else
-                                                {{ $optionValue }}
-                                            @endif
-                                        </label>
-                                    </div>
-                                @endif
-                            @endforeach
-                        @endif
-
-                        {{-- Multiple Choice --}}
-                        @if($q->question_type === 'multiple_choice')
-                            @php
-                                $options = collect(['A', 'B', 'C', 'D'])
-                                    ->filter(fn($opt) => !empty($q->{'option_'.$opt}))
-                                    ->shuffle();
-                            @endphp
-
-                            @foreach($options as $option)
-
-                                @php $optionValue = $q->{'option_' . $option}; @endphp
-
-                                @if(!empty($optionValue))
-                                    @php $inputId = 'q-' . $quizQuestion->id . '-opt-' . $option; @endphp
-
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox"
-                                            id="{{ $inputId }}"
-                                            name="questions[{{ $quizQuestion->id }}][answer][]"
-                                            value="{{ $option }}">
-
-                                        <label class="form-check-label" for="{{ $inputId }}">
-                                            @if($q->option_type === 'image')
-                                                <img src="{{ Storage::url($optionValue) }}"
-                                                    alt="Option {{ $option }}"
-                                                    class="img-fluid rounded"
-                                                    style="max-height:100px">
-                                            @else
-                                                {{ $optionValue }}
-                                            @endif
-                                        </label>
-                                    </div>
-                                @endif
-                            @endforeach
-                        @endif
-
-                        {{-- Text Type --}}
-                        @if($q->question_type === 'text')
-                            <textarea class="form-control mt-2"
-                                name="questions[{{ $quizQuestion->id }}][answer]"
-                                rows="3"
-                                placeholder="Type your answer here..."></textarea>
-                        @endif
-
-                        {{-- Sequence Type --}}
-                        @if($q->question_type === 'sequence')
-                            <p>Drag and drop to arrange the options in correct order:</p>
-
-                            <ul id="sequence-{{ $quizQuestion->id }}" class="list-group">
-                                @php
-                                    $options = collect(['A', 'B', 'C', 'D'])
-                                        ->filter(fn($opt) => !empty($q->{'option_'.$opt}))
-                                        ->shuffle();
-                                @endphp
-
-                                @foreach($options as $option)
-
-                                    @php $optionValue = $q->{'option_' . $option}; @endphp
-
-                                    @if(!empty($optionValue))
-                                        <li class="list-group-item d-flex"
-                                            data-option="{{ $option }}">
-
-                                            @if($q->option_type === 'image')
-                                                <img src="{{ Storage::url($optionValue) }}"
-                                                    class="img-fluid"
-                                                    style="max-height:100px">
-                                            @else
-                                                {{ $optionValue }}
-                                            @endif
-                                        </li>
+                            {{-- SINGLE CHOICE --}}
+                            @if($q->question_type === 'single_choice')
+                                @foreach(['A','B','C','D'] as $opt)
+                                    @php
+                                        $val = $q->{'option_'.$opt};
+                                        $inputId = 'q'.$q->id.'_radio_'.$opt;
+                                    @endphp
+                                    @if($val)
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input"
+                                                type="radio"
+                                                id="{{ $inputId }}"
+                                                name="answer_{{ $q->id }}"
+                                                value="{{ $opt }}">
+                                            <label class="form-check-label" for="{{ $inputId }}">
+                                                {{ $val }}
+                                            </label>
+                                        </div>
                                     @endif
                                 @endforeach
-                            </ul>
-
-                            <input type="hidden"
-                                name="questions[{{ $quizQuestion->id }}][answer]"
-                                id="sequence-input-{{ $quizQuestion->id }}">
-                        @endif
-
-                        <!-- Navigation -->
-                        <div class="mt-4 d-flex justify-content-between">
-                            <button type="button" class="btn btn-secondary prev-btn"
-                                {{ $index === 0 ? 'disabled' : '' }}>
-                                Previous
-                            </button>
-
-                            @if($index < count($quiz->quizQuestions) - 1)
-                                <button type="button" class="btn btn-primary next-btn">
-                                    Next Question
-                                </button>
-                            @else
-                                <button type="submit" class="btn btn-success">
-                                    Submit Quiz
-                                </button>
                             @endif
+
+                            {{-- MULTIPLE CHOICE --}}
+                            @if($q->question_type === 'multiple_choice')
+                                @foreach(['A','B','C','D'] as $opt)
+                                    @php
+                                        $val = $q->{'option_'.$opt};
+                                        $inputId = 'q'.$q->id.'_check_'.$opt;
+                                    @endphp
+                                    @if($val)
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input"
+                                                type="checkbox"
+                                                id="{{ $inputId }}"
+                                                value="{{ $opt }}">
+                                            <label class="form-check-label" for="{{ $inputId }}">
+                                                {{ $val }}
+                                            </label>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            @endif
+
+                            {{-- TEXT --}}
+                            @if($q->question_type === 'text')
+                                <textarea class="form-control"
+                                        rows="3"
+                                        placeholder="Type your answer"></textarea>
+                            @endif
+
+                            {{-- SEQUENCE --}}
+                            @if($q->question_type === 'sequence')
+                                <ul class="list-group sequence-list" data-question="{{ $q->id }}">
+                                    @foreach(['A','B','C','D'] as $opt)
+                                        @php $val = $q->{'option_'.$opt}; @endphp
+                                        @if($val)
+                                            <li class="list-group-item"
+                                                data-option="{{ $opt }}">
+                                                {{ $val }}
+                                            </li>
+                                        @endif
+                                    @endforeach
+                                </ul>
+                                <input type="hidden" class="sequence-answer">
+                            @endif
+
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button"
+                                        class="btn btn-secondary prev-btn"
+                                        {{ $questionIndex === 0 ? 'disabled' : '' }}>
+                                    Previous
+                                </button>
+
+                                @if($questionIndex < $totalQuestions - 1)
+                                    <button type="button" class="btn btn-primary next-btn">
+                                        Next
+                                    </button>
+                                @else
+                                    <button type="submit" class="btn btn-success">
+                                        Submit Quiz
+                                    </button>
+                                @endif
+                            </div>
                         </div>
 
-                    </div>
+                        @php $questionIndex++; @endphp
+
+                    @endforeach
                 @endforeach
+
             </div>
         </form>
     </div>
@@ -330,14 +302,64 @@
             });
         }
 
+        // function saveAnswer(currentQuestionBox) {
+        //     console.log('Saving answer for current question box:', currentQuestionBox);
+
+        //     const questionIdInput = currentQuestionBox.querySelector('.question-id');
+        //     const questionId = questionIdInput ? questionIdInput.value : null;
+
+        //     if (!questionId) {
+        //         console.error('Question ID not found!', currentQuestionBox);
+        //         return;
+        //     }
+
+        //     let answer = null;
+
+        //     const selectedRadio = currentQuestionBox.querySelector('input[type="radio"]:checked');
+        //     if (selectedRadio) {
+        //         answer = selectedRadio.value;
+        //     }
+        //     else if (currentQuestionBox.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
+        //         const selectedCheckboxes = currentQuestionBox.querySelectorAll('input[type="checkbox"]:checked');
+        //         answer = Array.from(selectedCheckboxes).map(cb => cb.value).join(',');
+        //     }
+        //     else if (currentQuestionBox.querySelector('textarea')) {
+        //         const textarea = currentQuestionBox.querySelector('textarea');
+        //         answer = textarea.value.trim();
+        //     }
+        //     else if (currentQuestionBox.querySelector('ul[id^="sequence-"]')) {
+        //         const sequenceInput = currentQuestionBox.querySelector('input[id^="sequence-input-"]');
+        //         answer = sequenceInput ? sequenceInput.value : null;
+        //     }
+
+        //     console.log('Saving Answer:', { questionId, answer });
+
+        //     if (answer !== null && answer !== '') {
+        //         fetch('{{ route("quiz.saveAnswer") }}', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        //             },
+        //             body: JSON.stringify({
+        //                 quiz_id: {{ $quiz->id }},
+        //                 question_id: questionId,
+        //                 answer: answer
+        //             })
+        //         })
+        //         .then(res => res.json())
+        //         .then(data => console.log('Saved:', data))
+        //         .catch(err => console.error('Error saving answer:', err));
+        //     }
+        // }
         function saveAnswer(currentQuestionBox) {
             console.log('Saving answer for current question box:', currentQuestionBox);
 
-            const questionIdInput = currentQuestionBox.querySelector('input[name$="[id]"]');
+            const questionIdInput = currentQuestionBox.querySelector('.question-id'); // <- FIXED
             const questionId = questionIdInput ? questionIdInput.value : null;
 
             if (!questionId) {
-                console.error('Question ID not found!');
+                console.error('Question ID not found!', currentQuestionBox);
                 return;
             }
 
@@ -355,8 +377,8 @@
                 const textarea = currentQuestionBox.querySelector('textarea');
                 answer = textarea.value.trim();
             }
-            else if (currentQuestionBox.querySelector('ul[id^="sequence-"]')) {
-                const sequenceInput = currentQuestionBox.querySelector('input[id^="sequence-input-"]');
+            else if (currentQuestionBox.querySelector('ul.sequence-list')) {
+                const sequenceInput = currentQuestionBox.querySelector('.sequence-answer');
                 answer = sequenceInput ? sequenceInput.value : null;
             }
 
@@ -380,6 +402,7 @@
                 .catch(err => console.error('Error saving answer:', err));
             }
         }
+
 
         document.querySelectorAll('.next-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -565,7 +588,7 @@
             const lastQuestionBox = questions[questions.length - 1];
 
             let answer = null;
-            const questionIdInput = lastQuestionBox.querySelector('input[name$="[id]"]');
+            const questionIdInput = lastQuestionBox.querySelector('.question-id');
             const questionId = questionIdInput ? questionIdInput.value : null;
 
             if (!questionId) return;
@@ -583,38 +606,29 @@
                 answer = textarea.value.trim() || null;
             }
 
-            else if (lastQuestionBox.querySelector('ul[id^="sequence-"]')) {
-                const sequenceInput = lastQuestionBox.querySelector('input[id^="sequence-input-"]');
+            else if (lastQuestionBox.querySelector('ul.sequence-list')) {
+                const sequenceInput = lastQuestionBox.querySelector('.sequence-answer');
                 answer = sequenceInput ? sequenceInput.value : null;
             }
 
-            if (answer === null || answer === '') {
-                return fetch('{{ route("quiz.saveFinalData") }}', {
+            /* -------------------------------
+            NO ANSWER → SUBMIT QUIZ ONLY
+            --------------------------------*/
+            if (!answer) {
+                fetch('{{ route("quiz.saveFinalData") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({ quiz_id: '{{ $quiz->id }}' })
-                })
-                .then(res => res.json())
-                .then(() => {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Quiz Submitted!',
-                        text: 'No answer was given.'
-                    }).then(() => {
-                        window.quizSubmitting = true;
-                        try {
-                            localStorage.removeItem(`quiz_{{ $quiz->id }}_start_time`);
-                        } catch (e) {}
-
-                        window.location.href = '{{ route("quiz.index") }}';
-                    });
-
-                });
+                }).then(() => finishQuiz());
             }
-            else{
+
+            /* -------------------------------
+            ANSWER EXISTS → SAVE THEN SUBMIT
+            --------------------------------*/
+            else {
                 fetch('{{ route("quiz.saveAnswer") }}', {
                     method: 'POST',
                     headers: {
@@ -628,44 +642,219 @@
                         answertype: 'submitquiz'
                     })
                 })
-                .then(res => res.json())
-                .then(data => {
-                    return fetch('{{ route("quiz.saveFinalData") }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            quiz_id: '{{ $quiz->id }}'
-                        })
-                    });
-
-                })
-                .then(res => res.json())
-                .then(data => {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Quiz Submitted!',
-                        text: 'Your last answer has been saved.',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        window.quizSubmitting = true;
-                        try { localStorage.removeItem(`quiz_{{ $quiz->id }}_start_time`); } catch(e){}
-                        window.location.href = '{{ route("quiz.index") }}';
-                    });
-                })
-                .catch(err => {
-                    console.error('Error saving answer:', err);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Submission Failed',
-                        text: 'There was an error submitting your quiz. Please try again.'
-                    });
-                });
+                .then(() => fetch('{{ route("quiz.saveFinalData") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ quiz_id: '{{ $quiz->id }}' })
+                }))
+                .then(() => finishQuiz())
+                .catch(() => Swal.fire('Error', 'Submission failed', 'error'));
             }
 
+            function finishQuiz() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Quiz Submitted!'
+                }).then(() => {
+                    window.quizSubmitting = true;
+                    try { localStorage.removeItem(`quiz_{{ $quiz->id }}_start_time`); } catch(e){}
+                    window.location.href = '{{ route("quiz.index") }}';
+                });
+            }
         });
+
+
+        // form.addEventListener('submit', function (e) {
+        //     e.preventDefault();
+
+        //     const questions = document.querySelectorAll('.question-box');
+        //     const lastQuestionBox = questions[questions.length - 1];
+
+        //     let answer = null;
+        //     const questionIdInput = lastQuestionBox.querySelector('input[name$="[id]"]');
+        //     const questionId = questionIdInput ? questionIdInput.value : null;
+
+        //     if (questionId) {
+        //         const selectedRadio = lastQuestionBox.querySelector('input[type="radio"]:checked');
+        //         if (selectedRadio) answer = selectedRadio.value;
+
+        //         else if (lastQuestionBox.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
+        //             const selectedCheckboxes = lastQuestionBox.querySelectorAll('input[type="checkbox"]:checked');
+        //             answer = Array.from(selectedCheckboxes).map(cb => cb.value).join(',');
+        //         }
+
+        //         else if (lastQuestionBox.querySelector('textarea')) {
+        //             const textarea = lastQuestionBox.querySelector('textarea');
+        //             answer = textarea.value.trim() || null;
+        //         }
+
+        //         else if (lastQuestionBox.querySelector('ul.sequence-list')) {
+        //             const sequenceInput = lastQuestionBox.querySelector('input.sequence-answer');
+        //             answer = sequenceInput ? sequenceInput.value : null;
+        //         }
+        //     }
+
+        //     function safeFetch(url, payload) {
+        //         return fetch(url, {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        //             },
+        //             body: JSON.stringify(payload)
+        //         })
+        //         .then(res => res.text())
+        //         .then(text => {
+        //             try {
+        //                 return JSON.parse(text);
+        //             } catch (e) {
+        //                 console.warn('Server did not return JSON:', text);
+        //                 return { status: true, message: 'Quiz submitted (fallback)' };
+        //             }
+        //         });
+        //     }
+
+        //     const quizId = '{{ $quiz->id }}';
+
+        //     const saveAnswerPromise = (answer !== null && answer !== '') 
+        //         ? safeFetch('{{ route("quiz.saveAnswer") }}', { quiz_id: quizId, question_id: questionId, answer: answer, answertype: 'submitquiz' })
+        //         : Promise.resolve({ status: true });
+
+        //     saveAnswerPromise
+        //         .then(() => safeFetch('{{ route("quiz.saveFinalData") }}', { quiz_id: quizId }))
+        //         .then(() => {
+        //             Swal.fire({
+        //                 icon: 'success',
+        //                 title: 'Quiz Submitted!',
+        //                 text: 'Your quiz has been submitted successfully.',
+        //                 confirmButtonText: 'OK'
+        //             }).then(() => {
+        //                 window.quizSubmitting = true;
+        //                 try { localStorage.removeItem(`quiz_${quizId}_start_time`); } catch(e){}
+        //                 window.location.href = '{{ route("quiz.index") }}';
+        //             });
+        //         })
+        //         .catch(err => {
+        //             console.error('Error submitting quiz:', err);
+        //             Swal.fire({
+        //                 icon: 'error',
+        //                 title: 'Submission Failed',
+        //                 text: 'There was an error submitting your quiz. Please try again.'
+        //             });
+        //         });
+        // });
+
+        // form.addEventListener('submit', function (e) {
+        //     e.preventDefault();
+
+        //     const questions = document.querySelectorAll('.question-box');
+        //     const lastQuestionBox = questions[questions.length - 1];
+
+        //     let answer = null;
+        //     const questionIdInput = lastQuestionBox.querySelector('input[name$="[id]"]');
+        //     const questionId = questionIdInput ? questionIdInput.value : null;
+
+        //     if (!questionId) return;
+
+        //     const selectedRadio = lastQuestionBox.querySelector('input[type="radio"]:checked');
+        //     if (selectedRadio) answer = selectedRadio.value;
+
+        //     else if (lastQuestionBox.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
+        //         const selectedCheckboxes = lastQuestionBox.querySelectorAll('input[type="checkbox"]:checked');
+        //         answer = Array.from(selectedCheckboxes).map(cb => cb.value).join(',');
+        //     }
+
+        //     else if (lastQuestionBox.querySelector('textarea')) {
+        //         const textarea = lastQuestionBox.querySelector('textarea');
+        //         answer = textarea.value.trim() || null;
+        //     }
+
+        //     else if (lastQuestionBox.querySelector('ul[id^="sequence-"]')) {
+        //         const sequenceInput = lastQuestionBox.querySelector('input[id^="sequence-input-"]');
+        //         answer = sequenceInput ? sequenceInput.value : null;
+        //     }
+
+        //     if (answer === null || answer === '') {
+        //         return fetch('{{ route("quiz.saveFinalData") }}', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        //             },
+        //             body: JSON.stringify({ quiz_id: '{{ $quiz->id }}' })
+        //         })
+        //         .then(res => res.json())
+        //         .then(() => {
+        //             Swal.fire({
+        //                 icon: 'success',
+        //                 title: 'Quiz Submitted!',
+        //                 text: 'No answer was given.'
+        //             }).then(() => {
+        //                 window.quizSubmitting = true;
+        //                 try {
+        //                     localStorage.removeItem(`quiz_{{ $quiz->id }}_start_time`);
+        //                 } catch (e) {}
+
+        //                 window.location.href = '{{ route("quiz.index") }}';
+        //             });
+
+        //         });
+        //     }
+        //     else{
+        //         fetch('{{ route("quiz.saveAnswer") }}', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        //             },
+        //             body: JSON.stringify({
+        //                 quiz_id: '{{ $quiz->id }}',
+        //                 question_id: questionId,
+        //                 answer: answer,
+        //                 answertype: 'submitquiz'
+        //             })
+        //         })
+        //         .then(res => res.json())
+        //         .then(data => {
+        //             return fetch('{{ route("quiz.saveFinalData") }}', {
+        //                 method: 'POST',
+        //                 headers: {
+        //                     'Content-Type': 'application/json',
+        //                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        //                 },
+        //                 body: JSON.stringify({
+        //                     quiz_id: '{{ $quiz->id }}'
+        //                 })
+        //             });
+
+        //         })
+        //         .then(res => res.json())
+        //         .then(data => {
+        //             Swal.fire({
+        //                 icon: 'success',
+        //                 title: 'Quiz Submitted!',
+        //                 text: 'Your last answer has been saved.',
+        //                 confirmButtonText: 'OK'
+        //             }).then(() => {
+        //                 window.quizSubmitting = true;
+        //                 try { localStorage.removeItem(`quiz_{{ $quiz->id }}_start_time`); } catch(e){}
+        //                 window.location.href = '{{ route("quiz.index") }}';
+        //             });
+        //         })
+        //         .catch(err => {
+        //             console.error('Error saving answer:', err);
+        //             Swal.fire({
+        //                 icon: 'error',
+        //                 title: 'Submission Failed',
+        //                 text: 'There was an error submitting your quiz. Please try again.'
+        //             });
+        //         });
+        //     }
+
+        // });
     });
 </script>
 

@@ -15,11 +15,16 @@ class QuizQuestion extends Model
     
     protected $fillable = [
         'quiz_id',
+        'user_id',
         'topic_id',
         'question_id',
     ];
 
-    // Relationship: A quiz question belongs to a quiz
+    protected $casts = [
+        'topic_id'    => 'array',
+        'question_id' => 'array',
+    ];
+
     public function quiz()
     {
         return $this->belongsTo(Quiz::class);

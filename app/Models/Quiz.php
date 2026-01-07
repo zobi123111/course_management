@@ -25,6 +25,8 @@ class Quiz extends Model
         'show_result',
         'created_by',
         'ou_id',
+        'question_selection',
+        'question_count',
     ];
 
     public function quizQuestions()
