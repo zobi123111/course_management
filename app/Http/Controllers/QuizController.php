@@ -238,7 +238,7 @@ class QuizController extends Controller
         $topics = Topic::withCount('questions')->where("ou_id", $quiz->ou_id)
                     ->where("course_id", $quiz->course_id)->get();
                     
-        $quizQuestions = QuizQuestion::with('question')->where('quiz_id', $quizId)->get();
+        $quizQuestions = QuizQuestion::where('quiz_id', $quizId)->get();
         
         return view('quiz.view', compact('quiz', 'topics', 'quizQuestions'));
     }
