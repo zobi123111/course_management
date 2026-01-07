@@ -614,17 +614,33 @@
             /* -------------------------------
             NO ANSWER → SUBMIT QUIZ ONLY
             --------------------------------*/
+
             if (!answer) {
-                fetch('{{ route("quiz.saveFinalData") }}', {
+                return fetch('{{ route("quiz.saveFinalData") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({ quiz_id: '{{ $quiz->id }}' })
-                }).then(() => finishQuiz());
-            }
+                })
+                .then(res => res.json())
+                .then(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Quiz Submitted!',
+                    }).then(() => {
+                        window.quizSubmitting = true;
+                        try {
+                            localStorage.removeItem(`quiz_{{ $quiz->id }}_start_time`);
+                        } catch (e) {}
 
+                        window.location.href = '{{ route("quiz.index") }}';
+                    });
+
+                });
+
+            }
             /* -------------------------------
             ANSWER EXISTS → SAVE THEN SUBMIT
             --------------------------------*/

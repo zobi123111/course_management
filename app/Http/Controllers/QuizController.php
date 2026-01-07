@@ -411,7 +411,7 @@ class QuizController extends Controller
         //     ]);
         // }
 
-        return back()->with('message', 'Topic added & questions assigned successfully!');
+        return back()->with('message', 'Topic assigned successfully!');
     }
 
     public function editTopic(Request $request)
@@ -488,7 +488,7 @@ class QuizController extends Controller
 
         $quizTopic->delete();
 
-       return redirect()->back()->with('message', 'Topic and questions Unassigned successfully.');
+       return redirect()->back()->with('message', 'Topic Unassigned successfully.');
     }
 
     public function updateStatus(Request $request)
@@ -807,6 +807,8 @@ class QuizController extends Controller
                             ->where('student_id', $user_id)
                             ->first();
 
+        $quizquestions = QuizQuestion::where('quiz_id', $quiz_id)->where('user_id', $user_id)->first();
+
         if (!$attempt) {
             return response()->json(['message' => 'Attempt not found'], 404);
         }
@@ -818,6 +820,7 @@ class QuizController extends Controller
         }
 
         $attempt->delete();
+        $quizquestions->delete();
 
         return response()->json(['message' => 'Attempt reset successfully']);
     }
@@ -969,6 +972,46 @@ class QuizController extends Controller
             'quiz_details' => json_encode($finalData),
         ]);
 
+
+        $questionIds = QuizQuestion::where('quiz_id', $quiz->id)->pluck('question_id')->flatMap(fn ($q) => is_array($q) ? $q : json_decode($q, true))->filter()->unique()->toArray();
+
+        $hasTextQuestion = TopicQuestion::whereIn('id', $questionIds)->where('question_type', 'text')->exists();
+
+        $totalCorrect = QuizAnswer::where('quiz_id', $quiz->id)->where('user_id', $userId)->where('is_correct', 1)->count();
+
+        $totalQuestions = QuizTopic::where('quiz_id', $quiz->id)->sum('question_quantity');
+
+        $percentage = $totalQuestions > 0 ? round(($totalCorrect / $totalQuestions) * 100, 2) : 0;
+
+        $result = ($percentage >= $quiz->passing_score) ? 'pass' : 'fail';
+
+        if (!$hasTextQuestion) {
+            QuizAttempt::updateOrCreate(
+                [
+                    'quiz_id'    => $quiz->id,
+                    'student_id' => $userId,
+                ],
+                [
+                    'submitted_at' => now(),
+                    'score'        => $percentage,
+                    'status'       => 'completed',
+                    'result'       => $result,
+                ]
+            );
+        } else {
+            QuizAttempt::updateOrCreate(
+                [
+                    'quiz_id'    => $quiz->id,
+                    'student_id' => $userId,
+                ],
+                [
+                    'status'       => 'completed',
+                    'submitted_at' => now(),
+                ]
+            );
+        }
+
+        
         return response()->json([
             'status' => true,
             'message' => 'Final quiz data saved successfully!',
