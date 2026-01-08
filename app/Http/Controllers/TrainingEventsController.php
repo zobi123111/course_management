@@ -871,11 +871,15 @@ class TrainingEventsController extends Controller
                 return $lesson;
             });
         } else {
-                 $eventLessons = $trainingEvent->eventLessons->map(function ($lesson) {
+                $eventLessons = $trainingEvent->eventLessons->map(function ($lesson) {
                     $lesson->is_my_lesson = true;
                     return $lesson;
                 });
         }
+
+        $eventLessons = $eventLessons->reject(function ($lesson) {
+            return $lesson?->lesson?->quizzes?->count() > 0;
+        });
 
         $courselessons = CourseLesson::where('course_id', $trainingEvent->course_id)->get();
 
