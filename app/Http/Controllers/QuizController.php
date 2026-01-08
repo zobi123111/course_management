@@ -645,7 +645,15 @@ class QuizController extends Controller
 
         });
 
-        $quiz = Quiz::with('quizQuestions')->findOrFail($quiz_id);
+        // $quiz = Quiz::with('quizQuestions')->findOrFail($quiz_id);
+        $quiz = Quiz::whereHas('quizQuestions', function ($query) use ($currentUser) {
+            $query->where('user_id', $currentUser->id);
+        })
+        ->with(['quizQuestions' => function ($query) use ($currentUser) {
+            $query->where('user_id', $currentUser->id);
+        }])
+        ->findOrFail($quiz_id);
+        
 
         $allQuestionIds = $quiz->quizQuestions
             ->pluck('question_id')

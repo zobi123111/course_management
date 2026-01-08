@@ -302,56 +302,6 @@
             });
         }
 
-        // function saveAnswer(currentQuestionBox) {
-        //     console.log('Saving answer for current question box:', currentQuestionBox);
-
-        //     const questionIdInput = currentQuestionBox.querySelector('.question-id');
-        //     const questionId = questionIdInput ? questionIdInput.value : null;
-
-        //     if (!questionId) {
-        //         console.error('Question ID not found!', currentQuestionBox);
-        //         return;
-        //     }
-
-        //     let answer = null;
-
-        //     const selectedRadio = currentQuestionBox.querySelector('input[type="radio"]:checked');
-        //     if (selectedRadio) {
-        //         answer = selectedRadio.value;
-        //     }
-        //     else if (currentQuestionBox.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
-        //         const selectedCheckboxes = currentQuestionBox.querySelectorAll('input[type="checkbox"]:checked');
-        //         answer = Array.from(selectedCheckboxes).map(cb => cb.value).join(',');
-        //     }
-        //     else if (currentQuestionBox.querySelector('textarea')) {
-        //         const textarea = currentQuestionBox.querySelector('textarea');
-        //         answer = textarea.value.trim();
-        //     }
-        //     else if (currentQuestionBox.querySelector('ul[id^="sequence-"]')) {
-        //         const sequenceInput = currentQuestionBox.querySelector('input[id^="sequence-input-"]');
-        //         answer = sequenceInput ? sequenceInput.value : null;
-        //     }
-
-        //     console.log('Saving Answer:', { questionId, answer });
-
-        //     if (answer !== null && answer !== '') {
-        //         fetch('{{ route("quiz.saveAnswer") }}', {
-        //             method: 'POST',
-        //             headers: {
-        //                 'Content-Type': 'application/json',
-        //                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        //             },
-        //             body: JSON.stringify({
-        //                 quiz_id: {{ $quiz->id }},
-        //                 question_id: questionId,
-        //                 answer: answer
-        //             })
-        //         })
-        //         .then(res => res.json())
-        //         .then(data => console.log('Saved:', data))
-        //         .catch(err => console.error('Error saving answer:', err));
-        //     }
-        // }
         function saveAnswer(currentQuestionBox) {
             console.log('Saving answer for current question box:', currentQuestionBox);
 
@@ -453,9 +403,20 @@
 
         function updateSidebar() {
             sidebarItems.forEach((item, i) => {
+
+                // 🚨 SAFETY CHECK
+                if (!questions[i]) {
+                    console.warn('No question box for sidebar index:', i);
+                    return;
+                }
+
                 item.classList.remove('answered', 'unanswered', 'current-question');
 
-                const questionInputs = questions[i].querySelectorAll('input[type="radio"], input[type="checkbox"], textarea');
+                const questionBox = questions[i];
+                const questionInputs = questionBox.querySelectorAll(
+                    'input[type="radio"], input[type="checkbox"], textarea'
+                );
+
                 let answered = false;
 
                 questionInputs.forEach(input => {
@@ -463,7 +424,7 @@
                     if (input.tagName === 'TEXTAREA' && input.value.trim() !== '') answered = true;
                 });
 
-                const sequenceInput = questions[i].querySelector('input[type="hidden"][id^="sequence-input-"]');
+                const sequenceInput = questionBox.querySelector('.sequence-answer');
                 if (sequenceInput && sequenceInput.value.trim() !== '') answered = true;
 
                 if (i === currentIndex) {
@@ -685,196 +646,6 @@
                 });
             }
         });
-
-
-        // form.addEventListener('submit', function (e) {
-        //     e.preventDefault();
-
-        //     const questions = document.querySelectorAll('.question-box');
-        //     const lastQuestionBox = questions[questions.length - 1];
-
-        //     let answer = null;
-        //     const questionIdInput = lastQuestionBox.querySelector('input[name$="[id]"]');
-        //     const questionId = questionIdInput ? questionIdInput.value : null;
-
-        //     if (questionId) {
-        //         const selectedRadio = lastQuestionBox.querySelector('input[type="radio"]:checked');
-        //         if (selectedRadio) answer = selectedRadio.value;
-
-        //         else if (lastQuestionBox.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
-        //             const selectedCheckboxes = lastQuestionBox.querySelectorAll('input[type="checkbox"]:checked');
-        //             answer = Array.from(selectedCheckboxes).map(cb => cb.value).join(',');
-        //         }
-
-        //         else if (lastQuestionBox.querySelector('textarea')) {
-        //             const textarea = lastQuestionBox.querySelector('textarea');
-        //             answer = textarea.value.trim() || null;
-        //         }
-
-        //         else if (lastQuestionBox.querySelector('ul.sequence-list')) {
-        //             const sequenceInput = lastQuestionBox.querySelector('input.sequence-answer');
-        //             answer = sequenceInput ? sequenceInput.value : null;
-        //         }
-        //     }
-
-        //     function safeFetch(url, payload) {
-        //         return fetch(url, {
-        //             method: 'POST',
-        //             headers: {
-        //                 'Content-Type': 'application/json',
-        //                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        //             },
-        //             body: JSON.stringify(payload)
-        //         })
-        //         .then(res => res.text())
-        //         .then(text => {
-        //             try {
-        //                 return JSON.parse(text);
-        //             } catch (e) {
-        //                 console.warn('Server did not return JSON:', text);
-        //                 return { status: true, message: 'Quiz submitted (fallback)' };
-        //             }
-        //         });
-        //     }
-
-        //     const quizId = '{{ $quiz->id }}';
-
-        //     const saveAnswerPromise = (answer !== null && answer !== '') 
-        //         ? safeFetch('{{ route("quiz.saveAnswer") }}', { quiz_id: quizId, question_id: questionId, answer: answer, answertype: 'submitquiz' })
-        //         : Promise.resolve({ status: true });
-
-        //     saveAnswerPromise
-        //         .then(() => safeFetch('{{ route("quiz.saveFinalData") }}', { quiz_id: quizId }))
-        //         .then(() => {
-        //             Swal.fire({
-        //                 icon: 'success',
-        //                 title: 'Quiz Submitted!',
-        //                 text: 'Your quiz has been submitted successfully.',
-        //                 confirmButtonText: 'OK'
-        //             }).then(() => {
-        //                 window.quizSubmitting = true;
-        //                 try { localStorage.removeItem(`quiz_${quizId}_start_time`); } catch(e){}
-        //                 window.location.href = '{{ route("quiz.index") }}';
-        //             });
-        //         })
-        //         .catch(err => {
-        //             console.error('Error submitting quiz:', err);
-        //             Swal.fire({
-        //                 icon: 'error',
-        //                 title: 'Submission Failed',
-        //                 text: 'There was an error submitting your quiz. Please try again.'
-        //             });
-        //         });
-        // });
-
-        // form.addEventListener('submit', function (e) {
-        //     e.preventDefault();
-
-        //     const questions = document.querySelectorAll('.question-box');
-        //     const lastQuestionBox = questions[questions.length - 1];
-
-        //     let answer = null;
-        //     const questionIdInput = lastQuestionBox.querySelector('input[name$="[id]"]');
-        //     const questionId = questionIdInput ? questionIdInput.value : null;
-
-        //     if (!questionId) return;
-
-        //     const selectedRadio = lastQuestionBox.querySelector('input[type="radio"]:checked');
-        //     if (selectedRadio) answer = selectedRadio.value;
-
-        //     else if (lastQuestionBox.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
-        //         const selectedCheckboxes = lastQuestionBox.querySelectorAll('input[type="checkbox"]:checked');
-        //         answer = Array.from(selectedCheckboxes).map(cb => cb.value).join(',');
-        //     }
-
-        //     else if (lastQuestionBox.querySelector('textarea')) {
-        //         const textarea = lastQuestionBox.querySelector('textarea');
-        //         answer = textarea.value.trim() || null;
-        //     }
-
-        //     else if (lastQuestionBox.querySelector('ul[id^="sequence-"]')) {
-        //         const sequenceInput = lastQuestionBox.querySelector('input[id^="sequence-input-"]');
-        //         answer = sequenceInput ? sequenceInput.value : null;
-        //     }
-
-        //     if (answer === null || answer === '') {
-        //         return fetch('{{ route("quiz.saveFinalData") }}', {
-        //             method: 'POST',
-        //             headers: {
-        //                 'Content-Type': 'application/json',
-        //                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        //             },
-        //             body: JSON.stringify({ quiz_id: '{{ $quiz->id }}' })
-        //         })
-        //         .then(res => res.json())
-        //         .then(() => {
-        //             Swal.fire({
-        //                 icon: 'success',
-        //                 title: 'Quiz Submitted!',
-        //                 text: 'No answer was given.'
-        //             }).then(() => {
-        //                 window.quizSubmitting = true;
-        //                 try {
-        //                     localStorage.removeItem(`quiz_{{ $quiz->id }}_start_time`);
-        //                 } catch (e) {}
-
-        //                 window.location.href = '{{ route("quiz.index") }}';
-        //             });
-
-        //         });
-        //     }
-        //     else{
-        //         fetch('{{ route("quiz.saveAnswer") }}', {
-        //             method: 'POST',
-        //             headers: {
-        //                 'Content-Type': 'application/json',
-        //                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        //             },
-        //             body: JSON.stringify({
-        //                 quiz_id: '{{ $quiz->id }}',
-        //                 question_id: questionId,
-        //                 answer: answer,
-        //                 answertype: 'submitquiz'
-        //             })
-        //         })
-        //         .then(res => res.json())
-        //         .then(data => {
-        //             return fetch('{{ route("quiz.saveFinalData") }}', {
-        //                 method: 'POST',
-        //                 headers: {
-        //                     'Content-Type': 'application/json',
-        //                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        //                 },
-        //                 body: JSON.stringify({
-        //                     quiz_id: '{{ $quiz->id }}'
-        //                 })
-        //             });
-
-        //         })
-        //         .then(res => res.json())
-        //         .then(data => {
-        //             Swal.fire({
-        //                 icon: 'success',
-        //                 title: 'Quiz Submitted!',
-        //                 text: 'Your last answer has been saved.',
-        //                 confirmButtonText: 'OK'
-        //             }).then(() => {
-        //                 window.quizSubmitting = true;
-        //                 try { localStorage.removeItem(`quiz_{{ $quiz->id }}_start_time`); } catch(e){}
-        //                 window.location.href = '{{ route("quiz.index") }}';
-        //             });
-        //         })
-        //         .catch(err => {
-        //             console.error('Error saving answer:', err);
-        //             Swal.fire({
-        //                 icon: 'error',
-        //                 title: 'Submission Failed',
-        //                 text: 'There was an error submitting your quiz. Please try again.'
-        //             });
-        //         });
-        //     }
-
-        // });
     });
 </script>
 
