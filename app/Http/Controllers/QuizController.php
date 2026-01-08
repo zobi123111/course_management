@@ -307,7 +307,7 @@ class QuizController extends Controller
             'status' => $request->status,
             'show_result' => $request->show_result,
             'question_selection' => $request->question_selection,
-            'question_count' => $request->question_selection === 'random' ? $request->random_question_count : null,
+            'question_count' => $request->question_selection === 'random' ? $request->question_count : null,
             'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id,
         ]);
 

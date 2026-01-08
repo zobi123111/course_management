@@ -581,15 +581,20 @@
                 }
             });
 
-            // EDIT
-            $('#edit_qs_manual, #edit_qs_random').on('change', function () {
-                if (this.id === 'edit_qs_random') {
+            function toggleEditQuestionCount(type) {
+                if (type === 'random') {
                     $('#edit_question_count_div').removeClass('d-none');
                 } else {
                     $('#edit_question_count_div').addClass('d-none');
                     $('#edit_question_count').val('');
                 }
+            }
+
+            // EDIT
+            $('#edit_qs_manual, #edit_qs_random').on('change', function () {
+                toggleEditQuestionCount(this.value);
             });
+
 
             $('#edit_course_id').on('change', function() {
                 let courseId = $(this).val();
@@ -672,10 +677,12 @@
                         $('#edit_ou_id').val(response.quiz.ou_id);
 
                         if (response.quiz.question_selection === 'random') {
-                            $('#edit_qs_random').prop('checked', true).trigger('change');
+                            $('#edit_qs_random').prop('checked', true);
+                            toggleEditQuestionCount('random');
                             $('#edit_question_count').val(response.quiz.question_count);
                         } else {
-                            $('#edit_qs_manual').prop('checked', true).trigger('change');
+                            $('#edit_qs_manual').prop('checked', true);
+                            toggleEditQuestionCount('manual');
                         }
 
                         $.ajax({
