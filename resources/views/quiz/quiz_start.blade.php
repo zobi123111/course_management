@@ -480,6 +480,10 @@
 
         sidebarItems.forEach((item, index) => {
             item.addEventListener('click', () => {
+
+                const currentQuestionBox = questions[currentIndex];
+                saveAnswer(currentQuestionBox);
+
                 currentIndex = index;
                 questions.forEach((q, i) => q.classList.toggle('d-none', i !== index));
                 questions[index].classList.add('active');
