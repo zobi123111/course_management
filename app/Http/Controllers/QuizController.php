@@ -311,6 +311,58 @@ class QuizController extends Controller
             'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id,
         ]);
 
+        if ($request->question_selection === 'random') {
+            QuizTopic::where('quiz_id', $quiz->id)->delete();
+
+            $topics = Topic::where('course_id', $request->course_id)->withCount('questions')->get();
+
+            if ($topics->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No topics found for this course.'
+                ], 422);
+            }
+
+            $requested = (int) $request->question_count;
+            $totalAvailable = $topics->sum('questions_count');
+
+            $distribution = [];
+
+            if ($requested >= $totalAvailable) {
+                foreach ($topics as $topic) {
+                    $distribution[$topic->id] = $topic->questions_count;
+                }
+            } else {
+                $remaining = $requested;
+                $base = intdiv($requested, $topics->count());
+
+                foreach ($topics as $topic) {
+                    $assign = min($base, $topic->questions_count);
+                    $distribution[$topic->id] = $assign;
+                    $remaining -= $assign;
+                }
+
+                while ($remaining > 0) {
+                    foreach ($topics as $topic) {
+                        if ($remaining === 0) break;
+
+                        if ($distribution[$topic->id] < $topic->questions_count) {
+                            $distribution[$topic->id]++;
+                            $remaining--;
+                        }
+                    }
+                }
+            }
+
+            foreach ($distribution as $topicId => $qty) {
+                QuizTopic::create([
+                    'quiz_id' => $quiz->id,
+                    'topic_id' => $topicId,
+                    'question_quantity' => $qty,
+                ]);
+            }
+        }
+
         return response()->json(['success' => true, 'message' => 'Quiz updated successfully.']);
     }
 
