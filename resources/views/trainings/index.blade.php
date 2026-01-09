@@ -216,7 +216,7 @@
                         @endif
                     @else
                         {{-- This event is already locked/ended --}}
-                        <span class="badge bg-secondary" data-bs-toggle="tooltip"
+                        <span class="badge bg-secondary unlocked" data-bs-toggle="tooltip" data-id = "{{ $event->id }}"
                             title="This course has been ended and is locked from editing">
                             <i class="bi bi-lock-fill me-1"></i>Ended
                         </span>
