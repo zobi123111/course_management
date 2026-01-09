@@ -166,5 +166,8 @@
       </div>
       @endif
   </div>
+    <div class="avms-footer" style="text-align: center; font-size:14px; color: #35a1e1; margin-top: 20px; ">
+    Created by AvMS (Aviation Management Systems LTD)
+  </div>
 </body>
 </html>
