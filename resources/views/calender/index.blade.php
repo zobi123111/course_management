@@ -132,16 +132,16 @@
 
             <div class="modal-body">
                 @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                <label>Select Org Unit</label>
-                <select id="organizationUnits" name="organizationUnits" class="form-control mb-2">
-                    <option value="">Select Org Unit</option>
-                    @foreach ($organizationUnits as $val)
-                    <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                    @endforeach
-                </select>
+                    <label>Select Org Unit</label>
+                    <select id="organizationUnits" name="organizationUnits" class="form-control mb-2">
+                        <option value="">Select Org Unit</option>
+                        @foreach ($organizationUnits as $val)
+                        <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                        @endforeach
+                    </select>
                 @endif
-
-                @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                @if(auth()->user()->is_admin == 1 && !empty(auth()->user()->ou_id))
+                    <input type="hidden" name="organizationUnits" id="organizationUnits" value="{{ auth()->user()->ou_id }}">
                 @endif
 
                 <label>Start Date & Time</label>
@@ -513,15 +513,20 @@
 
         function resetBookingForm()
         {
+            let $ou = $('#organizationUnits');
+
+            if ($ou.is('select')) {
+                $ou.val('');
+            }
+
             $('#resource').val('');
-            $('#organizationUnits').val('');
             $('#student').val('');
             $('#booking_type').val('1');
 
-            // Clear flatpickr values
             startPicker.clear();
             endPicker.clear();
         }
+
 
         function handleBookingType(
             bookingTypeSelector,

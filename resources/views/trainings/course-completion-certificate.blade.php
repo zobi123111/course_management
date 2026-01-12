@@ -142,7 +142,7 @@
 
     <div style="width: 100%; margin-top: 30px; font-size: 0.8rem; color: #666; display: table;">
       <!-- Left Side -->
-      <div style="display: table-cell; vertical-align: middle; width: 60%;">
+      <div style="display: table-cell; vertical-align: middle; width: 50%;">
         <p style="margin: 0;">
           {{ $event->orgUnit->org_unit_name ?? '' }} LIMITED 
           <!-- <a href="mailto:{{ $event->orgUnit->admin->email ?? 'admin@example.com' }}" style="color: #1c3b6f; text-decoration: none; font-weight: 600;">{{ $event->orgUnit->admin->email}}</a> | -->
@@ -152,7 +152,7 @@
 
       <!-- Right Side -->
       @if($event?->orgUnit?->org_logo)
-      <div style="display: table-cell; vertical-align: middle; text-align: right; width: 40%;">
+      <div style="display: table-cell; vertical-align: middle; text-align: right; width: 40%;" >
         <div style="display: inline-block; text-align: center;">
           <img src="{{ public_path('storage/organization_logo/' . $event->orgUnit->org_logo) }}" alt="T8UK Logo"
               style="max-width: 39px; height: auto; margin-bottom: 5px;">
@@ -166,8 +166,8 @@
       </div>
       @endif
   </div>
-    <div class="avms-footer" style="text-align: center; font-size:14px; color: #35a1e1; margin-top: 20px; ">
-    Created by AvMS (Aviation Management Systems LTD)
-  </div>
+    <div class="avms-footer" style="text-align: right; font-size:11px; color: #95d8ffff; margin-top: 20px;">
+      Created by AvMS (Aviation Management Systems LTD)
+    </div>
 </body>
 </html>

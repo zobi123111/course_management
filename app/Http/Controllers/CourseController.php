@@ -20,6 +20,7 @@ use App\Models\CourseCustomTime;
 use App\Models\CourseLesson;
 use App\Models\SubLesson;
 use App\Models\LessonPrerequisite;
+use App\Models\Rating;
 use Illuminate\Support\Facades\DB;
 
 
@@ -75,6 +76,8 @@ class CourseController extends Controller
             $courses = Courses::orderBy('position')->get();
             $groups = Group::all();  
             $resource  = Resource::all();
+
+            $ratings = Rating::with(['ou_ratings.organization_unit'])->where('status', 1)->get();
         } 
         elseif(checkAllowedModule('courses', 'course.index')->isNotEmpty() && Auth()->user()->is_admin ==  0)
         {
@@ -93,7 +96,9 @@ class CourseController extends Controller
                         ->from('courses_group')
                         ->whereIn('group_id', $groupIds);
                         })->where('status', 1)->orderBy('position')->get();
-                     //  dump($courses);     
+                     //  dump($courses);    
+                     
+            $ratings = Rating::with(['ou_ratings.organization_unit'])->where('status', 1)->get();
         }
         else 
         {
@@ -104,6 +109,15 @@ class CourseController extends Controller
             }
             $groups = Group::where('ou_id', $ouId)->get();
             $resource  = Resource::where('ou_id', $ouId)->get();
+
+            $ratings = Rating::where('status', 1)
+            ->whereHas('ou_ratings', function ($query) use ($ouId) {
+                $query->where('ou_id', $ouId);
+            })
+            ->with(['ou_ratings' => function ($query) use ($ouId) {
+                $query->where('ou_id', $ouId);
+            }])
+            ->get();
         }
     
         $ou_id = auth()->user()->ou_id;
@@ -113,9 +127,9 @@ class CourseController extends Controller
         }else{
           $organizationUnits = OrganizationUnits::where('id', $ou_id)->get();
         }
+        
    
-          //  dd($organizationUnits);
-          return view('courses.index', compact('courses', 'organizationUnits', 'groups', 'resource','ou_id'));
+          return view('courses.index', compact('courses', 'organizationUnits', 'groups', 'resource','ou_id', 'ratings'));
     }
 
 
