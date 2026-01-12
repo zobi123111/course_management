@@ -778,7 +778,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                 UK Med: {{ $date }}
                             </span>
                         @else
-                            <span class="text-muted me-2">UK: N/A</span>
+                            <!-- <span class="text-muted me-2">UK: N/A</span> -->
                         @endif
 
                         {{-- EASA Medical --}}
@@ -796,7 +796,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                 EASA Med: {{ $date }}
                             </span>
                         @else
-                            <span class="text-muted">EASA: N/A</span>
+                            <!-- <span class="text-muted">EASA: N/A</span> -->
                         @endif
                     </td>
 
