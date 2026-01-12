@@ -253,7 +253,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                 UK Licence: {{ $date }}
                             </span>
                         @else
-                            <span class="text-muted me-2">UK: N/A</span>
+                            <!-- <span class="text-muted me-2">UK: N/A</span> -->
                         @endif
 
                         {{-- EASA Licence --}}
@@ -277,7 +277,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                 EASA Licence: {{ $date }}
                             </span>
                         @else
-                            <span class="text-muted">EASA: N/A</span>
+                            <!-- <span class="text-muted">EASA: N/A</span> -->
                         @endif
                     </td>
 
