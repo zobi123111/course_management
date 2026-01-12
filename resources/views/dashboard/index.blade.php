@@ -195,553 +195,636 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
         <thead>
             <tr>
                 <th>Name</th>
-                <th>UK Licence Status</th>
+                <th>Licence Status</th>
                 <th>Associated Ratings (UK)</th>
-                <th>EASA Licence Status</th>
                 <th>Associated Ratings (EASA)</th>
-                 <th>OPC</th>
-                <th>UK Medical Status</th>
-                <th>EASA Medical Status</th>
+                <th>Medical Status</th>
                 <th>Passport Status</th>
                 <th>Action</th>
             </tr>
         </thead>
         <tbody>
-        <?php
-
-            if (!function_exists('getTooltip')) {
-            function getTooltip($status, $type) {
-            return match ($status) {
-            'Red' => "This {$type} has expired.",
-            'Yellow' => "This {$type} will expire soon.",
-            'Green' => "This {$type} is valid.",
-            'Non-Expiring' => "This {$type} does not expire.",
-            default => "Status unknown.",
-            };
-            }
-            }
+            <?php
+                if (!function_exists('getTooltip')) {
+                    function getTooltip($status, $type) {
+                        return match ($status) {
+                            'Red' => "This {$type} has expired.",
+                            'Yellow' => "This {$type} will expire soon.",
+                            'Green' => "This {$type} is valid.",
+                            'Non-Expiring' => "This {$type} does not expire.",
+                            default => "Status unknown.",
+                        };
+                    }
+                }
             ?>
 
             @foreach($users as $user)
-            @if ($user->is_activated == 0 && $user->status == 1) 
-            <tr>
-                <td>{{ $user->fname }} {{ $user->lname }}</td>
-                <?php
-                  $doc = $user->documents; 
-                  $ratingsByLicence = $user->usrRatings->groupBy('linked_to');
-                ?>
-             
 
-                {{-- Licence 1 --}}
-                <td>
-                    @if($doc && $doc->licence_file_uploaded)
-                    @php
-                    if ($doc->licence_non_expiring) {
-                    $status = 'Non-Expiring';
-                    $color = 'success';
-                    $date = 'Non-Expiring';
-                    } else {
-                    $status = $doc->licence_status;
-                    $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
-                    $date = $doc->licence_expiry_date ? date('d/m/Y', strtotime($doc->licence_expiry_date)) : 'N/A';
-                    }
-                    $tooltip = getTooltip($status, 'UK License');
-                    @endphp
-                    <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
-                    @else
-                    <span class="text-muted">Not Uploaded</span>
-                    @endif
+            @php
+                $opcRatingsByAircraft = $user->opcRatings->keyBy('aircraft_type'); // aircraft_type == parent rating id
+            @endphp
 
-                    {{-- Licence 1 Ratings --}}
-                    @if(isset($user->ratings_by_license['license_1']) && $user->ratings_by_license['license_1']->count())
-                    <div class="mt-2">
-                        @foreach($user->ratings_by_license['license_1'] as $ur)
-                        @php
-                        $r = $ur->rating;
-                        $expiry = $ur->expiry_date ? \Carbon\Carbon::parse($ur->expiry_date)->format('d/m/Y') : 'N/A';
-                        $status = $ur->expiry_status; // Uses accessor from model
-                        $color = match($status) {
-                        'Red' => 'danger',
-                        'Orange' => 'warning',
-                        'Amber' => 'info',
-                        'Blue' => 'primary',
-                        default => 'secondary'
-                        };
-                        $tooltip = "$r->name expires on $expiry";
-                        @endphp
+                @if ($user->is_activated == 0 && $user->status == 1) 
+                <tr>
+                    <td>{{ $user->fname }} {{ $user->lname }}</td>
+                        <?php
+                        $doc = $user->documents; 
+                        $ratingsByLicence = $user->usrRatings->groupBy('linked_to');
+                        ?>
+                    <td>
+                        {{-- UK Licence --}}
+                        @if($doc && $doc->licence_file_uploaded)
+                            @php
+                                if ($doc->licence_non_expiring) {
+                                    $status = 'Non-Expiring';
+                                    $color = 'success';
+                                    $date = 'Non-Expiring';
+                                } else {
+                                    $status = $doc->licence_status;
+                                    $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                                    $date = $doc->licence_expiry_date ? date('d/m/Y', strtotime($doc->licence_expiry_date)) : 'N/A';
+                                }
+                                $tooltip = getTooltip($status, 'UK Licence');
+                            @endphp
 
-                        <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">
-                            {{ $r->name ?? '' }}
-                        </span>
-
-                        {{-- Nested (child) ratings --}}
-                        @if($r->children && $r->children->count())
-                        @foreach($r->children as $child)
-                        <span class="badge bg-light text-dark border ms-1" data-bs-toggle="tooltip" title="Child of {{ $r->name }} (inherits expiry)">
-                            → {{ $child->name ?? 'N/A' }}
-                        </span>
-                        @endforeach
+                            <span class="badge bg-{{ $color }} me-1"
+                                data-bs-toggle="tooltip"
+                                title="{{ $tooltip }}">
+                                UK Licence: {{ $date }}
+                            </span>
+                        @else
+                            <span class="text-muted me-2">UK: N/A</span>
                         @endif
-                        @endforeach
-                    </div>
-                    @endif
-                </td>
 
-                <!-- <td>
-                    <?php
-                    $groupedEASA = [];
-                    if (isset($ratingsByLicence['licence_1'])) {
-                        //   print_r($ratingsByLicence['licence_1']);
-                        foreach ($ratingsByLicence['licence_1'] as $ratings) {
-                            $child_id = $ratings->rating_id;
-                            $parent_id = $ratings->parent_id;
-                            $expiry_date = $ratings->expiry_date;
-
-                            if ($parent_id === null && $ratings->rating) {
-
-                                $groupedEASA[$child_id] = [
-                                    'parent' => $ratings->rating->name,
-                                    'children' => [],
-                                    'parent_expiry' => $expiry_date,
-                                ];
-                            } elseif ($ratings->rating) {
-                                $parentRating = $ratings->parentRating;
-                                $childRating = $ratings->rating;
-
-                                if (!isset($groupedEASA[$parent_id])) {
-
-                                    $groupedEASA[$parent_id] = [
-                                        'parent' => $parentRating?->name ?? '',
-                                        'children' => [],
-                                        'parent_expiry' => $expiry_date,
-                                    ];
+                        {{-- EASA Licence --}}
+                        @if($doc && $doc->licence_file_uploaded_2)
+                            @php
+                                if ($doc->licence_non_expiring_2) {
+                                    $status = 'Non-Expiring';
+                                    $color = 'success';
+                                    $date = 'Non-Expiring';
+                                } else {
+                                    $status = $doc->licence_2_status;
+                                    $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                                    $date = $doc->licence_expiry_date_2 ? date('d/m/Y', strtotime($doc->licence_expiry_date_2)) : 'N/A';
                                 }
+                                $tooltip = getTooltip($status, 'EASA Licence');
+                            @endphp
 
-                                $groupedEASA[$parent_id]['children'][] = $childRating->name;
-                            } else {
-                                $parentRating = $ratings->parentRating;
-                                $groupedEASA[$parent_id] = [
-                                    'parent' => $parentRating?->name ?? '',
-                                    'children' => [],
-                                    'parent_expiry' => $expiry_date,
-                                ];
-                            }
-                        }
-                    }
-                    ?>
+                            <span class="badge bg-{{ $color }}"
+                                data-bs-toggle="tooltip"
+                                title="{{ $tooltip }}">
+                                EASA Licence: {{ $date }}
+                            </span>
+                        @else
+                            <span class="text-muted">EASA: N/A</span>
+                        @endif
+                    </td>
 
-                    @foreach ($groupedEASA as $entry)
-                    <strong>{{ $entry['parent'] }}</strong><br>
-                    @if (!empty($entry['children']))
-                    <ul style="margin-left: 15px;">
-                        @foreach ($entry['children'] as $child)
-                        <li>{{ $child }}</li>
-                        @endforeach
-                    </ul>
-                    @endif
-                    <br>
-                    @endforeach
-                </td> -->
-                <td class="lic_rating_td">
-                    <?php
-                    $groupedEASA = [];
-                    if (isset($ratingsByLicence['licence_1'])) {
-                        foreach ($ratingsByLicence['licence_1'] as $ratings) {
-                            $child_id = $ratings->rating_id;
-                            $parent_id = $ratings->parent_id;
-                            $expiry_date = $ratings->expiry_date;
+                    <td class="lic_rating_td">
+                        <?php
+                            $groupedEASA = [];
+                            if (isset($ratingsByLicence['licence_1'])) {
+                                foreach ($ratingsByLicence['licence_1'] as $ratings) {
+                                    $child_id = $ratings->rating_id;
+                                    $parent_id = $ratings->parent_id;
+                                    $expiry_date = $ratings->expiry_date;
 
-                            if ($parent_id === null && $ratings->rating) {
-                                $groupedEASA[$child_id] = [
-                                    'parent' => $ratings->rating,
-                                    'children' => [],
-                                    'parent_expiry' => $expiry_date,
-                                ];
-                            } elseif ($ratings->rating) {
-                                $parentRating = $ratings->parentRating;
-                                $childRating = $ratings->rating;
+                                    if ($parent_id === null && $ratings->rating) {
+                                        $groupedEASA[$child_id] = [
+                                            'parent' => $ratings->rating,
+                                            'children' => [],
+                                            'parent_expiry' => $expiry_date,
+                                        ];
+                                    } elseif ($ratings->rating) {
+                                        $parentRating = $ratings->parentRating;
+                                        $childRating = $ratings->rating;
 
-                                if (!isset($groupedEASA[$parent_id])) {
-                                    $groupedEASA[$parent_id] = [
-                                        'parent' => $parentRating,
-                                        'children' => [],
-                                        'parent_expiry' => $expiry_date,
-                                    ];
+                                        if (!isset($groupedEASA[$parent_id])) {
+                                            $groupedEASA[$parent_id] = [
+                                                'parent' => $parentRating,
+                                                'children' => [],
+                                                'parent_expiry' => $expiry_date,
+                                            ];
+                                        }
+                                        $groupedEASA[$parent_id]['children'][] = $childRating;
+                                    } else {
+                                        $parentRating = $ratings->parentRating;
+                                        $groupedEASA[$parent_id] = [
+                                            'parent' => $parentRating,
+                                            'children' => [],
+                                            'parent_expiry' => $expiry_date,
+                                        ];
+                                    }
                                 }
-                                $groupedEASA[$parent_id]['children'][] = $childRating;
-                            } else {
-                                $parentRating = $ratings->parentRating;
-                                $groupedEASA[$parent_id] = [
-                                    'parent' => $parentRating,
-                                    'children' => [],
-                                    'parent_expiry' => $expiry_date,
-                                ];
                             }
-                        }
-                    }
 
-                    // -------------------------
-                    // Sorting logic (same as controller)
-                    // -------------------------
-                    $getPriority = function ($rating) {
-                        if (!$rating) return 999;
+                            // -------------------------
+                            // Sorting logic (same as controller)
+                            // -------------------------
+                            $getPriority = function ($rating) {
+                                if (!$rating) return 999;
 
-                        $r = $rating;
+                                $r = $rating;
 
-                        if (($r->is_fixed_wing || $r->is_rotary) && !$r->is_instructor && !$r->is_examiner) {
-                            return 1;
-                        }
-                        if ($r->is_instructor) {
-                            return 2;
-                        }
-                        if ($r->is_examiner) {
-                            return 3;
-                        }
-                        return 999;
-                    };
+                                if (($r->is_fixed_wing || $r->is_rotary) && !$r->is_instructor && !$r->is_examiner) {
+                                    return 1;
+                                }
+                                if ($r->is_instructor) {
+                                    return 2;
+                                }
+                                if ($r->is_examiner) {
+                                    return 3;
+                                }
+                                return 999;
+                            };
 
-                    // Sort parent ratings
-                    uasort($groupedEASA, function ($a, $b) use ($getPriority) {
-                        $prioA = $getPriority($a['parent'] ?? null);
-                        $prioB = $getPriority($b['parent'] ?? null);
-
-                        if ($prioA !== $prioB) {
-                            return $prioA <=> $prioB;
-                        }
-
-                        $nameA = strtolower($a['parent']->name ?? '');
-                        $nameB = strtolower($b['parent']->name ?? '');
-                        return $nameA <=> $nameB;
-                    });
-
-                    // Sort children under each parent
-                    foreach ($groupedEASA as &$entry) {
-                        if (!empty($entry['children'])) {
-                            usort($entry['children'], function ($a, $b) use ($getPriority) {
-                                $prioA = $getPriority($a ?? null);
-                                $prioB = $getPriority($b ?? null);
+                            // Sort parent ratings
+                            uasort($groupedEASA, function ($a, $b) use ($getPriority) {
+                                $prioA = $getPriority($a['parent'] ?? null);
+                                $prioB = $getPriority($b['parent'] ?? null);
 
                                 if ($prioA !== $prioB) {
                                     return $prioA <=> $prioB;
                                 }
 
-                                $nameA = strtolower($a->name ?? '');
-                                $nameB = strtolower($b->name ?? '');
+                                $nameA = strtolower($a['parent']->name ?? '');
+                                $nameB = strtolower($b['parent']->name ?? '');
                                 return $nameA <=> $nameB;
-                            });
-                        }
-                    }
-                    unset($entry);
-                    ?>
-
-                    @foreach ($groupedEASA as $entry)
-                        @if (!empty($entry['children']))
-                            <?php
-                                $expirty_date = $entry['parent_expiry'];
-                                $color = getExpiryStatus($expirty_date);
-
-                                if (is_null($expirty_date)) {
-                                    $color = "#198754";
-                                    $tooltip = "This rating does not expire";
-                                } elseif ($color == "Red") {
-                                    $color = "#dc3545";
-                                    $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
-                                } elseif ($color == "Yellow") {
-                                    $color = "#ffc107";
-                                    $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
-                                } else {
-                                    $color = "#198754";
-                                    $tooltip = "This rating is valid until " . date('d/m/Y', strtotime($expirty_date));
-                                }
-                            ?>
-
-                            <div class="collapsible">
-                                <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
-                            </div>
-
-                            <div class="content">
-                                <ul>
-                                    @foreach ($entry['children'] as $child)
-                                    <li>{{ $child->name }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @else
-                            <?php
-                                $expirty_date = $entry['parent_expiry'];
-                                $color = getExpiryStatus($expirty_date);
-
-                                if (is_null($expirty_date)) {
-                                    $color = "#198754";
-                                    $tooltip = "This rating does not expire";
-                                } elseif ($color == "Red") {
-                                    $color = "#dc3545";
-                                    $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
-                                } elseif ($color == "Yellow") {
-                                    $color = "#ffc107";
-                                    $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
-                                } else {
-                                    $color = "#198754";
-                                    $tooltip = "This rating is valid until " . date('d/m/Y', strtotime($expirty_date));
-                                }
-                            ?>
-                            <div class="parent_rate">
-                                <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
-                            </div>
-                        @endif
-                    @endforeach
-                </td>
-
-                {{-- Licence 2 --}}
-                <td>
-                    @if($doc && $doc->licence_file_uploaded_2)
-                    @php
-                    if ($doc->licence_non_expiring_2) {
-                    $status = 'Non-Expiring';
-                    $color = 'success';
-                    $date = 'Non-Expiring';
-                    } else {
-                    $status = $doc->licence_2_status;
-                    $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
-                    $date = $doc->licence_expiry_date_2 ? date('d/m/Y', strtotime($doc->licence_expiry_date_2)) : 'N/A';
-                    }
-                    $tooltip = getTooltip($status, 'EASA Licence');
-                    @endphp
-                    <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
-                    @else
-                    <span class="text-muted">Not Uploaded</span>
-                    @endif
-                </td>
-
-                {{-- Associated Ratings (Licence 2) --}}
-            
-                <td class="lic_rating_td">
-                    @php
-                    $groupedEASA = [];
-
-                    if (isset($ratingsByLicence['licence_2'])) {
-                    foreach ($ratingsByLicence['licence_2'] as $ratings) {
-                    $child_id = $ratings->rating_id;
-                    $parent_id = $ratings->parent_id;
-                    $expiry_date = $ratings->expiry_date;
-
-                    if ($parent_id === null && $ratings->rating) {
-                    $groupedEASA[$child_id] = [
-                    'parent' => $ratings->rating,
-                    'children' => [],
-                    'parent_expiry' => $expiry_date,
-                    ];
-                    } elseif ($ratings->rating) {
-                    $parentRating = $ratings->parentRating;
-                    $childRating = $ratings->rating;
-
-                    if (!isset($groupedEASA[$parent_id])) {
-                    $groupedEASA[$parent_id] = [
-                    'parent' => $parentRating,
-                    'children' => [],
-                    'parent_expiry' => $expiry_date,
-                    ];
-                    }
-
-                    $groupedEASA[$parent_id]['children'][] = $childRating;
-                    } else {
-                    $parentRating = $ratings->parentRating;
-                    $groupedEASA[$parent_id] = [
-                    'parent' => $parentRating,
-                    'children' => [],
-                    'parent_expiry' => $expiry_date,
-                    ];
-                    }
-                    }
-                    }
-
-                    // -------------------------
-                    // Sorting logic (same as controller)
-                    // -------------------------
-                    $getPriority = function ($rating) {
-                    if (!$rating) return 999;
-
-                    $r = $rating;
-
-                    if (($r->is_fixed_wing || $r->is_rotary) && !$r->is_instructor && !$r->is_examiner) {
-                    return 1;
-                    }
-                    if ($r->is_instructor) {
-                    return 2;
-                    }
-                    if ($r->is_examiner) {
-                    return 3;
-                    }
-                    return 999;
-                    };
-
-                    // Sort parent ratings
-                    uasort($groupedEASA, function ($a, $b) use ($getPriority) {
-                    $prioA = $getPriority($a['parent'] ?? null);
-                    $prioB = $getPriority($b['parent'] ?? null);
-
-                    if ($prioA !== $prioB) {
-                    return $prioA <=> $prioB;
-                        }
-
-                        $nameA = strtolower($a['parent']->name ?? '');
-                        $nameB = strtolower($b['parent']->name ?? '');
-                        return $nameA <=> $nameB;
                             });
 
                             // Sort children under each parent
                             foreach ($groupedEASA as &$entry) {
-                            if (!empty($entry['children'])) {
-                            usort($entry['children'], function ($a, $b) use ($getPriority) {
-                            $prioA = $getPriority($a ?? null);
-                            $prioB = $getPriority($b ?? null);
+                                if (!empty($entry['children'])) {
+                                    usort($entry['children'], function ($a, $b) use ($getPriority) {
+                                        $prioA = $getPriority($a ?? null);
+                                        $prioB = $getPriority($b ?? null);
+
+                                        if ($prioA !== $prioB) {
+                                            return $prioA <=> $prioB;
+                                        }
+
+                                        $nameA = strtolower($a->name ?? '');
+                                        $nameB = strtolower($b->name ?? '');
+                                        return $nameA <=> $nameB;
+                                    });
+                                }
+                            }
+
+                            unset($entry);
+                        ?>
+
+                        @foreach ($groupedEASA as $entry)
+                            @if (!empty($entry['children']))
+                                <?php
+                                    $expirty_date = $entry['parent_expiry'];
+                                    $color = getExpiryStatus($expirty_date);
+
+                                    if (is_null($expirty_date)) {
+                                        $color = "#198754";
+                                        $tooltip = "This rating does not expire";
+                                    } elseif ($color == "Red") {
+                                        $color = "#dc3545";
+                                        $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
+                                    } elseif ($color == "Yellow") {
+                                        $color = "#ffc107";
+                                        $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
+                                    } else {
+                                        $color = "#198754";
+                                        $tooltip = "This rating is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                    }
+                                ?>
+
+                                @php
+                                    $opc = $opcRatingsByAircraft->get($entry['parent']->id);
+
+                                    $opcColor = null;
+                                    $opcTooltip = null;
+
+                                    if ($opc && $opc->opc_expiry_date) {
+                                        $opcDate = \Carbon\Carbon::parse($opc->opc_expiry_date);
+
+                                        if ($opcDate->isPast()) {
+                                            $opcColor = '#dc3545';
+                                            $opcTooltip = 'OPC expired on ' . $opcDate->format('d/m/Y');
+                                        } elseif ($opcDate->diffInDays(now()) < 90) {
+                                            $opcColor = '#ffc107';
+                                            $opcTooltip = 'OPC will expire on ' . $opcDate->format('d/m/Y');
+                                        } else {
+                                            $opcColor = '#198754';
+                                            $opcTooltip = 'OPC valid until ' . $opcDate->format('d/m/Y');
+                                        }
+                                    }
+                                @endphp
+
+                                <div class="collapsible">
+                                    <span class="badge" style="background-color:{{ $color }}"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-original-title="{{ $tooltip }}">
+                                        {{ $entry['parent']->name }}
+                                    </span>
+
+                                    @if($opcColor)
+                                        <span class="badge ms-1"
+                                            style="background-color:{{ $opcColor }}; color:white"
+                                            data-bs-toggle="tooltip"
+                                            title="{{ $opcTooltip }}">
+                                            OPC
+                                        </span>
+                                    @endif
+
+                                </div>
+
+                                <div class="content">
+                                    <ul>
+                                        @foreach ($entry['children'] as $child)
+                                        <li>{{ $child->name }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @else
+                                <?php
+                                    $expirty_date = $entry['parent_expiry'];
+                                    $color = getExpiryStatus($expirty_date);
+
+                                    if (is_null($expirty_date)) {
+                                        $color = "#198754";
+                                        $tooltip = "This rating does not expire";
+                                    } elseif ($color == "Red") {
+                                        $color = "#dc3545";
+                                        $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
+                                    } elseif ($color == "Yellow") {
+                                        $color = "#ffc107";
+                                        $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
+                                    } else {
+                                        $color = "#198754";
+                                        $tooltip = "This rating is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                    }
+                                ?>
+
+                                @php
+                                    $opc = $opcRatingsByAircraft->get($entry['parent']->id);
+
+                                    $opcColor = null;
+                                    $opcTooltip = null;
+
+                                    if ($opc && $opc->opc_expiry_date) {
+                                        $opcDate = \Carbon\Carbon::parse($opc->opc_expiry_date);
+
+                                        if ($opcDate->isPast()) {
+                                            $opcColor = '#dc3545';
+                                            $opcTooltip = 'OPC expired on ' . $opcDate->format('d/m/Y');
+                                        } elseif ($opcDate->diffInDays(now()) < 90) {
+                                            $opcColor = '#ffc107';
+                                            $opcTooltip = 'OPC will expire on ' . $opcDate->format('d/m/Y');
+                                        } else {
+                                            $opcColor = '#198754';
+                                            $opcTooltip = 'OPC valid until ' . $opcDate->format('d/m/Y');
+                                        }
+                                    }
+                                @endphp
+                                <div class="parent_rate">
+                                    <span class="badge" style="background-color:{{ $color }}"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-original-title="{{ $tooltip }}">
+                                        {{ $entry['parent']->name }}
+                                    </span>
+
+                                    @if($opcColor)
+                                        <span class="badge ms-1"
+                                            style="background-color:{{ $opcColor }}; color:white"
+                                            data-bs-toggle="tooltip"
+                                            title="{{ $opcTooltip }}">
+                                            OPC
+                                        </span>
+                                    @endif
+                                </div>
+                            @endif
+                        @endforeach
+                    </td>
+
+                    {{-- Associated Ratings (Licence 2) --}}
+                
+                    <td class="lic_rating_td">
+                        @php
+                        $groupedEASA = [];
+
+                        if (isset($ratingsByLicence['licence_2'])) {
+                        foreach ($ratingsByLicence['licence_2'] as $ratings) {
+                        $child_id = $ratings->rating_id;
+                        $parent_id = $ratings->parent_id;
+                        $expiry_date = $ratings->expiry_date;
+
+                        if ($parent_id === null && $ratings->rating) {
+                        $groupedEASA[$child_id] = [
+                        'parent' => $ratings->rating,
+                        'children' => [],
+                        'parent_expiry' => $expiry_date,
+                        ];
+                        } elseif ($ratings->rating) {
+                        $parentRating = $ratings->parentRating;
+                        $childRating = $ratings->rating;
+
+                        if (!isset($groupedEASA[$parent_id])) {
+                        $groupedEASA[$parent_id] = [
+                        'parent' => $parentRating,
+                        'children' => [],
+                        'parent_expiry' => $expiry_date,
+                        ];
+                        }
+
+                        $groupedEASA[$parent_id]['children'][] = $childRating;
+                        } else {
+                        $parentRating = $ratings->parentRating;
+                        $groupedEASA[$parent_id] = [
+                        'parent' => $parentRating,
+                        'children' => [],
+                        'parent_expiry' => $expiry_date,
+                        ];
+                        }
+                        }
+                        }
+
+                        // -------------------------
+                        // Sorting logic (same as controller)
+                        // -------------------------
+                        $getPriority = function ($rating) {
+                        if (!$rating) return 999;
+
+                        $r = $rating;
+
+                        if (($r->is_fixed_wing || $r->is_rotary) && !$r->is_instructor && !$r->is_examiner) {
+                        return 1;
+                        }
+                        if ($r->is_instructor) {
+                        return 2;
+                        }
+                        if ($r->is_examiner) {
+                        return 3;
+                        }
+                        return 999;
+                        };
+
+                        // Sort parent ratings
+                        uasort($groupedEASA, function ($a, $b) use ($getPriority) {
+                            $prioA = $getPriority($a['parent'] ?? null);
+                            $prioB = $getPriority($b['parent'] ?? null);
 
                             if ($prioA !== $prioB) {
                             return $prioA <=> $prioB;
                                 }
 
-                                $nameA = strtolower($a->name ?? '');
-                                $nameB = strtolower($b->name ?? '');
+                                $nameA = strtolower($a['parent']->name ?? '');
+                                $nameB = strtolower($b['parent']->name ?? '');
                                 return $nameA <=> $nameB;
-                                    });
-                                    }
-                                    }
-                                    unset($entry);
-                                    @endphp
+                        });
 
-                                    @foreach ($groupedEASA as $entry)
-                                    @if (!empty($entry['children']))
-                                        <?php
-                                        $expirty_date = $entry['parent_expiry'];
-                                        
-                                        $color = getExpiryStatus($expirty_date);
+                        // Sort children under each parent
+                        foreach ($groupedEASA as &$entry) {
+                            if (!empty($entry['children'])) {
+                                usort($entry['children'], function ($a, $b) use ($getPriority) {
+                                    $prioA = $getPriority($a ?? null);
+                                    $prioB = $getPriority($b ?? null);
 
-                                        if (is_null($expirty_date)) {
-                                            $color = "#198754";
-                                            $tooltip = "This rating does not expire";
-                                        } elseif ($color == "Red") {
-                                            $color = "#dc3545";
-                                            $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
-                                        } elseif ($color == "Yellow") {
-                                            $color = "#ffc107";
-                                            $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
+                                    if ($prioA !== $prioB) {
+                                        return $prioA <=> $prioB;
+                                    }
+
+                                    $nameA = strtolower($a->name ?? '');
+                                    $nameB = strtolower($b->name ?? '');
+                                    return $nameA <=> $nameB;
+                                });
+                            }
+                        }
+
+                        unset($entry);
+                        @endphp
+
+                        @foreach ($groupedEASA as $entry)
+                            @if (!empty($entry['children']))
+                                <?php
+                                    $expirty_date = $entry['parent_expiry'];
+                                    
+                                    $color = getExpiryStatus($expirty_date);
+
+                                    if (is_null($expirty_date)) {
+                                        $color = "#198754";
+                                        $tooltip = "This rating does not expire";
+                                    } elseif ($color == "Red") {
+                                        $color = "#dc3545";
+                                        $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
+                                    } elseif ($color == "Yellow") {
+                                        $color = "#ffc107";
+                                        $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
+                                    } else {
+                                        $color = "#198754";
+                                        $tooltip = "This rating is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                    }
+                                ?>
+
+                                @php
+                                    $opc = $opcRatingsByAircraft->get($entry['parent']->id);
+
+                                    $opcColor = null;
+                                    $opcTooltip = null;
+
+                                    if ($opc && $opc->opc_expiry_date) {
+                                        $opcDate = \Carbon\Carbon::parse($opc->opc_expiry_date);
+
+                                        if ($opcDate->isPast()) {
+                                            $opcColor = '#dc3545';
+                                            $opcTooltip = 'OPC expired on ' . $opcDate->format('d/m/Y');
+                                        } elseif ($opcDate->diffInDays(now()) < 90) {
+                                            $opcColor = '#ffc107';
+                                            $opcTooltip = 'OPC will expire on ' . $opcDate->format('d/m/Y');
                                         } else {
-                                            $color = "#198754";
-                                            $tooltip = "This rating is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                            $opcColor = '#198754';
+                                            $opcTooltip = 'OPC valid until ' . $opcDate->format('d/m/Y');
                                         }
-                                        ?>
-                                        <div class="collapsible">
-                                            <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
-                                        </div>
-                                    <div class="content">
-                                        <ul>
-                                            @foreach ($entry['children'] as $child)
-                                            <li>{{ $child->name }}</li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                    @else
-                                    <?php
-                                            $expirty_date = $entry['parent_expiry'];
-                                            $color = getExpiryStatus($expirty_date);
+                                    }
+                                @endphp
 
-                                            if (is_null($expirty_date)) {
-                                                $color = "#198754";
-                                                $tooltip = "This rating does not expire";
-                                            } elseif ($color == "Red") {
-                                                $color = "#dc3545";
-                                                $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
-                                            } elseif ($color == "Yellow") {
-                                                $color = "#ffc107";
-                                                $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
-                                            } else {
-                                                $color = "#198754";
-                                                $tooltip = "This rating is valid until " . date('d/m/Y', strtotime($expirty_date));
-                                            }
-                                    ?>
-                                            <div class="parent_rate">
-                                                <span class="badge" style="background-color:{{ $color }}" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $entry['parent']->name }}</span>
-                                            </div>
+                                <span class="badge" style="background-color:{{ $color }}"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-original-title="{{ $tooltip }}">
+                                    {{ $entry['parent']->name }}
+                                </span>
+
+                                @if($opcColor)
+                                    <span class="badge ms-1"
+                                        style="background-color:{{ $opcColor }}; color:white"
+                                        data-bs-toggle="tooltip"
+                                        title="{{ $opcTooltip }}">
+                                        OPC
+                                    </span>
+                                @endif
+
+                                <div class="collapsible">
+                                    <span class="badge" style="background-color:{{ $color }}"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-original-title="{{ $tooltip }}">
+                                        {{ $entry['parent']->name }}
+                                    </span>
+
+                                    @if($opcColor)
+                                        <span class="badge ms-1"
+                                            style="background-color:{{ $opcColor }}; color:white"
+                                            data-bs-toggle="tooltip"
+                                            title="{{ $opcTooltip }}">
+                                            OPC
+                                        </span>
                                     @endif
-                                    @endforeach
-                </td>
-            <?php
-                  $opcRatings = $user->opcRatings;
-                  $opcExpiry = $opcRatings->pluck('opc_expiry_date')->first();
-                  $opcExpiry = $user->opcRatings->pluck('opc_expiry_date')->first();
-                    if (!$opcExpiry) {
-                        $opcStatus = 'N/A';
-                        $tooltip = '';
-                    } elseif ($opcExpiry->lt(now())) {
-                        $opcStatus = 'Red';    
-                        $tooltip =  "This opc rating has expired";    
-                    } elseif ($opcExpiry->diffInDays(now()) < 90) {
-                        $opcStatus = 'Yellow'; 
-                        $tooltip = "This opc rating will expire soon";    
-                    } else {
-                        $opcStatus = 'Green';   
-                        $tooltip = "This opc rating is valid";  
-                    }
-                  $opcExpiry = $opcExpiry ? $opcExpiry->format('d/m/Y') : '';
+                                </div>
+                                <div class="content">
+                                    <ul>
+                                        @foreach ($entry['children'] as $child)
+                                        <li>{{ $child->name }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @else
+                                <?php
+                                    $expirty_date = $entry['parent_expiry'];
+                                    $color = getExpiryStatus($expirty_date);
 
-            ?>        
-              <td> <span class="badge" style="background-color:{{ $opcStatus }}; color:black" data-bs-toggle="tooltip" data-bs-original-title="{{ $tooltip }}" aria-describedby="tooltip281406">{{ $opcExpiry }}</span></td>
+                                    if (is_null($expirty_date)) {
+                                        $color = "#198754";
+                                        $tooltip = "This rating does not expire";
+                                    } elseif ($color == "Red") {
+                                        $color = "#dc3545";
+                                        $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
+                                    } elseif ($color == "Yellow") {
+                                        $color = "#ffc107";
+                                        $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
+                                    } else {
+                                        $color = "#198754";
+                                        $tooltip = "This rating is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                    }
+                                ?>
 
-                {{-- Medical 1 --}}
-                <td>
-                    @if($doc && $doc->medical_file_uploaded)
-                    @php
-                    $status = $doc->medical_status;
-                    $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
-                    $date = $doc->medical_expirydate ? date('d/m/Y', strtotime($doc->medical_expirydate)) : 'N/A';
-                    $tooltip = getTooltip($status, 'UK Medical Status');
-                    @endphp
-                    <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
-                    @else
-                    <span class="text-muted">Not Uploaded</span>
-                    @endif
-                </td>
+                                @php
+                                    $opc = $opcRatingsByAircraft->get($entry['parent']->id);
 
-                {{-- Medical 2 --}}
-                <td>
-                    @if($doc && $doc->medical_file_uploaded_2)
-                    @php
-                    $status = $doc->medical_2_status;
-                    $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
-                    $date = $doc->medical_expirydate_2 ? date('d/m/Y', strtotime($doc->medical_expirydate_2)) : 'N/A';
-                    $tooltip = getTooltip($status, 'EASA Medical Status');
-                    @endphp
-                    <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
-                    @else
-                    <span class="text-muted">Not Uploaded</span>
-                    @endif
-                </td>
+                                    $opcColor = null;
+                                    $opcTooltip = null;
 
-                {{-- Passport --}}
-                <td>
-                    @if($doc && $doc->passport_file_uploaded)
-                    @php
-                    $status = $doc->passport_status;
+                                    if ($opc && $opc->opc_expiry_date) {
+                                        $opcDate = \Carbon\Carbon::parse($opc->opc_expiry_date);
+
+                                        if ($opcDate->isPast()) {
+                                            $opcColor = '#dc3545';
+                                            $opcTooltip = 'OPC expired on ' . $opcDate->format('d/m/Y');
+                                        } elseif ($opcDate->diffInDays(now()) < 90) {
+                                            $opcColor = '#ffc107';
+                                            $opcTooltip = 'OPC will expire on ' . $opcDate->format('d/m/Y');
+                                        } else {
+                                            $opcColor = '#198754';
+                                            $opcTooltip = 'OPC valid until ' . $opcDate->format('d/m/Y');
+                                        }
+                                    }
+                                @endphp
+
+                                <span class="badge" style="background-color:{{ $color }}"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-original-title="{{ $tooltip }}">
+                                    {{ $entry['parent']->name }}
+                                </span>
+
+                                @if($opcColor)
+                                    <span class="badge ms-1"
+                                        style="background-color:{{ $opcColor }}; color:white"
+                                        data-bs-toggle="tooltip"
+                                        title="{{ $opcTooltip }}">
+                                        OPC
+                                    </span>
+                                @endif
+
+
+                                <div class="parent_rate">
+                                    <span class="badge" style="background-color:{{ $color }}"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-original-title="{{ $tooltip }}">
+                                        {{ $entry['parent']->name }}
+                                    </span>
+
+                                    @if($opcColor)
+                                        <span class="badge ms-1"
+                                            style="background-color:{{ $opcColor }}; color:white"
+                                            data-bs-toggle="tooltip"
+                                            title="{{ $opcTooltip }}">
+                                            OPC
+                                        </span>
+                                    @endif
+                                </div>
+                            @endif
+                        @endforeach
+                    </td>
                     
-                    $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
-                    $date = $doc->passport_expiry_date ? date('d/m/Y', strtotime($doc->passport_expiry_date)) : 'N/A';
-                    $tooltip = getTooltip($status, 'passport');
-                    
-                    @endphp
-                    <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
-                    @else
-                    <span class="text-muted">Not Uploaded</span>
-                    @endif
-                </td>
+                    {{-- Medical 1 --}}
 
-                {{-- View Link --}}
-                <td>
-                    <a href="{{ route('user.show', ['user_id' => encode_id($user->id)]) }}" class="view-icon" title="View User" style="font-size:18px; cursor: pointer;">
-                        <i class="fa fa-eye text-danger me-2"></i>
-                    </a>
-                </td>
-            </tr>
-            @endif
+                    <td>
+                        {{-- UK Medical --}}
+                        @if($doc && $doc->medical_file_uploaded)
+                            @php
+                                $status = $doc->medical_status;
+                                $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                                $date = $doc->medical_expirydate ? date('d/m/Y', strtotime($doc->medical_expirydate)) : 'N/A';
+                                $tooltip = getTooltip($status, 'UK Medical');
+                            @endphp
+
+                            <span class="badge bg-{{ $color }} me-1"
+                                data-bs-toggle="tooltip"
+                                title="{{ $tooltip }}">
+                                UK Med: {{ $date }}
+                            </span>
+                        @else
+                            <span class="text-muted me-2">UK: N/A</span>
+                        @endif
+
+                        {{-- EASA Medical --}}
+                        @if($doc && $doc->medical_file_uploaded_2)
+                            @php
+                                $status = $doc->medical_2_status;
+                                $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                                $date = $doc->medical_expirydate_2 ? date('d/m/Y', strtotime($doc->medical_expirydate_2)) : 'N/A';
+                                $tooltip = getTooltip($status, 'EASA Medical');
+                            @endphp
+
+                            <span class="badge bg-{{ $color }}"
+                                data-bs-toggle="tooltip"
+                                title="{{ $tooltip }}">
+                                EASA Med: {{ $date }}
+                            </span>
+                        @else
+                            <span class="text-muted">EASA: N/A</span>
+                        @endif
+                    </td>
+
+                    {{-- Passport --}}
+                    <td>
+                        @if($doc && $doc->passport_file_uploaded)
+                        @php
+                        $status = $doc->passport_status;
+                        
+                        $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                        $date = $doc->passport_expiry_date ? date('d/m/Y', strtotime($doc->passport_expiry_date)) : 'N/A';
+                        $tooltip = getTooltip($status, 'passport');
+                        
+                        @endphp
+                        <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
+                        @else
+                        <span class="text-muted">Not Uploaded</span>
+                        @endif
+                    </td>
+
+                    {{-- View Link --}}
+                    <td>
+                        <a href="{{ route('user.show', ['user_id' => encode_id($user->id)]) }}" class="view-icon" title="View User" style="font-size:18px; cursor: pointer;">
+                            <i class="fa fa-eye text-danger me-2"></i>
+                        </a>
+                    </td>
+                </tr>
+                @endif
             @endforeach
         </tbody>
     </table>

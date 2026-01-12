@@ -362,9 +362,18 @@
                         <label class="form-label">Aircraft Type</label>
                         <select class="form-select" name="enable_aircraft" id="enable_aircraft">
                             <option value="">Select Aircraft</option>
-                            <option value="1">EA500</option>
+
+                            @foreach ($ratings as $rating)
+                                @if ($rating->status == 1)
+                                    <option value="{{ $rating->id }}">
+                                        {{ $rating->name }}
+                                    </option>
+                                @endif
+                            @endforeach
+
                         </select>
                     </div>
+
 
                  
                     <div class="form-group">
@@ -637,8 +646,9 @@
                     <div class="form-group opc-aircraft-edit" style="display:none;">
                         <label class="form-label">Aircraft Type</label>
                         <select class="form-select" name="enable_aircraft" id="edit_enable_aircraft">
-                            <option value="">Select Aircraft</option>
-                            <option value="1">EA500</option>
+                            @foreach ($ratings as $rating)
+                                <option value="{{ $rating->id }}">{{ $rating->name }}</option>
+                            @endforeach
                         </select>
                     </div>
 
@@ -1059,32 +1069,40 @@
 
                     if (response.course.opc == 1) {
                         $('#edit_enable_opc').prop('checked', true);
-                        toggleOPC('#edit_enable_opc', '.opc-aircraft-edit');
-                        $('#edit_enable_aircraft').val(response.course.opc_aircraft);
+
+                        toggleOPC('#edit_enable_opc', '.opc-aircraft-edit', function () {
+                            $('#edit_enable_aircraft')
+                                .val(String(response.course.opc_aircraft))
+                                .trigger('change');
+                        });
+
                     } else {
                         $('#edit_enable_opc').prop('checked', false);
                         toggleOPC('#edit_enable_opc', '.opc-aircraft-edit');
                     }
 
-                    function toggleOPC(checkbox, container) {
-                                if ($(checkbox).is(":checked")) {
-                                    $(container).stop(true, true).slideDown();
-                                } else {
-                                    $(container).stop(true, true).slideUp();
-                                    $(container).find("select").prop('selectedIndex', 0);
-                                }
-                            }
-                        
-                            $(document).ready(function () {
-                                $("#enable_opc").on("change", function () {
-                                    toggleOPC(this, ".opc-aircraft");
-                                });
-                        
-                                $("#edit_enable_opc").on("change", function () {
-                                    toggleOPC(this, ".opc-aircraft-edit");
-                                });
-                        
+                    function toggleOPC(checkbox, container, callback = null) {
+                        if ($(checkbox).is(":checked")) {
+                            $(container).stop(true, true).slideDown(200, function () {
+                                if (callback) callback();
                             });
+                        } else {
+                            $(container).stop(true, true).slideUp(200);
+                            $(container).find("select").prop('selectedIndex', 0);
+                        }
+                    }
+
+                        
+                    $(document).ready(function () {
+                        $("#enable_opc").on("change", function () {
+                            toggleOPC(this, ".opc-aircraft");
+                        });
+                
+                        $("#edit_enable_opc").on("change", function () {
+                            toggleOPC(this, ".opc-aircraft-edit");
+                        });
+                
+                    });
  
 
                     // Populate Resources

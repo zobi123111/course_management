@@ -115,6 +115,13 @@
                             <input type="text" name="lastname" class="form-control">
                             <div id="lastname_error" class="text-danger error_e"></div>
                         </div>
+
+                        <div class="col-md-6">
+                            <label for="position" class="form-label">Position (Optional)</label>
+                            <input type="text" name="position" class="form-control" id="position" placeholder="Enter position (e.g., Student, Instructor, Manager)">
+                            <div id="position_error" class="text-danger error_e"></div>
+                        </div>
+
                         <div class="col-md-6">
                             <label for="email" class="form-label">Email<span class="text-danger">*</span></label>
                             <input type="email" name="email" class="form-control">
@@ -148,9 +155,7 @@
                             </select>
                             <div id="role_name_error" class="text-danger error_e"></div>
                         </div>
-                        <div class="col-md-6">
-
-                        </div>
+                       
                         {{-- <div class="col-md-6">
                             <label for="extra_roles" class="form-label">Select Multiple Roles<span
                                     class="text-danger"></span></label>
@@ -446,6 +451,11 @@
                             <label for="lastname" class="form-label">Last Name<span class="text-danger">*</span></label>
                             <input type="text" name="edit_lastname" class="form-control">
                             <div id="edit_lastname_error_up" class="text-danger error_e"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="position" class="form-label">Position (Optional)</label>
+                            <input type="text" name="edit_position" class="form-control" id="edit_position" placeholder="Enter position (e.g., Student, Instructor, Manager)">
+                            <div id="position_error" class="text-danger error_e"></div>
                         </div>
                         <div class="col-md-6">
                             <label for="email" class="form-label">Email<span class="text-danger">*</span></label>
@@ -1661,6 +1671,7 @@
                     $('input[name="edit_firstname"]').val(response.user.fname);
                     $('input[name="edit_lastname"]').val(response.user.lname);
                     $('input[name="edit_email"]').val(response.user.email);
+                    $('input[name="edit_position"]').val(response.user.position);
                     $('input[name="edit_form_id"]').val(response.user.id);
                     $('#edit_ou_id').val(response.user.ou_id);
                     $('#edit_status').val(response.user.status);
