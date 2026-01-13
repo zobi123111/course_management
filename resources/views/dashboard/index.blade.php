@@ -206,11 +206,11 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
         <tbody>
             <?php
                 if (!function_exists('getTooltip')) {
-                    function getTooltip($status, $type) {
+                    function getTooltip($status, $type, $expiry_date) {
                         return match ($status) {
-                            'Red' => "This {$type} has expired.",
-                            'Yellow' => "This {$type} will expire soon.",
-                            'Green' => "This {$type} is valid.",
+                            'Red' => "This {$type} has expired on {$expiry_date}.",
+                            'Yellow' => "This {$type} will expire soon on {$expiry_date}.",
+                            'Green' => "This {$type} is valid till {$expiry_date}.",
                             'Non-Expiring' => "This {$type} does not expire.",
                             default => "Status unknown.",
                         };
@@ -244,13 +244,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
                                     $date = $doc->licence_expiry_date ? date('d/m/Y', strtotime($doc->licence_expiry_date)) : 'N/A';
                                 }
-                                $tooltip = getTooltip($status, 'UK Licence');
+                                $tooltip = getTooltip($status, 'UK Licence', $date);
                             @endphp
 
                             <span class="badge bg-{{ $color }} me-1"
                                 data-bs-toggle="tooltip"
                                 title="{{ $tooltip }}">
-                                UK Licence: {{ $date }}
+                                UK Lic
                             </span>
                         @else
                             <!-- <span class="text-muted me-2">UK: N/A</span> -->
@@ -268,13 +268,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
                                     $date = $doc->licence_expiry_date_2 ? date('d/m/Y', strtotime($doc->licence_expiry_date_2)) : 'N/A';
                                 }
-                                $tooltip = getTooltip($status, 'EASA Licence');
+                                $tooltip = getTooltip($status, 'EASA Licence', $date);
                             @endphp
 
                             <span class="badge bg-{{ $color }}"
                                 data-bs-toggle="tooltip"
                                 title="{{ $tooltip }}">
-                                EASA Licence: {{ $date }}
+                                EASA Lic
                             </span>
                         @else
                             <!-- <span class="text-muted">EASA: N/A</span> -->
@@ -769,13 +769,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                 $status = $doc->medical_status;
                                 $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
                                 $date = $doc->medical_expirydate ? date('d/m/Y', strtotime($doc->medical_expirydate)) : 'N/A';
-                                $tooltip = getTooltip($status, 'UK Medical');
+                                $tooltip = getTooltip($status, 'UK Medical', $date);
                             @endphp
 
                             <span class="badge bg-{{ $color }} me-1"
                                 data-bs-toggle="tooltip"
                                 title="{{ $tooltip }}">
-                                UK Med: {{ $date }}
+                                UK Med
                             </span>
                         @else
                             <!-- <span class="text-muted me-2">UK: N/A</span> -->
@@ -787,13 +787,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                 $status = $doc->medical_2_status;
                                 $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
                                 $date = $doc->medical_expirydate_2 ? date('d/m/Y', strtotime($doc->medical_expirydate_2)) : 'N/A';
-                                $tooltip = getTooltip($status, 'EASA Medical');
+                                $tooltip = getTooltip($status, 'EASA Medical', $date);
                             @endphp
 
                             <span class="badge bg-{{ $color }}"
                                 data-bs-toggle="tooltip"
                                 title="{{ $tooltip }}">
-                                EASA Med: {{ $date }}
+                                EASA Med
                             </span>
                         @else
                             <!-- <span class="text-muted">EASA: N/A</span> -->
@@ -808,7 +808,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         
                         $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
                         $date = $doc->passport_expiry_date ? date('d/m/Y', strtotime($doc->passport_expiry_date)) : 'N/A';
-                        $tooltip = getTooltip($status, 'passport');
+                        $tooltip = getTooltip($status, 'passport', $date);
                         
                         @endphp
                         <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>

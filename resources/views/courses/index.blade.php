@@ -914,6 +914,69 @@
         });
     }
 
+    function fetchRatingsByOu(ouId, targetSelect) {
+        if (!ouId) return;
+
+        $.ajax({
+            url: "/course/get-ratings-by-ou",
+            type: "GET",
+            data: { ou_id: ouId },
+            dataType: "json",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            success: function (ratings) {
+
+                if (!Array.isArray(ratings)) {
+                    console.error("Expected array, got:", ratings);
+                    return;
+                }
+
+                let html = '<option value="">Select Aircraft</option>';
+
+                ratings.forEach(r => {
+                    html += `<option value="${r.id}">${r.name}</option>`;
+                });
+
+                $(targetSelect).html(html);
+            },
+            error: function (xhr) {
+                console.error("AJAX error:", xhr.responseText);
+            }
+        });
+    }
+
+    function fetchEditRatingsByOu(ouId, selectedAircraft = null) {
+        $.ajax({
+            url: "{{ route('course.get-ratings-by-ou') }}",
+            type: "GET",
+            dataType: "json",
+            data: { ou_id: ouId },
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            success: function (ratings) {
+                let options = "<option value=''>Select Aircraft</option>";
+
+                if (Array.isArray(ratings) && ratings.length > 0) {
+                    ratings.forEach(r => {
+                        options += `<option value="${r.id}">${r.name}</option>`;
+                    });
+                } else {
+                    options += "<option disabled>No aircraft found</option>";
+                }
+
+                $("#edit_enable_aircraft").html(options);
+
+                // ✅ Select aircraft AFTER options exist
+                if (selectedAircraft) {
+                    $("#edit_enable_aircraft")
+                        .val(String(selectedAircraft))
+                        .trigger("change");
+                }
+            }
+        });
+    }
 
     $(document).ready(function() {
         $('#courseTable').DataTable();
@@ -1029,7 +1092,8 @@
                     $('#edit_duration_type').val(response.course.duration_type);
                     $('#edit_duration_value').val(response.course.duration_value);
                     $('#edit_status').val(response.course.status);
-                    $('#edit_select_org_unit').val(response.course.ou_id);
+                    $('#edit_select_org_unit').val(response.course.ou_id).trigger('change');
+
                    // alert(response.course.enable_cbta);
                     if (response.course.enable_cbta == 1) {
                         $('#edit_enable_cbta').prop('checked', true);
@@ -1069,29 +1133,26 @@
 
                     if (response.course.opc == 1) {
                         $('#edit_enable_opc').prop('checked', true);
+                        toggleOPC('#edit_enable_opc', '.opc-aircraft-edit');
 
-                        toggleOPC('#edit_enable_opc', '.opc-aircraft-edit', function () {
-                            $('#edit_enable_aircraft')
-                                .val(String(response.course.opc_aircraft))
-                                .trigger('change');
-                        });
+                        fetchEditRatingsByOu(
+                            response.course.ou_id,
+                            response.course.opc_aircraft
+                        );
 
                     } else {
                         $('#edit_enable_opc').prop('checked', false);
                         toggleOPC('#edit_enable_opc', '.opc-aircraft-edit');
                     }
 
-                    function toggleOPC(checkbox, container, callback = null) {
+                    function toggleOPC(checkbox, container) {
                         if ($(checkbox).is(":checked")) {
-                            $(container).stop(true, true).slideDown(200, function () {
-                                if (callback) callback();
-                            });
+                            $(container).stop(true, true).slideDown(200);
                         } else {
                             $(container).stop(true, true).slideUp(200);
-                            $(container).find("select").prop('selectedIndex', 0);
+                            $(container).find("select").val('').trigger('change');
                         }
                     }
-
                         
                     $(document).ready(function () {
                         $("#enable_opc").on("change", function () {
@@ -1705,6 +1766,9 @@
         var $ato_numSelect = $("#select_ato_number");
         $ato_numSelect.empty().trigger("change");
 
+        if ($("#enable_opc").is(":checked")) {
+            fetchRatingsByOu(ou_id, "#enable_aircraft");
+        }
 
         $.ajax({
             url: "/group/get_ou_group/",
@@ -1775,6 +1839,14 @@
         var $resourceSelect = $(".resources-select");
         $groupSelect.empty().append("<option value=''>Select Group</option>").trigger("change");
         var $ato_numSelect = $("#edit_select_ato_number");
+
+        // if ($("#edit_enable_opc").is(":checked")) {
+        //     fetchRatingsByOu(ou_id, "#edit_enable_aircraft");
+        // }
+
+        if ($('#edit_enable_opc').is(':checked')) {
+            fetchEditRatingsByOu($(this).val());
+        }
 
         $.ajax({
             url: "/group/get_ou_group/",
@@ -1879,25 +1951,34 @@ $(document).ready(function() {
     toggleMPOpions("#edit_enable_more_mp", "#edit_enable_mp_lifus");
 });
 
-function toggleOPC(checkbox, container) {
+function toggleOPC(checkbox, container, aircraftSelect, ouSelect) {
     if ($(checkbox).is(":checked")) {
         $(container).stop(true, true).slideDown();
+
+        let ouId = $(ouSelect).val();
+        if (ouId) {
+            fetchRatingsByOu(ouId, aircraftSelect);
+        }
     } else {
         $(container).stop(true, true).slideUp();
-        $(container).find("select").prop('selectedIndex', 0);
+        $(aircraftSelect).val('').trigger('change');
     }
 }
 
 $(document).ready(function () {
+
+    // CREATE
     $("#enable_opc").on("change", function () {
-        toggleOPC(this, ".opc-aircraft");
+        toggleOPC(this, ".opc-aircraft", "#enable_aircraft", "#select_org_unit");
     });
 
+    // EDIT
     $("#edit_enable_opc").on("change", function () {
-        toggleOPC(this, ".opc-aircraft-edit");
+        toggleOPC(this, ".opc-aircraft-edit", "#edit_enable_aircraft", "#edit_select_org_unit");
     });
 
 });
+
 
 // Click on copy icon
 
