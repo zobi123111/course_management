@@ -642,6 +642,16 @@
             });
         });
 
+        $(document).ready(function () {
+            let ou = $("#organizationUnits");
+
+            // If admin with fixed OU (hidden input)
+            if (ou.length && ou.is('input[type="hidden"]') && ou.val()) {
+                ou.trigger('change');
+            }
+        });
+
+
         $("#organizationUnits").on('change', function(e) {
             let ou_id = $(this).val();
 
