@@ -162,6 +162,8 @@ Route::group(['middleware' => ['auth']], function () {
     //Group Routes
     Route::get('/group/get_ou_user/', [GroupController::class, 'getOrgUser'])->name('group.get_ou_user');     
     Route::get('/group/get_ou_group/', [GroupController::class, 'getOrgroup'])->name('group.getOrgroup');
+    Route::get('/course/get-ratings-by-ou', [CourseController::class, 'getRatingsByOu'])->name('course.get-ratings-by-ou');
+
 
 });
 

@@ -299,6 +299,31 @@ class CourseController extends Controller
         ]);
     }
 
+    public function getRatingsByOu(Request $request)
+    {
+
+        if (!$request->ajax()) {
+            return response()->json([], 400);
+        }
+
+        $ouId = $request->ou_id;
+
+        if (!$ouId) {
+            return response()->json([]);
+        }
+
+        $ratings = Rating::where('status', 1)
+            ->whereHas('ou_ratings', function ($q) use ($ouId) {
+                $q->where('ou_id', $ouId);
+            })
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
+        return response()->json($ratings);
+    }
+
+
     public function editCourse(Request $request)
     {
         $course = Courses::with('groups')->findOrFail($request->id);

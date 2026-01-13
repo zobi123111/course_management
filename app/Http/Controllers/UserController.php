@@ -1437,7 +1437,7 @@ class UserController extends Controller
                     'medical_restriction' => $medical_detail,
                     'medical_file' => $medicalFilePath ?? null,
                     'medical_file_uploaded' => $medicalFileUploaded ?? $UserDocument?->medical_file_uploaded,
-                    'medical_2' => $medical_checkbox,
+                    'medical_2' => $medical_2_checkbox,
                     'medical_issuedby_2' => $request->editissued_by_2,
                     'medical_class_2' => $request->editmedical_class_2,
                     'medical_issuedate_2' =>  $request->editmedical_issue_date_2,
