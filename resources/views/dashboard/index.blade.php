@@ -644,20 +644,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     }
                                 @endphp
 
-                                <span class="badge" style="background-color:{{ $color }}"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-original-title="{{ $tooltip }}">
-                                    {{ $entry['parent']->name }}
-                                </span>
-
-                                @if($opcColor)
-                                    <span class="badge ms-1"
-                                        style="background-color:{{ $opcColor }}; color:white"
-                                        data-bs-toggle="tooltip"
-                                        title="{{ $opcTooltip }}">
-                                        OPC
-                                    </span>
-                                @endif
+                                
 
                                 <div class="collapsible">
                                     <span class="badge" style="background-color:{{ $color }}"
@@ -723,22 +710,6 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                         }
                                     }
                                 @endphp
-
-                                <span class="badge" style="background-color:{{ $color }}"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-original-title="{{ $tooltip }}">
-                                    {{ $entry['parent']->name }}
-                                </span>
-
-                                @if($opcColor)
-                                    <span class="badge ms-1"
-                                        style="background-color:{{ $opcColor }}; color:white"
-                                        data-bs-toggle="tooltip"
-                                        title="{{ $opcTooltip }}">
-                                        OPC
-                                    </span>
-                                @endif
-
 
                                 <div class="parent_rate">
                                     <span class="badge" style="background-color:{{ $color }}"
