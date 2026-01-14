@@ -51,19 +51,20 @@
 
             {{-- Licence 1 --}}
             <td>
-                @if($doc && $doc->licence_file_uploaded) 
-                @php   
-                if($doc->licence_non_expiring) { 
-                $status = 'Non-Expiring';
-                $color = 'success';
-                $date = 'Non-Expiring';
-                } else {
-                $status = $doc->licence_status; 
-                $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
-                $date = $doc->licence_expiry_date ? date('d/m/Y', strtotime($doc->licence_expiry_date)) : 'N/A';
-                }
-                $tooltip = getTooltip($status, 'UK License');
-                @endphp
+                @if($doc && $doc->licence_file) 
+                    @php 
+                        if($doc->licence_non_expiring) { 
+                            $status = 'Non-Expiring';
+                            $color = 'success';
+                            $date = 'Non-Expiring';
+                        } else {
+                            $status = $doc->licence_status; 
+                            $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                            $date = $doc->licence_expiry_date ? date('d/m/Y', strtotime($doc->licence_expiry_date)) : 'N/A';
+                        }
+
+                        $tooltip = getTooltip($status, 'UK License');
+                    @endphp
                
             
                 <span class="badge bg-{{ $color }}" data-bs-toggle="tooltip" title="{{ $tooltip }}">{{ $date }}</span>
@@ -136,7 +137,7 @@
 
             {{-- Licence 2 --}}
             <td>
-                @if($doc && $doc->licence_file_uploaded_2)
+                @if($doc && $doc->licence_file_2)
                 @php
                 if ($doc->licence_non_expiring_2) {
                 $status = 'Non-Expiring';
