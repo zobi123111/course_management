@@ -524,6 +524,8 @@ class TrainingEventsController extends Controller
             'course_id' => $request->course_id,
             'lesson_ids' => json_encode($lesson_ids),
             'event_date' => $request->event_date,
+            'opc_validity' => $request->opc_validity_months,
+            'opc_extend' => $request->opc_extend_eom,
             'total_time' => $request->total_time,
             'simulator_time' => $request->total_simulator_time ?? '00:00',
             'std_license_number' => $request->std_licence_number,
@@ -739,6 +741,8 @@ class TrainingEventsController extends Controller
             'course_id' => $request->course_id,
             'student_id' => $request->student_id,
             'event_date' => $request->event_date,
+            'opc_validity' => $request->edit_opc_validity_months,
+            'opc_extend' => $request->edit_opc_extend_eom,
             'lesson_ids' => json_encode(array_column($lessonData, 'lesson_id')),
             'total_time' => $request->total_time ?? null,
             'simulator_time' => $request->total_simulator_time ?? '00:00',
@@ -807,10 +811,10 @@ class TrainingEventsController extends Controller
                     'destination_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($data['destination_airfield']),
                     'instructor_license_number' => $data['instructor_license_number'] ?? null,
                     'hours_credited' => gmdate("H:i", $creditMinutes * 60),
-                     'operation1'    => $data['operation_1'] ?? null,
-                     'role1'         => $data['role_1'] ?? null,
-                     'operation2'    => $data['operation_2'] ?? null,
-                     'role2'         => $data['role_2'] ?? null,
+                    'operation1'    => $data['operation_1'] ?? null,
+                    'role1'         => $data['role_1'] ?? null,
+                    'operation2'    => $data['operation_2'] ?? null,
+                    'role2'         => $data['role_2'] ?? null,
                 ]
             );
         }
@@ -2978,18 +2982,41 @@ class TrainingEventsController extends Controller
     }
 
 
-    private function calculateOpcExpiry(Carbon $completionDate, ?Carbon $currentExpiry = null): Carbon
-    {
-        if ($currentExpiry && $completionDate->between(
-                $currentExpiry->copy()->subMonths(3),
-                $currentExpiry
-            )) {
+    // private function calculateOpcExpiry(Carbon $completionDate, ?Carbon $currentExpiry = null): Carbon
+    // {
+    //     if ($currentExpiry && $completionDate->between(
+    //             $currentExpiry->copy()->subMonths(3),
+    //             $currentExpiry
+    //         )) {
 
-            return $currentExpiry->copy()->addMonths(6)->endOfMonth();
+    //         return $currentExpiry->copy()->addMonths(6)->endOfMonth();
+    //     }
+
+    //     return $completionDate->copy()->addMonths(6)->endOfMonth();
+    // }
+    // private function calculateOpcExpiry( Carbon $completionDate, int $validityMonths, ?Carbon $currentExpiry = null): Carbon 
+    // {
+    //     if ($currentExpiry && $completionDate->between( $currentExpiry->copy()->subMonths(3), $currentExpiry))
+    //     {
+    //         return $currentExpiry->copy()->addMonths($validityMonths)->endOfMonth();
+    //     }
+
+    //     return $completionDate->copy()->addMonths($validityMonths)->endOfMonth();
+    // }
+
+    private function calculateOpcExpiry(Carbon $completionDate, int $validityMonths, int $opcExtend, ?Carbon $currentExpiry = null ): Carbon 
+    {
+        if ($currentExpiry && $completionDate->between($currentExpiry->copy()->subMonths(3), $currentExpiry)) 
+        {
+            $expiry = $currentExpiry->copy()->addMonths($validityMonths);
+        } 
+        else {
+            $expiry = $completionDate->copy()->addMonths($validityMonths);
         }
 
-        return $completionDate->copy()->addMonths(6)->endOfMonth();
+        return $opcExtend == 1 ? $expiry->endOfMonth() : $expiry;
     }
+
 
     public function endCourse(Request $request)
     {
@@ -3019,20 +3046,55 @@ class TrainingEventsController extends Controller
 
             $completionDate = Carbon::parse($request->course_end_date);
 
-            $opcRating = UserOpcRating::where('user_id', $event->user_id)->where('aircraft_type', 1)->first();
+            $opcRating = UserOpcRating::where('user_id', $event->student_id)
+                ->where('aircraft_type', $event->course->opc_aircraft)
+                ->latest('opc_expiry_date')
+                ->first();
 
-            $currentExpiry = $opcRating?->opc_expiry_date ? Carbon::parse($opcRating->opc_expiry_date) : null;
+            $currentExpiry = $opcRating?->opc_expiry_date
+                ? Carbon::parse($opcRating->opc_expiry_date)
+                : null;
 
-            $newExpiry = $this->calculateOpcExpiry($completionDate, $currentExpiry);
+            $validityMonths = (int) ($event->opc_validity ?? 6);
+            $opcExtend      = (int) ($event->opc_extend ?? 1);
+
+            $newExpiry = $this->calculateOpcExpiry(
+                $completionDate,
+                $validityMonths,
+                $opcExtend,
+                $currentExpiry
+            );
 
             UserOpcRating::create([
-                    'user_id' => $event->student_id,
-                    'aircraft_type' => $event->course->opc_aircraft,
-                    'event_id' => $id,
-                    'course_id' => $event->course->id,
-                    'opc_expiry_date' => $newExpiry,
-                ]);
+                'user_id' => $event->student_id,
+                'aircraft_type' => $event->course->opc_aircraft,
+                'event_id' => $id,
+                'course_id' => $event->course->id,
+                'opc_expiry_date' => $newExpiry,
+            ]);
         }
+
+
+        // if ($event->course->opc == 1) {
+
+        //     $completionDate = Carbon::parse($request->course_end_date);
+
+        //     $opcRating = UserOpcRating::where('user_id', $event->user_id)->where('aircraft_type', $event->course->opc_aircraft)->latest('opc_expiry_date')->first();
+
+        //     $currentExpiry = $opcRating?->opc_expiry_date ? Carbon::parse($opcRating->opc_expiry_date) : null;
+
+        //     $validityMonths = (int) ($event->opc_validity ?? 6);
+
+        //     $newExpiry = $this->calculateOpcExpiry($completionDate, $validityMonths, $currentExpiry);
+
+        //     UserOpcRating::create([
+        //             'user_id' => $event->student_id,
+        //             'aircraft_type' => $event->course->opc_aircraft,
+        //             'event_id' => $id,
+        //             'course_id' => $event->course->id,
+        //             'opc_expiry_date' => $newExpiry,
+        //         ]);
+        // }
 
         return redirect()
             ->route('training.index')

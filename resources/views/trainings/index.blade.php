@@ -336,6 +336,36 @@
                     </div>
                 </div>
 
+                <div class="col-md-6 d-none" id="opc_validity_col">
+                    <label class="form-label">OPC Validity<span class="text-danger">*</span></label>
+                    <select class="form-select" name="opc_validity_months" id="opc_validity_months">
+                        <option value="">Select Validity</option>
+                        <option value="">Select Validity</option>
+                        <option value="1">1 Month</option>
+                        <option value="2">2 Months</option>
+                        <option value="3">3 Months</option>
+                        <option value="4">4 Months</option>
+                        <option value="5">5 Months</option>
+                        <option value="6">6 Months</option>
+                        <option value="7">7 Months</option>
+                        <option value="8">8 Months</option>
+                        <option value="9">9 Months</option>
+                        <option value="10">10 Months</option>
+                        <option value="11">11 Months</option>
+                        <option value="12">12 Months</option>
+                    </select>
+                    <div id="opc_validity_error" class="text-danger error_e"></div>
+                </div>
+
+                <div class="col-md-6 d-none" id="opc_extend_eom_col">
+                    <label class="form-label">Validity Extension<span class="text-danger">*</span></label>
+                    <select class="form-select" name="opc_extend_eom" id="opc_extend_eom">
+                        <option value="">Select Option</option>
+                        <option value="1">Extend validity to end of month</option>
+                        <option value="0">Do not extend (exact date)</option>
+                    </select>
+                    <div id="opc_extend_eom_error" class="text-danger error_e"></div>
+                </div>
                 
                 <!-- // Rank -->
                 <div class="col-md-6" id="add_rank_col" >
@@ -444,6 +474,38 @@
                         <input type="date" name="event_date" class="form-control" id="edit_event_date">
                         <div id="event_date_error_up" class="text-danger error_e"></div>
                     </div>
+                </div>
+
+                <div class="col-md-6 d-none" id="edit_opc_validity_col">
+                    <label class="form-label">OPC Validity<span class="text-danger">*</span></label>
+                    <select class="form-select" name="edit_opc_validity_months" id="edit_opc_validity_months">
+                        <option value="">Select Validity</option>
+                        <option value="1">1 Month</option>
+                        <option value="2">2 Months</option>
+                        <option value="3">3 Months</option>
+                        <option value="4">4 Months</option>
+                        <option value="5">5 Months</option>
+                        <option value="6">6 Months</option>
+                        <option value="7">7 Months</option>
+                        <option value="8">8 Months</option>
+                        <option value="9">9 Months</option>
+                        <option value="10">10 Months</option>
+                        <option value="11">11 Months</option>
+                        <option value="12">12 Months</option>
+                    </select>
+                    <div id="edit_opc_validity_error" class="text-danger error_e"></div>
+                </div>
+
+                <div class="col-md-6 d-none" id="edit_opc_extend_eom_col">
+                    <label class="form-label">Validity Extension<span class="text-danger">*</span></label>
+                    <select class="form-select"
+                            name="edit_opc_extend_eom"
+                            id="edit_opc_extend_eom">
+                        <option value="">Select Option</option>
+                        <option value="1">Extend validity to end of month</option>
+                        <option value="0">Do not extend (exact date)</option>
+                    </select>
+                    <div id="edit_opc_extend_eom_error" class="text-danger error_e"></div>
                 </div>
 
                 <!-- // Rank -->
@@ -843,7 +905,7 @@ $(document).ready(function() {
 
 
         if (isEditForm && typeof existingEventLessons !== 'undefined') {  
-             existingEventLessons.forEach(lesson => { 
+            existingEventLessons.forEach(lesson => { 
                 lessonPrefillMap[lesson.lesson_id] = { 
                     instructor_id: lesson.instructor_id || '',
                     resource_id: lesson.resource_id || '',
@@ -859,8 +921,8 @@ $(document).ready(function() {
                     operation2: lesson.operation2 || '',
                     role2: lesson.role2 || '',
                 }; 
-    });
-}
+            });
+        }
    
         let selectedStudentId = $('#select_user').val() || $('#edit_select_user').val();
         var edit_ou_id = isEditForm ? $('#edit_ou_id').val() : $('#select_org_unit').val(); 
@@ -880,34 +942,43 @@ $(document).ready(function() {
                      all_instructors = response.all_ou_instructor;
                      course = response.course;
 
-                        // 🔹 Function to handle rank visibility
-                 function toggleRankOptions(selectSelector, enableValue) {
-                            const rankSelect = $(selectSelector);
-                           
+                    // 🔹 OPC dropdown toggle
+                    if (course.opc == 1) {
+                        $('#opc_validity_col, #opc_extend_eom_col').removeClass('d-none');
+                    } else {
+                        $('#opc_validity_col, #opc_extend_eom_col').addClass('d-none');
+                        $('#opc_validity_months').val('');
+                        $('#opc_extend_eom').val('');
+                    }
 
-                            if (enableValue == 0 || enableValue == 1) {
-                                // Single Pilot (SP Event)
-                                rankSelect.find("option[value='2'], option[value='3']").hide();
-                                rankSelect.find("option[value='1']").show();
-                                rankSelect.val("1"); // Default to Captain
-                            } 
-                            else if (enableValue == 2 || enableValue == 3) {
-                                // Multi Pilot (MP or SP+MP Event)
-                               // rankSelect.find("option[value='1']").hide();   
-                                rankSelect.find("option[value='2'], option[value='3']").show();
-                            }
+                    // 🔹 Function to handle rank visibility
+                    function toggleRankOptions(selectSelector, enableValue) {
+                        const rankSelect = $(selectSelector);
+                        
+
+                        if (enableValue == 0 || enableValue == 1) {
+                            // Single Pilot (SP Event)
+                            rankSelect.find("option[value='2'], option[value='3']").hide();
+                            rankSelect.find("option[value='1']").show();
+                            rankSelect.val("1"); // Default to Captain
+                        } 
+                        else if (enableValue == 2 || enableValue == 3) {
+                            // Multi Pilot (MP or SP+MP Event)
+                            // rankSelect.find("option[value='1']").hide();   
+                            rankSelect.find("option[value='2'], option[value='3']").show();
                         }
+                    }
 
 
-                        // 🔹 Apply logic to both Add & Edit rank dropdowns
-                        toggleRankOptions("#addRankSelectBox", course.enable_mp_lifus);
-                        toggleRankOptions("#edit_rank", course.enable_mp_lifus);
+                    // 🔹 Apply logic to both Add & Edit rank dropdowns
+                    toggleRankOptions("#addRankSelectBox", course.enable_mp_lifus);
+                    toggleRankOptions("#edit_rank", course.enable_mp_lifus);
 
-                        response.lessons.forEach(function (lesson, idx) {
-                            let prefillData = isEditForm && lessonPrefillMap[lesson.id] ? lessonPrefillMap[lesson.id] : {};
-                            renderLessonBox(lesson, lessonContainer, prefillData, idx, mode, all_instructors, course);  
-                        });
-                                } 
+                    response.lessons.forEach(function (lesson, idx) {
+                        let prefillData = isEditForm && lessonPrefillMap[lesson.id] ? lessonPrefillMap[lesson.id] : {};
+                        renderLessonBox(lesson, lessonContainer, prefillData, idx, mode, all_instructors, course);  
+                    });
+                } 
                 else {
                     alert('No lessons found for the selected course.');
                 }
@@ -919,6 +990,29 @@ $(document).ready(function() {
                 else{
 
                 }
+
+                // 🔹 EDIT MODAL OPC LOGIC
+                if (isEditForm) {
+                    if (course.opc == 1) {
+                        $('#edit_opc_validity_col').removeClass('d-none');
+                        $('#edit_opc_extend_eom_col').removeClass('d-none');
+
+                         
+                        if (window.editOpcExtendEom !== '') {
+                            $('#edit_opc_extend_eom').val(window.editOpcExtendEom).trigger('change');
+                        }
+
+                        if (window.editOpcValidity) {
+                            $('#edit_opc_validity_months').val(window.editOpcValidity).trigger('change');
+                        }
+                    } else {
+                        $('#edit_opc_validity_col').addClass('d-none');
+                        $('#edit_opc_validity_months').val('');
+                        $('#edit_opc_extend_eom_col').addClass('d-none');
+                        $('#edit_opc_extend_eom').val('');
+                    }
+                }
+
             },
             error: function (xhr) {
                 console.error(xhr.responseText);
@@ -926,9 +1020,38 @@ $(document).ready(function() {
             }
         });
     });
+    
+    function validateOpcField(container, field, errorEl, message) {
+        if (!$(container).hasClass('d-none') && !$(field).val()) {
+            $(errorEl).text(message);
+            return false;
+        }
+        return true;
+    }
+
 
     $("#submitTrainingEvent").on("click", function(e) { 
         e.preventDefault();
+
+       if (
+            !validateOpcField(
+                '#opc_validity_col',
+                '#opc_validity_months',
+                '#opc_validity_error',
+                'OPC validity is required'
+            )
+        ) return false;
+
+        // OPC Extend
+        if (
+            !validateOpcField(
+                '#opc_extend_eom_col',
+                '#opc_extend_eom',
+                '#opc_extend_eom_error',
+                'OPC extend field is required'
+            )
+        ) return false;
+
         $.ajax({
             url: '{{ url("/training/create") }}',
             type: 'POST',
@@ -966,6 +1089,9 @@ $(document).ready(function() {
     $(document).on('click', '.edit-event-icon', function () {  
         $('.error_e').html('');
         var eventId = $(this).data('event-id');
+        window.editOpcValidity = event.opc_validity || '';
+        window.editOpcExtendEom = event.opc_extend || '';
+
         $.ajax({
             url: "{{ url('/training/edit') }}",  
             type: 'GET',
@@ -987,6 +1113,8 @@ $(document).ready(function() {
                     const selectedInstructor = event.student_id;
                     const selectedResource = event.resource_id;
                     const selectedCourse = event.course_id;
+                    const selectedValidity = event.opc_validity;
+                    const selectedExtend = event.opc_extend;
                     const rank = event.rank;
                  
                     if(rank == null){
@@ -1028,6 +1156,8 @@ $(document).ready(function() {
 
                 //-----------------------------------------------------------------------
                     $('#edit_select_course').val(selectedCourse).data("selected-value", selectedCourse);  
+                    $('#edit_opc_validity_months').val(selectedValidity).data("selected-value", selectedValidity);  
+                    $('#edit_opc_extend_eom').val(selectedExtend).data("selected-value", selectedExtend);  
 
                      window.existingEventLessons = (event.event_lessons || []).map(l => {  
                         let licenceValue = '';
@@ -1177,6 +1307,26 @@ $(document).ready(function() {
 
 
     $('#updateTrainingEvent').on('click', function(e) {
+
+        if (
+            !validateOpcField(
+                '#edit_opc_validity_col',
+                '#edit_opc_validity_months',
+                '#edit_opc_validity_error',
+                'OPC validity is required'
+            )
+        ) return false;
+
+        // OPC Extend
+        if (
+            !validateOpcField(
+                '#edit_opc_extend_eom_col',
+                '#edit_opc_extend_eom',
+                '#edit_opc_extend_eom_error',
+                'OPC extend field is required'
+            )
+        ) return false;
+
         e.preventDefault();
         $.ajax({
             url: "{{ url('/training/update') }}",

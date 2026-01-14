@@ -19,6 +19,8 @@ class TrainingEvents extends Model
         'resource_id',
         'lesson_ids',
         'event_date',
+        'opc_validity',
+        'opc_extend',
         'course_end_date',
         'recommended_by_instructor_id',
         'start_time',
