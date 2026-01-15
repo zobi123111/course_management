@@ -51,7 +51,7 @@
 
             {{-- Licence 1 --}}
             <td>
-                @if($doc && $doc->licence_file) 
+                @if($doc && $doc->licence_expiry_date) 
                     @php 
                         if($doc->licence_non_expiring) { 
                             $status = 'Non-Expiring';
@@ -137,7 +137,7 @@
 
             {{-- Licence 2 --}}
             <td>
-                @if($doc && $doc->licence_file_2)
+                @if($doc && $doc->licence_expiry_date_2)
                 @php
                 if ($doc->licence_non_expiring_2) {
                 $status = 'Non-Expiring';

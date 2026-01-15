@@ -50,6 +50,7 @@ class BookingController extends Controller
         $resource = $request->resource;
 
         $events = Booking::with('resources', 'users')
+            ->whereNotIn('status', ['cancelled', 'rejected'])
             ->when($student, function ($q) use ($student) {
                 $q->whereHas('users', function ($u) use ($student) {
                     $u->where('fname', 'like', "%$student%")
@@ -161,9 +162,10 @@ class BookingController extends Controller
 
         Booking::where('id', '!=', $booking->id)
             ->where('resource', $booking->resource)
+            ->where('resource_type', $booking->resource_type)
             ->where(function ($q) use ($booking) {
-                $q->where('start', '<', $booking->end)
-                ->where('end', '>', $booking->start);
+                $q->where('start', '=', $booking->end)
+                ->where('end', '=', $booking->start);
             })
             ->update(['status' => 'rejected']);
 
@@ -211,6 +213,34 @@ class BookingController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    public function delete(Request $request)
+    {
+        $booking = Booking::find($request->id);
+        $booking->status = 'cancelled';
+        $booking->save();
+
+
+        // $sendemail = organizationUnits::where('id', $request->organizationUnits)->first();
+        
+        // if ($sendemail->send_email == 1) {
+
+        //     $studentEmail = User::find($booking->std_id)->email;
+        //     $instructor = User::find($booking->instructor_id)->email;
+        //     $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
+
+        //     $allEmails = array_merge([$studentEmail], $ouEmails, [$instructor]);
+
+        //     Mail::send('emailtemplates.rejected_booking_email', ['booking' => $booking], function ($message) use ($allEmails) {
+        //         $message->to($allEmails)
+        //                 ->subject('Booking Rejected');
+        //     });
+        // }
+
+        return response()->json(['success' => true]);
+    }
+
+
 
     public function getstudents(Request $request)
     {
