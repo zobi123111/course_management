@@ -735,7 +735,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
                     <td>
                         {{-- UK Medical --}}
-                        @if($doc && $doc->medical_file_uploaded)
+                        @if($doc && $doc->medical_expirydate)
                             @php
                                 $status = $doc->medical_status;
                                 $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
@@ -753,7 +753,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         @endif
 
                         {{-- EASA Medical --}}
-                        @if($doc && $doc->medical_file_uploaded_2)
+                        @if($doc && $doc->medical_expirydate_2)
                             @php
                                 $status = $doc->medical_2_status;
                                 $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
