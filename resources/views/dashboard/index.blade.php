@@ -1562,6 +1562,62 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 </div>
             </div>
 
+            @if(auth()->user()->role == 3)
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title"> Pending Bookings</h5>
+                                <table class="table table-hover" id="pendingbookingTable">
+                                    <thead>
+                                        <tr>
+                                            <!-- <th scope="col">OU Unit</th> -->
+                                            <th scope="col">Student</th>
+                                            <th scope="col">Resource</th>
+                                            <th scope="col">Start</th>
+                                            <th scope="col">End</th>
+                                            <th scope="col">Booking Type</th>
+                                            <th scope="col">Resource Type</th>
+                                            <th scope="col">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($bookings as $booking)
+                                            <tr>
+                                                <!-- <td class="quizTitle">{{ $booking->organizationUnit->org_unit_name }}</td> -->
+                                                <td>{{ $booking->users->fname. " " . $booking->users->lname ?? 'N/A' }}</td>
+                                                <td>{{ $booking->resources->name ?? 'N/A' }}</td>
+                                                <td>{{ $booking->start }}</td>
+                                                <td>{{ $booking->end }}</td>
+                                                <td>
+                                                    @if($booking->booking_type == 1)
+                                                        Solo
+                                                    @elseif($booking->booking_type == 2)
+                                                        Lesson
+                                                    @elseif($booking->booking_type == 3)
+                                                        Standby
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($booking->resource_type == 1)
+                                                        Plane
+                                                    @elseif($booking->resource_type == 2)
+                                                        Simulator
+                                                    @elseif($booking->resource_type == 3)
+                                                        Classroom
+                                                    @endif
+                                                </td>
+                                                <td>{{ $booking->status }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             @if(auth()->user()->role == 18)
                 <div class="row">
                     <div class="col-lg-12">
@@ -1571,7 +1627,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                 <table class="table table-hover" id="pendingbookingTable">
                                     <thead>
                                         <tr>
-                                            <th scope="col">OU Unit</th>
+                                            <!-- <th scope="col">OU Unit</th> -->
                                             <th scope="col">Student</th>
                                             <th scope="col">Resource</th>
                                             <th scope="col">Start</th>
@@ -1585,7 +1641,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     <tbody>
                                         @foreach($bookings as $booking)
                                             <tr>
-                                                <td class="quizTitle">{{ $booking->organizationUnit->org_unit_name }}</td>
+                                                <!-- <td class="quizTitle">{{ $booking->organizationUnit->org_unit_name }}</td> -->
                                                 <td>{{ $booking->users->fname. " " . $booking->users->lname ?? 'N/A' }}</td>
                                                 <td>{{ $booking->resources->name ?? 'N/A' }}</td>
                                                 <td>{{ $booking->start }}</td>

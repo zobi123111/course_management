@@ -71,7 +71,7 @@ class BookingController extends Controller
 
             $canAccess = false;
 
-            if ($event->users->id == $user_id || Auth::user()->role == 1) {
+            if ($event->users->id == $user_id || Auth::user()->role == 1 || Auth::user()->is_admin == 1 ) {
                 $canAccess = true;
             }
 
