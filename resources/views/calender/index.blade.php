@@ -248,13 +248,15 @@
                 <input type="hidden" id="reject_booking_id">
 
             </div>
-            @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-            <div class="modal-footer">
-                <button id="editBookingBtn" class="btn btn-primary">Edit</button>
-                <button id="deleteBookingBtn" class="btn btn-danger">Delete</button>
-                <button id="approveBtn" class="btn btn-success">Approve</button>
-                <button id="rejectBtn" class="btn btn-danger">Reject</button>
-            </div>
+            @if(auth()->user()->is_owner == 1 || Auth::user()->is_admin == 1)
+                <div class="modal-footer">
+                    <button id="editBookingBtn" class="btn btn-primary">Edit</button>
+                    <button id="deleteBookingBtn" class="btn btn-danger">Delete</button>
+                    @if(auth()->user()->is_owner == 1)
+                        <button id="approveBtn" class="btn btn-success">Approve</button>
+                        <button id="rejectBtn" class="btn btn-danger">Reject</button>
+                    @endif
+                </div>
             @endif
         </div>
     </div>
@@ -278,13 +280,30 @@
             <div class="modal-body">
                 <input type="hidden" id="edit_booking_id">
 
-                <label>Org Unit</label>
+                <!-- <label>Org Unit</label>
                 <select id="edit_organizationUnits" class="form-control mb-2">
                     <option value="">Select Org Unit</option>
                     @foreach ($organizationUnits as $val)
                         <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
                     @endforeach
-                </select>
+                </select> -->
+
+                @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <label>Select Org Unit</label>
+                    <select id="edit_organizationUnits" class="form-control mb-2">
+                        <option value="">Select Org Unit</option>
+                        @foreach ($organizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                        @endforeach
+                    </select>
+                @endif
+                @if(auth()->user()->is_admin == 1 && !empty(auth()->user()->ou_id))
+                    <input type="hidden" name="organizationUnits" id="edit_organizationUnits" value="{{ auth()->user()->ou_id }}">
+                @endif
+
+                @if(auth()->user()->is_admin == 0 && auth()->user()->is_owner == 0 && !empty(auth()->user()->ou_id))
+                    <input type="hidden" name="organizationUnits" id="edit_organizationUnits" value="{{ auth()->user()->ou_id }}">
+                @endif
 
                 <label>Start Date & Time</label>
                 <input type="text" id="edit_booking_start" class="form-control mb-2">

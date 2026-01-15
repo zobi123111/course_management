@@ -186,8 +186,12 @@ class DashboardController extends Controller
         $readDocuments = countAcknowledgedDocuments($documents, $user);
         $unreadDocuments = $totalDocuments - $readDocuments;
 
-
-        $bookings = Booking::where('instructor_id', $userId)->where('status', 'pending')->get();
+        if($user->role == 3){
+            $bookings = Booking ::where('std_id', $userId)->where('status', 'pending')->get();
+        }
+        else {
+            $bookings = Booking ::where('instructor_id', $userId)->where('status', 'pending')->get();
+        }
 
         $users = User::where('ou_id', $ou_id)
                     ->whereNull('is_admin')
