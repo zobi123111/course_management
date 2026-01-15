@@ -233,7 +233,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         ?>
                     <td>
                         {{-- UK Licence --}}
-                        @if($doc && $doc->licence_file_uploaded)
+                        @if($doc && $doc->licence_expiry_date)
                             @php
                                 if ($doc->licence_non_expiring) {
                                     $status = 'Non-Expiring';
@@ -257,7 +257,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         @endif
 
                         {{-- EASA Licence --}}
-                        @if($doc && $doc->licence_file_uploaded_2)
+                        @if($doc && $doc->licence_expiry_date_2)
                             @php
                                 if ($doc->licence_non_expiring_2) {
                                     $status = 'Non-Expiring';
@@ -1612,12 +1612,12 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                                 <td>
                                                     @if(auth()->user()->role == 18)
                                                         <button class="btn btn-success booking-btn approve-btn"
-                                                            data-id="{{ $booking->id }}">
+                                                            data-id="{{ $booking->id }}" data-ou-id="{{ $booking->ou_id }}">
                                                             Approve
                                                         </button>
 
                                                         <button class="btn btn-danger booking-btn reject-btn"
-                                                            data-id="{{ $booking->id }}">
+                                                            data-id="{{ $booking->id }}" data-ou-id="{{ $booking->ou_id }}">
                                                             Reject
                                                         </button>
                                                     @endif
@@ -1689,6 +1689,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
             $(document).on('click', '.approve-btn', function () {
                 let id = $(this).data('id');
+                let ou_id = $(this).data('ou-id');
 
                 Swal.fire({
                     title: 'Approve Booking?',
@@ -1704,7 +1705,8 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
                         $.post("{{ url('/booking/approve') }}", {
                             _token: "{{ csrf_token() }}",
-                            id: id
+                            id: id,
+                            organizationUnits: ou_id
                         })
                         .done(function () {
                             // Swal.fire('Approved!', 'Booking has been approved.', 'success');
@@ -1722,6 +1724,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
             $(document).on('click', '.reject-btn', function () {
                 let id = $(this).data('id');
+                let ou_id = $(this).data('ou-id');
 
                 Swal.fire({
                     title: 'Reject Booking?',
@@ -1737,7 +1740,8 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
                         $.post("{{ url('/booking/reject') }}", {
                             _token: "{{ csrf_token() }}",
-                            id: id
+                            id: id,
+                            organizationUnits: ou_id
                         })
                         .done(function () {
                             // Swal.fire('Rejected!', 'Booking has been rejected.', 'success');

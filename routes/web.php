@@ -385,6 +385,7 @@ Route::get('/fullcalendar', [BookingController::class, 'loadEvents']);
 Route::post('/booking/store', [BookingController::class, 'store']);
 Route::post('/booking/update', [BookingController::class, 'update']);
 Route::post('/booking/approve', [BookingController::class, 'approve']);
+Route::post('/booking/delete', [BookingController::class, 'delete']);
 Route::post('/booking/reject', [BookingController::class, 'reject']);
 Route::get('/group/students/', [BookingController::class, 'getstudents'])->name('getstudents'); 
 
