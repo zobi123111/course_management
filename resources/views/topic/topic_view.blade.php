@@ -662,5 +662,84 @@
             createOrUpdatePreview(this);
         });
 
+        document.addEventListener('DOMContentLoaded', function () {
+            const fileInput = document.getElementById('csvFile');
+            const form = fileInput.closest('form');
+
+            // Create an element to show errors below the input
+            const errorDiv = document.createElement('div');
+            errorDiv.classList.add('text-danger', 'mb-2', 'mt-2', 'text-center');
+            errorDiv.style.display = 'none';
+            fileInput.parentNode.appendChild(errorDiv); // place below input
+
+            // Expected headers
+            const expectedHeaders = ['question', 'type', 'option_A', 'option_B', 'option_C', 'option_D', 'correct_answers'];
+
+            fileInput.addEventListener('change', function (e) {
+                errorDiv.style.display = 'none';
+                errorDiv.innerText = '';
+
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // 1️⃣ Check file type
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (ext !== 'csv') {
+                    errorDiv.innerText = 'Please select a valid CSV file.';
+                    errorDiv.style.display = 'block';
+                    fileInput.value = ''; // Reset file input
+                    return;
+                }
+
+                // 2️⃣ Check CSV headers
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const text = e.target.result;
+                    const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+                    if (lines.length === 0) {
+                        errorDiv.innerText = 'CSV file is empty.';
+                        errorDiv.style.display = 'block';
+                        fileInput.value = '';
+                        return;
+                    }
+
+                    const headers = lines[0].split(',').map(h => h.trim());
+                    const missingHeaders = expectedHeaders.filter(h => !headers.includes(h));
+
+                    if (missingHeaders.length > 0) {
+                        errorDiv.innerText = 'CSV is missing required headers: ' + missingHeaders.join(', ');
+                        errorDiv.style.display = 'block';
+                        fileInput.value = '';
+                    }
+                };
+                reader.readAsText(file);
+            });
+
+            // Prevent submission if error is visible
+            form.addEventListener('submit', function (e) {
+                if (errorDiv.style.display === 'block') {
+                    e.preventDefault();
+                }
+            });
+        });
+        
+        document.addEventListener('DOMContentLoaded', function () {
+            const fileInput = document.getElementById('csvFile');
+            const importModal = document.getElementById('importModal');
+
+            // Find the error div appended below the input
+            const errorDiv = fileInput.parentNode.querySelector('.text-danger');
+
+            // Reset error and input when modal closes
+            importModal.addEventListener('hidden.bs.modal', function () {
+                if (errorDiv) {
+                    errorDiv.style.display = 'none';
+                    errorDiv.innerText = '';
+                }
+                fileInput.value = ''; // clear file input
+            });
+        });
+
+
     </script>
 @endsection

@@ -233,7 +233,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         ?>
                     <td>
                         {{-- UK Licence --}}
-                        @if($doc && $doc->licence_expiry_date)
+                        @if($doc && $doc->licence_file)
                             @php
                                 if ($doc->licence_non_expiring) {
                                     $status = 'Non-Expiring';
@@ -257,7 +257,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         @endif
 
                         {{-- EASA Licence --}}
-                        @if($doc && $doc->licence_expiry_date_2)
+                        @if($doc && $doc->licence_file_2)
                             @php
                                 if ($doc->licence_non_expiring_2) {
                                     $status = 'Non-Expiring';
