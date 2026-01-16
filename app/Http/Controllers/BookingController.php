@@ -144,6 +144,7 @@ class BookingController extends Controller
         $booking->resource_type = $request->resource_type ?? $booking->resource_type;
         $booking->instructor_id = $request->instructor_id ?? $booking->instructor_id;
         $booking->send_email = $request->boolean('send_email') ? 1 : 0;
+        // $booking->status = 'pending';
         $booking->save();
 
         return response()->json([

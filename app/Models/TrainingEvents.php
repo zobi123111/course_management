@@ -220,7 +220,7 @@ class TrainingEvents extends Model
     //     return $this->taskGradings->merge($this->defLessonTasks);
     // }
 
-        public function defLessons()
+    public function defLessons()
     {
         return $this->hasMany(DefLesson::class, 'event_id', 'id');
     }
