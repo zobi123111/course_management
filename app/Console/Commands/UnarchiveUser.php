@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\TrainingEvents;
 use App\Models\User;
+use App\Models\OuSetting;
 use Illuminate\Support\Facades\Log;
 
 class UnarchiveUser extends Command
@@ -34,6 +35,7 @@ class UnarchiveUser extends Command
             ->get();
 
         foreach ($students as $student) {
+           
             $events = TrainingEvents::where('student_id', $student->student_id)->get();
 
             // Skip if no events found
@@ -46,15 +48,26 @@ class UnarchiveUser extends Command
             if ($completedEvents === $totalEvents) {
 
                 // Get the latest (most recent) course_end_date
-                $latestEndDate = $events->max('course_end_date');
+                $latestEndDate = $events->max('course_end_date'); 
 
                 // Check if last event ended at least 1 month ago
-                if ($latestEndDate && $today->diffInMonths($latestEndDate) >= 1) {
+                $ou_id =  User::where('id', $student->student_id)->pluck('ou_id')->first();
+                
+                $ou_setting = OuSetting::where('organization_id', $ou_id)->first();
+
+                
+                if($ou_setting->auto_archive == 1){    
+                    $archive_after_months = $ou_setting->archive_after_months;
+                  
+                    if ($latestEndDate && $today->diffInMonths($latestEndDate) >= $archive_after_months) {
                     $user = User::find($student->student_id);
                     if ($user && $user->role == 3 && $user->unarchived_by ==NULL) {   
                         $user->update(['is_activated' => 1]);
                     }
                 }
+                }
+
+             
             }
         }
     }
