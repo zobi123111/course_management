@@ -880,7 +880,10 @@ class QuizController extends Controller
         }
 
         $attempt->delete();
-        $quizquestions->delete();
+        
+        if ($quizquestions){
+            $quizquestions->delete();
+        }
 
         return response()->json(['message' => 'Attempt reset successfully']);
     }

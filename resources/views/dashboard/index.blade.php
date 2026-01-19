@@ -233,7 +233,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         ?>
                     <td>
                         {{-- UK Licence --}}
-                        @if($doc && $doc->licence_file_uploaded)
+                        @if($doc && $doc->licence_file)
                             @php
                                 if ($doc->licence_non_expiring) {
                                     $status = 'Non-Expiring';
@@ -257,7 +257,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         @endif
 
                         {{-- EASA Licence --}}
-                        @if($doc && $doc->licence_file_uploaded_2)
+                        @if($doc && $doc->licence_file_2)
                             @php
                                 if ($doc->licence_non_expiring_2) {
                                     $status = 'Non-Expiring';
@@ -735,7 +735,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
                     <td>
                         {{-- UK Medical --}}
-                        @if($doc && $doc->medical_file_uploaded)
+                        @if($doc && $doc->medical_expirydate)
                             @php
                                 $status = $doc->medical_status;
                                 $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
@@ -753,7 +753,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         @endif
 
                         {{-- EASA Medical --}}
-                        @if($doc && $doc->medical_file_uploaded_2)
+                        @if($doc && $doc->medical_expirydate_2)
                             @php
                                 $status = $doc->medical_2_status;
                                 $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
@@ -1562,6 +1562,62 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 </div>
             </div>
 
+            @if(auth()->user()->role == 3)
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title"> Pending Bookings</h5>
+                                <table class="table table-hover" id="pendingbookingTable">
+                                    <thead>
+                                        <tr>
+                                            <!-- <th scope="col">OU Unit</th> -->
+                                            <th scope="col">Student</th>
+                                            <th scope="col">Resource</th>
+                                            <th scope="col">Start</th>
+                                            <th scope="col">End</th>
+                                            <th scope="col">Booking Type</th>
+                                            <th scope="col">Resource Type</th>
+                                            <th scope="col">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($bookings as $booking)
+                                            <tr>
+                                                <!-- <td class="quizTitle">{{ $booking->organizationUnit->org_unit_name }}</td> -->
+                                                <td>{{ $booking->users->fname. " " . $booking->users->lname ?? 'N/A' }}</td>
+                                                <td>{{ $booking->resources->name ?? 'N/A' }}</td>
+                                                <td>{{ $booking->start }}</td>
+                                                <td>{{ $booking->end }}</td>
+                                                <td>
+                                                    @if($booking->booking_type == 1)
+                                                        Solo
+                                                    @elseif($booking->booking_type == 2)
+                                                        Lesson
+                                                    @elseif($booking->booking_type == 3)
+                                                        Standby
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($booking->resource_type == 1)
+                                                        Plane
+                                                    @elseif($booking->resource_type == 2)
+                                                        Simulator
+                                                    @elseif($booking->resource_type == 3)
+                                                        Classroom
+                                                    @endif
+                                                </td>
+                                                <td>{{ $booking->status }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             @if(auth()->user()->role == 18)
                 <div class="row">
                     <div class="col-lg-12">
@@ -1571,7 +1627,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                 <table class="table table-hover" id="pendingbookingTable">
                                     <thead>
                                         <tr>
-                                            <th scope="col">OU Unit</th>
+                                            <!-- <th scope="col">OU Unit</th> -->
                                             <th scope="col">Student</th>
                                             <th scope="col">Resource</th>
                                             <th scope="col">Start</th>
@@ -1585,7 +1641,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     <tbody>
                                         @foreach($bookings as $booking)
                                             <tr>
-                                                <td class="quizTitle">{{ $booking->organizationUnit->org_unit_name }}</td>
+                                                <!-- <td class="quizTitle">{{ $booking->organizationUnit->org_unit_name }}</td> -->
                                                 <td>{{ $booking->users->fname. " " . $booking->users->lname ?? 'N/A' }}</td>
                                                 <td>{{ $booking->resources->name ?? 'N/A' }}</td>
                                                 <td>{{ $booking->start }}</td>
@@ -1612,12 +1668,12 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                                 <td>
                                                     @if(auth()->user()->role == 18)
                                                         <button class="btn btn-success booking-btn approve-btn"
-                                                            data-id="{{ $booking->id }}">
+                                                            data-id="{{ $booking->id }}" data-ou-id="{{ $booking->ou_id }}">
                                                             Approve
                                                         </button>
 
                                                         <button class="btn btn-danger booking-btn reject-btn"
-                                                            data-id="{{ $booking->id }}">
+                                                            data-id="{{ $booking->id }}" data-ou-id="{{ $booking->ou_id }}">
                                                             Reject
                                                         </button>
                                                     @endif
@@ -1689,6 +1745,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
             $(document).on('click', '.approve-btn', function () {
                 let id = $(this).data('id');
+                let ou_id = $(this).data('ou-id');
 
                 Swal.fire({
                     title: 'Approve Booking?',
@@ -1704,7 +1761,8 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
                         $.post("{{ url('/booking/approve') }}", {
                             _token: "{{ csrf_token() }}",
-                            id: id
+                            id: id,
+                            organizationUnits: ou_id
                         })
                         .done(function () {
                             // Swal.fire('Approved!', 'Booking has been approved.', 'success');
@@ -1722,6 +1780,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
             $(document).on('click', '.reject-btn', function () {
                 let id = $(this).data('id');
+                let ou_id = $(this).data('ou-id');
 
                 Swal.fire({
                     title: 'Reject Booking?',
@@ -1737,7 +1796,8 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
                         $.post("{{ url('/booking/reject') }}", {
                             _token: "{{ csrf_token() }}",
-                            id: id
+                            id: id,
+                            organizationUnits: ou_id
                         })
                         .done(function () {
                             // Swal.fire('Rejected!', 'Booking has been rejected.', 'success');

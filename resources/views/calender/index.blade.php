@@ -98,7 +98,7 @@
 
 </style>
 
-<div class="row mb-3">
+<!-- <div class="row mb-3">
     <div class="col-md-4">
         <input type="text" id="studentSearch"
             class="form-control"
@@ -110,7 +110,7 @@
             class="form-control"
             placeholder="Search by resource">
     </div>
-</div>
+</div> -->
 
 
 <div class="container mt-4">
@@ -144,6 +144,10 @@
                     <input type="hidden" name="organizationUnits" id="organizationUnits" value="{{ auth()->user()->ou_id }}">
                 @endif
 
+                @if(auth()->user()->is_admin == 0 && auth()->user()->is_owner == 0 && !empty(auth()->user()->ou_id))
+                    <input type="hidden" name="organizationUnits" id="organizationUnits" value="{{ auth()->user()->ou_id }}">
+                @endif
+
                 <label>Start Date & Time</label>
                 <input type="date" id="booking_start" class="form-control mb-2" readonly>
 
@@ -159,7 +163,7 @@
 
                 <label>Resource Type</label>
                 <select name="resource_type" id="resource_type" class="form-control mb-2">
-                    <option value="1">Plane</option>
+                    <option value="1">Aircraft</option>
                     <option value="2">Simulator</option>
                     <option value="3">Classroom</option>
                 </select>
@@ -240,15 +244,19 @@
                 <p><strong>Type:</strong> <span id="view_type"></span></p>
                 <p><strong>Status:</strong> <span id="view_status"></span></p>
                 <input type="hidden" id="approve_booking_id">
+                <input type="hidden" id="approve_organizationUnits">
                 <input type="hidden" id="reject_booking_id">
 
             </div>
-            @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-            <div class="modal-footer">
-                <button id="editBookingBtn" class="btn btn-primary">Edit</button>
-                <button id="approveBtn" class="btn btn-success">Approve</button>
-                <button id="rejectBtn" class="btn btn-danger">Reject</button>
-            </div>
+            @if(auth()->user()->is_owner == 1 || Auth::user()->is_admin == 1)
+                <div class="modal-footer">
+                    <button id="editBookingBtn" class="btn btn-primary">Edit</button>
+                    <button id="deleteBookingBtn" class="btn btn-danger">Delete</button>
+                    @if(auth()->user()->is_owner == 1)
+                        <button id="approveBtn" class="btn btn-success">Approve</button>
+                        <button id="rejectBtn" class="btn btn-danger">Reject</button>
+                    @endif
+                </div>
             @endif
         </div>
     </div>
@@ -272,13 +280,30 @@
             <div class="modal-body">
                 <input type="hidden" id="edit_booking_id">
 
-                <label>Org Unit</label>
+                <!-- <label>Org Unit</label>
                 <select id="edit_organizationUnits" class="form-control mb-2">
                     <option value="">Select Org Unit</option>
                     @foreach ($organizationUnits as $val)
                         <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
                     @endforeach
-                </select>
+                </select> -->
+
+                @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <label>Select Org Unit</label>
+                    <select id="edit_organizationUnits" class="form-control mb-2">
+                        <option value="">Select Org Unit</option>
+                        @foreach ($organizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                        @endforeach
+                    </select>
+                @endif
+                @if(auth()->user()->is_admin == 1 && !empty(auth()->user()->ou_id))
+                    <input type="hidden" name="organizationUnits" id="edit_organizationUnits" value="{{ auth()->user()->ou_id }}">
+                @endif
+
+                @if(auth()->user()->is_admin == 0 && auth()->user()->is_owner == 0 && !empty(auth()->user()->ou_id))
+                    <input type="hidden" name="organizationUnits" id="edit_organizationUnits" value="{{ auth()->user()->ou_id }}">
+                @endif
 
                 <label>Start Date & Time</label>
                 <input type="text" id="edit_booking_start" class="form-control mb-2">
@@ -384,7 +409,7 @@
         // Important: initialize after Tempus Dominus script is loaded
         let startPicker = flatpickr("#booking_start", {
             enableTime: true,
-            dateFormat: "Y-m-d",
+            dateFormat: "Y-m-d H:i",
             time_24hr: true,
             minuteIncrement: 15,
 
@@ -402,7 +427,7 @@
 
         let endPicker = flatpickr("#booking_end", {
             enableTime: true,
-            dateFormat: "Y-m-d",
+            dateFormat: "Y-m-d H:i",
             time_24hr: true,
             minuteIncrement: 15
         });
@@ -498,6 +523,7 @@
                 }
 
                 $('#approve_booking_id').val(event.id);
+                $('#approve_organizationUnits').val(event.ou_id);
                 $('#reject_booking_id').val(event.id);
 
                 if (event.status == "pending") {
@@ -623,7 +649,8 @@
         // APPROVE BOOKING
         $("#approveBtn").click(function() {
             $.post(SITEURL + "/booking/approve", {
-                id: $("#approve_booking_id").val()
+                id: $("#approve_booking_id").val(),
+                organizationUnits: $("#approve_organizationUnits").val()
             }, function() {
                 toastr.success("Booking Approved");
                 $('#viewBookingModal').modal('hide');
@@ -631,10 +658,24 @@
             });
         });
 
+        $("#deleteBookingBtn").click(function () {
+            if (!confirm('Cancel this booking?')) return;
+
+            $.post(SITEURL + "/booking/delete", {
+                id: selectedEvent.id
+            }, function () {
+                toastr.success("Booking Cancelled");
+                $('#viewBookingModal').modal('hide');
+                $('#calendar').fullCalendar('refetchEvents');
+            });
+        });
+
+
         // REJECT BOOKING
         $("#rejectBtn").click(function() {
             $.post(SITEURL + "/booking/reject", {
-                id: $("#reject_booking_id").val()
+                id: $("#reject_booking_id").val(),
+                organizationUnits: $("#approve_organizationUnits").val()
             }, function() {
                 toastr.error("Booking Rejected");
                 $('#viewBookingModal').modal('hide');
@@ -708,13 +749,13 @@
 
         let editStartPicker = flatpickr("#edit_booking_start", {
             enableTime: true,
-            dateFormat: "Y-m-d",
+            dateFormat: "Y-m-d H:i",
             time_24hr: true
         });
 
         let editEndPicker = flatpickr("#edit_booking_end", {
             enableTime: true,
-            dateFormat: "Y-m-d",
+            dateFormat: "Y-m-d H:i",
             time_24hr: true
         });
 

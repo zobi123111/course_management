@@ -51,10 +51,19 @@ class TrainingEventsController extends Controller
             'firstLesson.instructor:id,fname,lname',
             'firstLesson.resource:id,name',
             'eventLessons',
+            'defLessons',
             'eventLessons.lesson:id,enable_cbta',
             'eventLessons.lesson.subLessons:id,lesson_id,title',
             'overallAssessments',
         ];
+
+        // $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations)->get();
+
+        // echo "<pre>";
+        //     print_r($trainingEvents_instructor);
+        // echo "</pre>";
+        // dd();
+
 
         if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) {
             // Super Admin: Get all data
@@ -80,7 +89,6 @@ class TrainingEventsController extends Controller
                 ])
                 ->orderByDesc('event_date')
                 ->get();
-
 
             $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations) 
                 ->where('entry_source', "instructor")
@@ -199,31 +207,176 @@ class TrainingEventsController extends Controller
                 ->get();
         }
         // Attach instructor lists to each training event
+        // $trainingEvents->each(function ($event) {
+        //     if (!$event->relationLoaded('eventLessons', 'defLessons') || !($event->eventLessons instanceof \Illuminate\Support\Collection)) {
+        //         $event->lesson_instructors = collect();
+        //         $event->lesson_instructor_users = collect();
+        //         $event->last_lesson_instructor_id = null;
+        //         $event->last_lesson_instructor = null;
+        //         return;
+        //     }
+        //     // Get unique instructor IDs from event lessons
+        //     $event->lesson_instructors = $event->eventLessons
+        //         ->pluck('instructor_id')
+        //         ->filter()
+        //         ->unique()
+        //         ->values();
+
+        //     $defLessonInstructorIds = $event->defLessons
+        //         ->pluck('instructor_id')
+        //         ->filter();
+
+        //     $event->lesson_instructors = $event->lesson_instructors
+        //         ->merge($defLessonInstructorIds)
+        //         ->unique()
+        //         ->values();
+
+                
+        //     // Load instructor users
+        //     $event->lesson_instructor_users = User::whereIn('id', $event->lesson_instructors)->get();
+
+
+        //     echo "<pre>";
+        //         print_r($event->defLessons);
+        //     echo "</pre>";
+
+        //     dd();
+
+        //     // Determine the last lesson instructor (by Id)
+        //     $lastLesson = $event->eventLessons->sortByDesc('id')->first();
+        //     $event->last_lesson_instructor_id = $lastLesson ? $lastLesson->instructor_id : null;
+
+        //     // Optional: preload the actual user object
+        //     $event->last_lesson_instructor = $event->lesson_instructor_users->firstWhere('id', $event->last_lesson_instructor_id);
+        // });
+
+
+
+        // $trainingEvents->each(function ($event) {
+
+            
+
+        //     // Always initialize
+        //     $event->lesson_instructors = collect();
+        //     $event->lesson_instructor_users = collect();
+        //     $event->last_lesson_instructor_id = null;
+        //     $event->last_lesson_instructor = null;
+
+        //     // Event lesson instructors
+        //     $eventLessonInstructorIds = $event->eventLessons
+        //         ->pluck('instructor_id')
+        //         ->filter();
+
+        //     // Def lesson instructors
+        //     $defLessonInstructorIds = $event->defLessons
+        //         ->pluck('instructor_id')
+        //         ->filter();
+
+        //     // Merge both
+        //     $event->lesson_instructors = $eventLessonInstructorIds
+        //         ->merge($defLessonInstructorIds)
+        //         ->unique()
+        //         ->values();
+
+
+        //     // Load users if any instructors exist
+        //     if ($event->lesson_instructors->isNotEmpty()) {
+        //         $event->lesson_instructor_users = User::whereIn('id', $event->lesson_instructors)->get();
+        //     }
+
+        //     // Last lesson instructor (eventLessons only)
+        //     // $lastLesson = $event->eventLessons->sortByDesc('id')->first();
+        //     // $event->last_lesson_instructor_id = $lastLesson?->instructor_id;
+
+        //     // $event->last_lesson_instructor = $event->lesson_instructor_users->firstWhere('id', $event->last_lesson_instructor_id);
+
+        //     // Try EVENT lessons first
+        //     $lastEventLessonInstructorId = $event->eventLessons
+        //         ->whereNotNull('instructor_id')
+        //         ->sortByDesc('id')
+        //         ->value('instructor_id');
+
+        //     // Fallback to DEF lessons
+        //     $lastDefLessonInstructorId = $event->defLessons
+        //         ->whereNotNull('instructor_id')
+        //         ->sortByDesc('id')
+        //         ->value('instructor_id');
+
+        //     // Final resolved instructor
+        //     $event->last_lesson_instructor_id =
+        //         $lastEventLessonInstructorId
+        //         ?? $lastDefLessonInstructorId
+        //         ?? null;
+
+        //     // Attach user (safe)
+        //     $event->last_lesson_instructor = $event->lesson_instructor_users->firstWhere('id', $event->last_lesson_instructor_id);
+
+
+        //     // echo "<pre>";
+        //     //     print_r($event->last_lesson_instructor_id);
+        //     // echo "</pre>";
+
+        //     // dd();
+        // });
+
         $trainingEvents->each(function ($event) {
-            if (!$event->relationLoaded('eventLessons') || !($event->eventLessons instanceof \Illuminate\Support\Collection)) {
-                $event->lesson_instructors = collect();
-                $event->lesson_instructor_users = collect();
-                $event->last_lesson_instructor_id = null;
-                $event->last_lesson_instructor = null;
-                return;
-            }
-            // Get unique instructor IDs from event lessons
-            $event->lesson_instructors = $event->eventLessons
+
+            $event->lesson_instructors = collect();
+            $event->lesson_instructor_users = collect();
+            $event->last_lesson_instructor_id = null;
+            $event->last_lesson_instructor = null;
+
+            $eventLessonInstructorIds = $event->eventLessons
                 ->pluck('instructor_id')
-                ->filter()
+                ->filter();
+
+            $defLessonInstructorIds = $event->defLessons
+                ->pluck('instructor_id')
+                ->filter();
+
+            $event->lesson_instructors = $eventLessonInstructorIds
+                ->merge($defLessonInstructorIds)
                 ->unique()
                 ->values();
 
-            // Load instructor users
-            $event->lesson_instructor_users = User::whereIn('id', $event->lesson_instructors)->get();
+            $lastEventLessonInstructorId = $event->eventLessons
+                ->whereNotNull('instructor_id')
+                ->sortByDesc('id')
+                ->value('instructor_id');
 
-            // Determine the last lesson instructor (by Id)
-            $lastLesson = $event->eventLessons->sortByDesc('id')->first();
-            $event->last_lesson_instructor_id = $lastLesson ? $lastLesson->instructor_id : null;
+            $lastDefLessonInstructorId = $event->defLessons
+                ->whereNotNull('instructor_id')
+                ->sortByDesc('id')
+                ->value('instructor_id');
 
-            // Optional: preload the actual user object
-            $event->last_lesson_instructor = $event->lesson_instructor_users->firstWhere('id', $event->last_lesson_instructor_id);
+            $event->last_lesson_instructor_id =
+                $lastEventLessonInstructorId
+                ?? $lastDefLessonInstructorId
+                ?? null;
+
+            if ($event->last_lesson_instructor_id) {
+                $event->lesson_instructors = $event->lesson_instructors
+                    ->push($event->last_lesson_instructor_id)
+                    ->unique()
+                    ->values();
+            }
+
+            if ($event->lesson_instructors->isNotEmpty()) {
+                $event->lesson_instructor_users =
+                    User::whereIn('id', $event->lesson_instructors)->get();
+            }
+
+            $event->last_lesson_instructor =
+                $event->lesson_instructor_users
+                    ->firstWhere('id', (int) $event->last_lesson_instructor_id);
+
+            // echo "<pre>";
+            //     print_r($event->lesson_instructor_users);
+            // echo "</pre>";
+
+            // dd();
         });
+
 
        // dd($trainingEvents);
         return view('trainings.index', compact('groups', 'courses', 'instructors', 'organizationUnits', 'trainingEvents', 'resources', 'students', 'trainingEvents_instructor'));
@@ -3128,25 +3281,68 @@ class TrainingEventsController extends Controller
     //     return redirect()->route('training.index')->with('message', 'Course has been ended and locked.');
     // }
 
+    // public function getEventInstructors($id)
+    // {
+    //     $event = TrainingEvents::with('eventLessons')->findOrFail(decode_id($id));
+    //     $instructorIds = $event->eventLessons
+    //         ->pluck('instructor_id')
+    //         ->filter()
+    //         ->unique()
+    //         ->values();
+
+    //     $instructors = User::whereIn('id', $instructorIds)->get();
+
+    //     $lastLesson = $event->eventLessons->sortByDesc('id')->first();
+    //     $lastInstructorId = $lastLesson?->instructor_id;
+
+    //     return response()->json([
+    //         'instructors' => $instructors,
+    //         'last_instructor_id' => $lastInstructorId,
+    //     ]);
+    // }
+
     public function getEventInstructors($id)
     {
-        $event = TrainingEvents::with('eventLessons')->findOrFail(decode_id($id));
-        $instructorIds = $event->eventLessons
+        $event = TrainingEvents::with(['eventLessons', 'defLessons'])->findOrFail(decode_id($id));
+
+        // Get instructor IDs from eventLessons
+        $eventLessonInstructorIds = $event->eventLessons
             ->pluck('instructor_id')
-            ->filter()
+            ->filter();
+
+        // Get instructor IDs from defLessons
+        $defLessonInstructorIds = $event->defLessons
+            ->pluck('instructor_id')
+            ->filter();
+
+        // Merge both sets of instructors and get unique IDs
+        $instructorIds = $eventLessonInstructorIds
+            ->merge($defLessonInstructorIds)
             ->unique()
             ->values();
 
-        $instructors = User::whereIn('id', $instructorIds)->get();
+        // Fetch instructor user records
+        $instructors = User::whereIn('id', $instructorIds)->get(['id', 'fname', 'lname']);
 
-        $lastLesson = $event->eventLessons->sortByDesc('id')->first();
-        $lastInstructorId = $lastLesson?->instructor_id;
+        // Determine last instructor (prefer eventLessons first)
+        $lastEventInstructorId = $event->eventLessons
+            ->whereNotNull('instructor_id')
+            ->sortByDesc('id')
+            ->value('instructor_id');
+
+        $lastDefInstructorId = $event->defLessons
+            ->whereNotNull('instructor_id')
+            ->sortByDesc('id')
+            ->value('instructor_id');
+
+        $lastInstructorId = $lastEventInstructorId ?? $lastDefInstructorId ?? null;
 
         return response()->json([
             'instructors' => $instructors,
             'last_instructor_id' => $lastInstructorId,
         ]);
     }
+
 
     public function unlocked_trainingEvent(Request $request)
     {
