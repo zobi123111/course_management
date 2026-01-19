@@ -137,6 +137,7 @@
                 @if(checkAllowedModule('orgunit','orgunit.delete')->isNotEmpty())
                 <th scope="col">Delete</th>
                 @endif
+                <th scope="col">View</th>
               
             </tr>
         </thead>
@@ -163,6 +164,7 @@
                         data-user-id="{{ encode_id(optional($val->roleOneUsers)->id) }}">
                     </i>
                 </td>
+                
                
             </tr>
             @endforeach
@@ -312,13 +314,13 @@
                         <div id="password_confirmation_error" class="text-danger error_e"></div>
                     </div>
 
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <div class="email-switch">
                             <label for="create_send_email" class="switch-text">
                                 Send Email Notification
                             </label>
 
-                            <!-- Hidden input ensures 0 is sent if unchecked -->
+                           
                             <input type="hidden" name="send_email" value="0">
 
                             <label class="switch mt-2">
@@ -327,7 +329,7 @@
                                     id="create_send_email"
                                     name="send_email"
                                     value="1"
-                                    class="switch-input"
+                                    class="switch-input" 
                                 >
                                 <div class="switch-button">
                                     <span class="switch-button-left">Send Email</span>
@@ -335,7 +337,7 @@
                                 </div>
                             </label>
                         </div>
-                    </div>
+                    </div> -->
 
                     <div class="modal-footer"> 
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
@@ -437,13 +439,10 @@
                             <div id="password_confirmation_error_up" class="text-danger error_e"></div>
                         </div>
                     </div>
-
-                    <div class="email-switch">
+                    <!-- <div class="email-switch">
                         <label for="edit_send_email" class="switch-text">
                             Send Email Notification
                         </label>
-
-                        <!-- This ensures 0 is sent when unchecked -->
                         <input type="hidden" name="send_email" value="0">
 
                         <label class="switch mt-2">
@@ -459,9 +458,7 @@
                                 <span class="switch-button-right">Not Send Email</span>
                             </div>
                         </label>
-                    </div>
-
-
+                    </div> -->
                     <div class="modal-footer">
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
                         <a href="#" type="button" id="updateOrgUnit" class="btn btn-primary sbt_btn">Update</a>
@@ -526,7 +523,8 @@ $(document).ready(function() {
             @endif
             @if(checkAllowedModule('orgunit','orgunit.delete')->isNotEmpty())
             { data: 'delete', name: 'delete', orderable: false, searchable: false },
-            @endif
+            @endif 
+            { data: 'view', name: 'view', orderable: false, searchable: false },
         ]
     });
 

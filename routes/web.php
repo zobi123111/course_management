@@ -388,6 +388,11 @@ Route::post('/booking/approve', [BookingController::class, 'approve']);
 Route::post('/booking/delete', [BookingController::class, 'delete']);
 Route::post('/booking/reject', [BookingController::class, 'reject']);
 Route::get('/group/students/', [BookingController::class, 'getstudents'])->name('getstudents'); 
+Route::get('/org_setting/{id}', [OrganizationController::class, 'org_setting'])->name('org_setting');
+Route::post('/store/org_setting', [OrganizationController::class, 'store_org_setting'])->name('store_org_setting');
+Route::get('/get_org_setting/{id}', [OrganizationController::class, 'get_org_setting'])->name('get_org_setting');
+
+
 
 
     

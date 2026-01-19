@@ -879,6 +879,7 @@ class UserController extends Controller
 
     public function save_user(Request $request)
     {
+       // dd($request->all());
         $validated = $request->validate([
             'firstname' => 'required',
             'lastname' => 'required',
@@ -1037,7 +1038,9 @@ class UserController extends Controller
             "medical_2_required"     => $request->medical_2_checkbox ?? 0,
             "medical_2_adminRequired" => $request->medical_2_verification_required ?? 0,
             "is_admin"               => $is_admin,
-            "is_activated"           => $request->archive_status
+            "is_activated"           => $request->archive_status,
+            "date_of_birth"          => $request->date_of_birth,
+            "phone_number"           => $request->phone_number,
             
         );
 
@@ -1208,7 +1211,7 @@ class UserController extends Controller
 
     public function update(Request $request)
     {
-        //dd($request->all());
+       // dd($request->all());
         $userToUpdate = User::find($request->edit_form_id);
         $UserDocument = UserDocument::where('user_id', $userToUpdate->id)->first();
 
@@ -1398,7 +1401,9 @@ class UserController extends Controller
                 'medical_2_adminRequired' => $medical_2_adminRequired ?? 0,
                 'is_admin' => $is_admin,
                 "is_activated"  => $request->archive_status,
-                 "unarchived_by"  => NULL
+                "unarchived_by"  => NULL,
+                "date_of_birth" => $request->date_of_birth,
+                "phone_number" => $request->phone_number
             ];
 
 

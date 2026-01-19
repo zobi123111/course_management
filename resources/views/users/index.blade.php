@@ -388,7 +388,7 @@
         <div class="col-md-6">
             <label for="email" class="form-label">Select Org Unit<span
                     class="text-danger">*</span></label>
-            <select class="form-select" name="ou_id" aria-label="Default select example">
+            <select class="form-select" name="ou_id" id="create_ou_id" aria-label="Default select example">
                 <option value="">Select Org Unit</option>
                 @foreach($organizationUnits as $val)
                 <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
@@ -411,6 +411,17 @@
                 <option value="0" selected>UnArchive</option>
                 <option value="1">Archive</option>
             </select>
+        </div>
+        <div class="row mb-3 mt-4">
+            <div class="col-md-6 create_date_of_birth_div" style="display:none">
+                    <label  class="form-label">Date of Birth</label>
+                <input type="date" class="form-control" name="date_of_birth" id="create_date_of_birth">
+            </div>
+
+            <div class="col-md-6 create_phone_number_div" style="display:none">
+                <label  class="form-label">Phone Number</label>
+                <input type="number" class="form-control" name="phone_number" id="create_phone_number">
+          </div>
         </div>
     </div>
     <div class="modal-footer">
@@ -732,7 +743,7 @@
                                 class="form-control mt-3" style="display: none;" placeholder="Enter the Text">
                         </div>
                     </div>
-                    </div>
+                   </div>
 
                     @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                     <div class="col-md-6">
@@ -764,7 +775,20 @@
                             <option value="1">Archive</option>
                         </select>
                     </div>
+                   
+                <div class="row mb-3 mt-4">
+                    <div class="col-md-6 date_of_birth_div" style="display:none">
+                         <label  class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control" name="date_of_birth" id="date_of_birth">
+                    </div>
+
+                     <div class="col-md-6 phone_number_div" style="display:none">
+                         <label  class="form-label">Phone Number</label>
+                        <input type="number" class="form-control" name="phone_number" id="phone_number">
+                    </div>
+                </div>
             </div>
+            
             <div class="modal-footer">
                 <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
                 <a href="#" type="button" id="updateForm" class="btn btn-primary sbt_btn">Update</a>
@@ -1676,7 +1700,10 @@
                     $('#edit_ou_id').val(response.user.ou_id);
                     $('#edit_status').val(response.user.status);
                     $('#archive_status').val(response.user.is_activated);
-                    console.log(response);
+                    $('#date_of_birth').val(response.user.date_of_birth);
+                    $('#phone_number').val(response.user.phone_number);
+                    $('#edit_ou_id').trigger('change');
+                
                     edit_selectBoxIndex = response.userRatings_licence_1.length || 0;
                     if (response.licence1 == 1) {
                         $('#edit_licence_rating_section').show();
@@ -2046,7 +2073,6 @@
                         $('#edit_licence_checkbox').prop('checked', false).trigger('change');
                     }
                     if(document.licence_file){
-                                console.log(document.licence_file);
                                  $('#uk_licence_file a').attr('href', '/storage/' + document.licence_file);
                                 $('#uk_licence_file').show()
                                  $('#uk_licence_file a').show()
@@ -2056,7 +2082,6 @@
                             $('#uk_licence_file a').hide()
                         }
                     if(document.licence_file_2){
-                        console.log(document.licence_file_2);
                         $('#easa_licence_file a').attr('href', '/storage/' + document.licence_file_2);
                          $('#easa_licence_file').show();
                         $('#easa_licence_file a').show();
@@ -2137,7 +2162,6 @@
 
                 },
                 error: function(xhr, status, error) {
-                    console.error(xhr.responseText);
                 }
             });
         });
@@ -2276,7 +2300,57 @@
         }
     });
 
-    //------------------------------------
+$(document).on('change', '#edit_ou_id', function () {
+    let ou_id = $(this).val();
+    $.ajax({
+        type: 'get',
+        url: '/get_org_setting/' + ou_id,
+        success: function (response) {
+
+            if (response.OuSetting && response.OuSetting.show_dob == 1) {
+                $('.date_of_birth_div').show();
+                $('.phone_number_div').show();
+            } else { 
+                $('#date_of_birth').val('');
+                $('#phone_number').val('');
+                $('.date_of_birth_div').hide();
+                $('.phone_number_div').hide();
+            
+            }
+
+        },
+        error: function (xhr) {
+            console.log(xhr.responseText);
+        }
+    });
+});
+
+$(document).on('change', '#create_ou_id', function () {
+    let ou_id = $(this).val();
+    $.ajax({
+        type: 'get',
+        url: '/get_org_setting/' + ou_id,
+        success: function (response) {
+
+            if (response.OuSetting && response.OuSetting.show_dob == 1) {
+                $('.create_date_of_birth_div').show();
+                $('.create_phone_number_div').show();
+            } else { 
+                $('#create_date_of_birth').val('');
+                $('#create_phone_number').val('');
+                $('.create_date_of_birth_div').hide();
+                $('.create_phone_number_div').hide();
+            
+            }
+
+        },
+        error: function (xhr) {
+            console.log(xhr.responseText);
+        }
+    });
+});
+
+//------------------------------------
 </script>
 
 

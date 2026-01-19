@@ -7,6 +7,7 @@ use App\Models\OrganizationUnits;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Page;
+use App\Models\OuSetting;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +21,7 @@ class OrganizationController extends Controller
 {
     public function index()
     {
-        $organizationUnitsData = OrganizationUnits::with(['roleOneUsers'])
+        $organizationUnitsData = OrganizationUnits::with(['roleOneUsers']) 
         ->withCount('users') // Count all users linked to organization
         ->whereNull('deleted_at')
         ->get();
@@ -75,6 +76,7 @@ class OrganizationController extends Controller
                 'permission' => '<a href="#" class="get_org_permission btn btn-primary" data-ou-id="' . encode_id($unit->id) . '" >'.'Permission'.'</a>',
                 'edit' => '<i class="fa fa-edit edit-orgunit-icon" data-orgunit-id="' . encode_id($unit->id) . '" data-user-id="' . encode_id(optional($unit->roleOneUsers)->id) . '"></i>',
                 'delete' => '<i class="fa-solid fa-trash delete-icon" data-orgunit-id="' . encode_id($unit->id) . '" data-user-id="' . encode_id(optional($unit->roleOneUsers)->id) . '"></i>',
+                'view' => '<a href="' . url('org_setting/'.encode_id($unit->id)) . '"><i class="fa fa-eye view-icon" data-orgunit-id="' . encode_id ($unit->id) . '"data-user-id="' . encode_id(optional($unit->roleOneUsers)->id) . '"></i></a>',
             ];
         });
 
@@ -176,7 +178,7 @@ class OrganizationController extends Controller
                 'org_logo' => $logo_name[0] ?? null,
                 'uk_ato_number'    => $request->uk_ato_num ?? null,
                 'easa_ato_number'  => $request->easa_ato_num ?? null,
-                'send_email'       => $request->send_email ?? 0,
+                'send_email'       => 0,
             ]);
     
             // Step 2: Store the user data only if email is provided
@@ -311,7 +313,7 @@ class OrganizationController extends Controller
                 'org_logo' => $logo_name[0] ?? $request->existing_org_logo,
                 'uk_ato_number'   => $request->uk_ato_number,
                 'easa_ato_number'  => $request->easa_ato_number,
-                'send_email'       => $request->send_email ?? 0,
+               
             ]);
 
             // Step 2: Update existing user
@@ -384,7 +386,53 @@ class OrganizationController extends Controller
         return response()->json(['orgUnitUsers' => $orgUnitUsers]);
 
         }
+  
+        public function org_setting(Request $request, $ou_id)
+        {
+            $ou_id = decode_id($ou_id);
 
+            $ou_detail = OrganizationUnits::where('id', $ou_id)->select('org_unit_name', 'id')->get();
+            $ou_name = $ou_detail[0]->org_unit_name;
+            $ou_id = $ou_detail[0]->id;
+            $organizationUnits = OrganizationUnits::all();
+            $OuSetting = OuSetting::where('organization_id', $ou_id)->first();
+            return view('organization.org_setting', compact('organizationUnits', 'ou_name', 'ou_id','OuSetting'));
+        }
+
+        public function store_org_setting(Request $request)
+        {
+            $validated = $request->validate([
+                'organization_unit_id' => 'required|integer|exists:organization_units,id',
+                'auto_archive'         => 'required|in:0,1',
+                'archive_after_months' => 'nullable|required_if:auto_archive,1|integer|min:1|max:120',
+                'show_dob'             => 'required|in:0,1',
+                'show_phone'           => 'required|in:0,1',
+                'send_email'           => 'required|in:0,1',
+            ]);
+
+            OuSetting::updateOrCreate(
+                ['organization_id' => $validated['organization_unit_id']],
+                [
+                    'auto_archive'         => $validated['auto_archive'],
+                    'archive_after_months' => $validated['archive_after_months'] ?? null,
+                    'show_dob'             => $validated['show_dob'],
+                    'show_phone'           => $validated['show_phone'],
+                    'show_phone'           => $validated['show_phone'],
+                    'send_email'           => $validated['send_email'],
+                ]
+            );
+            Session::flash('message', 'Organization General setting Updated successfully .');
+            return response()->json([
+                'success' => true,
+                'message' => 'Organization General setting Updated successfully .'
+            ]);
+        }
+        
+         public function get_org_setting(Request $request, $ou_id)
+        {
+            $OuSetting = OuSetting::where('organization_id', $ou_id)->first();
+            return response()->json(['OuSetting' => $OuSetting]);
+        }
 
     
 }

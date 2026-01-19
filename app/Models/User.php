@@ -73,7 +73,9 @@ class User extends Authenticatable
         'medical_2_adminRequired',
         'is_admin',
         'is_activated',
-        'unarchived_by'
+        'unarchived_by',
+        'date_of_birth',
+        'phone_number'
     ];
 
     /**
