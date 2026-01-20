@@ -174,6 +174,11 @@
                 <div class="row mb-4">
                     <label class="col-sm-4 col-form-label">
                         Send Email Notification
+                            <i class="bi bi-info-circle-fill text-primary ms-1"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="right"
+                                title="When enabled, an email notification will be sent while booking a resource during calendar booking.">
+                            </i>
                     </label>
                     <div class="col-sm-8">
                         <input type="hidden" name="send_email" value="0">

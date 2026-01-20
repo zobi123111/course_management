@@ -8,6 +8,7 @@ use App\Models\Resource;
 use App\Models\OrganizationUnits;
 use App\Models\Group;
 use App\Models\User;
+use App\Models\OuSetting;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
@@ -98,7 +99,6 @@ class BookingController extends Controller
 
     public function store(Request $request)
     {
-        // dd($request->all());
         $booking = new Booking();
         $booking->ou_id = $request->organizationUnits;
         $booking->std_id = $request->student ?? Auth::user()->id;
@@ -112,10 +112,10 @@ class BookingController extends Controller
         $booking->send_email = $request->boolean('send_email') ? 1 : 0;
         $booking->save();
 
-        $sendemail = organizationUnits::where('id', $request->organizationUnits)->first();
-
-        if ($sendemail->send_email == 1) {
-
+       // $sendemail = organizationUnits::where('id', $request->organizationUnits)->first();
+        $checkSend_mail = OuSetting::where('organization_id', $request->organizationUnits)->select('send_email')->first();
+        if ($checkSend_mail->send_email == 1) { 
+ 
             $studentEmail = User::find($booking->std_id)->email;
             $instructor = User::find($booking->instructor_id)->email;
             $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
@@ -127,14 +127,12 @@ class BookingController extends Controller
                         ->subject('New Booking Created');
             });
         }
-
         return response()->json(['success' => true]);
     }
 
     public function update(Request $request)
     {
         $booking = Booking::findOrFail($request->id);
-
         $booking->ou_id = $request->organizationUnits;
         $booking->std_id = $request->student ?? Auth::user()->id;
         $booking->resource = $request->resource_id;
