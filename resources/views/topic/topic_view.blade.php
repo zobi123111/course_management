@@ -35,6 +35,19 @@
     </div>
     @endif
 
+    @if(session()->has('skipped') && count(session('skipped')) > 0)
+        <div class="alert alert-warning skippedMessage" role="alert">
+            <strong>Skipped Questions:</strong>
+            <ul>
+                @foreach(session('skipped') as $skip)
+                    <li>
+                        <strong>{{ $skip['question'] }}</strong> - {{ $skip['reason'] }}
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -309,6 +322,10 @@
         setTimeout(function() {
             $('#successMessage').fadeOut('slow');
         }, 2000);
+
+        setTimeout(function() {
+            $('.skippedMessage').fadeOut('slow');
+        }, 3000);
 
         $(document).ready(function() {
             $('#questionTable').DataTable({
