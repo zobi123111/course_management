@@ -2306,11 +2306,23 @@ $(document).on('change', '#edit_ou_id', function () {
         type: 'get',
         url: '/get_org_setting/' + ou_id,
         success: function (response) {
-
-            if (response.OuSetting && response.OuSetting.show_dob == 1) {
+            console.log(response);
+            if (response.OuSetting && response.OuSetting.show_dob == 1 && response.OuSetting.show_phone == 0) { 
                 $('.date_of_birth_div').show();
+                $('.phone_number_div').hide();
+                $('#phone_number').val('');
+            }
+            else if(response.OuSetting && response.OuSetting.show_phone == 1 && response.OuSetting.show_dob == 0){ 
                 $('.phone_number_div').show();
-            } else { 
+                $('.date_of_birth_div').hide();
+                $('#date_of_birth').val('');
+                
+              }
+            else if(response.OuSetting && response.OuSetting.show_dob == 1 && response.OuSetting.show_phone == 1){ 
+                $('.phone_number_div').show();
+                $('.date_of_birth_div').show();
+            }
+            else { 
                 $('#date_of_birth').val('');
                 $('#phone_number').val('');
                 $('.date_of_birth_div').hide();
@@ -2332,10 +2344,22 @@ $(document).on('change', '#create_ou_id', function () {
         url: '/get_org_setting/' + ou_id,
         success: function (response) {
 
-            if (response.OuSetting && response.OuSetting.show_dob == 1) {
+            if (response.OuSetting && response.OuSetting.show_dob == 1 && response.OuSetting.show_phone == 0) { 
                 $('.create_date_of_birth_div').show();
+                $('.create_phone_number_div').hide();
+                $('#create_phone_number').val('');
+            }
+            else if(response.OuSetting && response.OuSetting.show_phone == 1 && response.OuSetting.show_dob == 0){ 
                 $('.create_phone_number_div').show();
-            } else { 
+                $('.create_date_of_birth_div').hide();
+                $('#create_date_of_birth').val('');
+                
+              }
+            else if(response.OuSetting && response.OuSetting.show_dob == 1 && response.OuSetting.show_phone == 1){ 
+                $('.create_phone_number_div').show();
+                $('.create_date_of_birth_div').show();
+            }
+            else { 
                 $('#create_date_of_birth').val('');
                 $('#create_phone_number').val('');
                 $('.create_date_of_birth_div').hide();
