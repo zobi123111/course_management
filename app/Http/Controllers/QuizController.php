@@ -382,11 +382,50 @@ class QuizController extends Controller
         return redirect()->route('quiz.index')->with('message', 'Quiz deleted successfully');
     }
 
+    // public function importCsv(Request $request)
+    // {
+    //     $request->validate([
+    //         'topic_id'  => 'required|integer|exists:topics,id',
+    //         'csv_file' => 'required|mimes:csv,txt|max:2048',
+    //     ]);
+
+    //     $file = $request->file('csv_file');
+    //     $path = $file->getRealPath();
+
+    //     $data = array_map('str_getcsv', file($path));
+
+    //     $header = array_map('trim', $data[0]);
+    //     unset($data[0]);
+
+    //     foreach ($data as $row) {
+    //         $row = array_combine($header, $row);
+
+    //         $option_A = isset($row['option_A']) ? trim($row['option_A']) : null;
+    //         $option_B = isset($row['option_B']) ? trim($row['option_B']) : null;
+    //         $option_C = isset($row['option_C']) ? trim($row['option_C']) : null;
+    //         $option_D = isset($row['option_D']) ? trim($row['option_D']) : null;
+
+    //         TopicQuestion::create([
+    //             'topic_id'        => $request->topic_id,
+    //             'question_text'   => $row['question'] ?? null,
+    //             'question_type'   => $row['type'] ?? null,
+    //             'option_type'     => 'text',
+    //             'option_A'        => $option_A,
+    //             'option_B'        => $option_B,
+    //             'option_C'        => $option_C,
+    //             'option_D'        => $option_D,
+    //             'correct_option'  => $row['correct_answers'] ?? null,
+    //         ]);
+    //     }
+
+    //     return back()->with('message', 'Questions imported successfully!');
+    // }
+
     public function importCsv(Request $request)
     {
         $request->validate([
             'topic_id'  => 'required|integer|exists:topics,id',
-            'csv_file' => 'required|mimes:csv,txt|max:2048',
+            'csv_file'  => 'required|mimes:csv,txt|max:2048',
         ]);
 
         $file = $request->file('csv_file');
@@ -397,28 +436,60 @@ class QuizController extends Controller
         $header = array_map('trim', $data[0]);
         unset($data[0]);
 
-        foreach ($data as $row) {
+        $skipped = [];
+        $importedCount = 0;
+
+        foreach ($data as $index => $row) {
+
             $row = array_combine($header, $row);
 
-            $option_A = isset($row['option_A']) ? trim($row['option_A']) : null;
-            $option_B = isset($row['option_B']) ? trim($row['option_B']) : null;
-            $option_C = isset($row['option_C']) ? trim($row['option_C']) : null;
-            $option_D = isset($row['option_D']) ? trim($row['option_D']) : null;
+            $requiredFields = [
+                'question',
+                'type',
+                'option_A',
+                'option_B',
+                'option_C',
+                'option_D',
+                'correct_answers'
+            ];
+
+            $missingFields = [];
+
+            foreach ($requiredFields as $field) {
+                if (!isset($row[$field]) || trim($row[$field]) === '') {
+                    $missingFields[] = $field;
+                }
+            }
+
+            if (!empty($missingFields)) {
+                $skipped[] = [
+                    'row'     => $index + 1,
+                    'question'=> $row['question'] ?? 'N/A',
+                    'reason'  => 'Missing fields: ' . implode(', ', $missingFields),
+                ];
+                continue;
+            }
 
             TopicQuestion::create([
-                'topic_id'        => $request->topic_id,
-                'question_text'   => $row['question'] ?? null,
-                'question_type'   => $row['type'] ?? null,
-                'option_type'     => 'text',
-                'option_A'        => $option_A,
-                'option_B'        => $option_B,
-                'option_C'        => $option_C,
-                'option_D'        => $option_D,
-                'correct_option'  => $row['correct_answers'] ?? null,
+                'topic_id'       => $request->topic_id,
+                'question_text'  => trim($row['question']),
+                'question_type'  => trim($row['type']),
+                'option_type'    => 'text',
+                'option_A'       => trim($row['option_A']),
+                'option_B'       => trim($row['option_B']),
+                'option_C'       => trim($row['option_C']),
+                'option_D'       => trim($row['option_D']),
+                'correct_option' => trim($row['correct_answers']),
             ]);
+
+            $importedCount++;
         }
 
-        return back()->with('message', 'Questions imported successfully!');
+        return back()->with([
+            'message' => "Questions imported successfully!",
+            'imported' => $importedCount,
+            'skipped' => $skipped,
+        ]);
     }
 
     public function exportCsv()
