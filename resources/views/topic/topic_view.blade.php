@@ -36,7 +36,7 @@
     @endif
 
     @if(session()->has('skipped') && count(session('skipped')) > 0)
-        <div class="alert alert-warning skippedMessage" role="alert">
+        <div class="alert alert-warning alert-dismissible fade show skippedMessage" role="alert">
             <strong>Skipped Questions:</strong>
             <ul>
                 @foreach(session('skipped') as $skip)
@@ -45,8 +45,11 @@
                     </li>
                 @endforeach
             </ul>
+
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
+
 
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
@@ -323,9 +326,9 @@
             $('#successMessage').fadeOut('slow');
         }, 2000);
 
-        setTimeout(function() {
-            $('.skippedMessage').fadeOut('slow');
-        }, 3000);
+        // setTimeout(function() {
+        //     $('.skippedMessage').fadeOut('slow');
+        // }, 3000);
 
         $(document).ready(function() {
             $('#questionTable').DataTable({
