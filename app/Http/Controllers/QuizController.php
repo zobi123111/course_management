@@ -422,109 +422,107 @@ class QuizController extends Controller
     // }
 
     public function importCsv(Request $request)
-{
-    $request->validate([
-        'topic_id'  => 'required|integer|exists:topics,id',
-        'csv_file'  => 'required|mimes:csv,txt|max:2048',
-    ]);
-
-    $file = $request->file('csv_file');
-    $path = $file->getRealPath();
-
-    $data = array_map('str_getcsv', file($path));
-
-    $header = array_map('trim', $data[0]);
-    unset($data[0]);
-
-    $skipped = [];
-    $importedCount = 0;
-
-    foreach ($data as $index => $row) {
-
-        // 🔹 FIX 1: prevent array_combine error (very small change)
-        $row = array_pad($row, count($header), null);
-        $row = array_slice($row, 0, count($header));
-        $row = array_combine($header, $row);
-
-        // 🔹 Required fields (only A & B mandatory)
-        $requiredFields = [
-            'question',
-            'type',
-            'option_A',
-            'option_B',
-            'correct_answers'
-        ];
-
-        $missingFields = [];
-
-        foreach ($requiredFields as $field) {
-            if (!isset($row[$field]) || trim($row[$field]) === '') {
-                $missingFields[] = $field;
-            }
-        }
-
-        if (!empty($missingFields)) {
-            $skipped[] = [
-                'row'      => $index + 1,
-                'question' => $row['question'] ?? 'N/A',
-                'reason'   => 'Missing fields: ' . implode(', ', $missingFields),
-            ];
-            continue;
-        }
-
-        // 🔹 FIX 2: validate correct answer ONLY against non-empty options
-        $correctAnswer = trim($row['correct_answers']);
-
-        // convert to array for multi/sequence
-        $correctAnswers = array_map('trim', explode(',', $correctAnswer));
-
-        // valid options
-        $validAnswers = [];
-        foreach (['A', 'B', 'C', 'D'] as $key) {
-            if (!empty($row['option_' . $key])) {
-                $validAnswers[] = $key;
-            }
-        }
-
-        // validate all correct answers
-        $invalid = [];
-        foreach ($correctAnswers as $ans) {
-            if (!in_array(strtoupper($ans), $validAnswers)) {
-                $invalid[] = $ans;
-            }
-        }
-
-        if (!empty($invalid)) {
-            $skipped[] = [
-                'row'      => $index + 1,
-                'question' => $row['question'] ?? 'N/A',
-                'reason'   => "Invalid correct answer: " . implode(', ', $invalid),
-            ];
-            continue;
-        }
-
-        // 🔹 Insert (unchanged except safe nulls)
-        TopicQuestion::create([
-            'topic_id'       => $request->topic_id,
-            'question_text'  => trim($row['question']),
-            'question_type'  => trim($row['type']),
-            'option_type'    => 'text',
-            'option_A'       => trim($row['option_A']),
-            'option_B'       => trim($row['option_B']),
-            'option_C'       => trim($row['option_C'] ?? null),
-            'option_D'       => trim($row['option_D'] ?? null),
-            'correct_option' => $correctAnswer,
+    {
+        $request->validate([
+            'topic_id' => 'required|integer|exists:topics,id',
+            'csv_file' => 'required|mimes:csv,txt|max:2048',
         ]);
 
-        $importedCount++;
-    }
+        $file = $request->file('csv_file');
+        $path = $file->getRealPath();
 
-    return back()->with([
-        'message'  => "Questions imported successfully!",
-        'imported' => $importedCount,
-        'skipped'  => $skipped,
-    ]);
-}
+        $data = array_map('str_getcsv', file($path));
+
+        $header = array_map('trim', $data[0]);
+        unset($data[0]);
+
+        $skipped = [];
+        $importedCount = 0;
+
+        foreach ($data as $index => $row) {
+
+            $row = array_pad($row, count($header), null);
+            $row = array_slice($row, 0, count($header));
+            $row = array_combine($header, $row);
+
+            $type = strtolower(trim($row['type'] ?? ''));
+
+            $requiredFields = ['question', 'type'];
+
+            if ($type !== 'text') {
+                $requiredFields = array_merge($requiredFields, [
+                    'option_A',
+                    'option_B',
+                    'correct_answers',
+                ]);
+            }
+
+            $missingFields = [];
+            foreach ($requiredFields as $field) {
+                if (!isset($row[$field]) || trim($row[$field]) === '') {
+                    $missingFields[] = $field;
+                }
+            }
+
+            if (!empty($missingFields)) {
+                $skipped[] = [
+                    'row'      => $index + 1,
+                    'question' => $row['question'] ?? 'N/A',
+                    'reason'   => 'Missing fields: ' . implode(', ', $missingFields),
+                ];
+                continue;
+            }
+
+            if ($type !== 'text') {
+
+                $correctAnswer  = trim($row['correct_answers']);
+                $correctAnswers = array_map('trim', explode(',', $correctAnswer));
+
+                $validAnswers = [];
+                foreach (['A', 'B', 'C', 'D'] as $key) {
+                    if (!empty($row['option_' . $key])) {
+                        $validAnswers[] = $key;
+                    }
+                }
+
+                $invalid = [];
+                foreach ($correctAnswers as $ans) {
+                    if (!in_array(strtoupper($ans), $validAnswers)) {
+                        $invalid[] = $ans;
+                    }
+                }
+
+                if (!empty($invalid)) {
+                    $skipped[] = [
+                        'row'      => $index + 1,
+                        'question' => $row['question'] ?? 'N/A',
+                        'reason'   => 'Invalid correct answer: ' . implode(', ', $invalid),
+                    ];
+                    continue;
+                }
+            }
+
+            TopicQuestion::create([
+                'topic_id'       => $request->topic_id,
+                'question_text'  => trim($row['question']),
+                'question_type'  => $type,
+                'option_type'    => $type === 'text' ? null : 'text',
+                'option_A'       => $type === 'text' ? null : trim($row['option_A']),
+                'option_B'       => $type === 'text' ? null : trim($row['option_B']),
+                'option_C'       => $type === 'text' ? null : trim($row['option_C'] ?? null),
+                'option_D'       => $type === 'text' ? null : trim($row['option_D'] ?? null),
+                'correct_option' => $type === 'text' ? null : trim($row['correct_answers']),
+            ]);
+
+            $importedCount++;
+        }
+
+        return back()->with([
+            'message'  => 'Questions imported successfully!',
+            'imported' => $importedCount,
+            'skipped'  => $skipped,
+        ]);
+    }
 
 
     public function exportCsv()
