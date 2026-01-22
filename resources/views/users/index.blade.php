@@ -77,7 +77,9 @@
                             <th scope="col">Position</th>
                             @endif
                             <th scope="col">Status</th>
+                            @if(auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1)
                             <th scope="col">Action</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -1253,12 +1255,14 @@
                     data: 'status',
                     name: 'status'
                 },
+                 @if(auth() -> user() -> is_owner == 1 || auth() -> user() -> is_admin == 1)
                 {
                     data: 'action',
                     name: 'action',
                     orderable: false,
                     searchable: false
                 }
+                @endif
             ]
         });
 

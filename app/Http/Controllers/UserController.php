@@ -60,13 +60,13 @@ class UserController extends Controller
 
             // Filter based on permissions
             if (!$is_owner) {
-                if ($is_admin) {
+                // if ($is_admin) {
                     // Admin: only users from same OU
                     $query->where('users.ou_id', $ou_id);
-                } else {
+                // } else {
                     // Normal user: only their own record
-                    $query->where('users.id', $authUser->id);
-                }
+                //     $query->where('users.id', $authUser->id);
+                // }
             }
 
             return DataTables::of($query)
