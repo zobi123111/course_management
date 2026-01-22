@@ -1212,6 +1212,7 @@
             processing: true,
             serverSide: true,
             ajax: "{{ route('users.data') }}",
+            order: [],
             columns: [{
                     data: 'image',
                     name: 'image',
