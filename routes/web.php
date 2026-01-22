@@ -392,6 +392,13 @@ Route::get('/org_setting/{id}', [OrganizationController::class, 'org_setting'])-
 Route::post('/store/org_setting', [OrganizationController::class, 'store_org_setting'])->name('store_org_setting');
 Route::get('/get_org_setting/{id}', [OrganizationController::class, 'get_org_setting'])->name('get_org_setting');
 
+Route::get('/rhs_tags', [TrainingEventsController::class, 'rhs_tags'])->name('rhs_tags');
+Route::post('/tag/create', [TrainingEventsController::class, 'create_tag'])->name('create_tag.store');
+Route::post('/tag/edit', [TrainingEventsController::class, 'edit_tag'])->name('edit_tag.edit');
+Route::post('/tag/update', [TrainingEventsController::class, 'update_tag'])->name('update_tag.update');
+Route::post('/tag/delete', [TrainingEventsController::class, 'delete_tag'])->name('delete_tag.delete');
+
+
 
 
 
