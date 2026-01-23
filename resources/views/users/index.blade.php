@@ -504,75 +504,77 @@
                             <div id="edit_role_name_error_up" class="text-danger error_e"></div>
                         </div>
                         {{-- <div class="col-md-6">
-                            <label for="extra_roles" class="form-label">Select Multiple Roles<span
-                                    class="text-danger"></span></label>
-                            <select class="form-select extra_roles" name="extra_roles[]" id="edit_extra_roles" multiple="multiple">
-                                <option value="">Select roles</option>
-                                @foreach($roles as $val)
-                                <option value="{{ $val->id }}">{{ $val->role_name }}</option>
-                        @endforeach
-                        </select>
-                        <div id="extra_roles_error_up" class="text-danger error_e"></div>
-                    </div> --}}
-                    <!-- Update Password Checkbox -->
-                    <div class="col-md-6">
-                        <div class="">
-                        <label for="edit_update_password_checkbox" class="form-label">Password Change on next
-                            logon</label>
-                        <input type="checkbox" name="edit_update_password_checkbox"
-                            id="edit_update_password_checkbox">
-                        <input type="hidden" name="edit_update_password" id="edit_update_password" value="0">
-                    </div>
-                    </div>
-
-
-                    <!-- Licence -->
-                    <div class="col-md-6">
-                        <div class="mt-3">
-                        <label for="edit_licence_checkbox" class="form-label">UK Licence</label>
-                        <input type="checkbox" name="edit_licence_checkbox" value="1" id="edit_licence_checkbox" class="ms-2">
-
-                        <label for="edit_licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
-                        <input type="checkbox" name="edit_licence_verification_required" id="edit_licence_verification_required" class="ms-2" value="1">
-                        </div>
-                        <input type="text" name="edit_licence" id="edit_licence" class="form-control" style="display: none;" placeholder="Enter UK Licence Number">
-                        <div id="edit_licence_error_up" class="text-danger error_e"></div>
-                        <input type="file" name="edit_licence_file" id="edit_licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
-                        <div id="edit_licence_file_error_up" class="text-danger error_e"></div>
-                        <div class="col-md-6 mt-2" id="uk_licence_file" style="display: none;" >
-                            <a  target="_blank" class="btn btn-sm btn-outline-primary">View Uploaded File</a>
-                        </div>
-
-                        <div id="edit_licence_rating_section" class="mt-3" style="display: none;">
-                            <label class="form-label">Select Ratings for UK Licence</label>
-                            <input type="checkbox" id="edit_uk_licence" />
-                            <div id="edit_rating_select_boxes_container" class="mt-2" style="display: none;">
-                                <!-- Select boxes will be appended here -->
-                            </div>
-                            <button type="button" id="edit_add_rating_box" class="btn btn-primary mt-2" style="display: none;">Add Rating</button>
+                                <label for="extra_roles" class="form-label">Select Multiple Roles<span
+                                        class="text-danger"></span></label>
+                                <select class="form-select extra_roles" name="extra_roles[]" id="edit_extra_roles" multiple="multiple">
+                                    <option value="">Select roles</option>
+                                    @foreach($roles as $val)
+                                    <option value="{{ $val->id }}">{{ $val->role_name }}</option>
+                            @endforeach
+                            </select>
+                            <div id="extra_roles_error_up" class="text-danger error_e"></div>
+                        </div> --}}
+                        <!-- Update Password Checkbox -->
+                        <div class="col-md-6">
+                            <div class="">
+                            <label for="edit_update_password_checkbox" class="form-label">Password Change on next
+                                logon</label>
+                            <input type="checkbox" name="edit_update_password_checkbox"
+                                id="edit_update_password_checkbox">
+                            <input type="hidden" name="edit_update_password" id="edit_update_password" value="0">
                         </div>
                     </div>
-                    <div class="col-md-6">
-                            <div class="mt-3" id="edit_license2">
-                            <label for="edit_licence_checkbox" class="form-label"> EASA Licence</label>
-                            <input type="checkbox" name="edit_licence_2_checkbox" value="1" id="edit_licence_2_checkbox" class="ms-2">
+
+
+                    <div class="row">
+                        <!-- Licence -->
+                        <div class="col-md-6">
+                            <div class="mt-3">
+                            <label for="edit_licence_checkbox" class="form-label">UK Licence</label>
+                            <input type="checkbox" name="edit_licence_checkbox" value="1" id="edit_licence_checkbox" class="ms-2">
 
                             <label for="edit_licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
-                            <input type="checkbox" name="edit_licence_2_verification_required" id="edit_licence_2_verification_required" class="ms-2" value="1">
-                    </div>
-                   
-                        <div id="edit_second_licence_section" style="display: none;">
-                            <input type="text" name="edit_licence_2" id="edit_licence_2" class="form-control edit_licence_2" placeholder="Enter EASA Licence Number">
-                            <div id="edit_licence_2_error" class="text-danger error_e"></div>
+                            <input type="checkbox" name="edit_licence_verification_required" id="edit_licence_verification_required" class="ms-2" value="1">
+                            </div>
+                            <input type="text" name="edit_licence" id="edit_licence" class="form-control" style="display: none;" placeholder="Enter UK Licence Number">
+                            <div id="edit_licence_error_up" class="text-danger error_e"></div>
+                            <input type="file" name="edit_licence_file" id="edit_licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                            <div id="edit_licence_file_error_up" class="text-danger error_e"></div>
+                            <div class="col-md-6 mt-2" id="uk_licence_file" style="display: none;" >
+                                <a  target="_blank" class="btn btn-sm btn-outline-primary">View Uploaded File</a>
+                            </div>
 
-                            <input type="file" name="edit_licence_file_2" id="edit_licence_file_2" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
-                            <div id="edit_licence_file_2_error" class="text-danger error_e"></div>
+                            <div id="edit_licence_rating_section" class="mt-3" style="display: none;">
+                                <label class="form-label">Select Ratings for UK Licence</label>
+                                <input type="checkbox" id="edit_uk_licence" />
+                                <div id="edit_rating_select_boxes_container" class="mt-2" style="display: none;">
+                                    <!-- Select boxes will be appended here -->
+                                </div>
+                                <button type="button" id="edit_add_rating_box" class="btn btn-primary mt-2" style="display: none;">Add Rating</button>
+                            </div>
                         </div>
-                        <div class="col-md-6 mt-2" id="easa_licence_file" style="display:none;" >
-                            <a  target="_blank" class="btn btn-sm btn-outline-primary">View Uploaded File</a>
-                         </div>
 
-                           <div id="edit_licence_2_rating_section" class="mt-3">
+                        <div class="col-md-6">
+                            <div class="mt-3" id="edit_license2">
+                                <label for="edit_licence_checkbox" class="form-label"> EASA Licence</label>
+                                <input type="checkbox" name="edit_licence_2_checkbox" value="1" id="edit_licence_2_checkbox" class="ms-2">
+
+                                <label for="edit_licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
+                                <input type="checkbox" name="edit_licence_2_verification_required" id="edit_licence_2_verification_required" class="ms-2" value="1">
+                            </div>
+                    
+                            <div id="edit_second_licence_section" style="display: none;">
+                                <input type="text" name="edit_licence_2" id="edit_licence_2" class="form-control edit_licence_2" placeholder="Enter EASA Licence Number">
+                                <div id="edit_licence_2_error" class="text-danger error_e"></div>
+
+                                <input type="file" name="edit_licence_file_2" id="edit_licence_file_2" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
+                                <div id="edit_licence_file_2_error" class="text-danger error_e"></div>
+                            </div>
+                            <div class="col-md-6 mt-2" id="easa_licence_file" style="display:none;" >
+                                <a  target="_blank" class="btn btn-sm btn-outline-primary">View Uploaded File</a>
+                            </div>
+
+                            <div id="edit_licence_2_rating_section" class="mt-3">
                                 <label class="form-label">Select Ratings for EASA Licence</label>
                                 <input type="checkbox" id="licence_2_ratings" />
                                 <div id="licence_2_ratings_container" class="mt-2" style="display: none;">
@@ -580,112 +582,120 @@
                                 </div>
                                 <button type="button" id="edit_licence_2_ratings" class="btn btn-primary mt-2" style="display: none;">Add Rating</button>
                             </div>
-                    </div>
-                    <!--   // Medical  -->
-                    <div class="col-md-6">
-                        <div class="mt-3">
-                        <label for="licence_checkbox" class="form-label">UK Medical</label>
-                        <input type="checkbox" name="editmedical_checkbox" id="editmedical_checkbox" class="ms-2"
-                            value="1">
-                        <label for="licence_verification_required" class="form-label ms-4">Admin Verification
-                            required?</label>
-                        <input type="checkbox" name="editmedical_verification_required"
-                            id="editmedical_verification_required" class="ms-2" value="1">
-                            </div>
-                        <div class="editmedical_issued_div" style="display:none">
-                            <label for="extra_roles" class="form-label">Medical Issued By<span
-                                    class="text-danger"></span></label>
-                            <select class="form-select " name="editissued_by" id="editissued_by">
-                                <option value="">Select Issued By</option>
-                                <option value="UKCAA">UK CAA</option>
-                                <option value="EASA">EASA</option>
-                                <option value="FAA">FAA</option>
-                            </select>
-                        </div>
-                        <div class="editmedical_class_div" style="display:none">
-                            <label for="extra_roles" class="form-label mt-2">Medical Class<span
-                                    class="text-danger"></span></label>
-                            <select class="form-select " name="editmedical_class" id="editmedical_class">
-                                <option value="">Select the Class</option>
-                                <option value="class1">Class 1</option>
-                                <option value="class2">Class 2</option>
-                            </select>
-                            <div id="editmedical_issue_date_div">
-                                <label for="extra_roles" class="form-label mt-2">Medical Issue Date<span
-                                        class="text-danger"></span></label>
-                                <input type="date" name="editmedical_issue_date" id="editmedical_issue_date"
-                                    class="form-control" placeholder="Medical Issue Date">
-                            </div>
-                            <div id="editmedical_expiry_date_div">
-                                <label for="extra_roles" class="form-label mt-2">Medical Expiry Date<span
-                                        class="text-danger"></span></label>
-                                <input type="date" name="editmedical_expiry_date" id="editmedical_expiry_date"
-                                    class="form-control" placeholder="Medical Expiry Date">
-                            </div>
-                            <div id="editmedical_detail_div">
-                                <label for="extra_roles" class="form-label mt-2">Medical Detail <span
-                                        class="text-danger"></span></label>
-                                <!-- <input type="text" name="editmedical_detail" id="editmedical_detail"
-                                        class="form-control" placeholder="Enter the Detail"> -->
-                                <textarea name="editmedical_detail" id="editmedical_detail" class="form-control" placeholder="Enter the Detail"></textarea>
-                            </div>
-                            <div id="editmedical_detail_div">
-                                <label for="extra_roles" class="form-label mt-2">Medical Upload <span
-                                        class="text-danger"></span></label>
-                                <input type="file" name="editmedical_file" id="editmedical_file"
-                                    class="form-control" placeholder="Enter the Detail">
-                            </div>
-                            <!-- <button type="button" id="edit_second_medical_btn" class="btn btn-secondary mt-3">
-                                    Second Medical
-                                </button> -->
                         </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <div class="mt-3" id="edit_medical_2">
-                            <label for="licence_checkbox" class="form-label">EASA Medical</label>
-                            <input type="checkbox" name="edit_medical_2_checkbox" id="edit_medical_2_checkbox" class="ms-2" value="1">
-                            <label for="licence_verification_required" class="form-label ms-4">Admin Verification
-                                required?</label>
-                            <input type="checkbox" name="edit_medical_2_verification_required"
-                                id="edit_medical_2_verification_required" class="ms-2" value="1">
-                        </div>
-
-
-                        <!-- Second Medical Fields -->
-                        <div id="edit_second_medical_section" style="display: none;">
-
-                            <!-- <div class="no-left-margin">
+                    <div class="row">
+                        <!--   // Medical  -->
+                        <div class="col-md-6">
+                            <div class="mt-3">
+                                <label for="licence_checkbox" class="form-label">UK Medical</label>
+                                <input type="checkbox" name="editmedical_checkbox" id="editmedical_checkbox" class="ms-2" value="1">
                                 <label for="licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
-                                <input type="checkbox" name="editmedical_verification_required_2" id="editmedical_verification_required_2" class="ms-2" value="1">
-                            </div> -->
+                                <input type="checkbox" name="editmedical_verification_required" id="editmedical_verification_required" class="ms-2" value="1">
+                            </div>
+                            <div class="editmedical_issued_div" style="display:none">
+                                <label for="extra_roles" class="form-label">Medical Issued By<span class="text-danger"></span></label>
+                                <select class="form-select " name="editissued_by" id="editissued_by">
+                                    <option value="">Select Issued By</option>
+                                    <option value="UKCAA">UK CAA</option>
+                                    <option value="EASA">EASA</option>
+                                    <option value="FAA">FAA</option>
+                                </select>
+                            </div>
+                            <div class="editmedical_class_div" style="display:none">
+                                <label for="extra_roles" class="form-label mt-2">Medical Class<span
+                                        class="text-danger"></span></label>
+                                <select class="form-select " name="editmedical_class" id="editmedical_class">
+                                    <option value="">Select the Class</option>
+                                    <option value="class1">Class 1</option>
+                                    <option value="class2">Class 2</option>
+                                </select>
+                                <div id="editmedical_issue_date_div">
+                                    <label for="extra_roles" class="form-label mt-2">Medical Issue Date<span
+                                            class="text-danger"></span></label>
+                                    <input type="date" name="editmedical_issue_date" id="editmedical_issue_date"
+                                        class="form-control" placeholder="Medical Issue Date">
+                                </div>
+                                <div id="editmedical_expiry_date_div">
+                                    <label for="extra_roles" class="form-label mt-2">Medical Expiry Date<span
+                                            class="text-danger"></span></label>
+                                    <input type="date" name="editmedical_expiry_date" id="editmedical_expiry_date"
+                                        class="form-control" placeholder="Medical Expiry Date">
+                                </div>
+                                <div id="editmedical_detail_div">
+                                    <label for="extra_roles" class="form-label mt-2">Medical Detail <span
+                                            class="text-danger"></span></label>
+                                    <!-- <input type="text" name="editmedical_detail" id="editmedical_detail"
+                                            class="form-control" placeholder="Enter the Detail"> -->
+                                    <textarea name="editmedical_detail" id="editmedical_detail" class="form-control" placeholder="Enter the Detail"></textarea>
+                                </div>
+                                <div id="editmedical_detail_div">
+                                    <label for="extra_roles" class="form-label mt-2">Medical Upload <span
+                                            class="text-danger"></span></label>
+                                    <input type="file" name="editmedical_file" id="editmedical_file"
+                                        class="form-control" placeholder="Enter the Detail">
+                                </div>
 
-                            <label class="form-label">EASA Medical Issued By</label>
-                            <select class="form-select" name="editissued_by_2" id="editissued_by_2">
-                                <option value="">Select Issued By</option>
-                                <option value="UKCAA">UK CAA</option>
-                                <option value="EASA">EASA</option>
-                                <option value="FAA">FAA</option>
-                            </select>
+                                <div class="col-md-6 mt-2" id="uk_medical_file_display" style="display:none;" >
+                                    <a  target="_blank" class="btn btn-sm btn-outline-primary">View Uploaded File</a>
+                                </div>
+                                <!-- <button type="button" id="edit_second_medical_btn" class="btn btn-secondary mt-3">
+                                        Second Medical
+                                    </button> -->
+                            </div>
+                        </div>
 
-                            <label class="form-label mt-2">EASA Medical Class</label>
-                            <select class="form-select" name="editmedical_class_2" id="editmedical_class_2">
-                                <option value="">Select the Class</option>
-                                <option value="class1">Class 1</option>
-                                <option value="class2">Class 2</option>
-                            </select>
+                        <div class="col-md-6">
+                            <div class="mt-3" id="edit_medical_2">
+                                <label for="licence_checkbox" class="form-label">EASA Medical</label>
+                                <input type="checkbox" name="edit_medical_2_checkbox" id="edit_medical_2_checkbox" class="ms-2" value="1">
+                                <label for="licence_verification_required" class="form-label ms-4">Admin Verification
+                                    required?</label>
+                                <input type="checkbox" name="edit_medical_2_verification_required"
+                                    id="edit_medical_2_verification_required" class="ms-2" value="1">
+                            </div>
 
-                            <label class="form-label mt-2">EASA Medical Issue Date</label>
-                            <input type="date" name="editmedical_issue_date_2" id="editmedical_issue_date_2" class="form-control">
 
-                            <label class="form-label mt-2">EASA Medical Expiry Date</label>
-                            <input type="date" name="editmedical_expiry_date_2" id="editmedical_expiry_date_2" class="form-control">
+                            <!-- Second Medical Fields -->
+                            <div id="edit_second_medical_section" style="display: none;">
 
-                            <label class="form-label mt-2">EASA Medical Detail</label>
-                            <textarea name="editmedical_detail_2" id="editmedical_detail_2" class="form-control" placeholder="Enter the Detail"></textarea>
+                                <!-- <div class="no-left-margin">
+                                    <label for="licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
+                                    <input type="checkbox" name="editmedical_verification_required_2" id="editmedical_verification_required_2" class="ms-2" value="1">
+                                </div> -->
 
-                            <label class="form-label mt-2">EASA Medical Upload</label>
-                            <input type="file" name="editmedical_file_2" id="editmedical_file_2" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+                                <label class="form-label">EASA Medical Issued By</label>
+                                <select class="form-select" name="editissued_by_2" id="editissued_by_2">
+                                    <option value="">Select Issued By</option>
+                                    <option value="UKCAA">UK CAA</option>
+                                    <option value="EASA">EASA</option>
+                                    <option value="FAA">FAA</option>
+                                </select>
+
+                                <label class="form-label mt-2">EASA Medical Class</label>
+                                <select class="form-select" name="editmedical_class_2" id="editmedical_class_2">
+                                    <option value="">Select the Class</option>
+                                    <option value="class1">Class 1</option>
+                                    <option value="class2">Class 2</option>
+                                </select>
+
+                                <label class="form-label mt-2">EASA Medical Issue Date</label>
+                                <input type="date" name="editmedical_issue_date_2" id="editmedical_issue_date_2" class="form-control">
+
+                                <label class="form-label mt-2">EASA Medical Expiry Date</label>
+                                <input type="date" name="editmedical_expiry_date_2" id="editmedical_expiry_date_2" class="form-control">
+
+                                <label class="form-label mt-2">EASA Medical Detail</label>
+                                <textarea name="editmedical_detail_2" id="editmedical_detail_2" class="form-control" placeholder="Enter the Detail"></textarea>
+
+                                <label class="form-label mt-2">EASA Medical Upload</label>
+                                <input type="file" name="editmedical_file_2" id="editmedical_file_2" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+
+                                <div class="col-md-6 mt-2" id="easa_medical_file_display" style="display:none;" >
+                                    <a  target="_blank" class="btn btn-sm btn-outline-primary">View Uploaded File</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -704,6 +714,10 @@
                         <input type="file" name="edit_passport_file" id="edit_passport_file"
                             class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
                         <div id="edit_passport_file_error_up" class="text-danger error_e"></div>
+
+                        <div class="col-md-6 mt-2" id="passport_file_display" style="display:none;" >
+                            <a  target="_blank" class="btn btn-sm btn-outline-primary">View Uploaded File</a>
+                        </div>
                     </div>
 
 
@@ -2094,6 +2108,33 @@
                        
                           $('#easa_licence_file a').hide();
                          $('#easa_licence_file').hide();
+                    }
+
+                    if(document.passport_file){
+                        $('#passport_file_display a').attr('href', '/storage/' + document.passport_file);
+                        $('#passport_file_display').show();
+                        $('#passport_file_display a').show();
+                    }else{
+                        $('#passport_file_display a').hide();
+                        $('#passport_file_display').hide();
+                    }
+
+                    if(document.medical_file){
+                        $('#uk_medical_file_display a').attr('href', '/storage/' + document.medical_file);
+                        $('#uk_medical_file_display').show();
+                        $('#uk_medical_file_display a').show();
+                    }else{
+                        $('#uk_medical_file_display a').hide();
+                        $('#uk_medical_file_display').hide();
+                    }
+
+                    if(document.medical_file_2){
+                        $('#easa_medical_file_display a').attr('href', '/storage/' + document.medical_file_2);
+                        $('#easa_medical_file_display').show();
+                        $('#easa_medical_file_display a').show();
+                    }else{
+                        $('#easa_medical_file_display a').hide();
+                        $('#easa_medical_file_display').hide();
                     }
 
                     if (response.user.medical_2_required == 1) {
