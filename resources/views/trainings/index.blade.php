@@ -584,7 +584,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="endCourseLabel">End Course/Event</h5>
+                    <h5 class="modal-title" id="endCourseLabel">Confirm End of Course </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                  <div class="modal-body">
@@ -599,7 +599,8 @@
                             </div>
                         @endif
                     </div>
-                    <p>Are you sure you want to end this course? Once ended, it will be locked for further editing.</p>
+                    <!-- <p>Are you sure you want to end this course? Once ended, it will be locked for further editing.</p> -->
+                    <p>This should file the course and prevent any further changes but shall still allow the view of grading, documents etc and also grade reporting (statistics)</p>
                     <div class="mb-3">
                         <label for="courseEndDate" class="form-label">Course End Date</label>
                         <input type="date" class="form-control" id="courseEndDate" name="course_end_date" value="{{ old('course_end_date', date('Y-m-d')) }}" required>

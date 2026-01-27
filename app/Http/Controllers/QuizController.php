@@ -948,17 +948,40 @@ class QuizController extends Controller
 
 
 
+    // public function viewAttempts(Request $request)
+    // {
+    //     $currentUser = auth()->user();
+    //     $quiz_id = decode_id($request->id);
+
+    //     $quiz = Quiz::findOrFail($quiz_id);
+
+    //     $Attempt = QuizAttempt::with('student')->where('quiz_id', $quiz_id)->get();
+
+    //     return view('quiz.view_attempts', compact('Attempt', 'quiz'));
+    // }
+
     public function viewAttempts(Request $request)
     {
-        $currentUser = auth()->user();
         $quiz_id = decode_id($request->id);
 
         $quiz = Quiz::findOrFail($quiz_id);
 
-        $Attempt = QuizAttempt::with('student')->where('quiz_id', $quiz_id)->get();
+        $attempts = QuizAttempt::withTrashed()
+            ->with('student')
+            ->where('quiz_id', $quiz_id)
+            ->orderByDesc('created_at')
+            ->get()
+            ->groupBy('student_id')
+            ->map(function ($studentAttempts) {
+                return $studentAttempts->firstWhere('deleted_at', null)
+                    ?? $studentAttempts->first();
+            })
+            ->values();
 
-        return view('quiz.view_attempts', compact('Attempt', 'quiz'));
+        return view('quiz.view_attempts', compact('attempts', 'quiz'));
     }
+
+
 
     public function resetAttempt(Request $request)
     {
