@@ -290,12 +290,14 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     $child_id = $ratings->rating_id;
                                     $parent_id = $ratings->parent_id;
                                     $expiry_date = $ratings->expiry_date;
+                                    $admin_verified = $ratings->admin_verified;
 
                                     if ($parent_id === null && $ratings->rating) {
                                         $groupedEASA[$child_id] = [
                                             'parent' => $ratings->rating,
                                             'children' => [],
                                             'parent_expiry' => $expiry_date,
+                                            'parent_admin_verified' => $admin_verified,
                                         ];
                                     } elseif ($ratings->rating) {
                                         $parentRating = $ratings->parentRating;
@@ -306,6 +308,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                                 'parent' => $parentRating,
                                                 'children' => [],
                                                 'parent_expiry' => $expiry_date,
+                                                'parent_admin_verified' => $admin_verified,
                                             ];
                                         }
                                         $groupedEASA[$parent_id]['children'][] = $childRating;
@@ -315,6 +318,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                             'parent' => $parentRating,
                                             'children' => [],
                                             'parent_expiry' => $expiry_date,
+                                            'parent_admin_verified' => $admin_verified,
                                         ];
                                     }
                                 }
@@ -379,11 +383,12 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                             @if (!empty($entry['children']))
                                 <?php
                                     $expirty_date = $entry['parent_expiry'];
+                                    $admin_verified = $entry['parent_admin_verified'];
                                     $color = getExpiryStatus($expirty_date);
 
-                                    if (is_null($expirty_date)) {
-                                        $color = "#198754";
-                                        $tooltip = "This rating does not expire";
+                                    if (is_null($expirty_date) || empty($expirty_date)) {
+                                        $color = "#dc3545";
+                                        $tooltip = "No expiry date entered";
                                     } elseif ($color == "Red") {
                                         $color = "#dc3545";
                                         $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
@@ -391,8 +396,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                         $color = "#ffc107";
                                         $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
                                     } else {
-                                        $color = "#198754";
-                                        $tooltip = "This rating is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                        if ($admin_verified == '1') {
+                                            $color = "#198754";
+                                            $tooltip = "This rating is verified and valid until " . date('d/m/Y', strtotime($expirty_date));
+                                        } else {
+                                            $color = "#ffc107";
+                                            $tooltip = "This rating is pending admin verification and is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                        }
                                     }
                                 ?>
 
@@ -445,8 +455,8 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                              {{-- Multiple Training Tags --}}
                                         @foreach ($trainingTags as $trainingTag)
                                             @php
-                                                $trainingColor = '#198754';
-                                                $trainingTooltip = 'Tag does not expire';
+                                                $trainingColor = '#dc3545';
+                                                $trainingTooltip = 'No tag expiry date entered';
 
                                                 if (!empty($trainingTag->tag_expiry_date)) {
                                                     $trainingDate = \Carbon\Carbon::parse($trainingTag->tag_expiry_date);
@@ -484,11 +494,12 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                             @else
                                 <?php
                                     $expirty_date = $entry['parent_expiry'];
+                                    $admin_verified = $entry['parent_admin_verified'];
                                     $color = getExpiryStatus($expirty_date);
 
-                                    if (is_null($expirty_date)) {
-                                        $color = "#198754";
-                                        $tooltip = "This rating does not expire";
+                                    if (is_null($expirty_date) || empty($expirty_date)) {
+                                        $color = "#dc3545";
+                                        $tooltip = "No expiry date entered";
                                     } elseif ($color == "Red") {
                                         $color = "#dc3545";
                                         $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
@@ -496,8 +507,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                         $color = "#ffc107";
                                         $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
                                     } else {
-                                        $color = "#198754";
-                                        $tooltip = "This rating is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                        if ($admin_verified == '1') {
+                                            $color = "#198754";
+                                            $tooltip = "This rating is verified and valid until " . date('d/m/Y', strtotime($expirty_date));
+                                        } else {
+                                            $color = "#ffc107";
+                                            $tooltip = "This rating is pending admin verification and is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                        }
                                     }
                                 ?>
 
@@ -553,12 +569,14 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         $child_id = $ratings->rating_id;
                         $parent_id = $ratings->parent_id;
                         $expiry_date = $ratings->expiry_date;
+                        $admin_verified = $ratings->admin_verified;
 
                         if ($parent_id === null && $ratings->rating) {
                         $groupedEASA[$child_id] = [
                         'parent' => $ratings->rating,
                         'children' => [],
                         'parent_expiry' => $expiry_date,
+                        'parent_admin_verified' => $admin_verified,
                         ];
                         } elseif ($ratings->rating) {
                         $parentRating = $ratings->parentRating;
@@ -569,6 +587,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         'parent' => $parentRating,
                         'children' => [],
                         'parent_expiry' => $expiry_date,
+                        'parent_admin_verified' => $admin_verified,
                         ];
                         }
 
@@ -579,6 +598,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         'parent' => $parentRating,
                         'children' => [],
                         'parent_expiry' => $expiry_date,
+                        'parent_admin_verified' => $admin_verified,
                         ];
                         }
                         }
@@ -643,12 +663,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                             @if (!empty($entry['children']))
                                 <?php
                                     $expirty_date = $entry['parent_expiry'];
+                                    $admin_verified = $entry['parent_admin_verified'];
                                     
                                     $color = getExpiryStatus($expirty_date);
 
-                                    if (is_null($expirty_date)) {
-                                        $color = "#198754";
-                                        $tooltip = "This rating does not expire";
+                                    if (is_null($expirty_date) || empty($expirty_date)) {
+                                        $color = "#dc3545";
+                                        $tooltip = "No expiry date entered";
                                     } elseif ($color == "Red") {
                                         $color = "#dc3545";
                                         $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
@@ -656,8 +677,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                         $color = "#ffc107";
                                         $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
                                     } else {
-                                        $color = "#198754";
-                                        $tooltip = "This rating is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                        if ($admin_verified == '1') {
+                                            $color = "#198754";
+                                            $tooltip = "This rating is verified and valid until " . date('d/m/Y', strtotime($expirty_date));
+                                        } else {
+                                            $color = "#ffc107";
+                                            $tooltip = "This rating is pending admin verification and is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                        }
                                     }
                                 ?>
 
@@ -711,11 +737,12 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                             @else
                                 <?php
                                     $expirty_date = $entry['parent_expiry'];
+                                    $admin_verified = $entry['parent_admin_verified'];
                                     $color = getExpiryStatus($expirty_date);
 
-                                    if (is_null($expirty_date)) {
-                                        $color = "#198754";
-                                        $tooltip = "This rating does not expire";
+                                    if (is_null($expirty_date) || empty($expirty_date)) {
+                                        $color = "#dc3545";
+                                        $tooltip = "No expiry date entered";
                                     } elseif ($color == "Red") {
                                         $color = "#dc3545";
                                         $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
@@ -723,8 +750,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                         $color = "#ffc107";
                                         $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
                                     } else {
-                                        $color = "#198754";
-                                        $tooltip = "This rating is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                        if ($admin_verified == '1') {
+                                            $color = "#198754";
+                                            $tooltip = "This rating is verified and valid until " . date('d/m/Y', strtotime($expirty_date));
+                                        } else {
+                                            $color = "#ffc107";
+                                            $tooltip = "This rating is pending admin verification and is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                        }
                                     }
                                 ?>
 

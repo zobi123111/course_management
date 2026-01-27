@@ -19,26 +19,51 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($Attempt as $index => $item)
-                    <tr>
-                        <td>{{ $index + 1 }}</td>
-                        <td>{{ $item->student->fname }} {{ $item->student->lname }}</td>
-                        <td>{{ $item->score }}%</td>
-                        <td>{{ ucwords(str_replace('_', ' ', $item->status)) }}</td>
-                        <td>{{ ucfirst($item->result ?? 'N/A') }}</td>
+                @forelse ($attempts as $index => $item)
+    @php
+        // Check: is user ka koi ACTIVE attempt hai?
+        $hasActiveAttempt = $attempts
+            ->where('quiz_id', $item->quiz_id)
+            ->where('student_id', $item->student_id)
+            ->whereNull('deleted_at')
+            ->isNotEmpty();
+    @endphp
 
-                        <td>
-                            <a href="javascript:void(0);" class="btn btn-primary btn-sm view-attempt-icon" data-quiz-id="{{ encode_id($item->quiz_id) }}" data-user-id="{{ encode_id($item->student_id) }}"> View </a>
+    <tr>
+        <td>{{ $index + 1 }}</td>
+        <td>{{ $item->student->fname }} {{ $item->student->lname }}</td>
+        <td>{{ $item->score !== null ? $item->score.'%' : '—' }}</td>
+        <td>{{ ucwords(str_replace('_', ' ', $item->status)) }}</td>
+        <td>{{ ucfirst($item->result ?? 'N/A') }}</td>
 
-                           <a href="javascript:void(0);" onclick="confirmReset(this)" data-quiz-id="{{ encode_id($item->quiz_id) }}" data-user-id="{{ encode_id($item->student_id) }}" data-attempt-id="{{ encode_id($item->id) }}" class="btn btn-danger btn-sm"> Reset </a>
+        <td>
+            {{-- VIEW button → always show --}}
+            <a href="javascript:void(0);"
+               class="btn btn-primary btn-sm view-attempt-icon"
+               data-quiz-id="{{ encode_id($item->quiz_id) }}"
+               data-user-id="{{ encode_id($item->student_id) }}">
+                View
+            </a>
 
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="text-center">No attempts found</td>
-                    </tr>
-                @endforelse
+            {{-- RESET button → sirf jab active attempt ho --}}
+            @if($hasActiveAttempt)
+                <a href="javascript:void(0);"
+                   onclick="confirmReset(this)"
+                   data-quiz-id="{{ encode_id($item->quiz_id) }}"
+                   data-user-id="{{ encode_id($item->student_id) }}"
+                   data-attempt-id="{{ encode_id($item->id) }}"
+                   class="btn btn-danger btn-sm">
+                    Reset
+                </a>
+            @endif
+        </td>
+    </tr>
+@empty
+    <tr>
+        <td colspan="6" class="text-center">No attempts found</td>
+    </tr>
+@endforelse
+
             </tbody>
         </table>
     </div>
