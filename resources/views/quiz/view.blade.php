@@ -70,6 +70,18 @@
             <div class="col-md-2"></div>
         </div>
     </div>
+
+    @php
+        $totalAvailableQuestions = $quiz->topics->sum(fn($t) => $t->topic->questions->count());
+    @endphp
+
+    @if($totalAvailableQuestions < $quiz->question_count)
+        <div class="alert alert-warning mb-3">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Warning:</strong>
+            Quiz will show duplicate questions because {{ $totalAvailableQuestions }} are available and {{ $quiz->question_count }} are required.
+        </div>
+    @endif
     
     <div class="card shadow-sm">
         <div class="card-body">
