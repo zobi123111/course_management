@@ -19,4 +19,9 @@ class RhsTag extends Model
     {
         return $this->hasMany(UserTagRating::class, 'tag_id');
     }
+
+    public function trainingTags()
+    {
+        return $this->hasMany(Training_tags::class, 'tag_id', 'id');
+    }
 }

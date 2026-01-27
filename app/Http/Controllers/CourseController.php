@@ -289,13 +289,13 @@ class CourseController extends Controller
                     $validity = $request->master_validity[$key] ?? null;
                     if (!empty($validity)) {
                         UserTagRating::create([
-                            'user_id'         => null,
-                            'event_id'        => null,
+                           // 'user_id'         => null,
+                           // 'event_id'        => null,
                             'course_id'       => $course->id,
                             'tag_id'          => $tagId,
                             'tag_validity'    => $validity,
                             'tag_type'        => 'master',
-                            'tag_expiry_date' => null,
+                           // 'tag_expiry_date' => null,
                         ]);
                     }
                 }
@@ -332,13 +332,13 @@ class CourseController extends Controller
                 }
                 $tagId = $rhsTag->id;
                 UserTagRating::create([
-                    'user_id'         => null,
-                    'event_id'        => null,
+                   // 'user_id'         => null,
+                   // 'event_id'        => null,
                     'course_id'       => $course->id,
                     'tag_id'          => $tagId,
                     'tag_validity'    => $validity,
                     'tag_type'        => 'manual',
-                    'tag_expiry_date' => null,
+                   // 'tag_expiry_date' => null,
                 ]);
             }
         }
@@ -350,8 +350,7 @@ class CourseController extends Controller
     public function getCourse(Request $request)
     {
         //dd((decode_id($request->id)));
-        $course = Courses::with(['groups', 'prerequisites', 'training_feedback_questions', 'documents', 'customTimes', 'userTagRatings.rhsTag'])
-            ->findOrFail(decode_id($request->id));
+        $course = Courses::with(['groups', 'prerequisites', 'training_feedback_questions', 'documents', 'customTimes', 'userTagRatings.rhsTag'])->findOrFail(decode_id($request->id));
         $ou_id = $course->ou_id;
         $allGroups = Group::all();
         $courseResources = CourseResources::where('courses_id', decode_id($request->id))->get();
@@ -362,7 +361,7 @@ class CourseController extends Controller
         return response()->json([
             'course' => $course,
             'allGroups' => $allGroups,
-            'courseResources' => $courseResources,
+            'courseResources' => $courseResources, 
             'resources' => $resources,
             'ato_num' => $ato_num
         ]);
@@ -642,13 +641,13 @@ class CourseController extends Controller
 
                         // 2️⃣ Insert fresh record
                         UserTagRating::create([
-                            'user_id'         => null,
-                            'event_id'        => null,
+                           // 'user_id'         => null,
+                           // 'event_id'        => null,
                             'course_id'       => $request->course_id,
                             'tag_id'          => $tagId,
                             'tag_validity'    => $validity,
                             'tag_type'        => 'master',
-                            'tag_expiry_date' => null,
+                           // 'tag_expiry_date' => null,
                         ]);
                     }
                 }
@@ -708,13 +707,13 @@ class CourseController extends Controller
                 //     ->delete();
 
                 UserTagRating::create([
-                    'user_id'         => null,
-                    'event_id'        => null,
+                  //  'user_id'         => null,
+                  //  'event_id'        => null,
                     'course_id'       => $request->course_id,
                     'tag_id'          => $tagId,
                     'tag_validity'    => $validity,
                     'tag_type'        => 'manual',
-                    'tag_expiry_date' => null,
+                  //  'tag_expiry_date' => null,
                 ]);
             }
         }

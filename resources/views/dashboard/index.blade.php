@@ -221,8 +221,9 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
             @foreach($users as $user)
 
             @php
-                $opcRatingsByAircraft = $user->opcRatings->keyBy('aircraft_type'); // aircraft_type == parent rating id
+                $opcRatingsByAircraft = $user->opcRatings->keyBy('aircraft_type'); 
             @endphp
+          
 
                 @if ($user->is_activated == 0 && $user->status == 1) 
                 <tr>
@@ -417,6 +418,15 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     }
                                 @endphp
 
+                            <?php 
+                                $training_tags = $user->training_tags->keyBy('aircraft_type'); 
+                                 $trainingTags = $user->training_tags->where('aircraft_type', $entry['parent']->id);
+                                 //dump($trainingTags);
+                            ?>
+                           
+
+                          
+
                                 <div class="collapsible">
                                     <span class="badge" style="background-color:{{ $color }}"
                                         data-bs-toggle="tooltip"
@@ -432,6 +442,35 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                             OPC
                                         </span>
                                     @endif
+                                             {{-- Multiple Training Tags --}}
+                                        @foreach ($trainingTags as $trainingTag)
+                                            @php
+                                                $trainingColor = '#198754';
+                                                $trainingTooltip = 'Tag does not expire';
+
+                                                if (!empty($trainingTag->tag_expiry_date)) {
+                                                    $trainingDate = \Carbon\Carbon::parse($trainingTag->tag_expiry_date);
+
+                                                    if ($trainingDate->isPast()) {
+                                                        $trainingColor = '#dc3545';
+                                                        $trainingTooltip = 'Tag expired on ' . $trainingDate->format('d/m/Y');
+                                                    } elseif ($trainingDate->diffInDays(now()) < 90) {
+                                                        $trainingColor = '#ffc107';
+                                                        $trainingTooltip = 'Tag will expire on ' . $trainingDate->format('d/m/Y');
+                                                    } else {
+                                                        $trainingColor = '#198754';
+                                                        $trainingTooltip = 'Tag valid until ' . $trainingDate->format('d/m/Y');
+                                                    }
+                                                }
+                                            @endphp
+
+                                            <span class="badge ms-1"
+                                                style="background-color:{{ $trainingColor }}; color:white"
+                                                data-bs-toggle="tooltip"
+                                                title="{{ $trainingTooltip }}">
+                                                {{ $trainingTag->rhsTag->rhstag }}
+                                            </span>
+                                        @endforeach
 
                                 </div>
 
@@ -692,7 +731,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                 @php
                                     $opc = $opcRatingsByAircraft->get($entry['parent']->id);
 
-                                    $opcColor = null;
+                                    $opcColor = null; 
                                     $opcTooltip = null;
 
                                     if ($opc && $opc->opc_expiry_date) {

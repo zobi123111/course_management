@@ -64,7 +64,7 @@ class User extends Authenticatable
         'medical_issuedate',
         'medical_expirydate',
         'medical_restriction',
-        'medical_verified',
+        'medical_verified', 
         'licence_file_uploaded',
         'passport_file_uploaded',
         'medical_file',
@@ -258,6 +258,11 @@ class User extends Authenticatable
     public function opcRatings()
     {
         return $this->hasMany(UserOpcRating::class);
+    }
+
+    public function training_tags()
+    {
+        return $this->hasMany(Training_tags::class);
     }
 
 }

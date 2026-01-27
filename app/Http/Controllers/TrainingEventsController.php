@@ -24,6 +24,8 @@ use App\Models\ExaminerGrading;
 use App\Models\TrainingEventLog;
 use App\Models\TrainingEventReview;
 use App\Models\UserOpcRating;
+use App\Models\RhsTag;
+use App\Models\Training_tags;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -152,18 +154,8 @@ class TrainingEventsController extends Controller
               //  dd($currentUser->id);
                 $trainingEvents = $trainingEventsQuery
                     ->where('student_id', $currentUser->id)
-                    // ->where(function ($query) use ($currentUser) {
-                    //     $query->whereHas('taskGradings', function ($q) use ($currentUser) {
-                    //         $q->where('user_id', $currentUser->id);
-                    //      })->orWhereHas('competencyGradings', function ($q) use ($currentUser) {
-                    //         $q->where('user_id', $currentUser->id);
-                    //     })->orWhereHas('overallAssessments', function ($q) use ($currentUser) {
-                    //         $q->where('user_id', $currentUser->id);
-                    //      });
-                    // })
                     ->get();
                 $trainingEvents_instructor = [];
-               // dd($trainingEvents);
                  
                
 
@@ -206,118 +198,7 @@ class TrainingEventsController extends Controller
                 ->withCount(['taskGradings', 'competencyGradings'])
                 ->get();
         }
-        // Attach instructor lists to each training event
-        // $trainingEvents->each(function ($event) {
-        //     if (!$event->relationLoaded('eventLessons', 'defLessons') || !($event->eventLessons instanceof \Illuminate\Support\Collection)) {
-        //         $event->lesson_instructors = collect();
-        //         $event->lesson_instructor_users = collect();
-        //         $event->last_lesson_instructor_id = null;
-        //         $event->last_lesson_instructor = null;
-        //         return;
-        //     }
-        //     // Get unique instructor IDs from event lessons
-        //     $event->lesson_instructors = $event->eventLessons
-        //         ->pluck('instructor_id')
-        //         ->filter()
-        //         ->unique()
-        //         ->values();
-
-        //     $defLessonInstructorIds = $event->defLessons
-        //         ->pluck('instructor_id')
-        //         ->filter();
-
-        //     $event->lesson_instructors = $event->lesson_instructors
-        //         ->merge($defLessonInstructorIds)
-        //         ->unique()
-        //         ->values();
-
-                
-        //     // Load instructor users
-        //     $event->lesson_instructor_users = User::whereIn('id', $event->lesson_instructors)->get();
-
-
-        //     echo "<pre>";
-        //         print_r($event->defLessons);
-        //     echo "</pre>";
-
-        //     dd();
-
-        //     // Determine the last lesson instructor (by Id)
-        //     $lastLesson = $event->eventLessons->sortByDesc('id')->first();
-        //     $event->last_lesson_instructor_id = $lastLesson ? $lastLesson->instructor_id : null;
-
-        //     // Optional: preload the actual user object
-        //     $event->last_lesson_instructor = $event->lesson_instructor_users->firstWhere('id', $event->last_lesson_instructor_id);
-        // });
-
-
-
-        // $trainingEvents->each(function ($event) {
-
-            
-
-        //     // Always initialize
-        //     $event->lesson_instructors = collect();
-        //     $event->lesson_instructor_users = collect();
-        //     $event->last_lesson_instructor_id = null;
-        //     $event->last_lesson_instructor = null;
-
-        //     // Event lesson instructors
-        //     $eventLessonInstructorIds = $event->eventLessons
-        //         ->pluck('instructor_id')
-        //         ->filter();
-
-        //     // Def lesson instructors
-        //     $defLessonInstructorIds = $event->defLessons
-        //         ->pluck('instructor_id')
-        //         ->filter();
-
-        //     // Merge both
-        //     $event->lesson_instructors = $eventLessonInstructorIds
-        //         ->merge($defLessonInstructorIds)
-        //         ->unique()
-        //         ->values();
-
-
-        //     // Load users if any instructors exist
-        //     if ($event->lesson_instructors->isNotEmpty()) {
-        //         $event->lesson_instructor_users = User::whereIn('id', $event->lesson_instructors)->get();
-        //     }
-
-        //     // Last lesson instructor (eventLessons only)
-        //     // $lastLesson = $event->eventLessons->sortByDesc('id')->first();
-        //     // $event->last_lesson_instructor_id = $lastLesson?->instructor_id;
-
-        //     // $event->last_lesson_instructor = $event->lesson_instructor_users->firstWhere('id', $event->last_lesson_instructor_id);
-
-        //     // Try EVENT lessons first
-        //     $lastEventLessonInstructorId = $event->eventLessons
-        //         ->whereNotNull('instructor_id')
-        //         ->sortByDesc('id')
-        //         ->value('instructor_id');
-
-        //     // Fallback to DEF lessons
-        //     $lastDefLessonInstructorId = $event->defLessons
-        //         ->whereNotNull('instructor_id')
-        //         ->sortByDesc('id')
-        //         ->value('instructor_id');
-
-        //     // Final resolved instructor
-        //     $event->last_lesson_instructor_id =
-        //         $lastEventLessonInstructorId
-        //         ?? $lastDefLessonInstructorId
-        //         ?? null;
-
-        //     // Attach user (safe)
-        //     $event->last_lesson_instructor = $event->lesson_instructor_users->firstWhere('id', $event->last_lesson_instructor_id);
-
-
-        //     // echo "<pre>";
-        //     //     print_r($event->last_lesson_instructor_id);
-        //     // echo "</pre>";
-
-        //     // dd();
-        // });
+ 
 
         $trainingEvents->each(function ($event) {
 
@@ -370,16 +251,11 @@ class TrainingEventsController extends Controller
                 $event->lesson_instructor_users
                     ->firstWhere('id', (int) $event->last_lesson_instructor_id);
 
-            // echo "<pre>";
-            //     print_r($event->lesson_instructor_users);
-            // echo "</pre>";
-
-            // dd();
+          
         });
 
-
-       // dd($trainingEvents);
-        return view('trainings.index', compact('groups', 'courses', 'instructors', 'organizationUnits', 'trainingEvents', 'resources', 'students', 'trainingEvents_instructor'));
+        $tags = RhsTag::all();
+        return view('trainings.index', compact('groups', 'courses', 'instructors', 'organizationUnits', 'trainingEvents', 'resources', 'students', 'trainingEvents_instructor', 'tags'));
     }
 
     public function getOrgStudentsInstructorsResources(Request $request, $ou_id)
@@ -3227,27 +3103,35 @@ class TrainingEventsController extends Controller
             ]);
         }
 
+          $course = Courses::with(['userTagRatings.rhsTag'])->findOrFail($event->course->id);
+            if (!empty($course->userTagRatings)) {
+                foreach ($course->userTagRatings as $row) {
 
-        // if ($event->course->opc == 1) {
+                    $months     = (int) $row->tag_validity;
+                    $expiryDate = $completionDate->copy()->addMonths($months);
+                    $tag_id     = $row->tag_id;
 
-        //     $completionDate = Carbon::parse($request->course_end_date);
+                    Training_tags::updateOrCreate(
+                        [
+                            'user_id'       => $event->student_id,
+                            'event_id'      => $id,
+                            'course_id'     => $event->course->id,
+                            'tag_id'        => $tag_id,
+                            'aircraft_type' => $event->course->opc_aircraft,
+                        ],
+                        [
+                            'tag_expiry_date' => $expiryDate,
+                        ]
+                    );
+                }
+            }
 
-        //     $opcRating = UserOpcRating::where('user_id', $event->user_id)->where('aircraft_type', $event->course->opc_aircraft)->latest('opc_expiry_date')->first();
 
-        //     $currentExpiry = $opcRating?->opc_expiry_date ? Carbon::parse($opcRating->opc_expiry_date) : null;
+         
 
-        //     $validityMonths = (int) ($event->opc_validity ?? 6);
 
-        //     $newExpiry = $this->calculateOpcExpiry($completionDate, $validityMonths, $currentExpiry);
 
-        //     UserOpcRating::create([
-        //             'user_id' => $event->student_id,
-        //             'aircraft_type' => $event->course->opc_aircraft,
-        //             'event_id' => $id,
-        //             'course_id' => $event->course->id,
-        //             'opc_expiry_date' => $newExpiry,
-        //         ]);
-        // }
+
 
         return redirect()
             ->route('training.index')
@@ -3557,6 +3441,57 @@ class TrainingEventsController extends Controller
     {
         $resources  = Resource::all();
         return view('trainings.calender', compact('resources'));
+    }
+
+    public function rhs_tags()
+    {
+        $tags = RhsTag::all();
+        return view("rhs.index", compact('tags'));
+    }
+
+     public function create_tag(Request $request)
+    {   
+        // dd($request);
+        $request->validate([
+            'tag_name' => 'required|max:255|unique:rhs_tags,rhstag,NULL,id,deleted_at,NULL',
+        ]);
+
+        $tag = RhsTag::create([ 
+            'rhstag' => $request->tag_name
+        ]);
+
+        Session::flash('message', 'Tag created successfully.');
+        return response()->json(['message' => 'Tag created successfully']);
+    }
+
+    public function edit_tag(Request $request)
+    {
+        $tag = RhsTag::findOrFail(decode_id($request->id));
+        return response()->json(['tag'=> $tag]);
+       
+    }
+
+    public function update_tag(Request $request)
+    {
+       $tag_id = decode_id($request->tag_id);
+       $request->validate([
+        'tag_name' => 'required|max:255|unique:rhs_tags,rhstag,' . $tag_id . ',id,deleted_at,NULL',
+       ]);
+
+       RhsTag::where('id', $tag_id)->update(['rhstag' => $request->tag_name]);
+       Session::flash('message', 'Tag updated successfully.');
+       return response()->json(['message' => 'Tag updated successfully']);
+    }
+
+    public function delete_tag(Request $request)
+    {
+      $tag_id = decode_id($request->tag_id);
+       $tag = RhsTag::findOrFail($tag_id);
+        if ($tag) {
+            $tag->delete();
+            return redirect()->route('rhs_tags')->with('message', 'Tag deleted successfully');
+        }
+
     }
 
 }

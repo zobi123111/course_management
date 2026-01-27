@@ -68,16 +68,16 @@ class CheckRolePermission
         if ($request->route()->getName() == 'dashboard') {
             return $next($request);
         }
-
+       
         // Fetch allowed pages based on the active session role
         $allowedPages = getAllowedPages($current_role)->pluck('modules.*.route_name')->flatten();
-        // dd($allowedPages); 
+        // dd($allowedPages);
         // Check if the user has access to the requested route
         if ($request->isMethod('get') && !$allowedPages->contains($request->route()->getName())) {
             Session::flash('message', 'You don\'t have permission to access this page.');
             return redirect()->route('dashboard')->with('error', 'Access Denied!');
         }
 
-        return $next($request);
+        return $next($request); 
     }
 }

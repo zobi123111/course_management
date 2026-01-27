@@ -10,11 +10,12 @@
 </div>
 @endif
 
-
+@if(checkAllowedModule('tags','create_tag.store')->isNotEmpty()) 
 <div class="create_btn">
     <button class="btn btn-primary create-button" id="createtag" data-toggle="modal"
-        data-target="#createTagModal">Create Tag</button>
+        data-target="#createTagModal">Create Tag</button> 
 </div>
+@endif
 
 <br>
 
@@ -24,8 +25,12 @@
     <thead>
         <tr>
             <th scope="col">Tag Name</th>
+            @if(checkAllowedModule('tags','edit_tag.edit')->isNotEmpty()) 
             <th scope="col">Edit</th>
+            @endif
+            @if(checkAllowedModule('tags','delete_tag.delete')->isNotEmpty()) 
             <th scope="col">Delete</th>
+            @endif
            
         </tr>
     </thead>
@@ -33,12 +38,16 @@
 @foreach ($tags as $val)
     <tr>
         <td class="tagName">{{ $val->rhstag }}</td>
+        @if(checkAllowedModule('tags','edit_tag.edit')->isNotEmpty()) 
         <td>
             <i class="fa fa-edit edit-tag-icon" style="font-size:25px; cursor:pointer" tag-id="{{ encode_id($val->id) }}"></i>
         </td>
+        @endif
+        @if(checkAllowedModule('tags','delete_tag.delete')->isNotEmpty()) 
         <td>
             <i class="fa-solid fa-trash delete-tag-icon" style="font-size:25px; cursor:pointer" tag-id="{{ encode_id($val->id) }}"></i>
         </td>
+        @endif
     </tr>
 @endforeach
 </tbody>
