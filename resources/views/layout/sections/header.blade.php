@@ -126,7 +126,7 @@
                         </li>
                         @endif
 
-                        @if(Auth::user()->is_owner != 1)
+                        @if(Auth::user()->is_owner == 1 || Auth::user()->is_admin == 1)
                         <li>
                             <a class="dropdown-item d-flex align-items-center" href="{{ url('org_setting/'.encode_id(Auth::user()->ou_id)) }}">
                                 <i class="bi bi-gear"></i>
