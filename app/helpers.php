@@ -78,8 +78,11 @@ function getAllowedPages()
     $current_role = session('current_role', $user->role);
     
     // If user is the owner, return all pages
-    if ($user->is_owner) {
-        return Page::with('modules')->orderBy('position', 'asc')->get();
+    if ($user->is_owner) { 
+        $pages =  Page::with('modules')->orderBy('position', 'asc')->get();
+         dump($pages);
+        return $pages;
+       
     }  
  
     // Always allow the Dashboard page
@@ -134,7 +137,7 @@ function getAllowedPages()
 
             return $allowedPages;
         }
-         dd($dashboardPage);
+        
         return collect($dashboardPage ? [$dashboardPage] : []);
     }
 
@@ -153,6 +156,7 @@ function getAllowedPages()
     if ($dashboardPage && !$allowedPages->contains('id', $dashboardPage->id)) {
         $allowedPages->prepend($dashboardPage);
     }
+   
 
     return $allowedPages;
 }
