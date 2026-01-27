@@ -336,7 +336,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-6 d-none" id="opc_validity_col">
+                <!-- <div class="col-md-6 d-none" id="opc_validity_col">
                     <label class="form-label">OPC Validity<span class="text-danger">*</span></label>
                     <select class="form-select" name="opc_validity_months" id="opc_validity_months">
                         <option value="">Select Validity</option>
@@ -355,9 +355,9 @@
                         <option value="12">12 Months</option>
                     </select>
                     <div id="opc_validity_error" class="text-danger error_e"></div>
-                </div>
+                </div> -->
 
-                <div class="col-md-6 d-none" id="opc_extend_eom_col">
+                <!-- <div class="col-md-6 d-none" id="opc_extend_eom_col">
                     <label class="form-label">Validity Extension<span class="text-danger">*</span></label>
                     <select class="form-select" name="opc_extend_eom" id="opc_extend_eom">
                         <option value="">Select Option</option>
@@ -365,7 +365,7 @@
                         <option value="0">Do not extend (exact date)</option>
                     </select>
                     <div id="opc_extend_eom_error" class="text-danger error_e"></div>
-                </div>
+                </div> -->
                 
                 <!-- // Rank -->
                 <div class="col-md-6" id="add_rank_col" >
@@ -476,7 +476,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-6 d-none" id="edit_opc_validity_col">
+                <!-- <div class="col-md-6 d-none" id="edit_opc_validity_col">
                     <label class="form-label">OPC Validity<span class="text-danger">*</span></label>
                     <select class="form-select" name="edit_opc_validity_months" id="edit_opc_validity_months">
                         <option value="">Select Validity</option>
@@ -494,9 +494,9 @@
                         <option value="12">12 Months</option>
                     </select>
                     <div id="edit_opc_validity_error" class="text-danger error_e"></div>
-                </div>
+                </div> -->
 
-                <div class="col-md-6 d-none" id="edit_opc_extend_eom_col">
+                <!-- <div class="col-md-6 d-none" id="edit_opc_extend_eom_col">
                     <label class="form-label">Validity Extension<span class="text-danger">*</span></label>
                     <select class="form-select"
                             name="edit_opc_extend_eom"
@@ -506,7 +506,7 @@
                         <option value="0">Do not extend (exact date)</option>
                     </select>
                     <div id="edit_opc_extend_eom_error" class="text-danger error_e"></div>
-                </div>
+                </div> -->
 
                 <!-- // Rank -->
                 <div class="col-md-6" id="edit_rank_col">
@@ -1308,24 +1308,24 @@ $(document).ready(function() {
 
     $('#updateTrainingEvent').on('click', function(e) {
 
-        if (
-            !validateOpcField(
-                '#edit_opc_validity_col',
-                '#edit_opc_validity_months',
-                '#edit_opc_validity_error',
-                'OPC validity is required'
-            )
-        ) return false;
+        // if (
+        //     !validateOpcField(
+        //         '#edit_opc_validity_col',
+        //         '#edit_opc_validity_months',
+        //         '#edit_opc_validity_error',
+        //         'OPC validity is required'
+        //     )
+        // ) return false;
 
         // OPC Extend
-        if (
-            !validateOpcField(
-                '#edit_opc_extend_eom_col',
-                '#edit_opc_extend_eom',
-                '#edit_opc_extend_eom_error',
-                'OPC extend field is required'
-            )
-        ) return false;
+        // if (
+        //     !validateOpcField(
+        //         '#edit_opc_extend_eom_col',
+        //         '#edit_opc_extend_eom',
+        //         '#edit_opc_extend_eom_error',
+        //         'OPC extend field is required'
+        //     )
+        // ) return false;
 
         e.preventDefault();
         $.ajax({
@@ -1337,7 +1337,7 @@ $(document).ready(function() {
                     $('#editTrainingEventForm').modal('hide');
                     location.reload();
                 }else{
-                    alert(response.message);
+                    alert(response.message); 
                 }
             },
             error: function(xhr, status, error) {

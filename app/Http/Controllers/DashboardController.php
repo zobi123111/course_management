@@ -120,7 +120,6 @@ class DashboardController extends Controller
                                         ->orderBy('id', 'DESC')
                                     // ->limit(1)  
                                         ->get();
-            // dd($trainingEvents_instructor);
 
             foreach ($trainingEvents as $event) {
                 $outstandingItems->push([
@@ -135,13 +134,6 @@ class DashboardController extends Controller
             }              
         }
 
-        // $quizs = TrainingEvents::where('student_id', $user->id)
-        //                         ->with('quizzes')
-        //                         ->get();
-        // $courseIds = TrainingEvents::where('student_id', $user->id)
-        //     ->pluck('course_id');
-
-        // $quizzes = Quiz::whereIn('course_id', $courseIds)->where('status', 'published')->get();
 
         $groups = Group::where('status', 1)->whereJsonContains('user_ids', (string)$user->id)->pluck('id');
         $courseIds = CourseGroup::whereIn('group_id', $groups)->pluck('courses_id');
@@ -197,7 +189,8 @@ class DashboardController extends Controller
                     ->whereNull('is_admin')
                     ->with([
                         'documents',
-                        'opcRatings',
+                        'opcRatings', 
+                        'training_tags.rhsTag',
                         'usrRatings' => function ($query) {
                             $query->whereIn('linked_to', ['licence_1', 'licence_2'])
                                 ->with([
@@ -207,9 +200,8 @@ class DashboardController extends Controller
                         }
                     ])
                     ->get();
-                    // dd($users[2]->opcRatings);
+      //  dump($users);            
             
-
         return view('dashboard.index', compact('user_count', 'course_count', 'group_count', 'folder_count','totalDocuments', 'quizscount', 'quizs', 'readDocuments', 'unreadDocuments', 'requestCount', 'users', 'trainingEvents', 'bookings', 'outstandingItems'
         ));
     }
