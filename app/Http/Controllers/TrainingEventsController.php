@@ -1137,6 +1137,7 @@ class TrainingEventsController extends Controller
                         
 
         $grouped_customLogs = $training_custom_logs->groupBy('lesson_id');
+        
           
         return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs'));
     }
@@ -1600,7 +1601,7 @@ class TrainingEventsController extends Controller
             'event_id'             => 'required|integer|exists:training_events,id',
             'task_grade'           => 'nullable|array',
             'task_grade.*.*' => ['nullable', function ($attribute, $value, $fail) {
-                $allowedValues = ['Incomplete', 'Further training required', 'Competent'];
+                $allowedValues = ['Incomplete', 'Further training required', 'Competent', 'Not Applicable']; 
                 if (!in_array($value, $allowedValues) && !is_numeric($value)) {
                     $fail('The ' . str_replace('_', ' ', $attribute) . ' must be a valid grade or a number.');
                 }
@@ -1726,15 +1727,21 @@ class TrainingEventsController extends Controller
                     }
 
                     $totalSubLessons = SubLesson::where('lesson_id', $lesson_id)->count();
+                    $totalSubLessons = SubLesson::where('lesson_id', $lesson_id)->where('is_mandatory', 1)->count();
+                   // dd($totalSubLessons);
 
-                    $gradedSubLessons = TaskGrading::where([
+                    $gradedSubLessons = TaskGrading::with('subLesson')->where([
                         'event_id'  => $event_id,
                         'lesson_id' => $lesson_id,
                         'user_id'   => $gradedStudentId,
                     ])
                         ->whereNotNull('task_grade')
-                        ->where('task_grade', '!=', '') 
+                        ->where('task_grade', '!=', '')  
+                         ->whereHas('subLesson', function ($q) {
+                                $q->where('is_mandatory', 1);
+                            })
                         ->count();
+                  //  dd($gradedSubLessons);
                     
                     if ($totalSubLessons > 0 && $totalSubLessons == $gradedSubLessons) { 
                       
@@ -1850,9 +1857,6 @@ class TrainingEventsController extends Controller
                     }
                 }
             }
-
- 
-
 
             // Commit the transaction on success    
             DB::commit();

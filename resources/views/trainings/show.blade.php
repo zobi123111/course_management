@@ -2182,7 +2182,7 @@
                 </div>
                 <div class="tab-pane fade" id="Lesson" role="tabpanel" aria-labelledby="Lesson-tab">
                     <div class="card-body">
-                        @foreach($eventLessons as $eventLesson)
+                        @foreach($eventLessons as $eventLesson) 
                         <?php $isDisabled = false; ?>
                         <form action="" method="POST" id="gradingFrom">
                             @csrf
@@ -2273,16 +2273,23 @@
                                     <div id="lesson-{{ $eventLesson->id }}" class="accordion-collapse collapse" data-bs-parent="#faq-group-2">
                                         <div class="accordion-body">
                                             @if($lesson && $lesson->subLessons->isNotEmpty())
-                                            @foreach($lesson->subLessons as $sublesson)
+                                            @foreach($lesson->subLessons as $sublesson) 
                                             <?php $is_my_lesson = $eventLesson->is_my_lesson; ?>
                                             <div class="custom-box">
                                                 <input type="hidden" name="tg_subLesson_id[]" value="{{ $sublesson->id }}">
                                                 <div class="header grade_head" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $sublesson->id }}" aria-expanded="false">
 
-                                                    <div class="task-desc">
-                                                        <span class="rmk">RMK</span>
-                                                        <span class="question-mark">?</span>
-                                                        <span class="title">{{ $sublesson->title }}</span>
+                                                    <div class="task-desc d-flex align-items-center">
+                                                        <div id="mandatory_div" class="me-2" style="margin-left: -15px;">
+                                                            @if($sublesson->is_mandatory == 1)
+                                                                <i class="text-danger fw-bold me-1 align-middle" title="Grading is mandatory">*</i>
+                                                            @endif   
+                                                        </div>
+                                                         <div id="non_mandatory_div" class="d-flex align-items-center">
+                                                           <span class="rmk">RMK</span>
+                                                           <span class="question-mark">?</span>
+                                                           <span class="title">{{ $sublesson->title }}</span>
+                                                        </div>
                                                     </div>
                                                     <i class="grade-comment">click to enter comment</i>
                                                 </div>
@@ -2320,6 +2327,12 @@
                                                                     @if($sublesson->grade_type == 'pass_fail')
 
                                                                     <tr>
+                                                                        <td>
+                                                                            <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
+                                                                                <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Not Applicable" {{ $selectedGrade == 'Not Applicable' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
+                                                                                <span class="custom-radio competent">N/A</span>
+                                                                            </label>
+                                                                        </td>
 
                                                                         <td>
                                                                             <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
@@ -2339,6 +2352,7 @@
                                                                                 <span class="custom-radio competent">Competent</span>
                                                                             </label>
                                                                         </td>
+                                                                    
                                                                     </tr>
 
                                                                     @elseif($lesson->grade_type == 'percentage')
