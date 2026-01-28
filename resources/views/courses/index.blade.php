@@ -94,6 +94,13 @@
         background: #fff !important;
         /* box-shadow: 0 2px 6px rgba(0,0,0,0.2); */
     }
+
+    #create_rhs_tag_col .row button i.fa:before {
+       color: white !important;
+   }
+    #edit_rhs_tag_col .row button i.fa:before {
+       color: white !important;
+   }
 </style>
 
 @if(session()->has('message'))
@@ -391,7 +398,7 @@
                             <div class="form-check" id="select_tag_div" style="display:none">
                                 <input class="form-check-input" type="checkbox" id="create_is_rhs" name="create_is_rhs" value="1">
                                 <label class="form-check-label" for="create_is_rhs">
-                                    Tag
+                                    Qualification
                                 </label>
                             </div>
                         </div>
@@ -761,7 +768,7 @@
                             <div class="form-check" id="edit_tag_div">
                                 <input class="form-check-input" type="checkbox" id="is_rhs" name="is_rhs" value="1">
                                 <label class="form-check-label" for="is_rhs">
-                                    Tag
+                                    Qualification
                                 </label>
                             </div>
                         </div>
