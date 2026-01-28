@@ -387,8 +387,8 @@
                     <!-- //------------------------------------------------------------------------------------------>
                     <div class="form-group">
                         <!-- RHS Applicable Checkbox -->
-                        <div class="col-md-12 mb-3">
-                            <div class="form-check">
+                        <div class="col-md-12 mb-3" >
+                            <div class="form-check" id="select_tag_div" style="display:none">
                                 <input class="form-check-input" type="checkbox" id="create_is_rhs" name="create_is_rhs" value="1">
                                 <label class="form-check-label" for="create_is_rhs">
                                     Tag
@@ -401,11 +401,11 @@
                                 <!-- Action Buttons -->
                                 <div class="mb-3">
                                     <button type="button" class="btn btn-primary me-2" id="create_master_tag">
-                                        Add Master Tag
+                                        Select Tag
                                     </button>
 
                                     <button type="button" class="btn btn-secondary" id="create_add_manual_tag">
-                                        Add Manual Tag
+                                        Add New Tag
                                     </button>
                                 </div>
                                 <!-- RHS Rows Container -->
@@ -416,7 +416,7 @@
                         <!-- MASTER TAG TEMPLATE (SELECT) -->
                         <div class="row create_rhs_row d-none" id="create_rhs_select_row_template">
                             <div class="col-md-5 mb-3">
-                                <label class="form-label">Tag <span class="text-danger">*</span></label>
+                                <label class="form-label">Select Tag <span class="text-danger">*</span></label>
                                 <select class="form-select" name="master_tag_select[]">
                                     <option value="">Select Tag</option>
                                     @foreach ($tags as $val)
@@ -442,7 +442,7 @@
                         <!-- MANUAL TAG TEMPLATE (INPUT) -->
                         <div class="row rhs_row d-none" id="create_rhs_input_row_template">
                             <div class="col-md-5 mb-3">
-                                <label class="form-label">Manual Tag <span class="text-danger">*</span></label>
+                                <label class="form-label">Tag <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control"
                                     name="manual_tag_select[]" placeholder="Enter tag name">
                             </div>
@@ -758,7 +758,7 @@
                     <div class="form-group">
                         <!-- RHS Applicable Checkbox -->
                         <div class="col-md-12 mb-3">
-                            <div class="form-check">
+                            <div class="form-check" id="edit_tag_div">
                                 <input class="form-check-input" type="checkbox" id="is_rhs" name="is_rhs" value="1">
                                 <label class="form-check-label" for="is_rhs">
                                     Tag
@@ -771,11 +771,11 @@
                                 <!-- Action Buttons -->
                                 <div class="mb-3">
                                     <button type="button" class="btn btn-primary me-2" id="add_master_tag">
-                                        Add Master Tag
+                                        Select Tag
                                     </button>
 
                                     <button type="button" class="btn btn-secondary" id="add_manual_tag">
-                                        Add Manual Tag
+                                        New Tag
                                     </button>
                                 </div>
                                 <!-- RHS Rows Container -->
@@ -786,7 +786,7 @@
                         <!-- MASTER TAG TEMPLATE (SELECT) -->
                         <div class="row rhs_row d-none" id="rhs_select_row_template">
                             <div class="col-md-5 mb-3">
-                                <label class="form-label">Tag <span class="text-danger">*</span></label>
+                                <label class="form-label">Select Tag <span class="text-danger">*</span></label>
                                 <select class="form-select" name="master_tag_select[]">
                                     <option value="">Select Tag</option>
                                     @foreach ($tags as $val)
@@ -812,7 +812,7 @@
                         <!-- MANUAL TAG TEMPLATE (INPUT) -->
                         <div class="row rhs_row d-none" id="rhs_input_row_template">
                             <div class="col-md-5 mb-3">
-                                <label class="form-label">Manual Tag <span class="text-danger">*</span></label>
+                                <label class="form-label">Tag <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control"
                                     name="manual_tag_select[]" placeholder="Enter tag name">
                             </div>
@@ -1323,7 +1323,7 @@
                         fetchEditRatingsByOu(
                             response.course.ou_id,
                             response.course.opc_aircraft
-                        );
+                        ); 
                         $('#edit_opc_validity_col').show();
                         $('#edit_opc_extend_eom_col').show();
                         $('#edit_opc_validity_months').val(response.course.opc_validity);
@@ -1389,15 +1389,19 @@
                             $(container).find("select").val('').trigger('change');
                             $('#edit_opc_validity_col').hide();
                             $('#edit_opc_extend_eom_col').hide();
+                            // $('#select_tag_div').hide();
+                            $('#edit_rhs_tag_col').addClass('d-none');
+                            $('#edit_tag_div').hide();
+
                         }
                     }
 
                     $(document).ready(function() {
-                        $("#enable_opc").on("change", function() {
+                        $("#enable_opc").on("change", function() { 
                             toggleOPC(this, ".opc-aircraft");
                         });
 
-                        $("#edit_enable_opc").on("change", function() {
+                        $("#edit_enable_opc").on("change", function() { 
                             toggleOPC(this, ".opc-aircraft-edit");
                         });
 
@@ -2201,17 +2205,23 @@
             $(aircraftSelect).val('').trigger('change');
             $('#opc_validity_col').hide();
             $('#opc_extend_eom_col').hide();
+            $('#select_tag_div').hide();
+            $('#create_rhs_tag_col').addClass('d-none');
+            $('#create_is_rhs').prop('checked', false);
+            $('#is_rhs').prop('checked', false); 
+
         }
     }
 
     $(document).ready(function() {
         // CREATE
-        $("#enable_opc").on("change", function() {
+        $("#enable_opc").on("change", function() { 
             toggleOPC(this, ".opc-aircraft", "#enable_aircraft", "#select_org_unit");
+
         });
 
         // EDIT
-        $("#edit_enable_opc").on("change", function() {
+        $("#edit_enable_opc").on("change", function() { 
             toggleOPC(this, ".opc-aircraft-edit", "#edit_enable_aircraft", "#edit_select_org_unit");
         });
 
@@ -2366,12 +2376,13 @@
     // In Edit course
 
     // Toggle RHS Section
-    $('#is_rhs').on('change', function() {
+    $('#is_rhs').on('change', function() { 
+
         if ($(this).is(':checked')) {
             $('#edit_rhs_tag_col').removeClass('d-none');
         } else {
             $('#edit_rhs_tag_col').addClass('d-none');
-            $('#rhs_rows_container').empty();
+           // $('#rhs_rows_container').empty();
         }
     });
 
@@ -2401,12 +2412,13 @@
 
     // In create course
 
-    $('#create_is_rhs').on('change', function() {
+    $('#create_is_rhs').on('change', function() { 
         if ($(this).is(':checked')) {
             $('#create_rhs_tag_col').removeClass('d-none');
-        } else {
+        } else { 
             $('#create_rhs_tag_col').addClass('d-none');
-            $('#create_rhs_tag_col').empty();
+           // $('#create_rhs_tag_col').empty();
+          
         }
     });
 
@@ -2437,11 +2449,13 @@
     $(document).on('change', '#enable_aircraft', function() {
         $('#opc_validity_col').show();
         $('#opc_extend_eom_col').show();
+        $('#select_tag_div').show();
     });
 
     $(document).on('change', '#edit_enable_aircraft', function() { 
         $('#edit_opc_validity_col').show();
         $('#edit_opc_extend_eom_col').show();
+        $('#edit_tag_div').show();
     });
 </script>
 
