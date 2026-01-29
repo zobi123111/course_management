@@ -257,7 +257,7 @@
         .custom-radio {
             display: inline-block;
             font-size: 14px;
-            padding: 5px;
+            padding: 8px;
             overflow: hidden;
             white-space: nowrap;
         }
