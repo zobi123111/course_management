@@ -300,8 +300,8 @@
         }
 
         .radio-label input:checked + .custom-radio.not_applicable {
-            background-color: #dc3545; /* Red */
-            color: #ffffff;
+            background-color: #cecece; /* Red */
+            color: #000;
             font-weight: 600;
             width: 100%;
         }
