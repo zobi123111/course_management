@@ -200,7 +200,7 @@
             .custom-radio {
                 display: inline-block;
                 font-size: 13px;
-                padding: 7px 6px;
+                padding: 5px;
                 overflow: hidden;
                 white-space: nowrap;
                
@@ -257,7 +257,7 @@
         .custom-radio {
             display: inline-block;
             font-size: 14px;
-            padding: 5px 8px;
+            padding: 8px;
             overflow: hidden;
             white-space: nowrap;
         }
@@ -277,27 +277,33 @@
             background-color: #FFFF00;
             /* Yellow */
             color: black;
-            font-weight: bold;
+            font-weight: 600;
             width: 100%;
-            padding: 7px
+            
         }
 
         .radio-label input:checked+.custom-radio.ftr {
             background-color: #ffc107;
             /* Amber */
             color: black;
-            font-weight: bold;
+            font-weight: 600;
             width: 100%;
-            padding: 7px
+            
         }
 
         .radio-label input:checked+.custom-radio.competent {
             background-color: #008000;
             /* green */
-            color: black;
-            font-weight: bold;
+            color: white;
+            font-weight: 600;
             width: 100%;
-            padding: 7px
+        }
+
+        .radio-label input:checked + .custom-radio.not_applicable {
+            background-color: #cecece; /* Red */
+            color: #000;
+            font-weight: 600;
+            width: 100%;
         }
 
         .btn-container {
@@ -2330,7 +2336,7 @@
                                                                         <td>
                                                                             <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
                                                                                 <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Not Applicable" {{ $selectedGrade == 'Not Applicable' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
-                                                                                <span class="custom-radio competent">N/A</span>
+                                                                                <span class="custom-radio not_applicable">N/A</span>
                                                                             </label>
                                                                         </td>
 

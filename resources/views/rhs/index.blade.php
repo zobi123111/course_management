@@ -1,5 +1,5 @@
-@section('title', 'RHS Tag')
-@section('sub-title', 'RHS Tag')
+@section('title', 'Tags')
+@section('sub-title', 'Tags')
 @extends('layout.app')
 @section('content')
 

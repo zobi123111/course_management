@@ -85,12 +85,12 @@
         <div class="info-grid">
             <div class="label"> <strong> Marks: </strong> </div>
             <div class="value">
-                {{ $quizAttempt->score !== null ? $quizAttempt->score.'%' : 'N/A' }}
+                {{ $quizAttempt?->score !== null ? $quizAttempt->score.'%' : 'N/A' }}
             </div>
 
             <div class="label"> <strong> Result: </strong> </div>
             <div class="value">
-                @if ($quizAttempt->result)
+                @if ($quizAttempt?->result)
                     <span class="badge bg-{{ $quizAttempt->result === 'pass' ? 'success' : 'danger' }}">
                         {{ ucfirst($quizAttempt->result) }}
                     </span>
@@ -101,11 +101,12 @@
 
             <div class="label"> <strong> Time Taken: </strong> </div>
             <div class="value">
-                @if($quizAttempt->started_at && $quizAttempt->submitted_at)
+                @if($quizAttempt?->started_at && $quizAttempt?->submitted_at)
                     @php
                         $seconds = \Carbon\Carbon::parse($quizAttempt->started_at)
                             ->diffInSeconds(\Carbon\Carbon::parse($quizAttempt->submitted_at));
-                        $minutes = floor($seconds / 60);
+
+                        $minutes = intdiv($seconds, 60);
                         $remainingSeconds = $seconds % 60;
                     @endphp
 

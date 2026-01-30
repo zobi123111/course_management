@@ -65,7 +65,7 @@ class UserController extends Controller
                     $query->where('users.ou_id', $ou_id);
                 } else {
                     // Normal user: only their own record
-                    $query->where('users.id', $authUser->id);
+                    $query->where('users.ou_id', $ou_id)->where('users.status', 1);
                 }
             }
 
