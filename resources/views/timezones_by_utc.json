@@ -1,0 +1,169 @@
+{
+  "UTC-12:00": [
+    "Etc/GMT+12"
+  ],
+  "UTC-11:00": [
+    "Pacific/Midway",
+    "Pacific/Niue",
+    "Pacific/Pago_Pago"
+  ],
+  "UTC-10:00": [
+    "Pacific/Honolulu"
+  ],
+  "UTC-09:30": [
+    "Pacific/Marquesas"
+  ],
+  "UTC-09:00": [
+    "America/Anchorage",
+    "America/Juneau"
+  ],
+  "UTC-08:00": [
+    "America/Los_Angeles",
+    "America/Vancouver",
+    "America/Tijuana"
+  ],
+  "UTC-07:00": [
+    "America/Denver",
+    "America/Phoenix",
+    "America/Edmonton"
+  ],
+  "UTC-06:00": [
+    "America/Chicago",
+    "America/Mexico_City",
+    "America/Guatemala"
+  ],
+  "UTC-05:00": [
+    "America/New_York",
+    "America/Toronto",
+    "America/Lima",
+    "America/Bogota"
+  ],
+  "UTC-04:00": [
+    "America/Halifax",
+    "America/Caracas",
+    "America/La_Paz"
+  ],
+  "UTC-03:30": [
+    "America/St_Johns"
+  ],
+  "UTC-03:00": [
+    "America/Argentina/Buenos_Aires",
+    "America/Sao_Paulo",
+    "America/Montevideo"
+  ],
+  "UTC-02:00": [
+    "America/Noronha"
+  ],
+  "UTC-01:00": [
+    "Atlantic/Azores",
+    "Atlantic/Cape_Verde"
+  ],
+  "UTC+00:00": [
+    "UTC",
+    "Europe/London",
+    "Europe/Dublin",
+    "Africa/Accra",
+    "Atlantic/Reykjavik"
+  ],
+  "UTC+01:00": [
+    "Europe/Paris",
+    "Europe/Berlin",
+    "Europe/Rome",
+    "Africa/Lagos"
+  ],
+  "UTC+02:00": [
+    "Europe/Athens",
+    "Europe/Bucharest",
+    "Africa/Johannesburg",
+    "Africa/Cairo",
+    "Asia/Jerusalem"
+  ],
+  "UTC+03:00": [
+    "Europe/Moscow",
+    "Asia/Riyadh",
+    "Asia/Kuwait",
+    "Africa/Nairobi"
+  ],
+  "UTC+03:30": [
+    "Asia/Tehran"
+  ],
+  "UTC+04:00": [
+    "Asia/Dubai",
+    "Asia/Muscat",
+    "Asia/Baku",
+    "Asia/Yerevan"
+  ],
+  "UTC+04:30": [
+    "Asia/Kabul"
+  ],
+  "UTC+05:00": [
+    "Asia/Karachi",
+    "Asia/Tashkent"
+  ],
+  "UTC+05:30": [
+    "Asia/Kolkata",
+    "Asia/Colombo"
+  ],
+  "UTC+05:45": [
+    "Asia/Kathmandu"
+  ],
+  "UTC+06:00": [
+    "Asia/Dhaka",
+    "Asia/Thimphu",
+    "Asia/Almaty"
+  ],
+  "UTC+06:30": [
+    "Asia/Yangon",
+    "Indian/Cocos"
+  ],
+  "UTC+07:00": [
+    "Asia/Bangkok",
+    "Asia/Ho_Chi_Minh",
+    "Asia/Jakarta"
+  ],
+  "UTC+08:00": [
+    "Asia/Shanghai",
+    "Asia/Singapore",
+    "Asia/Kuala_Lumpur",
+    "Asia/Manila",
+    "Australia/Perth"
+  ],
+  "UTC+08:45": [
+    "Australia/Eucla"
+  ],
+  "UTC+09:00": [
+    "Asia/Tokyo",
+    "Asia/Seoul",
+    "Asia/Pyongyang"
+  ],
+  "UTC+09:30": [
+    "Australia/Adelaide",
+    "Australia/Darwin"
+  ],
+  "UTC+10:00": [
+    "Australia/Sydney",
+    "Australia/Melbourne",
+    "Pacific/Port_Moresby"
+  ],
+  "UTC+10:30": [
+    "Australia/Lord_Howe"
+  ],
+  "UTC+11:00": [
+    "Pacific/Guadalcanal",
+    "Pacific/Noumea"
+  ],
+  "UTC+12:00": [
+    "Pacific/Auckland",
+    "Pacific/Fiji"
+  ],
+  "UTC+12:45": [
+    "Pacific/Chatham"
+  ],
+  "UTC+13:00": [
+    "Pacific/Tongatapu",
+    "Pacific/Apia"
+  ],
+  "UTC+14:00": [
+    "Pacific/Kiritimati"
+  ]
+}

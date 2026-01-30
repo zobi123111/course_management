@@ -136,6 +136,38 @@
                     </div>
                 </div>
 
+                <!-- Time Zone  -->
+                <div class="row mb-3">
+                    <label class="col-sm-4 col-form-label">
+                        Time Zone
+                    </label>
+                    <div class="col-sm-8">
+                        <select name="timezone" class="form-control" class="form-control">
+                            <option value="">Select Time Zone</option>
+                          @foreach($timezones as $utc => $zones)
+                                <optgroup label="{{ $utc }}">
+                                    @foreach($zones as $zone)
+                                        @php
+                                            $tzValue = "({$utc}) {$zone}";
+                                        @endphp
+
+                                        <option value="{{ $tzValue }}"
+                                            {{ 
+                                                (isset($ou) && $ou->timezone === $tzValue) || 
+                                                (isset($OuSetting) && $OuSetting->timezone === $tzValue)
+                                                ? 'selected' : '' 
+                                            }}>
+                                            {{ $tzValue }}
+                                        </option>
+                                    @endforeach
+                                </optgroup>
+                            @endforeach
+                        </select>
+
+                        <div id="timezone_error" class="text-danger error_e"></div>
+                    </div>
+                </div>
+
                 <hr>
 
                 <h5>User Create/ Update – Custom Fields     
@@ -183,7 +215,7 @@
                     <div class="col-sm-8">
                         <input type="hidden" name="send_email" value="0">
 
-                        <label class="switch">
+                        <label class="switch"> 
                             <input type="checkbox"
                                    id="edit_send_email"
                                    name="send_email"

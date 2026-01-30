@@ -1633,13 +1633,16 @@ class TrainingEventsController extends Controller
             // Store or update Task Grading (for sublessons):
                  // SAVE OVERALL LESSON ASSESSMENT
             // ================================
+            // dd($request->overall_result);
             if ($request->has('overall_result')) { 
                 foreach ($request->overall_result as $lesson_id => $resultValue) {
                     $remarkValue = $request->overall_remark[$lesson_id] ?? null;
+                    //dd($resultValue);
                     $update_assessment = array(
                              'overall_result'   => $resultValue,
                              'overall_remark'   => $remarkValue,
                     );
+                  //  dd($update_assessment);
                     TrainingEventLessons::where('id', $lesson_id)->update($update_assessment);
                 }
             }
@@ -1648,7 +1651,7 @@ class TrainingEventsController extends Controller
                 foreach ($request->input('task_grade') as $lesson_id => $subLessons) {
                     foreach ($subLessons as $sub_lesson_id => $task_grade) {
                         // Update or create the normal task grade
-
+                      // dump($sub_lesson_id);
 
                         TaskGrading::updateOrCreate(
                             [
@@ -1664,31 +1667,72 @@ class TrainingEventsController extends Controller
                                 'lesson_type'   => 1
                             ]
                         );
-                           $grades = TaskGrading::where([
-                                    'event_id'  => $event_id,
-                                    'lesson_id' => $lesson_id,
-                                    'user_id'   => $gradedStudentId,
-                                ])->pluck('task_grade')->toArray();
+                        //    $grades = TaskGrading::where([
+                        //             'event_id'  => $event_id,
+                        //             'lesson_id' => $lesson_id,
+                        //             'user_id'   => $gradedStudentId,
+                        //         ])->pluck('task_grade')->toArray();
                        
-                                $finalResult = null;
+                        //         $finalResult = null;
+                        //-------------------------------------------------------------------------
+                          
+                        // if (in_array('Incomplete', $grades)) {
+                        //     $finalResult = 'Incomplete';
 
-                            // RULE 1: If any Incomplete → Incomplete
-                            if (in_array('Incomplete', $grades)) {
-                                $finalResult = 'Incomplete';
+                    
+                        // } elseif (in_array('Further training required', $grades)) {
+                        //     $finalResult = 'Further training required';
 
-                            // RULE 2: If any Further training required → Further training required
-                            } elseif (in_array('Further training required', $grades)) {
-                                $finalResult = 'Further training required';
+                        
+                        // } else {
+                        //     $finalResult = 'Competent';
+                        // }  
+                        // TrainingEventLessons::where('training_event_id', $event_id)
+                        //     ->where('lesson_id', $lesson_id)
+                        //     ->update([
+                        //         'overall_result' => $finalResult
+                        //     ]);
+                        //-----------------------------------------------------------------------------------
+                        $gradings = TaskGrading::with('subLesson')
+                                    ->where([
+                                        'event_id'  => $event_id,
+                                        'lesson_id' => $lesson_id,
+                                        'user_id'   => $gradedStudentId,
+                                    ])
+                                    ->get();
 
-                            // RULE 3: All competent → Competent
-                            } else {
-                                $finalResult = 'Competent';
-                            }  
-                        TrainingEventLessons::where('training_event_id', $event_id)
-                            ->where('lesson_id', $lesson_id)
-                            ->update([
-                                'overall_result' => $finalResult
-                            ]); 
+                               $finalResult = 'Competent';
+                                    
+                                foreach ($gradings as $row) { 
+                                     
+                                    $grade = $row->task_grade;
+                                    $isMandatory = $row->subLesson->is_mandatory ?? 0;
+                                    //dd($grade);
+                                   // dd($isMandatory);
+
+                                    if ($isMandatory == 1) {
+
+                                        if ($grade === 'Incomplete') {
+                                            $finalResult = 'Incomplete';
+                                            break; // highest priority, stop checking
+                                        }
+
+                                        if ($grade === 'Further training required') {
+                                            $finalResult = 'Further training required';
+                                            // don’t break yet — Incomplete might exist later
+                                        }
+                                    }
+                                }
+                                //dd($event_id);
+                                   TrainingEventLessons::where('training_event_id', $event_id)
+                                            ->where('lesson_id', $lesson_id)
+                                            ->update([
+                                                'overall_result' => $finalResult
+                                            ]);
+
+
+                                                            
+                        //-----------------------------------------------------------------------------------
 
 
                         $lessonSummary = $request->input("lesson_summary.$lesson_id");
@@ -1826,7 +1870,7 @@ class TrainingEventsController extends Controller
             }
 
             // Instructor Grading 
-            if ($request->has('instructor_grade')) {
+            if ($request->has('instructor_grade')) { 
                 foreach ($request->input('instructor_grade') as $lesson_id => $competencyGrades) {
                     foreach ($competencyGrades as $competency_id => $grade) {
 

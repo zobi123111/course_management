@@ -94,28 +94,17 @@
         cursor: pointer;
         font-weight: 500;
     }
-
-
 </style>
-
-<!-- <div class="row mb-3">
-    <div class="col-md-4">
-        <input type="text" id="studentSearch"
-            class="form-control"
-            placeholder="Search by student name">
+<div class="create_btn d-flex justify-content-between align-items-center"> 
+    <div>
+        <a  class="btn btn-primary me-2 booking-button" id="create_booking">Create Booking</a>
     </div>
-
-    <div class="col-md-4">
-        <input type="text" id="resourceSearch"
-            class="form-control"
-            placeholder="Search by resource">
-    </div>
-</div> -->
-
+</div>
 
 <div class="container mt-4">
     <div id="calendar"></div>
 </div>
+
 
 
 <!-- ====================================================== -->
@@ -149,10 +138,10 @@
                 @endif
 
                 <label>Start Date & Time</label>
-                <input type="date" id="booking_start" class="form-control mb-2" readonly>
+                <input type="date" id="booking_start" class="form-control mb-2">
 
                 <label>End Date & Time</label>
-                <input type="date" id="booking_end" class="form-control mb-2" readonly>
+                <input type="date" id="booking_end" class="form-control mb-2">
 
                 <label>Booking Type</label>
                 <select id="booking_type" name="booking_type" class="form-control mb-2">
@@ -194,25 +183,6 @@
                         <option value="">Select Instructor</option>
                     </select>
                 </div>
-
-
-                <!-- <div class="email-switch">
-                    <label for="create_send_email" class="switch-text">
-                        Send Email Notification
-                    </label>
-
-                    <label class="switch">
-                        <input type="checkbox"
-                            id="create_send_email"
-                            class="switch-input"
-                            name ="send_email"
-                            checked>
-                        <div class="switch-button">
-                            <span class="switch-button-left">Do Not Send</span>
-                            <span class="switch-button-right">Send Email</span>
-                        </div>
-                    </label>
-                </div> -->
 
             </div>
 
@@ -341,36 +311,6 @@
                         <option value="">Select Instructor</option>
                     </select>
                 </div>
-
-
-
-                <!-- <div class="email-switch">
-                    <label for="edit_send_email" class="switch-text">
-                        Send Email Notification
-                    </label>
-
-                    <label class="switch mt-2">
-                        <input type="checkbox"
-                            id="edit_send_email"
-                            class="switch-input"
-                            checked>
-                        <div class="switch-button">
-                            <span class="switch-button-left">Send Email</span>
-                            <span class="switch-button-right">Not Send Email</span>
-                        </div>
-                    </label>
-                </div> -->
-
-                <!-- <label class="switch mt-2">
-                    <input type="checkbox"
-                        id="edit_send_email"
-                        class="switch-input"
-                        checked>
-                    <div class="switch-button">
-                        <span class="switch-button-left">Send Email</span>
-                        <span class="switch-button-right">Not Send Email</span>
-                    </div>
-                </label> -->
             </div>
 
             <div class="modal-footer">
@@ -389,7 +329,7 @@
 
 
 @section('js_scripts')
-<meta name="csrf-token" content="{{ csrf_token() }}">
+<meta name="csrf-token" content="{{ csrf_token() }}"> 
 <script>
     $(function() {
 
@@ -448,7 +388,7 @@
             },
             defaultView: 'month',
             events: SITEURL + "/fullcalendar",
-            events: function(start, end, timezone, callback) {
+            events: function(start, end, timezone, callback) { 
                 $.ajax({
                     url: SITEURL + "/fullcalendar",
                     data: {
@@ -462,12 +402,10 @@
             },
 
             eventRender: function(event, element) {
-
                 element.find('.fc-title').html(`
                     <div style="font-weight:600;">Resource: ${event.resource}</div>
                     <div style="font-size:14px;">Booked for: ${event.title}</div>
                 `);
-
                 if (event.status === 'pending') element.css('background', '#f1c40f');
                 if (event.status === 'approved') element.css('background', '#2ecc71');
                 if (event.status === 'rejected') element.css('background', '#9b4747');
@@ -475,26 +413,21 @@
             },
             select: function(start) {
                 resetBookingForm();
-                $('#newBookingModal').modal('show'); 
-
+              //  $('#newBookingModal').modal('show'); 
                 let startStr = moment(start).format("YYYY-MM-DD HH:mm");
-
-                // Let flatpickr onChange calculate end = 23:59
                 startPicker.setDate(startStr, true);
             },
-
-
             eventClick: function(event) {
                 selectedEvent = event;
-
+                console.log(event);
                 var user_id = {{ auth() -> user() -> id }};
                 if (event.can_access == true) { 
                     $('#viewBookingModal').modal('show');
                 }
                 $('#booking_student').text(event.student);
                 $('#booking_resource').text(event.resource);
-                $('#start_date').text(moment(event.start).format("DD-MM-YYYY"));
-                $('#end_date').text(moment(event.end).format("DD-MM-YYYY"));
+                $('#start_date').text(moment(event.start).format('ddd MMM DD YYYY HH:mm:ss'));
+                $('#end_date').text(moment(event.end).format('ddd MMM DD YYYY HH:mm:ss'));
 
                 let typeText = '';
                 if (event.booking_type == 1) {
@@ -506,15 +439,11 @@
                 }
 
                 $('#view_type').text(typeText);
-                let status = event.status ?
-                    event.status.charAt(0).toUpperCase() + event.status.slice(1) :
-                    '';
-                $('#view_status')
-                    .removeClass('text-warning text-success text-danger')
-                    .text(status);
+                let status = event.status ? event.status.charAt(0).toUpperCase() + event.status.slice(1) : '';
+                $('#view_status').removeClass('text-warning text-success text-danger').text(status);
 
                 //$('#view_status').text(status);
-                if (event.status === 'pending') {
+                if (event.status === 'pending') { 
                     $('#view_status').addClass('text-warning'); // yellow
                 } else if (event.status === 'approved') {
                     $('#view_status').addClass('text-success'); // green
@@ -540,11 +469,9 @@
         function resetBookingForm()
         {
             let $ou = $('#organizationUnits');
-
             if ($ou.is('select')) {
                 $ou.val('');
             }
-
             $('#resource').val('');
             $('#student').val('');
             $('#booking_type').val('1');
@@ -552,7 +479,6 @@
             startPicker.clear();
             endPicker.clear();
         }
-
 
         function handleBookingType(
             bookingTypeSelector,
@@ -607,7 +533,7 @@
             var start = $('#booking_start').val();
             var end = $('#booking_end').val();
             // var send_email = $("#create_send_email").is(":checked");
-
+            
             let bookingType = $("#booking_type").val();
             let instructor  = $("#booking_instructor").val();
 
@@ -760,14 +686,9 @@
         });
 
         $("#editBookingBtn").click(function () {
-
             $('#viewBookingModal').modal('hide');
-
             $('#edit_booking_id').val(selectedEvent.id);
-
-            $('#edit_organizationUnits')
-                .val(selectedEvent.ou_id)
-                .trigger('change');
+            $('#edit_organizationUnits').val(selectedEvent.ou_id).trigger('change');
 
             setTimeout(function () {
                 $('#edit_resource').val(selectedEvent.resource_id);
@@ -778,11 +699,7 @@
             $('#edit_booking_type').val(selectedEvent.booking_type);
 
             // $('#edit_send_email').prop('checked', selectedEvent.send_email == 1 ? true : false);
-
-            editStartPicker.setDate(
-                moment(selectedEvent.start).format("YYYY-MM-DD HH:mm"),
-                true
-            );
+            editStartPicker.setDate(moment(selectedEvent.start).format("YYYY-MM-DD HH:mm"),true);
 
             editEndPicker.setDate(
                 moment(selectedEvent.end).format("YYYY-MM-DD HH:mm"),
@@ -839,7 +756,6 @@
         });
 
         $("#updateBookingBtn").click(function () {
-
             let editbookingType = $("#edit_booking_type").val();
             let editinstructor  = $("#edit_instructor").val();
 
@@ -909,14 +825,26 @@
                 '#edit_instructor'
             );
         });
-
-
         // On page load
-        toggleInstructorRequirement('#booking_type', '#booking_instructor');
-
-
-
+      toggleInstructorRequirement('#booking_type', '#booking_instructor');
+      $(document).on("click", "#create_booking", function () {
+            resetBookingForm();
+            // 2️⃣ If Org Unit is prefilled (hidden input), trigger change
+            let $ou = $("#organizationUnits");
+            if ($ou.length && $ou.val()) {
+                $ou.trigger("change");
+            }
+            // 3️⃣ Default booking type handling
+            handleBookingType(
+                '#booking_type',
+                '#create_resource_wrapper',
+                '#resource',
+                '#create_instructor_wrapper',
+                '#booking_instructor'
+            );
+            // 4️⃣ Open modal
+            $('#newBookingModal').modal('show');
+        });
     });
 </script>
-
 @endsection

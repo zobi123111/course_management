@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\OrganizationUnits;
+use App\Models\OuSetting;
 use Carbon\Carbon;
 
 function encode_id($id)
@@ -300,6 +301,26 @@ function get_user_role($roleId)
         }
 
         return 'Green'; // Valid
+    }
+
+    function timezone($start_time, $ou_id)
+    {
+        // Get timezone string
+        $timezoneRow = OuSetting::where('organization_id', $ou_id)
+            ->value('timezone'); // "(UTC-02:00) America/Noronha"
+
+        // Extract actual timezone
+        preg_match('/\)\s*(.*)$/', $timezoneRow, $matches);
+        $timezone = $matches[1] ?? 'UTC';
+
+        // Convert UTC time to OU timezone
+        $convertedTime = Carbon::createFromFormat(
+            'Y-m-d H:i:s',
+            $start_time,
+            'UTC'
+        )->setTimezone($timezone);
+
+        return $convertedTime->format('Y-m-d H:i:s');
     }
 
 
