@@ -351,14 +351,16 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/question/update', [QuizController::class, 'updateQuestion'])->name('question.update');
     Route::post('/question/delete', [QuizController::class, 'destroyQuestion'])->name('question.destroy');
    
-    // Tags
-    Route::get('/tags', [TrainingEventsController::class, 'rhs_tags'])->name('rhs_tags');
-    Route::post('/tag/create', [TrainingEventsController::class, 'create_tag'])->name('create_tag.store');
-    Route::post('/tag/edit', [TrainingEventsController::class, 'edit_tag'])->name('edit_tag.edit');
-    Route::post('/tag/update', [TrainingEventsController::class, 'update_tag'])->name('update_tag.update');
-    Route::post('/tag/delete', [TrainingEventsController::class, 'delete_tag'])->name('delete_tag.delete');
+   
     
 });
+
+ // Tags
+Route::get('/tags', [TrainingEventsController::class, 'rhs_tags'])->name('rhs_tags');
+Route::post('/tag/create', [TrainingEventsController::class, 'create_tag'])->name('create_tag.store');
+Route::post('/tag/edit', [TrainingEventsController::class, 'edit_tag'])->name('edit_tag.edit');
+Route::post('/tag/update', [TrainingEventsController::class, 'update_tag'])->name('update_tag.update');
+Route::post('/tag/delete', [TrainingEventsController::class, 'delete_tag'])->name('delete_tag.delete');
 
 Route::get('/quiz/view-attempts/{id}', [QuizController::class, 'viewAttempts'])->name('quiz.viewAttempts');
 Route::post('/quiz/single-attempt', [QuizController::class, 'viewSingleAttempt'])->name('quiz.viewSingleAttempt');
@@ -387,7 +389,7 @@ Route::post('/unarchive-user', [TrainingEventsController::class, 'unarchive'])->
 
 
 // Calender
-Route::get('/calendar', [BookingController::class, 'index'])->name('calender.index');
+Route::get('/calendar', [BookingController::class, 'index'])->name('calender.index'); 
 Route::get('/fullcalendar', [BookingController::class, 'loadEvents']);
 Route::post('/booking/store', [BookingController::class, 'store']);
 Route::post('/booking/update', [BookingController::class, 'update']);

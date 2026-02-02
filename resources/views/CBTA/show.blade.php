@@ -1,5 +1,5 @@
-@section('title', 'CBTA Grading')
-@section('sub-title', 'CBTA Grading')
+@section('title', 'Competency Grading')
+@section('sub-title', 'Competency Grading') 
 @extends('layout.app')
 @section('content')
 
@@ -14,10 +14,10 @@
      
     <div class="create_btn ">
          <a href="{{ url('org_setting/'.request('ou_id')) }}" class="btn btn-primary" > <i class="bi bi-arrow-left"></i> Back</a>
-        @if(checkAllowedModule('custom-cbta','custom-cbta.add')->isNotEmpty())
+       
         <button class="btn btn-primary create-button" id="create-cbta" data-toggle="modal"
             data-target="#orgUnitModal">Create CBTA</button>
-         @endif
+       
     </div>
    
     <br>
@@ -48,28 +48,22 @@
                             <tr>
                                 <th scope="col">Competency</th> 
                                 <th scope="col">Short Name</th>
-                                @if(checkAllowedModule('custom-cbta','custom-cbta.edit')->isNotEmpty()) 
                                 <th scope="col">Edit</th>
-                                @endif
-                                @if(checkAllowedModule('custom-cbta','custom-cbta.delete')->isNotEmpty()) 
                                 <th scope="col">Delete</th>
-                                @endif
+                             
                             </tr>
                         </thead>
                         @foreach ($instructor as $val)
                         <tr>
                             <td> {{ $val->competency }}</td>
                             <td> {{ $val->short_name }}</td>
-                            @if(checkAllowedModule('custom-cbta','custom-cbta.edit')->isNotEmpty()) 
                             <td>
                                 <i class="fa fa-edit edit-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>
                             </td>
-                            @endif
-                           @if(checkAllowedModule('custom-cbta','custom-cbta.delete')->isNotEmpty()) 
                             <td>
                              <i class="fa-solid fa-trash delete-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>
                             </td>
-                            @endif
+                          
                         </tr>
                         @endforeach
 
