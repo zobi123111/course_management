@@ -310,12 +310,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     // Student specific reporting section Routes
     Route::get('/user-reporting', [ReportsController::class, 'getStudentReports'])->name('user.reporting');
 
-    // Custom CBTA
-    Route::get('/custom-cbta', [CbtaControlller::class, 'index'])->name('custom-cbta.show');
-    Route::post('/custom-cbta-add', [CbtaControlller::class, 'save'])->name('custom-cbta.add');
-    Route::post('/custom-cbta-edit', [CbtaControlller::class, 'edit'])->name('custom-cbta.edit');
-    Route::post('/custom-cbta-update', [CbtaControlller::class, 'update'])->name('custom-cbta.update');
-    Route::post('/custom-cbta-delete', [CbtaControlller::class, 'delete'])->name('custom-cbta.delete');
+ 
     
     // Quiz Routes
     Route::get('/quiz', [QuizController::class, 'quizzes'])->name('quiz.index');
@@ -354,6 +349,13 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
    
     
 });
+
+// Custom CBTA
+Route::get('/custom-cbta', [CbtaControlller::class, 'index'])->name('custom-cbta.show');
+Route::post('/custom-cbta-add', [CbtaControlller::class, 'save'])->name('custom-cbta.add');
+Route::post('/custom-cbta-edit', [CbtaControlller::class, 'edit'])->name('custom-cbta.edit');
+Route::post('/custom-cbta-update', [CbtaControlller::class, 'update'])->name('custom-cbta.update');
+Route::post('/custom-cbta-delete', [CbtaControlller::class, 'delete'])->name('custom-cbta.delete');
 
  // Tags
 Route::get('/tags', [TrainingEventsController::class, 'rhs_tags'])->name('rhs_tags');
