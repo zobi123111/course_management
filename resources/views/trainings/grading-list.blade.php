@@ -356,7 +356,7 @@
                                         @endphp
                                         <div class="mb-4">
                                             <h6 class="fw-bold text-secondary mb-2">
-                                                <i class="bi bi-book me-1"></i>Lesson: {{ $lesson['title'] }}
+                                                <i class="bi bi-book me-1"></i>Lesson: {{ isset($lesson['title']) ? $lesson['title'] : '' }}
                                                 <br><small class="text-muted">
                                                     <i class="bi bi-person-video3 me-1"></i>Instructor: {{ $defLesson->student->fname }} {{ $defLesson->student->lname }}|
                                                     @if($defLesson->lesson_date)
@@ -546,7 +546,8 @@
                                         @endphp
                                         <div class="mb-4">
                                             <h6 class="fw-bold text-secondary mb-2">
-                                                <i class="bi bi-book me-1"></i>Lesson: {{ $lesson['title'] }}
+                                                <i class="bi bi-book me-1"></i>Lesson: {{ isset($lesson['title']) ? $lesson['title'] : '' }}
+
                                                 <br><small class="text-muted">
                                                     <i class="bi bi-person-video3 me-1"></i>Instructor: {{ $defLesson->student->fname }} {{ $defLesson->student->lname }} |
                                                     @if($defLesson->lesson_date)

@@ -396,7 +396,8 @@ class OrganizationController extends Controller
             $ou_id = $ou_detail[0]->id;
             $organizationUnits = OrganizationUnits::all();
             $OuSetting = OuSetting::where('organization_id', $ou_id)->first();
-            return view('organization.org_setting', compact('organizationUnits', 'ou_name', 'ou_id','OuSetting'));
+            $timezones = json_decode(file_get_contents(resource_path('views/timezones_by_utc.json')),true);
+            return view('organization.org_setting', compact('organizationUnits', 'ou_name', 'ou_id','OuSetting','timezones'));
         }
 
         public function store_org_setting(Request $request)
@@ -408,7 +409,9 @@ class OrganizationController extends Controller
                 'show_dob'             => 'required|in:0,1',
                 'show_phone'           => 'required|in:0,1',
                 'send_email'           => 'required|in:0,1',
+                'timezone'             => 'required'
             ]);
+          
 
             OuSetting::updateOrCreate(
                 ['organization_id' => $validated['organization_unit_id']],
@@ -419,6 +422,7 @@ class OrganizationController extends Controller
                     'show_phone'           => $validated['show_phone'],
                     'show_phone'           => $validated['show_phone'],
                     'send_email'           => $validated['send_email'],
+                    'timezone'             => $validated['timezone'],
                 ]
             );
             Session::flash('message', 'Organization General setting Updated successfully .');

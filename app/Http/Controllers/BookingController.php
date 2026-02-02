@@ -42,6 +42,7 @@ class BookingController extends Controller
            // dd($bookedResourceIds);
             $resources = Resource::whereNotIn('id', $bookedResourceIds)->get();
         }
+      
         return view('calender.index', compact('resources', 'organizationUnits', 'groups', 'students'));
     }
 
@@ -69,20 +70,20 @@ class BookingController extends Controller
         $data = [];
 
         foreach ($events as $event) {
-
             $canAccess = false;
-
             if ($event->users->id == $user_id || Auth::user()->role == 1 || Auth::user()->is_admin == 1 ) {
                 $canAccess = true;
             }
 
+          $start_time =  timezone($event->start, $event->ou_id);
+          $end_time =  timezone($event->end, $event->ou_id);
             $data[] = [
                 'id'           => $event->id,
                 'student'      => $event->users->fname . ' ' . $event->users->lname,
                 'title'        => $event->users->fname . ' ' . $event->users->lname,
                 'resource'     => $event->resources->name ?? '',
-                'start'        => $event->start,
-                'end'          => Carbon::parse($event->end)->addDay(),
+                'start'        => $start_time,
+                'end'          => $end_time,
                 'booking_type' => $event->booking_type,
                 'status'       => $event->status,
                 'can_access'   => $canAccess,
@@ -92,8 +93,9 @@ class BookingController extends Controller
                 'send_email'   => $event->send_email,
                 'instructor_id'=> $event->instructor_id,
             ];
+             
         }
-
+       
         return response()->json($data);
     }
 
@@ -114,20 +116,41 @@ class BookingController extends Controller
 
        // $sendemail = organizationUnits::where('id', $request->organizationUnits)->first();
         $checkSend_mail = OuSetting::where('organization_id', $request->organizationUnits)->select('send_email')->first();
-        if ($checkSend_mail->send_email == 1) { 
+        // if ($checkSend_mail->send_email == 1) { 
  
-            $studentEmail = User::find($booking->std_id)->email;
-            $instructor = User::find($booking->instructor_id)->email;
-            $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
+        //     $studentEmail = User::find($booking->std_id)->email;
+        //     $instructor = User::find($booking->instructor_id)->email;
+        //     $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
 
-            $allEmails = array_merge([$studentEmail], $ouEmails, [$instructor]);
+        //     $allEmails = array_merge([$studentEmail], $ouEmails, [$instructor]);
 
-            Mail::send('emailtemplates.create_booking_email', ['booking' => $booking], function ($message) use ($allEmails) {
-                $message->to($allEmails)
-                        ->subject('New Booking Created');
-            });
-        }
-        return response()->json(['success' => true]);
+        //     Mail::send('emailtemplates.create_booking_email', ['booking' => $booking], function ($message) use ($allEmails) {
+        //         $message->to($allEmails)
+        //                 ->subject('New Booking Created');
+        //     });
+        // }
+         if ($checkSend_mail->send_email == 1) {
+                $studentEmail = User::where('id', $booking->std_id)->value('email');
+                $instructorEmail = User::where('id', $booking->instructor_id)->value('email');
+
+                $ouEmails = User::where('ou_id', $booking->ou_id)
+                                ->where('is_admin', 1)
+                                ->pluck('email')
+                                ->toArray();
+
+                $allEmails = array_filter(array_merge(
+                    [$studentEmail],
+                    $ouEmails,
+                    [$instructorEmail]
+                ));
+
+                // Mail::send('emailtemplates.create_booking_email',['booking' => $booking],function ($message) use ($allEmails) {
+                //             $message->to($allEmails)
+                //             ->subject('New Booking Created');
+                //     }
+                // );
+            }
+            return response()->json(['success' => true]);
     }
 
     public function update(Request $request)

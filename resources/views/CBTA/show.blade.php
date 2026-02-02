@@ -11,12 +11,15 @@
 @endif
 
 <div class="main_cont_outer">
-    @if(checkAllowedModule('custom-cbta','custom-cbta.add')->isNotEmpty()) 
+     
     <div class="create_btn ">
+         <a href="{{ url('org_setting/'.request('ou_id')) }}" class="btn btn-primary" > <i class="bi bi-arrow-left"></i> Back</a>
+        @if(checkAllowedModule('custom-cbta','custom-cbta.add')->isNotEmpty())
         <button class="btn btn-primary create-button" id="create-cbta" data-toggle="modal"
             data-target="#orgUnitModal">Create CBTA</button>
+         @endif
     </div>
-    @endif
+   
     <br>
     <div id="update_success_msg"></div>
     <div class="card pt-4">
@@ -169,7 +172,7 @@
                     <div class="form-group">
                         <label for="" class="form-label">Short Name</label>
                         <input type="text" name="edit_short_name" class="form-control">
-                        <div id="edit_short_name_error" class="text-danger error_e"></div>
+                        <div id="edit_short_name_error" class="text-danger error_e"></div> 
                     </div>
                     <div class="form-group">
                         <label for="" class="form-label">Competency Type<span

@@ -2289,7 +2289,7 @@
                                                         <div id="mandatory_div" class="me-2" style="margin-left: -15px;">
                                                             @if($sublesson->is_mandatory == 1)
                                                                 <i class="text-danger fw-bold me-1 align-middle" title="Grading is mandatory">*</i>
-                                                            @endif   
+                                                            @endif    
                                                         </div>
                                                          <div id="non_mandatory_div" class="d-flex align-items-center">
                                                            <span class="rmk">RMK</span>
@@ -2297,7 +2297,7 @@
                                                            <span class="title">{{ $sublesson->title }}</span>
                                                         </div>
                                                     </div>
-                                                    <i class="grade-comment">click to enter comment</i>
+                                                    <i class="grade-comment">click to enter comment</i> 
                                                 </div>
 
                                                 <div class="table-container">
@@ -2727,8 +2727,10 @@
                                                                 </tr>
                                                             </tbody>
                                                         </table>
+                                                      <span class="text-danger">Note: You cannot change this manually. The result will be based on the above grading. </span>
                                                     </div>
                                                 </div>
+                                           
 
                                                 <!-- Remark -->
                                                 <div class="row mb-3 remark-section">
