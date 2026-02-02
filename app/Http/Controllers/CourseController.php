@@ -323,7 +323,8 @@ class CourseController extends Controller
 
                 if (!$rhsTag) {
                     $rhsTag = RhsTag::create([
-                        'rhstag' => trim($tagName)
+                     'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id,
+                     'rhstag' => trim($tagName)
                     ]);
                 } else {
                     if ($rhsTag->trashed()) {
@@ -633,13 +634,6 @@ class CourseController extends Controller
 
                     if (!empty($validity)) {
 
-                        // 1️⃣ Delete existing record
-                        // UserTagRating::where('course_id', $request->course_id)
-                        //     ->where('tag_id', $tagId)
-                        //     ->where('tag_type', 'master')
-                        //     ->delete();
-
-                        // 2️⃣ Insert fresh record
                         UserTagRating::create([
                            // 'user_id'         => null,
                            // 'event_id'        => null,
@@ -688,7 +682,8 @@ class CourseController extends Controller
                  */
                 if (!$rhsTag) {
                     $rhsTag = RhsTag::create([
-                        'rhstag' => trim($tagName)
+                    'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : (auth()->user()->ou_id ?? null),
+                    'rhstag' => trim($tagName)
                     ]);
                 } else {
                     if ($rhsTag->trashed()) {

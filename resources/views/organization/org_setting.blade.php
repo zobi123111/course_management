@@ -86,12 +86,16 @@
 @endif
 
 <div class="card">
+    <div class="create_btn d-flex justify-content-between align-items-center mt-4" style="margin-left:10px"> 
+        <div>
+            <a href="{{ url('tags') }}?ou_id={{ encode_id($ou_id) }}" class="btn btn-primary me-2 create-button">Manage Tags</a>
+            <a href="{{ url('custom-cbta') }}?ou_id={{ encode_id($ou_id) }}" class="btn btn-primary" id="addRating">Manage Competency Grading</a> 
+        </div>
+    </div>
     <div class="container mt-4">
         <div class="card-body">
-
             <form method="POST" id="ouSettingsForm">
                 @csrf
-
                 {{-- Organization Unit --}}
                 <div class="row mb-3">
                     <label class="col-sm-4 col-form-label">Organization Unit</label>

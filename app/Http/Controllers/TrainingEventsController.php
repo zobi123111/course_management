@@ -61,10 +61,6 @@ class TrainingEventsController extends Controller
 
         // $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations)->get();
 
-        // echo "<pre>";
-        //     print_r($trainingEvents_instructor);
-        // echo "</pre>";
-        // dd();
 
 
         if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) {
@@ -151,7 +147,6 @@ class TrainingEventsController extends Controller
                         'competencyGradings'
                     ])->get();
             } else {
-              //  dd($currentUser->id);
                 $trainingEvents = $trainingEventsQuery
                     ->where('student_id', $currentUser->id)
                     ->get();
@@ -685,8 +680,6 @@ class TrainingEventsController extends Controller
                 $query->where('role_name', 'like', '%Instructor%');
             })->with('roles')->get();
 
-          //  dd($trainingEvent);
-
         if ($trainingEvent) {
             return response()->json(['success' => true, 'trainingEvent' => $trainingEvent, 'instructors' => $instructors, 'licence_number' => $student_licence]);
         } else {
@@ -696,8 +689,6 @@ class TrainingEventsController extends Controller
 
     public function updateTrainingEvent(Request $request)
     {
-        
-        // Convert nested lesson times to H:i format
         $lessonData = $request->input('lesson_data', []);
         foreach ($lessonData as $key => $lesson) {
             if (!empty($lesson['start_time'])) {
@@ -889,14 +880,12 @@ class TrainingEventsController extends Controller
             'documents',
             'studentDocument'
         ])->find(decode_id($event_id));
-       // dd($trainingEvent);
 
 
         if (!$trainingEvent) {
             return abort(404, 'Training Event not found');
         }
 
-      //  dump($eventLessons);
         if (hasUserRole($currentUser, 'Instructor') && empty($currentUser->is_admin)) { 
             $eventLessons = $trainingEvent->eventLessons->map(function ($lesson) use ($currentUser) {
                 // Add a flag to indicate if this is instructor's own lesson
@@ -1268,7 +1257,6 @@ class TrainingEventsController extends Controller
         }
 
 
-      // dump($deferredLessons);
         return response()->json(['success' => true,  'defTasks' => $defTasks, 'deferredLessons' => $deferredLessons, 'defLessonTasks' => $defLessonTasks]);
     }
 
@@ -1633,16 +1621,16 @@ class TrainingEventsController extends Controller
             // Store or update Task Grading (for sublessons):
                  // SAVE OVERALL LESSON ASSESSMENT
             // ================================
-            // dd($request->overall_result);
+      
             if ($request->has('overall_result')) { 
                 foreach ($request->overall_result as $lesson_id => $resultValue) {
                     $remarkValue = $request->overall_remark[$lesson_id] ?? null;
-                    //dd($resultValue);
+                  
                     $update_assessment = array(
                              'overall_result'   => $resultValue,
                              'overall_remark'   => $remarkValue,
                     );
-                  //  dd($update_assessment);
+              
                     TrainingEventLessons::where('id', $lesson_id)->update($update_assessment);
                 }
             }
@@ -1651,7 +1639,6 @@ class TrainingEventsController extends Controller
                 foreach ($request->input('task_grade') as $lesson_id => $subLessons) {
                     foreach ($subLessons as $sub_lesson_id => $task_grade) {
                         // Update or create the normal task grade
-                      // dump($sub_lesson_id);
 
                         TaskGrading::updateOrCreate(
                             [
@@ -1707,8 +1694,6 @@ class TrainingEventsController extends Controller
                                      
                                     $grade = $row->task_grade;
                                     $isMandatory = $row->subLesson->is_mandatory ?? 0;
-                                    //dd($grade);
-                                   // dd($isMandatory);
 
                                     if ($isMandatory == 1) {
 
@@ -1723,15 +1708,13 @@ class TrainingEventsController extends Controller
                                         }
                                     }
                                 }
-                                //dd($event_id);
+                         
                                    TrainingEventLessons::where('training_event_id', $event_id)
                                             ->where('lesson_id', $lesson_id)
                                             ->update([
                                                 'overall_result' => $finalResult
                                             ]);
-
-
-                                                            
+                                 
                         //-----------------------------------------------------------------------------------
 
 
@@ -1772,7 +1755,7 @@ class TrainingEventsController extends Controller
 
                     $totalSubLessons = SubLesson::where('lesson_id', $lesson_id)->count();
                     $totalSubLessons = SubLesson::where('lesson_id', $lesson_id)->where('is_mandatory', 1)->count();
-                   // dd($totalSubLessons);
+                
 
                     $gradedSubLessons = TaskGrading::with('subLesson')->where([
                         'event_id'  => $event_id,
@@ -1785,7 +1768,7 @@ class TrainingEventsController extends Controller
                                 $q->where('is_mandatory', 1);
                             })
                         ->count();
-                  //  dd($gradedSubLessons);
+              
                     
                     if ($totalSubLessons > 0 && $totalSubLessons == $gradedSubLessons) { 
                       
@@ -2261,7 +2244,6 @@ class TrainingEventsController extends Controller
             'eventLessons.resource:id,id,name,type,class,registration',
         ])->findOrFail($event_id);
 
-      //  dd($event);
 
         $eventLesson = $event->eventLessons->first();
 
@@ -3493,18 +3475,27 @@ class TrainingEventsController extends Controller
 
     public function rhs_tags()
     {
-        $tags = RhsTag::all();
-        return view("rhs.index", compact('tags'));
+        if (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) { 
+            $organizationUnits = OrganizationUnits::all();
+            $tags = RhsTag::all();
+        } else { 
+            $ou_id = auth()->user()->ou_id;
+            $tags = RhsTag::where('ou_id', $ou_id)->get();
+            $organizationUnits = OrganizationUnits::where('id', $ou_id)->get();
+          
+        }
+
+        return view("rhs.index", compact('tags', 'organizationUnits'));
     }
 
      public function create_tag(Request $request)
     {   
-        // dd($request);
         $request->validate([
             'tag_name' => 'required|max:255|unique:rhs_tags,rhstag,NULL,id,deleted_at,NULL',
         ]);
 
         $tag = RhsTag::create([ 
+            'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->organization_unit : auth()->user()->ou_id,
             'rhstag' => $request->tag_name
         ]);
 
@@ -3514,9 +3505,8 @@ class TrainingEventsController extends Controller
 
     public function edit_tag(Request $request)
     {
-        $tag = RhsTag::findOrFail(decode_id($request->id));
+        $tag = RhsTag::with('organization_unit')->findOrFail(decode_id($request->id));
         return response()->json(['tag'=> $tag]);
-       
     }
 
     public function update_tag(Request $request)
@@ -3526,7 +3516,7 @@ class TrainingEventsController extends Controller
         'tag_name' => 'required|max:255|unique:rhs_tags,rhstag,' . $tag_id . ',id,deleted_at,NULL',
        ]);
 
-       RhsTag::where('id', $tag_id)->update(['rhstag' => $request->tag_name]);
+       RhsTag::where('id', $tag_id)->update(['rhstag' => $request->tag_name, 'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->organization_unit : auth()->user()->ou_id, ]);
        Session::flash('message', 'Tag updated successfully.');
        return response()->json(['message' => 'Tag updated successfully']);
     }

@@ -74,10 +74,9 @@ class BookingController extends Controller
             if ($event->users->id == $user_id || Auth::user()->role == 1 || Auth::user()->is_admin == 1 ) {
                 $canAccess = true;
             }
-         
+
           $start_time =  timezone($event->start, $event->ou_id);
           $end_time =  timezone($event->end, $event->ou_id);
-          // dd($end_time);
             $data[] = [
                 'id'           => $event->id,
                 'student'      => $event->users->fname . ' ' . $event->users->lname,

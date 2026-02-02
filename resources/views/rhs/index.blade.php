@@ -10,12 +10,12 @@
 </div>
 @endif
 
-@if(checkAllowedModule('tags','create_tag.store')->isNotEmpty()) 
+
 <div class="create_btn">
-    <button class="btn btn-primary create-button" id="createtag" data-toggle="modal"
-        data-target="#createTagModal">Create Tag</button> 
+    <a href="{{ url('org_setting/'.request('ou_id')) }}" class="btn btn-primary" > <i class="bi bi-arrow-left"></i> Back</a>
+    <button class="btn btn-primary create-button" id="createtag" data-toggle="modal"  data-target="#createTagModal">Create Tag</button> 
 </div>
-@endif
+
 
 <br>
 
@@ -25,29 +25,23 @@
     <thead>
         <tr>
             <th scope="col">Tag Name</th>
-            @if(checkAllowedModule('tags','edit_tag.edit')->isNotEmpty()) 
+            <th scope="col">Organization Unit</th>
             <th scope="col">Edit</th>
-            @endif
-            @if(checkAllowedModule('tags','delete_tag.delete')->isNotEmpty()) 
             <th scope="col">Delete</th>
-            @endif
-           
         </tr>
     </thead>
 <tbody>
 @foreach ($tags as $val)
     <tr>
         <td class="tagName">{{ $val->rhstag }}</td>
-        @if(checkAllowedModule('tags','edit_tag.edit')->isNotEmpty()) 
+        <td class="tagName">{{ $val->organization_unit->org_unit_name }}</td>
         <td>
             <i class="fa fa-edit edit-tag-icon" style="font-size:25px; cursor:pointer" tag-id="{{ encode_id($val->id) }}"></i>
         </td>
-        @endif
-        @if(checkAllowedModule('tags','delete_tag.delete')->isNotEmpty()) 
         <td>
             <i class="fa-solid fa-trash delete-tag-icon" style="font-size:25px; cursor:pointer" tag-id="{{ encode_id($val->id) }}"></i>
         </td>
-        @endif
+      
     </tr>
 @endforeach
 </tbody>
@@ -74,7 +68,19 @@
                         <input type="text" name="tag_name" class="form-control">
                         <div id="tag_name_error" class="text-danger error_e"></div>
                     </div>
-
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Organization Unit <span class="text-danger">*</span>
+                        </label>
+                        <select name="organization_unit" class="form-select">
+                            <option value="">Select</option>
+                            @foreach ($organizationUnits as $val)
+                               <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>  
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="submitTag" class="btn btn-primary sbt_btn">Save</button>
@@ -106,6 +112,19 @@
                         <input type="text" name="tag_name" id="edit_tagname" class="form-control">
                         <div id="tag_name_error_up" class="text-danger error_e"></div>
                     </div>
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id)) 
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Organization Unit <span class="text-danger">*</span>
+                        </label>
+                        <select name="organization_unit" class="form-select" id="edit_ou">
+                            <option value="">Select</option>
+                            @foreach ($organizationUnits as $val)
+                               <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>  
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
             
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -198,6 +217,7 @@ $(document).ready(function() {
                 console.log(response.tag.rhstag);
                 $('#edit_tagname').val(response.tag.rhstag);
                 $('#edit_tag_id').val(tagid);
+                $('#edit_ou').val(response.tag.ou_id);
                  $('#editTagModal').modal('show');
               
             },

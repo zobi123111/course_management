@@ -12,10 +12,11 @@ class RhsTag extends Model
     use SoftDeletes;
 
     protected $fillable = [
+        'ou_id',
         'rhstag'
     ];
 
-    public function userTagRatings()
+    public function userTagRatings() 
     {
         return $this->hasMany(UserTagRating::class, 'tag_id');
     }
@@ -24,4 +25,11 @@ class RhsTag extends Model
     {
         return $this->hasMany(Training_tags::class, 'tag_id', 'id');
     }
+
+    public function organization_unit()
+    {
+        return $this->belongsTo(OrganizationUnits::class, 'ou_id', 'id');
+    }
+
+ 
 }

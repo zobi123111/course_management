@@ -1034,24 +1034,24 @@ $(document).ready(function() {
     $("#submitTrainingEvent").on("click", function(e) { 
         e.preventDefault();
 
-       if (
-            !validateOpcField(
-                '#opc_validity_col',
-                '#opc_validity_months',
-                '#opc_validity_error',
-                'OPC validity is required'
-            )
-        ) return false;
+    //    if (
+    //         !validateOpcField(
+    //             '#opc_validity_col',
+    //             '#opc_validity_months',
+    //             '#opc_validity_error',
+    //             'OPC validity is required'
+    //         )
+    //     ) return false;
 
-        // OPC Extend
-        if (
-            !validateOpcField(
-                '#opc_extend_eom_col',
-                '#opc_extend_eom',
-                '#opc_extend_eom_error',
-                'OPC extend field is required'
-            )
-        ) return false;
+    //     // OPC Extend
+    //     if (
+    //         !validateOpcField(
+    //             '#opc_extend_eom_col',
+    //             '#opc_extend_eom',
+    //             '#opc_extend_eom_error',
+    //             'OPC extend field is required'
+    //         )
+    //     ) return false;
 
         $.ajax({
             url: '{{ url("/training/create") }}',
@@ -1375,7 +1375,7 @@ $(document).ready(function() {
             $.ajax({
                 url: '/grading/unlock/' + eventId,
                 type: 'POST',
-                data: {"_token": "{{ csrf_token() }}"},
+                data: {"_token": "{{ csrf_token() }}"}, 
                 success: function(response) {
                     if (response.success) {
                         location.reload();
