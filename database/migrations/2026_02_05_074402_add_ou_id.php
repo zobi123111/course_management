@@ -1,0 +1,28 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('cbta_gradings', function (Blueprint $table) {
+              $table->Integer('ou_id')->nullable()->after('competency'); 
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('cbta_gradings', function (Blueprint $table) {
+             $table->dropColumn(['ou_id']);
+        });
+    }
+};

@@ -48,4 +48,9 @@ class OrganizationUnits extends Model
         return $this->hasMany(RhsTag::class, 'ou_id', 'id');
     }
 
+    public function cbta_grading()
+    {
+        return $this->hasMany(CbtaGrading::class, 'ou_id', 'id');
+    }
+
 }

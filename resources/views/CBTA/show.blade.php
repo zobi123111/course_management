@@ -35,7 +35,7 @@
                     <li class="nav-item flex-sm-fill">
                         <a class="nav-link font-weight-bold" id="nav-profile-tab" data-bs-toggle="tab"
                             data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-Approved"
-                            aria-selected="false">Examiner</a>
+                            aria-selected="false">Examiner</a> 
                     </li>
 
                 </ul>
@@ -43,11 +43,12 @@
             <div class="tab-content border bg-light" id="nav-tabContent">
                 <!-- Pending Payrolls Tab -->
                 <div class="tab-pane fade active show" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
-                    <table class="table table-hover" id="orgUnitTable">
+                    <table class="table table-hover" id="instructorTable">
                         <thead>
                             <tr>
                                 <th scope="col">Competency</th> 
                                 <th scope="col">Short Name</th>
+                                <th scope="col">Organization Unit</th>
                                 <th scope="col">Edit</th>
                                 <th scope="col">Delete</th>
                              
@@ -57,6 +58,7 @@
                         <tr>
                             <td> {{ $val->competency }}</td>
                             <td> {{ $val->short_name }}</td>
+                            <td> {{ $val->organization_unit->org_unit_name }} </td>
                             <td>
                                 <i class="fa fa-edit edit-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>
                             </td>
@@ -73,11 +75,12 @@
                 </div>
                 <!-- Approved Payrolls Tab -->
                 <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-                    <table class="table table-hover" id="orgUnitTable">
+                    <table class="table table-hover" id="examinerTable">
                         <thead>
                             <tr>
                                 <th scope="col">Competency</th>
                                 <th scope="col">Short Name</th>
+                                <th scope="col">Organization Unit</th>
                                 <th scope="col">Action</th>
                             </tr>
                         </thead>
@@ -85,6 +88,7 @@
                         <tr>
                             <td> {{ $val->competency }}</td>
                             <td> {{ $val->short_name }}</td>
+                            <td> {{ $val->organization_unit->org_unit_name }} </td>
                              <td>
                                 <i class="fa fa-edit edit-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>
                                 <i class="fa-solid fa-trash delete-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>
@@ -113,6 +117,19 @@
             <div class="modal-body">
                 <form action="" id="cbta_form" method="POST" class="row g-3 needs-validation">
                     @csrf
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Organization Unit <span class="text-danger">*</span>
+                        </label>
+                        <select name="organization_unit" class="form-select">
+                            <option value="">Select the Organization Unit</option>
+                            @foreach ($organizationUnits as $val)
+                               <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>  
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
                     <div class="form-group">
                         <label for="" class="form-label">Competency<span
                                 class="text-danger">*</span></label>
@@ -157,6 +174,19 @@
             <div class="modal-body">
                 <form action="" id="editcbta_form" method="POST" class="row g-3 needs-validation">
                     @csrf
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Organization Unit <span class="text-danger">*</span>
+                        </label>
+                        <select name="organization_unit" id="edit_organization_unit" class="form-select">
+                            <option value="">Select the Organization Unit</option>
+                            @foreach ($organizationUnits as $val)
+                               <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>  
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
                     <div class="form-group">
                         <label for="" class="form-label">Competency<span class="text-danger">*</span></label>
                         <input type="text" name="edit_competency" class="form-control">
@@ -195,6 +225,30 @@
 
 @section('js_scripts')
 <script>
+    $(document).ready(function () {
+
+    // Instructor table
+    var instructorTable = $('#instructorTable').DataTable({
+        pageLength: 10,
+        lengthMenu: [10, 20, 50, 100],
+        ordering: true,
+        searching: true,
+        responsive: true
+    });
+
+    // Examiner table
+    var examinerTable = $('#examinerTable').DataTable({
+        pageLength: 10,
+        lengthMenu: [10, 20, 50, 100],
+        ordering: true,
+        searching: true,
+        responsive: true
+    });
+
+  
+
+});
+
     $("#create-cbta").on('click', function() {
         $(".error_e").html('');
         $("#cbta_form")[0].reset();
@@ -246,7 +300,9 @@
                 if (response.cbta) {
                     $('input[name="edit_competency"]').val(response.cbta[0].competency || '');
                     $('input[name="edit_short_name"]').val(response.cbta[0].short_name || '');
-                     $('#edit_competency_type option[value='+response.cbta[0].competency_type +']').prop('selected', true);
+                    $('#edit_competency_type option[value='+response.cbta[0].competency_type +']').prop('selected', true);
+                    $('#edit_organization_unit').val(response.cbta[0].ou_id);
+                     
       
                    
                 }

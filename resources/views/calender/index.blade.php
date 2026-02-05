@@ -20,7 +20,8 @@
     .switch-button {
         position: absolute;
         cursor: pointer;
-        background-color: #dc3545; /* OFF - red */
+        background-color: #dc3545;
+        /* OFF - red */
         border-radius: 30px;
         inset: 0;
         transition: background-color 0.3s ease;
@@ -65,20 +66,21 @@
     }
 
     /* ON state */
-    .switch-input:checked + .switch-button {
-        background-color: #28a745; /* green */
+    .switch-input:checked+.switch-button {
+        background-color: #28a745;
+        /* green */
     }
 
-    .switch-input:checked + .switch-button::before {
+    .switch-input:checked+.switch-button::before {
         transform: translateX(78px);
     }
 
-    .switch-input:checked + .switch-button .switch-button-left {
+    .switch-input:checked+.switch-button .switch-button-left {
         transform: translateX(-100%);
         opacity: 0;
     }
 
-    .switch-input:checked + .switch-button .switch-button-right {
+    .switch-input:checked+.switch-button .switch-button-right {
         transform: translateX(0);
         opacity: 1;
     }
@@ -95,16 +97,62 @@
         font-weight: 500;
     }
 </style>
-<div class="create_btn d-flex justify-content-between align-items-center"> 
+
+<div class="create_btn d-flex justify-content-between align-items-center">
+    <!-- Left end -->
     <div>
-        <a  class="btn btn-primary me-2 booking-button" id="create_booking">Create Booking</a>
+        <a class="btn btn-primary me-2 booking-button" id="create_booking">
+            Create Booking
+        </a>
+    </div>
+
+    <!-- Right end -->
+    <div class="d-flex align-items-center">
+        <label class="me-2 mb-0 text-nowrap"><b>Organization Unit</b></label>
+        <select class="form-select" style="width: 200px;" id="change_organization_unit">
+            <option value="">Select the organization unit</option>
+            @foreach ($organizationUnits as $val)
+            <option value="{{ $val->id }}">{{ $val-> org_unit_name}}</option>
+            @endforeach
+        </select>
     </div>
 </div>
 
-<div class="container mt-4">
-    <div id="calendar"></div>
-</div>
+<div class="container-fluid mt-3">
+    <div class="row">
+        <!-- LEFT SIDE : RESOURCES -->
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <strong>Resources</strong>
+                </div>
 
+                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                    @foreach ($resources as $res)
+                    <?php // dump($res); 
+                    ?>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input resource-filter"
+                            type="checkbox"
+                            value="{{ $res->id }}"
+                            id="resource_{{ $res->id }}" checked>
+
+                        <label class="form-check-label" for="resource_{{ $res->id }}">
+                            {{ $res->name }}
+                        </label>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT SIDE : CALENDAR -->
+        <div class="col-md-9">
+            <div id="calendar"></div>
+        </div>
+
+    </div>
+</div>
 
 
 <!-- ====================================================== -->
@@ -118,9 +166,10 @@
                 <h5 class="modal-title">Create Booking</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-
+            <form id="booking_form">
             <div class="modal-body">
-                @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                <div class="form-group">
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                     <label>Select Org Unit</label>
                     <select id="organizationUnits" name="organizationUnits" class="form-control mb-2">
                         <option value="">Select Org Unit</option>
@@ -128,63 +177,92 @@
                         <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
                         @endforeach
                     </select>
-                @endif
+                    @endif
+                    <span class="text-danger error-text" id="error_organizationUnits"></span>
+                </div>
+
+
                 @if(auth()->user()->is_admin == 1 && !empty(auth()->user()->ou_id))
-                    <input type="hidden" name="organizationUnits" id="organizationUnits" value="{{ auth()->user()->ou_id }}">
+                <input type="hidden" name="organizationUnits" id="organizationUnits" value="{{ auth()->user()->ou_id }}">
                 @endif
+
+
 
                 @if(auth()->user()->is_admin == 0 && auth()->user()->is_owner == 0 && !empty(auth()->user()->ou_id))
-                    <input type="hidden" name="organizationUnits" id="organizationUnits" value="{{ auth()->user()->ou_id }}">
+                <input type="hidden" name="organizationUnits" id="organizationUnits" value="{{ auth()->user()->ou_id }}">
                 @endif
 
-                <label>Start Date & Time</label>
-                <input type="date" id="booking_start" class="form-control mb-2">
+                <div class="form-group">
+                    <label>Start Date & Time</label>
+                    <input type="date" name="start_date" id="booking_start" class="form-control mb-2">
+                    <span class="text-danger error-text" id="error_start_date"></span>
+                </div>
 
-                <label>End Date & Time</label>
-                <input type="date" id="booking_end" class="form-control mb-2">
+                <div class="form-group">
+                    <label>End Date & Time</label>
+                    <input type="date" name="end_date" id="booking_end" class="form-control mb-2" >
+                    <span class="text-danger error-text" id="error_end_date"></span>
+                </div>
 
-                <label>Booking Type</label>
-                <select id="booking_type" name="booking_type" class="form-control mb-2">
-                    <option value="1">Solo</option>
-                    <option value="2">Lesson</option>
-                    <option value="3">Standby</option>
-                </select>
 
-                <label>Resource Type</label>
-                <select name="resource_type" id="resource_type" class="form-control mb-2">
-                    <option value="1">Aircraft</option>
-                    <option value="2">Simulator</option>
-                    <option value="3">Classroom</option>
-                </select>
-
-                @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                <label>Select Student</label>
-                <select id="student" name="student" class="form-control mb-2">
-                    <option value="">Select Student</option>
-                    @foreach ($students as $val)
-                    <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
-                    @endforeach
-                </select>
-                @endif
-
-                <div id="create_resource_wrapper">
-                    <label>Resource</label>
-                    <select id="resource" name="resource" class="form-control mb-2">
-                        <option value="">Select Resource</option>
-                        @foreach ($resources as $val)
-                            <option value="{{ $val->id }}">{{ $val->name }}</option>
-                        @endforeach
+                <div class="form-group">
+                    <label>Booking Type</label>
+                    <select id="booking_type" name="booking_type" class="form-control mb-2">
+                        <option value="1">Solo</option>
+                        <option value="2">Lesson</option>
+                        <option value="3">Standby</option>
                     </select>
                 </div>
 
-                <div id="create_instructor_wrapper">
-                    <label>Instructor</label>
-                    <select id="booking_instructor" class="form-control mb-2">
-                        <option value="">Select Instructor</option>
+
+                <div class="form-group">
+                    <label>Resource Type</label>
+                    <select name="resource_type" id="resource_type" class="form-control mb-2">
+                        <option value="1">Aircraft</option>
+                        <option value="2">Simulator</option>
+                        <option value="3">Classroom</option>
                     </select>
+                </div>
+
+
+                <div class="form-group">
+                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    <label>Select Student</label>
+                    <select id="student" name="student" class="form-control mb-2">
+                        <option value="">Select Student</option>
+                        @foreach ($students as $val)
+                        <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
+                        @endforeach
+                    </select>
+                    @endif
+                    <span class="text-danger error-text" id="error_student"></span>
+                </div>
+
+                <div class="form-group">
+                    <div id="create_resource_wrapper">
+                        <label>Resource</label>
+                        <select id="resource" name="resource" class="form-control mb-2">
+                            <option value="">Select Resource</option>
+                            @foreach ($resources as $val)
+                            <option value="{{ $val->id }}">{{ $val->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <span class="text-danger error-text" id="error_resource"></span>
+                </div>
+
+                <div class="form-group">
+                    <div id="create_instructor_wrapper">
+                        <label>Instructor</label>
+                        <select name="instructor" id="booking_instructor" class="form-control mb-2">
+                            <option value="">Select Instructor</option>
+                        </select>
+                    </div>
+                    <span class="text-danger error-text" id="error_instructor"></span>
                 </div>
 
             </div>
+            </form>
 
             <div class="modal-footer">
                 <button class="btn btn-primary" id="saveBookingBtn">Submit Booking</button>
@@ -202,23 +280,68 @@
         <div class="modal-content">
 
             <div class="modal-header">
-                <h5 class="modal-title">Booking Details</h5>
+                <!-- <h5 class="modal-title">Booking Details</h5> -->
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-
             <div class="modal-body">
-                <p><strong>Student:</strong> <span id="booking_student"></span></p>
-                <p><strong>Resource:</strong> <span id="booking_resource"></span></p>
-                <p><strong>Start Date:</strong> <span id="start_date"></span></p>
-                <p><strong>End Date:</strong> <span id="end_date"></span></p>
-                <p><strong>Type:</strong> <span id="view_type"></span></p>
-                <p><strong>Status:</strong> <span id="view_status"></span></p>
+                <div class="border rounded p-3 booking-card">
+                    <!-- Header -->
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <strong>Single student</strong>
+                        </div>
+                        <div class="text-end text-success small">
+                            <div id="booking_day"></div>
+                            <div id="booking_time"></div>
+                        </div>
+                    </div>
+                    <!-- Details -->
+                    <ul class="list-unstyled small mb-3">
+                        <li class="mb-1">
+                            <i class="bi bi-bookmark-check text-success me-2"></i>
+                            <span id="bookingType"></span>
+                        </li>
+
+                        <li class="mb-1">
+                            <i class="bi bi-person-fill text-primary me-2"></i>
+                            <span id="booking_student">CHAUN LDG65 - Naresh Chauhan</span>
+                        </li>
+
+                        <li class="mb-1">
+                            <i class="bi bi-airplane text-secondary me-2"></i>
+                            <span id="booking_resource"></span>
+                        </li>
+
+                        <li class="mb-1">
+                            <i class="bi bi-journal-text me-2"></i>
+                            <span id="booking_lesson">F18: Solo Circuit Consolidation</span>
+                        </li>
+
+                        <li class="mb-1">
+                            <i class="bi bi-lock-fill text-danger me-2"></i>
+                            <span id="booking_code">TK CCTS 1600Z-1645Z BOOKED</span>
+                        </li>
+
+                        <li class="mb-1">
+                            <i class="bi bi-envelope-x text-muted me-2"></i>
+                            Notify via email: <span id="mail_send"></span> 
+                        </li>
+                    </ul>
+                    <!-- Footer -->
+                    <div class="border-top pt-2 d-flex justify-content-between align-items-center">
+                        <span class="small">
+                            <strong>Status:</strong>
+                            <span id="view_status" class="text-success">Scheduled</span>
+                        </span>
+                        <i class="bi bi-calendar-event"></i>
+                    </div>
+                </div>
+
                 <input type="hidden" id="approve_booking_id">
                 <input type="hidden" id="approve_organizationUnits">
                 <input type="hidden" id="reject_booking_id">
-
             </div>
-            @if(auth()->user()->is_owner == 1 || Auth::user()->is_admin == 1)
+            <!-- @if(auth()->user()->is_owner == 1 || Auth::user()->is_admin == 1)
                 <div class="modal-footer">
                     <button id="editBookingBtn" class="btn btn-primary">Edit</button>
                     <button id="deleteBookingBtn" class="btn btn-danger">Delete</button>
@@ -227,10 +350,12 @@
                         <button id="rejectBtn" class="btn btn-danger">Reject</button>
                     @endif
                 </div>
-            @endif
+            @endif -->
         </div>
     </div>
 </div>
+
+
 <!-- ====================================================== -->
 <!-- END BOOKING MODAL -->
 <!-- ====================================================== -->
@@ -259,20 +384,20 @@
                 </select> -->
 
                 @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                    <label>Select Org Unit</label>
-                    <select id="edit_organizationUnits" class="form-control mb-2">
-                        <option value="">Select Org Unit</option>
-                        @foreach ($organizationUnits as $val)
-                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                        @endforeach
-                    </select>
+                <label>Select Org Unit</label>
+                <select id="edit_organizationUnits" class="form-control mb-2">
+                    <option value="">Select Org Unit</option>
+                    @foreach ($organizationUnits as $val)
+                    <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                    @endforeach
+                </select>
                 @endif
                 @if(auth()->user()->is_admin == 1 && !empty(auth()->user()->ou_id))
-                    <input type="hidden" name="organizationUnits" id="edit_organizationUnits" value="{{ auth()->user()->ou_id }}">
+                <input type="hidden" name="organizationUnits" id="edit_organizationUnits" value="{{ auth()->user()->ou_id }}">
                 @endif
 
                 @if(auth()->user()->is_admin == 0 && auth()->user()->is_owner == 0 && !empty(auth()->user()->ou_id))
-                    <input type="hidden" name="organizationUnits" id="edit_organizationUnits" value="{{ auth()->user()->ou_id }}">
+                <input type="hidden" name="organizationUnits" id="edit_organizationUnits" value="{{ auth()->user()->ou_id }}">
                 @endif
 
                 <label>Start Date & Time</label>
@@ -291,16 +416,16 @@
                 <label>Student</label>
                 <select id="edit_student" class="form-control mb-2">
                     @foreach ($students as $val)
-                        <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
+                    <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
                     @endforeach
                 </select>
 
-                
+
                 <div id="edit_resource_wrapper">
                     <label>Resource</label>
                     <select id="edit_resource" class="form-control mb-2">
                         @foreach ($resources as $val)
-                            <option value="{{ $val->id }}">{{ $val->name }}</option>
+                        <option value="{{ $val->id }}">{{ $val->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -329,7 +454,7 @@
 
 
 @section('js_scripts')
-<meta name="csrf-token" content="{{ csrf_token() }}"> 
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <script>
     $(function() {
 
@@ -371,7 +496,15 @@
             time_24hr: true,
             minuteIncrement: 15
         });
+        $(document).on('change', '.resource-filter', function() {
+            $('#calendar').fullCalendar('refetchEvents');
+        });
 
+        let ouChanged = false;
+        $(document).on('change', '#change_organization_unit', function() {
+            ouChanged = true;
+            $('#calendar').fullCalendar('refetchEvents');
+        });
 
         // ---------------------------
         // FullCalendar
@@ -388,15 +521,29 @@
             },
             defaultView: 'month',
             events: SITEURL + "/fullcalendar",
-            events: function(start, end, timezone, callback) { 
+            events: function(start, end, timezone, callback) {
+
+                let selectedResources = [];
+                $('.resource-filter:checked').each(function() {
+                    selectedResources.push($(this).val());
+                });
+
+                let data = {
+                    resources: selectedResources
+                };
+
+                let ouId = $('#change_organization_unit').val();
+
+                // ✅ Send ou_id ONLY when user selects one
+                if (ouId) {
+                    data.ou_id = ouId;
+                }
+
                 $.ajax({
                     url: SITEURL + "/fullcalendar",
-                    data: {
-                        student: $('#studentSearch').val(),
-                        resource: $('#resourceSearch').val()
-                    },
-                    success: function(data) {
-                        callback(data);
+                    data: data,
+                    success: function(response) {
+                        callback(response);
                     }
                 });
             },
@@ -413,17 +560,14 @@
             },
             select: function(start) {
                 resetBookingForm();
-              //  $('#newBookingModal').modal('show'); 
+                //  $('#newBookingModal').modal('show'); 
                 let startStr = moment(start).format("YYYY-MM-DD HH:mm");
                 startPicker.setDate(startStr, true);
             },
             eventClick: function(event) {
                 selectedEvent = event;
-                console.log(event);
-                var user_id = {{ auth() -> user() -> id }};
-                if (event.can_access == true) { 
-                    $('#viewBookingModal').modal('show');
-                }
+                var user_id = {{ auth()-> user()->id }};
+             
                 $('#booking_student').text(event.student);
                 $('#booking_resource').text(event.resource);
                 $('#start_date').text(moment(event.start).format('ddd MMM DD YYYY HH:mm:ss'));
@@ -437,13 +581,21 @@
                 } else if (event.booking_type == 3) {
                     typeText = 'Standby';
                 }
+                $('#bookingType').text(typeText);
 
-                $('#view_type').text(typeText);
+                let sendmail = '';
+                if(event.send_mail == 0){
+                    sendmail = "Disabled";
+                }else if(event.send_mail == 1){
+                   sendmail = "Enabled";
+                }
+                $('#mail_send').text(sendmail);
+
                 let status = event.status ? event.status.charAt(0).toUpperCase() + event.status.slice(1) : '';
                 $('#view_status').removeClass('text-warning text-success text-danger').text(status);
 
                 //$('#view_status').text(status);
-                if (event.status === 'pending') { 
+                if (event.status === 'pending') {
                     $('#view_status').addClass('text-warning'); // yellow
                 } else if (event.status === 'approved') {
                     $('#view_status').addClass('text-success'); // green
@@ -462,12 +614,19 @@
                     $('#approveBtn').hide();
                     $('#rejectBtn').hide();
                 }
+                   if (event.can_access == true) {
+                    $('#booking_day').html(event.start.format('dddd, DD-MM-YYYY'));
+                    $('#booking_student').html(event.student);
+                    var startTime = event.start.format('HH:mm');
+                    var endTime   = event.end.format('HH:mm');
+                    $('#booking_time').html(startTime + ' - ' + endTime);
+                    $('#viewBookingModal').modal('show');
+                }
             }
 
         });
 
-        function resetBookingForm()
-        {
+        function resetBookingForm() {
             let $ou = $('#organizationUnits');
             if ($ou.is('select')) {
                 $ou.val('');
@@ -522,55 +681,73 @@
         // ---------------------------
         // Save Booking (AJAX)
         // ---------------------------
-
-        $("#saveBookingBtn").click(function(e) {
+        $("#saveBookingBtn").on("click", function(e) {
             e.preventDefault();
-
-            // read values (from datetimepicker inputs)
-            var resource_id = $("#resource").val();
-            var organizationUnits = $("#organizationUnits").val();
-            var group = $("#group").val();
-            var start = $('#booking_start').val();
-            var end = $('#booking_end').val();
-            // var send_email = $("#create_send_email").is(":checked");
-            
-            let bookingType = $("#booking_type").val();
-            let instructor  = $("#booking_instructor").val();
-
-            if (!resource_id) {
-                toastr.error('Please select a resource');
-                return;
-            }
-            if (!start || !end) {
-                toastr.error('Please select start and end date/time');
-                return;
-            }
-
-            if ((bookingType == 2) && !instructor) {
-                toastr.error('Instructor is required for Lesson booking');
-                return;
-            }
-
-            $.post(SITEURL + "/booking/store", {
-                resource_id: resource_id,
-                start: start,
-                end: end,
-                organizationUnits: organizationUnits,
-                group: group,
-                // send_email: send_email,
-                booking_type: $("#booking_type").val(),
-                resource_type: $("#resource_type").val(),
-                instructor: $("#booking_instructor").val(),
-                student: $("#student").val(),
-            }, function(response) {
-                toastr.success("Booking Request Submitted");
-                $('#newBookingModal').modal('hide');
-                $('#calendar').fullCalendar('refetchEvents');
-            }).fail(function(xhr) {
-                toastr.error('Failed to save booking');
-                console.error(xhr.responseText);
+            $(".loader").fadeIn();
+            var formData = new FormData($('#booking_form')[0]); 
+            $.ajax({
+                url: '{{ url("/booking/store") }}', 
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) { 
+                // $(".loader").fadeOut("slow");
+                // $('#orgUnitModal').modal('hide');
+                location.reload();
+                },
+                error: function(xhr) {
+                    if (xhr.status === 422) {
+                        let errors = xhr.responseJSON.errors;
+                        let errorMsg = '';
+                        $('.error-text').text('');
+                        $.each(errors, function(key, value) {
+                            $('#error_' + key).text(value[0]);
+                        });
+                    } else {
+                        alert('Something went wrong');
+                    }
+                }
             });
-        });
+
+    })
+
+        // $("#saveBookingBtn").click(function(e) {
+        //     e.preventDefault();
+
+        //     $.ajax({
+        //         url: SITEURL + "/booking/store",
+        //         type: "POST",
+        //         data: {
+        //             resource_id: $("#resource").val(),
+        //             organizationUnits: $("#organizationUnits").val(),
+        //             start: $('#booking_start').val(),
+        //             end: $('#booking_end').val(),
+        //             booking_type: $("#booking_type").val(),
+        //             resource_type: $("#resource_type").val(),
+        //             instructor: $("#booking_instructor").val(),
+        //             student: $("#student").val(),
+        //         },
+        //         success: function(response) {
+        //             $('#newBookingModal').modal('hide');
+        //             $('#calendar').fullCalendar('refetchEvents'); 
+        //             alert(response.message); // or custom UI
+        //         },
+        //         error: function(xhr) {
+        //             if (xhr.status === 422) {
+        //                 let errors = xhr.responseJSON.errors;
+        //                 let errorMsg = '';
+        //                 $('.error-text').text('');
+        //                 $.each(errors, function(key, value) {
+        //                     $('#error_' + key).text(value[0]);
+        //                 });
+        //             } else {
+        //                 alert('Something went wrong');
+        //             }
+        //         }
+        //     });
+        // });
+
 
         // APPROVE BOOKING
         $("#approveBtn").click(function() {
@@ -584,12 +761,12 @@
             });
         });
 
-        $("#deleteBookingBtn").click(function () {
+        $("#deleteBookingBtn").click(function() {
             if (!confirm('Cancel this booking?')) return;
 
             $.post(SITEURL + "/booking/delete", {
                 id: selectedEvent.id
-            }, function () {
+            }, function() {
                 toastr.success("Booking Cancelled");
                 $('#viewBookingModal').modal('hide');
                 $('#calendar').fullCalendar('refetchEvents');
@@ -609,7 +786,7 @@
             });
         });
 
-        $(document).ready(function () {
+        $(document).ready(function() {
             let ou = $("#organizationUnits");
 
             // If admin with fixed OU (hidden input)
@@ -685,12 +862,12 @@
             time_24hr: true
         });
 
-        $("#editBookingBtn").click(function () {
+        $("#editBookingBtn").click(function() {
             $('#viewBookingModal').modal('hide');
             $('#edit_booking_id').val(selectedEvent.id);
             $('#edit_organizationUnits').val(selectedEvent.ou_id).trigger('change');
 
-            setTimeout(function () {
+            setTimeout(function() {
                 $('#edit_resource').val(selectedEvent.resource_id);
                 $('#edit_student').val(selectedEvent.std_id);
                 $('#edit_instructor').val(selectedEvent.instructor_id);
@@ -699,7 +876,7 @@
             $('#edit_booking_type').val(selectedEvent.booking_type);
 
             // $('#edit_send_email').prop('checked', selectedEvent.send_email == 1 ? true : false);
-            editStartPicker.setDate(moment(selectedEvent.start).format("YYYY-MM-DD HH:mm"),true);
+            editStartPicker.setDate(moment(selectedEvent.start).format("YYYY-MM-DD HH:mm"), true);
 
             editEndPicker.setDate(
                 moment(selectedEvent.end).format("YYYY-MM-DD HH:mm"),
@@ -709,11 +886,11 @@
             $('#editBookingModal').modal('show');
         });
 
-        $("#edit_organizationUnits").on('change', function () {
+        $("#edit_organizationUnits").on('change', function() {
             let ou_id = $(this).val();
 
             let $resource = $("#edit_resource");
-            let $student  = $("#edit_student");
+            let $student = $("#edit_student");
             let $instructor = $("#edit_instructor");
 
             $resource.empty().append("<option value=''>Select Resource</option>");
@@ -725,12 +902,14 @@
             $.ajax({
                 url: "/group/students/",
                 type: "GET",
-                data: { ou_id: ou_id },
+                data: {
+                    ou_id: ou_id
+                },
                 dataType: "json",
-                success: function (response) {
+                success: function(response) {
 
                     if (response.org_resource) {
-                        response.org_resource.forEach(function (r) {
+                        response.org_resource.forEach(function(r) {
                             $resource.append(
                                 `<option value="${r.id}">${r.name}</option>`
                             );
@@ -738,14 +917,14 @@
                     }
 
                     if (response.students) {
-                        response.students.forEach(function (s) {
+                        response.students.forEach(function(s) {
                             $student.append(
                                 `<option value="${s.id}">${s.fname} ${s.lname}</option>`
                             );
                         });
                     }
                     if (response.instructors) {
-                        response.instructors.forEach(function (i) {
+                        response.instructors.forEach(function(i) {
                             $instructor.append(
                                 `<option value="${i.id}">${i.fname} ${i.lname}</option>`
                             );
@@ -755,9 +934,9 @@
             });
         });
 
-        $("#updateBookingBtn").click(function () {
+        $("#updateBookingBtn").click(function() {
             let editbookingType = $("#edit_booking_type").val();
-            let editinstructor  = $("#edit_instructor").val();
+            let editinstructor = $("#edit_instructor").val();
 
             if ((editbookingType == 2 || editbookingType == 3) && !editinstructor) {
                 toastr.error('Instructor is required for Lesson or Standby booking');
@@ -774,7 +953,7 @@
                 end: $('#edit_booking_end').val(),
                 instructor_id: $('#edit_instructor').val(),
                 // send_email: $('#edit_send_email').is(':checked') ? 1 : 0
-            }, function () {
+            }, function() {
                 toastr.success("Booking Updated");
                 $('#editBookingModal').modal('hide');
                 $('#calendar').fullCalendar('refetchEvents');
@@ -797,7 +976,7 @@
         }
 
         // On change
-        $('#booking_type').on('change', function () {
+        $('#booking_type').on('change', function() {
             toggleInstructorRequirement('#booking_type', '#booking_instructor');
             handleBookingType(
                 '#booking_type',
@@ -816,7 +995,7 @@
             '#booking_instructor'
         );
 
-        $('#edit_booking_type').on('change', function () {
+        $('#edit_booking_type').on('change', function() {
             handleBookingType(
                 '#edit_booking_type',
                 '#edit_resource_wrapper',
@@ -826,8 +1005,8 @@
             );
         });
         // On page load
-      toggleInstructorRequirement('#booking_type', '#booking_instructor');
-      $(document).on("click", "#create_booking", function () {
+        toggleInstructorRequirement('#booking_type', '#booking_instructor');
+        $(document).on("click", "#create_booking", function() {
             resetBookingForm();
             // 2️⃣ If Org Unit is prefilled (hidden input), trigger change
             let $ou = $("#organizationUnits");

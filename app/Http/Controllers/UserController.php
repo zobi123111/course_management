@@ -121,7 +121,7 @@ class UserController extends Controller
                 ->make(true);
         }
 
-        return view('users.index', compact('roles', 'organizationUnits', 'rating'));
+        return view('users.index', compact('roles', 'organizationUnits', 'rating')); 
     }
 
     public function userData(Request $request)
