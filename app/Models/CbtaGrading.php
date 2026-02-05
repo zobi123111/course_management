@@ -12,8 +12,9 @@ class CbtaGrading extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $fillable = [
+    protected $fillable = [ 
         'competency',
+        'ou_id',
         'short_name',
         'competency_type' 
     ];
@@ -21,6 +22,11 @@ class CbtaGrading extends Model
     public function examinerGrading(): HasMany
     {
          return $this->hasMany(ExaminerGrading::class, 'cbta_gradings_id', 'id');
+    }
+
+    public function organization_unit()
+    {
+        return $this->belongsTo(OrganizationUnits::class,'ou_id', 'id');
     }
 
    

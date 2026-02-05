@@ -294,7 +294,7 @@
     </div>
 
     {{-- Instructor Comment Section --}}
-     @if($event->course->instructor_cbta == 1) 
+     @if($event->entry_source == "instructor") 
     <div class="section">
         <h2>Instructor Comment</h2>
         <p><strong>Result:</strong> {{ $event->eventLessons[0]->instructor_comment ?? '' }}</p>

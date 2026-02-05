@@ -21,7 +21,7 @@ class BookingController extends Controller
         $student = auth()->user()->role;
         $organizationUnits = OrganizationUnits::all();
         $groups = Group::all();
-        $students = collect(); // ✅ collect all students
+        $students = collect(); 
 
         foreach ($groups as $val) {
             // user_ids is an array like ["100","114","154"]
@@ -35,36 +35,46 @@ class BookingController extends Controller
         $students = $students->unique('id')->values();
         if ($student == 3) {
             $ou_id = auth()->user()->ou_id;
-            $resources  = Resource::where('ou_id', $ou_id)->get();
+          //  $resources  = Resource::where('ou_id', $ou_id)->get();
         } else {
-           // $resources  = Resource::all();
-            $bookedResourceIds = Booking::pluck('resource')->unique();
-           // dd($bookedResourceIds);
-            $resources = Resource::whereNotIn('id', $bookedResourceIds)->get();
+            $bookedResourceIds = Booking::pluck('resource')->unique()->toArray();
+            $resources = Resource::whereIn('id', $bookedResourceIds)->get();
         }
-      
+       
         return view('calender.index', compact('resources', 'organizationUnits', 'groups', 'students'));
     }
 
     public function loadEvents(Request $request)
     {
-        $student = $request->student;
-        $resource = $request->resource;
-
+        $student   = $request->student;
+        $resource  = $request->resource;
+        $resources = $request->resources;
+        $ou_id     = $request->ou_id;
+      //  dump($ou_id);
+       
+        
         $events = Booking::with('resources', 'users')
-            ->whereNotIn('status', ['cancelled', 'rejected'])
-            ->when($student, function ($q) use ($student) {
-                $q->whereHas('users', function ($u) use ($student) {
-                    $u->where('fname', 'like', "%$student%")
-                    ->orWhere('lname', 'like', "%$student%");
-                });
-            })
-            ->when($resource, function ($q) use ($resource) {
-                $q->whereHas('resources', function ($r) use ($resource) {
-                    $r->where('name', 'like', "%$resource%");
-                });
-            })
-            ->get();
+                ->whereNotIn('status', ['cancelled', 'rejected'])
+
+                ->when($student, function ($q) use ($student) {
+                    $q->whereHas('users', function ($u) use ($student) {
+                        $u->where('fname', 'like', "%$student%")
+                        ->orWhere('lname', 'like', "%$student%");
+                    });
+                })
+                ->when($ou_id, function ($q) use ($ou_id) {
+                    $q->whereHas('users', function ($u) use ($ou_id) {
+                        $u->where('ou_id', $ou_id);
+                    });
+                })
+
+                ->when(!empty($resources), function ($q) use ($resources) {
+                    $q->whereIn('resource', $resources); // 👈 key line
+                })
+
+                ->get();
+      //  dump($events);    
+
 
         $user_id = Auth::id();
         $data = [];
@@ -75,8 +85,12 @@ class BookingController extends Controller
                 $canAccess = true;
             }
 
+        
+          $mailSend = OuSetting::where('organization_id', $event->ou_id)->select('send_email')->first();
+          
           $start_time =  timezone($event->start, $event->ou_id);
-          $end_time =  timezone($event->end, $event->ou_id);
+          $end_time   =  timezone($event->end, $event->ou_id);
+         // dump($event->resources->name);
             $data[] = [
                 'id'           => $event->id,
                 'student'      => $event->users->fname . ' ' . $event->users->lname,
@@ -92,6 +106,7 @@ class BookingController extends Controller
                 'ou_id'        => $event->ou_id,
                 'send_email'   => $event->send_email,
                 'instructor_id'=> $event->instructor_id,
+                'send_mail'    => $mailSend->send_email ?? ''
             ];
              
         }
@@ -101,12 +116,55 @@ class BookingController extends Controller
 
     public function store(Request $request)
     {
+      //  dd($request->all());
+         $validated = $request->validate([
+                'organizationUnits' => 'required|exists:organization_units,id',
+               // 'resource_id'       => 'required|exists:resources,id',
+                'start_date'        => 'required|date',
+                'end_date'          => 'required|date|after:start_date',
+                'booking_type'      => 'required|in:1,2,3',
+                'resource_type'     => 'required|in:1,2,3',
+                'student'           => 'required|nullable|exists:users,id',
+                'resource'          => 'required',
+                // Instructor required only for Lesson (2)
+                'instructor' => 'required_if:booking_type,2|nullable|exists:users,id',
+            ]);
+              // ✅ Parse dates
+                $start = Carbon::parse($request->start_date);
+                $end   = Carbon::parse($request->end_date);
+               // dd($request->resource);
+
+                // ✅ Resource + Time Conflict Check
+                // $resourceConflict = Booking::where('resource', $request->resource)
+                //     ->where(function ($q) use ($start, $end) {
+                //         $q->where('start', '<', $end)
+                //         ->where('end',   '>', $start);
+                //     })
+                //     ->exists();
+                $resourceConflict = Booking::where('resource', $request->resource)
+                                    ->whereDate('start', $start->toDateString())
+                                    ->where(function ($q) use ($start, $end) {
+                                        $q->where('start', '<', $end)
+                                        ->where('end', '>', $start);
+                                    })
+                                    ->exists();
+              
+
+                if ($resourceConflict) {
+                    return response()->json([
+                        'errors' => [
+                            'resource' => ['This resource is already booked for the selected time slot.']
+                        ]
+                    ], 422);
+                } 
+
+        
         $booking = new Booking();
         $booking->ou_id = $request->organizationUnits;
         $booking->std_id = $request->student ?? Auth::user()->id;
-        $booking->resource = $request->resource_id;
-        $booking->start = $request->start;
-        $booking->end = $request->end;
+        $booking->resource = $request->resource;
+        $booking->start = $request->start_date;
+        $booking->end = $request->end_date;
         $booking->booking_type = $request->booking_type;
         $booking->resource_type = $request->resource_type;
         $booking->instructor_id = $request->instructor;
@@ -129,28 +187,28 @@ class BookingController extends Controller
         //                 ->subject('New Booking Created');
         //     });
         // }
-         if ($checkSend_mail->send_email == 1) {
-                $studentEmail = User::where('id', $booking->std_id)->value('email');
-                $instructorEmail = User::where('id', $booking->instructor_id)->value('email');
+        // if ($checkSend_mail->send_email == 1) {
+                // $studentEmail = User::where('id', $booking->std_id)->value('email');
+                // $instructorEmail = User::where('id', $booking->instructor_id)->value('email');
 
-                $ouEmails = User::where('ou_id', $booking->ou_id)
-                                ->where('is_admin', 1)
-                                ->pluck('email')
-                                ->toArray();
+                // $ouEmails = User::where('ou_id', $booking->ou_id)
+                //                 ->where('is_admin', 1)
+                //                 ->pluck('email')
+                //                 ->toArray();
 
-                $allEmails = array_filter(array_merge(
-                    [$studentEmail],
-                    $ouEmails,
-                    [$instructorEmail]
-                ));
+                // $allEmails = array_filter(array_merge(
+                //     [$studentEmail],
+                //     $ouEmails,
+                //     [$instructorEmail]
+                // ));
 
                 // Mail::send('emailtemplates.create_booking_email',['booking' => $booking],function ($message) use ($allEmails) {
                 //             $message->to($allEmails)
                 //             ->subject('New Booking Created');
                 //     }
                 // );
-            }
-            return response()->json(['success' => true]);
+           // }
+             return response()->json([ 'message' => 'Booking created successfully'], 201);
     }
 
     public function update(Request $request)

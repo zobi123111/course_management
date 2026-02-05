@@ -1084,15 +1084,15 @@ class TrainingEventsController extends Controller
                     $query->where('role_name', 'like', '%Instructor%');
                 })->with('roles')->get();
         }
-
+       // dd($trainingEvent->ou_id);
         $course = Courses::with('resources')->find($trainingEvent->course_id);
         $resources = $course ? $course->resources : collect();
 
         $courses = Courses::orderBy('position')->get();
         $event_id =  decode_id($event_id);
 
-        $instructor_cbta = CbtaGrading::where('competency_type', 'instructor')->get()->toArray();
-        $examiner_cbta = CbtaGrading::where('competency_type', 'examiner')->get()->toArray();
+        $instructor_cbta = CbtaGrading::where('competency_type', 'instructor')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
+        $examiner_cbta = CbtaGrading::where('competency_type', 'examiner')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
 
         $instructor_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'instructor')->get()->toArray();
 
