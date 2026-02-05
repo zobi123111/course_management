@@ -157,18 +157,18 @@ class CourseController extends Controller
                     }
                 }
             ],
-           'opc_validity_months' => [
-                    'sometimes',
-                    'required_if:enable_aircraft,!=,',
-                    'integer',
-                    'min:1',
-                ],
+        //    'opc_validity_months' => [
+        //             'sometimes',
+        //             'required_if:enable_opc,!=,',
+        //             'integer',
+        //             'min:1',
+        //         ],
 
-            'opc_extend_eom' => [
-                    'sometimes',
-                    'required_if:enable_aircraft,!=,',
-                    'in:0,1',
-                ],
+        //     'opc_extend_eom' => [
+        //             'sometimes',
+        //             'required_if:enable_opc,!=,',
+        //             'in:0,1',
+        //         ],
 
             // Validation for add feedback questions
             'enable_feedback' => 'nullable|boolean',
@@ -427,6 +427,7 @@ class CourseController extends Controller
             'enable_instructor_upload' => 'nullable|boolean',
             'instructor_documents' => 'nullable|array',
             'instructor_documents.*.name' => 'nullable|string|max:255',
+          
             'ou_id' => [
                 function ($attribute, $value, $fail) {
                     if (auth()->user()->role == 1 && empty(auth()->user()->ou_id) && empty($value)) {
@@ -434,18 +435,18 @@ class CourseController extends Controller
                     }
                 }
             ],
-            'opc_validity_months' => [
-                    'sometimes',
-                    'required_if:enable_aircraft,!=,',
-                    'integer',
-                    'min:1',
-                ],
+            // 'opc_validity_months' => [
+            //         'sometimes',
+            //         'required_if:enable_opc,!=,',
+            //         'integer',
+            //         'min:1',
+            //     ],
 
-            'opc_extend_eom' => [
-                    'sometimes',
-                    'required_if:enable_aircraft,!=,',
-                    'in:0,1',
-                ],
+            // 'opc_extend_eom' => [
+            //         'sometimes',
+            //         'required_if:enable_opc,!=,',
+            //         'in:0,1',
+            //     ],
         ], [], [
             'feedback_questions.*.question' => 'Feedback question',
             'feedback_questions.*.answer_type' => 'Answer type',
@@ -1052,7 +1053,12 @@ class CourseController extends Controller
             'enable_cbta'                => $course_info->enable_cbta,
             'enable_mp_lifus'            => $course_info->enable_mp_lifus,
             'enable_prerequisites'       => $course_info->enable_prerequisites,
+            'opc'                        => $course_info->opc,
+            'opc_aircraft'               => $course_info->opc_aircraft,
+            'opc_validity'               => $course_info->opc_validity,
+            'opc_extend'                 => $course_info->opc_extend ,
         ];
+       // dd($course);
 
         // CREATE NEW COURSE
         $create_course = Courses::create($course);
@@ -1180,6 +1186,24 @@ class CourseController extends Controller
                 }
             }
         }
+
+        //------------------------------------------------UserTagRating---------------------------------------------------------
+            $tags =  UserTagRating::where('course_id', $course_id)->get();
+
+            if ($tags->isNotEmpty()) {
+                foreach ($tags as $tag) {
+                        $all_tags = [
+                            'course_id'       => $create_course->id,
+                            'tag_id'          => $tag->tag_id ,
+                            'tag_validity'    =>  $tag->tag_validity ,
+                            'tag_type'        =>  $tag->tag_type,
+                    ];
+                    UserTagRating::create($all_tags);
+
+                }
+
+            }
+
 
         // ------------------------------------- End Copy Lesson Start-----------------------------------------------------------
 
