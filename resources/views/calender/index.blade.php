@@ -924,21 +924,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 success: function (data) {
                     var response = data.response[0];
-                    console.log(response);
+              
+                       // Organization Unit
+                   $("#edit_organizationUnits").val(response.ou_id);
 
                     // Basic fields
                     $("#edit_booking_id").val(response.id);
                     $("#edit_booking_type").val(response.booking_type);
-
-                    // Organization Unit
-                    $("#edit_organizationUnits").val(response.ou_id).trigger("change");
-                    // Wait for dependent dropdowns
-                     console.log(response.std_id);
-                     console.log(response.resource);
                     $("#edit_resource").val(response.resource);
                     $("#edit_student").val(response.std_id);
                     $("#edit_instructor").val(response.instructor_id);
-                  
 
                     // Instructor toggle
                     if (response.booking_type == 1) {
