@@ -888,30 +888,87 @@ document.addEventListener('DOMContentLoaded', function () {
              allowInput: true,
         });
 
-        $("#editBookingBtn").click(function() { 
-            $('#viewBookingModal').modal('hide');
-            $('#edit_booking_id').val(selectedEvent.id);
-            $('#edit_organizationUnits').val(selectedEvent.ou_id).trigger('change');
-            setTimeout(function() {
-                $('#edit_resource').val(selectedEvent.resource_id);
-                $('#edit_student').val(selectedEvent.std_id);
-                $('#edit_instructor').val(selectedEvent.instructor_id);
-            }, 300);
+        // $("#editBookingBtn").click(function() { 
+        //     $('#viewBookingModal').modal('hide');
+        //     $('#edit_booking_id').val(selectedEvent.id);
+        //     $('#edit_organizationUnits').val(selectedEvent.ou_id).trigger('change');
+        //     setTimeout(function() {
+        //         $('#edit_resource').val(selectedEvent.resource_id);
+        //         $('#edit_student').val(selectedEvent.std_id);
+        //         $('#edit_instructor').val(selectedEvent.instructor_id);
+        //     }, 300);
 
-            $('#edit_booking_type').val(selectedEvent.booking_type_numValue);
-            console.log(selectedEvent.booking_type_numValue);
-            if(selectedEvent.booking_type_numValue == 1){
-               $('#edit_instructor_wrapper').hide();
-            }else{
-               $('#edit_instructor_wrapper').show();
-            }
-            editStartPicker.setDate(moment(selectedEvent.start).format("YYYY-MM-DD HH:mm"), true);
-            editEndPicker.setDate(
-                moment(selectedEvent.end).format("YYYY-MM-DD HH:mm"),
-                true
-            );
-            $('#editBookingModal').modal('show');
-        });
+        //     $('#edit_booking_type').val(selectedEvent.booking_type_numValue);
+        //     console.log(selectedEvent.booking_type_numValue);
+        //     if(selectedEvent.booking_type_numValue == 1){
+        //        $('#edit_instructor_wrapper').hide();
+        //     }else{
+        //        $('#edit_instructor_wrapper').show();
+        //     }
+        //     editStartPicker.setDate(moment(selectedEvent.start).format("YYYY-MM-DD HH:mm"), true);
+        //     editEndPicker.setDate(
+        //         moment(selectedEvent.end).format("YYYY-MM-DD HH:mm"),
+        //         true
+        //     );
+        //     $('#editBookingModal').modal('show');
+        // });
+         $("#editBookingBtn").on("click", function () {
+            $("#viewBookingModal").modal("hide");
+             $('#edit_booking_id').val(selectedEvent.id);
+            var booking_id  = $('#edit_booking_id').val();
+            $.ajax({
+                url: SITEURL + "/calendar/edit",
+                type: "POST",
+                data: {
+                    id: booking_id
+                },
+                success: function (data) {
+                    var response = data.response[0];
+                    console.log(response);
+
+                    // Basic fields
+                    $("#edit_booking_id").val(response.id);
+                    $("#edit_booking_type").val(response.booking_type);
+
+                    // Organization Unit
+                    $("#edit_organizationUnits")
+                        .val(response.ou_id)
+                        .trigger("change");
+
+                    // Wait for dependent dropdowns
+                    setTimeout(function () {
+                        $("#edit_resource").val(response.resource).trigger("change");
+                        $("#edit_student").val(response.std_id).trigger("change");
+                        $("#edit_instructor").val(response.instructor_id).trigger("change");
+                    }, 300);
+
+                    // Instructor toggle
+                    if (response.booking_type == 1) {
+                        $("#edit_instructor_wrapper").hide();
+                    } else {
+                        $("#edit_instructor_wrapper").show();
+                    }
+
+                    // Date pickers
+                    editStartPicker.setDate(
+                        moment(response.start).format("YYYY-MM-DD HH:mm"),
+                        true
+                    );
+
+                    editEndPicker.setDate(
+                        moment(response.end).format("YYYY-MM-DD HH:mm"),
+                        true
+                    );
+
+                    $("#editBookingModal").modal("show");
+                },
+                error: function (xhr) {
+                    toastr.error("Unable to load booking details.");
+                    console.error(xhr.responseText);
+                }
+            });
+});
+
 
          $("#edit_organizationUnits").on('change', function() {
             let ou_id = $(this).val();
