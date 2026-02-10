@@ -931,16 +931,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     $("#edit_booking_type").val(response.booking_type);
 
                     // Organization Unit
-                    $("#edit_organizationUnits")
-                        .val(response.ou_id)
-                        .trigger("change");
-
+                    $("#edit_organizationUnits").val(response.ou_id).trigger("change");
                     // Wait for dependent dropdowns
-                    setTimeout(function () {
-                        $("#edit_resource").val(response.resource).trigger("change");
-                        $("#edit_student").val(response.std_id).trigger("change");
-                        $("#edit_instructor").val(response.instructor_id).trigger("change");
-                    }, 300);
+               
+                    $("#edit_resource").val(response.resource);
+                    $("#edit_student").val(response.std_id);
+                    $("#edit_instructor").val(response.instructor_id);
+                  
 
                     // Instructor toggle
                     if (response.booking_type == 1) {
