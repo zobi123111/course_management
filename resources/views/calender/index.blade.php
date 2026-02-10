@@ -933,7 +933,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     // Organization Unit
                     $("#edit_organizationUnits").val(response.ou_id).trigger("change");
                     // Wait for dependent dropdowns
-               
+                     console.log(response.std_id);
+                     console.log(response.resource);
                     $("#edit_resource").val(response.resource);
                     $("#edit_student").val(response.std_id);
                     $("#edit_instructor").val(response.instructor_id);
