@@ -401,6 +401,8 @@ Route::post('/booking/reject', [BookingController::class, 'reject']);
 Route::get('/group/students/', [BookingController::class, 'getstudents'])->name('getstudents'); 
 Route::get('/calendar/resources', [BookingController::class, 'loadResources']);
 Route::get('/calendar/events', [BookingController::class, 'loadEvents']);
+Route::post('/calendar/edit', [BookingController::class, 'edit_booking']);
+
 
 
 
