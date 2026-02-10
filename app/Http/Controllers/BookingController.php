@@ -40,9 +40,7 @@ class BookingController extends Controller
             $bookedResourceIds = Booking::pluck('resource')->unique()->toArray();
             $resources = Resource::whereIn('id', $bookedResourceIds)->get();
            //  $resources = Resource::all();
-
         }
-       
         return view('calender.index', compact('resources', 'organizationUnits', 'groups', 'students'));
     }
 
@@ -50,18 +48,12 @@ class BookingController extends Controller
     public function loadEvents(Request $request)
     {
         $mode = $request->mode ?? 'resource';
-
         $events = Booking::with(['users', 'resources', 'instructor'])
                 // ->whereNotIn('status', ['cancelled', 'rejected'])
                  ->get();
-
-
         $data = [];
-
         foreach ($events as $e) { 
             $mailSend = OuSetting::where('organization_id', $e->ou_id)->select('send_email')->first();
-            
-
             if ($mode === 'instructor') {
                 $resourceId = $e->instructor_id;
             } elseif ($mode === 'student') {
@@ -69,7 +61,6 @@ class BookingController extends Controller
             } else {
                 $resourceId = $e->resource;
             }
-
             // Prevent invisible events
             if (!$resourceId) {
                 continue;
@@ -77,10 +68,7 @@ class BookingController extends Controller
 
             /* ---------------- Names ---------------- */
             $studentName = $e->users->fname . ' ' . $e->users->lname;
-
-            $instructorName = $e->instructor
-                ? $e->instructor->fname . ' ' . $e->instructor->lname
-                : null;
+            $instructorName = $e->instructor ? $e->instructor->fname . ' ' . $e->instructor->lname : null;
 
             /* ---------------- Booking type handling ---------------- */
             switch ((int) $e->booking_type) {
@@ -136,7 +124,6 @@ class BookingController extends Controller
                     'start'                 => $e->start,
                     'end'                   => $e->end,
                     'status'                => $e->status,
-
                 ]
             ];
         }
@@ -387,7 +374,7 @@ class BookingController extends Controller
     public function getstudents(Request $request)
     {
         $org_group    = Group::where('ou_id', $request->ou_id)->get();
-        $students = collect(); // ✅ collect all students
+        $students = collect();
 
         foreach ($org_group as $val) {
             // user_ids is an array like ["100","114","154"]
@@ -399,11 +386,9 @@ class BookingController extends Controller
 
         $instructors = User::where('ou_id', $request->ou_id)->where('role', 18)->get(['id', 'fname', 'lname']);
 
-        // remove duplicate users (if any)
+        //  Remove duplicate users (if any)
         $students = $students->unique('id')->values(); 
-
         $bookedResourceIds = Booking::where('status','approved')->pluck('resource')->unique();
-        
         //$org_resource = Resource::whereNotIn('id', $bookedResourceIds)->where('ou_id', $request->ou_id)->get();
         $org_resource = Resource::where('ou_id', $request->ou_id)->get();
 
@@ -413,5 +398,13 @@ class BookingController extends Controller
         } else {
             return response()->json(['error' => 'No group Found']);
         }
+    }
+
+    public function edit_booking(Request $request)
+    {
+        $booking_id = $request->id;
+        $booking    =  Booking::where('id', $booking_id)->get();
+        return response()->json(['success' => true, 'response'=> $booking]);
+
     }
 }
