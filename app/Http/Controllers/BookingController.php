@@ -39,80 +39,139 @@ class BookingController extends Controller
         } else {
             $bookedResourceIds = Booking::pluck('resource')->unique()->toArray();
             $resources = Resource::whereIn('id', $bookedResourceIds)->get();
+           //  $resources = Resource::all();
+
         }
        
         return view('calender.index', compact('resources', 'organizationUnits', 'groups', 'students'));
     }
 
+
     public function loadEvents(Request $request)
     {
-        $student   = $request->student;
-        $resource  = $request->resource;
-        $resources = $request->resources;
-        $ou_id     = $request->ou_id;
-      //  dump($ou_id);
-       
-        
-        $events = Booking::with('resources', 'users')
-                ->whereNotIn('status', ['cancelled', 'rejected'])
+        $mode = $request->mode ?? 'resource';
 
-                ->when($student, function ($q) use ($student) {
-                    $q->whereHas('users', function ($u) use ($student) {
-                        $u->where('fname', 'like', "%$student%")
-                        ->orWhere('lname', 'like', "%$student%");
-                    });
-                })
-                ->when($ou_id, function ($q) use ($ou_id) {
-                    $q->whereHas('users', function ($u) use ($ou_id) {
-                        $u->where('ou_id', $ou_id);
-                    });
-                })
-
-                ->when(!empty($resources), function ($q) use ($resources) {
-                    $q->whereIn('resource', $resources); // 👈 key line
-                })
-
-                ->get();
-      //  dump($events);    
+        $events = Booking::with(['users', 'resources', 'instructor'])
+                // ->whereNotIn('status', ['cancelled', 'rejected'])
+                 ->get();
 
 
-        $user_id = Auth::id();
         $data = [];
 
-        foreach ($events as $event) {
-            $canAccess = false;
-            if ($event->users->id == $user_id || Auth::user()->role == 1 || Auth::user()->is_admin == 1 ) {
-                $canAccess = true;
+        foreach ($events as $e) { 
+            $mailSend = OuSetting::where('organization_id', $e->ou_id)->select('send_email')->first();
+            
+
+            if ($mode === 'instructor') {
+                $resourceId = $e->instructor_id;
+            } elseif ($mode === 'student') {
+                $resourceId = $e->std_id;
+            } else {
+                $resourceId = $e->resource;
             }
 
-        
-          $mailSend = OuSetting::where('organization_id', $event->ou_id)->select('send_email')->first();
-          
-          $start_time =  timezone($event->start, $event->ou_id);
-          $end_time   =  timezone($event->end, $event->ou_id);
-         // dump($event->resources->name);
+            // Prevent invisible events
+            if (!$resourceId) {
+                continue;
+            }
+
+            /* ---------------- Names ---------------- */
+            $studentName = $e->users->fname . ' ' . $e->users->lname;
+
+            $instructorName = $e->instructor
+                ? $e->instructor->fname . ' ' . $e->instructor->lname
+                : null;
+
+            /* ---------------- Booking type handling ---------------- */
+            switch ((int) $e->booking_type) {
+                case 1: 
+                    $title = $studentName . ' (Solo)';
+                    $color = '#9CA3AF'; // grey
+                    $typeText = 'Solo';
+                    break;
+
+                case 2: // LESSON
+                    $title = $instructorName . ' - ' . $studentName;
+                    $color = '#2563EB'; // blue
+                    $typeText = 'Lesson';
+                    break;
+
+                case 3: // STANDBY
+                    $title = $studentName . ' (Standby)';
+                    $color = '#F59E0B'; // orange
+                    $typeText = 'Standby';
+                    break;
+
+                default:
+                    $title = $studentName;
+                    $color = '#6B7280';
+                    $typeText = 'Unknown';
+            }
+
+            /* ---------------- Push event ---------------- */
             $data[] = [
-                'id'           => $event->id,
-                'student'      => $event->users->fname . ' ' . $event->users->lname,
-                'title'        => $event->users->fname . ' ' . $event->users->lname,
-                'resource'     => $event->resources->name ?? '',
-                'start'        => $start_time,
-                'end'          => $end_time,
-                'booking_type' => $event->booking_type,
-                'status'       => $event->status,
-                'can_access'   => $canAccess,
-                'std_id'       => $event->std_id,
-                'resource_id'  => $event->resource,
-                'ou_id'        => $event->ou_id,
-                'send_email'   => $event->send_email,
-                'instructor_id'=> $event->instructor_id,
-                'send_mail'    => $mailSend->send_email ?? ''
+                'id'         => $e->id,
+                'resourceId' => (string) $resourceId,
+                'start'      => timezone($e->start, $e->ou_id),
+                'end'        => timezone($e->end, $e->ou_id),
+                'title'      => $title,
+
+                // Styling
+                'backgroundColor' => $color,
+                'borderColor'     => $color,
+
+                'extendedProps' => [
+                    'student'               => $studentName,
+                    'instructor'            => $instructorName,
+                    'resource'              => $e->resources->name ?? null,
+                    'booking_type'          => $typeText,
+                    'booking_type_numValue' => $e->booking_type,
+                    'registration'          => $e->resources->registration,
+                    'send_mail'             => $mailSend->send_email ?? '',
+                    'std_id'                => $e->std_id,
+                    'resource_id'           => $e->resource,
+                    'ou_id'                 => $e->ou_id,
+                    'instructor_id'         => $e->instructor_id,
+                    'id'                    => $e->id,
+                    'start'                 => $e->start,
+                    'end'                   => $e->end,
+                    'status'                => $e->status,
+
+                ]
             ];
-             
         }
-       
+
         return response()->json($data);
     }
+
+  public function loadResources(Request $request)
+    {
+        $mode = $request->mode ?? 'resource';
+
+        if ($mode === 'instructor') {
+            return User::where('role', 18)->where('is_activated', 0)->where('status', 1)->get()
+                ->map(fn($u) => [
+                    'id' => $u->id,
+                    'title' => $u->fname.' '.$u->lname
+                ]);
+        }
+
+        if ($mode === 'student') {
+            return User::where('role', 3)->where('is_activated', 0)->where('status', 1)->get()
+                ->map(fn($u) => [
+                    'id' => $u->id,
+                    'title' => $u->fname.' '.$u->lname
+                ]);
+        }
+
+        // DEFAULT: RESOURCE
+        return Resource::all()
+            ->map(fn($r) => [
+                'id' => $r->id,
+                'title' => $r->name
+            ]);
+    }
+
 
     public function store(Request $request)
     {
@@ -213,6 +272,7 @@ class BookingController extends Controller
 
     public function update(Request $request)
     {
+        // dd($request->all());
         $booking = Booking::findOrFail($request->id);
         $booking->ou_id = $request->organizationUnits;
         $booking->std_id = $request->student ?? Auth::user()->id;
@@ -239,30 +299,30 @@ class BookingController extends Controller
 
         $booking->status = 'approved';
         $booking->save();
-
-        Booking::where('id', '!=', $booking->id)
-            ->where('resource', $booking->resource)
-            ->where('resource_type', $booking->resource_type)
-            ->where(function ($q) use ($booking) {
-                $q->where('start', '=', $booking->end)
-                ->where('end', '=', $booking->start);
-            })
-            ->update(['status' => 'rejected']);
+        // Booking::where('id', '!=', $booking->id)
+        //     ->where('resource', $booking->resource)
+        //     ->where('resource_type', $booking->resource_type)
+        //     ->where(function ($q) use ($booking) {
+        //         $q->where('start', '=', $booking->end)
+        //         ->where('end', '=', $booking->start);
+        //     })
+        //     ->update(['status' => 'rejected']);
+         
 
         $sendemail = organizationUnits::where('id', $request->organizationUnits)->first();
 
-        if ($sendemail->send_email == 1) {
+        // if ($sendemail->send_email == 1) {
 
-            $studentEmail = User::find($booking->std_id)->email;
-            $instructor = User::find($booking->instructor_id)->email;
-            $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
+        //     $studentEmail = User::find($booking->std_id)->email;
+        //     $instructor = User::find($booking->instructor_id)->email;
+        //     $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
 
-            $allEmails = array_merge([$studentEmail], $ouEmails, [$instructor]);
+        //     $allEmails = array_merge([$studentEmail], $ouEmails, [$instructor]);
 
-            Mail::send('emailtemplates.approved_booking_email',['booking' => $booking],function ($message) use ($allEmails) {
-                    $message->to($allEmails)->subject('Booking Approved');
-                });
-        }
+        //     Mail::send('emailtemplates.approved_booking_email',['booking' => $booking],function ($message) use ($allEmails) {
+        //             $message->to($allEmails)->subject('Booking Approved');
+        //         });
+        // }
 
         return response()->json(['success' => true]);
     }
@@ -277,19 +337,19 @@ class BookingController extends Controller
 
         $sendemail = organizationUnits::where('id', $request->organizationUnits)->first();
         
-        if ($sendemail->send_email == 1) {
+        // if ($sendemail->send_email == 1) {
 
-            $studentEmail = User::find($booking->std_id)->email;
-            $instructor = User::find($booking->instructor_id)->email;
-            $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
+        //     $studentEmail = User::find($booking->std_id)->email;
+        //     $instructor = User::find($booking->instructor_id)->email;
+        //     $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
 
-            $allEmails = array_merge([$studentEmail], $ouEmails, [$instructor]);
+        //     $allEmails = array_merge([$studentEmail], $ouEmails, [$instructor]);
 
-            Mail::send('emailtemplates.rejected_booking_email', ['booking' => $booking], function ($message) use ($allEmails) {
-                $message->to($allEmails)
-                        ->subject('Booking Rejected');
-            });
-        }
+        //     Mail::send('emailtemplates.rejected_booking_email', ['booking' => $booking], function ($message) use ($allEmails) {
+        //         $message->to($allEmails)
+        //                 ->subject('Booking Rejected');
+        //     });
+        // }
 
         return response()->json(['success' => true]);
     }
@@ -297,8 +357,10 @@ class BookingController extends Controller
     public function delete(Request $request)
     {
         $booking = Booking::find($request->id);
-        $booking->status = 'cancelled';
-        $booking->save();
+        // $booking->status = 'cancelled';
+        // $booking->save();
+         Booking::where('id', $request->id)->delete();
+
 
 
         // $sendemail = organizationUnits::where('id', $request->organizationUnits)->first();
@@ -342,7 +404,8 @@ class BookingController extends Controller
 
         $bookedResourceIds = Booking::where('status','approved')->pluck('resource')->unique();
         
-        $org_resource = Resource::whereNotIn('id', $bookedResourceIds)->where('ou_id', $request->ou_id)->get();
+        //$org_resource = Resource::whereNotIn('id', $bookedResourceIds)->where('ou_id', $request->ou_id)->get();
+        $org_resource = Resource::where('ou_id', $request->ou_id)->get();
 
         $ato_num = OrganizationUnits::where('id', $request->ou_id)->get();
         if ($org_group) {
