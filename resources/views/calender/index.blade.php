@@ -5,7 +5,7 @@
 
 @section('content')
 <style>
-    #calendar {
+     #calendar {
         height: calc(100vh - 160px);
     }
 
@@ -42,12 +42,24 @@
     .booking-meta {
     margin: 0;
 }
+.booking_day {
+    color: #000;
+    font-size: 20px !important;
+    font-weight: 600 !important;
+}
+
+.booking_time {
+    color: #000;
+    font-size: 16px;
+    font-weight: 500;
+}
 
 .booking-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 6px 4px;
+    gap: 8px;
+    padding: 4px;
+    font-size: 15px;
     border-radius: 6px;
 }
 
@@ -62,6 +74,40 @@
     cursor: default;
 }
 
+.fc-button {
+    font-weight: 600 !important;
+    border: none !important;
+    margin-right: 2px !important;
+    display: flex !important;
+    align-items: center;
+    font-size: 16px !important;
+}
+ .viewBookingModal .modal-body {
+    padding: 0 !important;
+}
+.fc-button .fc-icon::before {
+    font-size: 20px !important;
+}
+    .filters_by {
+    display: flex;
+    font-size: 16px;
+    gap: 10px;
+    align-items: center;
+    margin-top: 15px;
+}
+.filters_by label {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.filters_by h4 {
+    font-size: 18px;
+    margin: 0;
+    line-height: 23px;
+    font-weight: 700;
+}
+
 
     
 
@@ -72,7 +118,8 @@
             Create Booking
           </a>
     </div>
-    <div class="mb-2">
+    <div class="mb-3 filters_by">
+        <h4>Filter by:- </h4>
     <label class="me-3">
         <input type="checkbox" id="by_resource" checked> Resource
     </label>
@@ -203,8 +250,8 @@
 <!-- //-----------------------------------------End create booking---------------------------------------------------->
 
 <!-- //-------------------------------View Booking Model-------------------------------------------------------------->
- <div class="modal fade" id="viewBookingModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+<div class="modal  fade viewBookingModal" id="viewBookingModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
 
             <div class="modal-header">
@@ -213,61 +260,63 @@
             </div>
             <div class="modal-body">
                 <div class="border rounded p-3 booking-card">
-                    <!-- Header -->
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <!-- <strong>Single student</strong> -->
-                        </div>
-                        <div class="text-end text-success small">
-                            <div id="booking_day"></div>
-                            <div id="booking_time"></div>
-                        </div>
+                    <div class="row">
+                            <div class="col-md-8">
+                                <ul class="list-unstyled small mb-3 booking-meta">
+                                    <li class="booking-item">
+                                        <i class="fa-solid fa-plane booking-icon text-secondary"
+                                        data-bs-toggle="tooltip"
+                                        title="Resource"></i>
+                                        <span id="booking_resource"></span>
+                                    </li>
+
+                                    <li class="booking-item">
+                                    <i class="fa-solid fa-person-chalkboard booking-icon text-primary"
+                                            data-bs-toggle="tooltip"
+                                            title="Student"></i>
+                                        <span id="booking_student"></span>
+                                    </li>
+
+                                    <li class="booking-item" id="bookingInstructor_li" style="display:none">
+                                    <i class="fa-solid fa-user-graduate booking-icon text-primary"
+                                            data-bs-toggle="tooltip"
+                                            title="Instructor"></i>
+                                        <span id="bookingInstructor"></span>
+                                    </li>
+
+                                    <li class="booking-item">
+                                        <i class="bi bi-journal-text booking-icon text-info"
+                                        data-bs-toggle="tooltip"
+                                        title="Lesson"></i>
+                                        <span id="booking_lesson">F18: Solo Circuit Consolidation  (Static data)</span>
+                                    </li>
+
+                                    <li class="booking-item">
+                                        <i class="bi bi-lock-fill booking-icon text-danger"
+                                        data-bs-toggle="tooltip"
+                                        title="Course"></i>
+                                        <span id="booking_code">TK CCTS 1600Z–1645Z BOOKED (Static data)</span>
+                                    </li>
+
+                                    <li class="booking-item">
+                                        <i class="bi bi-envelope-x booking-icon text-muted"
+                                        data-bs-toggle="tooltip"
+                                        title="Email Notification"></i>
+                                        <span>Notify via email:</span>
+                                        <span id="mail_send"></span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-4">
+                                <!-- Header -->
+                                <div class="mb-2">
+                                    <div class="text-end text-success small">
+                                        <div id="booking_day" class="booking_day"></div>
+                                        <div id="booking_time" class="booking_time"></div>
+                                    </div>
+                                </div>
+                            </div>
                     </div>
-                    <!-- Details -->
-                   <ul class="list-unstyled small mb-3 booking-meta">
-                        <li class="booking-item">
-                            <i class="fa-solid fa-plane booking-icon text-secondary"
-                            data-bs-toggle="tooltip"
-                            title="Resource"></i>
-                            <span id="booking_resource"></span>
-                        </li>
-
-                        <li class="booking-item">
-                           <i class="fa-solid fa-person-chalkboard booking-icon text-primary"
-                                data-bs-toggle="tooltip"
-                                title="Student"></i>
-                            <span id="booking_student"></span>
-                        </li>
-
-                        <li class="booking-item" id="bookingInstructor_li" style="display:none">
-                           <i class="fa-solid fa-user-graduate booking-icon text-primary"
-                                data-bs-toggle="tooltip"
-                                title="Student"></i>
-                            <span id="bookingInstructor"></span>
-                        </li>
-
-                        <li class="booking-item">
-                            <i class="bi bi-journal-text booking-icon text-info"
-                            data-bs-toggle="tooltip"
-                            title="Lesson"></i>
-                            <span id="booking_lesson">F18: Solo Circuit Consolidation  (Static data)</span>
-                        </li>
-
-                        <li class="booking-item">
-                            <i class="bi bi-lock-fill booking-icon text-danger"
-                            data-bs-toggle="tooltip"
-                            title="Course"></i>
-                            <span id="booking_code">TK CCTS 1600Z–1645Z BOOKED (Static data)</span>
-                        </li>
-
-                        <li class="booking-item">
-                            <i class="bi bi-envelope-x booking-icon text-muted"
-                            data-bs-toggle="tooltip"
-                            title="Email Notification"></i>
-                            <span>Notify via email:</span>
-                            <span id="mail_send"></span>
-                        </li>
-                    </ul>
 
                     <!-- Footer -->
                     <div class="border-top pt-2 d-flex justify-content-between align-items-center">
@@ -295,10 +344,10 @@
         <!-- ACTION BUTTONS -->
         <div id="actionButtons" class="d-flex gap-2">
             <button id="approveBtn" class="btn btn-success">
-                <i class="fa fa-check me-1"></i> Approve
+                Approve
             </button>
             <button id="rejectBtn" class="btn btn-danger">
-                <i class="fa fa-times me-1"></i> Reject
+                 Reject
             </button>
         </div>
 
@@ -493,7 +542,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         slotLabelFormat: {
                             hour: 'numeric',
                             minute: '2-digit',
-                            hour12: true
+                            hour12: false
                         }
                     }
                 },
@@ -536,7 +585,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (viewType === 'resourceTimelineDay') {
                             return {
                                 html: `
-                                    <div style="font-size:12px;font-weight:600;white-space:nowrap;">
+                                    <div style="font-size: 16px;font-weight: 500;white-space:nowrap;text-align: center;padding: 6px;">
                                         ${arg.event.title}
                                     </div>
                                 `
