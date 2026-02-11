@@ -25,8 +25,8 @@ class BookingController extends Controller
 
         foreach ($groups as $val) {
             // user_ids is an array like ["100","114","154"]
-            if (!empty($val->user_ids) && is_array($val->user_ids)) {
-                $groupStudents = User::whereIn('id', $val->user_ids)->get();
+            if(!empty($val->user_ids) && is_array($val->user_ids)) {
+                $groupStudents = User::whereIn('id', $val->user_ids)->where('is_activated', 1)->where('status', 1)->get();
                 $students = $students->merge($groupStudents);
             }
         }
@@ -144,11 +144,17 @@ class BookingController extends Controller
         }
 
         if ($mode === 'student') {
-            return User::where('role', 3)->where('is_activated', 0)->where('status', 1)->get()
-                ->map(fn($u) => [
-                    'id' => $u->id,
-                    'title' => $u->fname.' '.$u->lname
-                ]);
+          return User::where('role', 3)
+                        ->where(function ($query) {
+                            $query->where('is_activated', 1)
+                                ->orWhere('status', 1);
+                        })
+                        ->get()
+                        ->map(fn($u) => [
+                            'id' => $u->id,
+                            'title' => $u->fname . ' ' . $u->lname
+                        ]);
+
         }
 
         // DEFAULT: RESOURCE
@@ -373,31 +379,30 @@ class BookingController extends Controller
 
     public function getstudents(Request $request)
     {
-        $org_group    = Group::where('ou_id', $request->ou_id)->get();
-        $students = collect();
+        // $org_group    = Group::where('ou_id', $request->ou_id)->get();
+        // $students = collect();
+        $students = User::where('ou_id', $request->ou_id)->get();
 
-        foreach ($org_group as $val) {
-            // user_ids is an array like ["100","114","154"]
-            if (!empty($val->user_ids) && is_array($val->user_ids)) {
-                $groupStudents = User::whereIn('id', $val->user_ids)->get();
-                $students = $students->merge($groupStudents);
-            }
-        }
+        // foreach ($org_group as $val) {
+        //     // user_ids is an array like ["100","114","154"]
+        //     if (!empty($val->user_ids) && is_array($val->user_ids)) {
+        //         $groupStudents = User::whereIn('id', $val->user_ids)->get();
+        //         $students = $students->merge($groupStudents);
+        //     }
+        // }
 
         $instructors = User::where('ou_id', $request->ou_id)->where('role', 18)->get(['id', 'fname', 'lname']);
 
         //  Remove duplicate users (if any)
-        $students = $students->unique('id')->values(); 
+       // $students = $students->unique('id')->values(); 
         $bookedResourceIds = Booking::where('status','approved')->pluck('resource')->unique();
         //$org_resource = Resource::whereNotIn('id', $bookedResourceIds)->where('ou_id', $request->ou_id)->get();
         $org_resource = Resource::where('ou_id', $request->ou_id)->get();
 
         $ato_num = OrganizationUnits::where('id', $request->ou_id)->get();
-        if ($org_group) {
-            return response()->json(['org_group' => $org_group, 'org_resource' => $org_resource, 'ato_num' => $ato_num, 'students' => $students, 'instructors' => $instructors]);
-        } else {
-            return response()->json(['error' => 'No group Found']);
-        }
+    
+            return response()->json(['org_resource' => $org_resource, 'ato_num' => $ato_num, 'students' => $students, 'instructors' => $instructors]);
+       
     }
 
     public function edit_booking(Request $request)

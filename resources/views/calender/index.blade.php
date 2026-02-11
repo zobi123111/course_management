@@ -547,11 +547,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         return {
                             html: `
                                 <div style="font-weight:600">
-                                    ${arg.event.title} ${typeBadge}
+                                    ${arg.event.title}
                                 </div>
-                                <div style="font-size:12px">
-                                    ${e.resource ?? ''}
-                                </div>
+                               
                             `
                         };
                     },
@@ -746,7 +744,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 dataType: "json", // Ensures response is treated as JSON
                 success: function(response) {
-                    if (response.students && Array.isArray(response.students)) {
+                    if (response.students && Array.isArray(response.students)) { 
                         var options = "<option value=''>Select Student</option>";
                         response.students.forEach(function(value) {
                             options += "<option value='" + value.id + "'>" + value.fname + ' ' + value.lname +
@@ -916,6 +914,7 @@ document.addEventListener('DOMContentLoaded', function () {
             $("#viewBookingModal").modal("hide");
              $('#edit_booking_id').val(selectedEvent.id);
             var booking_id  = $('#edit_booking_id').val();
+           
             $.ajax({
                 url: SITEURL + "/calendar/edit",
                 type: "POST",
@@ -923,17 +922,22 @@ document.addEventListener('DOMContentLoaded', function () {
                     id: booking_id
                 },
                 success: function (data) {
+                  
                     var response = data.response[0];
-              
+                 $("#edit_organizationUnits").val(response.ou_id).trigger('change');
                        // Organization Unit
-                   $("#edit_organizationUnits").val(response.ou_id);
+                  
 
                     // Basic fields
                     $("#edit_booking_id").val(response.id);
                     $("#edit_booking_type").val(response.booking_type);
-                    $("#edit_resource").val(response.resource);
-                    $("#edit_student").val(response.std_id);
+                    console.log(response.resource);
+                    setTimeout(function () {
+                                $("#edit_resource").val(String(response.resource)).trigger("change");
+                                $("#edit_student").val(response.std_id);
                     $("#edit_instructor").val(response.instructor_id);
+                        }, 300);
+                    
 
                     // Instructor toggle
                     if (response.booking_type == 1) {
@@ -965,6 +969,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
          $("#edit_organizationUnits").on('change', function() {
             let ou_id = $(this).val();
+         
 
             let $resource = $("#edit_resource");
             let $student = $("#edit_student");
