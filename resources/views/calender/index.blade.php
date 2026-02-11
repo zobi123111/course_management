@@ -5,7 +5,7 @@
 
 @section('content')
 <style>
-     #calendar {
+    #calendar {
         height: calc(100vh - 160px);
     }
 
@@ -29,109 +29,113 @@
         font-size: 15px;
         font-weight: 600;
     }
+
     /* While dragging selection */
     .fc-highlight {
-      background: rgba(158, 5, 158, 0.25) !important; 
+        background: rgba(158, 5, 158, 0.25) !important;
     }
 
     /* Timeline selection */
     .fc-timeline-selection {
-        background: rgba(16, 185, 129, 0.35) !important; /* green */
+        background: rgba(16, 185, 129, 0.35) !important;
+        /* green */
     }
 
     .booking-meta {
-    margin: 0;
-}
-.booking_day {
-    color: #000;
-    font-size: 20px !important;
-    font-weight: 600 !important;
-}
+        margin: 0;
+    }
 
-.booking_time {
-    color: #000;
-    font-size: 16px;
-    font-weight: 500;
-}
+    .booking_day {
+        color: #000;
+        font-size: 20px !important;
+        font-weight: 600 !important;
+    }
 
-.booking-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px;
-    font-size: 15px;
-    border-radius: 6px;
-}
+    .booking_time {
+        color: #000;
+        font-size: 16px;
+        font-weight: 500;
+    }
 
-.booking-item:hover {
-    background: #f8fafc; /* subtle hover */
-}
+    .booking-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px;
+        font-size: 15px;
+        border-radius: 6px;
+    }
 
-.booking-icon {
-    font-size: 15px;
-    width: 20px;
-    text-align: center;
-    cursor: default;
-}
+    .booking-item:hover {
+        background: #f8fafc;
+        /* subtle hover */
+    }
 
-.fc-button {
-    font-weight: 600 !important;
-    border: none !important;
-    margin-right: 2px !important;
-    display: flex !important;
-    align-items: center;
-    font-size: 16px !important;
-}
- .viewBookingModal .modal-body {
-    padding: 0 !important;
-}
-.fc-button .fc-icon::before {
-    font-size: 20px !important;
-}
+    .booking-icon {
+        font-size: 15px;
+        width: 20px;
+        text-align: center;
+        cursor: default;
+    }
+
+    .fc-button {
+        font-weight: 600 !important;
+        border: none !important;
+        margin-right: 2px !important;
+        display: flex !important;
+        align-items: center;
+        font-size: 16px !important;
+    }
+
+    .viewBookingModal .modal-body {
+        padding: 0 !important;
+    }
+
+    .fc-button .fc-icon::before {
+        font-size: 20px !important;
+    }
+
     .filters_by {
-    display: flex;
-    font-size: 16px;
-    gap: 10px;
-    align-items: center;
-    margin-top: 15px;
-}
-.filters_by label {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-}
+        display: flex;
+        font-size: 16px;
+        gap: 10px;
+        align-items: center;
+        margin-top: 15px;
+    }
 
-.filters_by h4 {
-    font-size: 18px;
-    margin: 0;
-    line-height: 23px;
-    font-weight: 700;
-}
+    .filters_by label {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+    }
 
-
-    
-
+    .filters_by h4 {
+        font-size: 18px;
+        margin: 0;
+        line-height: 23px;
+        font-weight: 700;
+    }
 </style>
 <div class="container-fluid mt-3">
     <div style="margin-bottom: 10px;">
-          <a class="btn btn-primary me-2 booking-button" id="create_booking">
+        <a class="btn btn-primary me-2 booking-button" id="create_booking">
             Create Booking
-          </a>
+        </a>
     </div>
     <div class="mb-3 filters_by">
         <h4>Filter by:- </h4>
-    <label class="me-3">
-        <input type="checkbox" id="by_resource" checked> Resource
-    </label>
+        <label class="me-3">
+            <input type="checkbox" id="by_resource" checked> Resource
+        </label>
 
-    <label class="me-3">
-        <input type="checkbox" id="by_instructor"> Instructor
-    </label>
+        <label class="me-3">
+            <input type="checkbox" id="by_instructor"> Instructor
+        </label>
 
-    <label>
-        <input type="checkbox" id="by_student"> Student
-    </label>
-</div>
+        <label>
+            <input type="checkbox" id="by_student"> Student
+        </label>
+    </div>
 
     <div class="row">
         <div class="col-12">
@@ -151,93 +155,93 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="booking_form">
-            <div class="modal-body">
-                <div class="form-group">
-                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                    <label>Select Org Unit</label>
-                    <select id="organizationUnits" name="organizationUnits" class="form-control mb-2">
-                        <option value="">Select Org Unit</option>
-                        @foreach ($organizationUnits as $val)
-                        <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                        @endforeach
-                    </select>
+                <div class="modal-body">
+                    <div class="form-group">
+                        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                        <label>Select Org Unit</label>
+                        <select id="organizationUnits" name="organizationUnits" class="form-control mb-2">
+                            <option value="">Select Org Unit</option>
+                            @foreach ($organizationUnits as $val)
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                            @endforeach
+                        </select>
+                        @endif
+                        <span class="text-danger error-text" id="error_organizationUnits"></span>
+                    </div>
+
+
+                    @if(auth()->user()->is_admin == 1 && !empty(auth()->user()->ou_id))
+                    <input type="hidden" name="organizationUnits" id="organizationUnits" value="{{ auth()->user()->ou_id }}">
                     @endif
-                    <span class="text-danger error-text" id="error_organizationUnits"></span>
-                </div>
 
-
-                @if(auth()->user()->is_admin == 1 && !empty(auth()->user()->ou_id))
-                <input type="hidden" name="organizationUnits" id="organizationUnits" value="{{ auth()->user()->ou_id }}">
-                @endif
-
-                @if(auth()->user()->is_admin == 0 && auth()->user()->is_owner == 0 && !empty(auth()->user()->ou_id))
-                <input type="hidden" name="organizationUnits" id="organizationUnits" value="{{ auth()->user()->ou_id }}">
-                @endif
-
-                <div class="form-group">
-                    <label>Start Date & Time</label>
-                    <input type="date" name="start_date" id="booking_start" class="form-control mb-2" autocomplete="off">
-                    <span class="text-danger error-text" id="error_start_date"></span>
-                </div>
-
-                <div class="form-group">
-                    <label>End Date & Time</label>
-                    <input type="date" name="end_date" id="booking_end" class="form-control mb-2" autocomplete="off">
-                    <span class="text-danger error-text" id="error_end_date"></span>
-                </div>
-
-
-                <div class="form-group">
-                    <label>Booking Type</label>
-                    <select id="booking_type" name="booking_type" class="form-control mb-2">
-                        <option value="1">Solo</option>
-                        <option value="2">Lesson</option>
-                        <option value="3">Standby</option>
-                    </select>
-                </div>
-
-
-                <div class="form-group">
-                    <label>Resource Type</label>
-                    <select name="resource_type" id="resource_type" class="form-control mb-2">
-                        <option value="1">Aircraft</option>
-                        <option value="2">Simulator</option>
-                        <option value="3">Classroom</option>
-                    </select>
-                </div>
-
-
-                <div class="form-group">
-                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                    <label>Select Student</label>
-                    <select id="student" name="student" class="form-control mb-2">
-                        <option value="">Select Student</option>
-                    </select>
+                    @if(auth()->user()->is_admin == 0 && auth()->user()->is_owner == 0 && !empty(auth()->user()->ou_id))
+                    <input type="hidden" name="organizationUnits" id="organizationUnits" value="{{ auth()->user()->ou_id }}">
                     @endif
-                    <span class="text-danger error-text" id="error_student"></span>
-                </div>
 
-                <div class="form-group">
-                    <div id="create_resource_wrapper">
-                        <label>Resource</label>
-                        <select id="resource" name="resource" class="form-control mb-2">
-                            <option value="">Select Resource</option>
+                    <div class="form-group">
+                        <label>Start Date & Time</label>
+                        <input type="date" name="start_date" id="booking_start" class="form-control mb-2" autocomplete="off">
+                        <span class="text-danger error-text" id="error_start_date"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>End Date & Time</label>
+                        <input type="date" name="end_date" id="booking_end" class="form-control mb-2" autocomplete="off">
+                        <span class="text-danger error-text" id="error_end_date"></span>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label>Booking Type</label>
+                        <select id="booking_type" name="booking_type" class="form-control mb-2">
+                            <option value="1">Solo</option>
+                            <option value="2">Lesson</option>
+                            <option value="3">Standby</option>
                         </select>
                     </div>
-                    <span class="text-danger error-text" id="error_resource"></span>
-                </div>
 
-                <div class="form-group" >
-                    <div id="create_instructor_wrapper" style="display:none">
-                        <label>Instructor</label>
-                        <select name="instructor" id="booking_instructor" class="form-control mb-2">
-                            <option value="">Select Instructor</option>
+
+                    <div class="form-group">
+                        <label>Resource Type</label>
+                        <select name="resource_type" id="resource_type" class="form-control mb-2">
+                            <option value="1">Aircraft</option>
+                            <option value="2">Simulator</option>
+                            <option value="3">Classroom</option>
                         </select>
                     </div>
-                    <span class="text-danger error-text" id="error_instructor"></span>
-                </div>
 
-            </div>
+
+                    <div class="form-group">
+                        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                        <label>Select Student</label>
+                        <select id="student" name="student" class="form-control mb-2">
+                            <option value="">Select Student</option>
+                        </select>
+                        @endif
+                        <span class="text-danger error-text" id="error_student"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <div id="create_resource_wrapper">
+                            <label>Resource</label>
+                            <select id="resource" name="resource" class="form-control mb-2">
+                                <option value="">Select Resource</option>
+                            </select>
+                        </div>
+                        <span class="text-danger error-text" id="error_resource"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <div id="create_instructor_wrapper" style="display:none">
+                            <label>Instructor</label>
+                            <select name="instructor" id="booking_instructor" class="form-control mb-2">
+                                <option value="">Select Instructor</option>
+                            </select>
+                        </div>
+                        <span class="text-danger error-text" id="error_instructor"></span>
+                    </div>
+
+                </div>
             </form>
 
             <div class="modal-footer">
@@ -261,61 +265,61 @@
             <div class="modal-body">
                 <div class="border rounded p-3 booking-card">
                     <div class="row">
-                            <div class="col-md-8">
-                                <ul class="list-unstyled small mb-3 booking-meta">
-                                    <li class="booking-item">
-                                        <i class="fa-solid fa-plane booking-icon text-secondary"
+                        <div class="col-md-8">
+                            <ul class="list-unstyled small mb-3 booking-meta">
+                                <li class="booking-item">
+                                    <i class="fa-solid fa-plane booking-icon text-secondary"
                                         data-bs-toggle="tooltip"
                                         title="Resource"></i>
-                                        <span id="booking_resource"></span>
-                                    </li>
+                                    <span id="booking_resource"></span>
+                                </li>
 
-                                    <li class="booking-item">
+                                <li class="booking-item">
                                     <i class="fa-solid fa-person-chalkboard booking-icon text-primary"
-                                            data-bs-toggle="tooltip"
-                                            title="Student"></i>
-                                        <span id="booking_student"></span>
-                                    </li>
+                                        data-bs-toggle="tooltip"
+                                        title="Student"></i>
+                                    <span id="booking_student"></span>
+                                </li>
 
-                                    <li class="booking-item" id="bookingInstructor_li" style="display:none">
+                                <li class="booking-item" id="bookingInstructor_li" style="display:none">
                                     <i class="fa-solid fa-user-graduate booking-icon text-primary"
-                                            data-bs-toggle="tooltip"
-                                            title="Instructor"></i>
-                                        <span id="bookingInstructor"></span>
-                                    </li>
+                                        data-bs-toggle="tooltip"
+                                        title="Instructor"></i>
+                                    <span id="bookingInstructor"></span>
+                                </li>
 
-                                    <li class="booking-item">
-                                        <i class="bi bi-journal-text booking-icon text-info"
+                                <li class="booking-item">
+                                    <i class="bi bi-journal-text booking-icon text-info"
                                         data-bs-toggle="tooltip"
                                         title="Lesson"></i>
-                                        <span id="booking_lesson">F18: Solo Circuit Consolidation  (Static data)</span>
-                                    </li>
+                                    <span id="booking_lesson">F18: Solo Circuit Consolidation (Static data)</span>
+                                </li>
 
-                                    <li class="booking-item">
-                                        <i class="bi bi-lock-fill booking-icon text-danger"
+                                <li class="booking-item">
+                                    <i class="bi bi-lock-fill booking-icon text-danger"
                                         data-bs-toggle="tooltip"
                                         title="Course"></i>
-                                        <span id="booking_code">TK CCTS 1600Z–1645Z BOOKED (Static data)</span>
-                                    </li>
+                                    <span id="booking_code">TK CCTS 1600Z–1645Z BOOKED (Static data)</span>
+                                </li>
 
-                                    <li class="booking-item">
-                                        <i class="bi bi-envelope-x booking-icon text-muted"
+                                <li class="booking-item">
+                                    <i class="bi bi-envelope-x booking-icon text-muted"
                                         data-bs-toggle="tooltip"
                                         title="Email Notification"></i>
-                                        <span>Notify via email:</span>
-                                        <span id="mail_send"></span>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="col-md-4">
-                                <!-- Header -->
-                                <div class="mb-2">
-                                    <div class="text-end text-success small">
-                                        <div id="booking_day" class="booking_day"></div>
-                                        <div id="booking_time" class="booking_time"></div>
-                                    </div>
+                                    <span>Notify via email:</span>
+                                    <span id="mail_send"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <!-- Header -->
+                            <div class="mb-2">
+                                <div class="text-end text-success small">
+                                    <div id="booking_day" class="booking_day"></div>
+                                    <div id="booking_time" class="booking_time"></div>
                                 </div>
                             </div>
+                        </div>
                     </div>
 
                     <!-- Footer -->
@@ -333,41 +337,38 @@
                 <input type="hidden" id="reject_booking_id">
                 <input type="hidden" id="delete_booking_id">
             </div>
-     @if(auth()->user()->is_owner == 1 || Auth::user()->is_admin == 1)
-<div class="modal-footer">
+            @if(auth()->user()->is_owner == 1 || Auth::user()->is_admin == 1 || auth()->user()->role == 3)
+            <div class="modal-footer">
+                <button id="editBookingBtn" class="btn btn-primary">Edit</button>
+                <button id="deleteBookingBtn" class="btn btn-danger">Delete</button>
+                @if(auth()->user()->is_owner == 1)
+                <!-- ACTION BUTTONS -->
+                <div id="actionButtons" class="d-flex gap-2">
+                    <button id="approveBtn" class="btn btn-success">
+                        Approve
+                    </button>
+                    <button id="rejectBtn" class="btn btn-danger">
+                        Reject
+                    </button>
+                </div>
 
-    <button id="editBookingBtn" class="btn btn-primary">Edit</button>
-    <button id="deleteBookingBtn" class="btn btn-danger">Delete</button>
+                <!-- APPROVED STATUS -->
+                <div id="approvedStatus" class="alert alert-success d-flex align-items-center mb-0 d-none" style="padding: 8px;">
+                    <i class="fa fa-circle-check me-2 fs-5"></i>
+                    <strong>Approved</strong>
+                    <span class="ms-2 text-muted">(This booking has been approved)</span>
+                </div>
 
-    @if(auth()->user()->is_owner == 1)
+                <!-- REJECTED STATUS -->
+                <div id="rejectedStatus" class="alert alert-danger d-flex align-items-center mb-0 d-none" style="padding: 8px;">
+                    <i class="fa fa-circle-xmark me-2 fs-5"></i>
+                    <strong>Rejected</strong>
+                    <span class="ms-2 text-muted">(This booking has been rejected)</span>
+                </div>
 
-        <!-- ACTION BUTTONS -->
-        <div id="actionButtons" class="d-flex gap-2">
-            <button id="approveBtn" class="btn btn-success">
-                Approve
-            </button>
-            <button id="rejectBtn" class="btn btn-danger">
-                 Reject
-            </button>
-        </div>
-
-        <!-- APPROVED STATUS -->
-        <div id="approvedStatus" class="alert alert-success d-flex align-items-center mb-0 d-none" style="padding: 8px;">
-            <i class="fa fa-circle-check me-2 fs-5"></i>
-            <strong>Approved</strong>
-            <span class="ms-2 text-muted">(This booking has been approved)</span>
-        </div>
-
-        <!-- REJECTED STATUS -->
-        <div id="rejectedStatus" class="alert alert-danger d-flex align-items-center mb-0 d-none" style="padding: 8px;">
-            <i class="fa fa-circle-xmark me-2 fs-5"></i>
-            <strong>Rejected</strong>
-            <span class="ms-2 text-muted">(This booking has been rejected)</span>
-        </div>
-
-    @endif
-</div>
-@endif
+                @endif
+            </div>
+            @endif
 
         </div>
     </div>
@@ -375,7 +376,7 @@
 <!-- //-------------------------------End Booking Model--------------------------------------------------------------->
 
 <!-- //-------------------------------Edit Booking Model-------------------------------------------------------------->
- <div class="modal fade" id="editBookingModal" tabindex="-1">
+<div class="modal fade" id="editBookingModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
 
@@ -419,18 +420,14 @@
 
                 <label>Student</label>
                 <select id="edit_student" class="form-control mb-2">
-                    @foreach ($students as $val)
-                    <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
-                    @endforeach
+
                 </select>
 
 
                 <div id="edit_resource_wrapper">
                     <label>Resource</label>
                     <select id="edit_resource" class="form-control mb-2">
-                        @foreach ($resources as $val)
-                        <option value="{{ $val->id }}">{{ $val->name }}</option>
-                        @endforeach
+
                     </select>
                 </div>
 
@@ -466,111 +463,119 @@
 
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
 
-    let SITEURL = "{{ url('/') }}";
-    let calendar = null;
-    let currentMode = 'resource'; // resource | instructor | student
+        let SITEURL = "{{ url('/') }}";
+        let calendar = null;
+        let currentMode = 'resource'; // resource | instructor | student
 
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
 
-    /* ----------------------------------------------------
-       INIT / REINIT CALENDAR
-    ---------------------------------------------------- */
-    function initCalendar() { 
+        /* ----------------------------------------------------
+        INIT / REINIT CALENDAR
+        ---------------------------------------------------- */
+        function initCalendar() {
 
-        if (calendar) {
-            calendar.destroy();
-        }
+            if (calendar) {
+                calendar.destroy();
+            }
 
-        /* ✅ Dynamic resource header title */
-        let headerTitle = 'Resources';
-        if (currentMode === 'instructor') headerTitle = 'Instructor';
-        if (currentMode === 'student') headerTitle = 'Student';
+            /* ✅ Dynamic resource header title */
+            let headerTitle = 'Resources';
+            if (currentMode === 'instructor') headerTitle = 'Instructor';
+            if (currentMode === 'student') headerTitle = 'Student';
 
-        calendar = new FullCalendar.Calendar(
-            document.getElementById('calendar'),
-            {
-                schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
-                initialView: 'resourceTimelineDay',
-                height: 'auto',
-                editable: false,
-                selectable: true,
-                resourceAreaWidth: '18%',
-                slotMinWidth: 90,
+            calendar = new FullCalendar.Calendar(
+                document.getElementById('calendar'), {
+                    schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
+                    initialView: 'resourceTimelineDay',
+                    height: 'auto',
+                    editable: false,
+                    selectable: true,
+                    resourceAreaWidth: '18%',
+                    slotMinWidth: 90,
 
-                /* ✅ HEADER TEXT CHANGED HERE */
-                resourceAreaHeaderContent: headerTitle,
+                    /* ✅ HEADER TEXT CHANGED HERE */
+                    resourceAreaHeaderContent: headerTitle,
 
-                /* ✅ DAY / WEEK / MONTH ALL ENABLED */
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'resourceTimelineMonth,resourceTimelineWeek,resourceTimelineDay'
-                },
-
-                /* ✅ DEFINE ALL VIEWS */
-                views: {
-                    resourceTimelineMonth: {
-                        slotLabelFormat: [
-                            { day: 'numeric' },
-                            { weekday: 'short' }
-                        ]
+                    /* ✅ DAY / WEEK / MONTH ALL ENABLED */
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'resourceTimelineMonth,resourceTimelineWeek,resourceTimelineDay'
                     },
-                    resourceTimelineWeek: {
-                        slotDuration: { days: 1 },
-                        slotLabelContent: function (arg) {
-                            let d = arg.date;
-                            return {
-                                html: `
-                                    <div style="text-align:center">
-                                        <div class="fc-day-number">${d.getDate()}</div>
-                                        <div class="fc-weekday">
-                                            ${d.toLocaleDateString('en-US', { weekday: 'short' })}
-                                        </div>
-                                    </div>
-                                `
-                            };
-                        }
-                    },
-                    resourceTimelineDay: {
-                        slotDuration: { hours: 1 },
-                        slotLabelFormat: {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: false
-                        }
-                    }
-                },
 
-                /* ---------------- RESOURCES ---------------- */
-                resources: function (fetchInfo, successCallback, failureCallback) {
-                    fetch(SITEURL + '/calendar/resources?mode=' + currentMode)
-                        .then(res => res.json())
-                        .then(data => successCallback(data))
-                        .catch(err => failureCallback(err));
-                },
-
-                /* ---------------- EVENTS ---------------- */
-                events: function (info, successCallback, failureCallback) {
-                    $.ajax({
-                        url: SITEURL + '/calendar/events',
-                        data: { mode: currentMode },
-                        success: function (res) {
-                            successCallback(res);
+                    /* ✅ DEFINE ALL VIEWS */
+                    views: {
+                        resourceTimelineMonth: {
+                            slotLabelFormat: [{
+                                    day: 'numeric'
+                                },
+                                {
+                                    weekday: 'short'
+                                }
+                            ]
                         },
-                        error: function (err) {
-                            failureCallback(err);
+                        resourceTimelineWeek: {
+                            slotDuration: {
+                                days: 1
+                            },
+                            slotLabelContent: function(arg) {
+                                let d = arg.date;
+                                return {
+                                    html: `
+                                            <div style="text-align:center">
+                                                <div class="fc-day-number">${d.getDate()}</div>
+                                                <div class="fc-weekday">
+                                                    ${d.toLocaleDateString('en-US', { weekday: 'short' })}
+                                                </div>
+                                            </div>
+                                        `
+                                };
+                            }
+                        },
+                        resourceTimelineDay: {
+                            slotDuration: {
+                                hours: 1
+                            },
+                            slotLabelFormat: {
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                hour12: false
+                            }
                         }
-                    });
-                },
+                    },
 
-                /* ---------------- EVENT UI ---------------- */
-        eventContent: function (arg) {
+                    /* ---------------- RESOURCES ---------------- */
+                    resources: function(fetchInfo, successCallback, failureCallback) {
+                        fetch(SITEURL + '/calendar/resources?mode=' + currentMode)
+                            .then(res => res.json())
+                            .then(data => successCallback(data))
+                            .catch(err => failureCallback(err));
+                    },
+
+                    /* ---------------- EVENTS ---------------- */
+                    events: function(info, successCallback, failureCallback) {
+                        $.ajax({
+                            url: SITEURL + '/calendar/events',
+                            data: {
+                                mode: currentMode
+                            },
+                            success: function(res) {
+                                successCallback(res);
+                            },
+                            error: function(err) {
+                                failureCallback(err);
+                            }
+                        });
+                    },
+
+                    /* ---------------- EVENT UI ---------------- */
+                    eventContent: function(arg) {
                         let e = arg.event.extendedProps;
                         let viewType = arg.view.type;
 
@@ -585,130 +590,146 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (viewType === 'resourceTimelineDay') {
                             return {
                                 html: `
-                                    <div style="font-size: 16px;font-weight: 500;white-space:nowrap;text-align: center;padding: 6px;">
-                                        ${arg.event.title}
-                                    </div>
-                                `
+                                            <div style="font-size: 16px;font-weight: 500;white-space:nowrap;text-align: center;padding: 6px;">
+                                                ${arg.event.title}
+                                            </div>
+                                        `
                             };
                         }
 
                         // WEEK / MONTH → full content
                         return {
                             html: `
-                                <div style="font-weight:600">
-                                    ${arg.event.title}
-                                </div>
-                               
-                            `
+                                        <div style="font-weight:600">
+                                            ${arg.event.title}
+                                        </div>
+                                    
+                                    `
                         };
                     },
 
 
-                /* ---------------- EVENT CLICK ---------------- */
-                eventClick: function (info) {
-                    let e = info.event.extendedProps;
-                    selectedEvent = e;
-                   let mailText = (e.send_mail == 1) ? 'Enabled' : 'Disabled';
-                    $('#mail_send').text(mailText);
-                    $('#resource_registration').text(e.registration);
-                    $('#booking_student').text(e.student);
-                    $('#booking_resource').text(e.resource);
-                    let statusText = e.status ? e.status.charAt(0).toUpperCase() + e.status.slice(1): 'Scheduled';
-                    $('#view_status').text(statusText);
+                    /* ---------------- EVENT CLICK ---------------- */
+                    eventClick: function(info) {
+                        let e = info.event.extendedProps;
+                        selectedEvent = e;
+                        let mailText = (e.send_mail == 1) ? 'Enabled' : 'Disabled';
+                        $('#mail_send').text(mailText);
+                        $('#resource_registration').text(e.registration);
+                        $('#booking_student').text(e.student);
+                        $('#booking_resource').text(e.resource);
+                        let statusText = e.status ? e.status.charAt(0).toUpperCase() + e.status.slice(1) : 'Scheduled';
+                        $('#view_status').text(statusText);
 
-                    $('#approve_booking_id').val(selectedEvent.id);
-                    $('#reject_booking_id').val(selectedEvent.id);
-                    $('#delete_booking_id').val(selectedEvent.id);
-                  
-                    // Reset UI
-                    $("#editBookingBtn, #deleteBookingBtn").addClass("d-none");
-                    $("#actionButtons, #approvedStatus, #rejectedStatus").addClass("d-none");
+                        $('#approve_booking_id').val(selectedEvent.id);
+                        $('#reject_booking_id').val(selectedEvent.id);
+                        $('#delete_booking_id').val(selectedEvent.id);
 
-                    if (e.status === "approved") {
+                        // Reset UI
+                        $("#editBookingBtn, #deleteBookingBtn").addClass("d-none");
+                        $("#actionButtons, #approvedStatus, #rejectedStatus").addClass("d-none");
 
-                        $("#approvedStatus").removeClass("d-none");
+                        if (e.status === "approved") {
 
-                    } else if (e.status === "rejected") {
+                            $("#approvedStatus").removeClass("d-none");
 
-                        $("#rejectedStatus").removeClass("d-none");
+                        } else if (e.status === "rejected") {
 
-                    } else {
-                        // pending / scheduled
-                        $("#editBookingBtn, #deleteBookingBtn").removeClass("d-none");
-                        $("#actionButtons").removeClass("d-none");
+                            $("#rejectedStatus").removeClass("d-none");
+
+                        } else {
+                            // pending / scheduled
+                            $("#editBookingBtn, #deleteBookingBtn").removeClass("d-none");
+                            $("#actionButtons").removeClass("d-none");
+                        }
+
+                        if (e.instructor != null) {
+                            $('#bookingInstructor_li').show();
+                            $('#bookingInstructor').text(e.instructor);
+                        } else {
+                            $('#bookingInstructor_li').hide();
+                            $('#bookingInstructor').text('');
+                        }
+
+                        $('#booking_day').text(
+                            moment(info.event.start).format('ddd, MMM DD YYYY')
+                        );
+
+                        $('#booking_time').text(
+                            moment(info.event.start).format('HH:mm') +
+                            ' - ' +
+                            moment(info.event.end).format('HH:mm')
+                        );
+
+                        $('#viewBookingModal').modal('show');
+                    },
+
+                    /* ---------------- SELECT SLOT ---------------- */
+                    select: function(info) {
+                        resetBookingForm();
+                        console.log(info.resource.id);
+                        let start = moment(info.start);
+                        let end = moment(info.end).subtract(1, 'hour'); // ✅ FIX
+
+                        startPicker.setDate(
+                            start.format('YYYY-MM-DD HH:mm'),
+                            true
+                        );
+
+                        endPicker.setDate(
+                            end.format('YYYY-MM-DD HH:mm'),
+                            true
+                        );
+                        let $ou = $("#organizationUnits");
+                        if ($ou.length && $ou.val()) {
+                            $ou.trigger("change");
+                        }
+                        if (info.resource) {
+                            let resourceId = info.resource.id;
+
+                            // wait until resource dropdown is loaded
+                            setTimeout(function() {
+                                $("#resource").val(resourceId).trigger("change");
+                            }, 300);
+                        }
+                        $('#newBookingModal').modal('show');
                     }
-                     
-                    if(e.instructor != null){
-                        $('#bookingInstructor_li').show();
-                       $('#bookingInstructor').text(e.instructor);
-                    }else{
-                        $('#bookingInstructor_li').hide();
-                       $('#bookingInstructor').text('');
-                    }
-                   
-                    $('#booking_day').text(
-                        moment(info.event.start).format('ddd, MMM DD YYYY')
-                    );
-
-                    $('#booking_time').text(
-                        moment(info.event.start).format('HH:mm') +
-                        ' - ' +
-                        moment(info.event.end).format('HH:mm')
-                    );
-
-                    $('#viewBookingModal').modal('show');
-                },
-
-                /* ---------------- SELECT SLOT ---------------- */
-                select: function (info) {
-                    resetBookingForm();
-
-                    startPicker.setDate(
-                        moment(info.start).format('YYYY-MM-DD HH:mm'),
-                        true
-                    );
-                    endPicker.setDate(
-                        moment(info.end).format('YYYY-MM-DD HH:mm'),
-                        true
-                    );
-                    $('#newBookingModal').modal('show');
                 }
-            }
-        );
+            );
 
-        calendar.render();
-    }
+            calendar.render();
+        }
 
-    /* ----------------------------------------------------
-       CHECKBOX HANDLING (ONLY ONE ACTIVE)
-    ---------------------------------------------------- */
-    function activateOnly(id) {
-        $('#by_resource, #by_instructor, #by_student').prop('checked', false);
-        $('#' + id).prop('checked', true);
-    }
+        /* ----------------------------------------------------
+        CHECKBOX HANDLING (ONLY ONE ACTIVE)
+        ---------------------------------------------------- */
+        function activateOnly(id) {
+            $('#by_resource, #by_instructor, #by_student').prop('checked', false);
+            $('#' + id).prop('checked', true);
+        }
 
-    $('#by_resource').on('change', function () {
-        activateOnly('by_resource');
-        currentMode = 'resource';
-        initCalendar();
-    });
+        $('#by_resource').on('change', function() {
+            activateOnly('by_resource');
+            currentMode = 'resource';
+            initCalendar();
+        });
 
-    $('#by_instructor').on('change', function () {
-        activateOnly('by_instructor');
-        currentMode = 'instructor';
-        initCalendar();
-    });
+        $('#by_instructor').on('change', function() {
+            activateOnly('by_instructor');
+            currentMode = 'instructor';
+            initCalendar();
+        });
 
-    $('#by_student').on('change', function () {
-        activateOnly('by_student');
-        currentMode = 'student';
-        initCalendar();
-    });
+        $('#by_student').on('change', function() {
+            activateOnly('by_student');
+            currentMode = 'student';
+            initCalendar();
+        });
 
-    /* ----------------------------------------------------
-       FLATPICKR
-    ---------------------------------------------------- */
-    let startPicker = flatpickr("#booking_start", {
+        /* ----------------------------------------------------
+        FLATPICKR
+        ---------------------------------------------------- */
+        let startPicker = flatpickr("#booking_start", {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             time_24hr: true,
@@ -727,52 +748,52 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         let endPicker = flatpickr("#booking_end", {
-                    enableTime: true,
-                    dateFormat: "Y-m-d H:i",
-                    time_24hr: true,
-                    minuteIncrement: 15,
-                    allowInput: true,
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            minuteIncrement: 15,
+            allowInput: true,
         });
 
-    function resetBookingForm() {
-        $('#booking_form')[0].reset();
-        startPicker.clear();
-        endPicker.clear();
-    }
+        function resetBookingForm() {
+            $('#booking_form')[0].reset();
+            startPicker.clear();
+            endPicker.clear();
+        }
 
-    $('#create_booking').on('click', function () {
-        resetBookingForm();
-        $('#newBookingModal').modal('show');
-    });
+        $('#create_booking').on('click', function() {
+            resetBookingForm();
+            $('#newBookingModal').modal('show');
+        });
 
-    $('#saveBookingBtn').on('click', function (e) {
-        e.preventDefault();
-        let formData = new FormData($('#booking_form')[0]);
-        $.ajax({
-            url: SITEURL + "/booking/store",
-            type: "POST",
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function () {
-                $('#newBookingModal').modal('hide');
-                calendar.refetchEvents();
-            },
-            error: function (xhr) {
-                if (xhr.status === 422) {
-                    $('.error-text').text('');
-                    $.each(xhr.responseJSON.errors, function (k, v) {
-                        $('#error_' + k).text(v[0]);
-                    });
-                } else {
-                    alert('Something went wrong');
+        $('#saveBookingBtn').on('click', function(e) {
+            e.preventDefault();
+            let formData = new FormData($('#booking_form')[0]);
+            $.ajax({
+                url: SITEURL + "/booking/store",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function() {
+                    $('#newBookingModal').modal('hide');
+                    calendar.refetchEvents();
+                },
+                error: function(xhr) {
+                    if (xhr.status === 422) {
+                        $('.error-text').text('');
+                        $.each(xhr.responseJSON.errors, function(k, v) {
+                            $('#error_' + k).text(v[0]);
+                        });
+                    } else {
+                        alert('Something went wrong');
+                    }
                 }
-            }
+            });
         });
-    });
 
-    initCalendar();
-      $("#organizationUnits").on('change', function(e) {
+        initCalendar();
+        $("#organizationUnits").on('change', function(e) {
             let ou_id = $(this).val();
 
             var $groupSelect = $("#group");
@@ -793,7 +814,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 dataType: "json", // Ensures response is treated as JSON
                 success: function(response) {
-                    if (response.students && Array.isArray(response.students)) { 
+                    if (response.students && Array.isArray(response.students)) {
                         var options = "<option value=''>Select Student</option>";
                         response.students.forEach(function(value) {
                             options += "<option value='" + value.id + "'>" + value.fname + ' ' + value.lname +
@@ -825,8 +846,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         });
-              // On change
-        $('#booking_type').on('change', function() { 
+        // On change
+        $('#booking_type').on('change', function() {
             toggleInstructorRequirement('#booking_type', '#booking_instructor');
             handleBookingType(
                 '#booking_type',
@@ -837,7 +858,7 @@ document.addEventListener('DOMContentLoaded', function () {
             );
         });
 
-     
+
 
         $('#edit_booking_type').on('change', function() {
             handleBookingType(
@@ -869,7 +890,7 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#newBookingModal').modal('show');
         });
 
-    function handleBookingType(
+        function handleBookingType(
             bookingTypeSelector,
             resourceWrapper,
             resourceSelector,
@@ -883,12 +904,12 @@ document.addEventListener('DOMContentLoaded', function () {
             $(instructorWrapper).hide();
             $(instructorSelector).val('').prop('required', false);
 
-            if (type == 1) { 
+            if (type == 1) {
                 // SOLO
                 $(resourceWrapper).show();
                 $(resourceSelector).prop('required', true);
 
-            } else if (type == 2) { 
+            } else if (type == 2) {
                 // LESSON
                 $(instructorWrapper).show();
                 $(instructorSelector).prop('required', true);
@@ -896,7 +917,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 $(resourceWrapper).show();
                 $(resourceSelector).prop('required', true);
 
-            } else if (type == 3) { 
+            } else if (type == 3) {
                 // STANDBY
                 $(instructorWrapper).show();
                 $(instructorSelector).prop('required', false);
@@ -906,7 +927,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-    function toggleInstructorRequirement(bookingTypeSelector, instructorSelector) {
+        function toggleInstructorRequirement(bookingTypeSelector, instructorSelector) {
             let bookingType = $(bookingTypeSelector).val();
 
             if (bookingType == 1) { // Solo
@@ -925,14 +946,14 @@ document.addEventListener('DOMContentLoaded', function () {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             time_24hr: true,
-             allowInput: true,
+            allowInput: true,
         });
 
         let editEndPicker = flatpickr("#edit_booking_end", {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             time_24hr: true,
-             allowInput: true,
+            allowInput: true,
         });
 
         // $("#editBookingBtn").click(function() { 
@@ -959,34 +980,33 @@ document.addEventListener('DOMContentLoaded', function () {
         //     );
         //     $('#editBookingModal').modal('show');
         // });
-         $("#editBookingBtn").on("click", function () {
+        $("#editBookingBtn").on("click", function() {
             $("#viewBookingModal").modal("hide");
-             $('#edit_booking_id').val(selectedEvent.id);
-            var booking_id  = $('#edit_booking_id').val();
-           
+            $('#edit_booking_id').val(selectedEvent.id);
+            var booking_id = $('#edit_booking_id').val();
+
             $.ajax({
                 url: SITEURL + "/calendar/edit",
                 type: "POST",
                 data: {
                     id: booking_id
                 },
-                success: function (data) {
-                  
+                success: function(data) {
+
                     var response = data.response[0];
-                 $("#edit_organizationUnits").val(response.ou_id).trigger('change');
-                       // Organization Unit
-                  
+                    $("#edit_organizationUnits").val(response.ou_id).trigger('change');
+                    // Organization Unit
 
                     // Basic fields
                     $("#edit_booking_id").val(response.id);
                     $("#edit_booking_type").val(response.booking_type);
-                    console.log(response.resource);
-                    setTimeout(function () {
-                                $("#edit_resource").val(String(response.resource)).trigger("change");
-                                $("#edit_student").val(response.std_id);
-                    $("#edit_instructor").val(response.instructor_id);
-                        }, 300);
-                    
+
+                    setTimeout(function() {
+                        $("#edit_resource").val(String(response.resource)).trigger("change");
+                        $("#edit_student").val(response.std_id);
+                        $("#edit_instructor").val(response.instructor_id);
+                    }, 300);
+
 
                     // Instructor toggle
                     if (response.booking_type == 1) {
@@ -1008,17 +1028,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     $("#editBookingModal").modal("show");
                 },
-                error: function (xhr) {
+                error: function(xhr) {
                     toastr.error("Unable to load booking details.");
                     console.error(xhr.responseText);
                 }
             });
-});
+        });
 
 
-         $("#edit_organizationUnits").on('change', function() {
+        $("#edit_organizationUnits").on('change', function() {
             let ou_id = $(this).val();
-         
+
 
             let $resource = $("#edit_resource");
             let $student = $("#edit_student");
@@ -1038,7 +1058,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 dataType: "json",
                 success: function(response) {
-
                     if (response.org_resource) {
                         response.org_resource.forEach(function(r) {
                             $resource.append(
@@ -1046,7 +1065,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             );
                         });
                     }
-
                     if (response.students) {
                         response.students.forEach(function(s) {
                             $student.append(
@@ -1090,11 +1108,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 $('#editBookingModal').modal('hide');
                 $('#calendar').fullCalendar('refetchEvents');
             });
-             initCalendar();
+            initCalendar();
         });
 
         // APPROVE BOOKING
-        $("#approveBtn").on("click", function () {
+        $("#approveBtn").on("click", function() {
             if (!confirm("Are you sure you want to approve this booking ?")) {
                 return;
             }
@@ -1106,13 +1124,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     id: $("#approve_booking_id").val(),
                     organizationUnits: $("#approve_organizationUnits").val()
                 },
-                success: function (response) {
+                success: function(response) {
                     toastr.success("Booking Approved");
                     $('#viewBookingModal').modal('hide');
                     $('#calendar').fullCalendar('refetchEvents');
                     initCalendar();
                 },
-                error: function (xhr) {
+                error: function(xhr) {
                     toastr.error("Something went wrong. Please try again.");
                     console.error(xhr.responseText);
                 }
@@ -1120,7 +1138,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         });
 
-        $("#rejectBtn").on("click", function () {
+        $("#rejectBtn").on("click", function() {
             if (!confirm("Are you sure you want to reject this booking ?")) {
                 return;
             }
@@ -1131,44 +1149,40 @@ document.addEventListener('DOMContentLoaded', function () {
                     id: $("#reject_booking_id").val(),
                     organizationUnits: $("#approve_organizationUnits").val()
                 },
-                success: function () {
+                success: function() {
                     toastr.error("Booking Rejected");
                     $('#viewBookingModal').modal('hide');
                     $('#calendar').fullCalendar('refetchEvents');
                     initCalendar();
                 },
-                error: function (xhr) {
+                error: function(xhr) {
                     toastr.error("Something went wrong. Please try again.");
                     console.error(xhr.responseText);
                 }
             });
         });
 
-        
-    $("#deleteBookingBtn").on("click", function () {
-        if (!confirm("Are you sure you want to delete this booking ?")) return;
-        $.ajax({
-            url: SITEURL + "/booking/delete",
-            type: "POST",
-            data: {
-                id: $("#delete_booking_id").val(),
-            },
-            success: function (response) {
-                toastr.success("Booking Deleted");
-                $("#viewBookingModal").modal("hide");
-                $("#calendar").fullCalendar("refetchEvents");
-            },
-            error: function (xhr) {
-                toastr.error("Unable to cancel booking. Please try again.");
-                console.error(xhr.responseText);
-            }
+
+        $("#deleteBookingBtn").on("click", function() {
+            if (!confirm("Are you sure you want to delete this booking ?")) return;
+            $.ajax({
+                url: SITEURL + "/booking/delete",
+                type: "POST",
+                data: {
+                    id: $("#delete_booking_id").val(),
+                },
+                success: function(response) {
+                    toastr.success("Booking Deleted");
+                    $("#viewBookingModal").modal("hide");
+                    $("#calendar").fullCalendar("refetchEvents");
+                },
+                error: function(xhr) {
+                    toastr.error("Unable to cancel booking. Please try again.");
+                    console.error(xhr.responseText);
+                }
+            });
+
         });
-
     });
-
-
-
-
-});
 </script>
 @endsection
