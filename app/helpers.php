@@ -305,22 +305,38 @@ function get_user_role($roleId)
 
     function timezone($start_time, $ou_id)
     {
+       // dd($start_time);
         // Get timezone string
-        $timezoneRow = OuSetting::where('organization_id', $ou_id)
-            ->value('timezone'); // "(UTC-02:00) America/Noronha"
+        if($ou_id == ''){
+           return 
+            [
+                'datetime'   => $start_time,
+                'utc_offset' => "UTC"  
+            ];
 
-        // Extract actual timezone
-        preg_match('/\)\s*(.*)$/', $timezoneRow, $matches);
-        $timezone = $matches[1] ?? 'UTC';
+        }else{  
+            $timezoneRow = OuSetting::where('organization_id', $ou_id)->value('timezone'); 
+                /* Extract UTC Offset */
+            preg_match('/\((UTC[^\)]+)\)/', $timezoneRow, $offsetMatch);
+            $utcOffset = $offsetMatch[1] ?? 'UTC';
+            // Extract actual timezone
+            preg_match('/\)\s*(.*)$/', $timezoneRow, $matches);
+            $timezone = $matches[1] ?? 'UTC';
 
-        // Convert UTC time to OU timezone
-        $convertedTime = Carbon::createFromFormat(
-            'Y-m-d H:i:s',
-            $start_time,
-            'UTC'
-        )->setTimezone($timezone);
+            // Convert UTC time to OU timezone
+            $convertedTime = Carbon::createFromFormat(
+                'Y-m-d H:i:s',
+                $start_time,
+                'UTC'
+            )->setTimezone($timezone);
 
-        return $convertedTime->format('Y-m-d H:i:s');
+            return 
+            [
+                'datetime'   => $convertedTime->format('Y-m-d H:i:s'),
+                'utc_offset' => $utcOffset  
+            ];
+        }
+    
     }
 
 
