@@ -115,6 +115,10 @@
         line-height: 23px;
         font-weight: 700;
     }
+    div#utc_offset {
+        color: #000;
+        font-weight: 700;
+    }
 </style>
 <div class="container-fluid mt-3">
     <div style="margin-bottom: 10px;">
@@ -271,14 +275,14 @@
                                     <i class="fa-solid fa-plane booking-icon text-secondary"
                                         data-bs-toggle="tooltip"
                                         title="Resource"></i>
-                                    <span id="booking_resource"></span>
+                                    <a id="booking_resource"></a>
                                 </li>
 
                                 <li class="booking-item">
                                     <i class="fa-solid fa-person-chalkboard booking-icon text-primary"
                                         data-bs-toggle="tooltip"
                                         title="Student"></i>
-                                    <span id="booking_student"></span>
+                                    <a id="booking_student"></a>
                                 </li>
 
                                 <li class="booking-item" id="bookingInstructor_li" style="display:none">
@@ -317,6 +321,7 @@
                                 <div class="text-end text-success small">
                                     <div id="booking_day" class="booking_day"></div>
                                     <div id="booking_time" class="booking_time"></div>
+                                    <div id="utc_offset" class="utc_offset"></div>
                                 </div>
                             </div>
                         </div>
@@ -478,6 +483,7 @@
         /* ----------------------------------------------------
         INIT / REINIT CALENDAR
         ---------------------------------------------------- */
+        let headerExtraInfo = '';
         function initCalendar() {
 
             if (calendar) {
@@ -565,9 +571,14 @@
                             data: {
                                 mode: currentMode
                             },
-                            success: function(res) {
-                                successCallback(res);
-                            },
+                      success: function(res) {
+                        successCallback(res);
+
+                        if (res.length > 0) {
+                        let headerExtraInfo = res[0].utc_offset;
+                        console.log(headerExtraInfo);
+                        }
+                       },
                             error: function(err) {
                                 failureCallback(err);
                             }
@@ -616,8 +627,9 @@
                         let mailText = (e.send_mail == 1) ? 'Enabled' : 'Disabled';
                         $('#mail_send').text(mailText);
                         $('#resource_registration').text(e.registration);
-                        $('#booking_student').text(e.student);
-                        $('#booking_resource').text(e.resource);
+                       $('#booking_student').text(e.student).attr('href', SITEURL + '/users/show/' + e.encode_std_id);
+                        $('#booking_resource').text(e.resource).attr('href', SITEURL + '/resource/show/' + e.resource_id);;
+                      
                         let statusText = e.status ? e.status.charAt(0).toUpperCase() + e.status.slice(1) : 'Scheduled';
                         $('#view_status').text(statusText);
 
@@ -655,11 +667,16 @@
                             moment(info.event.start).format('ddd, MMM DD YYYY')
                         );
 
+                  
+
                         $('#booking_time').text(
                             moment(info.event.start).format('HH:mm') +
                             ' - ' +
                             moment(info.event.end).format('HH:mm')
                         );
+                        $('#utc_offset').html(info.event.extendedProps.utc_offset);
+                          
+
 
                         $('#viewBookingModal').modal('show');
                     },
@@ -693,7 +710,7 @@
                             }, 300);
                         }
                         $('#newBookingModal').modal('show');
-                    }
+                    },
                 }
             );
 
@@ -956,30 +973,7 @@
             allowInput: true,
         });
 
-        // $("#editBookingBtn").click(function() { 
-        //     $('#viewBookingModal').modal('hide');
-        //     $('#edit_booking_id').val(selectedEvent.id);
-        //     $('#edit_organizationUnits').val(selectedEvent.ou_id).trigger('change');
-        //     setTimeout(function() {
-        //         $('#edit_resource').val(selectedEvent.resource_id);
-        //         $('#edit_student').val(selectedEvent.std_id);
-        //         $('#edit_instructor').val(selectedEvent.instructor_id);
-        //     }, 300);
-
-        //     $('#edit_booking_type').val(selectedEvent.booking_type_numValue);
-        //     console.log(selectedEvent.booking_type_numValue);
-        //     if(selectedEvent.booking_type_numValue == 1){
-        //        $('#edit_instructor_wrapper').hide();
-        //     }else{
-        //        $('#edit_instructor_wrapper').show();
-        //     }
-        //     editStartPicker.setDate(moment(selectedEvent.start).format("YYYY-MM-DD HH:mm"), true);
-        //     editEndPicker.setDate(
-        //         moment(selectedEvent.end).format("YYYY-MM-DD HH:mm"),
-        //         true
-        //     );
-        //     $('#editBookingModal').modal('show');
-        // });
+  
         $("#editBookingBtn").on("click", function() {
             $("#viewBookingModal").modal("hide");
             $('#edit_booking_id').val(selectedEvent.id);

@@ -27,6 +27,8 @@ class BookingController extends Controller
     {
         $mode = $request->mode ?? 'resource';
         $role = auth()->user()->role;
+        
+        $is_owner = auth()->user()->is_owner;
         if ($role == 3) {
             $login_id = auth()->user()->id;
             $events = Booking::with(['users', 'resources', 'instructor'])->where('std_id', $login_id)->get();
@@ -35,10 +37,18 @@ class BookingController extends Controller
         }
 
         $data = [];
+
+        if($is_owner == 1){
+            $ou_id = '';
+        }else{
+          $ou_id = auth()->user()->ou_id;
+        }
+
         foreach ($events as $e) {
-            $mailSend = OuSetting::where('organization_id', $e->ou_id)->select('send_email')->first();
-            if ($mode === 'instructor') {
+            $mailSend = OuSetting::where('organization_id', $ou_id)->select('send_email')->first();
+            if ($mode === 'instructor') { 
                 $resourceId = $e->instructor_id;
+                // dd($e);
             } elseif ($mode === 'student') {
                 $resourceId = $e->std_id;
             } else {
@@ -59,32 +69,48 @@ class BookingController extends Controller
                     $title = $studentName . ' (Solo)';
                     $color = '#9CA3AF'; // grey
                     $typeText = 'Solo';
+                    $id       = $e->std_id;
                     break;
 
                 case 2: // LESSON
                     $title = $instructorName . ' - ' . $studentName;
                     $color = '#2563EB'; // blue
                     $typeText = 'Lesson';
+                    $id       = $e->std_id;
                     break;
 
                 case 3: // STANDBY
                     $title = $studentName . ' (Standby)';
                     $color = '#F59E0B'; // orange
                     $typeText = 'Standby';
+                     $id       = $e->std_id;
                     break;
 
                 default:
                     $title = $studentName;
                     $color = '#6B7280';
                     $typeText = 'Unknown';
+                    $id       = $e->std_id;
             }
 
             /* ---------------- Push event ---------------- */
+            $start_time = timezone($e->start, $ou_id);
+        
+            $start_timezone = $start_time['datetime'];
+
+            $end_time = timezone($e->end, $ou_id);
+            $end_timezone = $end_time['datetime'];
+
+            $utc = timezone($e->end, $ou_id);
+            $utc_offset = $utc['utc_offset'] ?? 'UTC';
+
+
             $data[] = [
                 'id'         => $e->id,
                 'resourceId' => (string) $resourceId,
-                'start'      => timezone($e->start, $e->ou_id),
-                'end'        => timezone($e->end, $e->ou_id),
+                'start'      => $start_timezone,
+                'end'        => $end_timezone,
+                'utc_offset' => $utc_offset,
                 'title'      => $title,
 
                 // Styling
@@ -100,7 +126,8 @@ class BookingController extends Controller
                     'registration'          => $e->resources->registration,
                     'send_mail'             => $mailSend->send_email ?? '',
                     'std_id'                => $e->std_id,
-                    'resource_id'           => $e->resource,
+                    'encode_std_id'         => encode_id($e->std_id),
+                    'resource_id'           => encode_id($e->resource),
                     'ou_id'                 => $e->ou_id,
                     'instructor_id'         => $e->instructor_id,
                     'id'                    => $e->id,
@@ -210,9 +237,13 @@ class BookingController extends Controller
         ];
 
         // ✅ Only validate student if NOT role 3
-        if (Auth::user()->role != 3) {
-            $rules['student'] = 'required|exists:users,id';
-        }
+         if (Auth::user()->is_owner == 1) {
+             $rules['student'] = 'required|exists:users,id';
+         }
+
+        // if (Auth::user()->role != 3) {
+            
+        // }
 
         $validated = $request->validate($rules);
 
