@@ -102,7 +102,7 @@ class BookingController extends Controller
             $end_timezone = $end_time['datetime'];
 
             $utc = timezone($e->end, $ou_id);
-            $utc_offset = $utc['utc_offset'] ?? 'UTC';
+            $utc_offset = $utc['utc_offset'] ?? 'UTC+00:00';
 
 
             $data[] = [
@@ -130,6 +130,7 @@ class BookingController extends Controller
                     'resource_id'           => encode_id($e->resource),
                     'ou_id'                 => $e->ou_id,
                     'instructor_id'         => $e->instructor_id,
+                    'encode_instructor_id'  => encode_id($e->instructor_id),
                     'id'                    => $e->id,
                     'start'                 => $e->start,
                     'end'                   => $e->end,
@@ -157,7 +158,7 @@ class BookingController extends Controller
                 ]);
                  return $instructor;   
              }
-             elseif ($is_admin == 1 || $role == 3) {
+             elseif ($is_admin == 1) {
                 $instructor =  User::where('role', 18)->where('ou_id', $ou_id)->where('is_activated', 0)->where('status', 1)->get()
                 ->map(fn($u) => [
                     'id' => $u->id,
@@ -166,6 +167,23 @@ class BookingController extends Controller
                  return $instructor;  
 
              }
+             else{
+                $id = auth()->id();
+              
+                $groups = Group::whereJsonContains('user_ids', (string) $id)->get();
+           
+                $userIds = $groups->pluck('user_ids')->flatten()->unique()->values(); 
+              
+                $users = User::where('role', 18)->whereIn('id', $userIds)
+                                ->where('ou_id', $ou_id)
+                                ->where('is_activated', 0)->where('status', 1)
+                                ->get()
+                                ->map(fn($u) => [
+                                    'id'    => $u->id,
+                                    'title' => $u->fname . ' ' . $u->lname
+                                ]);
+               return $users;                  
+              }
          
         }
 
@@ -194,35 +212,63 @@ class BookingController extends Controller
                     ]);
                 return $user;
             } else {
-                $user =  User::where('role', 3)->where('id', auth()->user()->id)
-                    ->get()
-                    ->map(fn($u) => [
-                        'id' => $u->id,
-                        'title' => $u->fname . ' ' . $u->lname
-                    ]);
-                return $user;
+                $id = auth()->id();
+              
+                 
+                $users = User::where('id', $id)
+                            ->get()
+                            ->map(fn($u) => [
+                                'id'    => $u->id,
+                                'title' => $u->fname . ' ' . $u->lname
+                            ]);
+                            //  dd($users); 
+
+                return $users;
             }
         }
 
+        if ($mode === 'resource') {
+            if ($is_owner == 1) {
+                return Resource::all()
+                        ->map(fn($r) => [
+                            'id' => $r->id,
+                            'title' => $r->name
+                        ]);
+               }
+               elseif ($is_admin == 1) { 
+                    $ou_id = auth()->user()->ou_id;
+          
 
-        $role = auth()->user()->role;
-        if ($role == 3) {
-            $ou_id = auth()->user()->ou_id;
 
-            return Resource::where('ou_id', $ou_id)->get()
-                ->map(fn($r) => [
-                    'id' => $r->id,
-                    'title' => $r->name
-                ]);
-        } else {
-            return Resource::all()
-                ->map(fn($r) => [
-                    'id' => $r->id,
-                    'title' => $r->name
-                ]);
-        }
+                    return Resource::where('ou_id', $ou_id)->get()
+                            ->map(fn($r) => [
+                                'id' => $r->id,
+                                'title' => $r->name
+                            ]);
+                }else{
+                        $id = auth()->id();
+                        $ou_id = auth()->user()->ou_id;
+                        // Get group IDs where user exists
+                        $groupIds = Group::whereJsonContains('user_ids', (string) $id)
+                                        ->pluck('id');
+
+                        // Get resources linked to those groups
+                        return Resource::join('group_resource', 'resources.id', '=', 'group_resource.resource_id')
+                                ->whereIn('group_resource.group_id', $groupIds)
+                                ->where('resources.ou_id', $ou_id)
+                                ->select('resources.id', 'resources.name')
+                                ->distinct()
+                                ->get()
+                                ->map(fn($r) => [
+                                    'id' => $r->id,
+                                    'title' => $r->name
+                                ]);
+                }
+
+          }
+
+     
     }
-
 
     public function store(Request $request)
     {
@@ -436,27 +482,50 @@ class BookingController extends Controller
 
     public function getstudents(Request $request)
     {
-        // $org_group    = Group::where('ou_id', $request->ou_id)->get();
-        // $students = collect();
+        $ou_id = auth()->user()->ou_id;
+        $role = auth()->user()->role;
+        $is_admin = auth()->user()->is_admin;
+        $is_owner = auth()->user()->is_owner;
         $students = User::where('ou_id', $request->ou_id)->get();
-
-        // foreach ($org_group as $val) {
-        //     // user_ids is an array like ["100","114","154"]
-        //     if (!empty($val->user_ids) && is_array($val->user_ids)) {
-        //         $groupStudents = User::whereIn('id', $val->user_ids)->get();
-        //         $students = $students->merge($groupStudents);
-        //     }
-        // }
-
-        $instructors = User::where('ou_id', $request->ou_id)->where('role', 18)->get(['id', 'fname', 'lname']);
-
-        //  Remove duplicate users (if any)
-        // $students = $students->unique('id')->values(); 
-        $bookedResourceIds = Booking::where('status', 'approved')->pluck('resource')->unique();
-        //$org_resource = Resource::whereNotIn('id', $bookedResourceIds)->where('ou_id', $request->ou_id)->get();
-        $org_resource = Resource::where('ou_id', $request->ou_id)->get();
-
+        $id = auth()->id();
+        
         $ato_num = OrganizationUnits::where('id', $request->ou_id)->get();
+
+        if ($is_owner == 1) {
+            $instructors = User::where('ou_id', $request->ou_id)->where('role', 18)->get(['id', 'fname', 'lname']);
+            $org_resource = Resource::where('ou_id', $request->ou_id)->get();
+          
+        }
+         elseif ($is_admin == 1) {
+             $org_resource = Resource::where('ou_id', $request->ou_id)->get();
+             $instructors = User::where('ou_id', $request->ou_id)->where('role', 18)->where('is_activated', 0)->where('status', 1)->get(['id', 'fname', 'lname']);
+                 
+         }else{
+            $org_resource = Resource::where('ou_id', $request->ou_id)->get();
+
+            $id = auth()->id();
+            $ou_id = auth()->user()->ou_id;
+            $groupIds = Group::whereJsonContains('user_ids', (string) $id)->pluck('id');
+
+            // Get resources linked to those groups
+           $org_resource =  Resource::join('group_resource', 'resources.id', '=', 'group_resource.resource_id')
+                        ->whereIn('group_resource.group_id', $groupIds)
+                        ->where('resources.ou_id', $ou_id)
+                        ->select('resources.id', 'resources.name')
+                        ->distinct()
+                        ->get();
+
+            $groups = Group::whereJsonContains('user_ids', (string) $id)->get();
+            $userIds = $groups->pluck('user_ids')->flatten()->unique()->values(); 
+            $instructors = User::where('role', 18)->where('ou_id', $request->ou_id)
+                           ->where('is_activated', 0)->where('status', 1)
+                           ->whereIn('id', $userIds)
+                           ->get(['id', 'fname', 'lname']);
+                  
+         }
+        
+
+
 
         return response()->json(['org_resource' => $org_resource, 'ato_num' => $ato_num, 'students' => $students, 'instructors' => $instructors]);
     }

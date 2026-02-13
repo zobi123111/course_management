@@ -311,7 +311,7 @@ function get_user_role($roleId)
            return 
             [
                 'datetime'   => $start_time,
-                'utc_offset' => "UTC"  
+                'utc_offset' => "UTC + 00:00"  
             ];
 
         }else{  

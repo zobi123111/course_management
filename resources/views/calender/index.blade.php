@@ -115,9 +115,10 @@
         line-height: 23px;
         font-weight: 700;
     }
-    div#utc_offset {
+    span#utc_offset {
         color: #000;
-        font-weight: 700;
+        font-weight: 700 !important;
+        
     }
 </style>
 <div class="container-fluid mt-3">
@@ -269,7 +270,7 @@
             <div class="modal-body">
                 <div class="border rounded p-3 booking-card">
                     <div class="row">
-                        <div class="col-md-8">
+                        <div class="col-md-7">
                             <ul class="list-unstyled small mb-3 booking-meta">
                                 <li class="booking-item">
                                     <i class="fa-solid fa-plane booking-icon text-secondary"
@@ -289,7 +290,7 @@
                                     <i class="fa-solid fa-user-graduate booking-icon text-primary"
                                         data-bs-toggle="tooltip"
                                         title="Instructor"></i>
-                                    <span id="bookingInstructor"></span>
+                                    <a id="bookingInstructor"></a>
                                 </li>
 
                                 <li class="booking-item">
@@ -315,14 +316,13 @@
                                 </li>
                             </ul>
                         </div>
-                        <div class="col-md-4">
-                            <!-- Header -->
-                            <div class="mb-2">
-                                <div class="text-end text-success small">
-                                    <div id="booking_day" class="booking_day"></div>
+                        <div class="col-md-5">
+                            <div class="text-end text-success">
+                                    <div id="booking_day_div">
+                                        <span id="booking_day" class="booking_day"></span>
+                                        <span id="utc_offset" class="utc_offset small text-muted ms-2"></span>
+                                    </div>
                                     <div id="booking_time" class="booking_time"></div>
-                                    <div id="utc_offset" class="utc_offset"></div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -469,6 +469,9 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('by_resource').checked = true;
+        document.getElementById('by_instructor').checked = false;
+        document.getElementById('by_student').checked = false;
 
         let SITEURL = "{{ url('/') }}";
         let calendar = null;
@@ -621,14 +624,14 @@
 
 
                     /* ---------------- EVENT CLICK ---------------- */
-                    eventClick: function(info) {
+                    eventClick: function(info) { 
                         let e = info.event.extendedProps;
                         selectedEvent = e;
                         let mailText = (e.send_mail == 1) ? 'Enabled' : 'Disabled';
                         $('#mail_send').text(mailText);
                         $('#resource_registration').text(e.registration);
                        $('#booking_student').text(e.student).attr('href', SITEURL + '/users/show/' + e.encode_std_id);
-                        $('#booking_resource').text(e.resource).attr('href', SITEURL + '/resource/show/' + e.resource_id);;
+                        $('#booking_resource').text(e.resource).attr('href', SITEURL + '/resource/show/' + e.resource_id);
                       
                         let statusText = e.status ? e.status.charAt(0).toUpperCase() + e.status.slice(1) : 'Scheduled';
                         $('#view_status').text(statusText);
@@ -657,15 +660,18 @@
 
                         if (e.instructor != null) {
                             $('#bookingInstructor_li').show();
-                            $('#bookingInstructor').text(e.instructor);
+                            $('#bookingInstructor').text(e.instructor).attr('href', SITEURL + '/users/show/' + e.encode_instructor_id);
                         } else {
                             $('#bookingInstructor_li').hide();
                             $('#bookingInstructor').text('');
                         }
+                       
+                        let date = moment(info.event.start);
+                                            
+                        let utcOffset = info.event.extendedProps.utc_offset || '';
 
-                        $('#booking_day').text(
-                            moment(info.event.start).format('ddd, MMM DD YYYY')
-                        );
+                        $('#booking_day').text(date.format('ddd, MMM DD YYYY'));
+                        $('#utc_offset').text(' (' + utcOffset + ')');
 
                   
 
@@ -674,7 +680,7 @@
                             ' - ' +
                             moment(info.event.end).format('HH:mm')
                         );
-                        $('#utc_offset').html(info.event.extendedProps.utc_offset);
+                       
                           
 
 
@@ -844,6 +850,7 @@
                     if (response.org_resource && Array.isArray(response.org_resource)) {
                         var options = "<option value=''>Select Resource </option>";
                         response.org_resource.forEach(function(value) {
+                            console.log(value);
                             options += "<option value='" + value.id + "'>" + value.name +
                                 "</option>";
                         });
