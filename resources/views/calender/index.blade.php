@@ -120,6 +120,10 @@
         font-weight: 700 !important;
         
     }
+    span.offset_flag {
+        font-size: large;
+        font-weight: 600;
+    }
 </style>
 <div class="container-fluid mt-3">
     <div style="margin-bottom: 10px;">
@@ -579,7 +583,7 @@
 
                         if (res.length > 0) {
                         let headerExtraInfo = res[0].utc_offset;
-                        console.log(headerExtraInfo);
+                        updateCalendarTitle(headerExtraInfo);
                         }
                        },
                             error: function(err) {
@@ -717,8 +721,23 @@
                         }
                         $('#newBookingModal').modal('show');
                     },
+                    datesSet: function () {
+                        updateCalendarTitle(headerExtraInfo);
+                    },
                 }
             );
+            function updateCalendarTitle(headerExtraInfo) {
+                   let title = calendar.view.title;
+
+                    let headerHtml = title;
+
+                    if (headerExtraInfo) {
+                        headerHtml += '<span class="offset_flag">' + "("+ headerExtraInfo + ")" + '</span>';
+                    }
+
+                    document.querySelector('.fc-toolbar-title').innerHTML = headerHtml;
+            }
+
 
             calendar.render();
         }
