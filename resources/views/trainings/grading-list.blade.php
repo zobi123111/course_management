@@ -1,8 +1,6 @@
 @extends('layout.app')
-
 @section('title', 'Grading List')
 @section('sub-title', 'Student Grading')
-
 @section('content')
 
 <style>
@@ -25,6 +23,7 @@
     }
 </style>
 
+
 @if(session()->has('message'))
 <div id="successMessage" class="alert alert-success fade show" role="alert">
     <i class="bi bi-check-circle me-1"></i>
@@ -32,7 +31,25 @@
 </div>
 @endif
 
+
 <section class="section py-4">
+    <div class="backbtn" style="display: flex; justify-content: space-between;margin-right:62px;">
+                <h3 class="text-primary mt-4"></h3>
+                <a href="{{ url('reports') }}" class="btn btn-secondary mt-4 " style=" border-radius: 26px;"><i class="bi bi-arrow-left-circle-fill"></i> Back to Reports</a>
+</div>
+    <!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        @foreach($breadcrumbs as $breadcrumb)
+        @if($breadcrumb['url'])
+        <li class="breadcrumb-item active-link"><a href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['title'] }}</a></li>
+        @else
+        <li class="breadcrumb-item active" aria-current="page">{{ $breadcrumb['title'] }}</li>
+        @endif
+        @endforeach
+    </ol>
+</nav>
+<!-- End Breadcrumb -->
     <div class="container">
         @if(!$event)
         <div class="alert alert-info text-center">
@@ -49,10 +66,19 @@
                     </div>
                 </div>
             </div>
+            
 
             <div class="card-body p-4">
                 <!-- Task Grading -->
                 <div class="mb-4">
+                    <div class="d-flex align-items-center bg-light rounded p-3 shadow-sm" style="margin-bottom: 32px; margin-top: -9px">
+                        <i class="bi bi-person-circle text-primary fs-3 me-3"></i>
+                        <div>
+                            <small class="text-muted">Student Name</small>
+                            <h5 class="mb-0 fw-bold text-dark"> {{ $user_name->fname ?? '' }} {{ $user_name->lname ?? '' }}</h5>
+                        </div>
+                    </div>
+                
                     <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#taskGrading" role="button" aria-expanded="false" aria-controls="taskGrading">
                         <span><i class="bi bi-card-checklist me-2"></i>Task Based Grading</span>
                         <i class="bi bi-chevron-down"></i>
@@ -557,7 +583,7 @@
                                                     @if($defLesson->start_time && $defLesson->end_time)
                                                     <i class="bi bi-calendar-date me-1"></i>Time: {{ date('h:i A', strtotime($defLesson->start_time)) }} - {{ date('h:i A', strtotime($defLesson->end_time)) }}
                                                     @endif
-                                                </small>
+                                                </small> 
 
                                             </h6>
                                             <div class="table-responsive">
