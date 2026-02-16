@@ -1026,9 +1026,9 @@ class QuizController extends Controller
         $user = auth()->user();
         $userId = $user->id;
 
-        $quiz = QuizQuestion::findOrFail($validated['question_id']);
+        // $quiz = QuizQuestion::findOrFail($validated['question_id']);
 
-        $question = TopicQuestion::findOrFail($quiz->question_id);
+        $question = TopicQuestion::findOrFail($validated['question_id']);
 
         $isCorrect = false;
 
