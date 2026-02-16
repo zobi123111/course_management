@@ -37,6 +37,7 @@ use Carbon\Carbon;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 
 
+
 class TrainingEventsController extends Controller
 {
     public function index()
@@ -442,14 +443,10 @@ class TrainingEventsController extends Controller
 
     public function createTrainingEvent(Request $request)
     {
-
         //Validate base fields
         $request->validate([
             'student_id' => 'required|exists:users,id',
             'course_id' => 'required|exists:courses,id',
-            // 'lesson_ids' => 'required|array',
-            // 'lesson_ids.*' => 'exists:course_lessons,id',
-            // 'total_time' => 'required|date_format:H:i',
             'event_date' => 'required|date_format:Y-m-d',
             'std_license_number' => 'nullable|string',
             'total_simulator_time' => 'nullable|date_format:H:i',
@@ -461,42 +458,6 @@ class TrainingEventsController extends Controller
                 }
             ],
             'lesson_data' => 'required|array|min:1',
-            // Validate ONLY the first lesson (index 0)
-            // 'lesson_data.0.lesson_id' => 'required|exists:course_lessons,id',
-            // 'lesson_data.0.instructor_id' => 'required|exists:users,id',
-            // 'lesson_data.0.resource_id' => 'required|exists:resources,id',
-            // 'lesson_data.0.lesson_date' => 'required|date_format:Y-m-d',
-            // 'lesson_data.*.start_time' => [
-            //         'nullable',
-            //         'date_format:H:i',
-            //     ],
-            // 'lesson_data.*.end_time' => [
-            //         'nullable',
-            //         'date_format:H:i',
-            //         function ($attribute, $value, $fail) use ($request) {
-            //             preg_match('/lesson_data\.(\d+)\.end_time/', $attribute, $matches);
-            //             if (!isset($matches[1])) return;
-
-            //             $index = (int) $matches[1];
-            //             $startTime = $request->input("lesson_data.$index.start_time");
-
-            //             if ($index === 0) {
-            //                 if (empty($startTime) || empty($value)) {
-            //                     return $fail("Start time and end time are required for the first lesson.");
-            //                 }
-            //             }
-
-            //             // Validate only if both times exist
-            //             if (!empty($startTime) && !empty($value)) {
-            //                 if (strtotime($value) <= strtotime($startTime)) {
-            //                     $fail("End time must be after start time.");
-            //                 }
-            //             }
-            //         },
-            //     ],
-            // 'lesson_data.0.departure_airfield' => 'required|string|size:4',
-            // 'lesson_data.0.destination_airfield' => 'required|string|size:4',
-            // 'lesson_data.0.instructor_license_number' => 'nullable|string',
         ], [], [
             'event_date' => 'Course start date',
             'lesson_data.0.instructor_id' => 'instructor',
@@ -1966,7 +1927,9 @@ class TrainingEventsController extends Controller
 
     public function getStudentGrading(Request $request, $event_id) 
     {  
+       
         $eventId = decode_id($event_id);
+        $course_id = $request->segment(5);
         
         $trainingEvent = TrainingEvents::select('ou_id', 'student_id')->findOrFail($eventId);
        
@@ -2100,10 +2063,21 @@ class TrainingEventsController extends Controller
               if ($gradedSubLessons == 0 || $gradedSubLessons != $totalSubLessons) {
                         $allLessonsGraded = false;
                         break;
-                    }
+                    } 
             }
 
-        return view('trainings.grading-list', compact('event', 'userId', 'defLessonGrading', 'CustomLessonGrading', 'examinerGrouped', 'instructorGrouped', 'reviews','allLessonsGraded'));
+           // dd($userId);
+        $user_name = User::where('id', $userId)->select('fname', 'lname')->first();
+
+       $course_id = request()->segment(4);
+
+       $breadcrumbs = [
+            ['title' => 'Report', 'url' => route('reports.index')],
+            ['title' => $event->course->course_name, 'url' => url('reports/course/'.$course_id)] 
+        ];
+      
+
+        return view('trainings.grading-list', compact('event', 'userId', 'defLessonGrading', 'CustomLessonGrading', 'examinerGrouped', 'instructorGrouped', 'reviews','allLessonsGraded','user_name', 'breadcrumbs'));
     }
 
     // public function unlockEventGarding(Request $request, $event_id)
@@ -3488,14 +3462,41 @@ class TrainingEventsController extends Controller
         return view("rhs.index", compact('tags', 'organizationUnits'));
     }
 
-     public function create_tag(Request $request)
-    {   
+    // public function create_tag(Request $request) 
+    // {   
+    //     $request->validate([
+    //         'tag_name' => 'required|max:255|unique:rhs_tags,rhstag,NULL,id,deleted_at,NULL',
+    //     ]);
+
+    //     $tag = RhsTag::create([ 
+    //         'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->organization_unit : auth()->user()->ou_id,
+    //         'rhstag' => $request->tag_name
+    //     ]);
+
+    //     Session::flash('message', 'Tag created successfully.');
+    //     return response()->json(['message' => 'Tag created successfully']);
+    // }
+
+    public function create_tag(Request $request)
+    {
+        $ouId = (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) 
+                    ? $request->organization_unit 
+                    : auth()->user()->ou_id;
+
         $request->validate([
-            'tag_name' => 'required|max:255|unique:rhs_tags,rhstag,NULL,id,deleted_at,NULL',
+            'tag_name' => [
+                'required',
+                'max:255',
+                Rule::unique('rhs_tags', 'rhstag')
+                    ->where(function ($query) use ($ouId) {
+                        return $query->where('ou_id', $ouId)
+                                    ->whereNull('deleted_at');
+                    }),
+            ],
         ]);
 
-        $tag = RhsTag::create([ 
-            'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->organization_unit : auth()->user()->ou_id,
+        $tag = RhsTag::create([
+            'ou_id' => $ouId,
             'rhstag' => $request->tag_name
         ]);
 
