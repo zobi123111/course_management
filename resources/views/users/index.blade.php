@@ -105,6 +105,9 @@
                     class="row g-3 needs-validation">
                     @csrf
                     <div class="row g-3 mb-3">
+                        @if(!empty(auth()->user()->ou_id) && auth()->user()->is_owner == 0)
+                            <input type="hidden" id="admin_ou_id" value="{{ auth()->user()->ou_id }}">
+                        @endif
                         <!-- Bootstrap Grid -->
                         <div class="col-md-6">
                             <label for="firstname" class="form-label">First Name <span
@@ -451,6 +454,9 @@
                 <form action="" method="POST" id="editUserForm" class="row g-3 needs-validation">
                     @csrf
                     <div class="row g-3 mb-3">
+                        @if(!empty(auth()->user()->ou_id) && auth()->user()->is_owner == 0)
+                            <input type="hidden" id="admin_ou_id" value="{{ auth()->user()->ou_id }}">
+                        @endif
                         <!-- Bootstrap Grid -->
                         <div class="col-md-6">
                             <label for="firstname" class="form-label">First Name<span
@@ -2303,6 +2309,14 @@
                 $('#edit_licence_rating_value').val(null).trigger('change'); // Clear selection
             }
         });
+
+        //Call the DOB and phone number display function on page load in case of validation error and old input exists
+
+        let ou_id = $('#admin_ou_id').val();
+
+        if (ou_id) {
+            handleOuSettings(ou_id);
+        }
     });
     $(document).ready(function() {
         $('#edit_rating_value').select2({
@@ -2419,6 +2433,37 @@ $(document).on('change', '#create_ou_id', function () {
         }
     });
 });
+
+function handleOuSettings(ou_id) {
+
+    if (!ou_id) return;
+
+    $.ajax({
+        type: 'get',
+        url: '/get_org_setting/' + ou_id,
+        success: function (response) {
+
+            let showDob   = response.OuSetting && response.OuSetting.show_dob == 1;
+            let showPhone = response.OuSetting && response.OuSetting.show_phone == 1;
+
+            // ===== DOB Handling =====
+            if (showDob) {
+                $('.date_of_birth_div, .create_date_of_birth_div').show();
+            } else {
+                $('.date_of_birth_div, .create_date_of_birth_div').hide();
+                $('#date_of_birth, #create_date_of_birth').val('');
+            }
+
+            // ===== Phone Handling =====
+            if (showPhone) {
+                $('.phone_number_div, .create_phone_number_div').show();
+            } else {
+                $('.phone_number_div, .create_phone_number_div').hide();
+                $('#phone_number, #create_phone_number').val('');
+            }
+        }
+    });
+}
 
 //------------------------------------
 </script>
