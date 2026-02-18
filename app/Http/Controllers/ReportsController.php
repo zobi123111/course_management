@@ -82,8 +82,10 @@ class ReportsController extends Controller
                 $query->where('ou_id', $userOuId)
                     ->whereNull('deleted_at');
             })
-            ->orderBy('id', 'asc')
+           // ->orderBy('id', 'asc')
+            ->orderByDesc('course_end_date')
             ->get();
+          
 
         // Group events by course_id
         $courses = $events->groupBy('course_id')->filter(fn($courseEvents) => $courseEvents->first()->course)->map(function ($courseEvents) {
