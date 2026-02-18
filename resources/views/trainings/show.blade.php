@@ -120,6 +120,11 @@
         }
 
 
+        .bi.bi-card-text {
+            color: #0d6efd;
+            cursor: pointer;
+            font-size: 18px;
+        }
 
         .custom-box .question-mark {
             color: #4959dc;
