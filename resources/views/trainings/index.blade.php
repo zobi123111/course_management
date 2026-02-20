@@ -1880,7 +1880,7 @@ $(document).ready(function() {
     $(document).on("click", ".archive-course-btn", function () {
         let event_id = $(this).data('event-id');
         // Ask confirmation first
-        if (!confirm("Are you sure you want to archive this Event ?")) {
+        if (!confirm("Are you sure you want to archive this event ? This action is irreversible and cannot be undo.")) {
             return; // Stop if user clicks Cancel
         }
 
