@@ -34,7 +34,9 @@ class TrainingEvents extends Model
         'student_acknowledged',
         'student_acknowledgement_comments',
         'entry_source',
-        'rank'
+        'rank',
+        'old_course_id',
+        'archive'
     ];
  
     public function orgUnit()
