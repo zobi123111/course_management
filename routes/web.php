@@ -25,9 +25,7 @@ use App\Http\Controllers\CbtaControlller;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\BookingController;
-
-
-
+use App\Http\Controllers\ValidationCodesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -163,6 +161,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/group/get_ou_user/', [GroupController::class, 'getOrgUser'])->name('group.get_ou_user');     
     Route::get('/group/get_ou_group/', [GroupController::class, 'getOrgroup'])->name('group.getOrgroup');
     Route::get('/course/get-ratings-by-ou', [CourseController::class, 'getRatingsByOu'])->name('course.get-ratings-by-ou');
+    Route::get('/course/get-tags-by-ou', [CourseController::class, 'getTagsByOu'])->name('course.get-tags-by-ou');
 
 
 });
@@ -351,6 +350,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     
 });
 
+Route::get('/training/training-event-new-design/{event_id}', [TrainingEventsController::class, 'TestshowTrainingEvent'])->name('training.test-show'); 
 Route::get('/lesson-grade', [TrainingEventsController::class, 'Lessongrade'])->name('lesson.grade');
 Route::post('/event/lessons/update', [TrainingEventsController::class, 'EventLessonUpdate'])->name('event.lesson.update');
 
@@ -362,6 +362,12 @@ Route::post('/custom-cbta-add', [CbtaControlller::class, 'save'])->name('custom-
 Route::post('/custom-cbta-edit', [CbtaControlller::class, 'edit'])->name('custom-cbta.edit');
 Route::post('/custom-cbta-update', [CbtaControlller::class, 'update'])->name('custom-cbta.update');
 Route::post('/custom-cbta-delete', [CbtaControlller::class, 'delete'])->name('custom-cbta.delete');
+
+Route::get('/validation-codes', [ValidationCodesController::class, 'index'])->name('validation-codes.show');
+Route::post('/validation-codes-add', [ValidationCodesController::class, 'save'])->name('validation-codes.add');
+Route::post('/validation-codes-edit', [ValidationCodesController::class, 'edit'])->name('validation-codes.edit');
+Route::post('/validation-codes-update', [ValidationCodesController::class, 'update'])->name('validation-codes.update');
+Route::post('/validation-codes-delete', [ValidationCodesController::class, 'delete'])->name('validation-codes.delete');
 
  // Tags
 Route::get('/tags', [TrainingEventsController::class, 'rhs_tags'])->name('rhs_tags');

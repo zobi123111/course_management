@@ -85,6 +85,7 @@
                         @endif
                         @if(checkAllowedModule('training','training.show')->isNotEmpty())
                             <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                            <!-- <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;"> -->
                             <i class="fa fa-eye text-danger me-2"></i>
                             </a>            
                         @endif
