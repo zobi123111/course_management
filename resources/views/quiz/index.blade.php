@@ -124,10 +124,10 @@
 
 </style>
     @if(session()->has('message'))
-    <div id="successMessage" class="alert alert-success fade show" role="alert">
-        <i class="bi bi-check-circle me-1"></i>
-        {{ session()->get('message') }}
-    </div>
+        <div id="successMessage" class="alert alert-success fade show" role="alert">
+            <i class="bi bi-check-circle me-1"></i>
+            {{ session()->get('message') }}
+        </div>
     @endif
 
     @if(checkAllowedModule('courses','course.store')->isNotEmpty())
@@ -339,6 +339,9 @@
                             </select>
                             <div id="status_error" class="text-danger error_e"></div>
                         </div>
+
+                        <div id="quiz_global_error" class="alert alert-danger d-none"></div>
+
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             <button type="button" id="submitQuiz" class="btn btn-primary sbt_btn">Save</button>
@@ -640,6 +643,7 @@
 
             $("#submitQuiz").on('click', function(e) {
                 e.preventDefault();
+                $('#quiz_global_error').addClass('d-none').html('');
                 $.ajax({
                     url: '{{ url("/quiz/create") }}',
                     type: 'POST',
@@ -653,6 +657,11 @@
                         $.each(errors, function(key, value) {
                             $('#' + key + '_error').html('<p>' + value + '</p>');
                         });
+                        if (xhr.responseJSON.message) {
+                            $('#quiz_global_error')
+                                .removeClass('d-none')
+                                .html(xhr.responseJSON.message);
+                        }
                     }
                 });
             });
