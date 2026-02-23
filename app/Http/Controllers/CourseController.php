@@ -257,6 +257,7 @@ class CourseController extends Controller
             'opc_aircraft' => $request->enable_aircraft ?? null,
             'opc_validity' => $request->opc_validity_months ?? null,
             'opc_extend' => $request->opc_extend_eom ?? null,
+            'auto_archive'   => $request->auto_archive ?? 0
         ]);
 
         $course->groups()->attach($request->group_ids);
@@ -512,6 +513,7 @@ class CourseController extends Controller
             'opc_aircraft' => $request->enable_aircraft ?? null,
             'opc_validity' => $request->opc_validity_months ?? null,
             'opc_extend' => $request->opc_extend_eom ?? null,
+            'auto_archive' => $request->auto_archive ?? 0
         ]);
 
 
