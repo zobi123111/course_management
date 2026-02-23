@@ -109,7 +109,7 @@
                                 <i class="fa fa-eye text-danger me-2"></i>
                                 </a>      
 
-                                <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                                <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="btn btn-sm btn-primary" title="View Training Event" style="font-size:18px; cursor: pointer;">
                                     View
                                 </a>            
                             @endif
@@ -156,7 +156,7 @@
                             <i class="fa fa-eye text-danger me-2"></i>
                             </a>            
 
-                            <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                            <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="btn btn-sm btn-primary" title="View Training Event" style="font-size:18px; cursor: pointer;">
                                 View
                             </a>   
                         @endif 
