@@ -1120,6 +1120,280 @@ class TrainingEventsController extends Controller
         return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs'));
     }
 
+    public function TestshowTrainingEvent(Request $request, $event_id)
+    {
+        $currentUser = auth()->user();
+        $trainingEvent = TrainingEvents::with([
+            'course:id,course_name,enable_mp_lifus,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num,instructor_cbta,examiner_cbta,enable_mp_lifus',
+            'course.documents',
+            'group:id,name,user_ids',
+            'instructor:id,fname,lname',
+            'student:id,fname,lname,licence',
+            'trainingQuizzes' => function ($q) {
+                $q->select('id', 'trainingevent_id', 'quiz_id', 'student_id', 'is_active');
+            },
+            'resource:id,name',
+            'eventLessons' => function ($q) {
+                $q->orderBy('position', 'asc'); 
+            },
+            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id,position,instructor_cbta,examiner_cbta',
+            'eventLessons.instructor:id,fname,lname', 
+            'eventLessons.resource:id,name',
+            'trainingFeedbacks.question',
+            'documents',
+            'studentDocument'
+        ])->find(decode_id($event_id));
+
+
+        if (!$trainingEvent) {
+            return abort(404, 'Training Event not found');
+        }
+
+        if (hasUserRole($currentUser, 'Instructor') && empty($currentUser->is_admin)) { 
+            $eventLessons = $trainingEvent->eventLessons->map(function ($lesson) use ($currentUser) {
+                // Add a flag to indicate if this is instructor's own lesson
+                $lesson->is_my_lesson = ($lesson->instructor_id == $currentUser->id);
+                return $lesson;
+            });
+        } else {
+                $eventLessons = $trainingEvent->eventLessons->map(function ($lesson) {
+                    $lesson->is_my_lesson = true;
+                    return $lesson;
+                });
+        }
+
+        $eventLessons = $eventLessons->reject(function ($lesson) {
+            return $lesson?->lesson?->quizzes?->count() > 0;
+        });
+
+        $courselessons = CourseLesson::where('course_id', $trainingEvent->course_id)->get();
+
+        // if (hasUserRole($currentUser, 'Instructor') && empty($currentUser->is_admin)) { 
+        //     $eventLessons = $trainingEvent->eventLessons->filter(function ($lesson) use ($currentUser) {
+        //         return $lesson->instructor_id == $currentUser->id;
+        //     })->values();
+        // } else {
+        //     $eventLessons = $trainingEvent->eventLessons; 
+        // }
+
+        $student = $trainingEvent->student;
+        $lessonIds = $eventLessons->pluck('lesson_id')->filter()->unique();
+
+
+
+
+        //Get task gradings (sublesson grades and comments)
+        if (!empty($student)) {
+            $taskGrades = TaskGrading::where('user_id', $student->id)
+                ->where('event_id', $trainingEvent->id)
+                ->whereIn('lesson_id', $lessonIds)
+                ->get()
+                ->keyBy(fn($item) => $item->lesson_id . '_' . $item->sub_lesson_id);
+
+            //Get competency grades (competency area grades and comments)
+
+
+            $def_lesson_id = DefLessonTask::where('event_id', decode_id($event_id))->pluck('def_lesson_id');
+
+
+            $competencyGrades = CompetencyGrading::where('user_id', $student->id)
+                ->where('event_id', $trainingEvent->id)
+                ->whereIn('lesson_id', $lessonIds)
+                ->get()
+                ->groupBy('lesson_id');
+
+
+
+            $def_grading  =  DeferredGrading::where('user_id', $student->id)
+                ->where('event_id', $trainingEvent->id)
+                ->whereIn('deflesson_id', $def_lesson_id)
+                ->get()
+                ->groupBy('deflesson_id');
+        } else {
+            $taskGrades = collect(); // instead of ''
+            $competencyGrades = collect(); // instead of ''
+            $def_grading = collect();
+        }
+
+
+
+
+        //Optional: Also pass overall assessments if you need them
+        $overallAssessments = OverallAssessment::where('event_id', $trainingEvent->id)
+            ->where('user_id', $student->id ?? null)
+            ->first();
+
+        $hasCBTA = $trainingEvent->eventLessons->contains(function ($lesson) {
+            return $lesson->enable_cbta == 1;
+        });
+        $isGradingCompleted = $taskGrades->isNotEmpty() && ($hasCBTA ? $competencyGrades->isNotEmpty() : true);
+
+        //Retrieve feedback data
+        $trainingFeedbacks = $trainingEvent->trainingFeedbacks;
+ 
+        $defTasks = collect(DB::select("
+            SELECT 
+                dt.*,
+                sl.title AS task_title,
+
+                -- Prefer task_grade from dlt, else fallback to tg
+                CASE 
+                    WHEN dlt.task_grade IS NOT NULL THEN dlt.task_grade
+                    ELSE tg.task_grade
+                END AS task_grade,
+
+                CASE 
+                    WHEN dlt.task_comment IS NOT NULL THEN dlt.task_comment
+                    ELSE tg.task_comment
+                END AS task_comment
+
+            FROM def_tasks dt
+
+            -- Subquery join for latest def_lesson_tasks (ignore soft-deleted)
+            LEFT JOIN (
+                SELECT dlt.*
+                FROM def_lesson_tasks dlt
+                INNER JOIN (
+                    SELECT event_id, user_id, task_id, MAX(id) AS max_id
+                    FROM def_lesson_tasks
+                    WHERE deleted_at IS NULL
+                    GROUP BY event_id, user_id, task_id
+                ) latest_dlt
+                ON dlt.id = latest_dlt.max_id
+                WHERE dlt.deleted_at IS NULL
+            ) dlt ON dlt.event_id = dt.event_id
+                AND dlt.user_id = dt.user_id
+                AND dlt.task_id = dt.task_id
+
+            -- Subquery join for latest task_gradings
+            LEFT JOIN (
+                SELECT tg.*
+                FROM task_gradings tg
+                INNER JOIN (
+                    SELECT event_id, user_id, sub_lesson_id, MAX(id) AS max_id
+                    FROM task_gradings
+                    GROUP BY event_id, user_id, sub_lesson_id
+                ) latest_tg
+                ON tg.id = latest_tg.max_id
+            ) tg ON tg.event_id = dt.event_id
+                AND tg.user_id = dt.user_id
+                AND tg.sub_lesson_id = dt.task_id
+
+            -- Join to get sublesson title
+            LEFT JOIN sub_lessons sl ON sl.id = dt.task_id 
+
+            WHERE dt.event_id = ?
+        ", [$trainingEvent->id]));
+
+
+        $getFirstdeftTasks = TaskGrading::where('event_id', $trainingEvent->id)
+            ->whereIn('task_grade', ['Incomplete', 'Further training required'])
+            ->get();
+
+        $deferredTaskIds = collect($getFirstdeftTasks)->pluck('sub_lesson_id')->toArray();
+
+        $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson'])
+            ->where('event_id', $trainingEvent->id)
+            ->where('lesson_type', "deferred")
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $customLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson'])
+            ->where('event_id', $trainingEvent->id)
+            ->where('lesson_type', "custom")
+            ->orderBy('id', 'desc')
+            ->get();
+
+
+
+        $defLessonTasks = DefLessonTask::with(['user', 'defLesson.instructor', 'defLesson.instructor.documents', 'defLesson.resource', 'task'])
+            ->where('event_id', $trainingEvent->id)
+            ->whereRelation('defLesson', 'lesson_type', 'deferred')
+            ->get();
+
+        $customLessonTasks = DefLessonTask::with(['user', 'defLesson.instructor', 'defLesson.instructor.documents', 'defLesson.resource', 'task.courseLesson.course'])
+            ->where('event_id', $trainingEvent->id)
+            ->whereRelation('defLesson', 'lesson_type', 'custom')
+            // ->orderBy('def_lesson_id', 'desc')
+            ->get();
+      
+
+
+        $deferredLessonsTasks = DefLessonTask::with([
+            'user',
+            'defLesson.instructor',
+            'defLesson.resource',
+            'task'
+        ])
+            ->where('event_id', $trainingEvent->id)
+            ->where('task_grade', '!=', 'Competent') // Excludes 'Competent' grades
+            ->whereNotNull('task_grade')             // Ensures only graded tasks are included
+            ->get();
+        $gradedDefTasksMap = $deferredLessonsTasks->mapWithKeys(function ($item) {
+            return [$item->def_lesson_id . '_' . $item->task_id => true];
+        });
+                
+        if ($currentUser->is_owner == 1) {
+            // Super Admin: Get all data
+            $instructors = User::whereHas('roles', function ($query) {
+                $query->where('role_name', 'like', '%Instructor%');
+            })->with('roles')->get();
+        } else {
+            $instructors = User::where('ou_id', $currentUser->ou_id)
+                ->where(function ($query) {
+                    $query->whereNull('is_admin')->orWhere('is_admin', false);
+                })
+                ->whereHas('roles', function ($query) {
+                    $query->where('role_name', 'like', '%Instructor%');
+                })->with('roles')->get();
+        }
+       // dd($trainingEvent->ou_id);
+        $course = Courses::with('resources')->find($trainingEvent->course_id);
+        $resources = $course ? $course->resources : collect();
+
+        $courses = Courses::orderBy('position')->get();
+        $event_id =  decode_id($event_id);
+
+        $instructor_cbta = CbtaGrading::where('competency_type', 'instructor')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
+        $examiner_cbta = CbtaGrading::where('competency_type', 'examiner')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
+
+        $instructor_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'instructor')->get()->toArray();
+
+        $examiner_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'examiner')->get()->toArray();
+     
+
+
+       $training_logs = TrainingEventLog::with('users', 'lesson.quizzes')
+                        ->where('event_id', $trainingEvent->id)
+                        ->where('lesson_type', 1)
+                        ->orderBy('id', 'asc')
+                        ->get();
+
+        $groupedLogs = $training_logs->groupBy('lesson_id');
+
+        $training_deferred_logs = TrainingEventLog::with('users', 'lesson.quizzes')
+                        ->where('event_id', $trainingEvent->id)
+                        ->where('lesson_type', 2)
+                        ->orderBy('id', 'asc')
+                        ->get();
+
+        $grouped_deferredLogs = $training_deferred_logs->groupBy('lesson_id');
+     
+       
+
+        $training_custom_logs = TrainingEventLog::with('users', 'lesson.quizzes')
+                        ->where('event_id', $trainingEvent->id)
+                        ->where('lesson_type', 3)
+                        ->orderBy('id', 'asc')
+                        ->get();
+                        
+
+        $grouped_customLogs = $training_custom_logs->groupBy('lesson_id');
+        
+          
+        return view('trainings.new-show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs'));
+    }
+
     public function edit_customLesson(Request $request)
     {
         $event_id = $request->event_id;
@@ -1272,8 +1546,6 @@ class TrainingEventsController extends Controller
             'message' => "Lesson deleted successfully"
         ], 200);
     }
-
-
 
     public function delete_deferredLesson(Request $request)
     {
@@ -3475,16 +3747,39 @@ class TrainingEventsController extends Controller
         return view('trainings.calender', compact('resources'));
     }
 
+    // public function rhs_tags()
+    // {
+    //     if (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) { 
+    //         $organizationUnits = OrganizationUnits::all();
+    //         $tags = RhsTag::all();
+    //     } else { 
+    //         $ou_id = auth()->user()->ou_id;
+    //         $tags = RhsTag::where('ou_id', $ou_id)->get();
+    //         $organizationUnits = OrganizationUnits::where('id', $ou_id)->get();
+          
+    //     }
+
+    //     return view("rhs.index", compact('tags', 'organizationUnits'));
+    // }
     public function rhs_tags()
     {
-        if (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) { 
+        $user = auth()->user();
+        $requestOuId = request('ou_id') ? decode_id(request('ou_id')) : null;
+
+        if ($user->role == 1) {
+
             $organizationUnits = OrganizationUnits::all();
-            $tags = RhsTag::all();
-        } else { 
-            $ou_id = auth()->user()->ou_id;
+
+            if ($requestOuId) {
+                $tags = RhsTag::where('ou_id', $requestOuId)->get();
+            } else {                
+                $tags = RhsTag::all();
+        }
+
+        } else {
+            $ou_id = $user->ou_id;
             $tags = RhsTag::where('ou_id', $ou_id)->get();
             $organizationUnits = OrganizationUnits::where('id', $ou_id)->get();
-          
         }
 
         return view("rhs.index", compact('tags', 'organizationUnits'));
@@ -3560,6 +3855,331 @@ class TrainingEventsController extends Controller
         }
 
     }
+
+    public function Lessongrade(Request $request)
+    {
+        $currentUser = auth()->user();
+
+        $event_id = $request->event_id;
+        $lesson_id = $request->lesson_id;
+
+
+
+        $lessondetails = TrainingEventLessons::where('id', decode_id($lesson_id))->where('training_event_id', decode_id($event_id))->first();
+
+        // if ($lessondetails->is_locked) {
+        //     return redirect()->back()->with('error', 'You need to unlock the lesson first.');
+        // }
+        $deflessondetails = DefLesson::where('id', decode_id($lesson_id))->where('event_id', decode_id($event_id))->first();
+
+        // dd($deflessondetails);
+
+        $trainingEvent = TrainingEvents::with([
+            'course:id,course_name,enable_mp_lifus,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num,instructor_cbta,examiner_cbta,enable_mp_lifus',
+            'course.documents',
+            'group:id,name,user_ids',
+            'instructor:id,fname,lname',
+            'student:id,fname,lname,licence',
+            'trainingQuizzes' => function ($q) {
+                $q->select('id', 'trainingevent_id', 'quiz_id', 'student_id', 'is_active');
+            },
+            'resource:id,name',
+            'eventLessons' => function ($q) {
+                $q->orderBy('position', 'asc'); 
+            },
+            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id,position,instructor_cbta,examiner_cbta',
+            'eventLessons.instructor:id,fname,lname', 
+            'eventLessons.resource:id,name',
+            'trainingFeedbacks.question',
+            'documents',
+            'studentDocument'
+        ])->find(decode_id($event_id));
+
+
+        if (!$trainingEvent) {
+            return abort(404, 'Training Event not found');
+        }
+
+        if (hasUserRole($currentUser, 'Instructor') && empty($currentUser->is_admin)) { 
+            $eventLessons = $trainingEvent->eventLessons->map(function ($lesson) use ($currentUser) {
+                // Add a flag to indicate if this is instructor's own lesson
+                $lesson->is_my_lesson = ($lesson->instructor_id == $currentUser->id);
+                return $lesson;
+            });
+        } else {
+                $eventLessons = $trainingEvent->eventLessons->map(function ($lesson) {
+                    $lesson->is_my_lesson = true;
+                    return $lesson;
+                });
+        }
+
+        $eventLessons = $eventLessons->reject(function ($lesson) {
+            return $lesson?->lesson?->quizzes?->count() > 0;
+        });
+
+        $courselessons = CourseLesson::where('course_id', $trainingEvent->course_id)->get();
+
+        // if (hasUserRole($currentUser, 'Instructor') && empty($currentUser->is_admin)) { 
+        //     $eventLessons = $trainingEvent->eventLessons->filter(function ($lesson) use ($currentUser) {
+        //         return $lesson->instructor_id == $currentUser->id;
+        //     })->values();
+        // } else {
+        //     $eventLessons = $trainingEvent->eventLessons; 
+        // }
+
+        $student = $trainingEvent->student;
+        $lessonIds = $eventLessons->pluck('lesson_id')->filter()->unique();
+
+
+
+
+        //Get task gradings (sublesson grades and comments)
+        if (!empty($student)) {
+            $taskGrades = TaskGrading::where('user_id', $student->id)
+                ->where('event_id', $trainingEvent->id)
+                ->whereIn('lesson_id', $lessonIds)
+                ->get()
+                ->keyBy(fn($item) => $item->lesson_id . '_' . $item->sub_lesson_id);
+
+            //Get competency grades (competency area grades and comments)
+
+
+            $def_lesson_id = DefLessonTask::where('event_id', decode_id($event_id))->pluck('def_lesson_id');
+
+
+            $competencyGrades = CompetencyGrading::where('user_id', $student->id)
+                ->where('event_id', $trainingEvent->id)
+                ->whereIn('lesson_id', $lessonIds)
+                ->get()
+                ->groupBy('lesson_id');
+
+
+
+            $def_grading  =  DeferredGrading::where('user_id', $student->id)
+                ->where('event_id', $trainingEvent->id)
+                ->whereIn('deflesson_id', $def_lesson_id)
+                ->get()
+                ->groupBy('deflesson_id');
+        } else {
+            $taskGrades = collect(); // instead of ''
+            $competencyGrades = collect(); // instead of ''
+            $def_grading = collect();
+        }
+
+
+        //Optional: Also pass overall assessments if you need them
+        $overallAssessments = OverallAssessment::where('event_id', $trainingEvent->id)
+            ->where('user_id', $student->id ?? null)
+            ->first();
+
+        $hasCBTA = $trainingEvent->eventLessons->contains(function ($lesson) {
+            return $lesson->enable_cbta == 1;
+        });
+        $isGradingCompleted = $taskGrades->isNotEmpty() && ($hasCBTA ? $competencyGrades->isNotEmpty() : true);
+
+        //Retrieve feedback data
+        $trainingFeedbacks = $trainingEvent->trainingFeedbacks;
+
+        $defTasks = collect(DB::select("
+            SELECT 
+                dt.*,
+                sl.title AS task_title,
+
+                -- Prefer task_grade from dlt, else fallback to tg
+                CASE 
+                    WHEN dlt.task_grade IS NOT NULL THEN dlt.task_grade
+                    ELSE tg.task_grade
+                END AS task_grade,
+
+                CASE 
+                    WHEN dlt.task_comment IS NOT NULL THEN dlt.task_comment
+                    ELSE tg.task_comment
+                END AS task_comment
+
+            FROM def_tasks dt
+
+            -- Subquery join for latest def_lesson_tasks (ignore soft-deleted)
+            LEFT JOIN (
+                SELECT dlt.*
+                FROM def_lesson_tasks dlt
+                INNER JOIN (
+                    SELECT event_id, user_id, task_id, MAX(id) AS max_id
+                    FROM def_lesson_tasks
+                    WHERE deleted_at IS NULL
+                    GROUP BY event_id, user_id, task_id
+                ) latest_dlt
+                ON dlt.id = latest_dlt.max_id
+                WHERE dlt.deleted_at IS NULL
+            ) dlt ON dlt.event_id = dt.event_id
+                AND dlt.user_id = dt.user_id
+                AND dlt.task_id = dt.task_id
+
+            -- Subquery join for latest task_gradings
+            LEFT JOIN (
+                SELECT tg.*
+                FROM task_gradings tg
+                INNER JOIN (
+                    SELECT event_id, user_id, sub_lesson_id, MAX(id) AS max_id
+                    FROM task_gradings
+                    GROUP BY event_id, user_id, sub_lesson_id
+                ) latest_tg
+                ON tg.id = latest_tg.max_id
+            ) tg ON tg.event_id = dt.event_id
+                AND tg.user_id = dt.user_id
+                AND tg.sub_lesson_id = dt.task_id
+
+            -- Join to get sublesson title
+            LEFT JOIN sub_lessons sl ON sl.id = dt.task_id 
+
+            WHERE dt.event_id = ?
+        ", [$trainingEvent->id]));
+
+
+        $getFirstdeftTasks = TaskGrading::where('event_id', $trainingEvent->id)
+            ->whereIn('task_grade', ['Incomplete', 'Further training required'])
+            ->get();
+
+        $deferredTaskIds = collect($getFirstdeftTasks)->pluck('sub_lesson_id')->toArray();
+
+        $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson'])
+            ->where('event_id', $trainingEvent->id)
+            ->where('lesson_type', "deferred")
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $customLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson'])
+            ->where('event_id', $trainingEvent->id)
+            ->where('lesson_type', "custom")
+            ->orderBy('id', 'desc')
+            ->get();
+
+
+
+        $defLessonTasks = DefLessonTask::with(['user', 'defLesson.instructor', 'defLesson.instructor.documents', 'defLesson.resource', 'task'])
+            ->where('event_id', $trainingEvent->id)
+            ->whereRelation('defLesson', 'lesson_type', 'deferred')
+            ->get();
+
+        $customLessonTasks = DefLessonTask::with(['user', 'defLesson.instructor', 'defLesson.instructor.documents', 'defLesson.resource', 'task.courseLesson.course'])
+            ->where('event_id', $trainingEvent->id)
+            ->whereRelation('defLesson', 'lesson_type', 'custom')
+            // ->orderBy('def_lesson_id', 'desc')
+            ->get();
+        
+
+
+        $deferredLessonsTasks = DefLessonTask::with([
+            'user',
+            'defLesson.instructor',
+            'defLesson.resource',
+            'task'
+        ])
+            ->where('event_id', $trainingEvent->id)
+            ->where('task_grade', '!=', 'Competent') // Excludes 'Competent' grades
+            ->whereNotNull('task_grade')             // Ensures only graded tasks are included
+            ->get();
+        $gradedDefTasksMap = $deferredLessonsTasks->mapWithKeys(function ($item) {
+            return [$item->def_lesson_id . '_' . $item->task_id => true];
+        });
+                
+        if ($currentUser->is_owner == 1) {
+            // Super Admin: Get all data
+            $instructors = User::whereHas('roles', function ($query) {
+                $query->where('role_name', 'like', '%Instructor%');
+            })->with('roles')->get();
+        } else {
+            $instructors = User::where('ou_id', $currentUser->ou_id)
+                ->where(function ($query) {
+                    $query->whereNull('is_admin')->orWhere('is_admin', false);
+                })
+                ->whereHas('roles', function ($query) {
+                    $query->where('role_name', 'like', '%Instructor%');
+                })->with('roles')->get();
+        }
+        // dd($trainingEvent->ou_id);
+        $course = Courses::with('resources')->find($trainingEvent->course_id);
+        $resources = $course ? $course->resources : collect();
+
+        $courses = Courses::orderBy('position')->get();
+        $event_id =  decode_id($event_id);
+
+        $instructor_cbta = CbtaGrading::where('competency_type', 'instructor')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
+        $examiner_cbta = CbtaGrading::where('competency_type', 'examiner')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
+
+        $instructor_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'instructor')->get()->toArray();
+
+        $examiner_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'examiner')->get()->toArray();
+        
+
+
+        $training_logs = TrainingEventLog::with('users', 'lesson.quizzes')
+                        ->where('event_id', $trainingEvent->id)
+                        ->where('lesson_type', 1)
+                        ->orderBy('id', 'asc')
+                        ->get();
+
+        $groupedLogs = $training_logs->groupBy('lesson_id');
+
+        $training_deferred_logs = TrainingEventLog::with('users', 'lesson.quizzes')
+                        ->where('event_id', $trainingEvent->id)
+                        ->where('lesson_type', 2)
+                        ->orderBy('id', 'asc')
+                        ->get();
+
+        $grouped_deferredLogs = $training_deferred_logs->groupBy('lesson_id');
+        
+        
+
+        $training_custom_logs = TrainingEventLog::with('users', 'lesson.quizzes')
+                        ->where('event_id', $trainingEvent->id)
+                        ->where('lesson_type', 3)
+                        ->orderBy('id', 'asc')
+                        ->get();
+                        
+
+        $grouped_customLogs = $training_custom_logs->groupBy('lesson_id');
+
+            
+        return view('trainings.lessonpage', compact('trainingEvent', 'lesson_id', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'lessondetails', 'deflessondetails', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs'));
+    }
+
+
+    public function EventLessonUpdate(Request $request)
+    {
+        // dd($request->all());
+        if($request->has('lessontype')){
+            $lesson = DefLesson::where('id', $request->id)->first();
+
+            $lesson->update([
+                'instructor_id'        => $request->instructor_id,
+                'resource_id'          => $request->resource_id,
+                'lesson_date'          => $request->lesson_date,
+                'start_time'           => $request->start_time,
+                'end_time'             => $request->end_time,
+                'departure_airfield'   => $request->departure_airfield,
+                'destination_airfield' => $request->destination_airfield,
+            ]);
+        }
+        else{
+            $lesson = TrainingEventLessons::findOrFail($request->id);
+
+            $lesson->update([
+                'instructor_id'        => $request->instructor_id,
+                'resource_id'          => $request->resource_id,
+                'lesson_date'          => $request->lesson_date,
+                'start_time'           => $request->start_time,
+                'end_time'             => $request->end_time,
+                'departure_airfield'   => $request->departure_airfield,
+                'destination_airfield' => $request->destination_airfield,
+            ]);
+        }
+
+
+        return response()->json([
+            'success' => true
+        ]);
+    }
+
 
     public function archive_trainingEvent(Request $request)
     {
