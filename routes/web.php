@@ -400,6 +400,8 @@ Route::get('/training/unarchieveUser', [TrainingEventsController::class, 'unarch
 
 Route::post('/unarchive-user', [TrainingEventsController::class, 'unarchive'])->name('unarchive.index');
 
+Route::post('/archive_trainingEvent', [TrainingEventsController::class, 'archive_trainingEvent'])->name('archive_trainingEvent.index');
+
 
 
 // Calender

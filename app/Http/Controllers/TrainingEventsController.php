@@ -26,6 +26,13 @@ use App\Models\TrainingEventReview;
 use App\Models\UserOpcRating;
 use App\Models\RhsTag;
 use App\Models\Training_tags;
+use App\Models\CourseGroup;
+use App\Models\CoursePrerequisite;
+use App\Models\CourseResources;
+use App\Models\TrainingFeedbackQuestion;
+use App\Models\CourseCustomTime;
+use App\Models\CourseDocuments;
+use App\Models\UserTagRating;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -63,8 +70,8 @@ class TrainingEventsController extends Controller
         // $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations)->get();
 
 
-
-        if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) {
+        $archive = request('archive');
+        if ($currentUser->is_owner == 1 && empty($currentUser->ou_id)) { 
             // Super Admin: Get all data
             $resources = Resource::all();
             // $courses = Courses::all();
@@ -80,8 +87,13 @@ class TrainingEventsController extends Controller
             $students = User::whereHas('roles', function ($query) {
                 $query->where('role_name', 'like', '%Student%');
             })->with('roles')->get();
+
+           
+         
+
             $trainingEvents = TrainingEvents::with($trainingEventsRelations)
                             ->where('entry_source', null)
+                            ->where('archive', $archive)
                             ->withCount([
                                 'taskGradings',
                                 'competencyGradings'
@@ -89,18 +101,23 @@ class TrainingEventsController extends Controller
                             // ->orderByDesc('event_date')
                             ->orderByDesc('updated_at') 
                             ->get();
+                           
            
 
           $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations)
                                         ->where('entry_source', 'instructor')
+                                        ->where('archive', $archive)
                                         ->withCount([
                                             'taskGradings',
                                             'competencyGradings'
                                         ])
                                         ->orderByDesc('updated_at')   // Latest updated first
                                         ->get();
+      
+       
+                                
                
-        } elseif (checkAllowedModule('training', 'training.index')->isNotEmpty() && empty($currentUser->is_admin)) {
+        } elseif (checkAllowedModule('training', 'training.index')->isNotEmpty() && empty($currentUser->is_admin)) { 
             // Regular User: Get data within their organizational unit
             $resources = Resource::where('ou_id', $currentUser->ou_id)->get();
             // $courses = Courses::where('ou_id', $currentUser->ou_id)->get();
@@ -148,6 +165,7 @@ class TrainingEventsController extends Controller
                 
                 $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations)
                     ->where('entry_source', "instructor")
+                    ->where('archive', $archive)
                     ->where('student_id', $currentUser->id)
                     ->withCount([
                         'taskGradings',
@@ -164,11 +182,8 @@ class TrainingEventsController extends Controller
                     ->get();
                 $trainingEvents_instructor = [];
                   
-                 
-               
-
             }
-        } else {
+        } else {  
             // Default Case: Users with limited access within their organization
             $resources = Resource::where('ou_id', $currentUser->ou_id)->get();
             $courses = Courses::where('ou_id', $currentUser->ou_id)->orderBy('position')->get();
@@ -193,18 +208,15 @@ class TrainingEventsController extends Controller
 
             $trainingEvents = TrainingEvents::where('ou_id', $currentUser->ou_id)
                 ->where('entry_source', null)
+                ->where('archive', $archive)
                 ->with($trainingEventsRelations)
                 ->withCount(['taskGradings', 'competencyGradings'])
                 ->orderByDesc('updated_at') 
                 ->get();
               
-              
-
-             
-
             $trainingEvents_instructor = TrainingEvents::where('ou_id', $currentUser->ou_id)
                 ->where('entry_source', "instructor")
-                //->with($trainingEventsRelations)
+                ->where('archive', $archive)
                 ->withCount(['taskGradings', 'competencyGradings'])
                 ->orderByDesc('updated_at') 
                 ->get();
@@ -3844,11 +3856,6 @@ class TrainingEventsController extends Controller
 
     }
 
-    // public function Lessongrade(Request $request)
-    // {
-    //     dd($request->all());
-    // }
-
     public function Lessongrade(Request $request)
     {
         $currentUser = auth()->user();
@@ -3958,8 +3965,6 @@ class TrainingEventsController extends Controller
             $competencyGrades = collect(); // instead of ''
             $def_grading = collect();
         }
-
-
 
 
         //Optional: Also pass overall assessments if you need them
@@ -4175,5 +4180,213 @@ class TrainingEventsController extends Controller
         ]);
     }
 
+
+    public function archive_trainingEvent(Request $request)
+    {
+       $event_id = decode_id($request->event_id);
+      // dd($event_id);
+       $course_id  = TrainingEvents::where('id', $event_id)->pluck('course_id')->first();
+       DB::beginTransaction();
+
+       try {
+
+        if (!$course_id || !is_numeric($course_id)) {
+            return response()->json(['status' => false, 'message' => 'Invalid Course ID'], 400);
+        }
+          // ------------ FETCH MAIN COURSE ------------
+        $course_info = Courses::find($course_id);
+        if (!$course_info) {
+            return response()->json(['status' => false, 'message' => 'Course not found'], 404);
+        }
+
+                // ------------ PREPARE COURSE PAYLOAD ------------
+        $course = [
+            'ou_id'                      => $course_info->ou_id,
+            'course_name'                => $course_info->course_name,
+            'description'                => $course_info->description,
+            'image'                      => $course_info->image,
+            'status'                     => $course_info->status,
+            'duration_type'              => $course_info->duration_type,
+            'duration_value'             => $course_info->duration_value,
+            'course_type'                => $course_info->course_type,
+            'enable_feedback'            => $course_info->enable_feedback,
+            'enable_custom_time_tracking'=> $course_info->enable_custom_time_tracking,
+            'enable_instructor_upload'   => $course_info->enable_instructor_upload,
+            'enable_groundschool_time'   => $course_info->enable_groundschool_time,
+            'groundschool_hours'         => $course_info->groundschool_hours,
+            'enable_simulator_time'      => $course_info->enable_simulator_time,
+            'simulator_hours'            => $course_info->simulator_hours,
+            'custom_time_name'           => $course_info->custom_time_name,
+            'custom_time_hours'          => $course_info->custom_time_hours,
+            'enable_cbta'                => $course_info->enable_cbta,
+            'enable_mp_lifus'            => $course_info->enable_mp_lifus,
+            'enable_prerequisites'       => $course_info->enable_prerequisites,
+            'opc'                        => $course_info->opc,
+            'opc_aircraft'               => $course_info->opc_aircraft,
+            'opc_validity'               => $course_info->opc_validity,
+            'opc_extend'                 => $course_info->opc_extend ,
+            'archive_trainingCourse'     => 1
+        ];
+
+       $create_course = Courses::create($course);
+
+              // ------------ COPY GROUPS ------------
+        $group_info = CourseGroup::where('courses_id', $course_id)->get();
+
+        if ($group_info->isNotEmpty()) {
+            foreach ($group_info as $row) {
+                CourseGroup::create([
+                    "courses_id" => $create_course->id,
+                    "group_id"   => $row->group_id
+                ]);
+            }
+        }
+
+             // ------------ Course Prerequisite Detail ------------
+
+        $CoursePrerequisite =  CoursePrerequisite::where('course_id', $course_id)->get();
+        if ($CoursePrerequisite->isNotEmpty()) {
+            foreach ($CoursePrerequisite as $row) {
+                CoursePrerequisite::create([
+                    'course_id'           => $create_course->id,
+                    'prerequisite_detail' => $row->prerequisite_detail,
+                    'prerequisite_type'    => $row->prerequisite_type,
+                ]);
+            }
+        }
+
+        
+        // ------------ COPY RESOURCES ------------
+        $resource_info = CourseResources::where('courses_id', $course_id)->get();
+
+        if ($resource_info->isNotEmpty()) {
+            foreach ($resource_info as $val) {
+                CourseResources::create([
+                    "courses_id"   => $create_course->id,
+                    "resources_id" => $val->resources_id
+                ]);
+            }
+        }
+
+        
+        // ------------ COPY FEEDBACK QUESTIONS ------------
+        $questions = TrainingFeedbackQuestion::where('course_id', $course_id)->get();
+
+        if ($questions->isNotEmpty()) {
+            foreach ($questions as $val) {
+                TrainingFeedbackQuestion::create([
+                    "course_id"   => $create_course->id,
+                    "question"    => $val->question,
+                    "answer_type" => $val->answer_type
+                ]);
+            }
+        }
+
+             // ------------ COPY CUSTOM TIME ------------
+        $custom_time = CourseCustomTime::where('course_id', $course_id)->get();
+        if ($custom_time->isNotEmpty()) {
+            foreach ($custom_time as $val) {
+                CourseCustomTime::create([
+                    "course_id" => $create_course->id,
+                    "name"      => $val->name ?? '',
+                    "hours"     => is_numeric($val->hours) ? $val->hours : 0,
+                ]);
+            }
+        }
+
+           // ------------ COPY COURSE DOCUMENTS ------------
+        $course_document = CourseDocuments::where('course_id', $course_id)->get();
+        if ($course_document->isNotEmpty()) {
+            foreach ($course_document as $val) {
+                CourseDocuments::create([
+                    "course_id"      => $create_course->id,
+                    "document_name"  => $val->document_name,
+                    "file_path"      => $val->file_path
+                ]);
+            }
+        }
+
+           // ------------------------------------- Copy Course End---------------------------------------------------------
+
+        // ------------------------------------- Start Copy Lesson Start---------------------------------------------------------
+        $lesson_info = CourseLesson::where('course_id', $course_id)->get();
+
+        if ($lesson_info->isNotEmpty()) {
+            foreach ($lesson_info as $lessonRow) {
+                $lesson = [
+                    'course_id'       => $create_course->id,
+                    'lesson_title'    => $lessonRow->lesson_title,
+                    'description'     => $lessonRow->description,
+                    'comment'         => $lessonRow->comment,
+                    'status'          => $lessonRow->status,
+                    'grade_type'      => $lessonRow->grade_type,
+                    'lesson_type'     => $lessonRow->lesson_type,
+                    'enable_cbta'     => $lessonRow->enable_cbta ?? 0,
+                    'instructor_cbta' => $lessonRow->instructor_cbta ?? 0,
+                    'examiner_cbta'   => $lessonRow->examiner_cbta ?? 0,
+                    'custom_time_id'  => $lessonRow->custom_time_type,
+                ];
+
+
+
+                // Create lesson copy
+                $create_lesson = CourseLesson::create($lesson);
+
+                // Fetch sub-lessons of the ORIGINAL lesson
+                $sublesson_info = SubLesson::where('lesson_id', $lessonRow->id)->get();
+
+                if ($sublesson_info->isNotEmpty()) {
+
+                    foreach ($sublesson_info as $sub) {
+
+                        $subLesson = [
+                            'lesson_id'    => $create_lesson->id,
+                            'title'        => $sub->title,
+                            'description'  => $sub->description,
+                            'grade_type'   => $sub->grade_type,
+                            'status'       => $sub->status,
+                            'is_mandatory' => $sub->is_mandatory,
+                        ];
+
+                        SubLesson::create($subLesson);
+                    }
+                }
+            }
+        }
+
+         //------------------------------------------------UserTagRating---------------------------------------------------------
+            $tags =  UserTagRating::where('course_id', $course_id)->get();
+
+            if ($tags->isNotEmpty()) {
+                foreach ($tags as $tag) {
+                        $all_tags = [
+                            'course_id'       => $create_course->id,
+                            'tag_id'          => $tag->tag_id ,
+                            'tag_validity'    =>  $tag->tag_validity ,
+                            'tag_type'        =>  $tag->tag_type,
+                    ];
+                    UserTagRating::create($all_tags);
+
+                }
+
+            }
+             // ------------------------------------- End Copy Lesson Start-----------------------------------------------------------
+
+            TrainingEvents::where('id', $event_id)->update(['course_id'=> $create_course->id, 'old_course_id'=> $course_id, 'archive'=> 1]);
+            DB::commit();
+            Session::flash('message', 'Training Event Archived Successfully');
+            return response()->json([
+                'status' => true,
+                'message' => 'Training Event Archived Successfully',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Something went wrong',
+                'error'   => $e->getMessage() 
+            ], 500);
+        }
+    }
 
 }
