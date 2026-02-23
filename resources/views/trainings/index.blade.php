@@ -90,53 +90,56 @@
 
                 <td>          
                 @if(get_user_role(auth()->user()->role) == 'administrator')  
-                @if($event->archive == 1)
-                    <span class="badge bg-warning text-dark">
-                        <i class="bi bi-archive-fill me-1"></i> Archived
-                    </span>
-                @else
-                    @if(empty($event->is_locked))
-                        @if(checkAllowedModule('training','training.edit')->isNotEmpty())
-                            <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                            data-event-id="{{ encode_id($event->id) }}"></i>
-                        @endif
-                        @if(checkAllowedModule('training','training.delete')->isNotEmpty())
-                            <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                            data-event-id="{{ encode_id($event->id) }}"></i>
-                        @endif
-                        @if(checkAllowedModule('training','training.show')->isNotEmpty())
-                            <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
-                            <!-- <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;"> -->
-                            <i class="fa fa-eye text-danger me-2"></i>
-                            </a>            
-                        @endif
-                    
-                        @if($event->can_end_course) 
-                            {{-- Active “End Course” button/icon --}}
-                            <button class="btn btn-sm btn-flag-checkered end-course-btn" data-event-id="{{ encode_id($event->id) }}"
-                                title="End Course/Event" >
-                                <i class="fa fa-flag-checkered text-primary"></i>
-                            </button>
-                        @endif
-                    @else
-                        {{-- This event is already locked/ended --}}
-                        <span class="badge bg-secondary unlocked" data-bs-toggle="tooltip" data-id = "{{ $event->id}}"
-                            title="This course has been ended and is locked from editing">
-                            <i class="bi bi-lock-fill me-1"></i>Ended
+                    @if($event->archive == 1)
+                        <span class="badge bg-warning text-dark">
+                            <i class="bi bi-archive-fill me-1"></i> Archived
                         </span>
-                        @if(checkAllowedModule('training','training.delete')->isNotEmpty())
-                            <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                            data-event-id="{{ encode_id($event->id) }}"></i>
+                    @else
+                        @if(empty($event->is_locked))
+                            @if(checkAllowedModule('training','training.edit')->isNotEmpty())
+                                <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                                data-event-id="{{ encode_id($event->id) }}"></i>
+                            @endif
+                            @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                                <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                                data-event-id="{{ encode_id($event->id) }}"></i>
+                            @endif
+                            @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                                <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                                <i class="fa fa-eye text-danger me-2"></i>
+                                </a>      
+
+                                <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                                    View
+                                </a>            
+                            @endif
+                        
+                            @if($event->can_end_course) 
+                                {{-- Active “End Course” button/icon --}}
+                                <button class="btn btn-sm btn-flag-checkered end-course-btn" data-event-id="{{ encode_id($event->id) }}"
+                                    title="End Course/Event" >
+                                    <i class="fa fa-flag-checkered text-primary"></i>
+                                </button>
+                            @endif
+                        @else
+                            {{-- This event is already locked/ended --}}
+                            <span class="badge bg-secondary unlocked" data-bs-toggle="tooltip" data-id = "{{ $event->id}}"
+                                title="This course has been ended and is locked from editing">
+                                <i class="bi bi-lock-fill me-1"></i>Ended
+                            </span>
+                            @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                                <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                                data-event-id="{{ encode_id($event->id) }}"></i>
+                            @endif
+                                <button type="button"
+                                    class="btn btn-outline-primary btn-sm archive-course-btn"
+                                    data-event-id="{{ encode_id($event->id) }}"
+                                    data-bs-toggle="tooltip"
+                                    title="Archive this course">
+                                    <i class="bi bi-archive-fill me-1"></i> Archive
+                                </button>
                         @endif
-                            <button type="button"
-                                class="btn btn-outline-primary btn-sm archive-course-btn"
-                                data-event-id="{{ encode_id($event->id) }}"
-                                data-bs-toggle="tooltip"
-                                title="Archive this course">
-                                <i class="bi bi-archive-fill me-1"></i> Archive
-                            </button>
-                    @endif
-                @endif    
+                    @endif    
                 @elseif(get_user_role(auth()->user()->role) == 'instructor')
                 @if($event->archive == 1)  
                     <span class="badge bg-warning text-dark">
@@ -152,6 +155,10 @@
                             <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
                             <i class="fa fa-eye text-danger me-2"></i>
                             </a>            
+
+                            <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                                View
+                            </a>   
                         @endif 
                     @else   
                         {{-- This event is already locked/ended --}}
