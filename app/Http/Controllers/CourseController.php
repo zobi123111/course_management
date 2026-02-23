@@ -125,8 +125,27 @@ class CourseController extends Controller
             $organizationUnits = OrganizationUnits::where('id', $ou_id)->get();
         }
 
-        $tags = RhsTag::all();
+        if (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) {
+            $tags = RhsTag::all();
+        } else {
+            $tags = RhsTag::where('ou_id', $ou_id)->get();
+        }
+
         return view('courses.index', compact('courses', 'organizationUnits', 'groups', 'resource', 'ou_id', 'ratings', 'tags'));
+    }
+
+    public function getTagsByOu(Request $request)
+    {
+        $ouId = $request->ou_id;
+        
+        if (!$ouId) {
+            return response()->json(['tags' => []]);
+        }
+
+        // Fetch tags for the specified OU
+        $tags = RhsTag::where('ou_id', $ouId)->get();
+        
+        return response()->json(['tags' => $tags]);
     }
 
 

@@ -143,25 +143,6 @@ class QuizController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $quiz = Quiz::create([
-            'title' => $request->title,
-            'course_id' => $request->course_id,
-            'lesson_id' => $request->lesson_id,
-            'duration' => $request->duration,
-            'passing_score' => $request->passing_score,
-            'quiz_type' => $request->quiz_type,
-            'status' => $request->status,
-            'show_result' => $request->show_result,
-            'question_selection' => $request->question_selection,
-            'question_count' => $request->question_selection === 'random'
-                ? $request->question_count
-                : null,
-            'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                ? $request->ou_id
-                : auth()->user()->ou_id,
-            'created_by' => Auth::id(),
-        ]);
-
         if ($request->question_selection === 'random') {
 
             $topics = Topic::where('course_id', $request->course_id)
@@ -174,6 +155,26 @@ class QuizController extends Controller
                     'message' => 'No topics found for this course.'
                 ], 422);
             }
+
+            $quiz = Quiz::create([
+                'title' => $request->title,
+                'course_id' => $request->course_id,
+                'lesson_id' => $request->lesson_id,
+                'duration' => $request->duration,
+                'passing_score' => $request->passing_score,
+                'quiz_type' => $request->quiz_type,
+                'status' => $request->status,
+                'show_result' => $request->show_result,
+                'question_selection' => $request->question_selection,
+                'question_count' => $request->question_selection === 'random'
+                    ? $request->question_count
+                    : null,
+                'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    ? $request->ou_id
+                    : auth()->user()->ou_id,
+                'created_by' => Auth::id(),
+            ]);
+
 
             $requested = (int) $request->question_count;
             $totalAvailable = $topics->sum('questions_count');
@@ -224,6 +225,23 @@ class QuizController extends Controller
                 ]);
             }
         }
+        else {
+            $quiz = Quiz::create([
+                'title' => $request->title,
+                'course_id' => $request->course_id,
+                'lesson_id' => $request->lesson_id,
+                'duration' => $request->duration,
+                'passing_score' => $request->passing_score,
+                'quiz_type' => $request->quiz_type,
+                'status' => $request->status,
+                'show_result' => $request->show_result,
+                'question_selection' => $request->question_selection,
+                'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                    ? $request->ou_id
+                    : auth()->user()->ou_id,
+                'created_by' => Auth::id(),
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -263,7 +281,7 @@ class QuizController extends Controller
     {
         // dd($request->all());
 
-        $courses = Courses::where('ou_id', $request->ou_id)->get();
+        $courses = Courses::where('ou_id', $request->ou_id)->withCount('topics')->get();
         return response()->json($courses);
     }
 
@@ -297,20 +315,6 @@ class QuizController extends Controller
 
         $quiz = Quiz::findOrFail($request->quiz_id);
 
-        $quiz->update([
-            'title' => $request->title,
-            'course_id' => $request->course_id,
-            'lesson_id' => $request->lesson_id,
-            'duration' => $request->duration,
-            'passing_score' => $request->passing_score,
-            'quiz_type' => $request->quiz_type,
-            'status' => $request->status,
-            'show_result' => $request->show_result,
-            'question_selection' => $request->question_selection,
-            'question_count' => $request->question_selection === 'random' ? $request->question_count : null,
-            'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id,
-        ]);
-
         if ($request->question_selection === 'random') {
             QuizTopic::where('quiz_id', $quiz->id)->delete();
 
@@ -322,6 +326,20 @@ class QuizController extends Controller
                     'message' => 'No topics found for this course.'
                 ], 422);
             }
+
+            $quiz->update([
+                'title' => $request->title,
+                'course_id' => $request->course_id,
+                'lesson_id' => $request->lesson_id,
+                'duration' => $request->duration,
+                'passing_score' => $request->passing_score,
+                'quiz_type' => $request->quiz_type,
+                'status' => $request->status,
+                'show_result' => $request->show_result,
+                'question_selection' => $request->question_selection,
+                'question_count' => $request->question_selection === 'random' ? $request->question_count : null,
+                'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id,
+            ]);
 
             $requested = (int) $request->question_count;
             $totalAvailable = $topics->sum('questions_count');
@@ -361,6 +379,21 @@ class QuizController extends Controller
                     'question_quantity' => $qty,
                 ]);
             }
+        }
+        else{
+            $quiz->update([
+                'title' => $request->title,
+                'course_id' => $request->course_id,
+                'lesson_id' => $request->lesson_id,
+                'duration' => $request->duration,
+                'passing_score' => $request->passing_score,
+                'quiz_type' => $request->quiz_type,
+                'status' => $request->status,
+                'show_result' => $request->show_result,
+                'question_selection' => $request->question_selection,
+                'question_count' => $request->question_selection === 'random' ? $request->question_count : null,
+                'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id,
+            ]);
         }
 
         return response()->json(['success' => true, 'message' => 'Quiz updated successfully.']);
