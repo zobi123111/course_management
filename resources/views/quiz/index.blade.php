@@ -459,6 +459,9 @@
                             </select>
                             <div id="show_result_error" class="text-danger error_e"></div>
                         </div>
+
+                        <div id="edit_quiz_global_error" class="alert alert-danger d-none"></div>
+
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             <button type="button" id="updateQuiz" class="btn btn-primary sbt_btn">Update</button>
@@ -715,6 +718,7 @@
 
             $('#updateQuiz').on('click', function(e) {
                 e.preventDefault();
+                $('#edit_quiz_global_error').addClass('d-none').html('');
                 $.ajax({
                     url: "{{ url('/quiz/update') }}",
                     type: "POST",
@@ -728,6 +732,11 @@
                         $.each(errors, function(key, value) {
                             $('#' + key + '_error_up').html('<p>' + value + '</p>');
                         });
+                        if (xhr.responseJSON.message) {
+                            $('#edit_quiz_global_error')
+                                .removeClass('d-none')
+                                .html(xhr.responseJSON.message);
+                        }
                     }
                 });
             });
