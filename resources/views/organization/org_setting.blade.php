@@ -90,6 +90,7 @@
         <div>
             <a href="{{ url('tags') }}?ou_id={{ encode_id($ou_id) }}" class="btn btn-primary me-2 create-button">Manage Tags</a>
             <a href="{{ url('custom-cbta') }}?ou_id={{ encode_id($ou_id) }}" class="btn btn-primary" id="addRating">Manage Competency Grading</a> 
+            <a href="{{ url('validation-codes') }}?ou_id={{ encode_id($ou_id) }}" class="btn btn-primary" id="addRating">Manage Validation Code</a> 
         </div>
     </div>
     <div class="container mt-4">

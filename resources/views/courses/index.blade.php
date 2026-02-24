@@ -558,6 +558,10 @@
                             <input class="form-check-input" type="checkbox" value="1" id="examiner" name="examiner_cbta">
                             <label class="form-check-label" for="examiner"> Enable Examiner Competencies </label>
                         </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" value="1"  name="auto_archive">
+                          <label class="form-check-label" for="auto_archive">Auto Archive</label>
+                       </div>
                     </div>
 
                     <div class="modal-footer">
@@ -960,7 +964,10 @@
                         <input class="form-check-input" type="checkbox" value="1" id="edit_examiner" name="edit_examiner_cbta">
                         <label class="form-check-label" for="examiner"> Enable Examiner Competencies </label>
                     </div>
-
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="auto_archive" name="auto_archive">
+                        <label class="form-check-label" for="auto_archive">Auto Archive</label>
+                    </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -1285,6 +1292,12 @@
                     $('#edit_duration_value').val(response.course.duration_value);
                     $('#edit_status').val(response.course.status);
                     $('#edit_select_org_unit').val(response.course.ou_id).trigger('change');
+                    if (response.course.auto_archive == 1) {
+                        $('#auto_archive').prop('checked', true);
+                    } else {
+                        $('#auto_archive').prop('checked', false);
+                    }
+
 
                     // alert(response.course.enable_cbta);
                     if (response.course.enable_cbta == 1) {
@@ -2075,6 +2088,37 @@
             },
             error: function(xhr, status, error) {
                 console.error(xhr.responseText);
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+
+        // Fetch tags for the selected OU
+        $.ajax({
+            url: "{{ route('course.get-tags-by-ou') }}",
+            type: "GET",
+            data: {
+                'ou_id': ou_id
+            },
+            dataType: "json",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            success: function(response) {
+                if (response.tags && Array.isArray(response.tags)) {
+                    let tagOptions = "<option value=''>Select Tag</option>";
+                    
+                    response.tags.forEach(function(tag) {
+                        tagOptions += "<option value='" + tag.id + "'>" + tag.rhstag + "</option>";
+                    });
+                    
+                    // Update all tag select dropdowns in create form
+                    $('select[name="master_tag_select[]"]').html(tagOptions);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error fetching tags:", xhr.responseText);
             }
         });
     });
@@ -2151,6 +2195,34 @@
             },
             error: function(xhr, status, error) {
                 console.error(xhr.responseText);
+            }
+        });
+
+        // Fetch tags for the selected OU in edit form
+        $.ajax({
+            url: "{{ route('course.get-tags-by-ou') }}",
+            type: "GET",
+            data: {
+                'ou_id': ou_id
+            },
+            dataType: "json",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            success: function(response) {
+                if (response.tags && Array.isArray(response.tags)) {
+                    let tagOptions = "<option value=''>Select Tag</option>";
+                    
+                    response.tags.forEach(function(tag) {
+                        tagOptions += "<option value='" + tag.id + "'>" + tag.rhstag + "</option>";
+                    });
+                    
+                    // Update all tag select dropdowns in edit form
+                    $('#editCourseModal select[name="master_tag_select[]"]').html(tagOptions);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error fetching tags:", xhr.responseText);
             }
         });
     });

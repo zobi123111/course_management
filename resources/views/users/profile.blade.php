@@ -247,8 +247,22 @@
                             <input type="text" id="lastName" name="lastName" class="form-control"
                                 value="{{ $user->lname }}">
                         </div>
+                    </div>
 
-
+                    <div class="row mb-3">
+                        @if($OuSetting && $OuSetting->show_dob == 1)
+                            <div class="col-md-6 create_date_of_birth_div">
+                                <label  class="form-label">Date of Birth</label>
+                                <input type="date" class="form-control" name="date_of_birth" value="{{ $user->date_of_birth }}"id="create_date_of_birth">
+                            </div>
+                        @endif
+                        
+                        @if($OuSetting && $OuSetting->show_phone == 1)
+                            <div class="col-md-6 create_phone_number_div">
+                                <label  class="form-label">Phone Number</label>
+                                <input type="number" class="form-control" name="phone_number" value="{{ $user->phone_number }}" id="create_phone_number">
+                            </div>
+                        @endif
                     </div>
 
                     <div class="row">
