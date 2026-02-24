@@ -1069,6 +1069,8 @@
 
 <script>
     let selectBoxIndex = 0;
+    // cache of all validation types returned from server (enabled + possibly disabled)
+    let cachedValidationTypes = [];
     $(document).ready(function() { 
         // Edit licence 2 
         $('#licence_2_ratings').on('change', function() { 
@@ -1432,6 +1434,11 @@
     function populateValidationDropdowns(response) {
         console.log('populateValidationDropdowns response:', response);
         
+        // keep a copy so new rows added later can be filled without another AJAX request
+        if (response.validation_type) {
+            cachedValidationTypes = response.validation_type.slice();
+        }
+        
         // Only populate the template row, not all instances
         let createTemplate = $('#create_rhs_select_row_template');
         let editTemplate = $('#edit_rhs_select_row_template');
@@ -1447,8 +1454,10 @@
                 createCountrySelect.find('option:not(:first)').remove();
 
                 response.validation_type.forEach(function(item) {
-                    createCodeSelect.append(`<option value="${item.id}" data-country="${item.country_name}">${item.code}</option>`);
-                    createCountrySelect.append(`<option value="${item.country_name}" data-code="${item.code}">${item.country_name}</option>`);
+                    // disable options that are not enabled
+                    let disabledAttr = item.enabled ? '' : ' disabled';
+                    createCodeSelect.append(`<option value="${item.id}" data-country="${item.country_name}"${disabledAttr}>${item.code}</option>`);
+                    createCountrySelect.append(`<option value="${item.country_name}" data-code="${item.code}"${disabledAttr}>${item.country_name}</option>`);
                 });
             }
 
@@ -1462,8 +1471,9 @@
                 editCountrySelect.find('option:not(:first)').remove();
 
                 response.validation_type.forEach(function(item) {
-                    editCodeSelect.append(`<option value="${item.id}" data-country="${item.country_name}">${item.code}</option>`);
-                    editCountrySelect.append(`<option value="${item.country_name}" data-code="${item.code}">${item.country_name}</option>`);
+                    let disabledAttr = item.enabled ? '' : ' disabled';
+                    editCodeSelect.append(`<option value="${item.id}" data-country="${item.country_name}"${disabledAttr}>${item.code}</option>`);
+                    editCountrySelect.append(`<option value="${item.country_name}" data-code="${item.code}"${disabledAttr}>${item.country_name}</option>`);
                 });
             }
         }
@@ -1873,6 +1883,9 @@
             $('.error_e').html('');
             $('.alert-danger').css('display', 'none');
             $("#Create_user")[0].reset();
+
+            // trigger OU change so validation types populate even if user doesn't touch the dropdown
+            $('#create_ou_id').trigger('change');
 
             // Manually hide and reset all conditional sections
             $('#licence').hide().prop('required', false).val('');
@@ -2570,27 +2583,26 @@
                     console.log('License validations:', response.license_validations);
 
                     // Fetch and populate validation types AND populate rows
-                    let editOuId = response.user.ou_id;
-                    if (editOuId) {
-                        $.ajax({
-                            type: 'get',
-                            url: '/get_org_setting/' + editOuId,
-                            success: function(orgResponse) {
-                                // Cache the validation types for reuse
-                                cachedValidationTypes = orgResponse.validation_type || [];
-                                
-                                // First populate the dropdowns
-                                populateValidationDropdowns(orgResponse);
+                    // always attempt to load validation types; if user has no OU, pass 0 and controller will send all enabled types
+                    let editOuId = response.user.ou_id || 0;
+                    $.ajax({
+                        type: 'get',
+                        url: '/get_org_setting/' + editOuId,
+                        success: function(orgResponse) {
+                            // Cache the validation types for reuse
+                            cachedValidationTypes = orgResponse.validation_type || [];
+                            // Populate template dropdown options
+                            populateValidationDropdowns(orgResponse);
 
-                                // Then populate rows with existing data
-                                if (response.license_validations && response.license_validations.length > 0) {
-                                    // Show the section and "Add License Validation" button
-                                    // $('#edit_rhs_tag_col').removeClass('d-none');
-                                    $('#edit_enable_license_validation').addClass('d-none');
-                                    $('#edit_add_license_validation').removeClass('d-none');
+                            // Then populate rows with existing data
+                            if (response.license_validations && response.license_validations.length > 0) {
+                                // Show the section and "Add License Validation" button
+                                // $('#edit_rhs_tag_col').removeClass('d-none');
+                                $('#edit_enable_license_validation').addClass('d-none');
+                                $('#edit_add_license_validation').removeClass('d-none');
 
-                                    // Populate existing license validations
-                                    response.license_validations.forEach(function(validation, index) {
+                                // Populate existing license validations
+                                response.license_validations.forEach(function(validation, index) {
                                         console.log('Processing validation:', validation);
                                         
                                         let row = $('#edit_rhs_select_row_template')
@@ -2619,6 +2631,21 @@
                                         if (matchingType) {
                                             $newRow.find('select[name="edit_validation_code[]"]').first().val(matchingType.id);
                                             console.log('Set validation code to:', matchingType.id);
+                                        } else {
+                                            // the validation type is not in the cached list (perhaps disabled)
+                                            // add a temporary option so the existing value is visible
+                                            let missingId = validation.validation_code_id || '';
+                                            let missingCode = validation.code || validation.validation_code || '(unknown)';
+                                            let $codeSelect = $newRow.find('select[name="edit_validation_code[]"]').first();
+                                            $codeSelect.append(`<option value="${missingId}" data-country="${validation.country_name}" selected>${missingCode}</option>`);
+                                            $codeSelect.val(missingId);
+
+                                            // also ensure country option exists
+                                            let $countrySelect = $newRow.find('select[name="edit_country_name[]"]').first();
+                                            if ($countrySelect.find(`option[value="${validation.country_name}"]`).length === 0) {
+                                                $countrySelect.append(`<option value="${validation.country_name}" data-code="${missingCode}" selected>${validation.country_name}</option>`);
+                                            }
+                                            console.log('Added missing validation type to selects');
                                         }
                                         
                                         console.log('Setting country_name to:', validation.country_name);
@@ -2647,19 +2674,7 @@
                                 }
                             }
                         });
-                    }
-                     else {
-                        // No OU ID, just handle the button visibility
-                        if (response.license_validations && response.license_validations.length > 0) {
-                            // $('#edit_rhs_tag_col').removeClass('d-none');
-                            $('#edit_enable_license_validation').addClass('d-none');
-                            $('#edit_add_license_validation').removeClass('d-none');
-                        } else {
-                            $('#edit_enable_license_validation').removeClass('d-none');
-                            $('#edit_add_license_validation').addClass('d-none');
-                        }
-                    }
-
+                    // button visibility will be handled within AJAX success above, but ensure default state for safety
                     $('#editUserDataModal').modal('show');
 
                 },
@@ -2678,6 +2693,7 @@
         });
 
         // Edit License Validation Handlers
+        // keep cache of validation types so new rows can be populated later
         let cachedValidationTypes = null; // Store validation types for reuse
 
         $('#edit_enable_license_validation').on('click', function() {
@@ -2908,7 +2924,7 @@
     });
 
     $(document).on('change', '#edit_ou_id', function () {
-        let ou_id = $(this).val();
+        let ou_id = $(this).val() || 0;
         $.ajax({
             type: 'get',
             url: '/get_org_setting/' + ou_id,
@@ -2950,7 +2966,7 @@
     });
 
     $(document).on('change', '#create_ou_id', function () {
-        let ou_id = $(this).val();
+        let ou_id = $(this).val() || 0;
         $.ajax({
             type: 'get',
             url: '/get_org_setting/' + ou_id,

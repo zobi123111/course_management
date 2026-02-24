@@ -1479,35 +1479,83 @@ class UserController extends Controller
                                             ->store('license_certificates', 'public');
                     }
 
-                    UserLicenseValidation::updateOrCreate(
-                        [
-                            'user_id' => $userToUpdate->id,
-                            'validation_code_id' => $codeId,
-                        ],
-                        [
-                            'country_name'      => $request->edit_country_name[$index] ?? null,
-                            'license_number'    => $request->edit_license_number[$index] ?? null,
-                            'licence_issued_to' => $request->edit_licence_issued_to[$index] ?? null,
-                            'validity_months'   => $request->edit_master_validity[$index] ?? null,
-                            'issue_date'        => $request->edit_issue_date[$index] ?? null,
-                            'expiry_date'       => $request->edit_expiry_date[$index] ?? null,
-                            'certificate_file'  => $filePath,
-                            'admin_verification_required' =>
-                                isset($request->edit_licence_verification_required[$index])
-                                    ? (bool) $request->edit_licence_verification_required[$index]
-                                    : false,
-                        ]
-                    );
+                    // if an ID was provided we should update that exact record;
+                    // this handles the case where the user changes the validation
+                    // code dropdown to a different value.  Otherwise create a
+                    // fresh row.
+                    if (!empty($request->edit_validation_id[$index])) {
+                        $model = UserLicenseValidation::withTrashed()
+                            ->find($request->edit_validation_id[$index]);
+                        if ($model) {
+                            $model->update([
+                                'validation_code_id' => $codeId,
+                                'country_name'      => $request->edit_country_name[$index] ?? null,
+                                'license_number'    => $request->edit_license_number[$index] ?? null,
+                                'licence_issued_to' => $request->edit_licence_issued_to[$index] ?? null,
+                                'validity_months'   => $request->edit_master_validity[$index] ?? null,
+                                'issue_date'        => $request->edit_issue_date[$index] ?? null,
+                                'expiry_date'       => $request->edit_expiry_date[$index] ?? null,
+                                'certificate_file'  => $filePath,
+                                'admin_verification_required' =>
+                                    isset($request->edit_licence_verification_required[$index])
+                                        ? (bool) $request->edit_licence_verification_required[$index]
+                                        : false,
+                            ]);
+                            continue;
+                        }
+                    }
+
+                    // no existing model to update, so create one
+                    $newModel = UserLicenseValidation::create([
+                        'user_id'            => $userToUpdate->id,
+                        'validation_code_id' => $codeId,
+                        'country_name'       => $request->edit_country_name[$index] ?? null,
+                        'license_number'     => $request->edit_license_number[$index] ?? null,
+                        'licence_issued_to'  => $request->edit_licence_issued_to[$index] ?? null,
+                        'validity_months'    => $request->edit_master_validity[$index] ?? null,
+                        'issue_date'         => $request->edit_issue_date[$index] ?? null,
+                        'expiry_date'        => $request->edit_expiry_date[$index] ?? null,
+                        'certificate_file'   => $filePath,
+                        'admin_verification_required' =>
+                            isset($request->edit_licence_verification_required[$index])
+                                ? (bool) $request->edit_licence_verification_required[$index]
+                                : false,
+                    ]);
+                    // $newModel created; its id will be added by the keepIds logic below
                 }
             }
 
             // --- remove any validations that were deleted client‑side ---
-            $submittedIds = array_filter($request->edit_validation_id ?? []);
-            UserLicenseValidation::where('user_id', $userToUpdate->id)
-                ->when(count($submittedIds), function ($q) use ($submittedIds) {
-                    $q->whereNotIn('id', $submittedIds);
-                })
-                ->delete();
+            // Build a list of IDs we actually want to keep.  Start with
+            // whatever was explicitly submitted (existing rows).
+            $keepIds = array_filter($request->edit_validation_id ?? []);
+
+            // After updateOrCreate above we may have created new models; make
+            // sure their IDs are included so the subsequent delete() doesn’t
+            // soft‑delete them.
+            if ($request->filled('edit_validation_code')) {
+                foreach ($request->edit_validation_code as $index => $codeId) {
+                    if (empty($codeId)) {
+                        continue;
+                    }
+
+                    // locate the record for this user/code – the most recent one
+                    $rec = UserLicenseValidation::where('user_id', $userToUpdate->id)
+                                ->where('validation_code_id', $codeId)
+                                ->orderBy('id', 'desc')
+                                ->first();
+
+                    if ($rec && ! in_array($rec->id, $keepIds)) {
+                        $keepIds[] = $rec->id;
+                    }
+                }
+            }
+
+            $delQuery = UserLicenseValidation::where('user_id', $userToUpdate->id);
+            if (count($keepIds)) {
+                $delQuery->whereNotIn('id', $keepIds);
+            }
+            $delQuery->delete();
 
             UserDocument::updateOrCreate(
                 ['user_id' => $userToUpdate->id], // Search criteria
