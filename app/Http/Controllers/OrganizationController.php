@@ -407,6 +407,7 @@ class OrganizationController extends Controller
             'archive_after_months' => 'nullable|required_if:auto_archive,1|integer|min:1|max:120',
             'show_dob'             => 'required|in:0,1',
             'show_phone'           => 'required|in:0,1',
+            'enable_tacho_fields'  => 'required|in:0,1',
             'send_email'           => 'required|in:0,1',
             'timezone'             => 'required'
         ]);
@@ -420,8 +421,10 @@ class OrganizationController extends Controller
                 'show_dob'             => $validated['show_dob'],
                 'show_phone'           => $validated['show_phone'],
                 'show_phone'           => $validated['show_phone'],
+                'enable_tacho_fields'  => $validated['enable_tacho_fields'],
                 'send_email'           => $validated['send_email'],
                 'timezone'             => $validated['timezone'],
+                
             ]
         );
         Session::flash('message', 'Organization General setting Updated successfully .');

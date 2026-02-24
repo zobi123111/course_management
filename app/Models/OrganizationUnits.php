@@ -53,4 +53,9 @@ class OrganizationUnits extends Model
         return $this->hasMany(CbtaGrading::class, 'ou_id', 'id');
     }
 
+    public function Ousetting()
+    {
+        return $this->hasOne(OuSetting::class, 'organization_id', 'id');
+    }
+
 }

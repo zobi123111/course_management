@@ -30,7 +30,11 @@ class DefLesson extends Model
         'is_locked',
         'lesson_summary',
         'instructor_comment',
-        'operation'
+        'operation',
+        'takeoff_time',
+        'landing_time',
+        'tacho_start_time',
+        'tacho_stop_time'
     ];
 
     protected $casts = [
