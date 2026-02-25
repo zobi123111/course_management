@@ -707,7 +707,7 @@ instructorsdata = @json($instructors);
 var resourcesdata;
 resourcesdata = @json($resources);
 var lastOUData = null;
-
+ 
 const currentUser = {
     id: {{ auth()->user()->id }},
     role: "{{ get_user_role(auth()->user()->role) }}"
