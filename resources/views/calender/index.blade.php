@@ -115,16 +115,19 @@
         line-height: 23px;
         font-weight: 700;
     }
+
     span#utc_offset {
         color: #000;
         font-weight: 700 !important;
-        
+
     }
+
     span.offset_flag {
         font-size: large;
         font-weight: 600;
     }
 </style>
+
 <div class="container-fluid mt-3">
     <div style="margin-bottom: 10px;">
         <a class="btn btn-primary me-2 booking-button" id="create_booking">
@@ -132,7 +135,8 @@
         </a>
     </div>
     <div class="mb-3 filters_by">
-        <h4>Filter by:- </h4>
+        <h4>Filter by:- </h4>Create Booking
+
         <label class="me-3">
             <input type="checkbox" id="by_resource" checked> Resource
         </label>
@@ -155,111 +159,284 @@
 
 
 <!-----------------------------Create Booking------------------------------------------------------------------------>
-<div class="modal fade" id="newBookingModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
+    <div class="modal fade" id="newBookingModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
 
-            <div class="modal-header">
-                <h5 class="modal-title">Create Booking</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="booking_form">
-                <div class="modal-body">
-                    <div class="form-group">
-                        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                        <label>Select Org Unit</label>
-                        <select id="organizationUnits" name="organizationUnits" class="form-control mb-2">
-                            <option value="">Select Org Unit</option>
-                            @foreach ($organizationUnits as $val)
-                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                            @endforeach
-                        </select>
-                        @endif
-                        <span class="text-danger error-text" id="error_organizationUnits"></span>
-                    </div>
-
-
-                    @if(auth()->user()->is_admin == 1 && !empty(auth()->user()->ou_id))
-                    <input type="hidden" name="organizationUnits" id="organizationUnits" value="{{ auth()->user()->ou_id }}">
-                    @endif
-
-                    @if(auth()->user()->is_admin == 0 && auth()->user()->is_owner == 0 && !empty(auth()->user()->ou_id))
-                    <input type="hidden" name="organizationUnits" id="organizationUnits" value="{{ auth()->user()->ou_id }}">
-                    @endif
-
-                    <div class="form-group">
-                        <label>Start Date & Time</label>
-                        <input type="date" name="start_date" id="booking_start" class="form-control mb-2" autocomplete="off">
-                        <span class="text-danger error-text" id="error_start_date"></span>
-                    </div>
-
-                    <div class="form-group">
-                        <label>End Date & Time</label>
-                        <input type="date" name="end_date" id="booking_end" class="form-control mb-2" autocomplete="off">
-                        <span class="text-danger error-text" id="error_end_date"></span>
-                    </div>
-
-
-                    <div class="form-group">
-                        <label>Booking Type</label>
-                        <select id="booking_type" name="booking_type" class="form-control mb-2">
-                            <option value="1">Solo</option>
-                            <option value="2">Lesson</option>
-                            <option value="3">Standby</option>
-                        </select>
-                    </div>
-
-
-                    <div class="form-group">
-                        <label>Resource Type</label>
-                        <select name="resource_type" id="resource_type" class="form-control mb-2">
-                            <option value="1">Aircraft</option>
-                            <option value="2">Simulator</option>
-                            <option value="3">Classroom</option>
-                        </select>
-                    </div>
-
-
-                    <div class="form-group">
-                        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                        <label>Select Student</label>
-                        <select id="student" name="student" class="form-control mb-2">
-                            <option value="">Select Student</option>
-                        </select>
-                        @endif
-                        <span class="text-danger error-text" id="error_student"></span>
-                    </div>
-
-                    <div class="form-group">
-                        <div id="create_resource_wrapper">
-                            <label>Resource</label>
-                            <select id="resource" name="resource" class="form-control mb-2">
-                                <option value="">Select Resource</option>
-                            </select>
-                        </div>
-                        <span class="text-danger error-text" id="error_resource"></span>
-                    </div>
-
-                    <div class="form-group">
-                        <div id="create_instructor_wrapper" style="display:none">
-                            <label>Instructor</label>
-                            <select name="instructor" id="booking_instructor" class="form-control mb-2">
-                                <option value="">Select Instructor</option>
-                            </select>
-                        </div>
-                        <span class="text-danger error-text" id="error_instructor"></span>
-                    </div>
-
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Booking</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-            </form>
+                <form id="booking_form">
+                    <div class="modal-body">
 
-            <div class="modal-footer">
-                <button class="btn btn-primary" id="saveBookingBtn">Submit Booking</button>
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                                <label>Select Org Unit</label>
+                                <select id="organizationUnits" name="organizationUnits" class="form-control mb-2">
+                                    <option value="">Select Org Unit</option>
+                                    @foreach ($organizationUnits as $val)
+                                    <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                                    @endforeach
+                                </select>
+                                @endif
+                                <span class="text-danger error-text" id="error_organizationUnits"></span>
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <div class="form-group">
+                                    @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                                    <label>Select Student</label>
+                                    <select id="add_student" name="student" class="form-control mb-2">
+                                        <option value="">Select Student</option>
+                                    </select>
+                                    @endif
+                                    <span class="text-danger error-text" id="error_student"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if(auth()->user()->is_admin == 1 && !empty(auth()->user()->ou_id))
+                        <input type="hidden" name="organizationUnits" id="organizationUnits" value="{{ auth()->user()->ou_id }}">
+                        @endif
+
+                        @if(auth()->user()->is_admin == 0 && auth()->user()->is_owner == 0 && !empty(auth()->user()->ou_id))
+                        <input type="hidden" name="organizationUnits" id="organizationUnits" value="{{ auth()->user()->ou_id }}">
+                        @endif
+
+
+
+                        <div class="row">
+
+
+
+                            <div class="col-md-6 form-group">
+                                <div class="form-group">
+                                    <label>Start Date & Time</label>
+                                    <input type="date" name="start_date" id="booking_start" class="form-control mb-2" autocomplete="off">
+                                    <span class="text-danger error-text" id="error_start_date"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <div class="form-group">
+                                    <label>End Date & Time</label>
+                                    <input type="date" name="end_date" id="booking_end" class="form-control mb-2" autocomplete="off">
+                                    <span class="text-danger error-text" id="error_end_date"></span>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+
+                                <div class="form-group">
+                                    <label>Resource Type</label>
+                                    <select name="resource_type" id="resource_type" class="form-control mb-2">
+                                        <option value="1">Aircraft</option>
+                                        <option value="2">Simulator</option>
+                                        <option value="3">Classroom</option>
+                                    </select>
+                                </div>
+
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <div class="form-group">
+                                    <label>Booking Type</label>
+                                    <select id="booking_type" name="booking_type" class="form-control mb-2">
+                                        <option value="1">Solo</option>
+                                        <option value="2">Lesson</option>
+                                        <option value="3">Standby</option>
+                                    </select>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    
+                        <div id="create_trainingevent_div" style="display:none">
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <div class="form-group">
+                                        <label>Courses</label>
+                                        <select name="course" id="course" class="form-control mb-2">
+                                            <option value="">Select Courses</option>
+                                        </select>
+                                        <span class="text-danger error-text" id="error_course"></span>
+                                    </div>
+
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <div class="form-group">
+                                        <label>Lesson</label>
+                                        <select name="lesson" id="lesson" class="form-control mb-2">
+                                            <option value="">Select Lesson</option>
+                                        </select>
+                                        <span class="text-danger error-text" id="error_lesson"></span>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <div class="form-group">
+                                        <label>Rank</label>
+                                        <select name="rank" id="add_rank" class="form-control mb-2">
+                                            <option value="1">Captain</option>
+                                            <option value="2">First Officer</option>
+                                            <option value="3">Second Officer</option>
+                                        </select>
+                                        <span class="text-danger error-text" id="error_rank"></span>
+                                    </div>
+
+                                </div>
+
+                                <div class="col-md-6 form-group">
+                                    <div class="form-group">
+                                        <label>Course Start Date</label>
+                                        <input type="date" name="course_date" id="course_date" class="form-control mb-2" autocomplete="off">
+                                        <span class="text-danger error-text" id="error_course_date"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <div class="form-group">
+                                        <label>Lesson Date</label>
+                                        <input type="date" name="lesson_date" id="lesson_date" class="form-control mb-2" autocomplete="off">
+                                        <span class="text-danger error-text" id="error_lesson_date"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <div class="form-group">
+                                        <label>Instructor Licence Number</label>
+                                        <input type="text" name="licence_number" id="licence_number" class="form-control mb-2" autocomplete="off" readonly>
+                                        <span class="text-danger error-text" id="error_licence_number"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row" id="time_div" style="display:none">
+                                <div class="col-md-6 form-group">
+                                    <div class="form-group">
+                                        <label>Start Time</label>
+                                        <input type="time" name="start_time" class="form-control lesson-start-time">
+                                        <span class="text-danger error-text" id="error_lesson_date"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <div class="form-group">
+                                        <label>End Time</label>
+                                        <input type="time" name="end_time" class="form-control lesson-start-time">
+                                        <span class="text-danger error-text" id="error_licence_number"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <div class="form-group">
+                                        <label>Departure Airfield</label>
+                                        <input type="text" name="departure_airfield" class="form-control">
+                                        <span class="text-danger error-text" id="error_departure_airfield"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <div class="form-group">
+                                        <label>Destination Airfield</label>
+                                        <input type="text" name="destination_airfield" class="form-control">
+                                        <span class="text-danger error-text" id="error_destination_airfield"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <div class="form-group">
+                                        <label>Operation</label>
+                                        <select name="operation" id="operation" class="form-control mb-2">
+                                            <option value="">Select Operation</option>
+                                            <option value="1">PF in LHS</option>
+                                            <option value="2">PM in LHS</option>
+                                            <option value="3">PF in RHS</option>
+                                            <option value="4">PM in RHS</option>
+
+                                        </select>
+
+                                        <span class="text-danger error-text" id="error_operation"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <div class="form-group">
+                                        <label>Role</label>
+                                        <select name="role" id="role" class="form-control mb-2">
+                                            <option value="">Select Role</option>
+                                            <option value="1">PF-Pilot Flying</option>
+                                            <option value="2">PM-Pilot Monitoring</option>
+
+                                        </select>
+                                        <span class="text-danger error-text" id="error_role"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <div class="form-group">
+                                        <label>Student Licence Number</label>
+                                        <input type="text" name="student_licence" id="studentLicence_number" class="form-control mb-2" autocomplete="off" readonly>
+                                        <span class="text-danger error-text" id="error_student_licence"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 form-group">
+                                    <div class="form-group">
+                                        <label>Total Time (hh:mm)*</label>
+                                        <input type="text" name="total_time" id="total_time" class="form-control mb-2" autocomplete="off" readonly>
+                                        <span class="text-danger error-text" id="error_total_time"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <div class="form-group">
+                                        <div id="create_resource_wrapper">
+                                            <label>Resource</label>
+                                            <select id="resource" name="resource" class="form-control mb-2 add_resource">
+                                                <option value="">Select Resource</option>
+                                            </select>
+                                        </div>
+                                        <span class="text-danger error-text" id="error_resource"></span>
+                                    </div>
+
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <div class="form-group">
+                                        <div id="create_instructor_wrapper" style="display:none">
+                                            <label>Instructor</label>
+                                            <select name="instructor" id="booking_instructor" class="form-control mb-2">
+                                                <option value="">Select Instructor</option>
+                                            </select>
+                                        </div>
+                                        <span class="text-danger error-text" id="error_instructor"></span>
+                                    </div>
+                                </div>
+                            </div>
+                    
+                </form>
+
+                <div class="modal-footer">
+                    <button class="btn btn-primary" id="saveBookingBtn">Submit Booking</button>
+                </div>
+
             </div>
-
         </div>
     </div>
-</div>
 <!-- //-----------------------------------------End create booking---------------------------------------------------->
 
 <!-- //-------------------------------View Booking Model-------------------------------------------------------------->
@@ -322,11 +499,11 @@
                         </div>
                         <div class="col-md-5">
                             <div class="text-end text-success">
-                                    <div id="booking_day_div">
-                                        <span id="booking_day" class="booking_day"></span>
-                                        <span id="utc_offset" class="utc_offset small text-muted ms-2"></span>
-                                    </div>
-                                    <div id="booking_time" class="booking_time"></div>
+                                <div id="booking_day_div">
+                                    <span id="booking_day" class="booking_day"></span>
+                                    <span id="utc_offset" class="utc_offset small text-muted ms-2"></span>
+                                </div>
+                                <div id="booking_time" class="booking_time"></div>
                             </div>
                         </div>
                     </div>
@@ -491,6 +668,7 @@
         INIT / REINIT CALENDAR
         ---------------------------------------------------- */
         let headerExtraInfo = '';
+
         function initCalendar() {
 
             if (calendar) {
@@ -578,14 +756,14 @@
                             data: {
                                 mode: currentMode
                             },
-                      success: function(res) {
-                        successCallback(res);
+                            success: function(res) {
+                                successCallback(res);
 
-                        if (res.length > 0) {
-                        let headerExtraInfo = res[0].utc_offset;
-                        updateCalendarTitle(headerExtraInfo);
-                        }
-                       },
+                                if (res.length > 0) {
+                                    let headerExtraInfo = res[0].utc_offset;
+                                    updateCalendarTitle(headerExtraInfo);
+                                }
+                            },
                             error: function(err) {
                                 failureCallback(err);
                             }
@@ -628,15 +806,15 @@
 
 
                     /* ---------------- EVENT CLICK ---------------- */
-                    eventClick: function(info) { 
+                    eventClick: function(info) {
                         let e = info.event.extendedProps;
                         selectedEvent = e;
                         let mailText = (e.send_mail == 1) ? 'Enabled' : 'Disabled';
                         $('#mail_send').text(mailText);
                         $('#resource_registration').text(e.registration);
-                       $('#booking_student').text(e.student).attr('href', SITEURL + '/users/show/' + e.encode_std_id);
+                        $('#booking_student').text(e.student).attr('href', SITEURL + '/users/show/' + e.encode_std_id);
                         $('#booking_resource').text(e.resource).attr('href', SITEURL + '/resource/show/' + e.resource_id);
-                      
+
                         let statusText = e.status ? e.status.charAt(0).toUpperCase() + e.status.slice(1) : 'Scheduled';
                         $('#view_status').text(statusText);
 
@@ -669,23 +847,23 @@
                             $('#bookingInstructor_li').hide();
                             $('#bookingInstructor').text('');
                         }
-                       
+
                         let date = moment(info.event.start);
-                                            
+
                         let utcOffset = info.event.extendedProps.utc_offset || '';
 
                         $('#booking_day').text(date.format('ddd, MMM DD YYYY'));
                         $('#utc_offset').text(' (' + utcOffset + ')');
 
-                  
+
 
                         $('#booking_time').text(
                             moment(info.event.start).format('HH:mm') +
                             ' - ' +
                             moment(info.event.end).format('HH:mm')
                         );
-                       
-                          
+
+
 
 
                         $('#viewBookingModal').modal('show');
@@ -694,7 +872,6 @@
                     /* ---------------- SELECT SLOT ---------------- */
                     select: function(info) {
                         resetBookingForm();
-                        console.log(info.resource.id);
                         let start = moment(info.start);
                         let end = moment(info.end).subtract(1, 'hour'); // ✅ FIX
 
@@ -721,21 +898,22 @@
                         }
                         $('#newBookingModal').modal('show');
                     },
-                    datesSet: function () {
+                    datesSet: function() {
                         updateCalendarTitle(headerExtraInfo);
                     },
                 }
             );
+
             function updateCalendarTitle(headerExtraInfo) {
-                   let title = calendar.view.title;
+                let title = calendar.view.title;
 
-                    let headerHtml = title;
+                let headerHtml = title;
 
-                    if (headerExtraInfo) {
-                        headerHtml += '<span class="offset_flag">' + "("+ headerExtraInfo + ")" + '</span>';
-                    }
+                if (headerExtraInfo) {
+                    headerHtml += '<span class="offset_flag">' + "(" + headerExtraInfo + ")" + '</span>';
+                }
 
-                    document.querySelector('.fc-toolbar-title').innerHTML = headerHtml;
+                document.querySelector('.fc-toolbar-title').innerHTML = headerHtml;
             }
 
 
@@ -817,9 +995,12 @@
                 data: formData,
                 processData: false,
                 contentType: false,
-                success: function() {
+                success: function(res) {
                     $('#newBookingModal').modal('hide');
                     calendar.refetchEvents();
+                     alert(res.message); 
+                    location.reload()
+
                 },
                 error: function(xhr) {
                     if (xhr.status === 422) {
@@ -840,13 +1021,15 @@
 
             var $groupSelect = $("#group");
             var $resourceSelect = $("#resource");
-            var $student = $("#student");
+            var $student = $("#add_student");
             let $instructor = $("#booking_instructor");
+            //  let $courses = $("#course");
 
             $groupSelect.empty().append("<option value=''>Select Group</option>").trigger("change");
-            $resourceSelect.empty().append("<option value=''>Select Resource</option>").trigger("change");
-            $student.empty().append("<option value=''>Select Student</option>").trigger("change");
+              $resourceSelect.empty().append("<option value=''>Select Resource</option>");
+            // $student.empty().append("<option value=''>Select Student</option>").trigger("change");
             $instructor.empty().append("<option value=''>Select Instructor</option>");
+            //  $courses.empty().append("<option value=''>Select Courses</option>");
 
             $.ajax({
                 url: "/group/students/",
@@ -863,19 +1046,10 @@
                                 "</option>";
                         });
                         $student.html(options);
-                        $student.trigger("change");
+                        // $student.trigger("change");
                     }
 
-                    if (response.org_resource && Array.isArray(response.org_resource)) {
-                        var options = "<option value=''>Select Resource </option>";
-                        response.org_resource.forEach(function(value) {
-                            console.log(value);
-                            options += "<option value='" + value.id + "'>" + value.name +
-                                "</option>";
-                        });
-                        $resourceSelect.html(options);
-                        $resourceSelect.trigger("change");
-                    }
+
                     if (response.instructors) {
                         response.instructors.forEach(i => {
                             $instructor.append(
@@ -883,6 +1057,16 @@
                             );
                         });
                     }
+                        // Add resources 
+                    if (response.org_resource && Array.isArray(response.org_resource)) {
+                        var options = "<option value=''>Select Resource </option>";
+                        response.org_resource.forEach(function(value) {
+                            options += "<option data-resource='" + value.name + "' value='" + value.id + "'>" + value.name + "</option>";
+                        });
+                        $resourceSelect.html(options);
+                        // $resourceSelect.trigger("change");
+                    }
+             
                 },
                 error: function(xhr, status, error) {
                     console.error(xhr.responseText);
@@ -946,7 +1130,7 @@
             // Always reset first
             $(instructorWrapper).hide();
             $(instructorSelector).val('').prop('required', false);
-
+            // alert(type);
             if (type == 1) {
                 // SOLO
                 $(resourceWrapper).show();
@@ -973,12 +1157,12 @@
         function toggleInstructorRequirement(bookingTypeSelector, instructorSelector) {
             let bookingType = $(bookingTypeSelector).val();
 
-            if (bookingType == 1) { // Solo
+            if (bookingType == 1) {
                 $(instructorSelector)
                     .prop('required', false)
                     .val('')
                     .closest('.form-group').removeClass('required');
-            } else { // Lesson or Standby
+            } else {
                 $(instructorSelector)
                     .prop('required', true)
                     .closest('.form-group').addClass('required');
@@ -999,7 +1183,7 @@
             allowInput: true,
         });
 
-  
+
         $("#editBookingBtn").on("click", function() {
             $("#viewBookingModal").modal("hide");
             $('#edit_booking_id').val(selectedEvent.id);
@@ -1058,8 +1242,6 @@
 
         $("#edit_organizationUnits").on('change', function() {
             let ou_id = $(this).val();
-
-
             let $resource = $("#edit_resource");
             let $student = $("#edit_student");
             let $instructor = $("#edit_instructor");
@@ -1069,7 +1251,6 @@
             $instructor.empty().append("<option value=''>Select Instructor</option>");
 
             if (!ou_id) return;
-
             $.ajax({
                 url: "/group/students/",
                 type: "GET",
@@ -1201,8 +1382,218 @@
                     console.error(xhr.responseText);
                 }
             });
-
         });
+
+        $("#course").on('change', function() {
+            let course_id = $(this).val();
+            let $lesson = $("#lesson");
+            var $resourceSelect = $("#resource");
+
+            $lesson.empty().append("<option value=''>Select Lesson</option>");
+            if (!course_id) return;
+
+            $.ajax({
+                url: "/course/lesson",
+                type: "POST",
+                data: {
+                    course_id: course_id
+                },
+                dataType: "json",
+                success: function(response) {
+                    if (response.lessons) {
+                        response.lessons.forEach(i => {
+                            $lesson.append(
+                                `<option value="${i.id}">${i.lesson_title}</option>`
+                            );
+                        });
+                    }
+                    let rankSelect = $("#add_rank");
+
+                    if (response.enable_mp_lifus !== undefined) {
+                        let enableValue = response.enable_mp_lifus;
+                        // First show all options (reset)
+                        rankSelect.find("option").show();
+                        if (enableValue == 0 || enableValue == 1) {
+                            rankSelect.find("option[value='2'], option[value='3']").hide();
+                            rankSelect.val("1");
+                        } else if (enableValue == 2 || enableValue == 3) {
+                            rankSelect.find("option[value='2'], option[value='3']").show();
+                        }
+                    }
+
+                    // Add resources 
+                    if (response.resources && Array.isArray(response.resources)) {
+                        var options = "<option value=''>Select Resource </option>";
+                        response.resources.forEach(function(value) {
+                            options += "<option data-resource='" + value.name + "' value='" + value.id + "'>" + value.name + "</option>";
+                        });
+                        $resourceSelect.html(options);
+                        // $resourceSelect.trigger("change");
+                    }
+                }
+            });
+        });
+
+        $("#booking_instructor").on('change', function() {
+
+            let instructorId = $(this).val();
+            let selectedCourseId = $('#course').val();
+            let licenseInput = $('#licence_number');
+
+            // 🔴 Validation — instructor required
+            if (!instructorId) {
+                licenseInput.val('');
+                return;
+            }
+
+            // 🔴 Validation — course required
+            if (!selectedCourseId) {
+                alert("Please select course first.");
+                $(this).val('');
+                licenseInput.val('');
+                return;
+            }
+
+            // 🔵 Disable while loading
+            licenseInput.prop('readonly', true).val('Loading...');
+
+            $.ajax({
+                url: "{{ url('/training/get_instructor_license_no') }}/" + instructorId + "/" + selectedCourseId,
+                type: 'GET',
+                dataType: 'json',
+
+                success: function(response) {
+
+                    //  licenseInput.prop('readonly', false);
+
+                    // 🔴 Response validation
+                    if (!response || typeof response !== "object") {
+                        licenseInput.val('');
+                        alert("Invalid response received.");
+                        return;
+                    }
+
+                    if (response.success === true) {
+                        if (response.instructor_licence_number) {
+                            licenseInput.val(response.instructor_licence_number);
+                        } else {
+                            licenseInput.val('');
+                            alert("Instructor licence number not found.");
+                        }
+
+                    } else {
+                        licenseInput.val('');
+                        alert(response.message || "Instructor not found.");
+                    }
+                },
+
+                error: function(xhr) {
+                    // licenseInput.prop('readonly', false).val('');
+                    console.error(xhr);
+                    alert("Server error while fetching licence number.");
+                }
+            });
+        });
+
+        $(".add_resource").on('change', function() { 
+            let resource = $(this).find(':selected').data('resource');
+            let booking_type = $('#booking_type').val();
+     
+            if (resource == "Classroom" && (booking_type ==1) ) {
+                $('#time_div').hide();
+
+            } else {
+                $('#time_div').show();
+
+            }
+        });
+
+        $(document).on('change', '#add_student', function() {
+            var userId = $(this).val();
+            let ou_id = $('#organizationUnits').val();
+            var licenceNumberField = $('#studentLicence_number');
+            let $courses = $("#course");
+
+            if (userId) {
+                $.ajax({
+                    url: "{{ url('/training/get_licence_number_and_courses') }}/" + userId + '/' + ou_id,
+                    type: "GET",
+                    success: function(response) {
+                        console.log();
+                        if (response.success) {
+                            if (response.licence_number) {
+                                licenceNumberField.val(response.licence_number);
+                            } else {
+                               // alert('Student Licence number not found!');
+                                licenceNumberField.val('');
+                            }
+
+                            //  Add Courses
+
+                            if (response.courses && response.courses.length > 0) {
+                                response.courses.forEach(i => {
+                                    $courses.append(
+                                        `<option value="${i.id}">${i.course_name}</option>`
+                                    );
+                                });
+                            }
+
+                        } else {
+                            licenceNumberField.val('');
+                            alert('Licence number not found!');
+                            courseDropdown.html('<option value="">Select Course</option>'); // Clear courses
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error(xhr.responseText);
+                    }
+                });
+            } else {
+                licenceNumberField.val('');
+            }
+        });
+
+        $(document).on('change', '#booking_type', function() {
+            var booking_type = $(this).val();
+             if(booking_type == 1){
+                $('#create_trainingevent_div').hide();
+
+             }else{
+                 $('#create_trainingevent_div').show();
+
+             }
+        });
+
+        $(document).on('change', 'input[name="start_time"], input[name="end_time"]', function () {
+          calculateTotalTime();
+        });
+        function calculateTotalTime() {
+
+    let start = $('input[name="start_time"]').val();
+    let end   = $('input[name="end_time"]').val();
+
+    if(start && end){
+
+        let startTime = moment(start, "HH:mm");
+        let endTime   = moment(end, "HH:mm");
+
+        // handle next day case
+        if(endTime.isBefore(startTime)){
+            endTime.add(1, 'day');
+        }
+
+        let diffMinutes = endTime.diff(startTime, 'minutes');
+
+        let hours = Math.floor(diffMinutes / 60);
+        let minutes = diffMinutes % 60;
+
+        let formatted =
+            String(hours).padStart(2,'0') + ":" +
+            String(minutes).padStart(2,'0');
+
+        $("#total_time").val(formatted);
+    }
+}
     });
 </script>
 @endsection

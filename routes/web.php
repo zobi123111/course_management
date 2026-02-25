@@ -412,6 +412,7 @@ Route::post('/booking/update', [BookingController::class, 'update']);
 Route::post('/booking/approve', [BookingController::class, 'approve']);
 Route::post('/booking/delete', [BookingController::class, 'delete']);
 Route::post('/booking/reject', [BookingController::class, 'reject']);
+Route::post('/course/lesson', [BookingController::class, 'lessons'])->name('lessons'); 
 Route::get('/group/students/', [BookingController::class, 'getstudents'])->name('getstudents'); 
 Route::get('/calendar/resources', [BookingController::class, 'loadResources']);
 Route::get('/calendar/events', [BookingController::class, 'loadEvents']);
