@@ -302,7 +302,7 @@
                                     <div class="col-md-12 mb-3">
                                         <div class="d-flex align-items-center justify-content-between">
                                             <div class="form-check d-flex align-items-center">
-                                                <input class="form-check-input me-2" type="checkbox" name="licence_verification_required[]" value="1">
+                                                <input class="form-check-input me-2" type="checkbox" name="licence_validation_verification_required[]" value="1">
                                                 <label class="form-check-label"> Admin Verification required? </label>
                                             </div>
 
@@ -945,7 +945,7 @@
                                 <div class="col-md-12 mb-3">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div class="form-check d-flex align-items-center">
-                                            <input class="form-check-input me-2" type="checkbox" name="edit_licence_verification_required[]" value="1">
+                                            <input class="form-check-input me-2" type="checkbox" name="edit_licence_validation_verification_required[]" value="1">
                                             <label class="form-check-label"> Admin Verification required? </label>
                                         </div>
 
@@ -1446,19 +1446,43 @@
         if (response.validation_type && response.validation_type.length > 0) {
             // Populate Create Template
             if (createTemplate.length) {
-                let createCodeSelect = createTemplate.find('select[name="validation_code[]"]');
-                let createCountrySelect = createTemplate.find('select[name="country_name[]"]');
+                let codeSelect    = createTemplate.find('select[name="validation_code[]"]');
+                let countrySelect = createTemplate.find('select[name="country_name[]"]');
 
-                // Clear existing options (keep defaults)
-                createCodeSelect.find('option:not(:first)').remove();
-                createCountrySelect.find('option:not(:first)').remove();
+                // 🔹 Capture selected values BEFORE reset
+                let selectedCode    = codeSelect.val();
+                let selectedCountry = countrySelect.val();
 
-                response.validation_type.forEach(function(item) {
-                    // disable options that are not enabled
-                    let disabledAttr = item.enabled ? '' : ' disabled';
-                    createCodeSelect.append(`<option value="${item.id}" data-country="${item.country_name}"${disabledAttr}>${item.code}</option>`);
-                    createCountrySelect.append(`<option value="${item.country_name}" data-code="${item.code}"${disabledAttr}>${item.country_name}</option>`);
+                codeSelect.find('option:not(:first)').remove();
+                countrySelect.find('option:not(:first)').remove();
+
+                response.validation_type.forEach(item => {
+                    let disabled = item.enabled ? '' : 'disabled';
+
+                    codeSelect.append(
+                        `<option value="${item.id}" data-country="${item.country_name}" ${disabled}>
+                            ${item.code}
+                        </option>`
+                    );
+
+                    countrySelect.append(
+                        `<option value="${item.country_name}" data-code="${item.code}" ${disabled}>
+                            ${item.country_name}
+                        </option>`
+                    );
                 });
+
+                // 🔹 Restore selected values
+                if (selectedCode) {
+                    codeSelect.val(selectedCode);
+                }
+
+                if (selectedCountry) {
+                    countrySelect.val(selectedCountry);
+                }
+
+                codeSelect.trigger('change');
+                countrySelect.trigger('change');
             }
 
             // Populate Edit Template
@@ -2623,7 +2647,7 @@
                                         populateValidationTypesForRow($newRow, cachedValidationTypes);
                                         
                                         console.log('Setting admin_verification_required to:', validation.admin_verification_required);
-                                        $newRow.find('input[name="edit_licence_verification_required[]"]').first().prop('checked', validation.admin_verification_required == 1);
+                                        $newRow.find('input[name="edit_licence_validation_verification_required[]"]').first().prop('checked', validation.admin_verification_required == 1);
                                         
                                         // Find validation type by country_name match
                                         let matchingType = cachedValidationTypes.find(type => type.country_name === validation.country_name);

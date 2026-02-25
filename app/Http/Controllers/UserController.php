@@ -890,7 +890,7 @@ class UserController extends Controller
 
     public function save_user(Request $request)
     {
-       // dd($request->all());
+        // dd($request->all());
 
         $validated = $request->validate([
             'firstname' => 'required',
@@ -1088,7 +1088,7 @@ class UserController extends Controller
                         'issue_date'         => $request->issue_date[$index] ?? null,
                         'expiry_date'        => $request->expiry_date[$index] ?? null,
                         'certificate_file'   => $filePath,
-                        'admin_verification_required' => $request->boolean('licence_verification_required'),
+                        'admin_verification_required' => $request->licence_validation_verification_required[$index] ?? 0,
                     ]);
                 }
             }
@@ -1496,10 +1496,7 @@ class UserController extends Controller
                                 'issue_date'        => $request->edit_issue_date[$index] ?? null,
                                 'expiry_date'       => $request->edit_expiry_date[$index] ?? null,
                                 'certificate_file'  => $filePath,
-                                'admin_verification_required' =>
-                                    isset($request->edit_licence_verification_required[$index])
-                                        ? (bool) $request->edit_licence_verification_required[$index]
-                                        : false,
+                                'admin_verification_required' => isset($request->edit_licence_validation_verification_required[$index]) ? 1 : 0,
                             ]);
                             continue;
                         }
@@ -1516,10 +1513,7 @@ class UserController extends Controller
                         'issue_date'         => $request->edit_issue_date[$index] ?? null,
                         'expiry_date'        => $request->edit_expiry_date[$index] ?? null,
                         'certificate_file'   => $filePath,
-                        'admin_verification_required' =>
-                            isset($request->edit_licence_verification_required[$index])
-                                ? (bool) $request->edit_licence_verification_required[$index]
-                                : false,
+                        'admin_verification_required' => isset($request->edit_licence_validation_verification_required[$index]) ? 1 : 0,
                     ]);
                     // $newModel created; its id will be added by the keepIds logic below
                 }
