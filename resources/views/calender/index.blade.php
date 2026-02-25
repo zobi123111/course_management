@@ -205,12 +205,7 @@
                         <input type="hidden" name="organizationUnits" id="organizationUnits" value="{{ auth()->user()->ou_id }}">
                         @endif
 
-
-
                         <div class="row">
-
-
-
                             <div class="col-md-6 form-group">
                                 <div class="form-group">
                                     <label>Start Date & Time</label>
@@ -230,7 +225,6 @@
 
                         <div class="row">
                             <div class="col-md-6 form-group">
-
                                 <div class="form-group">
                                     <label>Resource Type</label>
                                     <select name="resource_type" id="resource_type" class="form-control mb-2">
@@ -320,22 +314,7 @@
                                 </div>
                             </div>
 
-                            <div class="row" id="time_div" style="display:none">
-                                <div class="col-md-6 form-group">
-                                    <div class="form-group">
-                                        <label>Start Time</label>
-                                        <input type="time" name="start_time" class="form-control lesson-start-time">
-                                        <span class="text-danger error-text" id="error_lesson_date"></span>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 form-group">
-                                    <div class="form-group">
-                                        <label>End Time</label>
-                                        <input type="time" name="end_time" class="form-control lesson-start-time">
-                                        <span class="text-danger error-text" id="error_licence_number"></span>
-                                    </div>
-                                </div>
-                            </div>
+                          
 
                             <div class="row">
                                 <div class="col-md-6 form-group">
@@ -424,6 +403,22 @@
                                             </select>
                                         </div>
                                         <span class="text-danger error-text" id="error_instructor"></span>
+                                    </div>
+                                </div>
+                        </div>
+                          <div class="row" id="time_div" style="display:none">
+                                <div class="col-md-6 form-group">
+                                    <div class="form-group">
+                                        <label>Start Time</label>
+                                        <input type="time" name="start_time" class="form-control lesson-start-time">
+                                        <span class="text-danger error-text" id="error_lesson_date"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <div class="form-group">
+                                        <label>End Time</label>
+                                        <input type="time" name="end_time" class="form-control lesson-start-time">
+                                        <span class="text-danger error-text" id="error_licence_number"></span>
                                     </div>
                                 </div>
                             </div>
@@ -1006,7 +1001,8 @@
                     if (xhr.status === 422) {
                         $('.error-text').text('');
                         $.each(xhr.responseJSON.errors, function(k, v) {
-                            $('#error_' + k).text(v[0]);
+                            // $('#error_' + k).text(v[0]);
+                            alert(v[0]);
                         });
                     } else {
                         alert('Something went wrong');
@@ -1499,13 +1495,14 @@
             let resource = $(this).find(':selected').data('resource');
             let booking_type = $('#booking_type').val();
      
-            if (resource == "Classroom" && (booking_type ==1) ) {
+            if (resource == "Classroom") { 
                 $('#time_div').hide();
 
-            } else {
+            } 
+            else if (resource != "Classroom"  && (booking_type == 2 || booking_type ==3)){
                 $('#time_div').show();
-
             }
+          
         });
 
         $(document).on('change', '#add_student', function() {
@@ -1513,6 +1510,7 @@
             let ou_id = $('#organizationUnits').val();
             var licenceNumberField = $('#studentLicence_number');
             let $courses = $("#course");
+            $courses.empty().append('<option value="">Select Course</option>');
 
             if (userId) {
                 $.ajax({
@@ -1557,6 +1555,9 @@
             var booking_type = $(this).val();
              if(booking_type == 1){
                 $('#create_trainingevent_div').hide();
+                $('.add_resource').val('').trigger('change');
+                $('#time_div').hide();
+
 
              }else{
                  $('#create_trainingevent_div').show();
