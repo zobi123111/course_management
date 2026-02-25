@@ -86,12 +86,17 @@
 @endif
 
 <div class="card">
+    <div class="create_btn d-flex justify-content-between align-items-center mt-4" style="margin-left:10px"> 
+        <div>
+            <a href="{{ url('tags') }}?ou_id={{ encode_id($ou_id) }}" class="btn btn-primary me-2 create-button">Manage Tags</a>
+            <a href="{{ url('custom-cbta') }}?ou_id={{ encode_id($ou_id) }}" class="btn btn-primary" id="addRating">Manage Competency Grading</a> 
+            <a href="{{ url('validation-codes') }}?ou_id={{ encode_id($ou_id) }}" class="btn btn-primary" id="addRating">Manage Validation Code</a> 
+        </div>
+    </div>
     <div class="container mt-4">
         <div class="card-body">
-
             <form method="POST" id="ouSettingsForm">
                 @csrf
-
                 {{-- Organization Unit --}}
                 <div class="row mb-3">
                     <label class="col-sm-4 col-form-label">Organization Unit</label>
@@ -133,6 +138,38 @@
                                 <option value="{{ $i }}">{{ $i }}</option>
                             @endfor
                         </select>
+                    </div>
+                </div>
+
+                <!-- Time Zone  -->
+                <div class="row mb-3">
+                    <label class="col-sm-4 col-form-label">
+                        Time Zone
+                    </label>
+                    <div class="col-sm-8">
+                        <select name="timezone" class="form-control" class="form-control">
+                            <option value="">Select Time Zone</option>
+                          @foreach($timezones as $utc => $zones)
+                                <optgroup label="{{ $utc }}">
+                                    @foreach($zones as $zone)
+                                        @php
+                                            $tzValue = "({$utc}) {$zone}";
+                                        @endphp
+
+                                        <option value="{{ $tzValue }}"
+                                            {{ 
+                                                (isset($ou) && $ou->timezone === $tzValue) || 
+                                                (isset($OuSetting) && $OuSetting->timezone === $tzValue)
+                                                ? 'selected' : '' 
+                                            }}>
+                                            {{ $tzValue }}
+                                        </option>
+                                    @endforeach
+                                </optgroup>
+                            @endforeach
+                        </select>
+
+                        <div id="timezone_error" class="text-danger error_e"></div>
                     </div>
                 </div>
 
@@ -183,7 +220,7 @@
                     <div class="col-sm-8">
                         <input type="hidden" name="send_email" value="0">
 
-                        <label class="switch">
+                        <label class="switch"> 
                             <input type="checkbox"
                                    id="edit_send_email"
                                    name="send_email"
@@ -193,6 +230,33 @@
                             <div class="switch-button">
                                 <span class="switch-button-left">Send Email</span>
                                 <span class="switch-button-right">Not Send Email</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <label class="col-sm-4 col-form-label">
+                        Enable Tacho Fields
+                            <i class="bi bi-info-circle-fill text-primary ms-1"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="right"
+                                title="When enabled, an email notification will be sent while booking a resource during calendar booking.">
+                            </i>
+                    </label>
+                    <div class="col-sm-8">
+                        <input type="hidden" name="enable_tacho_fields" value="0">
+
+                        <label class="switch"> 
+                            <input type="checkbox"
+                                   id="edit_enable_tacho_fields"
+                                   name="enable_tacho_fields"
+                                   value="1"
+                                   class="switch-input"
+                                   {{ optional($OuSetting)->enable_tacho_fields == 1 ? 'checked' : '' }}>
+                            <div class="switch-button">
+                                <span class="switch-button-left">Enable Tacho Fields</span>
+                                <span class="switch-button-right">Disable Tacho Fields</span>
                             </div>
                         </label>
                     </div>

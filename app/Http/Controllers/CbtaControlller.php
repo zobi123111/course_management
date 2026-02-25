@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\CbtaGrading;
+use App\Models\OrganizationUnits;
 use Session;
 use Illuminate\Validation\Rule;
 
@@ -10,9 +11,16 @@ class CbtaControlller extends Controller
 {
     public function index()
     {
-      $instructor =  CbtaGrading::where('competency_type', 'instructor')->get();
-      $examiner =  CbtaGrading::where('competency_type', 'examiner')->get();
-        return view('CBTA.show', compact('instructor', 'examiner'));
+     if(auth()->user()->is_owner == 1){
+        $instructor =  CbtaGrading::with('organization_unit')->where('competency_type', 'instructor')->get();
+         $examiner =  CbtaGrading::with('organization_unit')->where('competency_type', 'examiner')->get();
+
+     }else{
+      $instructor =  CbtaGrading::with('organization_unit')->where('competency_type', 'instructor')->where('ou_id', auth()->user()->ou_id)->get();
+      $examiner =  CbtaGrading::with('organization_unit')->where('competency_type', 'examiner')->where('ou_id', auth()->user()->ou_id)->get();
+     }
+      $organizationUnits  = OrganizationUnits::all();
+      return view('CBTA.show', compact('instructor', 'examiner','organizationUnits'));
     }
 
 
@@ -32,9 +40,10 @@ public function save(Request $request)
     ]);
 
     CbtaGrading::create([
-        'competency' => $request->competency,
-        'short_name' => $request->short_name,
-        'competency_type' => $request->competency_type
+        'competency'      => $request->competency,
+        'ou_id' =>  (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->organization_unit : auth()->user()->ou_id,
+        'short_name'      => $request->short_name,
+        'competency_type' => $request->competency_type 
     ]);
 
     Session::flash('message', 'CBTA competency added successfully');
@@ -61,8 +70,9 @@ public function save(Request $request)
             ]);
     
            CbtaGrading::where('id', $request->cbta_id)->update([
-                    'competency' => $request->edit_competency,
-                    'short_name' => $request->edit_short_name,
+                    'competency'      => $request->edit_competency,
+                    'ou_id' =>  (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->organization_unit : auth()->user()->ou_id,
+                    'short_name'      => $request->edit_short_name,
                     'competency_type' => $request->edit_competency_type
                 ]);
 

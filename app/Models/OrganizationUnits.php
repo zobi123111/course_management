@@ -18,7 +18,7 @@ class OrganizationUnits extends Model
         return $this->hasMany(User::class, 'ou_id', 'id');
     }
 
-    public function roleOneUsers()
+    public function roleOneUsers() 
     {
         return $this->hasOne(User::class, 'ou_id', 'id')->where('role', 1);
     }    
@@ -41,6 +41,21 @@ class OrganizationUnits extends Model
     public function topics()
     {
         return $this->hasMany(Topic::class);
+    }
+
+    public function tags()
+    {
+        return $this->hasMany(RhsTag::class, 'ou_id', 'id');
+    }
+
+    public function cbta_grading()
+    {
+        return $this->hasMany(CbtaGrading::class, 'ou_id', 'id');
+    }
+
+    public function Ousetting()
+    {
+        return $this->hasOne(OuSetting::class, 'organization_id', 'id');
     }
 
 }

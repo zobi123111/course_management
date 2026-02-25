@@ -82,8 +82,10 @@ class ReportsController extends Controller
                 $query->where('ou_id', $userOuId)
                     ->whereNull('deleted_at');
             })
-            ->orderBy('id', 'asc')
+           // ->orderBy('id', 'asc')
+            ->orderByDesc('course_end_date')
             ->get();
+          
 
         // Group events by course_id
         $courses = $events->groupBy('course_id')->filter(fn($courseEvents) => $courseEvents->first()->course)->map(function ($courseEvents) {
@@ -140,11 +142,12 @@ class ReportsController extends Controller
     }
 
 
-
+ 
     public function showCourse($hashedId, Request $request)
     {
         $id = decode_id($hashedId);
-
+        
+    
         if (!$id) {
             abort(404, 'Invalid Course ID');
         }
@@ -152,9 +155,9 @@ class ReportsController extends Controller
         $showArchived = $request->has('show_archived') && $request->show_archived == '1';
         $showFailing = $request->has('show_failing') && $request->show_failing == '1';
 
-        
-
-        $course = Courses::with(['trainingEvents.student'])->findOrFail($id);
+       $course = Courses::with(['trainingEvents.student','courseLessons.sublessons'])->findOrFail($id);
+       $totalSubLessons = $course->courseLessons->pluck('sublessons')->flatten()->count();
+  
 
         // Create a map of student_id => training_event data
         $eventMap = $course->trainingEvents
@@ -168,12 +171,8 @@ class ReportsController extends Controller
             });
 
         // Get unique students
-        $students = $course->trainingEvents
-                    ->pluck('student')
-                    ->filter();
-        $students = $students
-                    ->unique('id')
-                    ->values();   
+        $students = $course->trainingEvents->pluck('student')->filter();
+        $students = $students->unique('id')->values();   
                  
 
        $employees = $course->trainingEvents
@@ -210,7 +209,7 @@ class ReportsController extends Controller
         }
 
         // Attach event data to each student
-        $students->transform(function ($student) use ($eventMap) {
+        $students->transform(function ($student) use ($eventMap, $totalSubLessons) {
             $student->event_id = $eventMap[$student->id]['event_id'] ?? null;
             $student->event_date = $eventMap[$student->id]['event_date'] ?? null;
             $student->course_end_date = $eventMap[$student->id]['course_end_date'] ?? null;
@@ -222,7 +221,7 @@ class ReportsController extends Controller
                 $daysSinceStart = $startDate->diffInDays(Carbon::now());
                 $student->show_alert = $daysSinceStart >= 150;
             }
-            
+         
             // Progress breakdown from task_grading
             $grades = TaskGrading::where('user_id', $student->id)
                 ->when($student->event_id, fn($q) => $q->where('event_id', $student->event_id))
@@ -230,7 +229,6 @@ class ReportsController extends Controller
                 ->map(fn($grade) => strtolower((string) $grade));
 
             $total = $grades->count();
-
   
             // 1️⃣ Fetch student's TaskGrading records
                 $grades = TaskGrading::where('user_id', $student->id)
@@ -252,21 +250,32 @@ class ReportsController extends Controller
                     $d->task_grade = strtolower((string) $d->task_grade);
                     return $d;
                 });
-                // 4️⃣ Initialize progress counters
-              $progress = [
-                    'total' => $normalizedGrades->count(),
+
+           // dd($normalizedGrades->count());
+               
+            //   $progress = [
+            //         'total' => $normalizedGrades->count(),
+            //         'incomplete' => 0,
+            //         'further' => 0,
+            //         'competent' => 0,
+            //     ];
+            $progress = [
+                    'total' => $totalSubLessons,
                     'incomplete' => 0,
                     'further' => 0,
                     'competent' => 0,
                 ];
 
+
              foreach ($normalizedGrades as $grade) {
+             //   dump($grade);
                         $matchingDef = $normalizedDef->firstWhere('task_id', $grade->sub_lesson_id);
                         if ($matchingDef) {
                             $finalGrade = $matchingDef->task_grade ?: 'incomplete';
                         } else {
                             $finalGrade = $grade->task_grade;
                         }
+                       // dump($finalGrade);
 
                         if (in_array($finalGrade, ['1', 'incomplete'])) {
                             $progress['incomplete']++;
@@ -291,7 +300,7 @@ class ReportsController extends Controller
             return $student;
         });
         // === Chart Data ===
-       //  dump($students);
+        
         $chartData = [
             'enrolled'    => $students->count(),
             'completed'   => $students->filter(fn($s) => $s->is_completed)->count(),
@@ -299,9 +308,46 @@ class ReportsController extends Controller
             'archived'    => $students->filter(fn($s) => $s->is_archived)->count(),
             'is_activated' => $students->filter(fn($s) => $s->is_activated)->count(),
             'failing'     => $failingStudentIds->intersect($students->pluck('id'))->count(),
-        ]; 
+        ];
+        // === Summary Calculation ===
 
-        return view('reports.course_detail', compact('course', 'students', 'showArchived', 'showFailing', 'chartData', 'employees'));
+            // 1️⃣ Total Enrolled
+            $totalEnrolled = $students->count();
+
+            // 2️⃣ Completed in Last 12 Months
+            $oneYearAgo = Carbon::now()->subMonths(12);
+
+            $completedLast12Months = $students->filter(function ($s) use ($oneYearAgo) {
+
+                if (!$s->is_completed) {
+                    return false;
+                }
+                // If course_end_date exists → check that
+                if ($s->course_end_date) {
+                    return Carbon::parse($s->course_end_date)->gte($oneYearAgo);
+                }
+
+                // If completed by progress but no end date
+                return false;
+
+            })->count();
+
+
+            // 3️⃣ Separate Summary Array
+            $courseSummary = [
+                'total_enrolled' => $totalEnrolled,
+                'completed_last_12_months' => $completedLast12Months,
+            ];
+         
+
+
+        $breadcrumbs = [
+            ['title' => 'Report', 'url' => route('reports.index')],
+            ['title' => "$course->course_name", 'url' => url('reports/course/'.$hashedId)],  
+        ];
+       
+     
+        return view('reports.course_detail', compact('course', 'students', 'showArchived', 'showFailing', 'chartData', 'employees','breadcrumbs', 'courseSummary'));
     } 
 
     public function updateStudentArchiveStatus(Request $request)

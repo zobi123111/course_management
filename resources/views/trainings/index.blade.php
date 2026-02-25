@@ -24,7 +24,27 @@
     </div>
 @endif
 <br>
- <h4>Student Training events</h4>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <!-- Left Side -->
+    <h4 class="mb-0 fw-semibold text-primary">
+        Student Training Events
+    </h4>
+
+    <!-- Right Side -->
+    <?php  $currentUser = auth()->user(); ?>
+    @if ($currentUser->is_owner == 1 || $currentUser->is_admin == 1) 
+    <div class="form-check form-switch mb-0">
+        <input class="form-check-input" 
+       type="checkbox" 
+       id="archiveToggle"
+       {{ request('archive') == '1' ? 'checked' : '' }}>
+        <label class="form-check-label fw-medium" for="archiveToggle">
+            Archive
+        </label>
+    </div>
+    @endif
+</div>
+
 <div class="card pt-4">
         <div class="card-body">
     <table class="table table-hover" id="trainingEventTable"> 
@@ -33,11 +53,8 @@
                 <th scope="col">Event</th>
                 <th scope="col">Student</th>
                 <th scope="col">Instructor</th>
-                <!-- <th scope="col">Resource</th> -->
                 <th scope="col">Start Date</th>
                 <th scope="col">Completion Date</th>
-                <!-- <th scope="col">Start Time</th>
-                <th scope="col">End Time</th> -->
                 <th scope="col">Status</th>
                 @if(checkAllowedModule('training','training.show')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.delete')->isNotEmpty() || checkAllowedModule('training','training.grading-list')->isNotEmpty())
                 <th scope="col">Action</th>
@@ -52,7 +69,7 @@
                 @endphp   
                 
             <tr>
-                <td class="eventName">{{ $event->course?->course_name }}</td>
+                <td class="eventName">{{ $event->course?->course_name }}   </td>
                 <td>{{ $event->student?->fname }} {{ $event->student?->lname }}</td>
                 <td>{{ $lesson?->instructor?->fname }} {{ $lesson?->instructor?->lname }}</td>
                 <!-- <td>{{ $lesson?->resource?->name }}</td> -->
@@ -71,45 +88,65 @@
                     @endif
                 </td>
 
-                <td>
+                <td>          
                 @if(get_user_role(auth()->user()->role) == 'administrator')  
-                    @if(empty($event->is_locked))
-                     
-                        @if(checkAllowedModule('training','training.edit')->isNotEmpty())
-                            <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                            data-event-id="{{ encode_id($event->id) }}"></i>
-                        @endif
-                        @if(checkAllowedModule('training','training.delete')->isNotEmpty())
-                            <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                            data-event-id="{{ encode_id($event->id) }}"></i>
-                        @endif
-                        @if(checkAllowedModule('training','training.show')->isNotEmpty())
-                            <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
-                            <i class="fa fa-eye text-danger me-2"></i>
-                            </a>            
-                        @endif
-                    
-                        @if($event->can_end_course) 
-                            {{-- Active “End Course” button/icon --}}
-                            <button class="btn btn-sm btn-flag-checkered end-course-btn" data-event-id="{{ encode_id($event->id) }}"
-                                title="End Course/Event" >
-                                <i class="fa fa-flag-checkered text-primary"></i>
-                            </button>
-                        @endif
-                    @else
-                        {{-- This event is already locked/ended --}}
-                        <span class="badge bg-secondary unlocked" data-bs-toggle="tooltip" data-id = "{{ $event->id}}"
-                            title="This course has been ended and is locked from editing">
-                            <i class="bi bi-lock-fill me-1"></i>Ended
+                    @if($event->archive == 1)
+                        <span class="badge bg-warning text-dark">
+                            <i class="bi bi-archive-fill me-1"></i> Archived
                         </span>
-                        @if(checkAllowedModule('training','training.delete')->isNotEmpty())
-                            <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                            data-event-id="{{ encode_id($event->id) }}"></i>
+                    @else
+                        @if(empty($event->is_locked))
+                            @if(checkAllowedModule('training','training.edit')->isNotEmpty())
+                                <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                                data-event-id="{{ encode_id($event->id) }}"></i>
+                            @endif
+                            @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                                <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                                data-event-id="{{ encode_id($event->id) }}"></i>
+                            @endif
+                            @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                                <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                                <i class="fa fa-eye text-danger me-2"></i>
+                                </a>  
+
+                                <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="btn btn-sm btn-primary" title="View New Design" style="font-size:18px; cursor: pointer;">
+                                    View 
+                                </a>            
+                            @endif
+                        
+                            @if($event->can_end_course) 
+                                {{-- Active “End Course” button/icon --}}
+                                <button class="btn btn-sm btn-flag-checkered end-course-btn" data-event-id="{{ encode_id($event->id) }}"
+                                    title="End Course/Event" >
+                                    <i class="fa fa-flag-checkered text-primary"></i>
+                                </button>
+                            @endif
+                        @else
+                            {{-- This event is already locked/ended --}}
+                            <span class="badge bg-secondary unlocked" data-bs-toggle="tooltip" data-id = "{{ $event->id}}"
+                                title="This course has been ended and is locked from editing">
+                                <i class="bi bi-lock-fill me-1"></i>Ended
+                            </span>
+                            @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                                <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                                data-event-id="{{ encode_id($event->id) }}"></i>
+                            @endif
+                                <button type="button"
+                                    class="btn btn-outline-primary btn-sm archive-course-btn"
+                                    data-event-id="{{ encode_id($event->id) }}"
+                                    data-bs-toggle="tooltip"
+                                    title="Archive this course">
+                                    <i class="bi bi-archive-fill me-1"></i> Archive
+                                </button>
                         @endif
-                    @endif
-                @elseif(get_user_role(auth()->user()->role) == 'instructor')   
+                    @endif    
+                @elseif(get_user_role(auth()->user()->role) == 'instructor')
+                @if($event->archive == 1)  
+                    <span class="badge bg-warning text-dark">
+                        <i class="bi bi-archive-fill me-1"></i> Archived
+                    </span>
+                @else
                     @if(empty($event->is_locked))
-                     
                        @if(checkAllowedModule('training','training.edit')->isNotEmpty())
                             <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
                             data-event-id="{{ encode_id($event->id) }}"></i>
@@ -118,6 +155,10 @@
                             <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
                             <i class="fa fa-eye text-danger me-2"></i>
                             </a>            
+
+                            <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="btn btn-sm btn-primary" title="View New Design" style="font-size:18px; cursor: pointer;">
+                                View
+                            </a>   
                         @endif 
                     @else   
                         {{-- This event is already locked/ended --}}
@@ -129,6 +170,7 @@
                         <i class="fa fa-list text-danger me-2"></i>
                         </a>
                     @endif
+                @endif    
                 @else                   
                     @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
                         <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
@@ -136,6 +178,7 @@
                         </a>
                     @endif    
                 @endif
+               
                 </td>
             </tr>
             @endforeach
@@ -143,7 +186,7 @@
     </table>
 </div>
 </div>
-  <h4>Instructor  Training events</h4> 
+<h4>Instructor  Training events</h4> 
 <div class="card pt-4">
         <div class="card-body">
     <table class="table table-hover" id="trainingEventTable">
@@ -188,77 +231,91 @@
                     </td>
 
                 <td>
-                @if(get_user_role(auth()->user()->role) == 'administrator')  
-                    @if(empty($event->is_locked))
-                 
-                        @if(checkAllowedModule('training','training.edit')->isNotEmpty())
-                            <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                            data-event-id="{{ encode_id($event->id) }}"></i>
-                        @endif
-                        @if(checkAllowedModule('training','training.delete')->isNotEmpty())
-                            <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                            data-event-id="{{ encode_id($event->id) }}"></i>
-                        @endif
-                        @if(checkAllowedModule('training','training.show')->isNotEmpty())
-                            <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
-                            <i class="fa fa-eye text-danger me-2"></i>
-                            </a>            
-                        @endif
-                        @if($event->can_end_course)
-                            {{-- Active “End Course” button/icon --}}
-                            <button
-                                class="btn btn-sm btn-flag-checkered end-course-btn"
-                                data-event-id="{{ encode_id($event->id) }}"
-                                title="End Course/Event"
-                            >
-                                <i class="fa fa-flag-checkered text-primary"></i>
+                @if($event->archive == 1)
+                    <span class="badge bg-warning text-dark">
+                        <i class="bi bi-archive-fill me-1"></i> Archived
+                    </span>
+                @else
+                    @if(get_user_role(auth()->user()->role) == 'administrator')  
+                        @if(empty($event->is_locked))
+                    
+                            @if(checkAllowedModule('training','training.edit')->isNotEmpty())
+                                <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                                data-event-id="{{ encode_id($event->id) }}"></i>
+                            @endif
+                            @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                                <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                                data-event-id="{{ encode_id($event->id) }}"></i>
+                            @endif
+                            @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                                <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                                <i class="fa fa-eye text-danger me-2"></i>
+                                </a>            
+                            @endif
+                            @if($event->can_end_course)
+                                {{-- Active “End Course” button/icon --}}
+                                <button
+                                    class="btn btn-sm btn-flag-checkered end-course-btn"
+                                    data-event-id="{{ encode_id($event->id) }}"
+                                    title="End Course/Event"
+                                >
+                                    <i class="fa fa-flag-checkered text-primary"></i>
+                                </button>
+                            @endif
+                            
+                        @else
+                            {{-- This event is already locked/ended --}}
+                            <span class="badge bg-secondary unlocked" data-bs-toggle="tooltip" data-id = "{{ $event->id }}"
+                                title="This course has been ended and is locked from editing">
+                                <i class="bi bi-lock-fill me-1"></i>Ended
+                            </span>
+                            @if(checkAllowedModule('training','training.delete')->isNotEmpty())
+                                <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                                data-event-id="{{ encode_id($event->id) }}"></i>
+                            @endif
+                            <button type="button"
+                                    class="btn btn-outline-primary btn-sm archive-course-btn"
+                                    data-event-id="{{ encode_id($event->id) }}"
+                                    data-bs-toggle="tooltip"
+                                    title="Archive this course">
+                                    <i class="bi bi-archive-fill me-1"></i> Archive
                             </button>
                         @endif
-                    @else
-                        {{-- This event is already locked/ended --}}
-                        <span class="badge bg-secondary unlocked" data-bs-toggle="tooltip" data-id = "{{ $event->id }}"
-                            title="This course has been ended and is locked from editing">
-                            <i class="bi bi-lock-fill me-1"></i>Ended
-                        </span>
-                        @if(checkAllowedModule('training','training.delete')->isNotEmpty())
-                            <i class="fa-solid fa-trash delete-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                            data-event-id="{{ encode_id($event->id) }}"></i>
+                    @elseif(get_user_role(auth()->user()->role) == 'instructor')   
+                        @if(empty($event->is_locked))
+                        
+                            @if(checkAllowedModule('training','training.edit')->isNotEmpty())
+                                <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
+                                data-event-id="{{ encode_id($event->id) }}"></i> 
+                            @endif
+                            @if(checkAllowedModule('training','training.show')->isNotEmpty())
+                                <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
+                                <i class="fa fa-eye text-danger me-2"></i>
+                                </a>            
+                            @endif
+                            @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
+                            <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
+                            <i class="fa fa-list text-danger me-2"></i>
+                            </a>
+                        @endif  
+                        @else
+                            {{-- This event is already locked/ended --}}
+                            <span class="badge bg-secondary" data-bs-toggle="tooltip"
+                                title="This course has been ended and is locked from editing">
+                                <i class="bi bi-lock-fill me-1"></i>Ended
+                            </span>
+                            <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
+                            <i class="fa fa-list text-danger me-2"></i>
+                            </a>
                         @endif
+                    @else                   
+                        @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
+                            <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
+                            <i class="fa fa-list text-danger me-2"></i>
+                            </a>
+                        @endif    
                     @endif
-                @elseif(get_user_role(auth()->user()->role) == 'instructor')   
-                    @if(empty($event->is_locked))
-                      
-                        @if(checkAllowedModule('training','training.edit')->isNotEmpty())
-                            <i class="fa fa-edit edit-event-icon me-2" style="font-size:25px; cursor: pointer;"
-                            data-event-id="{{ encode_id($event->id) }}"></i> 
-                        @endif
-                        @if(checkAllowedModule('training','training.show')->isNotEmpty())
-                            <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
-                            <i class="fa fa-eye text-danger me-2"></i>
-                            </a>            
-                        @endif
-                           @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
-                        <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
-                        <i class="fa fa-list text-danger me-2"></i>
-                        </a>
-                    @endif  
-                    @else
-                        {{-- This event is already locked/ended --}}
-                        <span class="badge bg-secondary" data-bs-toggle="tooltip"
-                            title="This course has been ended and is locked from editing">
-                            <i class="bi bi-lock-fill me-1"></i>Ended
-                        </span>
-                        <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
-                        <i class="fa fa-list text-danger me-2"></i>
-                        </a>
-                    @endif
-                @else                   
-                    @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
-                        <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
-                        <i class="fa fa-list text-danger me-2"></i>
-                        </a>
-                    @endif    
-                @endif
+                @endif    
                 </td>
             </tr>
             @endforeach
@@ -336,7 +393,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-6 d-none" id="opc_validity_col">
+                <!-- <div class="col-md-6 d-none" id="opc_validity_col">
                     <label class="form-label">OPC Validity<span class="text-danger">*</span></label>
                     <select class="form-select" name="opc_validity_months" id="opc_validity_months">
                         <option value="">Select Validity</option>
@@ -355,9 +412,9 @@
                         <option value="12">12 Months</option>
                     </select>
                     <div id="opc_validity_error" class="text-danger error_e"></div>
-                </div>
+                </div> -->
 
-                <div class="col-md-6 d-none" id="opc_extend_eom_col">
+                <!-- <div class="col-md-6 d-none" id="opc_extend_eom_col">
                     <label class="form-label">Validity Extension<span class="text-danger">*</span></label>
                     <select class="form-select" name="opc_extend_eom" id="opc_extend_eom">
                         <option value="">Select Option</option>
@@ -365,7 +422,7 @@
                         <option value="0">Do not extend (exact date)</option>
                     </select>
                     <div id="opc_extend_eom_error" class="text-danger error_e"></div>
-                </div>
+                </div> -->
                 
                 <!-- // Rank -->
                 <div class="col-md-6" id="add_rank_col" >
@@ -476,7 +533,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-6 d-none" id="edit_opc_validity_col">
+                <!-- <div class="col-md-6 d-none" id="edit_opc_validity_col">
                     <label class="form-label">OPC Validity<span class="text-danger">*</span></label>
                     <select class="form-select" name="edit_opc_validity_months" id="edit_opc_validity_months">
                         <option value="">Select Validity</option>
@@ -494,9 +551,9 @@
                         <option value="12">12 Months</option>
                     </select>
                     <div id="edit_opc_validity_error" class="text-danger error_e"></div>
-                </div>
+                </div> -->
 
-                <div class="col-md-6 d-none" id="edit_opc_extend_eom_col">
+                <!-- <div class="col-md-6 d-none" id="edit_opc_extend_eom_col">
                     <label class="form-label">Validity Extension<span class="text-danger">*</span></label>
                     <select class="form-select"
                             name="edit_opc_extend_eom"
@@ -506,7 +563,7 @@
                         <option value="0">Do not extend (exact date)</option>
                     </select>
                     <div id="edit_opc_extend_eom_error" class="text-danger error_e"></div>
-                </div>
+                </div> -->
 
                 <!-- // Rank -->
                 <div class="col-md-6" id="edit_rank_col">
@@ -584,7 +641,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="endCourseLabel">Confirm End of Course</h5>
+                    <h5 class="modal-title" id="endCourseLabel">Confirm End of Course </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                  <div class="modal-body">
@@ -600,7 +657,7 @@
                         @endif
                     </div>
                     <!-- <p>Are you sure you want to end this course? Once ended, it will be locked for further editing.</p> -->
-                    <p>This should file the course and prevent any further changes but shall still allow the view of grading, documents etc and also grade reporting (statistics).</p>
+                    <p>This should file the course and prevent any further changes but shall still allow the view of grading, documents etc and also grade reporting (statistics)</p>
                     <div class="mb-3">
                         <label for="courseEndDate" class="form-label">Course End Date</label>
                         <input type="date" class="form-control" id="courseEndDate" name="course_end_date" value="{{ old('course_end_date', date('Y-m-d')) }}" required>
@@ -1034,24 +1091,24 @@ $(document).ready(function() {
     $("#submitTrainingEvent").on("click", function(e) { 
         e.preventDefault();
 
-       if (
-            !validateOpcField(
-                '#opc_validity_col',
-                '#opc_validity_months',
-                '#opc_validity_error',
-                'OPC validity is required'
-            )
-        ) return false;
+    //    if (
+    //         !validateOpcField(
+    //             '#opc_validity_col',
+    //             '#opc_validity_months',
+    //             '#opc_validity_error',
+    //             'OPC validity is required'
+    //         )
+    //     ) return false;
 
-        // OPC Extend
-        if (
-            !validateOpcField(
-                '#opc_extend_eom_col',
-                '#opc_extend_eom',
-                '#opc_extend_eom_error',
-                'OPC extend field is required'
-            )
-        ) return false;
+    //     // OPC Extend
+    //     if (
+    //         !validateOpcField(
+    //             '#opc_extend_eom_col',
+    //             '#opc_extend_eom',
+    //             '#opc_extend_eom_error',
+    //             'OPC extend field is required'
+    //         )
+    //     ) return false;
 
         $.ajax({
             url: '{{ url("/training/create") }}',
@@ -1309,24 +1366,24 @@ $(document).ready(function() {
 
     $('#updateTrainingEvent').on('click', function(e) {
 
-        if (
-            !validateOpcField(
-                '#edit_opc_validity_col',
-                '#edit_opc_validity_months',
-                '#edit_opc_validity_error',
-                'OPC validity is required'
-            )
-        ) return false;
+        // if (
+        //     !validateOpcField(
+        //         '#edit_opc_validity_col',
+        //         '#edit_opc_validity_months',
+        //         '#edit_opc_validity_error',
+        //         'OPC validity is required'
+        //     )
+        // ) return false;
 
         // OPC Extend
-        if (
-            !validateOpcField(
-                '#edit_opc_extend_eom_col',
-                '#edit_opc_extend_eom',
-                '#edit_opc_extend_eom_error',
-                'OPC extend field is required'
-            )
-        ) return false;
+        // if (
+        //     !validateOpcField(
+        //         '#edit_opc_extend_eom_col',
+        //         '#edit_opc_extend_eom',
+        //         '#edit_opc_extend_eom_error',
+        //         'OPC extend field is required'
+        //     )
+        // ) return false;
 
         e.preventDefault();
         $.ajax({
@@ -1338,7 +1395,7 @@ $(document).ready(function() {
                     $('#editTrainingEventForm').modal('hide');
                     location.reload();
                 }else{
-                    alert(response.message);
+                    alert(response.message); 
                 }
             },
             error: function(xhr, status, error) {
@@ -1375,7 +1432,7 @@ $(document).ready(function() {
             $.ajax({
                 url: '/grading/unlock/' + eventId,
                 type: 'POST',
-                data: {"_token": "{{ csrf_token() }}"},
+                data: {"_token": "{{ csrf_token() }}"}, 
                 success: function(response) {
                     if (response.success) {
                         location.reload();
@@ -1827,6 +1884,50 @@ $(document).ready(function() {
             });
         }
     });
+
+    $(document).on("click", ".archive-course-btn", function () { 
+        let event_id = $(this).data('event-id');
+        // Ask confirmation first
+        if (!confirm("Are you sure you want to archive this event ? This action is irreversible and cannot be undo.")) {
+            return; // Stop if user clicks Cancel
+        }
+
+        let vdata = {
+            'event_id': event_id,
+            "_token": "{{ csrf_token() }}"
+        };
+
+        $.ajax({
+            type: "POST",
+            url: "{{ url('archive_trainingEvent') }}",
+            data: vdata,
+            success: function (response) {
+                if (response.status == true) {
+                    location.reload();
+                }
+            },
+            error: function (xhr) {
+                console.error(xhr.responseJSON?.message || "Something went wrong.");
+            }
+        });
+
+    });
+
+$(document).ready(function() {
+    $('#archiveToggle').on('change', function() {
+        let isChecked = $(this).is(':checked');
+        let url = new URL(window.location.href);
+      if (isChecked) { 
+            url.searchParams.set('archive', '1');
+        } else { 
+            url.searchParams.delete('archive');
+        }
+
+        window.location.href = url.toString();
+    });
+});
+
+
 
 
 </script>

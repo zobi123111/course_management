@@ -11,7 +11,7 @@ class Courses extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $fillable = ['ou_id','course_type','course_name','description','duration_type','duration_value','enable_groundschool_time', 'groundschool_hours', 'enable_simulator_time', 'simulator_hours', 'enable_custom_time_tracking', 'image','enable_feedback','enable_instructor_upload', 'status', 'enable_prerequisites', 'position', 'ato_num', 'enable_cbta','instructor_cbta','examiner_cbta', 'enable_mp_lifus', 'opc', 'opc_aircraft'];
+    protected $fillable = ['ou_id','course_type','course_name','description','duration_type','duration_value','enable_groundschool_time', 'groundschool_hours', 'enable_simulator_time', 'simulator_hours', 'enable_custom_time_tracking', 'image','enable_feedback','enable_instructor_upload', 'status', 'enable_prerequisites', 'position', 'ato_num', 'enable_cbta','instructor_cbta','examiner_cbta', 'enable_mp_lifus', 'opc', 'opc_aircraft','opc_validity', 'opc_extend', 'archive_trainingCourse', 'auto_archive'];
 
     public function organizationUnit()
     {
@@ -89,7 +89,7 @@ class Courses extends Model
         })->values();
     }
 
-    public function trainingEvents()
+    public function trainingEvents() 
     {
         return $this->hasMany(TrainingEvents::class, 'course_id');
     }
@@ -108,6 +108,12 @@ class Courses extends Model
     {
         return $this->hasMany(Topic::class, 'course_id');
     }
+
+    public function userTagRatings()
+    {
+        return $this->hasMany(UserTagRating::class, 'course_id');
+    }
+
 
 
 

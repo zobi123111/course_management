@@ -45,7 +45,6 @@
        color: #0d6efd !important; /* Ensures the description takes available space */
     }
 
-
 </style> --}}
 
 <style>
@@ -123,6 +122,10 @@
 
 .lesson-card {
     cursor: grab;
+}
+
+.ck.ck-editor__editable_inline {
+    height: 150px !important;
 }
 
 </style>
@@ -406,6 +409,17 @@
                     </div>
 
                     <div class="form-group">
+                        <label class="form-label">Student Briefing</label>
+                        <textarea name="student_briefing" rows="3" id="student_briefing_editor"
+                            class="form-control"></textarea>
+                    </div>
+
+                    <div class="form-group mt-3">
+                        <label class="form-label">Upload Briefing Documents</label>
+                        <input type="file" name="briefing_documents[]" multiple class="form-control">
+                    </div>
+
+                    <div class="form-group">
                         <label for="lesson_type" class="form-label">Lesson Type <span class="text-danger">*</span></label>
                         <select class="form-select" name="lesson_type" id="lesson_type" required>
                             <option value="flight" selected>Flight</option>
@@ -521,6 +535,22 @@
                         <label for="comment" class="form-label">Comment<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="edit_comment" id="edit_comment" rows="3"></textarea>
                         <div id="edit_comment_error_up" class="text-danger error_e"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Student Briefing</label>
+                        <textarea name="edit_student_briefing" rows="3" id="edit_student_briefing_editor"
+                            class="form-control"></textarea>
+                    </div>
+
+                    <div class="form-group mt-3">
+                        <label class="form-label">Upload Additional Documents</label>
+                        <input type="file" name="edit_briefing_documents[]" multiple class="form-control">
+
+                        <div class="form-group mt-3">
+                            <label class="form-label">Existing Documents</label>
+                            <div id="existing_briefing_documents"></div>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -649,7 +679,49 @@
 @section('js_scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<script src="https://cdn.tiny.cloud/1/3tih1jv3cdxs9ylxymhedwi0ph20bastzutt0g09pb8ycka0/tinymce/6/tinymce.min.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+
+
 <script>
+    // tinymce.init({
+    //     selector: '#student_briefing_editor',
+    //     height: 300,
+    //     plugins: 'lists link table code',
+    //     toolbar: 'undo redo | styleselect | bold italic underline | \
+    //             fontsize | alignleft aligncenter alignright | \
+    //             bullist numlist | link table | code',
+    //     menubar: false
+    // });
+
+
+    let createBriefingEditor;
+
+    $('#createLessonModal').on('shown.bs.modal', function () {
+
+        if (!createBriefingEditor) {
+            ClassicEditor
+                .create(document.querySelector('#student_briefing_editor'))
+                .then(editor => {
+                    createBriefingEditor = editor;
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        }
+    });
+
+    let editBriefingEditor;
+
+    ClassicEditor.create(document.querySelector('#edit_student_briefing_editor'))
+        .then(editor => {
+            editBriefingEditor = editor;
+        })
+        .catch(error => {
+            console.error(error);
+        });
+
+        
 
     $(function() {
         $('#sortable-lessons').sortable({
@@ -724,29 +796,46 @@ $(document).ready(function() {
     $("#createLesson").on('click', function() {
         $(".error_e").html('');
         $("#lesson")[0].reset();
+
+        if (createBriefingEditor) {
+            createBriefingEditor.setData('');
+        }
+
         $("#createLessonModal").modal('show');
-    })
+    });
 
     $("#submitLesson").on("click", function(e) {
         e.preventDefault();
+
+        let formData = new FormData($("#lesson")[0]);
+        // formData.set('student_briefing', tinymce.get('student_briefing_editor').getContent());
+
+        if (createBriefingEditor) {
+            formData.set(
+                'student_briefing',
+                createBriefingEditor.getData()
+            );
+        }
+
         $.ajax({
             url: '{{ url("/lesson/create") }}',
             type: 'POST',
-            data: $("#lesson").serialize(),
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(response) {
                 $('#createLessonModal').modal('hide');
                 location.reload();
             },
-            error: function(xhr, status, error) {
+            error: function(xhr) {
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
+
                 $.each(validationErrors, function(key, value) {
-                    var msg = '<p>' + value + '<p>';
-                    $('#' + key + '_error').html(msg);
-                })
+                    $('#' + key + '_error').html('<p>' + value + '</p>');
+                });
             }
         });
-
     })
 
     $('.edit-lesson-icon').click(function(e) {
@@ -780,25 +869,19 @@ $(document).ready(function() {
                         $('#edit_enable_examiner_cbta').prop('checked', false);
                 }
 
-
-
-
-
-
                 if (response.lesson.custom_time_id) {
                     $('#edit_custom_time_'+response.lesson.custom_time_id).prop('checked', true);  
 
                 }
 
                 // Set the correct grading type radio button
-               if (response.lesson.grade_type === "pass_fail") {
+                if (response.lesson.grade_type === "pass_fail") {
                     $('#edit_grade_pass_fail').prop('checked', true);
                 } else if (response.lesson.grade_type === "score") {
                     $('#edit_grade_score').prop('checked', true);
                 } else if (response.lesson.grade_type === "percentage") {
                     $('#edit_grade_percentage').prop('checked', true);
                 }
-
 
                 if (response.lesson.enable_prerequisites) {
                     $('#enable_prerequisites').prop('checked', true);
@@ -822,6 +905,32 @@ $(document).ready(function() {
                 } else {
                     $('#edit_comment_required').prop('checked', false);
                     $('#edit_comment').prop('required', false);
+                }
+
+                if (response.lesson.student_briefing) {
+                    editBriefingEditor.setData(response.lesson.student_briefing);
+                } else {
+                    editBriefingEditor.setData('');
+                }
+
+                $('#existing_briefing_documents').empty();
+
+                if (response.lesson.briefing_documents && response.lesson.briefing_documents.length > 0) {
+                    response.lesson.briefing_documents.forEach(doc => {
+                        let docHtml = `
+                            <div class="mb-2 d-flex justify-content-between align-items-center">
+                                <a href="/storage/${doc.file_path}" target="_blank">
+                                    ${doc.file_name}
+                                </a>
+                                <button type="button"
+                                    class="btn btn-sm btn-danger delete-briefing-doc"
+                                    data-id="${doc.id}">
+                                    Delete
+                                </button>
+                            </div>
+                        `;
+                        $('#existing_briefing_documents').append(docHtml);
+                    });
                 }
 
                 // Clear old prerequisites
@@ -869,12 +978,20 @@ $(document).ready(function() {
 
     $('#updateLesson').on('click', function(e) {
         e.preventDefault();
-        let data = $("#editLesson").serialize() + "&enable_prerequisites=" + ($('#enable_prerequisites')
-            .is(':checked') ? 1 : 0);
+        // let data = $("#editLesson").serialize() + "&enable_prerequisites=" + ($('#enable_prerequisites')
+        //     .is(':checked') ? 1 : 0);
+        let formData = new FormData($("#editLesson")[0]);
+
+        formData.set('edit_student_briefing', editBriefingEditor.getData());
+        formData.append("enable_prerequisites",
+            $('#enable_prerequisites').is(':checked') ? 1 : 0
+        );
         $.ajax({
             url: "{{ url('lesson/update') }}",
             type: "POST",
-            data: data,
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(response) {
                 $('#editlessonModal').modal('hide');
                 location.reload();
@@ -899,6 +1016,27 @@ $(document).ready(function() {
     //     $('#lessonId').val(lessonId);
 
     // });
+
+    $(document).on('click', '.delete-briefing-doc', function() {
+        let docId = $(this).data('id');
+        let row = $(this).closest('.mb-2');
+
+        if (confirm('Are you sure you want to delete this document?')) {
+            $.ajax({
+                url: '/lesson/document/delete/' + docId,
+                type: 'DELETE',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function() {
+                    row.remove();
+                },
+                error: function(xhr) {
+                    alert('Error deleting document: ' + xhr.responseText);
+                }
+            });
+        }
+    });
     
     $('.delete-lesson-icon').on('click', function (e) {
         e.preventDefault();

@@ -94,9 +94,14 @@
         background: #fff !important;
         /* box-shadow: 0 2px 6px rgba(0,0,0,0.2); */
     }
+
+    #create_rhs_tag_col .row button i.fa:before {
+       color: white !important;
+   }
+    #edit_rhs_tag_col .row button i.fa:before {
+       color: white !important;
+   }
 </style>
-
-
 
 @if(session()->has('message'))
 <div id="successMessage" class="alert alert-success fade show" role="alert">
@@ -134,7 +139,7 @@
                         <div class="course-image-container" style="position: relative;">
                             @if($val->image)
                             <img src="{{ asset('storage/' . $val->image) }}" class="card-img-top"
-                                alt="Course Image" >
+                                alt="Course Image">
                             @else
                             <img src="{{ asset('/assets/img/profile-img.jpg') }}" class="card-img-top course-image"
                                 alt="Course Image">
@@ -179,7 +184,7 @@
                             <a href="javascript:void(0)" class="btn btn-light course-copy-icon"
                                 data-course-id="{{ encode_id($val->id) }}">
                                 <i class="fa fa-copy"></i> Copy
-                            </a> 
+                            </a>
                             @endif
                         </div>
                     </div>
@@ -197,7 +202,7 @@
 <!-- Create Courses-->
 <div class="modal fade" id="createCourseModal" tabindex="-1" role="dialog" aria-labelledby="courseModalLabel"
     aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="courseModalLabel">Create Course</h5>
@@ -207,7 +212,7 @@
                 <form action="" id="courses" method="POST" enctype="multipart/form-data" class="row g-3 needs-validation">
                     @csrf
                     @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
                         <select class="form-select" name="ou_id" aria-label="Default select example" id="select_org_unit">
                             <option value="">Select Org Unit</option>
@@ -218,7 +223,7 @@
                         <div id="ou_id_error" class="text-danger error_e"></div>
                     </div>
 
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="email" class="form-label">Select ATO Number<span class="text-danger">*</span></label>
                         <select class="form-select" name="ato_number" aria-label="Default select example" id="select_ato_number">
 
@@ -227,7 +232,7 @@
                     </div>
                     @endif
                     @if(auth()->user()->role == 1 && auth()->user()->is_admin==1)
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="email" class="form-label">Select ATO Number<span class="text-danger">*</span></label>
                         <select class="form-select" name="ato_number" aria-label="Default select example" id="select_ato_number">
 
@@ -236,12 +241,12 @@
                     </div>
 
                     @endif
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="firstname" class="form-label">Course Name<span class="text-danger">*</span></label>
                         <input type="text" name="course_name" class="form-control">
                         <div id="course_name_error" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="course_type" class="form-label">Course Type<span
                                 class="text-danger">*</span></label>
                         <select class="form-select" name="course_type" id="course_type" required>
@@ -251,17 +256,17 @@
                         </select>
                         <div id="course_type_error" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <div class="col-md-12">
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="description" rows="3"></textarea>
                         <div id="description_error" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="image" class="form-label">Image<span class="text-danger">*</span></label>
                         <input type="file" name="image" class="form-control" accept="image/*">
                         <div id="image_error" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="duration" class="form-label">Course Duration<span
                                 class="text-danger">*</span></label>
                         <select class="form-select" name="duration_type" id="duration_type">
@@ -324,14 +329,7 @@
                         </div>
                         <button type="button" class="btn btn-sm btn-outline-primary" id="add_another_time_btn">Add More</button>
                     </div>
-                    <!-- <div class="form-group">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="enable_mp_lifus"  value="1">
-                            <label class="form-check-label" for="enable_mp_lifus">
-                                Enable MP LIFUS
-                            </label>
-                        </div>
-                    </div> -->
+
                     <div class="form-group">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="enable_more_mp">
@@ -362,21 +360,118 @@
                         <label class="form-label">Aircraft Type</label>
                         <select class="form-select" name="enable_aircraft" id="enable_aircraft">
                             <option value="">Select Aircraft</option>
-
                             @foreach ($ratings as $rating)
-                                @if ($rating->status == 1)
-                                    <option value="{{ $rating->id }}">
-                                        {{ $rating->name }}
-                                    </option>
-                                @endif
+                            @if ($rating->status == 1)
+                            <option value="{{ $rating->id }}">
+                                {{ $rating->name }}
+                            </option>
+                            @endif
                             @endforeach
 
                         </select>
                     </div>
+                    <div class="col-md-6 " id="opc_validity_col" style="display:none">
+                        <label class="form-label">OPC Validity<span class="text-danger">*</span></label>
+                        <select class="form-select" name="opc_validity_months" id="opc_validity_months">
+                            <option value="">Select Validity</option>
+                            @for($i=1;$i<=12;$i++)
+                                <option value="{{ $i }}">{{ $i }} Month{{ $i>1?'s':'' }}</option>
+                                @endfor
+                        </select>
+                        <div id="opc_validity_months_error" class="text-danger error_e"></div>
+                    </div>
 
+                    <div class="col-md-6 " id="opc_extend_eom_col" style="display:none">
+                        <label class="form-label">Validity Extension<span class="text-danger">*</span></label>
+                        <select class="form-select" name="opc_extend_eom" id="opc_extend_eom">
+                            <option value="">Select Option</option>
+                            <option value="1">Extend validity to end of month</option>
+                            <option value="0">Do not extend (exact date)</option>
+                        </select>
+                        <div id="opc_extend_eom_error" class="text-danger error_e"></div>
+                    </div>
 
-                 
+                    <!-- //------------------------------------------------------------------------------------------>
                     <div class="form-group">
+                        <!-- RHS Applicable Checkbox -->
+                        <div class="col-md-12 mb-3" >
+                            <div class="form-check" id="select_tag_div" style="display:none">
+                                <input class="form-check-input" type="checkbox" id="create_is_rhs" name="create_is_rhs" value="1">
+                                <label class="form-check-label" for="create_is_rhs">
+                                    Qualification
+                                </label>
+                            </div>
+                        </div>
+                        <!-- RHS Section -->
+                        <div class="row d-none" id="create_rhs_tag_col">
+                            <div class="col-md-12">
+                                <!-- Action Buttons -->
+                                <div class="mb-3">
+                                    <button type="button" class="btn btn-primary me-2" id="create_master_tag">
+                                        Select Tag
+                                    </button>
+
+                                    <button type="button" class="btn btn-secondary" id="create_add_manual_tag">
+                                        Add New Tag
+                                    </button>
+                                </div>
+                                <!-- RHS Rows Container -->
+                                <div id="create_rhs_rows_container"></div>
+                            </div>
+                        </div>
+
+                        <!-- MASTER TAG TEMPLATE (SELECT) -->
+                        <div class="row create_rhs_row d-none" id="create_rhs_select_row_template">
+                            <div class="col-md-5 mb-3">
+                                <label class="form-label">Select Tag <span class="text-danger">*</span></label>
+                                <select class="form-select" name="master_tag_select[]">
+                                    <option value="">Select Tag</option>
+                                    @foreach ($tags as $val)
+                                    <option value="{{ $val->id }}">{{ $val->rhstag }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-5 mb-3">
+                                <label class="form-label">Validity (Months) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control"
+                                    name="master_validity[]" min="1" placeholder="Months">
+                            </div>
+
+                            <div class="col-md-2 mb-3 d-flex align-items-end">
+                                <button type="button" class="btn btn-danger create_remove_rhs_row">
+                                    <i class="fa fa-minus"></i>
+                                </button>
+                            </div>
+
+                        </div>
+
+                        <!-- MANUAL TAG TEMPLATE (INPUT) -->
+                        <div class="row rhs_row d-none" id="create_rhs_input_row_template">
+                            <div class="col-md-5 mb-3">
+                                <label class="form-label">Tag <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control"
+                                    name="manual_tag_select[]" placeholder="Enter tag name">
+                            </div>
+
+                            <div class="col-md-5 mb-3">
+                                <label class="form-label">Validity (Months) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control"
+                                    name="manual_validity[]" min="1" placeholder="Months">
+                            </div>
+
+                            <div class="col-md-2 mb-3 d-flex align-items-end">
+                                <button type="button" class="btn btn-danger remove_rhs_row">
+                                    <i class="fa fa-minus"></i>
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                    <!-- //------------------------------------------------------------------------------------------>
+
+
+                    <div class="col-md-6">
                         <label for="groups" class="form-label">Assigned Resource<span
                                 class="text-danger"></span></label>
                         <select class="form-select resources-select" name="resources[]" multiple="multiple">
@@ -386,7 +481,7 @@
                         </select>
                         <div id="resources_error" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="groups" class="form-label">Select Groups<span class="text-danger">*</span></label>
                         <select class="form-select groups-select" name="group_ids[]" multiple="multiple">
                             @foreach($groups as $group)
@@ -436,7 +531,7 @@
                             <label class="form-check-label" for="enable_instructor_upload"> Enable Instructor Upload</label>
                         </div>
                     </div>
-                   
+
                     <div id="instructor_documents_container" style="display: none;">
                         <div id="instructor_documents_items">
                             <div class="instructor-documents-item border p-2 mt-2">
@@ -463,7 +558,11 @@
                             <input class="form-check-input" type="checkbox" value="1" id="examiner" name="examiner_cbta">
                             <label class="form-check-label" for="examiner"> Enable Examiner Competencies </label>
                         </div>
-                     </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" value="1"  name="auto_archive">
+                          <label class="form-check-label" for="auto_archive">Auto Archive</label>
+                       </div>
+                    </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -480,7 +579,7 @@
 <!-- Edit Courses -->
 <div class="modal fade" id="editCourseModal" tabindex="-1" role="dialog" aria-labelledby="editCourseModalLabel"
     aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="editCourseModalLabel">Edit Course</h5>
@@ -490,7 +589,7 @@
                 <form id="editCourse" class="row g-3 needs-validation">
                     @csrf
                     @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="email" class="form-label">Select Org Unit<span class="text-danger">*</span></label>
                         <select class="form-select" name="ou_id" aria-label="Default select example"
                             id="edit_select_org_unit">
@@ -501,7 +600,7 @@
                         </select>
                         <div id="ou_id_error" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="email" class="form-label">Select ATO Number<span class="text-danger">*</span></label>
                         <select class="form-select" name="ato_number" aria-label="Default select example" id="edit_select_ato_number">
 
@@ -510,7 +609,7 @@
                     </div>
                     @endif
                     @if(auth()->user()->role == 1 && auth()->user()->is_admin == 1)
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="email" class="form-label">Select ATO Number<span class="text-danger">*</span></label>
                         <select class="form-select" name="ato_number" aria-label="Default select example" id="edit_select_ato_number">
 
@@ -520,13 +619,13 @@
 
                     @endif
 
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="firstname" class="form-label">Course Name<span class="text-danger">*</span></label>
                         <input type="text" name="course_name" class="form-control">
                         <input type="hidden" name="course_id" class="form-control">
                         <div id="course_name_error_up" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="course_type" class="form-label">Course Type<span
                                 class="text-danger">*</span></label>
                         <select class="form-select" name="course_type" id="edit_course_type" required>
@@ -536,17 +635,17 @@
                         </select>
                         <div id="course_type_error_up" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <div class="col-md-12">
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="description" id="edit_description" rows="3"></textarea>
                         <div id="description_error_up" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="lastname" class="form-label">Image<span class="text-danger">*</span></label>
                         <input type="file" name="image" class="form-control" accept="image/*">
                         <div id="image_error_up" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="duration" class="form-label">Course Duration<span class="text-danger">*</span></label>
                         <select class="form-select" name="duration_type" id="edit_duration_type">
                             <option value="">Select Duration Type</option>
@@ -557,7 +656,7 @@
                             placeholder="Enter number of hours/events">
                         <div id="duration_error_up" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="edit_enable_groundschool_time" name="enable_groundschool_time">
                             <label class="form-check-label" for="enable_feedback">
@@ -594,7 +693,7 @@
                             </label>
                         </div>
                     </div>
-                
+
                     <div id="editCustomTimeConfigSection" style="display:none; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-top: 15px;">
                         <div id="edit_custom_time_tracking_container">
                             <div class="custom-time mb-3">
@@ -608,14 +707,7 @@
                         </div>
                         <button type="button" class="btn btn-sm btn-outline-primary" id="edit_add_another_time_btn">Add More</button>
                     </div>
-                    <!-- <div class="form-group">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="enable_mp_lifus" id="enable_mp_lifus" value="1">
-                            <label class="form-check-label" for="enable_mp_lifus">
-                                Enable MP Lifus
-                            </label>
-                        </div>
-                    </div> --> 
+
                     <div class="form-group">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="edit_enable_more_mp">
@@ -643,16 +735,116 @@
                         </div>
                     </div>
 
+
                     <div class="form-group opc-aircraft-edit" style="display:none;">
                         <label class="form-label">Aircraft Type</label>
                         <select class="form-select" name="enable_aircraft" id="edit_enable_aircraft">
                             @foreach ($ratings as $rating)
-                                <option value="{{ $rating->id }}">{{ $rating->name }}</option>
+                            <option value="{{ $rating->id }}">{{ $rating->name }}</option>
                             @endforeach
                         </select>
                     </div>
+                    <div class="col-md-6 " id="edit_opc_validity_col" style="display:none">
+                        <label class="form-label">OPC Validity<span class="text-danger">*</span></label>
+                        <select class="form-select" name="opc_validity_months" id="edit_opc_validity_months">
+                            <option value="">Select Validity</option>
+                            @for($i=1;$i<=12;$i++)
+                                <option value="{{ $i }}">{{ $i }} Month{{ $i>1?'s':'' }}</option>
+                                @endfor
+                        </select>
+                        <div id="opc_validity_months_error_up" class="text-danger error_e"></div>
+                    </div>
 
+                    <div class="col-md-6 " id="edit_opc_extend_eom_col" style="display:none">
+                        <label class="form-label">Validity Extension<span class="text-danger">*</span></label>
+                        <select class="form-select" name="opc_extend_eom" id="edit_opc_extend_eom">
+                            <option value="">Select Option</option>
+                            <option value="1">Extend validity to end of month</option>
+                            <option value="0">Do not extend (exact date)</option>
+                        </select>
+                        <div id="opc_extend_eom_error_up" class="text-danger error_e"></div>
+                    </div>
+
+                    <!-- //------------------------------------------------------------------------------------------>
                     <div class="form-group">
+                        <!-- RHS Applicable Checkbox -->
+                        <div class="col-md-12 mb-3">
+                            <div class="form-check" id="edit_tag_div">
+                                <input class="form-check-input" type="checkbox" id="is_rhs" name="is_rhs" value="1">
+                                <label class="form-check-label" for="is_rhs">
+                                    Qualification
+                                </label>
+                            </div>
+                        </div>
+                        <!-- RHS Section -->
+                        <div class="row d-none" id="edit_rhs_tag_col">
+                            <div class="col-md-12">
+                                <!-- Action Buttons -->
+                                <div class="mb-3">
+                                    <button type="button" class="btn btn-primary me-2" id="add_master_tag">
+                                        Select Tag
+                                    </button>
+
+                                    <button type="button" class="btn btn-secondary" id="add_manual_tag">
+                                        New Tag
+                                    </button>
+                                </div>
+                                <!-- RHS Rows Container -->
+                                <div id="rhs_rows_container"></div>
+                            </div>
+                        </div>
+
+                        <!-- MASTER TAG TEMPLATE (SELECT) -->
+                        <div class="row rhs_row d-none" id="rhs_select_row_template">
+                            <div class="col-md-5 mb-3">
+                                <label class="form-label">Select Tag <span class="text-danger">*</span></label>
+                                <select class="form-select" name="master_tag_select[]">
+                                    <option value="">Select Tag</option>
+                                    @foreach ($tags as $val)
+                                    <option value="{{ $val->id }}">{{ $val->rhstag }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-5 mb-3">
+                                <label class="form-label">Validity (Months) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control"
+                                    name="master_validity[]" min="1" placeholder="Months">
+                            </div>
+
+                            <div class="col-md-2 mb-3 d-flex align-items-end">
+                                <button type="button" class="btn btn-danger remove_rhs_row">
+                                    <i class="fa fa-minus"></i>
+                                </button>
+                            </div>
+
+                        </div>
+
+                        <!-- MANUAL TAG TEMPLATE (INPUT) -->
+                        <div class="row rhs_row d-none" id="rhs_input_row_template">
+                            <div class="col-md-5 mb-3">
+                                <label class="form-label">Tag <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control"
+                                    name="manual_tag_select[]" placeholder="Enter tag name">
+                            </div>
+
+                            <div class="col-md-5 mb-3">
+                                <label class="form-label">Validity (Months) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control"
+                                    name="manual_validity[]" min="1" placeholder="Months">
+                            </div>
+
+                            <div class="col-md-2 mb-3 d-flex align-items-end">
+                                <button type="button" class="btn btn-danger remove_rhs_row">
+                                    <i class="fa fa-minus"></i>
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                    <!-- //------------------------------------------------------------------------------------------>
+
+                    <div class="col-md-6">
                         <label for="groups" class="form-label">Assigned Resource<span
                                 class="text-danger"></span></label>
                         <select class="form-select resources-select" name="resources[]" multiple="multiple"
@@ -664,7 +856,7 @@
                         <div id="resources_error_up" class="text-danger error_e"></div>
                     </div>
 
-                    <div class="form-group">
+                    <div class="col-md-6">
                         <label for="groups" class="form-label">Select Groups<span class="text-danger"></span></label>
                         <select class="form-select groups-select" name="group_ids[]" multiple="multiple">
                             @foreach($groups as $group)
@@ -745,7 +937,7 @@
                             </label>
                         </div>
                     </div>
-                    
+
                     <div id="edit_instructor_documents_container" style="display: none;">
                         <div id="edit_instructor_documents_items">
                             <div class="instructor-documents-item border p-2 mt-2">
@@ -759,23 +951,26 @@
                         </div>
                         <button type="button" id="editAddDocumentsContainer" class="btn btn-primary mt-2">Add More</button>
                     </div>
-                
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="1" id="edit_enable_cbta" name="edit_enable_cbta">
-                            <label class="form-check-label" for="edit_enable_cbta"> Enable Pilot Competencies </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="1" id="edit_instructor" name="edit_instructor_cbta">
-                            <label class="form-check-label" for="instructor"> Enable Instructor Competencies </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="1" id="edit_examiner" name="edit_examiner_cbta">
-                            <label class="form-check-label" for="examiner"> Enable Examiner Competencies </label>
-                        </div>
-                    
-            
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="edit_enable_cbta" name="edit_enable_cbta">
+                        <label class="form-check-label" for="edit_enable_cbta"> Enable Pilot Competencies </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="edit_instructor" name="edit_instructor_cbta">
+                        <label class="form-check-label" for="instructor"> Enable Instructor Competencies </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="edit_examiner" name="edit_examiner_cbta">
+                        <label class="form-check-label" for="examiner"> Enable Examiner Competencies </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="auto_archive" name="auto_archive">
+                        <label class="form-check-label" for="auto_archive">Auto Archive</label>
+                    </div>
+
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button> 
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="updateCourse" class="btn btn-primary sbt_btn">Update</button>
                     </div>
                     <div class="loader" style="display: none;"></div>
@@ -813,9 +1008,9 @@
 
 
 <!-- // -------------------------------------------------------- -->
- <!-- Select ou Model -->
- <div class="modal fade" id="select_ou" tabindex="-1" aria-labelledby="select_ouModalLabel"
-     aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+<!-- Select ou Model -->
+<div class="modal fade" id="select_ou" tabindex="-1" aria-labelledby="select_ouModalLabel"
+    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
 
@@ -825,17 +1020,17 @@
             </div>
 
             <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Select Org Unit <span class="text-danger">*</span></label>
-                        <select class="form-select" id="select_ou_copy">
-                            <option value="">-- Select Org Unit --</option>
-                            @foreach($organizationUnits as $val)
-                                <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
-                            @endforeach
-                        </select>
-                        <small id="select_ou_copy_error" class="text-danger"></small>
-                    </div>
-              
+                <div class="mb-3">
+                    <label class="form-label">Select Org Unit <span class="text-danger">*</span></label>
+                    <select class="form-select" id="select_ou_copy">
+                        <option value="">-- Select Org Unit --</option>
+                        @foreach($organizationUnits as $val)
+                        <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
+                        @endforeach
+                    </select>
+                    <small id="select_ou_copy_error" class="text-danger"></small>
+                </div>
+
             </div>
 
             <div class="modal-footer">
@@ -850,7 +1045,7 @@
 </div>
 
 
- <!-- End Select ou Model -->
+<!-- End Select ou Model -->
 
 <!-- //----------------------------------------------------------------------------------------------- -->
 @endsection
@@ -920,12 +1115,14 @@
         $.ajax({
             url: "/course/get-ratings-by-ou",
             type: "GET",
-            data: { ou_id: ouId },
+            data: {
+                ou_id: ouId
+            },
             dataType: "json",
             headers: {
                 "X-Requested-With": "XMLHttpRequest"
             },
-            success: function (ratings) {
+            success: function(ratings) {
 
                 if (!Array.isArray(ratings)) {
                     console.error("Expected array, got:", ratings);
@@ -940,7 +1137,7 @@
 
                 $(targetSelect).html(html);
             },
-            error: function (xhr) {
+            error: function(xhr) {
                 console.error("AJAX error:", xhr.responseText);
             }
         });
@@ -951,11 +1148,13 @@
             url: "{{ route('course.get-ratings-by-ou') }}",
             type: "GET",
             dataType: "json",
-            data: { ou_id: ouId },
+            data: {
+                ou_id: ouId
+            },
             headers: {
                 "X-Requested-With": "XMLHttpRequest"
             },
-            success: function (ratings) {
+            success: function(ratings) {
                 let options = "<option value=''>Select Aircraft</option>";
 
                 if (Array.isArray(ratings) && ratings.length > 0) {
@@ -1082,7 +1281,7 @@
                 data: {
                     id: courseId
                 },
-                success: function(response) { 
+                success: function(response) {
                     // Populate course data
                     $('input[name="course_name"]').val(response.course.course_name);
                     $('input[name="course_id"]').val(response.course.id);
@@ -1093,37 +1292,43 @@
                     $('#edit_duration_value').val(response.course.duration_value);
                     $('#edit_status').val(response.course.status);
                     $('#edit_select_org_unit').val(response.course.ou_id).trigger('change');
+                    if (response.course.auto_archive == 1) {
+                        $('#auto_archive').prop('checked', true);
+                    } else {
+                        $('#auto_archive').prop('checked', false);
+                    }
 
-                   // alert(response.course.enable_cbta);
+
+                    // alert(response.course.enable_cbta);
                     if (response.course.enable_cbta == 1) {
                         $('#edit_enable_cbta').prop('checked', true);
-                       
+                        
+
                     } else {
                         $('#edit_enable_cbta').prop('checked', false);
-                        
-                    } 
+
+                    }
                     if (response.course.instructor_cbta == 1) {
                         $('#edit_instructor').prop('checked', true);
-                       
+
                     } else {
                         $('#edit_instructor').prop('checked', false);
-                        
-                    } 
+
+                    }
                     if (response.course.examiner_cbta == 1) {
                         $('#edit_examiner').prop('checked', true);
-                       
+
                     } else {
                         $('#edit_examiner').prop('checked', false);
-                        
-                    } 
+
+                    }
 
                     if (response.course.enable_mp_lifus == 1) {
                         // 🔹 Only SP Event
                         $('#edit_enable_more_mp').prop('checked', false);
                         $('#edit_enable_mp_lifus').val(1);
                         $('#edit_enable_mp_lifus option[value="2"], #edit_enable_mp_lifus option[value="3"]').hide();
-                    } 
-                    else if (response.course.enable_mp_lifus == 2 || response.course.enable_mp_lifus == 3) {
+                    } else if (response.course.enable_mp_lifus == 2 || response.course.enable_mp_lifus == 3) {
                         // 🔹 MP Event or SP+MP Event
                         $('#edit_enable_more_mp').prop('checked', true);
                         $('#edit_enable_mp_lifus').val(response.course.enable_mp_lifus);
@@ -1138,12 +1343,63 @@
                         fetchEditRatingsByOu(
                             response.course.ou_id,
                             response.course.opc_aircraft
-                        );
+                        ); 
+                        $('#edit_opc_validity_col').show();
+                        $('#edit_opc_extend_eom_col').show();
+                        $('#edit_opc_validity_months').val(response.course.opc_validity);
+                         $('#edit_opc_extend_eom').val(response.course.opc_extend);
+
 
                     } else {
                         $('#edit_enable_opc').prop('checked', false);
                         toggleOPC('#edit_enable_opc', '.opc-aircraft-edit');
+                        $('#edit_opc_validity_col').hide();
+                        $('#edit_opc_extend_eom_col').hide();
                     }
+                    $('#rhs_rows_container').empty();
+                    $('#is_rhs').prop('checked', false);
+                    $('#edit_rhs_tag_col').addClass('d-none');
+
+                    if (response.course.user_tag_ratings && response.course.user_tag_ratings.length > 0) {
+
+                        $('#is_rhs').prop('checked', true);
+                        $('#edit_rhs_tag_col').removeClass('d-none');
+
+                        response.course.user_tag_ratings.forEach(function(tag) {
+
+                            let $row;
+
+                            if (tag.tag_type === 'master') {
+
+                                // Clone MASTER template
+                                $row = $('#rhs_select_row_template').clone()
+                                    .removeClass('d-none')
+                                    .removeAttr('id');
+
+                                $row.find('select[name="master_tag_select[]"]')
+                                    .val(tag.tag_id);
+
+                                $row.find('input[name="master_validity[]"]')
+                                    .val(tag.tag_validity);
+
+                            } else if (tag.tag_type === 'manual') {
+
+                                // Clone MANUAL template
+                                $row = $('#rhs_input_row_template').clone()
+                                    .removeClass('d-none')
+                                    .removeAttr('id');
+
+                                $row.find('input[name="manual_tag_select[]"]')
+                                    .val(tag.rhs_tag.rhstag);
+
+                                $row.find('input[name="manual_validity[]"]')
+                                    .val(tag.tag_validity);
+                            }
+
+                            $('#rhs_rows_container').append($row);
+                        });
+                    }
+
 
                     function toggleOPC(checkbox, container) {
                         if ($(checkbox).is(":checked")) {
@@ -1151,20 +1407,26 @@
                         } else {
                             $(container).stop(true, true).slideUp(200);
                             $(container).find("select").val('').trigger('change');
+                            $('#edit_opc_validity_col').hide();
+                            $('#edit_opc_extend_eom_col').hide();
+                            // $('#select_tag_div').hide();
+                            $('#edit_rhs_tag_col').addClass('d-none');
+                            $('#edit_tag_div').hide();
+
                         }
                     }
-                        
-                    $(document).ready(function () {
-                        $("#enable_opc").on("change", function () {
+
+                    $(document).ready(function() {
+                        $("#enable_opc").on("change", function() { 
                             toggleOPC(this, ".opc-aircraft");
                         });
-                
-                        $("#edit_enable_opc").on("change", function () {
+
+                        $("#edit_enable_opc").on("change", function() { 
                             toggleOPC(this, ".opc-aircraft-edit");
                         });
-                
+
                     });
- 
+
 
                     // Populate Resources
                     if (response.resources) {
@@ -1192,7 +1454,7 @@
                             }
                             if (value.easa_ato_number) {
                                 ato_number += "<option value='easa-" + value.easa_ato_number + "'>EASA ATO Number - " + value.easa_ato_number + "</option>";
-                                hasData = true; 
+                                hasData = true;
                             }
                         });
 
@@ -1297,13 +1559,13 @@
 
                     $('#edit_instructor_documents_items').empty(); // Clear existing containers
                     let instructor_documents = response.course.documents;
-                   
+
                     if (instructor_documents.length > 0) {
                         instructor_documents.forEach((instructor_documents, index) => {
                             let instructorDocumentHtml = generateDocumentsContainerHtml(
                                 instructor_documents, index
                             );
-                           
+
                             $('#edit_instructor_documents_items').append(instructorDocumentHtml);
                         });
                     } else {
@@ -1316,7 +1578,7 @@
 
                     //Training Feedback
                     const questions = response.course.training_feedback_questions || [];
-                 
+
                     if (questions.length > 0) {
                         $('#edit_enable_feedback').prop('checked', true);
                         $('#edit_feedbackConfigSection').show();
@@ -1670,7 +1932,7 @@
         //Enabling Custom Time
 
         let customTimeIndex = 1;
-        $('#enable_custom_time_tracking').on('change', function() {
+        $('#enable_custom_time_tracking').on('change', function() { 
             $('#customTimeConfigSection').toggle(this.checked);
         });
 
@@ -1731,7 +1993,7 @@
 
 
     function generateDocumentsContainerHtml(instructor_documents, index) {
-       
+
         let documentName = instructor_documents.document_name || '';
         let filePath = instructor_documents.file_path ? `/storage/${instructor_documents.file_path}` : '';
         let existingFilePath = instructor_documents.file_path || '';
@@ -1826,6 +2088,37 @@
             },
             error: function(xhr, status, error) {
                 console.error(xhr.responseText);
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+
+        // Fetch tags for the selected OU
+        $.ajax({
+            url: "{{ route('course.get-tags-by-ou') }}",
+            type: "GET",
+            data: {
+                'ou_id': ou_id
+            },
+            dataType: "json",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            success: function(response) {
+                if (response.tags && Array.isArray(response.tags)) {
+                    let tagOptions = "<option value=''>Select Tag</option>";
+                    
+                    response.tags.forEach(function(tag) {
+                        tagOptions += "<option value='" + tag.id + "'>" + tag.rhstag + "</option>";
+                    });
+                    
+                    // Update all tag select dropdowns in create form
+                    $('select[name="master_tag_select[]"]').html(tagOptions);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error fetching tags:", xhr.responseText);
             }
         });
     });
@@ -1904,229 +2197,345 @@
                 console.error(xhr.responseText);
             }
         });
-    });
 
-$(document).ready(function() {
-    // 🔹 Function to toggle MP options
-    function toggleMPOpions(checkboxSelector, selectSelector) { 
-        const checkbox = $(checkboxSelector);
-        const select = $(selectSelector);
-        
-        function updateVisibility() {
-
-            if (checkbox.is(":checked")) {
-
-                // Show MP Event + SP+MP Event
-                select.find("option[value='2'], option[value='3']").show();
-
-                // Hide SP Event
-                select.find("option[value='1']").hide();
-
-                // If currently selected SP Event → change to MP Event
-                if (select.val() === "1") {
-                    select.val("2");
+        // Fetch tags for the selected OU in edit form
+        $.ajax({
+            url: "{{ route('course.get-tags-by-ou') }}",
+            type: "GET",
+            data: {
+                'ou_id': ou_id
+            },
+            dataType: "json",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            success: function(response) {
+                if (response.tags && Array.isArray(response.tags)) {
+                    let tagOptions = "<option value=''>Select Tag</option>";
+                    
+                    response.tags.forEach(function(tag) {
+                        tagOptions += "<option value='" + tag.id + "'>" + tag.rhstag + "</option>";
+                    });
+                    
+                    // Update all tag select dropdowns in edit form
+                    $('#editCourseModal select[name="master_tag_select[]"]').html(tagOptions);
                 }
-
-            } else {
-                // Hide options 2 & 3
-                select.find("option[value='2'], option[value='3']").hide();
-
-                // Show back SP Event
-                select.find("option[value='1']").show();
-
-                // Reset selection back to SP Event
-                select.val("1");
+            },
+            error: function(xhr, status, error) {
+                console.error("Error fetching tags:", xhr.responseText);
             }
-        }
-
-        // Run once on page load (for edit mode)
-        updateVisibility();
-
-        // Run every time checkbox changes
-        checkbox.on("change", updateVisibility);
-    }
-
-    // 🔹 Initialize for both Add & Edit sections
-    toggleMPOpions("#enable_more_mp", "#enable_mp_lifus");
-    toggleMPOpions("#edit_enable_more_mp", "#edit_enable_mp_lifus");
-});
-
-function toggleOPC(checkbox, container, aircraftSelect, ouSelect) {
-    if ($(checkbox).is(":checked")) {
-        $(container).stop(true, true).slideDown();
-
-        let ouId = $(ouSelect).val();
-        if (ouId) {
-            fetchRatingsByOu(ouId, aircraftSelect);
-        }
-    } else {
-        $(container).stop(true, true).slideUp();
-        $(aircraftSelect).val('').trigger('change');
-    }
-}
-
-$(document).ready(function () {
-
-    // CREATE
-    $("#enable_opc").on("change", function () {
-        toggleOPC(this, ".opc-aircraft", "#enable_aircraft", "#select_org_unit");
+        });
     });
 
-    // EDIT
-    $("#edit_enable_opc").on("change", function () {
-        toggleOPC(this, ".opc-aircraft-edit", "#edit_enable_aircraft", "#edit_select_org_unit");
+    $(document).ready(function() {
+        // 🔹 Function to toggle MP options
+        function toggleMPOpions(checkboxSelector, selectSelector) {
+            const checkbox = $(checkboxSelector);
+            const select = $(selectSelector);
+
+            function updateVisibility() {
+
+                if (checkbox.is(":checked")) {
+
+                    // Show MP Event + SP+MP Event
+                    select.find("option[value='2'], option[value='3']").show();
+
+                    // Hide SP Event
+                    select.find("option[value='1']").hide();
+
+                    // If currently selected SP Event → change to MP Event
+                    if (select.val() === "1") {
+                        select.val("2");
+                    }
+
+                } else {
+                    // Hide options 2 & 3
+                    select.find("option[value='2'], option[value='3']").hide();
+
+                    // Show back SP Event
+                    select.find("option[value='1']").show();
+
+                    // Reset selection back to SP Event
+                    select.val("1");
+                }
+            }
+
+            // Run once on page load (for edit mode)
+            updateVisibility();
+
+            // Run every time checkbox changes
+            checkbox.on("change", updateVisibility);
+        }
+
+        // 🔹 Initialize for both Add & Edit sections
+        toggleMPOpions("#enable_more_mp", "#enable_mp_lifus");
+        toggleMPOpions("#edit_enable_more_mp", "#edit_enable_mp_lifus");
     });
 
-});
+    function toggleOPC(checkbox, container, aircraftSelect, ouSelect) {
+        if ($(checkbox).is(":checked")) { 
+            $(container).stop(true, true).slideDown();
+            let ouId = $(ouSelect).val();
+            if (ouId) {
+                fetchRatingsByOu(ouId, aircraftSelect);
+            }
+        } else { 
+            $(container).stop(true, true).slideUp();
+            $(aircraftSelect).val('').trigger('change');
+            $('#opc_validity_col').hide();
+            $('#opc_extend_eom_col').hide();
+            $('#select_tag_div').hide();
+            $('#create_rhs_tag_col').addClass('d-none');
+            $('#create_is_rhs').prop('checked', false);
+            $('#is_rhs').prop('checked', false); 
+
+        }
+    }
+
+    $(document).ready(function() {
+        // CREATE
+        $("#enable_opc").on("change", function() { 
+            toggleOPC(this, ".opc-aircraft", "#enable_aircraft", "#select_org_unit");
+
+        });
+
+        // EDIT
+        $("#edit_enable_opc").on("change", function() { 
+            toggleOPC(this, ".opc-aircraft-edit", "#edit_enable_aircraft", "#edit_select_org_unit");
+        });
+
+    });
 
 
-// Click on copy icon
+    // Click on copy icon
 
-// $('.course-copy-icon').on('click', function () { 
-//     let course_id = $(this).data("course-id");
-//     if (!course_id) {
-//         alert("Invalid Course ID.");
-//         return;
-//     }
+    // $('.course-copy-icon').on('click', function () { 
+    //     let course_id = $(this).data("course-id");
+    //     if (!course_id) {
+    //         alert("Invalid Course ID.");
+    //         return;
+    //     }
 
-//     if (!confirm("Are you sure you want to duplicate this Course ?")) {
-//         return;
-//     }
-//       const loggedInOuId = "{{ $ou_id }}";
-//       alert(loggedInOuId);
+    //     if (!confirm("Are you sure you want to duplicate this Course ?")) {
+    //         return;
+    //     }
+    //       const loggedInOuId = "{{ $ou_id }}";
+    //       alert(loggedInOuId);
 
-//     // store course id temporarily
-//     selectedCourseId = course_id;
-//     // open modal
-//     $('#select_ou').modal('show');
-// });
+    //     // store course id temporarily
+    //     selectedCourseId = course_id;
+    //     // open modal
+    //     $('#select_ou').modal('show');
+    // });
 
-// Course Copy
-// $('#confirm_copy_course').on('click', function () { 
+    // Course Copy
+    // $('#confirm_copy_course').on('click', function () { 
 
-//     let ou_id = $('#select_ou_copy').val();
- 
-//     if (ou_id == '') {
-//         $('#select_ou_copy_error').text('Please select Org Unit');
-//         return;
-//     }
+    //     let ou_id = $('#select_ou_copy').val();
 
-//     $('#select_ou_copy_error').text('');
+    //     if (ou_id == '') {
+    //         $('#select_ou_copy_error').text('Please select Org Unit');
+    //         return;
+    //     }
 
-//     $.ajax({
-//         url: "{{ url('copy_course') }}",
-//         type: "POST",
-//         data: {
-//             course_id: selectedCourseId,
-//             ou_id: ou_id,
-//             _token: "{{ csrf_token() }}"
-//         },
-//         beforeSend: function () {
-//             $('#confirm_copy_course').prop('disabled', true).text('Processing...');
-//         },
-//         success: function (response) {
+    //     $('#select_ou_copy_error').text('');
 
-//             $('#confirm_copy_course').prop('disabled', false).text('Continue');
+    //     $.ajax({
+    //         url: "{{ url('copy_course') }}",
+    //         type: "POST",
+    //         data: {
+    //             course_id: selectedCourseId,
+    //             ou_id: ou_id,
+    //             _token: "{{ csrf_token() }}"
+    //         },
+    //         beforeSend: function () {
+    //             $('#confirm_copy_course').prop('disabled', true).text('Processing...');
+    //         },
+    //         success: function (response) {
 
-//             if (response.status === true || response.status === "true") {
-//                 alert(response.message);
-//                 $('#select_ou').modal('hide');
-//                 window.location.reload();
-//                 return;
-//             }
+    //             $('#confirm_copy_course').prop('disabled', false).text('Continue');
 
-//             alert(response.error || 'Something went wrong.');
-//         },
-//         error: function (xhr) {
-//             $('#confirm_copy_course').prop('disabled', false).text('Continue');
-//             alert('Server Error: ' + xhr.status);
-//         }
-//     });
-// });
+    //             if (response.status === true || response.status === "true") {
+    //                 alert(response.message);
+    //                 $('#select_ou').modal('hide');
+    //                 window.location.reload();
+    //                 return;
+    //             }
+
+    //             alert(response.error || 'Something went wrong.');
+    //         },
+    //         error: function (xhr) {
+    //             $('#confirm_copy_course').prop('disabled', false).text('Continue');
+    //             alert('Server Error: ' + xhr.status);
+    //         }
+    //     });
+    // });
     const loggedInOuId = "{{ $ou_id ?? '' }}";
     let selectedCourseId = null;
 
-$('.course-copy-icon').on('click', function () {
+    $('.course-copy-icon').on('click', function() {
 
-    let course_id = $(this).data("course-id");
+        let course_id = $(this).data("course-id");
 
-    if (!course_id) {
-        alert("Invalid Course ID.");
-        return;
-    }
+        if (!course_id) {
+            alert("Invalid Course ID.");
+            return;
+        }
 
-    if (!confirm("Are you sure you want to copy this Course ?")) {
-        return;
-    }
+        if (!confirm("Are you sure you want to copy this Course ?")) {
+            return;
+        }
 
-    selectedCourseId = course_id;
+        selectedCourseId = course_id;
 
-    // ✅ If OU already exists → Direct copy
-    if (loggedInOuId !== '') {
-        copyCourse(course_id, loggedInOuId);
-        return;
-    }
+        // ✅ If OU already exists → Direct copy
+        if (loggedInOuId !== '') {
+            copyCourse(course_id, loggedInOuId);
+            return;
+        }
 
-    // ❌ OU missing → open modal
-    $('#select_ou').modal('show');
-});
+        // ❌ OU missing → open modal
+        $('#select_ou').modal('show');
+    });
 
-$('#confirm_copy_course').on('click', function () {
+    $('#confirm_copy_course').on('click', function() {
 
-    let ou_id = $('#select_ou_copy').val();
+        let ou_id = $('#select_ou_copy').val();
 
-    if (ou_id === '') {
-        $('#select_ou_copy_error').text('Please select Org Unit');
-        return;
-    }
+        if (ou_id === '') {
+            $('#select_ou_copy_error').text('Please select Org Unit');
+            return;
+        }
 
-    $('#select_ou_copy_error').text('');
+        $('#select_ou_copy_error').text('');
 
-    copyCourse(selectedCourseId, ou_id);
-});
-function copyCourse(course_id, ou_id) {
+        copyCourse(selectedCourseId, ou_id);
+    });
 
-    $.ajax({
-        url: "{{ url('copy_course') }}",
-        type: "POST",
-        data: {
-            course_id: course_id,
-            ou_id: ou_id,
-            _token: "{{ csrf_token() }}"
-        },
-        beforeSend: function () {
-            $('#confirm_copy_course')
-                .prop('disabled', true)
-                .text('Processing...');
-        },
-        success: function (response) {
+    function copyCourse(course_id, ou_id) {
 
-            $('#confirm_copy_course')
-                .prop('disabled', false)
-                .text('Continue');
+        $.ajax({
+            url: "{{ url('copy_course') }}",
+            type: "POST",
+            data: {
+                course_id: course_id,
+                ou_id: ou_id,
+                _token: "{{ csrf_token() }}"
+            },
+            beforeSend: function() {
+                $('#confirm_copy_course')
+                    .prop('disabled', true)
+                    .text('Processing...');
+            },
+            success: function(response) {
 
-            if (response.status === true || response.status === "true") {
-                alert(response.message);
-                $('#select_ou').modal('hide');
-                window.location.reload();
-                return;
+                $('#confirm_copy_course')
+                    .prop('disabled', false)
+                    .text('Continue');
+
+                if (response.status === true || response.status === "true") {
+                    alert(response.message);
+                    $('#select_ou').modal('hide');
+                    window.location.reload();
+                    return;
+                }
+
+                alert(response.error || 'Something went wrong.');
+            },
+            error: function(xhr) {
+                $('#confirm_copy_course')
+                    .prop('disabled', false)
+                    .text('Continue');
+
+                alert('Server Error: ' + xhr.status);
             }
+        });
+    }
 
-            alert(response.error || 'Something went wrong.');
-        },
-        error: function (xhr) {
-            $('#confirm_copy_course')
-                .prop('disabled', false)
-                .text('Continue');
+    // In Edit course
 
-            alert('Server Error: ' + xhr.status);
+    // Toggle RHS Section
+    $('#is_rhs').on('change', function() { 
+
+        if ($(this).is(':checked')) {
+            $('#edit_rhs_tag_col').removeClass('d-none');
+        } else {
+            $('#edit_rhs_tag_col').addClass('d-none');
+           // $('#rhs_rows_container').empty();
         }
     });
-}
 
+    // Add Master Tag Row
+    $('#add_master_tag').on('click', function() { console.log('add_master_tag');
+        editaddRow('#rhs_select_row_template');
+    });
 
+    // Add Manual Tag Row
+    $('#add_manual_tag').on('click', function() {   console.log('add_manual_tag');
+        editaddRow('#rhs_input_row_template');
+    });
 
+    // Remove Row
+    $(document).on('click', '.remove_rhs_row', function() {
+        $(this).closest('.rhs_row').remove();
+    });
 
+    function editaddRow(templateId) {  console.log('Template found:', $(templateId).length);
+        let row = $(templateId)
+            .clone()
+            .removeClass('d-none')
+            .removeAttr('id');
+
+        $('#rhs_rows_container').append(row);
+    }
+
+    // In create course
+
+    $('#create_is_rhs').on('change', function() { 
+        if ($(this).is(':checked')) {
+            $('#create_rhs_tag_col').removeClass('d-none');
+        } else { 
+            $('#create_rhs_tag_col').addClass('d-none');
+           // $('#create_rhs_tag_col').empty();
+          
+        }
+    });
+
+    // Add Master Tag Row
+    $('#create_master_tag').on('click', function() {
+        addRow('#create_rhs_select_row_template');
+    });
+
+    // Add Manual Tag Row
+    $('#create_add_manual_tag').on('click', function() {
+        addRow('#create_rhs_input_row_template');
+    });
+
+    // Remove Row
+    $(document).on('click', '.create_remove_rhs_row', function() {
+        $(this).closest('.create_rhs_row').remove();
+    });
+
+    function addRow(templateId) {
+        let row = $(templateId)
+            .clone()
+            .removeClass('d-none')
+            .removeAttr('id');
+
+        $('#create_rhs_tag_col').append(row);
+    }
+
+    $(document).on('change', '#enable_aircraft', function() {
+        $('#opc_validity_col').show();
+        $('#opc_extend_eom_col').show();
+        $('#select_tag_div').show();
+    });
+
+    $(document).on('change', '#edit_enable_aircraft', function() { 
+        $('#edit_opc_validity_col').show();
+        $('#edit_opc_extend_eom_col').show();
+        $('#edit_tag_div').show();
+    });
 </script>
 
 @endsection

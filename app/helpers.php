@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\OrganizationUnits;
+use App\Models\OuSetting;
 use Carbon\Carbon;
 
 function encode_id($id)
@@ -134,7 +135,7 @@ function getAllowedPages()
 
             return $allowedPages;
         }
-         dd($dashboardPage);
+         // dd($dashboardPage);
         return collect($dashboardPage ? [$dashboardPage] : []);
     }
 
@@ -300,6 +301,42 @@ function get_user_role($roleId)
         }
 
         return 'Green'; // Valid
+    }
+
+    function timezone($start_time, $ou_id)
+    {
+       // dd($start_time);
+        // Get timezone string
+        if($ou_id == ''){
+           return 
+            [
+                'datetime'   => $start_time,
+                'utc_offset' => "UTC + 00:00"  
+            ];
+
+        }else{  
+            $timezoneRow = OuSetting::where('organization_id', $ou_id)->value('timezone'); 
+                /* Extract UTC Offset */
+            preg_match('/\((UTC[^\)]+)\)/', $timezoneRow, $offsetMatch);
+            $utcOffset = $offsetMatch[1] ?? 'UTC';
+            // Extract actual timezone
+            preg_match('/\)\s*(.*)$/', $timezoneRow, $matches);
+            $timezone = $matches[1] ?? 'UTC';
+
+            // Convert UTC time to OU timezone
+            $convertedTime = Carbon::createFromFormat(
+                'Y-m-d H:i:s',
+                $start_time,
+                'UTC'
+            )->setTimezone($timezone);
+
+            return 
+            [
+                'datetime'   => $convertedTime->format('Y-m-d H:i:s'),
+                'utc_offset' => $utcOffset  
+            ];
+        }
+    
     }
 
 

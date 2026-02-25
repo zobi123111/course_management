@@ -25,9 +25,7 @@ use App\Http\Controllers\CbtaControlller;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\BookingController;
-
-
-
+use App\Http\Controllers\ValidationCodesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -163,6 +161,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/group/get_ou_user/', [GroupController::class, 'getOrgUser'])->name('group.get_ou_user');     
     Route::get('/group/get_ou_group/', [GroupController::class, 'getOrgroup'])->name('group.getOrgroup');
     Route::get('/course/get-ratings-by-ou', [CourseController::class, 'getRatingsByOu'])->name('course.get-ratings-by-ou');
+    Route::get('/course/get-tags-by-ou', [CourseController::class, 'getTagsByOu'])->name('course.get-tags-by-ou');
 
 
 });
@@ -270,9 +269,10 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/training/store_grading', [TrainingEventsController::class, 'createGrading'])->name('training.store_grading'); 
     Route::post('/training/overall_assessment', [TrainingEventsController::class, 'storeOverallAssessment'])->name('training.overall_assessment');
     // Route::get('/grading', [TrainingEventsController::class, 'getStudentGrading'])->name('grading.list');
-    Route::get('/training/grading-list/{event_id}', [TrainingEventsController::class, 'getStudentGrading'])->name('training.grading-list');
+    Route::get('/training/grading-list/{event_id}/{course_id?}', [TrainingEventsController::class, 'getStudentGrading'])->name('training.grading-list');
     Route::post('/grading/unlock/{event_id}', [TrainingEventsController::class, 'unlockEventGarding'])->name('grading.unlock'); 
-    
+
+    // Route::get('/lesson-grade/{event}/{lesson}', [TrainingEventsController::class, 'Lessongrade'])->name('lesson.grade');    
 
 
     // Course Template
@@ -310,12 +310,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     // Student specific reporting section Routes
     Route::get('/user-reporting', [ReportsController::class, 'getStudentReports'])->name('user.reporting');
 
-    // Custom CBTA
-    Route::get('/custom-cbta', [CbtaControlller::class, 'index'])->name('custom-cbta.show');
-    Route::post('/custom-cbta-add', [CbtaControlller::class, 'save'])->name('custom-cbta.add');
-    Route::post('/custom-cbta-edit', [CbtaControlller::class, 'edit'])->name('custom-cbta.edit');
-    Route::post('/custom-cbta-update', [CbtaControlller::class, 'update'])->name('custom-cbta.update');
-    Route::post('/custom-cbta-delete', [CbtaControlller::class, 'delete'])->name('custom-cbta.delete');
+ 
     
     // Quiz Routes
     Route::get('/quiz', [QuizController::class, 'quizzes'])->name('quiz.index');
@@ -350,8 +345,37 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::get('/question/edit', [QuizController::class, 'editQuestion'])->name('question.edit');
     Route::post('/question/update', [QuizController::class, 'updateQuestion'])->name('question.update');
     Route::post('/question/delete', [QuizController::class, 'destroyQuestion'])->name('question.destroy');
+   
+   
     
 });
+
+Route::get('/training/training-event-new-design/{event_id}', [TrainingEventsController::class, 'TestshowTrainingEvent'])->name('training.test-show'); 
+Route::get('/lesson-grade', [TrainingEventsController::class, 'Lessongrade'])->name('lesson.grade');
+Route::post('/event/lessons/update', [TrainingEventsController::class, 'EventLessonUpdate'])->name('event.lesson.update');
+Route::delete('/lesson/document/delete/{id}', [LessonController::class, 'deleteBriefingDocument'])->name('lesson.document.delete');
+
+
+
+// Custom CBTA
+Route::get('/custom-cbta', [CbtaControlller::class, 'index'])->name('custom-cbta.show');
+Route::post('/custom-cbta-add', [CbtaControlller::class, 'save'])->name('custom-cbta.add');
+Route::post('/custom-cbta-edit', [CbtaControlller::class, 'edit'])->name('custom-cbta.edit');
+Route::post('/custom-cbta-update', [CbtaControlller::class, 'update'])->name('custom-cbta.update');
+Route::post('/custom-cbta-delete', [CbtaControlller::class, 'delete'])->name('custom-cbta.delete');
+
+Route::get('/validation-codes', [ValidationCodesController::class, 'index'])->name('validation-codes.show');
+Route::post('/validation-codes-add', [ValidationCodesController::class, 'save'])->name('validation-codes.add');
+Route::post('/validation-codes-edit', [ValidationCodesController::class, 'edit'])->name('validation-codes.edit');
+Route::post('/validation-codes-update', [ValidationCodesController::class, 'update'])->name('validation-codes.update');
+Route::post('/validation-codes-delete', [ValidationCodesController::class, 'delete'])->name('validation-codes.delete');
+
+ // Tags
+Route::get('/tags', [TrainingEventsController::class, 'rhs_tags'])->name('rhs_tags');
+Route::post('/tag/create', [TrainingEventsController::class, 'create_tag'])->name('create_tag.store');
+Route::post('/tag/edit', [TrainingEventsController::class, 'edit_tag'])->name('edit_tag.edit');
+Route::post('/tag/update', [TrainingEventsController::class, 'update_tag'])->name('update_tag.update');
+Route::post('/tag/delete', [TrainingEventsController::class, 'delete_tag'])->name('delete_tag.delete');
 
 Route::get('/quiz/view-attempts/{id}', [QuizController::class, 'viewAttempts'])->name('quiz.viewAttempts');
 Route::post('/quiz/single-attempt', [QuizController::class, 'viewSingleAttempt'])->name('quiz.viewSingleAttempt');
@@ -377,23 +401,27 @@ Route::get('/training/unarchieveUser', [TrainingEventsController::class, 'unarch
 
 Route::post('/unarchive-user', [TrainingEventsController::class, 'unarchive'])->name('unarchive.index');
 
+Route::post('/archive_trainingEvent', [TrainingEventsController::class, 'archive_trainingEvent'])->name('archive_trainingEvent.index');
+
 
 
 // Calender
-Route::get('/calendar', [BookingController::class, 'index'])->name('calender.index');
+Route::get('/calendar', [BookingController::class, 'index'])->name('calender.index'); 
 Route::get('/fullcalendar', [BookingController::class, 'loadEvents']);
 Route::post('/booking/store', [BookingController::class, 'store']);
 Route::post('/booking/update', [BookingController::class, 'update']);
 Route::post('/booking/approve', [BookingController::class, 'approve']);
 Route::post('/booking/delete', [BookingController::class, 'delete']);
 Route::post('/booking/reject', [BookingController::class, 'reject']);
+Route::post('/course/lesson', [BookingController::class, 'lessons'])->name('lessons'); 
 Route::get('/group/students/', [BookingController::class, 'getstudents'])->name('getstudents'); 
+Route::get('/calendar/resources', [BookingController::class, 'loadResources']);
+Route::get('/calendar/events', [BookingController::class, 'loadEvents']);
+Route::post('/calendar/edit', [BookingController::class, 'edit_booking']);
+
 Route::get('/org_setting/{id}', [OrganizationController::class, 'org_setting'])->name('org_setting');
 Route::post('/store/org_setting', [OrganizationController::class, 'store_org_setting'])->name('store_org_setting');
 Route::get('/get_org_setting/{id}', [OrganizationController::class, 'get_org_setting'])->name('get_org_setting');
-
-
-
 
     
 Route::get('/clear-cache', function() {
