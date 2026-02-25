@@ -334,6 +334,8 @@ class BookingController extends Controller
         $booking->send_email    = $request->boolean('send_email') ? 1 : 0;
         $booking->save();
 
+        
+
         // $sendemail = organizationUnits::where('id', $request->organizationUnits)->first();
         $checkSend_mail = OuSetting::where('organization_id', $request->organizationUnits)->select('send_email')->first();
 
