@@ -36,7 +36,8 @@ class TrainingEvents extends Model
         'entry_source',
         'rank',
         'old_course_id',
-        'archive'
+        'archive',
+        'trainingEvent_type'
     ];
  
     public function orgUnit()

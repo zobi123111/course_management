@@ -9,9 +9,14 @@ use App\Models\OrganizationUnits;
 use App\Models\Group;
 use App\Models\User;
 use App\Models\OuSetting;
+use App\Models\Courses;
+use App\Models\CourseLesson;
+use App\Models\TrainingEvents;
+use App\Models\TrainingEventLessons;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Session;
 
 
 class BookingController extends Controller
@@ -27,7 +32,7 @@ class BookingController extends Controller
     {
         $mode = $request->mode ?? 'resource';
         $role = auth()->user()->role;
-        
+
         $is_owner = auth()->user()->is_owner;
         if ($role == 3) {
             $login_id = auth()->user()->id;
@@ -38,15 +43,15 @@ class BookingController extends Controller
 
         $data = [];
 
-        if($is_owner == 1){
+        if ($is_owner == 1) {
             $ou_id = '';
-        }else{
-          $ou_id = auth()->user()->ou_id;
+        } else {
+            $ou_id = auth()->user()->ou_id;
         }
 
         foreach ($events as $e) {
             $mailSend = OuSetting::where('organization_id', $ou_id)->select('send_email')->first();
-            if ($mode === 'instructor') { 
+            if ($mode === 'instructor') {
                 $resourceId = $e->instructor_id;
                 // dd($e);
             } elseif ($mode === 'student') {
@@ -83,7 +88,7 @@ class BookingController extends Controller
                     $title = $studentName . ' (Standby)';
                     $color = '#F59E0B'; // orange
                     $typeText = 'Standby';
-                     $id       = $e->std_id;
+                    $id       = $e->std_id;
                     break;
 
                 default:
@@ -95,7 +100,7 @@ class BookingController extends Controller
 
             /* ---------------- Push event ---------------- */
             $start_time = timezone($e->start, $ou_id);
-        
+
             $start_timezone = $start_time['datetime'];
 
             $end_time = timezone($e->end, $ou_id);
@@ -152,39 +157,35 @@ class BookingController extends Controller
         if ($mode === 'instructor') {
             if ($is_owner == 1) {
                 $instructor =  User::where('role', 18)->where('is_activated', 0)->where('status', 1)->get()
-                ->map(fn($u) => [
-                    'id' => $u->id,
-                    'title' => $u->fname . ' ' . $u->lname
-                ]);
-                 return $instructor;   
-             }
-             elseif ($is_admin == 1) {
+                    ->map(fn($u) => [
+                        'id' => $u->id,
+                        'title' => $u->fname . ' ' . $u->lname
+                    ]);
+                return $instructor;
+            } elseif ($is_admin == 1) {
                 $instructor =  User::where('role', 18)->where('ou_id', $ou_id)->where('is_activated', 0)->where('status', 1)->get()
-                ->map(fn($u) => [
-                    'id' => $u->id,
-                    'title' => $u->fname . ' ' . $u->lname
-                ]);
-                 return $instructor;  
-
-             }
-             else{
+                    ->map(fn($u) => [
+                        'id' => $u->id,
+                        'title' => $u->fname . ' ' . $u->lname
+                    ]);
+                return $instructor;
+            } else {
                 $id = auth()->id();
-              
+
                 $groups = Group::whereJsonContains('user_ids', (string) $id)->get();
-           
-                $userIds = $groups->pluck('user_ids')->flatten()->unique()->values(); 
-              
+
+                $userIds = $groups->pluck('user_ids')->flatten()->unique()->values();
+
                 $users = User::where('role', 18)->whereIn('id', $userIds)
-                                ->where('ou_id', $ou_id)
-                                ->where('is_activated', 0)->where('status', 1)
-                                ->get()
-                                ->map(fn($u) => [
-                                    'id'    => $u->id,
-                                    'title' => $u->fname . ' ' . $u->lname
-                                ]);
-               return $users;                  
-              }
-         
+                    ->where('ou_id', $ou_id)
+                    ->where('is_activated', 0)->where('status', 1)
+                    ->get()
+                    ->map(fn($u) => [
+                        'id'    => $u->id,
+                        'title' => $u->fname . ' ' . $u->lname
+                    ]);
+                return $users;
+            }
         }
 
         if ($mode === 'student') {
@@ -213,15 +214,15 @@ class BookingController extends Controller
                 return $user;
             } else {
                 $id = auth()->id();
-              
-                 
+
+
                 $users = User::where('id', $id)
-                            ->get()
-                            ->map(fn($u) => [
-                                'id'    => $u->id,
-                                'title' => $u->fname . ' ' . $u->lname
-                            ]);
-                            //  dd($users); 
+                    ->get()
+                    ->map(fn($u) => [
+                        'id'    => $u->id,
+                        'title' => $u->fname . ' ' . $u->lname
+                    ]);
+                //  dd($users); 
 
                 return $users;
             }
@@ -230,44 +231,40 @@ class BookingController extends Controller
         if ($mode === 'resource') {
             if ($is_owner == 1) {
                 return Resource::all()
-                        ->map(fn($r) => [
-                            'id' => $r->id,
-                            'title' => $r->name
-                        ]);
-               }
-               elseif ($is_admin == 1) { 
-                    $ou_id = auth()->user()->ou_id;
-          
+                    ->map(fn($r) => [
+                        'id' => $r->id,
+                        'title' => $r->name
+                    ]);
+            } elseif ($is_admin == 1) {
+                $ou_id = auth()->user()->ou_id;
 
 
-                    return Resource::where('ou_id', $ou_id)->get()
-                            ->map(fn($r) => [
-                                'id' => $r->id,
-                                'title' => $r->name
-                            ]);
-                }else{
-                        $id = auth()->id();
-                        $ou_id = auth()->user()->ou_id;
-                        // Get group IDs where user exists
-                        $groupIds = Group::whereJsonContains('user_ids', (string) $id)
-                                        ->pluck('id');
 
-                        // Get resources linked to those groups
-                        return Resource::join('group_resource', 'resources.id', '=', 'group_resource.resource_id')
-                                ->whereIn('group_resource.group_id', $groupIds)
-                                ->where('resources.ou_id', $ou_id)
-                                ->select('resources.id', 'resources.name')
-                                ->distinct()
-                                ->get()
-                                ->map(fn($r) => [
-                                    'id' => $r->id,
-                                    'title' => $r->name
-                                ]);
-                }
+                return Resource::where('ou_id', $ou_id)->get()
+                    ->map(fn($r) => [
+                        'id' => $r->id,
+                        'title' => $r->name
+                    ]);
+            } else {
+                $id = auth()->id();
+                $ou_id = auth()->user()->ou_id;
+                // Get group IDs where user exists
+                $groupIds = Group::whereJsonContains('user_ids', (string) $id)
+                    ->pluck('id');
 
-          }
-
-     
+                // Get resources linked to those groups
+                return Resource::join('group_resource', 'resources.id', '=', 'group_resource.resource_id')
+                    ->whereIn('group_resource.group_id', $groupIds)
+                    ->where('resources.ou_id', $ou_id)
+                    ->select('resources.id', 'resources.name')
+                    ->distinct()
+                    ->get()
+                    ->map(fn($r) => [
+                        'id' => $r->id,
+                        'title' => $r->name
+                    ]);
+            }
+        }
     }
 
     public function store(Request $request)
@@ -279,17 +276,27 @@ class BookingController extends Controller
             'booking_type'      => 'required|in:1,2,3',
             'resource_type'     => 'required|in:1,2,3',
             'resource'          => 'required',
-            'instructor'        => 'required_if:booking_type,2|nullable|exists:users,id',
+           
         ];
 
-        // ✅ Only validate student if NOT role 3
-         if (Auth::user()->is_owner == 1) {
-             $rules['student'] = 'required|exists:users,id';
-         }
+        if ($request->booking_type == 2 || $request->booking_type == 3) {
+            $rules['instructor'] = 'required';
+            $rules['course'] = 'required';
+            $rules['lesson'] = 'required';
+            $rules['course_date'] = 'required';
+            $rules['rank'] = 'required';
+            $rules['lesson_date'] = 'required';
+            $rules['start_time'] = 'required';
+            $rules['end_time'] = 'required';
+            $rules['departure_airfield'] = 'required';
+            $rules['destination_airfield'] = 'required';
+            $rules['operation'] = 'required';
+            $rules['role'] = 'required';
+        }
 
-        // if (Auth::user()->role != 3) {
-            
-        // }
+        if (Auth::user()->is_owner == 1) {
+            $rules['student'] = 'required|exists:users,id';
+        }
 
         $validated = $request->validate($rules);
 
@@ -329,41 +336,98 @@ class BookingController extends Controller
 
         // $sendemail = organizationUnits::where('id', $request->organizationUnits)->first();
         $checkSend_mail = OuSetting::where('organization_id', $request->organizationUnits)->select('send_email')->first();
-        // if ($checkSend_mail->send_email == 1) { 
 
-        //     $studentEmail = User::find($booking->std_id)->email;
-        //     $instructor = User::find($booking->instructor_id)->email;
-        //     $ouEmails = User::where('ou_id', $booking->ou_id)->where('is_admin', 1)->pluck('email')->toArray();
 
-        //     $allEmails = array_merge([$studentEmail], $ouEmails, [$instructor]);
+        //--------------------------------------------------------------------------------------------------------------------------
 
-        //     Mail::send('emailtemplates.create_booking_email', ['booking' => $booking], function ($message) use ($allEmails) {
-        //         $message->to($allEmails)
-        //                 ->subject('New Booking Created');
-        //     });
-        // }
-        // if ($checkSend_mail->send_email == 1) {
-        // $studentEmail = User::where('id', $booking->std_id)->value('email');
-        // $instructorEmail = User::where('id', $booking->instructor_id)->value('email');
+        if ($request->booking_type == 2 || $request->booking_type == 3) {
+            //  Create tarining event
+            $lesson_ids = collect($request->lesson)->pluck('lesson_id')->toArray();
+            $existingEvent = TrainingEvents::where('student_id', $request->student)
+                ->where('course_id', $request->course)
+                ->where('ou_id', auth()->user()->is_owner ? $request->organizationUnits : auth()->user()->ou_id)
+                ->whereJsonContains('lesson_ids', $lesson_ids)
+                ->get();
 
-        // $ouEmails = User::where('ou_id', $booking->ou_id)
-        //                 ->where('is_admin', 1)
-        //                 ->pluck('email')
-        //                 ->toArray();
 
-        // $allEmails = array_filter(array_merge(
-        //     [$studentEmail],
-        //     $ouEmails,
-        //     [$instructorEmail]
-        // ));
 
-        // Mail::send('emailtemplates.create_booking_email',['booking' => $booking],function ($message) use ($allEmails) {
-        //             $message->to($allEmails)
-        //             ->subject('New Booking Created');
-        //     }
-        // );
-        // }
-        return response()->json(['message' => 'Booking created successfully'], 201);
+
+            $trainingEvent = TrainingEvents::create([
+                'student_id'        => $request->student,
+                'course_id'         => $request->course,
+                'lesson_ids'        => json_encode([$request->lesson]),
+                'event_date'        => $request->course_date,
+                // 'opc_validity' => $request->opc_validity_months,
+                // 'opc_extend' => $request->opc_extend_eom,
+                // 'total_time' => $request->total_time,
+                // 'simulator_time' => $request->total_simulator_time ?? '00:00',
+                'std_license_number' => $request->licence_number,
+                'ou_id' => auth()->user()->is_owner ? $request->organizationUnits : auth()->user()->ou_id,
+                // 'entry_source' => $request->entry_source,
+                'rank'            => $request->rank ?? null,
+                'trainingEvent_type' => 1
+            ]);
+
+
+            $lessonModel = \App\Models\CourseLesson::find($request->lesson);
+            $resourceModel = \App\Models\Resource::find($request->resource);
+
+            $lessonType = $lessonModel?->lesson_type;
+            $resourceName = $resourceModel?->name;
+
+            $start = $request->start_time ?? null;
+            $end = $request->end_time ?? null;
+            $creditMinutes = 0;
+
+            //Calculate credit_hours if applicable
+            //Apply logic based on lesson type and resource
+            if ($lessonType === 'groundschool' && $resourceName === 'Homestudy') {
+                // Fixed 8 hours for Homestudy
+                $creditMinutes = 480;
+                $start = '00:00';
+                $end = '08:00';
+            } elseif ($start && $end) {
+                // For all other lessons (including simulator and classroom)
+                try {
+                    $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
+                    $endTime = \Carbon\Carbon::createFromFormat('H:i', $end);
+
+                    if ($endTime->lessThan($startTime)) {
+                        $endTime->addDay(); // Handles overnight sessions
+                    }
+
+                    $creditMinutes = $startTime->diffInMinutes($endTime);
+                } catch (\Exception $e) {
+                    $creditMinutes = 0; // fallback in case of invalid time format
+                }
+            }
+
+            TrainingEventLessons::create([
+                'training_event_id'  => $trainingEvent->id,
+                'lesson_id'          => $request->lesson,
+                'instructor_id'      => $request->instructor,
+                'resource_id'        => $request->resource,
+                'lesson_date'        => $request->lesson_date,
+                'start_time'         => $start,
+                'end_time'           => $end,
+                'departure_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($request->departure_airfield),
+                'destination_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($request->destination_airfield,),
+                'instructor_license_number' => $request->licence_number ?? null,
+                'hours_credited'    => gmdate("H:i", $creditMinutes * 60),
+                'operation1'        => $request->Operation ?? null,
+                'role1'             => $request->role ?? null,
+                'operation2'        =>  null,
+                'role2'             =>  null,
+
+            ]);
+
+         
+          return response()->json(['message' => 'Training event created successfully']);
+          
+
+        }
+        //--------------------------------------------------------------------------------------------------------------------------------------
+       return response()->json(['success' => true,'message' => 'Booking created successfully.']);
     }
 
     public function update(Request $request)
@@ -488,19 +552,17 @@ class BookingController extends Controller
         $is_owner = auth()->user()->is_owner;
         $students = User::where('ou_id', $request->ou_id)->get();
         $id = auth()->id();
-        
+
         $ato_num = OrganizationUnits::where('id', $request->ou_id)->get();
 
         if ($is_owner == 1) {
             $instructors = User::where('ou_id', $request->ou_id)->where('role', 18)->get(['id', 'fname', 'lname']);
             $org_resource = Resource::where('ou_id', $request->ou_id)->get();
-          
-        }
-         elseif ($is_admin == 1) {
-             $org_resource = Resource::where('ou_id', $request->ou_id)->get();
-             $instructors = User::where('ou_id', $request->ou_id)->where('role', 18)->where('is_activated', 0)->where('status', 1)->get(['id', 'fname', 'lname']);
-                 
-         }else{
+            $courses = Courses::where('ou_id', $request->ou_id)->get();
+        } elseif ($is_admin == 1) {
+            $org_resource = Resource::where('ou_id', $request->ou_id)->get();
+            $instructors = User::where('ou_id', $request->ou_id)->where('role', 18)->where('is_activated', 0)->where('status', 1)->get(['id', 'fname', 'lname']);
+        } else {
             $org_resource = Resource::where('ou_id', $request->ou_id)->get();
 
             $id = auth()->id();
@@ -508,26 +570,33 @@ class BookingController extends Controller
             $groupIds = Group::whereJsonContains('user_ids', (string) $id)->pluck('id');
 
             // Get resources linked to those groups
-           $org_resource =  Resource::join('group_resource', 'resources.id', '=', 'group_resource.resource_id')
-                        ->whereIn('group_resource.group_id', $groupIds)
-                        ->where('resources.ou_id', $ou_id)
-                        ->select('resources.id', 'resources.name')
-                        ->distinct()
-                        ->get();
+            $org_resource =  Resource::join('group_resource', 'resources.id', '=', 'group_resource.resource_id')
+                ->whereIn('group_resource.group_id', $groupIds)
+                ->where('resources.ou_id', $ou_id)
+                ->select('resources.id', 'resources.name')
+                ->distinct()
+                ->get();
 
             $groups = Group::whereJsonContains('user_ids', (string) $id)->get();
-            $userIds = $groups->pluck('user_ids')->flatten()->unique()->values(); 
+            $userIds = $groups->pluck('user_ids')->flatten()->unique()->values();
             $instructors = User::where('role', 18)->where('ou_id', $request->ou_id)
-                           ->where('is_activated', 0)->where('status', 1)
-                           ->whereIn('id', $userIds)
-                           ->get(['id', 'fname', 'lname']);
-                  
-         }
-        
+                ->where('is_activated', 0)->where('status', 1)
+                ->whereIn('id', $userIds)
+                ->get(['id', 'fname', 'lname']);
+        }
+
+        return response()->json(['org_resource' => $org_resource, 'ato_num' => $ato_num, 'students' => $students, 'instructors' => $instructors, 'courses' => $courses]);
+    }
+
+    public function lessons(Request $request)
+    {
+        $course_id = $request->course_id;
+        $lessons = CourseLesson::where('course_id', $course_id)->get();
+        $course = Courses::with(['courseLessons', 'resources'])->find($course_id);
+        $enable_mp_lifus  = $course->enable_mp_lifus;
 
 
-
-        return response()->json(['org_resource' => $org_resource, 'ato_num' => $ato_num, 'students' => $students, 'instructors' => $instructors]);
+        return response()->json(['lessons' => $lessons, 'enable_mp_lifus' =>  $enable_mp_lifus, 'resources' => $course->resources]);
     }
 
     public function edit_booking(Request $request)
