@@ -10,7 +10,7 @@ class CourseLesson extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    protected $fillable = ['course_id','lesson_title','description','grade_type', 'lesson_type', 'custom_time_id', 'enable_cbta', 'comment','status', 'enable_prerequisites','instructor_cbta', 'examiner_cbta'];
+    protected $fillable = ['course_id','lesson_title','description','grade_type', 'lesson_type', 'custom_time_id', 'enable_cbta', 'comment','status', 'enable_prerequisites','instructor_cbta', 'examiner_cbta', 'student_briefing'];
 
     public function course()
     { 
@@ -58,5 +58,9 @@ class CourseLesson extends Model
         return $this->hasMany(Quiz::class, 'lesson_id', 'id');
     }
 
+    public function briefingDocuments()
+    {
+        return $this->hasMany(LessonBriefingDocument::class, 'lesson_id');
+    }
 
 }

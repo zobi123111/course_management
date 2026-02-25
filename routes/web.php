@@ -353,6 +353,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
 Route::get('/training/training-event-new-design/{event_id}', [TrainingEventsController::class, 'TestshowTrainingEvent'])->name('training.test-show'); 
 Route::get('/lesson-grade', [TrainingEventsController::class, 'Lessongrade'])->name('lesson.grade');
 Route::post('/event/lessons/update', [TrainingEventsController::class, 'EventLessonUpdate'])->name('event.lesson.update');
+Route::delete('/lesson/document/delete/{id}', [LessonController::class, 'deleteBriefingDocument'])->name('lesson.document.delete');
 
 
 

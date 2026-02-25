@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\UserCreated;
 use App\Mail\OrgUnitCreated;
+use App\Models\LicenceValidationType;
 
 class OrganizationController extends Controller 
 {
@@ -222,8 +223,6 @@ class OrganizationController extends Controller
             return response()->json(['error' => $e->getMessage()]);
         }
     }
-    
-
 
     public function getOrgUnit(Request $request) 
     {
@@ -249,7 +248,6 @@ class OrganizationController extends Controller
         ]);
     }
 
-
     public function updateOrgUnit(Request $request)
     {
         $rules = [
@@ -257,19 +255,21 @@ class OrganizationController extends Controller
             'description' => 'required',
             'status' => 'required',
            'org_logo' => 'nullable|mimes:jpeg,png,jpg,gif,svg|max:25600',
-        //    'uk_ato_number'   => 'required',
-        //    'easa_ato_number'  =>'required'
+            //    'uk_ato_number'   => 'required',
+            //    'easa_ato_number'  =>'required'
         ];
-      $logo_name = [];
+
+        $logo_name = [];
+
         if ($request->hasFile('org_logo')) {
-        $file = $request->file('org_logo');
-        $fileName = $file->getClientOriginalName(); // Get the original file name
-        $filePath = $file->storeAs('organization_logo', $fileName, 'public');
-        
-        // If you want to store only the filename instead of the path:
-        $storedFileName = basename($filePath);
-        $logo_name[] = ($fileName);
-    }
+            $file = $request->file('org_logo');
+            $fileName = $file->getClientOriginalName(); // Get the original file name
+            $filePath = $file->storeAs('organization_logo', $fileName, 'public');
+            
+            // If you want to store only the filename instead of the path:
+            $storedFileName = basename($filePath);
+            $logo_name[] = ($fileName);
+        }
      
 
         if ($request->filled('user_id') && ($request->filled('edit_email') || $request->filled('edit_firstname') || $request->filled('edit_lastname'))) {
@@ -358,7 +358,6 @@ class OrganizationController extends Controller
         }
     }
 
-
     public function deleteOrgUnit(Request $request)
     {        
         $organizationUnit = $request->filled('org_id')? OrganizationUnits::findOrFail(decode_id($request->org_id)): null;
@@ -385,58 +384,64 @@ class OrganizationController extends Controller
         // Return users
         return response()->json(['orgUnitUsers' => $orgUnitUsers]);
 
-        }
+    }
   
-        public function org_setting(Request $request, $ou_id)
-        {
-            $ou_id = decode_id($ou_id);
+    public function org_setting(Request $request, $ou_id)
+    {
+        $ou_id = decode_id($ou_id);
 
-            $ou_detail = OrganizationUnits::where('id', $ou_id)->select('org_unit_name', 'id')->get();
-            $ou_name = $ou_detail[0]->org_unit_name;
-            $ou_id = $ou_detail[0]->id;
-            $organizationUnits = OrganizationUnits::all();
-            $OuSetting = OuSetting::where('organization_id', $ou_id)->first();
-            $timezones = json_decode(file_get_contents(resource_path('views/timezones_by_utc.json')),true);
-            return view('organization.org_setting', compact('organizationUnits', 'ou_name', 'ou_id','OuSetting','timezones'));
-        }
+        $ou_detail = OrganizationUnits::where('id', $ou_id)->select('org_unit_name', 'id')->get();
+        $ou_name = $ou_detail[0]->org_unit_name;
+        $ou_id = $ou_detail[0]->id;
+        $organizationUnits = OrganizationUnits::all();
+        $OuSetting = OuSetting::where('organization_id', $ou_id)->first();
+        $timezones = json_decode(file_get_contents(resource_path('views/timezones_by_utc.json')),true);
+        return view('organization.org_setting', compact('organizationUnits', 'ou_name', 'ou_id','OuSetting','timezones'));
+    }
 
-        public function store_org_setting(Request $request)
-        {
-            $validated = $request->validate([
-                'organization_unit_id' => 'required|integer|exists:organization_units,id',
-                'auto_archive'         => 'required|in:0,1',
-                'archive_after_months' => 'nullable|required_if:auto_archive,1|integer|min:1|max:120',
-                'show_dob'             => 'required|in:0,1',
-                'show_phone'           => 'required|in:0,1',
-                'send_email'           => 'required|in:0,1',
-                'timezone'             => 'required'
-            ]);
-          
-
-            OuSetting::updateOrCreate(
-                ['organization_id' => $validated['organization_unit_id']],
-                [
-                    'auto_archive'         => $validated['auto_archive'],
-                    'archive_after_months' => $validated['archive_after_months'] ?? null,
-                    'show_dob'             => $validated['show_dob'],
-                    'show_phone'           => $validated['show_phone'],
-                    'show_phone'           => $validated['show_phone'],
-                    'send_email'           => $validated['send_email'],
-                    'timezone'             => $validated['timezone'],
-                ]
-            );
-            Session::flash('message', 'Organization General setting Updated successfully .');
-            return response()->json([
-                'success' => true,
-                'message' => 'Organization General setting Updated successfully .'
-            ]);
-        }
+    public function store_org_setting(Request $request)
+    {
+        $validated = $request->validate([
+            'organization_unit_id' => 'required|integer|exists:organization_units,id',
+            'auto_archive'         => 'required|in:0,1',
+            'archive_after_months' => 'nullable|required_if:auto_archive,1|integer|min:1|max:120',
+            'show_dob'             => 'required|in:0,1',
+            'show_phone'           => 'required|in:0,1',
+            'enable_tacho_fields'  => 'required|in:0,1',
+            'send_email'           => 'required|in:0,1',
+            'timezone'             => 'required'
+        ]);
         
-         public function get_org_setting(Request $request, $ou_id)
-        {
-            $OuSetting = OuSetting::where('organization_id', $ou_id)->first();
-            return response()->json(['OuSetting' => $OuSetting]);
-        }
+
+        OuSetting::updateOrCreate(
+            ['organization_id' => $validated['organization_unit_id']],
+            [
+                'auto_archive'         => $validated['auto_archive'],
+                'archive_after_months' => $validated['archive_after_months'] ?? null,
+                'show_dob'             => $validated['show_dob'],
+                'show_phone'           => $validated['show_phone'],
+                'show_phone'           => $validated['show_phone'],
+                'enable_tacho_fields'  => $validated['enable_tacho_fields'],
+                'send_email'           => $validated['send_email'],
+                'timezone'             => $validated['timezone'],
+                
+            ]
+        );
+        Session::flash('message', 'Organization General setting Updated successfully .');
+        return response()->json([
+            'success' => true,
+            'message' => 'Organization General setting Updated successfully .'
+        ]);
+    }
+        
+    public function get_org_setting(Request $request, $ou_id)
+    {
+        $OuSetting = OuSetting::where('organization_id', $ou_id)->first();
+        $validation_type = LicenceValidationType::where('ou_id', $ou_id)->where('enabled', 1)->get();
+
+        // dd($validation_type);
+        return response()->json(['OuSetting' => $OuSetting, 'validation_type' => $validation_type]);
+    }
 
     
 }

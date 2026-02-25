@@ -640,7 +640,7 @@
         <div class="loader" style="display: none;"></div>
         <div class="card-body mt-3">
             <div>
-                <a href="/training/show/{{ encode_id($trainingEvent->id) }}" class="btn btn-primary me-2">Back</a>
+                <a href="/training/training-event-new-design/{{ encode_id($trainingEvent->id) }}" class="btn btn-primary me-2">Back</a>
             </div>
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">{{ $trainingEvent?->course?->course_name }}</h5>
@@ -650,12 +650,20 @@
             </div>
             <!-- Default Tabs -->
             <ul class="nav nav-tabs mt-3" id="myTab" role="tablist">
+
+                @if(!in_array($lessonType, ['deferred', 'custom']))
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" style="padding: 0.5rem 4rem !important;" id="brief-tab" data-bs-toggle="tab" data-bs-target="#brief" type="button" role="tab" aria-controls="brief" aria-selected="true">Briefing</button>
+                    </li>
+                @endif
+
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" style="padding: 0.5rem 4rem !important;" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="overview" aria-controls="overview" aria-selected="false" tabindex="-1">Grade</button>
+                    <button class="nav-link  @if(in_array($lessonType, ['deferred', 'custom'])) active @endif" style="padding: 0.5rem 4rem !important;" id="Lesson-tab" data-bs-toggle="tab" data-bs-target="#Lesson" type="button" role="tab" aria-controls="Lesson" aria-selected="true">Details</button>
                 </li>
+
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" style="padding: 0.5rem 4rem !important;" id="Lesson-tab" data-bs-toggle="tab" data-bs-target="#Lesson" type="button" role="tab" aria-controls="Lesson" aria-selected="true">Details</button>
-                </li>
+                    <button class="nav-link" style="padding: 0.5rem 4rem !important;" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="overview" aria-controls="overview" aria-selected="false" tabindex="-1">Grade</button>
+                </li>               
                 
                 @if($trainingEvent?->course?->course_type === 'one_event' && $student)
                 <!-- <li class="nav-item" role="presentation">
@@ -667,7 +675,257 @@
             </ul>
             <div class="tab-content pt-2" id="myTabContent">
 
-                <div class="tab-pane fade p-3 active show" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                @if(!in_array($lessonType, ['deferred', 'custom']))
+                    <div class="tab-pane fade p-3 active show" id="brief" role="tabpanel" aria-labelledby="brief-tab">
+                        <div class="card mb-3 p-3">
+                            <div class="card-body">
+                            
+                                @php
+                                    if (!function_exists('keepBoldItalic')) {
+                                        function keepBoldItalic($html) {
+                                            return strip_tags($html, '<strong><b><i><em>');
+                                        }
+                                    }
+                                @endphp
+
+                                <!-- @if($lessonType == 'deferred')
+                                    <h5>{{ $deflessondetails->lesson_title ?? $deflessondetails->lesson_title }}</h5>
+                                    <p>{!! keepBoldItalic($deflessondetails->student_briefing) !!}</p>
+
+                                @elseif($lessonType == 'custom')
+                                    <h5>{{ $deflessondetails->lesson_title ?? $deflessondetails->lesson_title }}</h5>
+                                    <p>{!! keepBoldItalic($deflessondetails->student_briefing) !!}</p> -->
+                                <!-- @else -->
+                                    @foreach($eventLessons as $eventLesson)
+                                        @if($requestedLessonId && $eventLesson->id != $requestedLessonId)
+                                            @continue
+                                        @endif
+
+                                        <div class="lesson-item mb-4">
+                                            <h5 class="mt-3">Lesson Title: {{ $eventLesson->lesson?->lesson_title ?? $eventLesson->lesson_title }}</h5>
+                                            
+                                            <h5 class="mt-5">Lesson Description: </h5>
+                                            <p>
+                                                {!! keepBoldItalic($eventLesson->lesson?->description ?? '') !!}
+                                            </p>
+
+                                            <h5 class="mt-5">Lesson Briefing:</h5>
+                                            <p>
+                                                {!! keepBoldItalic($eventLesson->lesson?->student_briefing ?? '') !!}
+                                            </p>
+
+                                            @if($eventLesson->lesson?->briefingDocuments)
+                                                <div class="briefing-documents">
+                                                    @foreach($eventLesson->lesson->briefingDocuments as $doc)
+                                                        <div class="mb-2 d-flex justify-content-between align-items-center">
+                                                            <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank">
+                                                                {{ $doc->file_name }}
+                                                            </a>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                <!-- @endif -->
+
+                                <!-- @foreach($eventLessons as $eventLesson)
+                                    @if($requestedLessonId && $eventLesson->id != $requestedLessonId)
+                                        @continue
+                                    @endif
+
+                                    <h5>{{ $eventLesson->lesson->lesson_title ?? $eventLesson->lesson_title }}</h5>
+                                    <p>{!! keepBoldItalic($eventLesson->lesson->student_briefing) !!}</p>
+                                    @if ($eventLesson->lesson->briefingDocuments)
+                                        @foreach ($eventLesson->lesson->briefingDocuments as $doc)
+                                            <div class="mb-2 d-flex justify-content-between align-items-center">
+                                                <a href="/storage/{{ $doc->file_path }}" target="_blank">
+                                                    {{ $doc->file_name }}
+                                                </a>
+                                            </div>
+                                        @endforeach
+                                    @endif
+
+                                    @php
+                                        $filteredDeferred = $defLessonTasks->where('def_lesson_id', $eventLesson->id);
+                                    @endphp
+                                    @foreach($filteredDeferred as $deferred)
+                                        <h5>{{ $deferred->defLesson->lesson_title ?? $deferred->lesson_title }}</h5>
+                                        <p>{!! keepBoldItalic($deferred->defLesson->student_briefing) !!}</p>
+                                    @endforeach
+
+                                    @php
+                                        $filteredCustom = $customLessonTasks->where('def_lesson_id', $eventLesson->id);
+                                    @endphp
+                                    @foreach($filteredCustom as $custom)
+                                        <h5>{{ $custom->defLesson->lesson_title ?? $custom->lesson_title }}</h5>
+                                        <p>{!! keepBoldItalic($custom->defLesson->student_briefing) !!}</p>
+                                    @endforeach
+                                @endforeach -->
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <div class="tab-pane fade mt-3 @if(in_array($lessonType, ['deferred', 'custom'])) active show @endif" id="Lesson" role="tabpanel" aria-labelledby="Lesson-tab">
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="lessonAlert" class="alert d-none mb-3" role="alert"></div>
+                            <h5 class="card-title d-flex justify-content-between align-items-center">
+                                Lesson Details
+                                @if(checkAllowedModule('courses', 'lesson.edit')->isNotEmpty())
+                                <button type="button" class="btn btn-sm btn-primary" id="editBtn">
+                                    Edit
+                                </button>
+                                @endif
+                            </h5>
+
+                            @php
+                                $lesson = in_array($lessonType, ['custom', 'deferred'])
+                                    ? $deflessondetails
+                                    : $lessondetails;
+                            @endphp
+
+                            <form id="lessonForm" action="{{ route('event.lesson.update') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="id" value="{{ $lesson->id }}">
+
+                                <div class="row g-3">
+
+                                    @if($lessonType == 'custom')
+                                        <input type="hidden" name="lessontype" value="custom">
+                                    @elseif ($lessonType == 'deferred')
+                                        <input type="hidden" name="lessontype" value="deferred">
+                                    @endif
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Instructor</label>
+                                        <select class="form-select editable" name="instructor_id" disabled>
+                                            @foreach($instructors as $inst)
+                                                <option value="{{ $inst->id }}"
+                                                    {{ $lesson->instructor_id == $inst->id ? 'selected' : '' }}>
+                                                    {{ $inst->fname }} {{ $inst->lname }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Licence No</label>
+                                        <input type="text"
+                                            class="form-control always-disabled"
+                                            value="{{ $lesson->instructor->documents->licence ?? '' }}"
+                                            disabled>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Resource</label>
+                                        <select class="form-select editable" name="resource_id" disabled>
+                                            @foreach($resources as $resource)
+                                                <option value="{{ $resource->id }}"
+                                                    {{ $lesson->resource_id == $resource->id ? 'selected' : '' }}>
+                                                    {{ $resource->code ?? $resource->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Lesson Date - {{ $lesson->id }}</label>
+                                        <input type="date"
+                                            class="form-control editable"
+                                            name="lesson_date"
+                                            value="{{ \Carbon\Carbon::parse($lesson->lesson_date)->format('Y-m-d') }}"
+                                            disabled>
+
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Off Blocks</label>
+                                        <input type="time"
+                                            class="form-control editable"
+                                            name="start_time"
+                                            value="{{ $lesson->start_time ? \Carbon\Carbon::parse($lesson->start_time)->format('H:i') : '' }}"
+                                            disabled>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">On Blocks</label>
+                                        <input type="time"
+                                            class="form-control editable"
+                                            name="end_time"
+                                            value="{{ $lesson->end_time ? \Carbon\Carbon::parse($lesson->end_time)->format('H:i') : '' }}"
+                                            disabled>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Takeoff</label>
+                                        <input type="time"
+                                            class="form-control editable"
+                                            name="takeoff_time"
+                                            value="{{ $lesson->takeoff_time ? \Carbon\Carbon::parse($lesson->takeoff_time)->format('H:i') : '' }}"
+                                            disabled>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Landing</label>
+                                        <input type="time"
+                                            class="form-control editable"
+                                            name="landing_time"
+                                            value="{{ $lesson->landing_time ? \Carbon\Carbon::parse($lesson->landing_time)->format('H:i') : '' }}"
+                                            disabled>
+                                    </div>
+
+                                    @if($lesson->trainingEvent->orgUnit->Ousetting && $lesson->trainingEvent->orgUnit->Ousetting->enable_tacho_fields)
+                                        <div class="col-md-6">
+                                            <label class="form-label">Tacho Start</label>
+                                            <input type="time"
+                                                class="form-control editable"
+                                                name="tacho_start_time"
+                                                value="{{ $lesson->tacho_start_time ? \Carbon\Carbon::parse($lesson->tacho_start_time)->format('H:i') : '' }}"
+                                                disabled>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Tacho Stop</label>
+                                            <input type="time"
+                                                class="form-control editable"
+                                                name="tacho_stop_time"
+                                                value="{{ $lesson->tacho_stop_time ? \Carbon\Carbon::parse($lesson->tacho_stop_time)->format('H:i') : '' }}"
+                                                disabled>
+                                        </div>
+                                    @endif
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Departure Airfield</label>
+                                        <input type="text"
+                                            class="form-control editable"
+                                            name="departure_airfield"
+                                            value="{{ $lesson->departure_airfield }}"
+                                            disabled>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Destination Airfield</label>
+                                        <input type="text"
+                                            class="form-control editable"
+                                            name="destination_airfield"
+                                            value="{{ $lesson->destination_airfield }}"
+                                            disabled>
+                                    </div>
+
+                                </div>
+
+                                <div class="mt-4 d-none" id="actionButtons">
+                                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                                    <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade p-3 " id="overview" role="tabpanel" aria-labelledby="overview-tab">
                     <div class="card-body">
                         @foreach($eventLessons as $eventLesson) 
                             
@@ -994,6 +1252,7 @@
                                                     <label class="mt-3 mb-3">Instructor Comment</label>
                                                     <textarea name="instructor_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Instructor Comment">{{ old("lesson_summary.$lesson->id", $eventLesson->instructor_comment ?? '') }}</textarea>
                                                 </div>
+                                                <i><strong> Notes: </strong> for training manager/instructors only</i>
                                                 @endif
 
                                                 <!-- Examiner CBTA -->
@@ -1523,6 +1782,8 @@
                                                     <label>Instructor Comment</label>
                                                     <textarea name="def_instructor_summary[{{ $task->def_lesson_id }}]" rows="3" class="form-control" placeholder="Instructor Comment">{{ old("def_instructor_summary.$task->def_lesson_id ", $defLesson->instructor_comment ?? '') }}</textarea>
                                                 </div>
+                                                <i><strong> Notes: </strong> for training manager/instructors only</i>
+
                                                 <!-- // Logs -->
                                                 @if(!empty($grouped_deferredLogs) && $grouped_deferredLogs->count() > 0)
                                                 <?php
@@ -1824,6 +2085,8 @@
                                                         <label>Instructor Comment</label>
                                                         <textarea name="def_instructor_summary[{{ $task->def_lesson_id }}]" rows="3" class="form-control" placeholder="Instructor Comment">{{ old("def_instructor_summary.$task->def_lesson_id ", $defLesson->instructor_comment ?? '') }}</textarea>
                                                     </div>
+                                                    <i><strong> Notes: </strong> for training manager/instructors only</i>
+
                                                     <!-- // Logs -->
                                                     @if(!empty($grouped_customLogs) && $grouped_customLogs->count() > 0)
                                                     <?php
@@ -1868,124 +2131,6 @@
                                 @endforeach
                             @endif
                         @endif
-                    </div>
-                </div>
-
-                <div class="tab-pane fade mt-3" id="Lesson" role="tabpanel" aria-labelledby="Lesson-tab">
-                    <div class="card">
-                        <div class="card-body">
-                            <div id="lessonAlert" class="alert d-none mb-3" role="alert"></div>
-                            <h5 class="card-title d-flex justify-content-between align-items-center">
-                                Lesson Details
-                                <button type="button" class="btn btn-sm btn-primary" id="editBtn">
-                                    Edit
-                                </button>
-                            </h5>
-
-                            @php
-                                $lesson = in_array($lessonType, ['custom', 'deferred'])
-                                    ? $deflessondetails
-                                    : $lessondetails;
-                            @endphp
-
-                            <form id="lessonForm" action="{{ route('event.lesson.update') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="id" value="{{ $lesson->id }}">
-
-                                <div class="row g-3">
-
-                                    @if($lessonType == 'custom')
-                                        <input type="hidden" name="lessontype" value="custom">
-                                    @elseif ($lessonType == 'deferred')
-                                        <input type="hidden" name="lessontype" value="deferred">
-                                    @endif
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">Instructor</label>
-                                        <select class="form-select editable" name="instructor_id" disabled>
-                                            @foreach($instructors as $inst)
-                                                <option value="{{ $inst->id }}"
-                                                    {{ $lesson->instructor_id == $inst->id ? 'selected' : '' }}>
-                                                    {{ $inst->fname }} {{ $inst->lname }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">Licence No</label>
-                                        <input type="text"
-                                            class="form-control always-disabled"
-                                            value="{{ $lesson->instructor->documents->licence ?? '' }}"
-                                            disabled>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">Resource</label>
-                                        <select class="form-select editable" name="resource_id" disabled>
-                                            @foreach($resources as $resource)
-                                                <option value="{{ $resource->id }}"
-                                                    {{ $lesson->resource_id == $resource->id ? 'selected' : '' }}>
-                                                    {{ $resource->code ?? $resource->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">Lesson Date</label>
-                                        <input type="date"
-                                            class="form-control editable"
-                                            name="lesson_date"
-                                            value="{{ \Carbon\Carbon::parse($lesson->lesson_date)->format('Y-m-d') }}"
-                                            disabled>
-
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">Start Time</label>
-                                        <input type="time"
-                                            class="form-control editable"
-                                            name="start_time"
-                                            value="{{ \Carbon\Carbon::parse($lesson->start_time)->format('H:i') }}"
-                                            disabled>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">End Time</label>
-                                        <input type="time"
-                                            class="form-control editable"
-                                            name="end_time"
-                                            value="{{ \Carbon\Carbon::parse($lesson->end_time)->format('H:i') }}"
-                                            disabled>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">Departure Airfield</label>
-                                        <input type="text"
-                                            class="form-control editable"
-                                            name="departure_airfield"
-                                            value="{{ $lesson->departure_airfield }}"
-                                            disabled>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">Destination Airfield</label>
-                                        <input type="text"
-                                            class="form-control editable"
-                                            name="destination_airfield"
-                                            value="{{ $lesson->destination_airfield }}"
-                                            disabled>
-                                    </div>
-
-                                </div>
-
-                                <div class="mt-4 d-none" id="actionButtons">
-                                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
-                                    <button type="submit" class="btn btn-sm btn-primary">Save</button>
-                                </div>
-                            </form>
-                        </div>
                     </div>
                 </div>
 

@@ -3863,8 +3863,6 @@ class TrainingEventsController extends Controller
         $event_id = $request->event_id;
         $lesson_id = $request->lesson_id;
 
-
-
         $lessondetails = TrainingEventLessons::where('id', decode_id($lesson_id))->where('training_event_id', decode_id($event_id))->first();
 
         // if ($lessondetails->is_locked) {
@@ -3887,7 +3885,7 @@ class TrainingEventsController extends Controller
             'eventLessons' => function ($q) {
                 $q->orderBy('position', 'asc'); 
             },
-            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id,position,instructor_cbta,examiner_cbta',
+            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id,position,instructor_cbta,examiner_cbta,description,student_briefing',
             'eventLessons.instructor:id,fname,lname', 
             'eventLessons.resource:id,name',
             'trainingFeedbacks.question',
@@ -4158,6 +4156,10 @@ class TrainingEventsController extends Controller
                 'end_time'             => $request->end_time,
                 'departure_airfield'   => $request->departure_airfield,
                 'destination_airfield' => $request->destination_airfield,
+                'takeoff_time' => $request->takeoff_time,
+                'landing_time' => $request->landing_time,
+                'tacho_start_time' => $request->tacho_start_time,
+                'tacho_stop_time' => $request->tacho_stop_time,
             ]);
         }
         else{
@@ -4171,6 +4173,10 @@ class TrainingEventsController extends Controller
                 'end_time'             => $request->end_time,
                 'departure_airfield'   => $request->departure_airfield,
                 'destination_airfield' => $request->destination_airfield,
+                'takeoff_time' => $request->takeoff_time,
+                'landing_time' => $request->landing_time,
+                'tacho_start_time' => $request->tacho_start_time,
+                'tacho_stop_time' => $request->tacho_stop_time,
             ]);
         }
 

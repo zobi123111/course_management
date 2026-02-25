@@ -28,8 +28,14 @@
 
                     <!-- User Info -->
                     <div class="col-md-10">
-                        <h3 class="fw-bold mb-2">{{ $user->firstname }} {{ $user->lastname }}</h3>
+                        <h3 class="fw-bold mb-2">{{ $user->fname }} {{ $user->lname }}</h3>
                         <p class="mb-1"><i class="bi bi-envelope-fill text-primary me-2"></i>{{ $user->email }}</p>
+                        @if($user->phone_number)
+                            <p class="mb-1"><i class="bi bi-telephone-fill text-success me-2"></i>Phone Number: <strong>{{ $user->phone_number }}</strong></p>
+                        @endif
+                        @if($user->date_of_birth)
+                            <p class="mb-1"><i class="bi bi-calendar-date-fill text-success me-2"></i>Date of birth: <strong>{{ $user->date_of_birth }}</strong></p>
+                        @endif
                         <p class="mb-1"><i class="bi bi-person-badge-fill text-success me-2"></i>Role: <strong>{{ $user->roles->role_name }}</strong></p>
 
                         <!-- @if(!empty($extraRoles))

@@ -265,4 +265,9 @@ class User extends Authenticatable
         return $this->hasMany(Training_tags::class);
     }
 
+    public function licenseValidations()
+    {
+        return $this->hasMany(UserLicenseValidation::class);
+    }
+
 }
