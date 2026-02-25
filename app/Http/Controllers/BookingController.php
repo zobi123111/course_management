@@ -334,24 +334,29 @@ class BookingController extends Controller
         $booking->send_email    = $request->boolean('send_email') ? 1 : 0;
         $booking->save();
 
-        
-
         // $sendemail = organizationUnits::where('id', $request->organizationUnits)->first();
         $checkSend_mail = OuSetting::where('organization_id', $request->organizationUnits)->select('send_email')->first();
 
-
-        //--------------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------------------
 
         if ($request->booking_type == 2 || $request->booking_type == 3) {
             //  Create tarining event
             $lesson_ids = collect($request->lesson)->pluck('lesson_id')->toArray();
-            $existingEvent = TrainingEvents::where('student_id', $request->student)
-                ->where('course_id', $request->course)
-                ->where('ou_id', auth()->user()->is_owner ? $request->organizationUnits : auth()->user()->ou_id)
-                ->whereJsonContains('lesson_ids', $lesson_ids)
-                ->get();
 
+          $existingEvent = TrainingEvents::where('student_id', $request->student)
+                            ->where('course_id', $request->course)
+                            ->where('ou_id', auth()->user()->is_owner ? $request->organizationUnits : auth()->user()->ou_id)
+                       
+                            ->exists();
+            // dd($existingEvent);            
 
+            if ($existingEvent) {
+                    return response()->json([
+                        'errors' => [
+                            'lesson' => ['Training event already exists for this lesson.']
+                        ]
+                    ], 422);
+                }
 
 
             $trainingEvent = TrainingEvents::create([
@@ -428,7 +433,7 @@ class BookingController extends Controller
           
 
         }
-        //--------------------------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------------------------------
        return response()->json(['success' => true,'message' => 'Booking created successfully.']);
     }
 
@@ -552,7 +557,13 @@ class BookingController extends Controller
         $role = auth()->user()->role;
         $is_admin = auth()->user()->is_admin;
         $is_owner = auth()->user()->is_owner;
-        $students = User::where('ou_id', $request->ou_id)->get();
+        $students = User::where('ou_id', $request->ou_id)
+                    ->where(function ($q) {
+                        $q->where('is_admin', false)->orWhereNull('is_admin');
+                    })
+                    ->whereHas('roles', fn($q) => $q->where('role_name', 'like', '%Student%'))
+                    ->with('roles')
+                    ->get();
         $id = auth()->id();
 
         $ato_num = OrganizationUnits::where('id', $request->ou_id)->get();
