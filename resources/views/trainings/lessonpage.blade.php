@@ -716,13 +716,21 @@
 
                                             @if($eventLesson->lesson?->briefingDocuments)
                                                 <div class="briefing-documents">
-                                                    @foreach($eventLesson->lesson->briefingDocuments as $doc)
+                                                    <!-- @foreach($eventLesson->lesson->briefingDocuments as $doc)
                                                         <div class="mb-2 d-flex justify-content-between align-items-center">
-                                                            <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank">
+                                                            <a class="btn btn-primary" href="{{ asset('storage/' . $doc->file_path) }}" target="_blank">
                                                                 {{ $doc->file_name }}
                                                             </a>
                                                         </div>
-                                                    @endforeach
+                                                    @endforeach -->
+
+                                                    <div class="d-flex flex-row flex-wrap gap-2">
+                                                        @foreach($eventLesson->lesson->briefingDocuments as $doc)
+                                                            <a class="btn btn-primary" href="{{ asset('storage/' . $doc->file_path) }}" target="_blank">
+                                                                {{ $doc->file_name }}
+                                                            </a>
+                                                        @endforeach
+                                                    </div>
                                                 </div>
                                             @endif
                                         </div>
