@@ -18,7 +18,7 @@
 
     .grade-competent {
         background-color: #008000;
-        color: black;
+        color: white;
         font-weight: bold;
     }
 </style>
@@ -316,7 +316,7 @@
                                     default => 'grade-competent',
                                     };
                                     @endphp
-                                    <span class="badge {{ $gradeClass }}">
+                                    <span class="text-white badge {{ $gradeClass }}">
                                         {{ $item->task_grade ?? 'N/A' }}
                                     </span>
                                 </li>
@@ -503,7 +503,7 @@
                                     default => 'grade-competent',
                                     };
                                     @endphp
-                                    <span class="badge {{ $gradeClass }}">
+                                    <span class="text-white badge {{ $gradeClass }}">
                                         {{ $item->task_grade ?? 'N/A' }}
                                     </span>
                                 </li>
