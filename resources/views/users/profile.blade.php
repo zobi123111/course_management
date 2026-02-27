@@ -722,67 +722,196 @@
                                 </div>
                                 @endif
 
-                                <!-- Passport -->
-                                @if ($user->passport_required == 1)
-                                <div class="form-group col-sm-6 mt-3">
-                                    <label for="passport_checkbox" class="form-label">
-                                        <strong>Passport <span class="text-danger">*</span>
-                                            @if($document?->passport_invalidate == 1)
-                                            <span class="text-danger">(Re-upload a new document and date.)</span>
-                                            @endif
-                                        </strong>
-                                        @if($document?->passport_verified)
-                                        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
-                                        @endif
-                                    </label>
-                                    <input type="text" name="passport" id="passport" class="form-control"
-                                        value="{{ $document?->passport ? $document?->passport : ''}}"
-                                        placeholder="Enter Passport Number">
-                                    <div id="passport_error_up" class="text-danger error_e"></div>
+                                <div class="row">
+                                    @if ($user->licenseValidations)
+                                        @foreach($user->licenseValidations as $index => $licence)
+                                            <div class="col-lg-6 col-md-12 mb-4 licence-block">
 
+                                                <label for="extra_roles" class="form-label"><strong>License Validation - {{ $index+1 }} </strong>
+                                                    @if($licence->verified != 0)
+                                                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
+                                                    @endif
+                                                </label>
 
-                                    <label for="licence_" class="form-label mt-3">
-                                        <strong>Expiry Date <span class="text-danger">*</span> </strong>
-                                        @if($document?->passport_status == 'Red')
-                                        <span class="text-danger">
-                                            <i class="bi bi-x-circle-fill"></i> Expired
-                                        </span>
-                                        @elseif($document?->passport_status == 'Yellow')
-                                        <span class="text-warning">
-                                            <i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon
-                                        </span>
-                                        @elseif($document?->passport_status == 'Green')
-                                        <span class="text-success">
-                                            <i class="bi bi-check-circle-fill"></i> Valid
-                                        </span>
-                                        @else
-                                        <span class="text-secondary">
-                                            <i class="bi bi-question-circle-fill"></i> N/A
-                                        </span>
-                                        @endif
-                                    </label>
+                                                <input type="hidden" name="licences[{{ $index }}][id]" value="{{ $licence->id }}">
 
+                                                <!-- <div class="mb-2">
+                                                    <label>Validation Code</label>
+                                                    <input type="text"
+                                                        name="licences[{{ $index }}][validation_code_id]"
+                                                        value="{{ $licence->validation->code }}"
+                                                        class="form-control">
+                                                </div> -->
+                                                <div class="mb-2">
+                                                    <label>Validation Code</label>
 
-                                    <input type="date" name="passport_expiry_date" id="passport_expiry_date"
-                                        value="{{ $document?->passport_expiry_date ? $document?->passport_expiry_date : ''}}"
-                                        class="form-control mt-3">
-                                    <div id="passport_expiry_date_error_up" class="text-danger error_e"></div>
+                                                    <!-- store ID -->
+                                                    <input type="hidden"
+                                                        name="licences[{{ $index }}][validation_code_id]"
+                                                        value="{{ $licence->validation->id }}">
 
-                                    <input type="file" name="passport_file" id="passport_file" class="form-control mt-3"
-                                        accept=".pdf,.jpg,.jpeg,.png">
-                                    <div id="passport_file_error_up" class="text-danger error_e"></div>
-                                    <input type="hidden" name="old_passport_file" value="{{ $document?->passport_file }}">
-                                    @if ($document?->passport_file && $document?->passport_invalidate == 0)
-                                    <div class="mt-3">
-                                        <a href="{{ asset('storage/' . $document?->passport_file) }}" target="_blank"
-                                            class="btn btn-outline-primary btn-sm d-flex align-items-center"
-                                            style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
-                                            <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View
-                                            Passport
-                                        </a>
-                                    </div>
+                                                    <!-- show code only -->
+                                                    <input type="text"
+                                                        value="{{ $licence->validation->code }}"
+                                                        class="form-control"
+                                                        readonly>
+                                                </div>
+
+                                                <div class="mb-2">
+                                                    <label>Country</label>
+
+                                                    <!-- store ID -->
+                                                    <input type="hidden"
+                                                        name="licences[{{ $index }}][country_name]"
+                                                        value="{{ $licence->validation->country_name }}">
+
+                                                    <!-- show code only -->
+                                                    <input type="text"
+                                                        value="{{ $licence->validation->country_name }}"
+                                                        class="form-control"
+                                                        readonly>
+                                                </div>
+
+                                                <!-- <div class="mb-2">
+                                                    <label>Country</label>
+                                                    <input type="text"
+                                                        name="licences[{{ $index }}][country_name]"
+                                                        value="{{ $licence->validation->country_name }}"
+                                                        class="form-control">
+                                                </div> -->
+
+                                                <div class="mb-2">
+                                                    <label>License Number</label>
+                                                    <input type="text"
+                                                        name="licences[{{ $index }}][license_number]"
+                                                        value="{{ $licence->license_number }}"
+                                                        class="form-control">
+                                                </div>
+
+                                                <div class="mb-2">
+                                                    <label>Issued To</label>
+                                                    <select name="licences[{{ $index }}][licence_issued_to]" class="form-control">
+                                                        <option value="">-- Select --</option>
+
+                                                        <option value="UK"
+                                                            {{ $licence->licence_issued_to === 'UK' ? 'selected' : '' }}>
+                                                            UK
+                                                        </option>
+
+                                                        <option value="EASA"
+                                                            {{ $licence->licence_issued_to === 'EASA' ? 'selected' : '' }}>
+                                                            EASA
+                                                        </option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <label>Issue Date</label>
+                                                        <input type="date"
+                                                            name="licences[{{ $index }}][issue_date]"
+                                                            value="{{ $licence->issue_date }}"
+                                                            class="form-control issue-date">
+                                                    </div>
+
+                                                    <div class="col-md-6">
+                                                        <label>Expiry Date</label>
+                                                        <input type="date"
+                                                            name="licences[{{ $index }}][expiry_date]"
+                                                            value="{{ $licence->expiry_date }}"
+                                                            class="form-control expiry-date">
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-check form-switch mt-3">
+                                                    <input class="form-check-input non-expiring-checkbox" type="checkbox" name="licences[{{ $index }}][validation_non_expiring]" value="1" {{ $licence->validation_non_expiring ? 'checked' : '' }}>
+
+                                                    <label class="form-check-label">
+                                                        <strong>Non-Expiring Licence</strong>
+                                                    </label>
+                                                </div>
+
+                                                <div class="mt-2">
+                                                    <label>Certificate File</label>
+                                                    <input type="file"
+                                                        name="licences[{{ $index }}][certificate_file]"
+                                                        class="form-control">
+
+                                                    @if($licence->certificate_file)
+                                                        <a href="{{ asset('storage/'.$licence->certificate_file) }}" target="_blank"
+                                                            class="btn btn-outline-primary btn-sm d-flex align-items-center mt-3"
+                                                            style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
+                                                            <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View Certificate File
+                                                        </a>
+                                                    @endif
+                                                </div>                                            
+                                            </div>
+                                        @endforeach
                                     @endif
                                 </div>
+
+                               
+                                <!-- Passport -->
+                                @if ($user->passport_required == 1)
+                                    <div class="form-group col-sm-6 mt-3">
+                                        <label for="passport_checkbox" class="form-label">
+                                            <strong>Passport <span class="text-danger">*</span>
+                                                @if($document?->passport_invalidate == 1)
+                                                <span class="text-danger">(Re-upload a new document and date.)</span>
+                                                @endif
+                                            </strong>
+                                            @if($document?->passport_verified)
+                                            <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
+                                            @endif
+                                        </label>
+                                        <input type="text" name="passport" id="passport" class="form-control"
+                                            value="{{ $document?->passport ? $document?->passport : ''}}"
+                                            placeholder="Enter Passport Number">
+                                        <div id="passport_error_up" class="text-danger error_e"></div>
+
+
+                                        <label for="licence_" class="form-label mt-3">
+                                            <strong>Expiry Date <span class="text-danger">*</span> </strong>
+                                            @if($document?->passport_status == 'Red')
+                                            <span class="text-danger">
+                                                <i class="bi bi-x-circle-fill"></i> Expired
+                                            </span>
+                                            @elseif($document?->passport_status == 'Yellow')
+                                            <span class="text-warning">
+                                                <i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon
+                                            </span>
+                                            @elseif($document?->passport_status == 'Green')
+                                            <span class="text-success">
+                                                <i class="bi bi-check-circle-fill"></i> Valid
+                                            </span>
+                                            @else
+                                            <span class="text-secondary">
+                                                <i class="bi bi-question-circle-fill"></i> N/A
+                                            </span>
+                                            @endif
+                                        </label>
+
+
+                                        <input type="date" name="passport_expiry_date" id="passport_expiry_date"
+                                            value="{{ $document?->passport_expiry_date ? $document?->passport_expiry_date : ''}}"
+                                            class="form-control mt-3">
+                                        <div id="passport_expiry_date_error_up" class="text-danger error_e"></div>
+
+                                        <input type="file" name="passport_file" id="passport_file" class="form-control mt-3"
+                                            accept=".pdf,.jpg,.jpeg,.png">
+                                        <div id="passport_file_error_up" class="text-danger error_e"></div>
+                                        <input type="hidden" name="old_passport_file" value="{{ $document?->passport_file }}">
+                                        @if ($document?->passport_file && $document?->passport_invalidate == 0)
+                                        <div class="mt-3">
+                                            <a href="{{ asset('storage/' . $document?->passport_file) }}" target="_blank"
+                                                class="btn btn-outline-primary btn-sm d-flex align-items-center"
+                                                style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
+                                                <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View
+                                                Passport
+                                            </a>
+                                        </div>
+                                        @endif
+                                    </div>
                                 @endif
                             </div>
                             
@@ -1066,7 +1195,7 @@
             const isNonExpiringChecked = $('#non_expiring_licence').prop('checked');
             const isNonExpiringChecked_2 = $('#non_expiring_licence_2').prop('checked');
             const expiryDateField = $('#licence_expiry_date');
-            const expiryDateField_2 = $('#licence_expiry_date_2');
+            const expiryDateField_2 = $('#licence_expiry_date_2');       
 
             // Check if the expiry date field exists and is not empty
             const isExpiryDateFilled = expiryDateField.length && expiryDateField.val().trim() !== '';
@@ -1097,6 +1226,40 @@
             }
         }
 
+        function toggleLicenceFields($block) {
+
+            const isNonExpiring = $block.find('.non-expiring-checkbox').is(':checked');
+            const issueDate  = $block.find('.issue-date');
+            const expiryDate = $block.find('.expiry-date');
+
+            if (!issueDate.length || !expiryDate.length) return;
+
+            if (isNonExpiring) {
+                issueDate.val('');
+                expiryDate.val('');
+
+                // issueDate.prop('disabled', true).closest('.col-md-6').hide();
+                // expiryDate.prop('disabled', true).closest('.col-md-6').hide();
+
+                expiryDate.prop('required', false);
+
+            } else {
+
+                // Enable & show
+                // issueDate.prop('disabled', false).closest('.col-md-6').show();
+                // expiryDate.prop('disabled', false).closest('.col-md-6').show();
+
+                expiryDate.prop('required', true);
+            }
+        }
+
+        $('.licence-block').each(function () {
+            toggleLicenceFields($(this));
+        });
+
+        $(document).on('change', '.non-expiring-checkbox', function () {
+            toggleLicenceFields($(this).closest('.licence-block'));
+        });
 
         // Initialize the fields on page load
         toggleFields();
@@ -1104,8 +1267,10 @@
         // Event listeners
         $('#non_expiring_licence').change(toggleFields);
         $('#non_expiring_licence_2').change(toggleFields);
+        $('#validation_non_expiring').on('change', toggleFields);
         $('#licence_expiry_date').on('input', toggleFields);
         $('#licence_expiry_date_2').on('input', toggleFields);
+        // $('#validation_non_expiring').on('input', toggleFields);
 
         $(document).on('click', '#updateForm', function(e) {
             e.preventDefault();

@@ -21,10 +21,16 @@ class UserLicenseValidation extends Model
         'expiry_date',
         'certificate_file',
         'admin_verification_required',
+        'validation_non_expiring',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function validation()
+    {
+        return $this->belongsTo(LicenceValidationType::class, 'validation_code_id');
     }
 }
