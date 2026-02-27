@@ -292,6 +292,7 @@
 
         window.quizSubmitting = window.quizSubmitting || false;
         let currentIndex = 0;
+        window.currentIndex = currentIndex;
         const form = document.getElementById('quizForm');
         const questions = document.querySelectorAll('.question-box');
 
@@ -362,6 +363,7 @@
                     saveAnswer(currentQuestionBox, 'next');
 
                     currentIndex++;
+                    window.currentIndex = currentIndex;
                     if (currentIndex < questions.length) {
                         showQuestion(currentIndex);
                     }
@@ -375,6 +377,7 @@
             btn.addEventListener('click', () => {
                 if (currentIndex > 0) {
                     currentIndex--;
+                    window.currentIndex = currentIndex;
                     showQuestion(currentIndex);
                     updateSidebar();
                 }
@@ -446,6 +449,7 @@
                 saveAnswer(currentQuestionBox);
 
                 currentIndex = index;
+                window.currentIndex = currentIndex;
                 questions.forEach((q, i) => q.classList.toggle('d-none', i !== index));
                 questions[index].classList.add('active');
                 updateSidebar();
@@ -545,12 +549,50 @@
     document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('quizForm');
 
+        const sidebarSubmitBtn = document.getElementById('sidebarSubmitBtn');
+        // const questions = document.querySelectorAll('.question-box');
+
+        if (sidebarSubmitBtn) {
+            sidebarSubmitBtn.addEventListener('click', function () {
+
+                Swal.fire({
+                    title: 'Submit Quiz?',
+                    text: 'Are you sure you want to submit the quiz?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, submit',
+                    cancelButtonText: 'Cancel'
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+
+                        // const currentQuestionBox = questions[window.currentIndex];
+                        // if (currentQuestionBox && typeof saveAnswer === 'function') {
+                        //     await saveAnswer(currentQuestionBox);
+                        // }
+
+                        const currentQuestionBox = document.querySelector('.question-box.active');
+                        if (currentQuestionBox && typeof saveAnswer === 'function') {
+                            await saveAnswer(currentQuestionBox);
+                        }
+
+                        form.dispatchEvent(new Event('submit', { cancelable: true }));
+                    }
+                });
+
+            });
+        }
+
 
         form.addEventListener('submit', function (e) {
+            
+            if (window.quizSubmitting) return;
+            window.quizSubmitting = true;
+
             e.preventDefault();
 
             const questions = document.querySelectorAll('.question-box');
-            const lastQuestionBox = questions[questions.length - 1];
+            // const lastQuestionBox = questions[questions.length - 1];
+            const lastQuestionBox = questions[window.currentIndex];
 
             let answer = null;
             const questionIdInput = lastQuestionBox.querySelector('.question-id');
@@ -632,7 +674,10 @@
                     body: JSON.stringify({ quiz_id: '{{ $quiz->id }}' })
                 }))
                 .then(() => finishQuiz())
-                .catch(() => Swal.fire('Error', 'Submission failed', 'error'));
+                .catch(() => {
+                    window.quizSubmitting = false;
+                    Swal.fire('Error', 'Submission failed', 'error');
+                });
             }
 
             function finishQuiz() {

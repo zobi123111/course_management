@@ -23,6 +23,7 @@ use App\Models\ParentRating;
 use App\Models\UserLicenseValidation;
 use Illuminate\Support\Facades\Validator;
 use Auth;
+use Carbon\Carbon;
 
 class UserController extends Controller
 {
@@ -187,12 +188,20 @@ class UserController extends Controller
         $user = User::with([
             'usrRatings.rating',
             'usrRatings.parent',
-            'documents'
+            'documents',
+            'licenseValidations.validation',
         ])->findOrFail($id);
         $rawUserRatings = $user->usrRatings;
 
         $ou_id = $user->ou_id;
         $OuSetting = OuSetting::where('organization_id', $ou_id)->first();
+
+        if($user->is_owner) {
+            $validations = LicenceValidationType::all();
+        }
+        else {
+            $validations = LicenceValidationType::where('ou_id' , $user->ou_id)->get();
+        }
 
         $grouped = [];
 
@@ -371,7 +380,8 @@ class UserController extends Controller
             'missingParentRatingsLicence1',
             'missingParentRatingsLicence2',
             'grouped',
-            'OuSetting'
+            'OuSetting',
+            'validations'
         ));
     }
 
@@ -471,8 +481,6 @@ class UserController extends Controller
                 UserRating::where('user_id', $userId)->where('parent_id', $parentid)->where('linked_to', $linkedTo)->update(["expiry_date" => $expiry_date]);
             }
         }
-
-
 
         $userToUpdate = User::find($request->id);
         $document = UserDocument::where('user_id', $userToUpdate->id)->first();
@@ -880,9 +888,49 @@ class UserController extends Controller
             }
         }
 
+        // ================= USER LICENSE VALIDATIONS =================
+        if ($request->has('licences')) {
 
+            foreach ($request->licences as $index => $licenceData) {
 
+                $licence = UserLicenseValidation::find($licenceData['id'] ?? null);
 
+                if (!$licence) {
+                    continue;
+                }
+
+                if ($request->hasFile("licences.$index.certificate_file")) {
+
+                    if ($licence->certificate_file && Storage::disk('public')->exists($licence->certificate_file)) {
+                        Storage::disk('public')->delete($licence->certificate_file);
+                    }
+
+                    $filePath = $request
+                        ->file("licences.$index.certificate_file")
+                        ->store('license_certificates', 'public');
+
+                    $licence->certificate_file = $filePath;
+                    $licence->verified = 0;
+                }
+
+                $isNonExpiring = !empty($licenceData['validation_non_expiring']);
+
+                // Update fields
+                $licence->update([
+                    'validation_code_id'  => $licenceData['validation_code_id'] ?? $licence->validation_code_id,
+                    'country_name'        => $licenceData['country_name'] ?? $licence->country_name,
+                    'license_number'      => $licenceData['license_number'] ?? $licence->license_number,
+                    'licence_issued_to'   => $licenceData['licence_issued_to'] ?? $licence->licence_issued_to,
+                    'validation_non_expiring' => $isNonExpiring ? 1 : 0,
+                    'issue_date'          => !empty($licenceData['issue_date'])
+                                                ? Carbon::parse($licenceData['issue_date'])->format('Y-m-d')
+                                                : null,
+                    'expiry_date'         => !empty($licenceData['expiry_date'])
+                                                ? Carbon::parse($licenceData['expiry_date'])->format('Y-m-d')
+                                                : null,
+                ]);
+            }
+        }
 
         //   Session::flash('message', 'User saved successfully');
         return response()->json(['success' => true, 'message' => "User profile updated successfully"]);
