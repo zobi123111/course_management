@@ -32,7 +32,7 @@ class ValidationCodesController extends Controller
 
         // dd($request->all());
         $this->validate(request(), [
-            'code' => 'required|unique:licence_validation_types,code',
+            'code' => 'required',
             'country_name' => 'required',
             'aircraft_prefix' => 'required',
         ], [], 
@@ -65,7 +65,7 @@ class ValidationCodesController extends Controller
     public function update(Request $request)
     {
         $this->validate(request(), [
-            'code' => 'required|unique:licence_validation_types,code,'.$request->id,
+            'code' => 'required',
             'country_name' => 'required',
             'aircraft_prefix' => 'required',
         ], [], 
@@ -75,16 +75,16 @@ class ValidationCodesController extends Controller
             'aircraft_prefix' => 'Aircraft Prefix field',
         ]);
     
-           LicenceValidationType::where('id', $request->id)->update([
-                    'code'      => $request->code,
-                    'ou_id' =>  (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id,
-                    'country_name'      => $request->country_name,
-                    'aircraft_prefix' => $request->aircraft_prefix,
-                    'enabled' => $request->enabled
-                ]);
+        LicenceValidationType::where('id', $request->id)->update([
+                'code'      => $request->code,
+                'ou_id' =>  (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id,
+                'country_name'      => $request->country_name,
+                'aircraft_prefix' => $request->aircraft_prefix,
+                'enabled' => $request->enabled
+            ]);
 
-           Session::flash('message', 'Licence validation type updated successfully');
-          return response()->json(['success' => 'Licence validation type updated successfully']);
+        Session::flash('message', 'Licence validation type updated successfully');
+        return response()->json(['success' => 'Licence validation type updated successfully']);
     }
 
     public function delete(Request $request)
