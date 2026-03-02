@@ -594,6 +594,22 @@
             transform: translateX(0);
             opacity: 1;
         }
+
+        .drop-zone {
+            border: 2px dashed #0d6efd;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f8f9fa;
+        }
+        .drop-zone.dragover {
+            background: #e9f2ff;
+        }
+        .file-list {
+            list-style: none;
+            padding-left: 0;
+            font-size: 13px;
+        }
     </style>
 
     <head>
@@ -2162,50 +2178,74 @@
                         @endif
 
                         @if($isGradingCompleted && $trainingEvent->course->documents->isNotEmpty())
-                        <div class="mt-4">
-                            <h5><i class="fas fa-file-upload p-2"></i>Instructor Document Uploads</h5>
-                            <form action="{{ route('training.upload-documents', $trainingEvent->id) }}" method="POST" enctype="multipart/form-data">
-                                @csrf
-                                <div class="row">
-                                    @foreach($trainingEvent->course->documents as $doc)
-                                    @php
-                                    $uploadedDoc = optional($trainingEvent->documents)->where('course_document_id', $doc->id)->first();
-                                    @endphp
+                            <div class="mt-4">
+                                <div id="doc-alert" class="alert d-none"></div>
+                                <h5><i class="fas fa-file-upload p-2"></i>Instructor Document Uploads</h5>
 
-                                    <div class="col-md-6 mb-3">
-                                        <div class="border p-3 rounded">
-                                            <label class="form-label fw-bold">
-                                                {{ $doc->document_name }}
-                                            </label>
+                                <form id="docUploadForm"
+                                    action="{{ route('training.upload-documents', $trainingEvent->id) }}"
+                                    method="POST"
+                                    enctype="multipart/form-data">
+                                    @csrf
 
-                                            {{-- Show existing uploaded document --}}
-                                            @if($uploadedDoc)
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="text-success">Already Uploaded</span>
-                                                <a href="{{ asset('storage/' . $uploadedDoc->file_path) }}" target="_blank" class="btn btn-sm btn-outline-success">
-                                                    <i class="fas fa-download"></i> View
-                                                </a>
+                                    <div class="row">
+                                        @foreach($trainingEvent->course->documents as $doc)
+                                            <div class="col-md-6 mb-3">
+                                                <div class="border p-3 rounded">
+
+                                                    {{-- Document name --}}
+                                                    <label class="fw-bold mb-2">{{ $doc->document_name }}</label>
+
+                                                    {{-- 🔹 Existing uploaded files --}}
+                                                    @foreach(
+                                                        $trainingEvent->documents
+                                                            ->where('course_document_id', $doc->id)
+                                                        as $uploaded
+                                                    )
+                                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                                            <a href="{{ asset('storage/'.$uploaded->file_path) }}"
+                                                            target="_blank"
+                                                            class="btn btn-sm btn-outline-success">
+                                                                <i class="fas fa-eye"></i> View
+                                                            </a>
+
+                                                            <button type="button"
+                                                                    class="btn btn-sm btn-outline-danger"
+                                                                    onclick="deleteDocument({{ $uploaded->id }})">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                    @endforeach
+
+                                                    {{-- 🔹 Hidden real input --}}
+                                                    <input type="file"
+                                                        id="file_{{ $doc->id }}"
+                                                        name="training_event_documents[{{ $doc->id }}][]"
+                                                        multiple
+                                                        hidden>
+
+                                                    {{-- 🔹 Drop zone --}}
+                                                    <div class="drop-zone mt-2"
+                                                        data-doc-id="{{ $doc->id }}">
+                                                        <p class="mb-1">
+                                                            <i class="fas fa-cloud-upload-alt"></i>
+                                                            Drag & Drop files here
+                                                        </p>
+                                                        <small>or click to upload</small>
+
+                                                        <ul class="file-list mt-2"></ul>
+                                                    </div>
+
+                                                </div>
                                             </div>
-                                            @endif
-
-                                            {{-- File input --}}
-                                            <input type="file" name="training_event_documents[{{ $doc->id }}]" class="form-control">
-                                            @error('training_event_documents.' . $doc->id)
-                                            <small class="text-danger">{{ $message }}</small>
-                                            @enderror
-                                        </div>
+                                        @endforeach
                                     </div>
-                                    @endforeach
-                                </div>
 
-                                {{-- Submit button --}}
-                                <div class="mt-3">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-upload"></i> Submit Documents
+                                    <button class="btn btn-primary mt-3">
+                                        <i class="fas fa-upload"></i> Upload Documents
                                     </button>
-                                </div>
-                            </form>
-                        </div>
+                                </form>
+                            </div>
                         @endif
                     </div>
 
@@ -2506,6 +2546,88 @@
 
 
     <script>
+
+        const fileStore = {}; // 🔑 holds files per document
+
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            const docId = zone.dataset.docId;
+            const input = document.getElementById(`file_${docId}`);
+            const list = zone.querySelector('.file-list');
+
+            fileStore[docId] = [];
+
+            zone.addEventListener('click', () => input.click());
+
+            zone.addEventListener('dragover', e => {
+                e.preventDefault();
+                zone.classList.add('dragover');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('dragover');
+            });
+
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+                addFiles(docId, e.dataTransfer.files);
+                renderList(docId, list);
+            });
+
+            input.addEventListener('change', e => {
+                addFiles(docId, e.target.files);
+                renderList(docId, list);
+            });
+        });
+
+        function addFiles(docId, files) {
+            [...files].forEach(file => {
+                fileStore[docId].push(file);
+            });
+        }
+
+        function renderList(docId, list) {
+            list.innerHTML = '';
+            fileStore[docId].forEach(file => {
+                const li = document.createElement('li');
+                li.textContent = file.name;
+                list.appendChild(li);
+            });
+        }
+
+        document.getElementById('docUploadForm').addEventListener('submit', () => {
+            Object.keys(fileStore).forEach(docId => {
+                const dt = new DataTransfer();
+                fileStore[docId].forEach(file => dt.items.add(file));
+                document.getElementById(`file_${docId}`).files = dt.files;
+            });
+        });
+
+        function deleteDocument(id) {
+            if (!confirm('Delete this document?')) return;
+
+            fetch(`/training/document/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                showAlert('success', data.message);
+                setTimeout(() => location.reload(), 800);
+            })
+            .catch(() => showAlert('danger', 'Delete failed'));
+        }
+
+        function showAlert(type, msg) {
+            const alert = document.getElementById('doc-alert');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = msg;
+            alert.classList.remove('d-none');
+        }
+
         $(document).ready(function() {
 
             setTimeout(function () {
