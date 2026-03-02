@@ -792,6 +792,10 @@
                                 $lesson = in_array($lessonType, ['custom', 'deferred'])
                                     ? $deflessondetails
                                     : $lessondetails;
+
+                                $trainingEvent = in_array($lessonType, ['custom', 'deferred'])
+                                    ? $lesson?->event
+                                    : $lesson?->trainingEvent;
                             @endphp
 
                             <form id="lessonForm" action="{{ route('event.lesson.update') }}" method="POST">
@@ -884,22 +888,24 @@
                                             disabled>
                                     </div>
 
-                                    @if($lesson->trainingEvent->orgUnit->Ousetting && $lesson->trainingEvent->orgUnit->Ousetting->enable_tacho_fields)
+                                    @if($trainingEvent?->orgUnit?->Ousetting?->enable_tacho_fields)
                                         <div class="col-md-6">
                                             <label class="form-label">Tacho Start</label>
-                                            <input type="time"
+                                            <input type="number"
+                                                step="0.1"
                                                 class="form-control editable"
                                                 name="tacho_start_time"
-                                                value="{{ $lesson->tacho_start_time ? \Carbon\Carbon::parse($lesson->tacho_start_time)->format('H:i') : '' }}"
+                                                value="{{ $lesson->tacho_start_time}}"
                                                 disabled>
                                         </div>
 
                                         <div class="col-md-6">
                                             <label class="form-label">Tacho Stop</label>
-                                            <input type="time"
+                                            <input type="number"
+                                                step="0.1"
                                                 class="form-control editable"
                                                 name="tacho_stop_time"
-                                                value="{{ $lesson->tacho_stop_time ? \Carbon\Carbon::parse($lesson->tacho_stop_time)->format('H:i') : '' }}"
+                                                value="{{ $lesson->tacho_stop_time}}"
                                                 disabled>
                                         </div>
                                     @endif
