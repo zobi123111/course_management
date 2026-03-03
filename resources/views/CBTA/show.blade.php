@@ -58,7 +58,9 @@
                         <tr>
                             <td> {{ $val->competency }}</td>
                             <td> {{ $val->short_name }}</td>
-                            <td> {{ $val->organization_unit->org_unit_name }} </td>
+                            <td>
+                                {{ optional($val->organization_unit)->org_unit_name ?? 'N/A' }}
+                            </td>
                             <td>
                                 <i class="fa fa-edit edit-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>
                             </td>
@@ -88,7 +90,9 @@
                         <tr>
                             <td> {{ $val->competency }}</td>
                             <td> {{ $val->short_name }}</td>
-                            <td> {{ $val->organization_unit->org_unit_name }} </td>
+                            <td>
+                                {{ optional($val->organization_unit)->org_unit_name ?? 'N/A' }}
+                            </td>
                              <td>
                                 <i class="fa fa-edit edit-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>
                                 <i class="fa-solid fa-trash delete-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>

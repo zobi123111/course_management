@@ -179,6 +179,8 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/users/update', [UserController::class, 'update'])->name('user.update'); 
     Route::post('/users/delete', [UserController::class, 'destroy'])->name('user.destroy');
     Route::post('/users/verify', [UserController::class, 'docsVerify'])->name('user.verify');
+    Route::post('/users-validation-toggle/verify', [UserController::class, 'validationVerify'])->name('validation.verify');
+    Route::post('/users/invalidate-validation', [UserController::class, 'invalidateValidation'])->name('user.invalidateValidation');
     Route::post('/users/verify_rating', [UserController::class, 'verify_rating'])->name('user.verify_rating');
 
     Route::post('/users/invalidate-document', [UserController::class, 'invalidateDocument'])->name('user.invalidateDocument');
@@ -353,8 +355,9 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
 Route::get('/training/training-event-new-design/{event_id}', [TrainingEventsController::class, 'TestshowTrainingEvent'])->name('training.test-show'); 
 Route::get('/lesson-grade', [TrainingEventsController::class, 'Lessongrade'])->name('lesson.grade');
 Route::post('/event/lessons/update', [TrainingEventsController::class, 'EventLessonUpdate'])->name('event.lesson.update');
+Route::delete('/lesson/document/delete/{id}', [LessonController::class, 'deleteBriefingDocument'])->name('lesson.document.delete');
 
-
+Route::delete('/training/document/{id}', [TrainingEventsController::class, 'deleteDocument']);
 
 // Custom CBTA
 Route::get('/custom-cbta', [CbtaControlller::class, 'index'])->name('custom-cbta.show');
