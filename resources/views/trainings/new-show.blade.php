@@ -1718,7 +1718,7 @@
                                 <strong><i class="fas fa-exclamation-triangle"></i> Deferred Items (Auto-Generated)</strong>
                             </div>
                             <div class="card-body">
-                                <ul class="mb-3 ps-4">
+                                <ul class="mb-3 mt-3 ps-4">
 
                                     @foreach($defTasks as $item)
 
@@ -2180,10 +2180,10 @@
                         @if($isGradingCompleted && $trainingEvent->course->documents->isNotEmpty())
                             <div class="mt-4">
                                 <div id="doc-alert" class="alert d-none"></div>
+
                                 <h5><i class="fas fa-file-upload p-2"></i>Instructor Document Uploads</h5>
 
-                                <form id="docUploadForm"
-                                    action="{{ route('training.upload-documents', $trainingEvent->id) }}"
+                                <form action="{{ route('training.upload-documents', $trainingEvent->id) }}"
                                     method="POST"
                                     enctype="multipart/form-data">
                                     @csrf
@@ -2193,49 +2193,49 @@
                                             <div class="col-md-6 mb-3">
                                                 <div class="border p-3 rounded">
 
-                                                    {{-- Document name --}}
                                                     <label class="fw-bold mb-2">{{ $doc->document_name }}</label>
 
-                                                    {{-- 🔹 Existing uploaded files --}}
-                                                    @foreach(
-                                                        $trainingEvent->documents
-                                                            ->where('course_document_id', $doc->id)
-                                                        as $uploaded
-                                                    )
-                                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                                            <a href="{{ asset('storage/'.$uploaded->file_path) }}"
-                                                            target="_blank"
-                                                            class="btn btn-sm btn-outline-success">
-                                                                <i class="fas fa-eye"></i> View
-                                                            </a>
+                                                    {{-- Already uploaded files --}}
+                                                    <div class="row ">
+                                                        @foreach( $trainingEvent->documents->where('course_document_id', $doc->id) as $uploaded )
+                                                            <!-- <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                <a href="{{ asset('storage/'.$uploaded->file_path) }}"
+                                                                target="_blank"
+                                                                class="btn btn-sm btn-outline-success">
+                                                                    <i class="fas fa-eye"></i> View
+                                                                </a>
 
-                                                            <button type="button"
-                                                                    class="btn btn-sm btn-outline-danger"
-                                                                    onclick="deleteDocument({{ $uploaded->id }})">
-                                                                <i class="fas fa-trash"></i>
-                                                            </button>
-                                                        </div>
-                                                    @endforeach
+                                                                <button type="button"
+                                                                        class="btn btn-sm btn-outline-danger"
+                                                                        onclick="deleteDocument({{ $uploaded->id }})">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </div> -->
+                                                            <div class="col-md-6">
+                                                                <div class="d-flex justify-content-between align-items-center p-2 rounded bg-light border shadow-sm mb-1">
+                                                                    
+                                                                    <a href="{{ asset('storage/'.$uploaded->file_path) }}"
+                                                                    target="_blank"
+                                                                    class="btn btn-sm btn-outline-success">
+                                                                        <i class="fas fa-eye"></i> View
+                                                                    </a>
 
-                                                    {{-- 🔹 Hidden real input --}}
-                                                    <input type="file"
-                                                        id="file_{{ $doc->id }}"
-                                                        name="training_event_documents[{{ $doc->id }}][]"
-                                                        multiple
-                                                        hidden>
+                                                                    <button type="button"
+                                                                            class="btn btn-sm btn-outline-danger"
+                                                                            onclick="deleteDocument({{ $uploaded->id }})">
+                                                                        <i class="fas fa-trash"></i>
+                                                                    </button>
 
-                                                    {{-- 🔹 Drop zone --}}
-                                                    <div class="drop-zone mt-2"
-                                                        data-doc-id="{{ $doc->id }}">
-                                                        <p class="mb-1">
-                                                            <i class="fas fa-cloud-upload-alt"></i>
-                                                            Drag & Drop files here
-                                                        </p>
-                                                        <small>or click to upload</small>
-
-                                                        <ul class="file-list mt-2"></ul>
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
                                                     </div>
 
+                                                    {{-- Multiple file upload --}}
+                                                    <input type="file"
+                                                        class="form-control mt-2"
+                                                        name="training_event_documents[{{ $doc->id }}][]"
+                                                        multiple>
                                                 </div>
                                             </div>
                                         @endforeach
@@ -2524,12 +2524,12 @@
                             </div>
                         </div>
 
-                        <div class="row mb-3 remark-section">
+                        <!-- <div class="row mb-3 remark-section">
                             <label class="col-sm-2 col-form-label">Remark</label>
                             <div class="col-sm-10">
                                 <textarea class="form-control remark" name="remark_{{ $student->id ?? '' }}" style="height: 100px" placeholder="Enter your remarks here...">{{ $overallAssessments->remarks ?? '' }}</textarea>
                             </div>
-                        </div>
+                        </div> -->
 
                         <div class="btn-container">
                             <button type="submit" class="btn btn-save">Save</button>
@@ -2547,7 +2547,7 @@
 
     <script>
 
-        const fileStore = {}; // 🔑 holds files per document
+        const fileStore = {};
 
         document.querySelectorAll('.drop-zone').forEach(zone => {
             const docId = zone.dataset.docId;
@@ -2616,7 +2616,7 @@
             .then(res => res.json())
             .then(data => {
                 showAlert('success', data.message);
-                setTimeout(() => location.reload(), 800);
+                setTimeout(() => location.reload(), 600);
             })
             .catch(() => showAlert('danger', 'Delete failed'));
         }
