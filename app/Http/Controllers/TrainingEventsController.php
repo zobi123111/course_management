@@ -32,6 +32,7 @@ use App\Models\CourseResources;
 use App\Models\TrainingFeedbackQuestion;
 use App\Models\CourseCustomTime;
 use App\Models\CourseDocuments;
+use App\Models\TrainingEventDocument;
 use App\Models\UserTagRating;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -2578,51 +2579,77 @@ class TrainingEventsController extends Controller
     {
         $request->validate([
             'training_event_documents' => 'required|array|min:1',
-            'training_event_documents.*' => 'required|file|mimes:pdf,doc,docx,jpg,png|max:10240', // Add more formats if needed
-        ], [], [
-            'training_event_documents.*' => 'Training Event Document'
+            'training_event_documents.*' => 'required|array',
+            'training_event_documents.*.*' => 'file|mimes:pdf,doc,docx,jpg,png|max:10240',
         ]);
 
         // Loop through the uploaded files
-        foreach ($request->file('training_event_documents', []) as $courseDocId => $file) {
-            // If file exists in the form input
+        // foreach ($request->file('training_event_documents', []) as $courseDocId => $file) {
+        //     // If file exists in the form input
 
-            if ($file) {
-                // Get the original file name
-                $originalName = $file->getClientOriginalName();
+        //     if ($file) {
+        //         // Get the original file name
+        //         $originalName = $file->getClientOriginalName();
 
              
-                // Generate a unique filename with the original file name
-                $filename = time() . '_' . $originalName;
+        //         // Generate a unique filename with the original file name
+        //         $filename = time() . '_' . $originalName;
 
-                // Store the file in the 'public' disk (change to your desired location)
+        //         // Store the file in the 'public' disk (change to your desired location)
+        //         $path = $file->storeAs('training_event_documents', $filename, 'public');
+
+        //         // Check if the document has already been uploaded for this course_document_id
+        //         $existing = $trainingEvent->documents()
+        //             ->where('course_document_id', $courseDocId)
+        //             ->first();
+
+        //         if ($existing) {
+        //             // Optionally, delete the old file before updating (to avoid leftover files)
+        //             Storage::disk('public')->delete($existing->file_path);
+
+        //             // Update the existing document entry
+        //             $existing->update([
+        //                 'file_path' => $path,
+        //             ]);
+        //         } else {
+        //             // Create a new document record in the database
+        //             $trainingEvent->documents()->create([
+        //                 'course_document_id' => $courseDocId,
+        //                 'file_path' => $path,
+        //             ]);
+        //         }
+        //     }
+        // }
+        foreach ($request->file('training_event_documents', []) as $courseDocId => $files) {
+
+            foreach ($files as $file) {
+
+                $filename = uniqid().'_'.$file->getClientOriginalName();
                 $path = $file->storeAs('training_event_documents', $filename, 'public');
 
-                // Check if the document has already been uploaded for this course_document_id
-                $existing = $trainingEvent->documents()
-                    ->where('course_document_id', $courseDocId)
-                    ->first();
-
-                if ($existing) {
-                    // Optionally, delete the old file before updating (to avoid leftover files)
-                    Storage::disk('public')->delete($existing->file_path);
-
-                    // Update the existing document entry
-                    $existing->update([
-                        'file_path' => $path,
-                    ]);
-                } else {
-                    // Create a new document record in the database
-                    $trainingEvent->documents()->create([
-                        'course_document_id' => $courseDocId,
-                        'file_path' => $path,
-                    ]);
-                }
+                TrainingEventDocument::create([
+                    'training_event_id' => $trainingEvent->id,
+                    'course_document_id' => $courseDocId,
+                    'file_path' => $path,
+                ]);
             }
         }
 
         // Redirect back with a success message
         return redirect()->back()->with('success', 'Documents uploaded successfully.');
+    }
+
+    public function deleteDocument($id)
+    {
+        $doc = TrainingEventDocument::findOrFail($id);
+
+        Storage::disk('public')->delete($doc->file_path);
+        $doc->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Document deleted successfully'
+        ]);
     }
 
 

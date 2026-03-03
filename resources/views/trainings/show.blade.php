@@ -2733,7 +2733,7 @@
                                            
 
                                                 <!-- Remark -->
-                                                <div class="row mb-3 remark-section">
+                                                <!-- <div class="row mb-3 remark-section">
                                                     <label class="col-sm-2 col-form-label">Remark</label>
                                                     <div class="col-sm-10">
                                                         <textarea class="form-control remark"
@@ -2741,7 +2741,7 @@
                                                             style="height: 100px"
                                                             placeholder="Enter your remarks here...">{{ $lessonData->overall_remark ?? '' }}</textarea>
                                                     </div>
-                                                </div>
+                                                </div> -->
                                             </div>
                                         </div>
 
