@@ -114,8 +114,10 @@ class Courses extends Model
         return $this->hasMany(UserTagRating::class, 'course_id');
     }
 
-
-
+    public function Booking()
+    {
+        return $this->hasMany(Booking::class, 'course_id', 'id');
+    }
 
 }
 

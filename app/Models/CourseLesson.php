@@ -58,6 +58,11 @@ class CourseLesson extends Model
         return $this->hasMany(Quiz::class, 'lesson_id', 'id');
     }
 
+    public function booking()
+    {
+        return $this->hasMany(Booking::class, 'lesson_id', 'id');
+    }
+
     public function briefingDocuments()
     {
         return $this->hasMany(LessonBriefingDocument::class, 'lesson_id');

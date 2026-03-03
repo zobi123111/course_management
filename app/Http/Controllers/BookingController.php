@@ -24,7 +24,20 @@ class BookingController extends Controller
     public function index()
     {
         $organizationUnits = OrganizationUnits::all();
-        return view('calender.index', compact('organizationUnits'));
+        $ou_id = auth()->user()->ou_id;
+        if (auth()->user()->is_owner == 1) {
+            $students = collect();
+        } elseif (auth()->user()->is_admin == 1) {
+            $students = User::where('ou_id', $ou_id)
+                ->where(function ($q) {
+                    $q->where('is_admin', false)->orWhereNull('is_admin');
+                })
+                ->whereHas('roles', fn($q) => $q->where('role_name', 'like', '%Student%'))
+                ->with('roles')
+                ->get();
+        }
+
+        return view('calender.index', compact('organizationUnits', 'students'));
     }
 
 
@@ -36,9 +49,9 @@ class BookingController extends Controller
         $is_owner = auth()->user()->is_owner;
         if ($role == 3) {
             $login_id = auth()->user()->id;
-            $events = Booking::with(['users', 'resources', 'instructor'])->where('std_id', $login_id)->get();
+            $events = Booking::with(['users', 'resources', 'instructor', 'training_event', 'Courses', 'CourseLesson'])->where('std_id', $login_id)->get();
         } else {
-            $events = Booking::with(['users', 'resources', 'instructor'])->get();
+            $events = Booking::with(['users', 'resources', 'instructor', 'training_event', 'Courses', 'CourseLesson'])->get();
         }
 
         $data = [];
@@ -51,6 +64,7 @@ class BookingController extends Controller
 
         foreach ($events as $e) {
             $mailSend = OuSetting::where('organization_id', $ou_id)->select('send_email')->first();
+
             if ($mode === 'instructor') {
                 $resourceId = $e->instructor_id;
                 // dd($e);
@@ -98,6 +112,14 @@ class BookingController extends Controller
                     $id       = $e->std_id;
             }
 
+            /* ---------------- Training Event ---------------- */
+            $trainingEventTitle = $e->event_id  ? ($e->Courses->course_name ?? '') : '';
+
+            // Optional: Different color if event exists
+            if ($e->event_id && $trainingEventTitle) {
+                $color = '#10B981'; // green
+            }
+
             /* ---------------- Push event ---------------- */
             $start_time = timezone($e->start, $ou_id);
 
@@ -139,7 +161,12 @@ class BookingController extends Controller
                     'id'                    => $e->id,
                     'start'                 => $e->start,
                     'end'                   => $e->end,
-                    'status'                => $e->status,
+                    'event_id'              => encode_id($e->event_id) ?? '',
+                    'course'                => $trainingEventTitle,
+                    'course_id'             => encode_id($e->course_id) ?? '',
+                    'trainingEventLesson_id' => encode_id($e->trainingEventLesson_id) ?? '',
+                    'lesson_title'          => $e->CourseLesson->lesson_title ?? '',
+                    'status'                => $e->status
                 ]
             ];
         }
@@ -270,13 +297,13 @@ class BookingController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'organizationUnits' => 'required|exists:organization_units,id',
+            // 'organizationUnits' => 'required|exists:organization_units,id',
             'start_date'        => 'required|date',
             'end_date'          => 'required|date|after:start_date',
             'booking_type'      => 'required|in:1,2,3',
             'resource_type'     => 'required|in:1,2,3',
             'resource'          => 'required',
-           
+
         ];
 
         if ($request->booking_type == 2 || $request->booking_type == 3) {
@@ -322,7 +349,7 @@ class BookingController extends Controller
 
 
         $booking                = new Booking();
-        $booking->ou_id         = $request->organizationUnits;
+        $booking->ou_id         = $request->organizationUnits  ?? Auth::user()->ou_id;
         $booking->std_id        = $request->student ?? Auth::user()->id;
         $booking->resource      = $request->resource;
         $booking->start         = $request->start_date;
@@ -334,29 +361,29 @@ class BookingController extends Controller
         $booking->send_email    = $request->boolean('send_email') ? 1 : 0;
         $booking->save();
 
+        $bookingId = $booking->id;
+
         // $sendemail = organizationUnits::where('id', $request->organizationUnits)->first();
         $checkSend_mail = OuSetting::where('organization_id', $request->organizationUnits)->select('send_email')->first();
 
-//--------------------------------------------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------------------------------------------
 
         if ($request->booking_type == 2 || $request->booking_type == 3) {
             //  Create tarining event
             $lesson_ids = collect($request->lesson)->pluck('lesson_id')->toArray();
 
-          $existingEvent = TrainingEvents::where('student_id', $request->student)
-                            ->where('course_id', $request->course)
-                            ->where('ou_id', auth()->user()->is_owner ? $request->organizationUnits : auth()->user()->ou_id)
-                       
-                            ->exists();
-            // dd($existingEvent);            
+            $existingEvent = TrainingEvents::where('student_id', $request->student)
+                ->where('course_id', $request->course)
+                ->where('ou_id', auth()->user()->is_owner ? $request->organizationUnits : auth()->user()->ou_id)
 
-            if ($existingEvent) {
-                    return response()->json([
-                        'errors' => [
-                            'lesson' => ['Training event already exists for this lesson.']
-                        ]
-                    ], 422);
-                }
+                ->exists();
+            // if ($existingEvent) {
+            //         return response()->json([
+            //             'errors' => [
+            //                 'course' => ['Training event already exists for this course.']
+            //             ]
+            //         ], 422);
+            //     }
 
 
             $trainingEvent = TrainingEvents::create([
@@ -364,13 +391,11 @@ class BookingController extends Controller
                 'course_id'         => $request->course,
                 'lesson_ids'        => json_encode([$request->lesson]),
                 'event_date'        => $request->course_date,
-                // 'opc_validity' => $request->opc_validity_months,
-                // 'opc_extend' => $request->opc_extend_eom,
-                // 'total_time' => $request->total_time,
+                'total_time'        => $request->total_time,
                 // 'simulator_time' => $request->total_simulator_time ?? '00:00',
                 'std_license_number' => $request->licence_number,
                 'ou_id' => auth()->user()->is_owner ? $request->organizationUnits : auth()->user()->ou_id,
-                // 'entry_source' => $request->entry_source,
+                'entry_source' => NULL,
                 'rank'            => $request->rank ?? null,
                 'trainingEvent_type' => 1
             ]);
@@ -409,7 +434,7 @@ class BookingController extends Controller
                 }
             }
 
-            TrainingEventLessons::create([
+            $trainingEventLesson =   TrainingEventLessons::create([
                 'training_event_id'  => $trainingEvent->id,
                 'lesson_id'          => $request->lesson,
                 'instructor_id'      => $request->instructor,
@@ -425,20 +450,43 @@ class BookingController extends Controller
                 'role1'             => $request->role ?? null,
                 'operation2'        =>  null,
                 'role2'             =>  null,
-
             ]);
+            $trainingEventLesson_id = $trainingEventLesson->id;
 
-         
-          return response()->json(['message' => 'Training event created successfully']);
-          
+            Booking::where('id', $bookingId)->update(['event_id' => $trainingEvent->id, 'course_id' => $request->course, 'lesson_id' => $request->lesson, 'trainingEventLesson_id' => $trainingEventLesson_id]);
 
+            return response()->json(['message' => 'Training event created successfully']);
         }
-//--------------------------------------------------------------------------------------------------------------------------------------
-       return response()->json(['success' => true,'message' => 'Booking created successfully.']);
+        //--------------------------------------------------------------------------------------------------------------------------------------
+        return response()->json(['success' => true, 'message' => 'Booking created successfully.']);
     }
 
     public function update(Request $request)
     {
+        $rules = [
+        // 'organizationUnits' => 'required|exists:organization_units,id',
+        'start_date'        => 'required|date',
+        'end_date'          => 'required|date|after:start_date',
+        'booking_type'      => 'required|in:1,2,3',
+        'resource_type'     => 'required|in:1,2,3',
+        'resource'          => 'required',
+
+        ];
+
+        if ($request->booking_type == 2 || $request->booking_type == 3) {
+            $rules['instructor'] = 'required';
+            $rules['course'] = 'required';
+            $rules['lesson'] = 'required';
+            $rules['course_date'] = 'required';
+            $rules['rank'] = 'required';
+            $rules['lesson_date'] = 'required';
+            $rules['start_time'] = 'required';
+            $rules['end_time'] = 'required';
+            $rules['departure_airfield'] = 'required';
+            $rules['destination_airfield'] = 'required';
+            $rules['operation'] = 'required';
+            $rules['role'] = 'required';
+        }
         // dd($request->all());
         $booking = Booking::findOrFail($request->id);
         $booking->ou_id = $request->organizationUnits;
@@ -558,12 +606,12 @@ class BookingController extends Controller
         $is_admin = auth()->user()->is_admin;
         $is_owner = auth()->user()->is_owner;
         $students = User::where('ou_id', $request->ou_id)
-                    ->where(function ($q) {
-                        $q->where('is_admin', false)->orWhereNull('is_admin');
-                    })
-                    ->whereHas('roles', fn($q) => $q->where('role_name', 'like', '%Student%'))
-                    ->with('roles')
-                    ->get();
+            ->where(function ($q) {
+                $q->where('is_admin', false)->orWhereNull('is_admin');
+            })
+            ->whereHas('roles', fn($q) => $q->where('role_name', 'like', '%Student%'))
+            ->with('roles')
+            ->get();
         $id = auth()->id();
 
         $ato_num = OrganizationUnits::where('id', $request->ou_id)->get();
@@ -575,6 +623,7 @@ class BookingController extends Controller
         } elseif ($is_admin == 1) {
             $org_resource = Resource::where('ou_id', $request->ou_id)->get();
             $instructors = User::where('ou_id', $request->ou_id)->where('role', 18)->where('is_activated', 0)->where('status', 1)->get(['id', 'fname', 'lname']);
+            $courses = Courses::where('ou_id', $request->ou_id)->get();
         } else {
             $org_resource = Resource::where('ou_id', $request->ou_id)->get();
 
@@ -615,7 +664,7 @@ class BookingController extends Controller
     public function edit_booking(Request $request)
     {
         $booking_id = $request->id;
-        $booking    =  Booking::where('id', $booking_id)->get();
+        $booking    =  Booking::with('trainingEventLesson', 'training_event')->where('id', $booking_id)->get();
         return response()->json(['success' => true, 'response' => $booking]);
     }
 }

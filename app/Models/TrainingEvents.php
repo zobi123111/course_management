@@ -248,4 +248,9 @@ class TrainingEvents extends Model
     {
         return $this->hasMany(TrainingQuiz::class, 'trainingevent_id');
     }
+
+    public function booking() 
+    {
+        return $this->hasMany(Booking::class, 'event_id', 'id');
+    }
 }
