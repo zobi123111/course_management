@@ -1393,13 +1393,9 @@
                 },
                 success: function(data) {
                     var response = data.response[0];
+
                     $("#edit_organizationUnits").val(response.ou_id).trigger('change');
-        
                     $('#edit_departure_airfield').val(response.training_event_lesson?.departure_airfield ?? '');
-
-            
-
-
                     $('#edit_destination_airfield').val(response.training_event_lesson?.destination_airfield ?? '');
                     $('#edit_lesson_date').val(response.training_event_lesson?.lesson_date ?? '');
                     $('#edit_rank').val(response.training_event?.rank ?? '');
@@ -1968,6 +1964,20 @@
 
             } else {
                 $('#create_trainingevent_div').show();
+
+            }
+        });
+
+        $(document).on('change', '#edit_booking_type', function() {
+            var booking_type = $(this).val();
+            if (booking_type == 1) {
+                $('#edit_trainingevent_div').hide();
+                $('#edit_resource').val('').trigger('change');
+                $('#time_div').hide();
+
+
+            } else {
+                $('#edit_trainingevent_div').show();
 
             }
         });
