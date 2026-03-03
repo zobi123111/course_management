@@ -66,4 +66,10 @@ class TrainingEventLessons extends Model
         return $this->hasMany(Quiz::class, 'lesson_id', 'lesson_id');
     }
 
+    public function trainingEventLesson()
+    {
+        return $this->hasMany(Booking::class, 'trainingEventLesson_id', 'id');
+    }
+    
+
 }
