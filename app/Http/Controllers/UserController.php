@@ -15,11 +15,15 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\UserCreated;
+use App\Models\LicenceValidationType;
+use App\Models\OuSetting;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 use App\Models\ParentRating;
+use App\Models\UserLicenseValidation;
 use Illuminate\Support\Facades\Validator;
 use Auth;
+use Carbon\Carbon;
 
 class UserController extends Controller
 {
@@ -184,9 +188,20 @@ class UserController extends Controller
         $user = User::with([
             'usrRatings.rating',
             'usrRatings.parent',
-            'documents'
+            'documents',
+            'licenseValidations.validation',
         ])->findOrFail($id);
         $rawUserRatings = $user->usrRatings;
+
+        $ou_id = $user->ou_id;
+        $OuSetting = OuSetting::where('organization_id', $ou_id)->first();
+
+        if($user->is_owner) {
+            $validations = LicenceValidationType::all();
+        }
+        else {
+            $validations = LicenceValidationType::where('ou_id' , $user->ou_id)->get();
+        }
 
         $grouped = [];
 
@@ -364,7 +379,9 @@ class UserController extends Controller
             'parentIdsLicence2',
             'missingParentRatingsLicence1',
             'missingParentRatingsLicence2',
-            'grouped'
+            'grouped',
+            'OuSetting',
+            'validations'
         ));
     }
 
@@ -464,8 +481,6 @@ class UserController extends Controller
                 UserRating::where('user_id', $userId)->where('parent_id', $parentid)->where('linked_to', $linkedTo)->update(["expiry_date" => $expiry_date]);
             }
         }
-
-
 
         $userToUpdate = User::find($request->id);
         $document = UserDocument::where('user_id', $userToUpdate->id)->first();
@@ -704,10 +719,14 @@ class UserController extends Controller
             }
         }
 
+        // dd($request->all());
+
         $newData = [
             'fname' => $request->firstName,
             'lname' => $request->lastName,
             'email' => $request->email,
+            'date_of_birth' => $request->date_of_birth ?? $userToUpdate->date_of_birth,
+            'phone_number' => $request->phone_number ?? $userToUpdate->phone_number,
             'image' => $filePath ?? null,
             'licence' => $request->licence ?? $userToUpdate->licence,
             'licence_expiry_date' => $request->licence_expiry_date ?? null,
@@ -869,9 +888,49 @@ class UserController extends Controller
             }
         }
 
+        // ================= USER LICENSE VALIDATIONS =================
+        if ($request->has('licences')) {
 
+            foreach ($request->licences as $index => $licenceData) {
 
+                $licence = UserLicenseValidation::find($licenceData['id'] ?? null);
 
+                if (!$licence) {
+                    continue;
+                }
+
+                if ($request->hasFile("licences.$index.certificate_file")) {
+
+                    if ($licence->certificate_file && Storage::disk('public')->exists($licence->certificate_file)) {
+                        Storage::disk('public')->delete($licence->certificate_file);
+                    }
+
+                    $filePath = $request
+                        ->file("licences.$index.certificate_file")
+                        ->store('license_certificates', 'public');
+
+                    $licence->certificate_file = $filePath;
+                    $licence->verified = 0;
+                }
+
+                $isNonExpiring = !empty($licenceData['validation_non_expiring']);
+
+                // Update fields
+                $licence->update([
+                    'validation_code_id'  => $licenceData['validation_code_id'] ?? $licence->validation_code_id,
+                    'country_name'        => $licenceData['country_name'] ?? $licence->country_name,
+                    'license_number'      => $licenceData['license_number'] ?? $licence->license_number,
+                    'licence_issued_to'   => $licenceData['licence_issued_to'] ?? $licence->licence_issued_to,
+                    'validation_non_expiring' => $isNonExpiring ? 1 : 0,
+                    'issue_date'          => !empty($licenceData['issue_date'])
+                                                ? Carbon::parse($licenceData['issue_date'])->format('Y-m-d')
+                                                : null,
+                    'expiry_date'         => !empty($licenceData['expiry_date'])
+                                                ? Carbon::parse($licenceData['expiry_date'])->format('Y-m-d')
+                                                : null,
+                ]);
+            }
+        }
 
         //   Session::flash('message', 'User saved successfully');
         return response()->json(['success' => true, 'message' => "User profile updated successfully"]);
@@ -879,7 +938,8 @@ class UserController extends Controller
 
     public function save_user(Request $request)
     {
-       // dd($request->all());
+        // dd($request->all());
+
         $validated = $request->validate([
             'firstname' => 'required',
             'lastname' => 'required',
@@ -1049,6 +1109,38 @@ class UserController extends Controller
         $store = User::create($store_user);
         if ($store) {
 
+            if ($request->filled('validation_code')) {
+
+                foreach ($request->validation_code as $index => $codeId) {
+
+                    if (empty($codeId)) {
+                        continue;
+                    }
+
+                    $filePath = null;
+
+                    if ($request->hasFile("certificate_file.$index")) {
+                        $filePath = $request->file("certificate_file.$index")
+                                            ->store('license_certificates', 'public');
+                    }
+
+                    // echo "<pre>"; print_r($codeId); echo "</pre>";
+
+                    UserLicenseValidation::create([
+                        'user_id'            => $store->id,
+                        'validation_code_id' => $codeId,
+                        'country_name'       => $request->country_name[$index] ?? null,
+                        'license_number'     => $request->license_number[$index] ?? null,
+                        'licence_issued_to'  => $request->licence_issued_to[$index] ?? null,
+                        'validity_months'    => $request->master_validity[$index] ?? null,
+                        'issue_date'         => $request->issue_date[$index] ?? null,
+                        'expiry_date'        => $request->expiry_date[$index] ?? null,
+                        'certificate_file'   => $filePath,
+                        'admin_verification_required' => $request->licence_validation_verification_required[$index] ?? 0,
+                    ]);
+                }
+            }
+
             UserDocument::create([
                 'user_id' => $store->id,
                 'licence' =>  $request->licence ?? null,
@@ -1211,7 +1303,7 @@ class UserController extends Controller
 
     public function update(Request $request)
     {
-       // dd($request->all());
+        // dd($request->all());
         $userToUpdate = User::find($request->edit_form_id);
         $UserDocument = UserDocument::where('user_id', $userToUpdate->id)->first();
 
@@ -1418,6 +1510,94 @@ class UserController extends Controller
 
             // Update User
             $store =  $userToUpdate->update($newData);
+
+            // --- upsert any rows that remain in the form ---
+            if ($request->filled('edit_validation_code')) {
+
+                foreach ($request->edit_validation_code as $index => $codeId) {
+
+                    if (empty($codeId)) {
+                        continue;
+                    }
+
+                    $filePath = null;
+
+                    if ($request->hasFile("edit_certificate_file.$index")) {
+                        $filePath = $request->file("edit_certificate_file.$index")
+                                            ->store('license_certificates', 'public');
+                    }
+
+                    // if an ID was provided we should update that exact record;
+                    // this handles the case where the user changes the validation
+                    // code dropdown to a different value.  Otherwise create a
+                    // fresh row.
+                    if (!empty($request->edit_validation_id[$index])) {
+                        $model = UserLicenseValidation::withTrashed()
+                            ->find($request->edit_validation_id[$index]);
+                        if ($model) {
+                            $model->update([
+                                'validation_code_id' => $codeId,
+                                'country_name'      => $request->edit_country_name[$index] ?? null,
+                                'license_number'    => $request->edit_license_number[$index] ?? null,
+                                'licence_issued_to' => $request->edit_licence_issued_to[$index] ?? null,
+                                'validity_months'   => $request->edit_master_validity[$index] ?? null,
+                                'issue_date'        => $request->edit_issue_date[$index] ?? null,
+                                'expiry_date'       => $request->edit_expiry_date[$index] ?? null,
+                                'certificate_file'  => $filePath,
+                                'admin_verification_required' => isset($request->edit_licence_validation_verification_required[$index]) ? 1 : 0,
+                            ]);
+                            continue;
+                        }
+                    }
+
+                    // no existing model to update, so create one
+                    $newModel = UserLicenseValidation::create([
+                        'user_id'            => $userToUpdate->id,
+                        'validation_code_id' => $codeId,
+                        'country_name'       => $request->edit_country_name[$index] ?? null,
+                        'license_number'     => $request->edit_license_number[$index] ?? null,
+                        'licence_issued_to'  => $request->edit_licence_issued_to[$index] ?? null,
+                        'validity_months'    => $request->edit_master_validity[$index] ?? null,
+                        'issue_date'         => $request->edit_issue_date[$index] ?? null,
+                        'expiry_date'        => $request->edit_expiry_date[$index] ?? null,
+                        'certificate_file'   => $filePath,
+                        'admin_verification_required' => isset($request->edit_licence_validation_verification_required[$index]) ? 1 : 0,
+                    ]);
+                    // $newModel created; its id will be added by the keepIds logic below
+                }
+            }
+
+            // --- remove any validations that were deleted client‑side ---
+            // Build a list of IDs we actually want to keep.  Start with
+            // whatever was explicitly submitted (existing rows).
+            $keepIds = array_filter($request->edit_validation_id ?? []);
+
+            // After updateOrCreate above we may have created new models; make
+            // sure their IDs are included so the subsequent delete() doesn’t
+            // soft‑delete them.
+            if ($request->filled('edit_validation_code')) {
+                foreach ($request->edit_validation_code as $index => $codeId) {
+                    if (empty($codeId)) {
+                        continue;
+                    }
+
+                    // locate the record for this user/code – the most recent one
+                    $rec = UserLicenseValidation::where('user_id', $userToUpdate->id)
+                                ->where('validation_code_id', $codeId)
+                                ->orderBy('id', 'desc')
+                                ->first();
+
+                    if ($rec && ! in_array($rec->id, $keepIds)) {
+                        $keepIds[] = $rec->id;
+                    }
+                }
+            }
+
+            $delQuery = UserLicenseValidation::where('user_id', $userToUpdate->id);
+            if (count($keepIds)) {
+                $delQuery->whereNotIn('id', $keepIds);
+            }
+            $delQuery->delete();
 
             UserDocument::updateOrCreate(
                 ['user_id' => $userToUpdate->id], // Search criteria
@@ -1948,6 +2128,9 @@ class UserController extends Controller
             $licence2 = 1;
         }
 
+        // Get license validations
+        $licenseValidations = $user->licenseValidations()->get();
+
         return response()->json([
             'user'                  => $user,
             'user_ratings'          => $userRatings,
@@ -1955,6 +2138,7 @@ class UserController extends Controller
             'licence1'              => $licence1 ?? 0,
             'userRatings_licence_2' => $userRatingsLicence2Grouped,
             'licence2'              => $licence2 ?? 0,
+            'license_validations'   => $licenseValidations,
         ]);
     }
 

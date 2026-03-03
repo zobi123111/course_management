@@ -29,7 +29,11 @@ class TrainingEventLessons extends Model
         'operation2',
         'role2',
         'overall_result',
-        'overall_remark'
+        'overall_remark',
+        'takeoff_time',
+        'landing_time',
+        'tacho_start_time',
+        'tacho_stop_time'
     ];
 
     // protected $dates = ['lesson_date', 'start_time', 'end_time', 'total_time', 'deleted_at'];

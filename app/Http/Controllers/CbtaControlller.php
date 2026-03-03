@@ -13,7 +13,7 @@ class CbtaControlller extends Controller
     {
      if(auth()->user()->is_owner == 1){
         $instructor =  CbtaGrading::with('organization_unit')->where('competency_type', 'instructor')->get();
-         $examiner =  CbtaGrading::with('organization_unit')->where('competency_type', 'examiner')->get();
+        $examiner =  CbtaGrading::with('organization_unit')->where('competency_type', 'examiner')->get();
 
      }else{
       $instructor =  CbtaGrading::with('organization_unit')->where('competency_type', 'instructor')->where('ou_id', auth()->user()->ou_id)->get();

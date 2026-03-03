@@ -1027,7 +1027,7 @@ class QuizController extends Controller
                             ->where('student_id', $user_id)
                             ->first();
 
-        $quizquestions = QuizQuestion::where('quiz_id', $quiz_id)->where('user_id', $user_id)->first();
+        $quizquestions = QuizQuestion::where('quiz_id', $quiz_id)->where('user_id', $user_id)->get();
 
         if (!$attempt) {
             return response()->json(['message' => 'Attempt not found'], 404);
@@ -1042,7 +1042,10 @@ class QuizController extends Controller
         $attempt->delete();
         
         if ($quizquestions){
-            $quizquestions->delete();
+            foreach ($quizquestions as $quizquestion) {
+                $quizquestion->delete();
+            }
+            // $quizquestions->delete();
         }
 
         return response()->json(['message' => 'Attempt reset successfully']);
@@ -1172,7 +1175,6 @@ class QuizController extends Controller
                     ->where('user_id', $userId)
                     ->where('question_id', $q->id)
                     ->value('selected_option');
-
                 $finalData[] = [
                     'question_id' => $q->id,
                     'question_text' => $q->question_text,
@@ -1189,11 +1191,15 @@ class QuizController extends Controller
             }
         }
 
-        UserQuiz::create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $userId,
-            'quiz_details' => json_encode($finalData),
-        ]);
+        UserQuiz::updateOrCreate(
+            [
+                'quiz_id' => $quiz->id,
+                'user_id' => $userId,
+            ],
+            [
+                'quiz_details' => json_encode($finalData),
+            ]
+        );
 
 
         $questionIds = QuizQuestion::where('quiz_id', $quiz->id)->pluck('question_id')->flatMap(fn ($q) => is_array($q) ? $q : json_decode($q, true))->filter()->unique()->toArray();
@@ -1239,7 +1245,7 @@ class QuizController extends Controller
             'status' => true,
             'message' => 'Final quiz data saved successfully!',
         ]);
-    }
+    }    
 
     // public function saveFinalQuizData(Request $request)
     // {

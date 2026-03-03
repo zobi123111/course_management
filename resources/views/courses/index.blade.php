@@ -2088,6 +2088,37 @@
             },
             error: function(xhr, status, error) {
                 console.error(xhr.responseText);
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+
+        // Fetch tags for the selected OU
+        $.ajax({
+            url: "{{ route('course.get-tags-by-ou') }}",
+            type: "GET",
+            data: {
+                'ou_id': ou_id
+            },
+            dataType: "json",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            success: function(response) {
+                if (response.tags && Array.isArray(response.tags)) {
+                    let tagOptions = "<option value=''>Select Tag</option>";
+                    
+                    response.tags.forEach(function(tag) {
+                        tagOptions += "<option value='" + tag.id + "'>" + tag.rhstag + "</option>";
+                    });
+                    
+                    // Update all tag select dropdowns in create form
+                    $('select[name="master_tag_select[]"]').html(tagOptions);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error fetching tags:", xhr.responseText);
             }
         });
     });
@@ -2164,6 +2195,34 @@
             },
             error: function(xhr, status, error) {
                 console.error(xhr.responseText);
+            }
+        });
+
+        // Fetch tags for the selected OU in edit form
+        $.ajax({
+            url: "{{ route('course.get-tags-by-ou') }}",
+            type: "GET",
+            data: {
+                'ou_id': ou_id
+            },
+            dataType: "json",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            success: function(response) {
+                if (response.tags && Array.isArray(response.tags)) {
+                    let tagOptions = "<option value=''>Select Tag</option>";
+                    
+                    response.tags.forEach(function(tag) {
+                        tagOptions += "<option value='" + tag.id + "'>" + tag.rhstag + "</option>";
+                    });
+                    
+                    // Update all tag select dropdowns in edit form
+                    $('#editCourseModal select[name="master_tag_select[]"]').html(tagOptions);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error fetching tags:", xhr.responseText);
             }
         });
     });

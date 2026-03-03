@@ -132,7 +132,14 @@
                     type="button"
                     role="tab"
                 >
-                    {{ $index === 0 ? 'Latest' : 'Attempt ' . $index }}
+                <div class="d-flex flex-column text-center">
+                    <span class="fw-semibold">
+                        {{ $index === 0 ? 'Latest' : 'Attempt ' . $index }}
+                    </span>
+                    <small>
+                        ({{ \Carbon\Carbon::parse($attempt->created_at)->format('d M Y, h:i A') }})
+                    </small>
+                </div>
                 </button>
             </li>
         @endforeach

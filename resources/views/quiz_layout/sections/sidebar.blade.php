@@ -34,6 +34,12 @@
 
     </ul>
 
+    <div id="end-quiz-container" class="end-quiz-container mt-3 text-center">
+        <button type="button" id="sidebarSubmitBtn" class="btn btn-success w-100">
+            Submit Quiz
+        </button>
+    </div>
+
 
     <div class="course_logo">
         {{-- Optional: Organization logo --}}

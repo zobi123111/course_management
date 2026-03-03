@@ -15,6 +15,7 @@ class OuSetting extends Model
             'show_dob',
             'show_phone',
             'send_email',
-            'timezone'
+            'timezone',
+            'enable_tacho_fields'
     ];
 }
