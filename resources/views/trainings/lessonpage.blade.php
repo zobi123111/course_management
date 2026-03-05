@@ -843,7 +843,7 @@
                                     </div>
 
                                     <div class="col-md-6">
-                                        <label class="form-label">Lesson Date - {{ $lesson->id }}</label>
+                                        <label class="form-label">Lesson Date</label>
                                         <input type="date"
                                             class="form-control editable"
                                             name="lesson_date"
