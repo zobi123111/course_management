@@ -843,7 +843,7 @@
                                     </div>
 
                                     <div class="col-md-6">
-                                        <label class="form-label">Lesson Date - {{ $lesson->id }}</label>
+                                        <label class="form-label">Lesson Date</label>
                                         <input type="date"
                                             class="form-control editable"
                                             name="lesson_date"
@@ -889,27 +889,32 @@
                                     </div>
 
                                     @if($trainingEvent?->orgUnit?->Ousetting?->enable_tacho_fields)
+
                                         <div class="col-md-6">
                                             <label class="form-label">Tacho Start</label>
-                                            <input type="number"
-                                                step="0.1"
+                                            <input type="text"
                                                 class="form-control editable"
                                                 name="tacho_start_time"
-                                                value="{{ $lesson->tacho_start_time}}"
+                                                value="{{ str_pad(number_format($lesson->tacho_start_time, 2, '.', ''), 7, '0', STR_PAD_LEFT) }}"
+                                                pattern="^\d{4}\.\d{2}$"
+                                                inputmode="decimal"
+                                                placeholder="0000.00"
                                                 disabled>
                                         </div>
 
                                         <div class="col-md-6">
                                             <label class="form-label">Tacho Stop</label>
-                                            <input type="number"
-                                                step="0.1"
+                                            <input type="text"
                                                 class="form-control editable"
                                                 name="tacho_stop_time"
-                                                value="{{ $lesson->tacho_stop_time}}"
+                                                value="{{ str_pad(number_format($lesson->tacho_stop_time, 2, '.', ''), 7, '0', STR_PAD_LEFT) }}"
+                                                pattern="^\d{4}\.\d{2}$"
+                                                inputmode="decimal"
+                                                placeholder="0000.00"
                                                 disabled>
                                         </div>
-                                    @endif
 
+                                    @endif
                                     <div class="col-md-6">
                                         <label class="form-label">Departure Airfield</label>
                                         <input type="text"

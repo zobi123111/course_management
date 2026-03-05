@@ -725,7 +725,7 @@
                                 <div class="row">
                                     @if ($user->licenseValidations)
                                         @foreach($user->licenseValidations as $index => $licence)
-                                            <div class="col-lg-6 col-md-12 mb-4 licence-block">
+                                            <div class="col-lg-6 col-md-12 mb-4 mt-3 licence-block">
 
                                                 <label for="extra_roles" class="form-label"><strong>License Validation - {{ $index+1 }} </strong>
                                                     @if($licence->verified != 0)

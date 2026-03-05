@@ -124,7 +124,7 @@
 
                     <div class="row">
                         <!-- License Details -->
-                         @if($user->licence_required == 1)
+                        @if($user->licence_required == 1)
                             <div class="col-md-6 mb-4 license-six-cont">
                                 <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>UK License Details</h5>
                                 @if($document && $document->licence)
@@ -433,6 +433,62 @@
                             @endif
                     </div>
 
+                    <div class="row">
+                        @if ($user->licenseValidations)
+                            @foreach($user->licenseValidations as $index => $Validation)
+                                <div class="col-lg-6 col-md-12 mb-4 licence-block">
+
+                                    <label for="extra_roles" class="form-label"><strong>License Validation - {{ $index+1 }} </strong>
+                                        @if($Validation->verified != 0)
+                                        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified</span>
+                                        @endif
+                                    </label>
+
+                                    <input type="hidden" name="licences[{{ $index }}][id]" value="{{ $Validation->id }}">
+                                    <div class="d-flex flex-wrap gap-3">
+                                        <p class="mb-0"><strong>Validation Code:</strong> {{ $Validation->validation->code }}</p>
+                                        <p class="mb-0"><strong>Country:</strong> {{ $Validation->validation->country_name }}</p>
+                                        <p class="mb-0"><strong>License No:</strong> {{ $Validation->license_number }}</p>
+                                        <p class="mb-0"><strong>Issued To:</strong> {{ $Validation->licence_issued_to }}</p>
+                                        <p class="mb-0"><strong>Issue Date:</strong> {{ $Validation->issue_date ? \Carbon\Carbon::parse($Validation->issue_date)->format('d M Y') : '—' }}</p>
+                                        <p class="mb-0">
+                                            <strong>Expiry Date:</strong>
+                                            @if($Validation->validation_non_expiring)
+                                                Non-Expiring
+                                            @elseif($Validation->expiry_date)
+                                                {{ \Carbon\Carbon::parse($Validation->expiry_date)->format('d M Y') }}
+                                            @else
+                                                —
+                                            @endif
+                                        </p>
+                                    </div>
+
+                                    @if($Validation->certificate_file)
+                                        <a href="{{ asset('storage/'.$Validation->certificate_file) }}" target="_blank"
+                                            class="btn btn-outline-danger btn-sm mt-3"
+                                            style="border-radius: 6px; padding: 6px 10px; font-size: 14px; font-weight: 500; width: fit-content;">
+                                            <i class="bi bi-file-earmark-text me-1" style="font-size: 16px;"></i> View Certificate File
+                                        </a>
+                                    @endif
+
+                                    @if($Validation->admin_verification_required == 1)
+                                        <div class="licensevalidations mt-3">
+                                            <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input validation-verify-toggle" type="checkbox" id="licence2_verify"
+                                                    data-user-id="{{ $Validation->user_id }}" data-licence-validation-id="{{ $Validation->id }}" data-type="licensevalidations"
+                                                    {{ $Validation->verified ? 'checked disabled' : '' }}>
+                                                <label class="form-check-label" for="licence2_verify">{{ $Validation->verified ? 'Verified' : 'Mark as Verified' }}</label>
+                                            </div>
+                                        </div>
+                                    @endif
+                                    @if($Validation->verified == 1)
+                                        <button class="btn btn-danger btn-sm validations-invalidate" data-user-id="{{ $Validation->user_id }}" data-licence-validation-id="{{ $Validation->id }}" data-type="licensevalidations">Invalidate</button>
+                                    @endif
+                                </div>
+                            @endforeach
+                        @endif
+                    </div>
+
                     <!-- Medical Details -->
                         @if($user->medical == 1)
                         <div class="col-md-12 mb-4">
@@ -615,6 +671,45 @@
                 });
             });
 
+            $(".validation-verify-toggle").on('change', function() {
+                var userId = $(this).data("user-id");
+                var licenceValidation = $(this).data("licenceValidationId");
+                var isChecked = $(this).prop("checked") ? 1 : 0;
+
+                console.log('licenceValidation' , licenceValidation);
+                $.ajax({
+                    url: '{{ url("/users-validation-toggle/verify") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        userId: userId,
+                        licenceValidation: licenceValidation,
+                        verified: isChecked
+                    },
+                    success: function(response) {
+                        console.log(response);
+                        if (response.success) {
+                            alert(response.success);
+                            location.reload();
+                        } else {
+                            alert("Something went wrong!");
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        if (xhr.status === 422) {
+                            var errors = xhr.responseJSON.errors;
+                            var errorMessages = '';
+                            $.each(errors, function(key, messages) {
+                                errorMessages += messages.join('\n') + '\n';
+                            });
+                            alert(errorMessages);
+                        } else {
+                            alert("An unexpected error occurred.");
+                        }
+                    }
+                });
+            });
+
             $(".verify-rating").on('change', function() {
                 var linkedto = $(this).data("linkedto");
                 var userid = $(this).data("userid");
@@ -696,6 +791,34 @@
                     success: function(response) {
                         if (response.success) {
                             alert(response.success);
+                            location.reload();
+                        } else {
+                            alert('Failed to invalidate.');
+                        }
+                    },
+                    error: function() {
+                        alert('An error occurred while processing the request.');
+                    }
+                });
+            });
+
+            $('.validations-invalidate').on('click', function() {
+                if (!confirm('Are you sure you want to invalidate this document?')) return;
+
+                var userId = $(this).data("user-id");
+                var licenceValidation = $(this).data("licenceValidationId");
+
+                $.ajax({
+                    url: `{{ route('user.invalidateValidation') }}`,
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        user_id: userId,
+                        licenceValidation: licenceValidation
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
                             location.reload();
                         } else {
                             alert('Failed to invalidate.');

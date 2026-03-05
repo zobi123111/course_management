@@ -610,6 +610,21 @@
             padding-left: 0;
             font-size: 13px;
         }
+
+        .fas:before {
+            color: inherit;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .fas, .far, .fab {
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .delete-btn:hover i {
+            color: #ffffff !important;
+        }
     </style>
 
     <head>
@@ -629,13 +644,13 @@
     <div class="card">
         @if(session()->has('message'))
             <div id="successMessage" class="alert alert-success fade show" role="alert">
-                <i class="bi bi-check-circle me-1"></i>
+                <i class="text-primary bi bi-check-circle me-1"></i>
                 {{ session()->get('message') }}
             </div>
         @endif
         @if(session()->has('error'))
             <div id="errorMessage" class="alert alert-danger fade show" role="alert">
-                <i class="bi bi-exclamation-triangle me-1"></i>
+                <i class="text-primary bi bi-exclamation-triangle me-1"></i>
                 {{ session()->get('error') }}
             </div>
         @endif
@@ -676,18 +691,18 @@
                         <div class="custom-shadow mb-3 p-4">
 
                             <h4 class="mb-3 text-primary">
-                                <i class="fas fa-calendar-alt"></i> Training Event Overview
+                                <i class="text-primary fas fa-calendar-alt"></i> Training Event Overview
                             </h4>
                             <div class="row mb-3">
                                 <div class="col-md-12">
-                                    <strong><i class="fas fa-book"></i> Course Name:</strong>
+                                    <strong><i class="text-primary fas fa-book"></i> Course Name:</strong>
                                     <span class="badge bg-info text-white">{{ $trainingEvent->course->course_name ?? 'N/A' }}</span>
                                 </div>
                             </div>
                         
                             @if($trainingEvent->course?->duration_value && $trainingEvent->course?->duration_type)
                                 <div class="mb-3">
-                                    <strong><i class="fas fa-hourglass-half"></i> Course Total Duration:</strong>
+                                    <strong><i class="text-primary fas fa-hourglass-half"></i> Course Total Duration:</strong>
                                     @php
                                     $value = $trainingEvent->course->duration_value;
                                     $type = $trainingEvent->course->duration_type;
@@ -707,7 +722,7 @@
                             <div class="card-body mt-3">
                                 <div class="row g-4 align-items-center">
                                     <div class="col-md-4">
-                                        <h6 class="text-muted mb-1"><i class="fas fa-user me-1"></i>Student</h6>
+                                        <h6 class="text-muted mb-1"><i class="text-primary fas fa-user me-1"></i>Student</h6>
                                         <p class="mb-0 fw-semibold">
 
                                             {{ $trainingEvent->student->fname ?? '' }} {{ $trainingEvent->student->lname ?? '' }}
@@ -761,7 +776,7 @@
 
                                     <div class="col-md-4">
                                         <h6 class="text-muted mb-1">
-                                            <i class="fas fa-id-card me-1"></i><?= $label ?>
+                                            <i class="text-primary fas fa-id-card me-1"></i><?= $label ?>
                                         </h6>
                                         <p class="mb-0 fw-semibold"><?= $student_licence ?></p>
                                     </div>
@@ -769,7 +784,7 @@
                                     @if(!empty($trainingEvent->rank))
                                     <div class="col-md-4">
                                         <h6 class="text-muted mb-1">
-                                            <i class="fas fa-id-card me-1"></i>Rank
+                                            <i class="text-primary fas fa-id-card me-1"></i>Rank
                                         </h6>
                                         <?php
                                         if ($trainingEvent->rank == 1) {
@@ -829,33 +844,33 @@
 
                         @if($normalLessons->count())
                               <h4 class="mb-3 text-success">
-                                <i class="bi bi-patch-question-fill me-2"></i>
+                                <i class="text-primary bi bi-patch-question-fill me-2"></i>
                                 Lessons
                             </h4>
                             @foreach($normalLessons as $lesson)
                                 <div class="row mb-3 p-3 border rounded bg-light">
                                     <div class="col-md-12">
-                                        <strong><i class="fas fa-book"></i> Lesson Name:</strong>
+                                        <strong><i class="text-primary fas fa-book"></i> Lesson Name:</strong>
                                         <span class="text-primary">{{ $lesson->lesson->lesson_title ?? 'Untitled' }}</span>
                                     </div>
 
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="fas fa-chalkboard-teacher"></i> Instructor:</strong>
+                                        <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
                                         {{ optional($lesson->instructor)->fname }} {{ optional($lesson->instructor)->lname }}
                                     </div>
 
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="bi bi-card-text"></i> License:</strong>
+                                        <strong><i class="text-primary bi bi-card-text"></i> License:</strong>
                                         {{ $lesson->instructor_license_number ?? 'N/A' }}
                                     </div>
 
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="fas fa-toolbox"></i> Resource:</strong><br>
+                                        <strong><i class="text-primary fas fa-toolbox"></i> Resource:</strong><br>
                                         {{ optional($lesson->resource)->name ?? 'N/A' }}
                                     </div>
 
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="fas fa-calendar-day"></i> Date:</strong><br>
+                                        <strong><i class="text-primary fas fa-calendar-day"></i> Date:</strong><br>
 
                                         @if(!empty($lesson->lesson_date))
                                         {{ date('d-m-Y', strtotime($lesson->lesson_date)) }}
@@ -863,11 +878,11 @@
                                     </div>
 
                                     <!-- <div class="col-md-2 mt-3">
-                                        <strong><i class="fas fa-clock"></i> Start:</strong><br>
+                                        <strong><i class="text-primary fas fa-clock"></i> Start:</strong><br>
                                         {{ date('h:i A', strtotime($lesson->start_time)) }}
                                     </div> -->
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="fas fa-clock"></i> Start:</strong><br>
+                                        <strong><i class="text-primary fas fa-clock"></i> Start:</strong><br>
                                         @if(!empty($lesson->start_time) && $lesson->start_time !== '00:00:00')
                                         {{ date('h:i A', strtotime($lesson->start_time)) }}
                                         @elseif($lesson->start_time === '00:00:00')
@@ -877,7 +892,7 @@
                                         @endif
                                     </div>
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="fas fa-clock"></i> End:</strong><br>
+                                        <strong><i class="text-primary fas fa-clock"></i> End:</strong><br>
                                         @if(!empty($lesson->end_time) && $lesson->end_time !== '00:00:00')
                                         {{ date('h:i A', strtotime($lesson->end_time)) }}
                                         @elseif($lesson->end_time === '00:00:00')
@@ -888,40 +903,40 @@
                                     </div>
 
                                     <!-- <div class="col-md-2 mt-2">
-                                        <strong><i class="fas fa-clock"></i> End:</strong><br>
+                                        <strong><i class="text-primary fas fa-clock"></i> End:</strong><br>
                                         {{ date('h:i A', strtotime($lesson->end_time)) }}
                                     </div> -->
 
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="fas fa-plane-departure"></i> Departure:</strong><br>
+                                        <strong><i class="text-primary fas fa-plane-departure"></i> Departure:</strong><br>
                                         {{ $lesson->departure_airfield ?? 'N/A' }}
                                     </div>
 
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="fas fa-plane-arrival"></i> Destination:</strong><br>
+                                        <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
                                         {{ $lesson->destination_airfield ?? 'N/A' }}
                                     </div>
 
                                     <div class="col-md-2 mt-3">
                                         @php $lessonType = $lesson?->lesson?->lesson_type ?? null; @endphp
-                                        <strong><i class="fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
+                                        <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
                                         {{ ucfirst($lessonType) ?? 'N/A' }}
                                     </div>
 
                                     @if($lessonType === 'groundschool')
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="fas fa-hourglass-half"></i> Duration:</strong><br>
+                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Duration:</strong><br>
                                         {{ $trainingEvent->course->groundschool_hours ?? 'N/A' }}
                                     </div>
                                     @elseif($lessonType === 'simulator')
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="fas fa-hourglass-half"></i> Duration:</strong><br>
+                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Duration:</strong><br>
                                         {{ $trainingEvent->course->simulator_hours ?? 'N/A' }}
                                     </div>
                                     @endif
 
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="fas fa-hourglass-half"></i> Credited Hours:</strong><br>
+                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Credited Hours:</strong><br>
                                         {{ $lesson->hours_credited ?? '00:00' }}
                                     </div>
 
@@ -930,7 +945,7 @@
                                 <?php // dump($lesson->operation1); ?>
                                     @if(!empty($lesson->operation1))    
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="fas fa-hourglass-half"></i> Operation:</strong><br>
+                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Operation:</strong><br>
                                         @if($lesson->operation1 == 1)
                                         PF in LHS
                                         @elseif($lesson->operation1 == 2)
@@ -946,7 +961,7 @@
                                     <!-- // Rank -->
                                     @if(!empty($lesson->rank))
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="fas fa-hourglass-half"></i> Rank:</strong><br>
+                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Rank:</strong><br>
                                         @if($lesson->rank == 1)
                                         Captain
                                         @elseif($lesson->rank == 2)
@@ -964,7 +979,7 @@
 
                                     @if($customTime)
                                     <div class="col-md-6 mt-2">
-                                        <strong><i class="fas fa-clock"></i> Custom Time:</strong><br>
+                                        <strong><i class="text-primary fas fa-clock"></i> Custom Time:</strong><br>
                                         <span>Name: {{ $customTime->name }}</span><br>
                                         <span>Allotted: {{ $customTime->given_hours }}</span><br>
                                         <span>Credited: {{ $lesson->custom_hours_credited ?? '00:00' }}</span>
@@ -976,7 +991,7 @@
                                     <div class="col-md-12 mt-3">
                                         <div class="card shadow-sm border-0">
                                             <div class="card-header bg-primary text-white py-0">
-                                                <i class="bi bi-journal-text me-2"></i> Lesson Summary
+                                                <i class="text-primary bi bi-journal-text me-2"></i> Lesson Summary
                                             </div>
                                             <div class="card-body">
                                                 @if(!empty($lesson->lesson_summary))
@@ -996,7 +1011,7 @@
                                     <div class="col-md-12 mt-3">
                                         <div class="card shadow-sm border-0">
                                             <div class="card-header bg-primary text-white py-0">
-                                                <i class="bi bi-journal-text me-2"></i> Instructor Comment
+                                                <i class="text-primary bi bi-journal-text me-2"></i> Instructor Comment
                                             </div>
                                             <div class="card-body">
                                                 @if(!empty($lesson->instructor_comment ))
@@ -1018,7 +1033,7 @@
                             @if($quizLessons->count())
                                 <div class="mt-4">
                                     <h4 class="mb-3 text-success">
-                                        <i class="bi bi-patch-question-fill me-2"></i>
+                                        <i class="text-primary bi bi-patch-question-fill me-2"></i>
                                         Lessons with Quiz
                                     </h4>
                                     
@@ -1026,7 +1041,7 @@
                                     <div class="row mb-3 p-3 border rounded bg-light">
 
                                         <div class="col-md-12">
-                                            <strong><i class="fas fa-book"></i> Lesson Name:</strong>
+                                            <strong><i class="text-primary fas fa-book"></i> Lesson Name:</strong>
                                             <span class="text-primary">
                                                 {{ $lesson->lesson->lesson_title ?? 'Untitled Lesson' }}
                                             </span>
@@ -1052,12 +1067,12 @@
                                                         <div class="card-body border rounded mt-3 mb-3">
 
                                                             <!-- <div class="card-header bg-success text-white mt-3 py-1">
-                                                                <i class="bi bi-patch-question-fill me-2"></i> {{ $quiz->title ?? 'Quiz' }}
+                                                                <i class="text-primary bi bi-patch-question-fill me-2"></i> {{ $quiz->title ?? 'Quiz' }}
                                                             </div> -->
 
                                                            <div class="card-header bg-custom-blue text-white mt-3 py-1 d-flex align-items-center"> 
                                                                 <div> 
-                                                                    <i class="bi bi-patch-question-fill me-2"></i> {{ $quiz->title ?? 'Quiz' }} 
+                                                                    <i class="text-primary bi bi-patch-question-fill me-2"></i> {{ $quiz->title ?? 'Quiz' }} 
                                                                 </div> 
                                                                 @if(auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1 || $trainingEvent->student->id !== auth()->user()->id)
                                                                     <div class="ms-auto">
@@ -1080,22 +1095,22 @@
                                                                     <!-- <strong>{{ $quiz->title ?? 'Quiz' }}</strong> -->
 
                                                                     <div class="col-md-2 mt-3">
-                                                                        <strong><i class="fas fa-chalkboard-teacher"></i> Course:</strong>
+                                                                        <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Course:</strong>
                                                                         {{ $quiz->course->course_name ?? 'N/A' }}
                                                                     </div>
 
                                                                     <div class="col-md-2 mt-3">
-                                                                        <strong><i class="fas fa-book"></i> Duration:</strong>
+                                                                        <strong><i class="text-primary fas fa-book"></i> Duration:</strong>
                                                                         <span>{{ $quiz->duration ?? 'N/A' }}</span>
                                                                     </div>
 
                                                                     <div class="col-md-2 mt-3">
-                                                                        <strong><i class="fas fa-chalkboard-teacher"></i> Passing Score:</strong>
+                                                                        <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Passing Score:</strong>
                                                                         {{ $quiz->passing_score ?? 'N/A' }}
                                                                     </div>
 
                                                                     <div class="col-md-2 mt-2">
-                                                                        <strong><i class="fas fa-clock"></i> Time Taken:</strong>
+                                                                        <strong><i class="text-primary fas fa-clock"></i> Time Taken:</strong>
                                                                         <span>
                                                                             @if($attempt && $attempt->started_at && $attempt->submitted_at)
                                                                                 {{ \Carbon\Carbon::parse($attempt->started_at)
@@ -1108,7 +1123,7 @@
                                                                     </div>
 
                                                                     <div class="col-md-2 mt-3">
-                                                                        <strong><i class="fas fa-percentage"></i> Score:</strong>
+                                                                        <strong><i class="text-primary fas fa-percentage"></i> Score:</strong>
                                                                         <span>
                                                                             {{ ($attempt && $attempt->score !== null) ? $attempt->score . ' %' : 'N/A' }}
                                                                         </span>
@@ -1152,7 +1167,7 @@
                             @endif
 
                             @if($deferredLessons->isNotEmpty())
-                                <strong><i class="fas fa-exclamation-circle"></i> Deferred Lessons:</strong>
+                                <strong><i class="text-primary fas fa-exclamation-circle"></i> Deferred Lessons:</strong>
                                 @foreach($deferredLessons as $def)
 
                                     @php
@@ -1172,7 +1187,7 @@
                                     @endphp
                                     <div class="row mb-3 p-3 border rounded bg-light shadow-sm">
                                         <div class="col-md-6 mb-2">
-                                            <strong><i class="fas fa-book"></i> Lesson Name:</strong>
+                                            <strong><i class="text-primary fas fa-book"></i> Lesson Name:</strong>
                                             <span class="text-primary">{{ $def->lesson_title ?? 'Untitled' }}</span>
                                         </div>
 
@@ -1185,57 +1200,57 @@
                                         @endif
 
                                         <div class="col-md-2 mt-2">
-                                            <strong><i class="fas fa-chalkboard-teacher"></i> Instructor:</strong>
+                                            <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
                                             {{ optional($def->instructor)->fname }} {{ optional($def->instructor)->lname }}
                                         </div>
 
                                         <div class="col-md-2 mt-2">
-                                            <strong><i class="bi bi-card-text"></i> License:</strong>
+                                            <strong><i class="text-primary bi bi-card-text"></i> License:</strong>
                                             {{ $instructor_lic_no }}
                                         </div>
 
                                         <div class="col-md-2 mt-2">
-                                            <strong><i class="fas fa-toolbox"></i> Resource:</strong><br>
+                                            <strong><i class="text-primary fas fa-toolbox"></i> Resource:</strong><br>
                                             {{ $def->resource->name ?? 'N/A' }}
                                         </div>
 
                                         <div class="col-md-2 mt-2">
-                                            <strong><i class="fas fa-calendar-day"></i> Date:</strong><br>
+                                            <strong><i class="text-primary fas fa-calendar-day"></i> Date:</strong><br>
                                             {{ date('d-m-Y', strtotime($def->lesson_date)) }}
                                         </div>
 
                                         <div class="col-md-2 mt-2">
-                                            <strong><i class="fas fa-clock"></i> Start:</strong><br>
+                                            <strong><i class="text-primary fas fa-clock"></i> Start:</strong><br>
                                             {{ date('h:i A', strtotime($def->start_time)) }}
                                         </div>
 
                                         <div class="col-md-2 mt-2">
-                                            <strong><i class="fas fa-clock"></i> End:</strong><br>
+                                            <strong><i class="text-primary fas fa-clock"></i> End:</strong><br>
                                             {{ date('h:i A', strtotime($def->end_time)) }}
                                         </div>
 
                                         <div class="col-md-2 mt-2">
-                                            <strong><i class="fas fa-plane-departure"></i> Departure:</strong><br>
+                                            <strong><i class="text-primary fas fa-plane-departure"></i> Departure:</strong><br>
                                             {{ strtoupper($def->departure_airfield) ?? 'N/A' }}
                                         </div>
 
                                         <div class="col-md-2 mt-2">
-                                            <strong><i class="fas fa-plane-arrival"></i> Destination:</strong><br>
+                                            <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
                                             {{ strtoupper($def->destination_airfield) ?? 'N/A' }}
                                         </div>
                                         <div class="col-md-2 mt-2">
-                                            <strong><i class="fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
+                                            <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
 
                                             {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
 
                                         </div>
                                         <div class="col-md-2 mt-2">
-                                            <strong><i class="fas fa-hourglass-half"></i> Credited Hours:</strong><br>
+                                            <strong><i class="text-primary fas fa-hourglass-half"></i> Credited Hours:</strong><br>
                                             {{ $def->defLesson->hours_credited ?? '00:00' }}
                                         </div>
                                         @if($def->operation != 0)
                                         <div class="col-md-2 mt-2">
-                                            <strong><i class="fas fa-hourglass-half"></i> Operation:</strong><br>
+                                            <strong><i class="text-primary fas fa-hourglass-half"></i> Operation:</strong><br>
                                             @if($def->operation == 1)
                                             PF in LHS
                                             @elseif($def->operation == 2)
@@ -1255,7 +1270,7 @@
                                         <div class="col-md-12 mt-3">
                                             <div class="card shadow-sm border-0">
                                                 <div class="card-header bg-primary text-white py-0">
-                                                    <i class="bi bi-journal-text me-2"></i> Lesson Summary
+                                                    <i class="text-primary bi bi-journal-text me-2"></i> Lesson Summary
                                                 </div>
                                                 <div class="card-body">
                                                     @if(!empty($def->lesson_summary))
@@ -1275,7 +1290,7 @@
                                         <div class="col-md-12 mt-3">
                                             <div class="card shadow-sm border-0">
                                                 <div class="card-header bg-primary text-white py-0">
-                                                    <i class="bi bi-journal-text me-2"></i> Instructor Comment
+                                                    <i class="text-primary bi bi-journal-text me-2"></i> Instructor Comment
                                                 </div>
                                                 <div class="card-body">
                                                     @if(!empty($def->instructor_comment ))
@@ -1296,7 +1311,7 @@
                         <!--  -- Custom Lesson   -->
 
                         @if($customLessons->isNotEmpty())
-                        <strong class="mt-3"><i class="fas fa-exclamation-circle"></i> Custom Lessons:</strong>
+                        <strong class="mt-3"><i class="text-primary fas fa-exclamation-circle"></i> Custom Lessons:</strong>
                         @foreach($customLessons as $def)
                         @php
                         $start = strtotime($def->start_time);
@@ -1315,7 +1330,7 @@
 
                         <div class="row mb-3 p-3 border rounded bg-light shadow-sm">
                             <div class="col-md-6 mb-2 ">
-                                <strong><i class="fas fa-book"></i> Lesson Name:</strong>
+                                <strong><i class="text-primary fas fa-book"></i> Lesson Name:</strong>
                                 <span class="text-primary">{{ $def->lesson_title ?? 'Untitled' }}</span>
                             </div>
                             <div class="col-md-6 mb-2" style="text-align:end">
@@ -1325,56 +1340,56 @@
                             </div>
 
                             <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-chalkboard-teacher"></i> Instructor:</strong>
+                                <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
                                 {{ optional($def->instructor)->fname }} {{ optional($def->instructor)->lname }}
                             </div>
 
                             <div class="col-md-2 mt-2">
-                                <strong><i class="bi bi-card-text"></i> License:</strong>
+                                <strong><i class="text-primary bi bi-card-text"></i> License:</strong>
                                 {{ $instructor_lic_no }}
                             </div>
 
                             <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-toolbox"></i> Resource:</strong><br>
+                                <strong><i class="text-primary fas fa-toolbox"></i> Resource:</strong><br>
                                 {{ $def->resource->name ?? 'N/A' }}
                             </div>
 
                             <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-calendar-day"></i> Date:</strong><br>
+                                <strong><i class="text-primary fas fa-calendar-day"></i> Date:</strong><br>
                                 {{ date('d-m-Y', strtotime($def->lesson_date)) }}
                             </div>
 
                             <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-clock"></i> Start:</strong><br>
+                                <strong><i class="text-primary fas fa-clock"></i> Start:</strong><br>
                                 {{ date('h:i A', strtotime($def->start_time)) }}
                             </div>
 
                             <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-clock"></i> End:</strong><br>
+                                <strong><i class="text-primary fas fa-clock"></i> End:</strong><br>
                                 {{ date('h:i A', strtotime($def->end_time)) }}
                             </div>
 
                             <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-plane-departure"></i> Departure:</strong><br>
+                                <strong><i class="text-primary fas fa-plane-departure"></i> Departure:</strong><br>
                                 {{ strtoupper($def->departure_airfield) ?? 'N/A' }}
                             </div>
 
                             <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-plane-arrival"></i> Destination:</strong><br>
+                                <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
                                 {{ strtoupper($def->destination_airfield) ?? 'N/A' }}
                             </div>
                             <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
+                                <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
                                 {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
 
                             </div>
                             <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-hourglass-half"></i> Credited Hours:</strong><br>
+                                <strong><i class="text-primary fas fa-hourglass-half"></i> Credited Hours:</strong><br>
                                 {{ $def->defLesson->hours_credited ?? '00:00' }}
                             </div>
                             @if($def->operation != 0)
                             <div class="col-md-2 mt-2">
-                                <strong><i class="fas fa-hourglass-half"></i> Operation:</strong><br>
+                                <strong><i class="text-primary fas fa-hourglass-half"></i> Operation:</strong><br>
                                 @if($def->operation == 1)
                                 PF in LHS
                                 @elseif($def->operation == 2)
@@ -1394,7 +1409,7 @@
                             <div class="col-md-12 mt-3">
                                 <div class="card shadow-sm border-0">
                                     <div class="card-header bg-primary text-white py-0">
-                                        <i class="bi bi-journal-text me-2"></i> Lesson Summary
+                                        <i class="text-primary bi bi-journal-text me-2"></i> Lesson Summary
                                     </div>
                                     <div class="card-body">
                                         @if(!empty($def->lesson_summary))
@@ -1415,7 +1430,7 @@
                             <div class="col-md-12 mt-3">
                                 <div class="card shadow-sm border-0">
                                     <div class="card-header bg-primary text-white py-0">
-                                        <i class="bi bi-journal-text me-2"></i> Instructor Comment
+                                        <i class="text-primary bi bi-journal-text me-2"></i> Instructor Comment
                                     </div>
                                     <div class="card-body">
                                         @if(!empty($def->instructor_comment ))
@@ -1440,7 +1455,7 @@
                         <div class="card shadow-sm mt-4 border-primary">
                             <div class="card-header bg-primary text-white">
                                 <strong>
-                                    <!-- <i class="fas fa-clock"></i>  -->
+                                    <!-- <i class="text-primary fas fa-clock"></i>  -->
                                     Event Summary
                                 </strong>
                             </div>
@@ -1459,7 +1474,7 @@
                                 };
                                 @endphp
                                 <p>
-                                    <strong><i class="fas fa-hourglass-half"></i> Total Course Duration:</strong>
+                                    <strong><i class="text-primary fas fa-hourglass-half"></i> Total Course Duration:</strong>
                                     <span class="badge bg-success text-white">{{ $value }} {{ $label }}</span>
                                 </p>
                                 @endif
@@ -1715,7 +1730,7 @@
                         @if(isset($defTasks) && $defTasks->isNotEmpty())
                         <div class="card shadow-sm mb-4 border-danger">
                             <div class="card-header bg-danger text-white">
-                                <strong><i class="fas fa-exclamation-triangle"></i> Deferred Items (Auto-Generated)</strong>
+                                <strong><i class="text-primary fas fa-exclamation-triangle"></i> Deferred Items (Auto-Generated)</strong>
                             </div>
                             <div class="card-body">
                                 <ul class="mb-3 mt-3 ps-4">
@@ -2139,7 +2154,7 @@
                         @if($trainingFeedbacks && $trainingFeedbacks->isNotEmpty())
                         <div class="card shadow-sm mb-4 border-primary">
                             <div class="card-header bg-primary text-white">
-                                <strong><i class="fas fa-comments"></i> Student Feedback</strong>
+                                <strong><i class="text-primary fas fa-comments"></i> Student Feedback</strong>
                             </div>
                             <div class="card-body">
                                 @foreach($trainingFeedbacks as $index => $feedback)
@@ -2181,7 +2196,7 @@
                             <div class="mt-4">
                                 <div id="doc-alert" class="alert d-none"></div>
 
-                                <h5><i class="fas fa-file-upload p-2"></i>Instructor Document Uploads</h5>
+                                <h5><i class="text-primary fas fa-file-upload p-2"></i>Instructor Document Uploads</h5>
 
                                 <form action="{{ route('training.upload-documents', $trainingEvent->id) }}"
                                     method="POST"
@@ -2202,29 +2217,40 @@
                                                                 <a href="{{ asset('storage/'.$uploaded->file_path) }}"
                                                                 target="_blank"
                                                                 class="btn btn-sm btn-outline-success">
-                                                                    <i class="fas fa-eye"></i> View
+                                                                    <i class="text-primary fas fa-eye"></i> View
                                                                 </a>
 
                                                                 <button type="button"
                                                                         class="btn btn-sm btn-outline-danger"
                                                                         onclick="deleteDocument({{ $uploaded->id }})">
-                                                                    <i class="fas fa-trash"></i>
+                                                                    <i class="text-primary fas fa-trash"></i>
                                                                 </button>
                                                             </div> -->
-                                                            <div class="col-md-6">
-                                                                <div class="d-flex justify-content-between align-items-center p-2 rounded bg-light border shadow-sm mb-1">
-                                                                    
-                                                                    <a href="{{ asset('storage/'.$uploaded->file_path) }}"
-                                                                    target="_blank"
-                                                                    class="btn btn-sm btn-outline-success">
-                                                                        <i class="fas fa-eye"></i> View
-                                                                    </a>
+                                                            <div class="col-12 mb-2">
+                                                                <div class="d-flex justify-content-between align-items-center p-2 rounded bg-light border shadow-sm">
 
-                                                                    <button type="button"
-                                                                            class="btn btn-sm btn-outline-danger"
-                                                                            onclick="deleteDocument({{ $uploaded->id }})">
-                                                                        <i class="fas fa-trash"></i>
-                                                                    </button>
+                                                                    <div>
+                                                                        <strong>
+                                                                            {{ explode('_', basename($uploaded->file_path), 2)[1] ?? basename($uploaded->file_path) }}
+                                                                            <span class="text-muted">
+                                                                                ({{ \Carbon\Carbon::parse($uploaded->created_at)->format('d M Y H:i') }})
+                                                                            </span>
+                                                                        </strong>
+                                                                    </div>
+
+                                                                    <div class="d-flex gap-2">
+                                                                        <a href="{{ asset('storage/'.$uploaded->file_path) }}"
+                                                                        target="_blank"
+                                                                        class="btn btn-sm btn-outline-success">
+                                                                            <i class="text-primary fas fa-eye"></i> View
+                                                                        </a>
+
+                                                                        <button type="button"
+                                                                                class="btn btn-sm btn-outline-danger delete-btn"
+                                                                                onclick="deleteDocument({{ $uploaded->id }})">
+                                                                            <i class="fas fa-trash"></i>
+                                                                        </button>
+                                                                    </div>
 
                                                                 </div>
                                                             </div>
@@ -2242,7 +2268,7 @@
                                     </div>
 
                                     <button class="btn btn-primary mt-3">
-                                        <i class="fas fa-upload"></i> Upload Documents
+                                        <i class="text-primary fas fa-upload"></i> Upload Documents
                                     </button>
                                 </form>
                             </div>
@@ -2313,11 +2339,11 @@
                                                         data-lesson-id="{{ $eventLesson->lesson_id }}"
                                                         data-bs-toggle="tooltip"
                                                         title="Unlock this event to enable grading edits.">
-                                                        <i class="bi bi-lock-fill"></i>
+                                                        <i class="text-primary bi bi-lock-fill"></i>
                                                     </button>
                                                     @else
                                                     <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
-                                                        <i class="bi bi-lock-fill" data-training-event-leeson="{{ $eventLesson->id }}"></i>
+                                                        <i class="text-primary bi bi-lock-fill" data-training-event-leeson="{{ $eventLesson->id }}"></i>
                                                     </span>
                                                     @endif
                                                     @endif
@@ -2342,7 +2368,7 @@
                         <!-- Deferred Lessons section remains unchanged, assuming no redirect needed there -->
                         
                         @if($defLessonTasks->isNotEmpty())
-                            <h4 class="mb-3 text-primary"><i class="bi bi-exclamation-triangle-fill me-2"></i>Deferred Lessons</h4>
+                            <h4 class="mb-3 text-primary"><i class="text-primary bi bi-exclamation-triangle-fill me-2"></i>Deferred Lessons</h4>
                             @foreach($defLessonTasks->groupBy('def_lesson_id') as $defLessonId => $tasks)
                                 @php $defLesson = $tasks->first()->defLesson;
                                     $documents = $defLesson?->instructor?->documents; // Only one row expected
@@ -2365,7 +2391,7 @@
                                                         {{-- Show lock inside link, after text, only for instructors --}}
                                                         @if($is_locked == 1 && auth()->user()?->is_admin != 1) 
                                                             <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked"> 
-                                                                <i class="bi bi-lock-fill"></i> 
+                                                                <i class="text-primary bi bi-lock-fill"></i> 
                                                             </span>
                                                         @endif
                                                         @php
@@ -2389,7 +2415,7 @@
                                                         data-lesson-type="deferred"
                                                         data-bs-toggle="tooltip"
                                                         title="Unlock this event to enable grading edits.">
-                                                        <i class="bi bi-lock-fill"></i>
+                                                        <i class="text-primary bi bi-lock-fill"></i>
                                                     </button>
                                                     @endif
                                                 </h5>
@@ -2411,7 +2437,7 @@
                         
                         <!-- Custom Lessons section remains unchanged, assuming no redirect needed there -->
                         @if($customLessonTasks->isNotEmpty())
-                            <h4 class="mb-3 text-primary"><i class="bi bi-exclamation-triangle-fill me-2"></i>Custom Lessons</h4>
+                            <h4 class="mb-3 text-primary"><i class="text-primary bi bi-exclamation-triangle-fill me-2"></i>Custom Lessons</h4>
                             @foreach($customLessonTasks->groupBy('def_lesson_id') as $defLessonId => $tasks)
                                 @php $defLesson = $tasks->first()->defLesson;
                                     $documents = $defLesson?->instructor?->documents; // Only one row expected
@@ -2434,7 +2460,7 @@
                                                         {{-- Show lock inside link, after text, only for instructors --}}
                                                         @if($is_locked == 1 && auth()->user()?->is_admin != 1)
                                                         <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
-                                                            <i class="bi bi-lock-fill"></i>
+                                                            <i class="text-primary bi bi-lock-fill"></i>
                                                         </span>
                                                         @endif
                                                         <?php
@@ -2460,7 +2486,7 @@
                                                         data-lesson-type="custom"
                                                         data-bs-toggle="tooltip"
                                                         title="Unlock this event to enable grading edits.">
-                                                        <i class="bi bi-lock-fill"></i>
+                                                        <i class="text-primary bi bi-lock-fill"></i>
                                                     </button>
                                                     @endif
                                                 </h5>
@@ -2691,7 +2717,7 @@
 
                 container.innerHTML = `
                     <div id="errorMessage" class="alert alert-danger fade show" role="alert">
-                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        <i class="text-primary bi bi-exclamation-triangle me-1"></i>
                         ${message}
                     </div>
                 `;

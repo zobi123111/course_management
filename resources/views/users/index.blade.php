@@ -351,6 +351,15 @@
                                         <input type="date" class="form-control" name="issue_date[]">
                                     </div>
 
+                                    <div class="col-md-12 mb-3">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div class="form-check d-flex align-items-center">
+                                                <input class="form-check-input me-2" type="checkbox" name="licence_validation_non_expiring[]" value="1">
+                                                <label class="form-check-label"> Non-Expiring Licence Validation </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Expiry Date <span class="text-danger"></span></label>
                                         <input type="date" class="form-control" name="expiry_date[]">
@@ -993,6 +1002,15 @@
                                     <input type="date" class="form-control" name="edit_issue_date[]">
                                 </div>
 
+                                <div class="col-md-12 mb-3">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="form-check d-flex align-items-center">
+                                            <input class="form-check-input me-2" type="checkbox" name="edit_licence_validation_non_expiring[]" value="1">
+                                            <label class="form-check-label"> Non-Expiring Licence Validation </label>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Expiry Date <span class="text-danger"></span></label>
                                     <input type="date" class="form-control" name="edit_expiry_date[]">
@@ -1535,10 +1553,17 @@
 
         function addLicenseValidationRow() {
             let template = $('#create_rhs_select_row_template').clone();
+            let rowIndex = $('#create_rhs_rows_container .create_rhs_row').length;
 
             template
                 .removeClass('d-none')
                 .removeAttr('id');
+
+            // Update checkbox names with index
+            template.find('input[name="licence_validation_verification_required[]"]')
+                .attr('name', 'licence_validation_verification_required[' + rowIndex + ']');
+            template.find('input[name="licence_validation_non_expiring[]"]')
+                .attr('name', 'licence_validation_non_expiring[' + rowIndex + ']');
 
             $('#create_rhs_rows_container').append(template);
         }
@@ -1561,6 +1586,14 @@
 
         $(document).on('click', '.create_remove_rhs_row', function() {
             $(this).closest('.create_rhs_row').remove();
+            
+            // Re-index remaining checkbox names
+            $('#create_rhs_rows_container .create_rhs_row').each(function(index) {
+                $(this).find('input[type="checkbox"][name^="licence_validation_verification_required"]')
+                    .attr('name', 'licence_validation_verification_required[' + index + ']');
+                $(this).find('input[type="checkbox"][name^="licence_validation_non_expiring"]')
+                    .attr('name', 'licence_validation_non_expiring[' + index + ']');
+            });
             
             // Check if there are any rows left
             let remainingRows = $('#create_rhs_rows_container .create_rhs_row').length;
@@ -2640,14 +2673,32 @@
                                         // Then set values on the newly appended row using the same reference
                                         let $newRow = $('#edit_rhs_rows_container').find('.edit_rhs_row:last');
 
+                                        // Update checkbox names with index
+                                        let $verificationCheckbox = $newRow.find('input[name="edit_licence_validation_verification_required[]"]');
+                                        let $nonExpiringCheckbox = $newRow.find('input[name="edit_licence_validation_non_expiring[]"]');
+                                        
+                                        // Debug: log the validation object to see all available fields
+                                        console.log('Full validation object:', validation);
+                                        console.log('Verification checkbox element:', $verificationCheckbox);
+                                        console.log('Non-expiring checkbox element:', $nonExpiringCheckbox);
+                                        
+                                        // Set checked state BEFORE changing the name attribute
+                                        console.log('Setting admin_verification_required to:', validation.admin_verification_required);
+                                        $verificationCheckbox.prop('checked', validation.admin_verification_required == 1);
+                                        
+                                        let isNonExpiring = validation.validation_non_expiring;
+                                        $nonExpiringCheckbox.prop('checked', isNonExpiring == 1);
+                                        console.log('Non-expiring checkbox checked:', $nonExpiringCheckbox.prop('checked'));
+                                        
+                                        // Now update checkbox names with index
+                                        $verificationCheckbox.attr('name', 'edit_licence_validation_verification_required[' + index + ']');
+                                        $nonExpiringCheckbox.attr('name', 'edit_licence_validation_non_expiring[' + index + ']');
+
                                         // remember its primary key so the controller can remove deleted rows
                                         $newRow.find('input[name="edit_validation_id[]"]').val(validation.id);
                                         
                                         // Populate dropdowns on the appended element
                                         populateValidationTypesForRow($newRow, cachedValidationTypes);
-                                        
-                                        console.log('Setting admin_verification_required to:', validation.admin_verification_required);
-                                        $newRow.find('input[name="edit_licence_validation_verification_required[]"]').first().prop('checked', validation.admin_verification_required == 1);
                                         
                                         // Find validation type by country_name match
                                         let matchingType = cachedValidationTypes.find(type => type.country_name === validation.country_name);
@@ -2735,7 +2786,16 @@
 
         function addEditLicenseValidationRow() {
             let template = $('#edit_rhs_select_row_template').clone();
+            let rowIndex = $('#edit_rhs_rows_container .edit_rhs_row').length;
+            
             template.removeClass('d-none').removeAttr('id');
+
+            // Update checkbox names with index
+            template.find('input[name="edit_licence_validation_verification_required[]"]')
+                .attr('name', 'edit_licence_validation_verification_required[' + rowIndex + ']');
+            template.find('input[name="edit_licence_validation_non_expiring[]"]')
+                .attr('name', 'edit_licence_validation_non_expiring[' + rowIndex + ']');
+
             $('#edit_rhs_rows_container').append(template);
             
             // Populate the dropdowns for the newly added row
@@ -2762,6 +2822,14 @@
 
         $(document).on('click', '.edit_remove_rhs_row', function() {
             $(this).closest('.edit_rhs_row').remove();
+            
+            // Re-index remaining checkbox names
+            $('#edit_rhs_rows_container .edit_rhs_row').each(function(index) {
+                $(this).find('input[type="checkbox"][name^="edit_licence_validation_verification_required"]')
+                    .attr('name', 'edit_licence_validation_verification_required[' + index + ']');
+                $(this).find('input[type="checkbox"][name^="edit_licence_validation_non_expiring"]')
+                    .attr('name', 'edit_licence_validation_non_expiring[' + index + ']');
+            });
             
             // Check if there are any rows left
             let remainingRows = $('#edit_rhs_rows_container .edit_rhs_row').length;

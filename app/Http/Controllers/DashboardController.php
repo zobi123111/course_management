@@ -91,8 +91,6 @@ class DashboardController extends Controller
                     'overallAssessments',
                 ];
 
-
-
             $trainingEventsQuery = TrainingEvents::where('ou_id', $currentUser->ou_id)
                             ->with($trainingEventsRelations)
                             ->withCount(['taskGradings', 'competencyGradings']);
@@ -133,7 +131,6 @@ class DashboardController extends Controller
                 ]);
             }              
         }
-
 
         $groups = Group::where('status', 1)->whereJsonContains('user_ids', (string)$user->id)->pluck('id');
         $courseIds = CourseGroup::whereIn('group_id', $groups)->pluck('courses_id');
@@ -190,6 +187,7 @@ class DashboardController extends Controller
                     ->with([
                         'documents',
                         'opcRatings', 
+                        'licenseValidations.validation',
                         'training_tags.rhsTag',
                         'usrRatings' => function ($query) {
                             $query->whereIn('linked_to', ['licence_1', 'licence_2'])
