@@ -37,6 +37,11 @@
                             data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-Approved"
                             aria-selected="false">Examiner</a> 
                     </li>
+                    <li class="nav-item flex-sm-fill">
+                      <a class="nav-link font-weight-bold" id="nav-pilot-tab" data-bs-toggle="tab"
+                            data-bs-target="#nav-pilot" type="button" role="tab"
+                            aria-controls="nav-pilot" aria-selected="false">Pilot</a>
+                    </li>
 
                 </ul>
             </nav>
@@ -105,6 +110,36 @@
                     </table>
                 </div>
 
+                <!-- // Pilot Tab -->
+                <div class="tab-pane fade" id="nav-pilot" role="tabpanel" aria-labelledby="nav-pilot-tab">
+                    <table class="table table-hover" id="pilotTable">
+                        <thead>
+                            <tr>
+                                <th scope="col">Competency</th>
+                                <th scope="col">Short Name</th>
+                                <th scope="col">Organization Unit</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        @foreach ($pilot as $val)
+                        <tr>
+                            <td> {{ $val->competency }}</td>
+                            <td> {{ $val->short_name }}</td>
+                            <td>
+                                {{ optional($val->organization_unit)->org_unit_name ?? 'N/A' }}
+                            </td>
+                             <td>
+                                <i class="fa fa-edit edit-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>
+                                <i class="fa-solid fa-trash delete-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>
+                            </td>
+                        </tr>
+                        @endforeach
+
+                        </tbody>
+
+                    </table>
+                </div>
+
             </div>
         </div>
     </div>
@@ -151,6 +186,7 @@
                         <select class="form-select" name="competency_type">
                             <option value="instructor">Instructor</option>
                             <option value="examiner">Examiner</option>
+                            <option value="pilot">Pilot</option>
                         </select>
                         <div id="course_type_error" class="text-danger error_e"></div>
                     </div>
@@ -172,7 +208,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editcbtaModal">Create Organizational Unit</h5>
+                <h5 class="modal-title" id="editcbtaModal">Update Organizational Unit</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -208,6 +244,7 @@
                         <select class="form-select" name="edit_competency_type" id="edit_competency_type">
                             <option value="instructor">Instructor</option>
                             <option value="examiner">Examiner</option>
+                            <option value="pilot">Pilot</option>
                         </select>
                        
                     </div>
@@ -241,7 +278,16 @@
     });
 
     // Examiner table
-    var examinerTable = $('#examinerTable').DataTable({
+    var examinerTable = $('#examinerTable').DataTable({ 
+        pageLength: 10,
+        lengthMenu: [10, 20, 50, 100],
+        ordering: true,
+        searching: true,
+        responsive: true
+    });
+
+    // Pilot table
+    var examinerTable = $('#pilotTable').DataTable({ 
         pageLength: 10,
         lengthMenu: [10, 20, 50, 100],
         ordering: true,
