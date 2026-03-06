@@ -4,11 +4,11 @@
     @section('content')
 
     @php
-        $requestedLessonId = request()->get('lesson_id')
-            ? decode_id(request()->get('lesson_id'))
-            : null;
+    $requestedLessonId = request()->get('lesson_id')
+    ? decode_id(request()->get('lesson_id'))
+    : null;
 
-        $lessonType = request()->get('lesson_type'); 
+    $lessonType = request()->get('lesson_type');
     @endphp
 
 
@@ -17,12 +17,11 @@
     </div>
 
     <style>
-
         .lesson-item .card-body {
             padding: 0 20px 0px 20px;
         }
 
-        .lesson-item{
+        .lesson-item {
             margin-bottom: 15px !important;
         }
 
@@ -148,14 +147,14 @@
             /* flex-wrap: wrap; */
         }
 
-.unlock_btn_cont {
-    width: auto !important;
-    
-}
+        .unlock_btn_cont {
+            width: auto !important;
 
-.unlock_btn_outer i.bi.bi-lock-fill {
-    font-size: 16px;
-}
+        }
+
+        .unlock_btn_outer i.bi.bi-lock-fill {
+            font-size: 16px;
+        }
 
         .custom-box .question-mark {
             color: #4959dc;
@@ -248,7 +247,7 @@
                 padding: 5px;
                 overflow: hidden;
                 white-space: nowrap;
-               
+
             }
         }
 
@@ -324,7 +323,7 @@
             color: black;
             font-weight: 600;
             width: 100%;
-            
+
         }
 
         .radio-label input:checked+.custom-radio.ftr {
@@ -333,7 +332,7 @@
             color: black;
             font-weight: 600;
             width: 100%;
-            
+
         }
 
         .radio-label input:checked+.custom-radio.competent {
@@ -344,8 +343,9 @@
             width: 100%;
         }
 
-        .radio-label input:checked + .custom-radio.not_applicable {
-            background-color: #cecece; /* Red */
+        .radio-label input:checked+.custom-radio.not_applicable {
+            background-color: #cecece;
+            /* Red */
             color: #000;
             font-weight: 600;
             width: 100%;
@@ -520,6 +520,7 @@
             color: black;
             font-weight: bold;
         }
+
         td.overall_td {
             width: 33%;
         }
@@ -560,7 +561,8 @@
         .switch-button {
             position: absolute;
             cursor: pointer;
-            background-color: #dc3545; /* red for OFF */
+            background-color: #dc3545;
+            /* red for OFF */
             border-radius: 30px;
             top: 0;
             left: 0;
@@ -608,20 +610,21 @@
         }
 
         /* When checked (ON) */
-        .switch-input:checked + .switch-button {
-            background-color: #28a745; /* green for ON */
+        .switch-input:checked+.switch-button {
+            background-color: #28a745;
+            /* green for ON */
         }
 
-        .switch-input:checked + .switch-button::before {
+        .switch-input:checked+.switch-button::before {
             transform: translateX(68px);
         }
 
-        .switch-input:checked + .switch-button .switch-button-left {
+        .switch-input:checked+.switch-button .switch-button-left {
             transform: translateX(-100%);
             opacity: 0;
         }
 
-        .switch-input:checked + .switch-button .switch-button-right {
+        .switch-input:checked+.switch-button .switch-button-right {
             transform: translateX(0);
             opacity: 1;
         }
@@ -643,10 +646,10 @@
 
     <div class="card">
         @if(session()->has('message'))
-            <div id="successMessage" class="alert alert-success fade show" role="alert">
-                <i class="bi bi-check-circle me-1"></i>
-                {{ session()->get('message') }}
-            </div>
+        <div id="successMessage" class="alert alert-success fade show" role="alert">
+            <i class="bi bi-check-circle me-1"></i>
+            {{ session()->get('message') }}
+        </div>
         @endif
 
         <div class="loader" style="display: none;"></div>
@@ -664,9 +667,9 @@
             <ul class="nav nav-tabs mt-3" id="myTab" role="tablist">
 
                 @if(!in_array($lessonType, ['deferred', 'custom']))
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" style="padding: 0.5rem 4rem !important;" id="brief-tab" data-bs-toggle="tab" data-bs-target="#brief" type="button" role="tab" aria-controls="brief" aria-selected="true">Briefing</button>
-                    </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" style="padding: 0.5rem 4rem !important;" id="brief-tab" data-bs-toggle="tab" data-bs-target="#brief" type="button" role="tab" aria-controls="brief" aria-selected="true">Briefing</button>
+                </li>
                 @endif
 
                 <li class="nav-item" role="presentation">
@@ -675,8 +678,8 @@
 
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" style="padding: 0.5rem 4rem !important;" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="overview" aria-controls="overview" aria-selected="false" tabindex="-1">Grade</button>
-                </li>               
-                
+                </li>
+
                 @if($trainingEvent?->course?->course_type === 'one_event' && $student)
                 <!-- <li class="nav-item" role="presentation">
                     <button class="nav-link" id="student-tab-{{ $student->id ?? ''}}" data-bs-toggle="tab" data-bs-target="#student-{{ $student->id ?? '' }}" type="button" role="tab" aria-controls="student-{{ $student->id ?? '' }}" aria-selected="false">
@@ -688,45 +691,45 @@
             <div class="tab-content pt-2" id="myTabContent">
 
                 @if(!in_array($lessonType, ['deferred', 'custom']))
-                    <div class="tab-pane fade p-3 active show" id="brief" role="tabpanel" aria-labelledby="brief-tab">
-                        <div class="card mb-3 p-3">
-                            <div class="card-body">
-                            
-                                @php
-                                    if (!function_exists('keepBoldItalic')) {
-                                        function keepBoldItalic($html) {
-                                            return strip_tags($html, '<strong><b><i><em>');
-                                        }
-                                    }
-                                @endphp
+                <div class="tab-pane fade p-3 active show" id="brief" role="tabpanel" aria-labelledby="brief-tab">
+                    <div class="card mb-3 p-3">
+                        <div class="card-body">
 
-                                <!-- @if($lessonType == 'deferred')
+                            @php
+                            if (!function_exists('keepBoldItalic')) {
+                            function keepBoldItalic($html) {
+                            return strip_tags($html, '<strong><b><i><em>');
+                                            }
+                                            }
+                                            @endphp
+
+                                            <!-- @if($lessonType == 'deferred')
                                     <h5>{{ $deflessondetails->lesson_title ?? $deflessondetails->lesson_title }}</h5>
                                     <p>{!! keepBoldItalic($deflessondetails->student_briefing) !!}</p>
 
                                 @elseif($lessonType == 'custom')
                                     <h5>{{ $deflessondetails->lesson_title ?? $deflessondetails->lesson_title }}</h5>
                                     <p>{!! keepBoldItalic($deflessondetails->student_briefing) !!}</p> -->
-                                <!-- @else -->
-                                    @foreach($eventLessons as $eventLesson)
-                                        @if($requestedLessonId && $eventLesson->id != $requestedLessonId)
+                                            <!-- @else -->
+                                            @foreach($eventLessons as $eventLesson)
+                                            @if($requestedLessonId && $eventLesson->id != $requestedLessonId)
                                             @continue
-                                        @endif
+                                            @endif
 
-                                        <div class="lesson-item mb-4">
-                                            <h5 class="mt-3">Lesson Title: {{ $eventLesson->lesson?->lesson_title ?? $eventLesson->lesson_title }}</h5>
-                                            
-                                            <h5 class="mt-5">Lesson Description: </h5>
-                                            <p>
-                                                {!! keepBoldItalic($eventLesson->lesson?->description ?? '') !!}
-                                            </p>
+                                            <div class="lesson-item mb-4">
+                                                <h5 class="mt-3">Lesson Title: {{ $eventLesson->lesson?->lesson_title ?? $eventLesson->lesson_title }}</h5>
 
-                                            <h5 class="mt-5">Lesson Briefing:</h5>
-                                            <p>
-                                                {!! keepBoldItalic($eventLesson->lesson?->student_briefing ?? '') !!}
-                                            </p>
+                                                <h5 class="mt-5">Lesson Description: </h5>
+                                                <p>
+                                                    {!! keepBoldItalic($eventLesson->lesson?->description ?? '') !!}
+                                                </p>
 
-                                            @if($eventLesson->lesson?->briefingDocuments)
+                                                <h5 class="mt-5">Lesson Briefing:</h5>
+                                                <p>
+                                                    {!! keepBoldItalic($eventLesson->lesson?->student_briefing ?? '') !!}
+                                                </p>
+
+                                                @if($eventLesson->lesson?->briefingDocuments)
                                                 <div class="briefing-documents">
                                                     <!-- @foreach($eventLesson->lesson->briefingDocuments as $doc)
                                                         <div class="mb-2 d-flex justify-content-between align-items-center">
@@ -738,18 +741,18 @@
 
                                                     <div class="d-flex flex-row flex-wrap gap-2">
                                                         @foreach($eventLesson->lesson->briefingDocuments as $doc)
-                                                            <a class="btn btn-primary" href="{{ asset('storage/' . $doc->file_path) }}" target="_blank">
-                                                                {{ $doc->file_name }}
-                                                            </a>
+                                                        <a class="btn btn-primary" href="{{ asset('storage/' . $doc->file_path) }}" target="_blank">
+                                                            {{ $doc->file_name }}
+                                                        </a>
                                                         @endforeach
                                                     </div>
                                                 </div>
-                                            @endif
-                                        </div>
-                                    @endforeach
-                                <!-- @endif -->
+                                                @endif
+                                            </div>
+                                            @endforeach
+                                            <!-- @endif -->
 
-                                <!-- @foreach($eventLessons as $eventLesson)
+                                            <!-- @foreach($eventLessons as $eventLesson)
                                     @if($requestedLessonId && $eventLesson->id != $requestedLessonId)
                                         @continue
                                     @endif
@@ -782,9 +785,9 @@
                                         <p>{!! keepBoldItalic($custom->defLesson->student_briefing) !!}</p>
                                     @endforeach
                                 @endforeach -->
-                            </div>
                         </div>
                     </div>
+                </div>
                 @endif
 
                 <div class="tab-pane fade mt-3 @if(in_array($lessonType, ['deferred', 'custom'])) active show @endif" id="Lesson" role="tabpanel" aria-labelledby="Lesson-tab">
@@ -801,13 +804,13 @@
                             </h5>
 
                             @php
-                                $lesson = in_array($lessonType, ['custom', 'deferred'])
-                                    ? $deflessondetails
-                                    : $lessondetails;
+                            $lesson = in_array($lessonType, ['custom', 'deferred'])
+                            ? $deflessondetails
+                            : $lessondetails;
 
-                                $trainingEvent = in_array($lessonType, ['custom', 'deferred'])
-                                    ? $lesson?->event
-                                    : $lesson?->trainingEvent;
+                            $trainingEvent = in_array($lessonType, ['custom', 'deferred'])
+                            ? $lesson?->event
+                            : $lesson?->trainingEvent;
                             @endphp
 
                             <form id="lessonForm" action="{{ route('event.lesson.update') }}" method="POST">
@@ -817,19 +820,19 @@
                                 <div class="row g-3">
 
                                     @if($lessonType == 'custom')
-                                        <input type="hidden" name="lessontype" value="custom">
+                                    <input type="hidden" name="lessontype" value="custom">
                                     @elseif ($lessonType == 'deferred')
-                                        <input type="hidden" name="lessontype" value="deferred">
+                                    <input type="hidden" name="lessontype" value="deferred">
                                     @endif
 
                                     <div class="col-md-6">
                                         <label class="form-label">Instructor</label>
                                         <select class="form-select editable" name="instructor_id" disabled>
                                             @foreach($instructors as $inst)
-                                                <option value="{{ $inst->id }}"
-                                                    {{ $lesson->instructor_id == $inst->id ? 'selected' : '' }}>
-                                                    {{ $inst->fname }} {{ $inst->lname }}
-                                                </option>
+                                            <option value="{{ $inst->id }}"
+                                                {{ $lesson->instructor_id == $inst->id ? 'selected' : '' }}>
+                                                {{ $inst->fname }} {{ $inst->lname }}
+                                            </option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -846,10 +849,10 @@
                                         <label class="form-label">Resource</label>
                                         <select class="form-select editable" name="resource_id" disabled>
                                             @foreach($resources as $resource)
-                                                <option value="{{ $resource->id }}"
-                                                    {{ $lesson->resource_id == $resource->id ? 'selected' : '' }}>
-                                                    {{ $resource->code ?? $resource->name }}
-                                                </option>
+                                            <option value="{{ $resource->id }}"
+                                                {{ $lesson->resource_id == $resource->id ? 'selected' : '' }}>
+                                                {{ $resource->code ?? $resource->name }}
+                                            </option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -902,29 +905,29 @@
 
                                     @if($trainingEvent?->orgUnit?->Ousetting?->enable_tacho_fields)
 
-                                        <div class="col-md-6">
-                                            <label class="form-label">Tacho Start</label>
-                                            <input type="text"
-                                                class="form-control editable"
-                                                name="tacho_start_time"
-                                                value="{{ str_pad(number_format($lesson->tacho_start_time, 2, '.', ''), 7, '0', STR_PAD_LEFT) }}"
-                                                pattern="^\d{4}\.\d{2}$"
-                                                inputmode="decimal"
-                                                placeholder="0000.00"
-                                                disabled>
-                                        </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Tacho Start</label>
+                                        <input type="text"
+                                            class="form-control editable"
+                                            name="tacho_start_time"
+                                            value="{{ str_pad(number_format($lesson->tacho_start_time, 2, '.', ''), 7, '0', STR_PAD_LEFT) }}"
+                                            pattern="^\d{4}\.\d{2}$"
+                                            inputmode="decimal"
+                                            placeholder="0000.00"
+                                            disabled>
+                                    </div>
 
-                                        <div class="col-md-6">
-                                            <label class="form-label">Tacho Stop</label>
-                                            <input type="text"
-                                                class="form-control editable"
-                                                name="tacho_stop_time"
-                                                value="{{ str_pad(number_format($lesson->tacho_stop_time, 2, '.', ''), 7, '0', STR_PAD_LEFT) }}"
-                                                pattern="^\d{4}\.\d{2}$"
-                                                inputmode="decimal"
-                                                placeholder="0000.00"
-                                                disabled>
-                                        </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Tacho Stop</label>
+                                        <input type="text"
+                                            class="form-control editable"
+                                            name="tacho_stop_time"
+                                            value="{{ str_pad(number_format($lesson->tacho_stop_time, 2, '.', ''), 7, '0', STR_PAD_LEFT) }}"
+                                            pattern="^\d{4}\.\d{2}$"
+                                            inputmode="decimal"
+                                            placeholder="0000.00"
+                                            disabled>
+                                    </div>
 
                                     @endif
                                     <div class="col-md-6">
@@ -958,51 +961,51 @@
 
                 <div class="tab-pane fade p-3 " id="overview" role="tabpanel" aria-labelledby="overview-tab">
                     <div class="card-body">
-                        @foreach($eventLessons as $eventLesson) 
-                            
-                            @if($requestedLessonId && $eventLesson->id != $requestedLessonId)
-                                @continue
-                            @endif
+                        @foreach($eventLessons as $eventLesson)
 
-                            <?php $isDisabled = false; ?>
-                            <form action="" method="POST" id="gradingFrom">
-                                @csrf
-                                <input type="hidden" name="event_id" id="event_id" value="{{ $trainingEvent->id }}">
-                                <div class="accordion accordion-flush" id="faq-group-2">
-                                    <?php
-                                        $hours_credited = $eventLesson->hours_credited;
-                                        $hours_credited = "08:02:00"; // example
+                        @if($requestedLessonId && $eventLesson->id != $requestedLessonId)
+                        @continue
+                        @endif
 
-                                        list($hours, $minutes, $seconds) = explode(':', $eventLesson->hours_credited);
+                        <?php $isDisabled = false; ?>
+                        <form action="" method="POST" id="gradingFrom">
+                            @csrf
+                            <input type="hidden" name="event_id" id="event_id" value="{{ $trainingEvent->id }}">
+                            <div class="accordion accordion-flush" id="faq-group-2">
+                                <?php
+                                $hours_credited = $eventLesson->hours_credited;
+                                $hours_credited = "08:02:00"; // example
 
-                                        $hours = (int) $hours;
-                                        $minutes = (int) $minutes;
+                                list($hours, $minutes, $seconds) = explode(':', $eventLesson->hours_credited);
 
-                                        $hours_credited = $minutes > 0
-                                            ? "{$hours}hrs {$minutes}min"
-                                            : "{$hours}hrs";
+                                $hours = (int) $hours;
+                                $minutes = (int) $minutes;
 
-                                        $lesson = $eventLesson->lesson;
-                                        $isLocked = $eventLesson->is_locked == 1;
-                                    ?>
+                                $hours_credited = $minutes > 0
+                                    ? "{$hours}hrs {$minutes}min"
+                                    : "{$hours}hrs";
 
-                                    <?php
-                                        if ($lesson && $lesson->lesson_type == "groundschool") {
-                                            $duration = $trainingEvent->course->groundschool_hours ?? 0;
-                                        } elseif ($lesson && $lesson->lesson_type == "simulator") {
-                                            $duration = $trainingEvent->course->simulator_hours ?? 0;
-                                        } else {
-                                            $duration = 0;
-                                        }
+                                $lesson = $eventLesson->lesson;
+                                $isLocked = $eventLesson->is_locked == 1;
+                                ?>
 
-                                        $formattedDuration = number_format($duration, 2);
-                                        $hourLabel = ($formattedDuration == 1.00) ? 'hour' : 'hours';
-                                    ?>
+                                <?php
+                                if ($lesson && $lesson->lesson_type == "groundschool") {
+                                    $duration = $trainingEvent->course->groundschool_hours ?? 0;
+                                } elseif ($lesson && $lesson->lesson_type == "simulator") {
+                                    $duration = $trainingEvent->course->simulator_hours ?? 0;
+                                } else {
+                                    $duration = 0;
+                                }
 
-                                    <div class="accordion-item">
-                                        <input type="hidden" name="tg_lesson_id[]" value="{{ $eventLesson->id }}">
-                                        <h2 class="accordion-header unlock_btn_outer" style="display: flex; justify-content: flex-start;">
-                                            <!-- <button class="accordion-button {{ $isLocked ? 'collapsed' : 'collapsed' }}"
+                                $formattedDuration = number_format($duration, 2);
+                                $hourLabel = ($formattedDuration == 1.00) ? 'hour' : 'hours';
+                                ?>
+
+                                <div class="accordion-item">
+                                    <input type="hidden" name="tg_lesson_id[]" value="{{ $eventLesson->id }}">
+                                    <h2 class="accordion-header unlock_btn_outer" style="display: flex; justify-content: flex-start;">
+                                        <!-- <button class="accordion-button {{ $isLocked ? 'collapsed' : 'collapsed' }}"
                                                 type="button"
                                                 {{ $isLocked ? '' : 'data-bs-toggle=collapse' }}
                                                 {{ $isLocked ? '' : 'data-bs-target=#lesson-' . $eventLesson->id }}
@@ -1010,513 +1013,599 @@
                                                 aria-controls="lesson-{{ $eventLesson->id }}"
                                                 style="{{ $isLocked ? 'cursor: not-allowed; background-color: #f8f9fa;' : '' }}"> -->
 
-                                            <button class="accordion-button unlock_btn_cont" type="button" aria-expanded="true" style="cursor: default;">
+                                        <button class="accordion-button unlock_btn_cont" type="button" aria-expanded="true" style="cursor: default;">
 
-                                                {{ $lesson->lesson_title ?? 'Untitled Lesson' }}
-                                                (Duration: {{ $hours_credited }} / {{ number_format($duration, 2) }} hrs)
+                                            {{ $lesson->lesson_title ?? 'Untitled Lesson' }}
+                                            (Duration: {{ $hours_credited }} / {{ number_format($duration, 2) }} hrs)
 
-                                                @if($isLocked && !empty($groupedLogs[$eventLesson->lesson_id]))
-                                                @php
-                                                $lastLog = $groupedLogs[$eventLesson->lesson_id]->last();
-                                                $lockedBy = trim(($lastLog->users->fname ?? '') . ' ' . ($lastLog->users->lname ?? ''));
-                                                @endphp
-                                                <span>(Locked By - {{ $lockedBy ?? '' }}, Time - {{ ($lastLog->created_at->format('d M Y, h:i A')) ?? '' }})</span>
-                                                @endif
+                                            @if($isLocked && !empty($groupedLogs[$eventLesson->lesson_id]))
+                                            @php
+                                            $lastLog = $groupedLogs[$eventLesson->lesson_id]->last();
+                                            $lockedBy = trim(($lastLog->users->fname ?? '') . ' ' . ($lastLog->users->lname ?? ''));
+                                            @endphp
+                                            <span>(Locked By - {{ $lockedBy ?? '' }}, Time - {{ ($lastLog->created_at->format('d M Y, h:i A')) ?? '' }})</span>
+                                            @endif
 
-                                                @if($isLocked)
-                                                    @if(auth()->user()?->is_admin==1)
-                                                        <button type="button"
-                                                            class="btn btn-sm btn-outline-secondary ms-2 unlock-lesson-btn"
-                                                            data-event-id="{{ $eventLesson->training_event_id }}"
-                                                            data-lesson-id="{{ $eventLesson->lesson_id }}"
-                                                            data-bs-toggle="tooltip"
-                                                            title="Unlock this event to enable grading edits.">
-                                                            <i class="bi bi-lock-fill"></i>
-                                                        </button>
-                                                    @else
-                                                        <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
-                                                            <i class="bi bi-lock-fill" data-training-event-leeson="{{ $eventLesson->id }}"></i>
-                                                        </span>
-                                                    @endif
-                                                @endif
+                                            @if($isLocked)
+                                            @if(auth()->user()?->is_admin==1)
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-secondary ms-2 unlock-lesson-btn"
+                                                data-event-id="{{ $eventLesson->training_event_id }}"
+                                                data-lesson-id="{{ $eventLesson->lesson_id }}"
+                                                data-bs-toggle="tooltip"
+                                                title="Unlock this event to enable grading edits.">
+                                                <i class="bi bi-lock-fill"></i>
                                             </button>
+                                            @else
+                                            <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
+                                                <i class="bi bi-lock-fill" data-training-event-leeson="{{ $eventLesson->id }}"></i>
+                                            </span>
+                                            @endif
+                                            @endif
+                                        </button>
 
-                                        </h2>
-                                        <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
-                                            <div><strong>Instructor:</strong> {{ $eventLesson->instructor->fname ?? '' }} {{ $eventLesson->instructor->lname ?? '' }}</div>
-                                            <div><strong>Licence No:</strong> {{ !empty($eventLesson->instructor_license_number) ? $eventLesson->instructor_license_number : 'N/A' }}</div>
-                                            <div><strong>Resource:</strong> {{ $eventLesson->resource->name ?? 'N/A' }}</div>
-                                            <div><strong>Lesson Date:</strong> {{ ($eventLesson->lesson_date) ? date('d/m/Y', strtotime($eventLesson->lesson_date)) : 'N/A' }}</div>
-                                            <div><strong>Start Time:</strong> {{ ($eventLesson->start_time) ? date('h:i A', strtotime($eventLesson->start_time)) : 'N/A' }}</div>
-                                            <div><strong>End Time:</strong> {{ ($eventLesson->end_time) ? date('h:i A', strtotime($eventLesson->end_time)) : 'N/A' }}</div>
-                                            <div><strong>Departure Airfield:</strong> {{ !empty($eventLesson->departure_airfield) ? $eventLesson->departure_airfield : 'N/A' }}</div>
-                                            <div><strong>Destination Airfield:</strong> {{ !empty($eventLesson->destination_airfield) ? $eventLesson->destination_airfield : 'N/A' }}</div>
+                                    </h2>
+                                    <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
+                                        <div><strong>Instructor:</strong> {{ $eventLesson->instructor->fname ?? '' }} {{ $eventLesson->instructor->lname ?? '' }}</div>
+                                        <div><strong>Licence No:</strong> {{ !empty($eventLesson->instructor_license_number) ? $eventLesson->instructor_license_number : 'N/A' }}</div>
+                                        <div><strong>Resource:</strong> {{ $eventLesson->resource->name ?? 'N/A' }}</div>
+                                        <div><strong>Lesson Date:</strong> {{ ($eventLesson->lesson_date) ? date('d/m/Y', strtotime($eventLesson->lesson_date)) : 'N/A' }}</div>
+                                        <div><strong>Start Time:</strong> {{ ($eventLesson->start_time) ? date('h:i A', strtotime($eventLesson->start_time)) : 'N/A' }}</div>
+                                        <div><strong>End Time:</strong> {{ ($eventLesson->end_time) ? date('h:i A', strtotime($eventLesson->end_time)) : 'N/A' }}</div>
+                                        <div><strong>Departure Airfield:</strong> {{ !empty($eventLesson->departure_airfield) ? $eventLesson->departure_airfield : 'N/A' }}</div>
+                                        <div><strong>Destination Airfield:</strong> {{ !empty($eventLesson->destination_airfield) ? $eventLesson->destination_airfield : 'N/A' }}</div>
+                                    </div>
+
+                                    @if($isLocked)
+                                    <div class="alert alert-warning mb-3">
+                                        This lesson is currently locked. Grading edits are disabled. Unclock the lesson to enable grading edits.
+                                    </div>
+                                    @else
+                                    <div id="lesson-{{ $eventLesson->id }}" class="accordion-collapse collapse show" data-bs-parent="#faq-group-2">
+                                        <div class="accordion-body">
+                                            @if($lesson && $lesson->subLessons->isNotEmpty())
+                                            @foreach($lesson->subLessons as $sublesson)
+                                            <?php $is_my_lesson = $eventLesson->is_my_lesson; ?>
+                                            <div class="custom-box">
+                                                <input type="hidden" name="tg_subLesson_id[]" value="{{ $sublesson->id }}">
+                                                <div class="header grade_head" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $sublesson->id }}" aria-expanded="false">
+
+                                                    <div class="task-desc d-flex align-items-center">
+                                                        <div id="mandatory_div" class="me-2" style="margin-left: -15px;">
+                                                            @if($sublesson->is_mandatory == 1)
+                                                            <i class="text-danger fw-bold me-1 align-middle" title="Grading is mandatory">*</i>
+                                                            @endif
+                                                        </div>
+                                                        <div id="non_mandatory_div" class="d-flex align-items-center">
+                                                            <span class="rmk">RMK</span>
+                                                            <span class="question-mark">?</span>
+                                                            <span class="title">{{ $sublesson->title }}</span>
+                                                        </div>
+                                                    </div>
+                                                    <i class="grade-comment">click to enter comment</i>
+                                                </div>
+
+                                                <div class="table-container">
+                                                    @php
+                                                    $taskGrade = $taskGrades[$lesson->id . '_' . $sublesson->id] ?? null;
+                                                    $selectedGrade = $taskGrade->task_grade ?? null;
+
+                                                    $selectedComment = $taskGrade->task_comment ?? null;
+                                                    $isDeferred = in_array($sublesson->id, $deferredTaskIds);
+                                                    $is_my_lesson = $eventLesson->is_my_lesson;
+                                                    $isDisabled = !$is_my_lesson;
+                                                    @endphp
+
+
+                                                    <div class="main-tabledesign">
+                                                        <div class="back_deffered">
+                                                            @if($sublesson->normal_lesson == 1)
+                                                            <a class="btn btn-sm btn-danger backToDeferredLesson"
+                                                                data-event-id="{{ $sublesson->event_id }}"
+                                                                data-user-id="{{ $sublesson->user_id }}"
+                                                                data-task-id="{{ $sublesson->task_id }}"
+                                                                data-lesson-id="{{ $lesson->id  }}"
+                                                                data-sublesson-id="{{ $sublesson->id }}">
+                                                                <i class="bi bi-arrow-left-circle me-1"></i> Back To Deferred Lesson
+                                                            </a>
+                                                            @endif
+                                                        </div>
+                                                        <div class="grade_here_cont">
+                                                            <input type="hidden" name="tg_user_id" value="{{ $student->id ?? '' }}">
+                                                            <!-- <h5>{{ $student->fname ?? '' }} {{ $student->lname ?? '' }}</h5> -->
+                                                            <table>
+                                                                <tbody>
+                                                                    @if($sublesson->grade_type == 'pass_fail')
+
+                                                                    <tr>
+                                                                        <td>
+                                                                            <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
+                                                                                <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Not Applicable" {{ $selectedGrade == 'Not Applicable' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
+                                                                                <span class="custom-radio not_applicable">N/A</span>
+                                                                            </label>
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
+                                                                                <input type="radio" class="deselectable-radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
+                                                                                <span class="custom-radio incomplete">Incomplete</span>
+                                                                            </label>
+                                                                        </td>
+                                                                        <td>
+                                                                            <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
+                                                                                <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
+                                                                                <span class="custom-radio ftr">FTR</span>
+                                                                            </label>
+                                                                        </td>
+                                                                        <td>
+                                                                            <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
+                                                                                <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Competent" {{ $selectedGrade == 'Competent' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
+                                                                                <span class="custom-radio competent">Competent</span>
+                                                                            </label>
+                                                                        </td>
+
+                                                                    </tr>
+
+                                                                    @elseif($lesson->grade_type == 'percentage')
+                                                                    <tr>
+                                                                        <td colspan="5">
+                                                                            <input type="number"
+                                                                                name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]"
+                                                                                value="{{ old("task_grade.$lesson->id.$sublesson->id.$student->id", $selectedGrade) }}"
+                                                                                class="form-control"
+                                                                                placeholder="Enter percentage"
+                                                                                min="0" max="100"
+                                                                                step="0.1"
+                                                                                style="width: 250px;" {{-- Increased width --}}
+                                                                                {{ $isDeferred ? 'readonly title=Deferred: You cannot edit this grading.' : '' }}>
+                                                                        </td>
+                                                                    </tr>
+                                                                    @else
+                                                                    <tr>
+                                                                        @for ($i = 1; $i <= 5; $i++)
+                                                                            @php
+                                                                            $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
+                                                                            @endphp
+                                                                            <td>
+                                                                            <label class="radio-label">
+                                                                                <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="{{ $i }}" {{ old("task_grade.$lesson->id.$sublesson->id.$student->id", $selectedGrade) == $i ? 'checked' : '' }}>
+                                                                                <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
+                                                                            </label>
+                                                                            </td>
+                                                                            @endfor
+                                                                    </tr>
+                                                                    @endif
+                                                                </tbody>
+                                                            </table>
+                                                            <span class="custom-radio competent task_grade_{{ $lesson->id }}_{{ $sublesson->id }}_{{ $student->id ?? '' }}"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Toggleable Comment Box -->
+                                            <div class="collapse mt-2" id="comment-box-{{ $sublesson->id }}">
+                                                <textarea name="task_comments[{{ $lesson->id ?? '' }}][{{ $sublesson->id ?? '' }}]" rows="3" class="form-control" placeholder="Add your remarks or feedback here..." @if($isDeferred) readonly title="Deferred: You cannot edit this comment." @endif>{{ old("task_comments.$lesson->id.$sublesson->id.$student->id", $selectedComment) }}</textarea>
+                                            </div>
+                                            @endforeach
+                                            @else($lesson->subLessons->isEmpty())
+                                            <p class="text-muted">No Task available.</p>
+                                            @endif
                                         </div>
 
-                                        @if($isLocked)
-                                            <div class="alert alert-warning mb-3">
-                                                This lesson is currently locked. Grading edits are disabled. Unclock the lesson to enable grading edits.
+                                        <div class="accordion-item">
+                                            @if($lesson && $lesson->enable_cbta==1)
+                                            <h2 class="accordion-header">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <button type="button" class="accordion-button {{ $isLocked ? 'collapsed' : 'collapsed' }}" data-bs-toggle="collapse"
+                                                        data-bs-target="#comptency-{{ $eventLesson->id }}" aria-expanded="false">
+                                                        Overall Competency Grading
+                                                    </button>
+                                                </div>
+                                            </h2>
+                                            @endif
+                                        </div>
+                                        <div id="comptency-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                            <!-- Student name aligned to the right, above the competency grading -->
+                                            <div class="text-end pe-4 pt-2 fw-semibold">
+                                                {{ $student->fname }} {{ $student->lname }}
                                             </div>
-                                        @else
-                                            <div id="lesson-{{ $eventLesson->id }}" class="accordion-collapse collapse show" data-bs-parent="#faq-group-2">
-                                                <div class="accordion-body">
-                                                    @if($lesson && $lesson->subLessons->isNotEmpty())
-                                                    @foreach($lesson->subLessons as $sublesson) 
-                                                    <?php $is_my_lesson = $eventLesson->is_my_lesson; ?>
-                                                    <div class="custom-box">
-                                                        <input type="hidden" name="tg_subLesson_id[]" value="{{ $sublesson->id }}">
-                                                        <div class="header grade_head" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $sublesson->id }}" aria-expanded="false">
+                                            <div class="accordion-body">
+                                                @php
+                                                $competencies = [
+                                                'KNO' => 'Application of knowledge',
+                                                'PRO' => 'Application of Procedures and compliance with regulations',
+                                                'COM' => 'Communication',
+                                                'FPA' => 'Aeroplane flight path management - automation',
+                                                'FPM' => 'Aeroplane flight path management - Manual Control',
+                                                'LTW' => 'Leadership & Teamwork',
+                                                'PSD' => 'Problem-solving - decision-making',
+                                                'SAW' => 'Situation awareness and management of information',
+                                                'WLM' => 'Workload Management',
+                                                ];
+                                                $lessonCompetencies = $$eventLesson ?? collect();
 
-                                                            <div class="task-desc d-flex align-items-center">
-                                                                <div id="mandatory_div" class="me-2" style="margin-left: -15px;">
-                                                                    @if($sublesson->is_mandatory == 1)
-                                                                        <i class="text-danger fw-bold me-1 align-middle" title="Grading is mandatory">*</i>
-                                                                    @endif    
-                                                                </div>
-                                                                <div id="non_mandatory_div" class="d-flex align-items-center">
-                                                                <span class="rmk">RMK</span>
-                                                                <span class="question-mark">?</span>
-                                                                <span class="title">{{ $sublesson->title }}</span>
-                                                                </div>
-                                                            </div>
-                                                            <i class="grade-comment">click to enter comment</i> 
-                                                        </div>
+                                                @endphp
+                                                @foreach($competencies as $code => $title)
+                                                @php
 
-                                                        <div class="table-container">
-                                                            @php
-                                                            $taskGrade = $taskGrades[$lesson->id . '_' . $sublesson->id] ?? null;
-                                                            $selectedGrade = $taskGrade->task_grade ?? null;
+                                                $code = strtolower($code); // make sure it's lowercase
+                                                $grading = $lessonCompetencies->first();
 
-                                                            $selectedComment = $taskGrade->task_comment ?? null;
-                                                            $isDeferred = in_array($sublesson->id, $deferredTaskIds);
-                                                            $is_my_lesson = $eventLesson->is_my_lesson;
-                                                            $isDisabled = !$is_my_lesson;
-                                                            @endphp
-
-
-                                                            <div class="main-tabledesign">
-                                                                <div class="back_deffered">
-                                                                    @if($sublesson->normal_lesson == 1)
-                                                                    <a class="btn btn-sm btn-danger backToDeferredLesson"
-                                                                        data-event-id="{{ $sublesson->event_id }}"
-                                                                        data-user-id="{{ $sublesson->user_id }}"
-                                                                        data-task-id="{{ $sublesson->task_id }}"
-                                                                        data-lesson-id="{{ $lesson->id  }}"
-                                                                        data-sublesson-id="{{ $sublesson->id }}">
-                                                                        <i class="bi bi-arrow-left-circle me-1"></i> Back To Deferred Lesson
-                                                                    </a>
-                                                                    @endif
-                                                                </div>
-                                                                <div class="grade_here_cont">
-                                                                    <input type="hidden" name="tg_user_id" value="{{ $student->id ?? '' }}">
-                                                                    <!-- <h5>{{ $student->fname ?? '' }} {{ $student->lname ?? '' }}</h5> -->
-                                                                    <table>
-                                                                        <tbody>
-                                                                            @if($sublesson->grade_type == 'pass_fail')
-
-                                                                            <tr>
-                                                                                <td>
-                                                                                    <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
-                                                                                        <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Not Applicable" {{ $selectedGrade == 'Not Applicable' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
-                                                                                        <span class="custom-radio not_applicable">N/A</span>
-                                                                                    </label>
-                                                                                </td>
-
-                                                                                <td>
-                                                                                    <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
-                                                                                        <input type="radio" class="deselectable-radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
-                                                                                        <span class="custom-radio incomplete">Incomplete</span>
-                                                                                    </label>
-                                                                                </td>
-                                                                                <td>
-                                                                                    <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
-                                                                                        <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
-                                                                                        <span class="custom-radio ftr">FTR</span>
-                                                                                    </label>
-                                                                                </td>
-                                                                                <td>
-                                                                                    <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
-                                                                                        <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Competent" {{ $selectedGrade == 'Competent' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
-                                                                                        <span class="custom-radio competent">Competent</span>
-                                                                                    </label>
-                                                                                </td>
-                                                                            
-                                                                            </tr>
-
-                                                                            @elseif($lesson->grade_type == 'percentage')
-                                                                            <tr>
-                                                                                <td colspan="5">
-                                                                                    <input type="number"
-                                                                                        name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]"
-                                                                                        value="{{ old("task_grade.$lesson->id.$sublesson->id.$student->id", $selectedGrade) }}"
-                                                                                        class="form-control"
-                                                                                        placeholder="Enter percentage"
-                                                                                        min="0" max="100"
-                                                                                        step="0.1"
-                                                                                        style="width: 250px;" {{-- Increased width --}}
-                                                                                        {{ $isDeferred ? 'readonly title=Deferred: You cannot edit this grading.' : '' }}>
-                                                                                </td>
-                                                                            </tr>
-                                                                            @else
-                                                                            <tr>
-                                                                                @for ($i = 1; $i <= 5; $i++)
-                                                                                    @php
-                                                                                    $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
-                                                                                    @endphp
-                                                                                    <td>
-                                                                                    <label class="radio-label">
-                                                                                        <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="{{ $i }}" {{ old("task_grade.$lesson->id.$sublesson->id.$student->id", $selectedGrade) == $i ? 'checked' : '' }}>
-                                                                                        <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
-                                                                                    </label>
-                                                                                    </td>
-                                                                                    @endfor
-                                                                            </tr>
-                                                                            @endif
-                                                                        </tbody>
-                                                                    </table>
-                                                                    <span class="custom-radio competent task_grade_{{ $lesson->id }}_{{ $sublesson->id }}_{{ $student->id ?? '' }}"></span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                $selectedCompGrade = $grading?->{$code . '_grade'} ?? null;
+                                                $selectedCompComment = $grading?->{$code . '_comment'} ?? null;
+                                                @endphp
+                                                <div class="custom-box">
+                                                    <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $code }}" aria-expanded="false">
+                                                        <span class="rmk">RMK</span>
+                                                        <span class="question-mark">?</span>
+                                                        <span class="title"><span class="highlight">{{ $title }} ({{ strtoupper($code) }})</span></span>
+                                                        <input type="hidden" name="cg_lesson_id" value="{{ $lesson->id }}">
                                                     </div>
-                                                    <!-- Toggleable Comment Box -->
-                                                    <div class="collapse mt-2" id="comment-box-{{ $sublesson->id }}">
-                                                        <textarea name="task_comments[{{ $lesson->id ?? '' }}][{{ $sublesson->id ?? '' }}]" rows="3" class="form-control" placeholder="Add your remarks or feedback here..." @if($isDeferred) readonly title="Deferred: You cannot edit this comment." @endif>{{ old("task_comments.$lesson->id.$sublesson->id.$student->id", $selectedComment) }}</textarea>
-                                                    </div>
-                                                    @endforeach
-                                                    @else($lesson->subLessons->isEmpty())
-                                                    <p class="text-muted">No Task available.</p>
-                                                    @endif
-                                                </div>
-
-                                                <div class="accordion-item">
-                                                    @if($lesson && $lesson->enable_cbta==1)
-                                                    <h2 class="accordion-header">
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                            <button type="button" class="accordion-button {{ $isLocked ? 'collapsed' : 'collapsed' }}" data-bs-toggle="collapse"
-                                                                data-bs-target="#comptency-{{ $eventLesson->id }}" aria-expanded="false">
-                                                                Overall Competency Grading
-                                                            </button>
-                                                        </div>
-                                                    </h2>
-                                                    @endif
-                                                </div>
-                                                <div id="comptency-{{ $eventLesson->id }}" class="accordion-collapse collapse">
-                                                    <!-- Student name aligned to the right, above the competency grading -->
-                                                    <div class="text-end pe-4 pt-2 fw-semibold">
-                                                        {{ $student->fname }} {{ $student->lname }}
-                                                    </div>
-                                                    <div class="accordion-body">
-                                                        @php
-                                                            $competencies = [
-                                                            'KNO' => 'Application of knowledge',
-                                                            'PRO' => 'Application of Procedures and compliance with regulations',
-                                                            'COM' => 'Communication',
-                                                            'FPA' => 'Aeroplane flight path management - automation',
-                                                            'FPM' => 'Aeroplane flight path management - Manual Control',
-                                                            'LTW' => 'Leadership & Teamwork',
-                                                            'PSD' => 'Problem-solving - decision-making',
-                                                            'SAW' => 'Situation awareness and management of information',
-                                                            'WLM' => 'Workload Management',
-                                                        ];
-                                                        $lessonCompetencies = $$eventLesson ?? collect();
-
-                                                        @endphp
-                                                            @foreach($competencies as $code => $title)
-                                                        @php
-
-                                                        $code = strtolower($code); // make sure it's lowercase
-                                                        $grading = $lessonCompetencies->first();
-
-                                                        $selectedCompGrade = $grading?->{$code . '_grade'} ?? null;
-                                                        $selectedCompComment = $grading?->{$code . '_comment'} ?? null;
-                                                        @endphp
-                                                        <div class="custom-box">
-                                                            <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $code }}" aria-expanded="false">
-                                                                <span class="rmk">RMK</span>
-                                                                <span class="question-mark">?</span>
-                                                                <span class="title"><span class="highlight">{{ $title }} ({{ strtoupper($code) }})</span></span>
-                                                                <input type="hidden" name="cg_lesson_id" value="{{ $lesson->id }}">
-                                                            </div>
-                                                            <div class="table-container">
-                                                                <div class="main-tabledesign">
-                                                                    <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
-                                                                    <table>
-                                                                        <tbody>
-                                                                            <tr>
-                                                                                @for ($i = 1; $i <= 5; $i++)
-                                                                                    @php
-                                                                                    $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
-                                                                                    @endphp
-                                                                                    <td>
-                                                                                    <label class="radio-label">
-                                                                                        <input type="radio" class="scale-radio"
-                                                                                            name="comp_grade[{{ $lesson->id }}][{{ $code }}]"
-                                                                                            value="{{ $i }}" data-event-id="{{ $trainingEvent->id }}" data-lesson-id="{{ $lesson->id }}" data-user-id="{{ $student->id ?? '' }}" data-code="{{ $code }}" data-color-class="{{ $colorClass }}"
-                                                                                            {{ $selectedCompGrade == $i ? 'checked' : '' }}>
-                                                                                        <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
-                                                                                    </label>
-                                                                                    </td>
-                                                                                    @endfor
-                                                                            </tr>
-                                                                        </tbody>
-                                                                    </table>
-                                                                    <span class="custom-radio competent comp_grade_{{ $lesson->id }}_{{ $student->id ?? '' }}"></span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <!-- Toggleable Comment Box -->
-                                                        <div class="collapse mt-2" id="competency-box-{{ $code }}">
-                                                            <textarea name="comp_comments[{{ $lesson->id }}][{{ $code }}]" rows="3" class="form-control" placeholder="Add remarks or comments on competency">{{ $selectedCompComment }}</textarea>
-                                                        </div>
-                                                        @endforeach
-
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <label class="mt-3 mb-3">Lesson Summary</label>
-                                                    <textarea name="lesson_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Write Lesson Summary">{{ old("lesson_summary.$lesson->id", $eventLesson->lesson_summary ?? '') }}</textarea>
-                                                </div>
-
-                                                @if(Auth::user()->role == "1")
-                                                <div>
-                                                    <label class="mt-3 mb-3">Instructor Comment</label>
-                                                    <textarea name="instructor_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Instructor Comment">{{ old("lesson_summary.$lesson->id", $eventLesson->instructor_comment ?? '') }}</textarea>
-                                                </div>
-                                                <i><strong> Notes: </strong> for training manager/instructors only</i>
-                                                @endif
-
-                                                <!-- Examiner CBTA -->
-                                                <div class="accordion-item">
-                                                    @if($lesson->examiner_cbta == 1)
-                                                    <h2 class="accordion-header">
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                            <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
-                                                                data-bs-target="#examiner-{{ $eventLesson->id }}" aria-expanded="false">
-                                                                Examiner Competency Grading
-                                                            </button>
-                                                        </div>
-                                                    </h2>
-                                                    @endif
-                                                </div>
-
-                                                <div id="examiner-{{ $eventLesson->id }}" class="accordion-collapse collapse">
-                                                    <!-- Student name aligned to the right, above the competency grading -->
-                                                    <div class="text-end pe-4 pt-2 fw-semibold">
-                                                        {{ $student->fname }} {{ $student->lname }}
-                                                    </div>
-
-                                                    <div class="accordion-body">
-                                                        @foreach($examiner_cbta as $val)
-                                                        @php
-                                                        // Find grading for this competency and lesson
-                                                        $savedGrade = collect($examiner_grading)->first(function($g) use ($val, $lesson) {
-                                                        return $g['cbta_gradings_id'] == $val['id'] && $g['lesson_id'] == $lesson->id;
-                                                        });
-                                                        @endphp
-
-                                                        <div class="custom-box">
-                                                            <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $val['id'] }}" aria-expanded="false">
-                                                                <span class="rmk">RMK</span>
-                                                                <span class="question-mark">?</span>
-                                                                <span class="title"><span class="highlight">{{ $val['competency'] }} ({{ $val['short_name'] }})</span></span>
-                                                                <input type="hidden" name="cg_lesson_id" value="{{ $lesson->id }}">
-                                                            </div>
-
-                                                            <div class="table-container">
-                                                                <div class="main-tabledesign">
-                                                                    <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
-                                                                    <table>
-                                                                        <tbody>
-                                                                            <tr>
-                                                                                @for ($i = 1; $i <= 5; $i++)
-                                                                                    @php
-                                                                                    $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
-                                                                                    @endphp
-                                                                                    <td>
-                                                                                    <label class="radio-label">
-                                                                                        <input type="radio" class="scale-radio"
-                                                                                            name="examiner_grade[{{ $lesson->id }}][{{ $val['id'] }}]"
-                                                                                            value="{{ $i }}"
-                                                                                            data-event-id="{{ $trainingEvent->id }}"
-                                                                                            data-lesson-id="{{ $lesson->id }}"
-                                                                                            data-user-id="{{ $student->id ?? '' }}"
-                                                                                            data-code="{{ $val['id'] }}"
-                                                                                            data-color-class="{{ $colorClass }}"
-                                                                                            {{-- check if saved grade matches --}}
-                                                                                            {{ isset($savedGrade['competency_value']) && $savedGrade['competency_value'] == $i ? 'checked' : '' }}>
-                                                                                        <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
-                                                                                    </label>
-                                                                                    </td>
-                                                                                    @endfor
-                                                                            </tr>
-                                                                        </tbody>
-                                                                    </table>
-                                                                    <span class="custom-radio competent comp_grade_{{ $lesson->id }}_{{ $student->id ?? '' }}"></span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- Toggleable Comment Box -->
-                                                        <div class="collapse mt-2" id="competency-box-{{ $val['id'] }}">
-                                                            <textarea name="examiner_comments[{{ $lesson->id }}][{{ $val['id'] }}]"
-                                                                rows="3"
-                                                                class="form-control"
-                                                                placeholder="Add remarks or comments on competency">{{ $savedGrade['comment'] ?? '' }}</textarea>
-                                                        </div>
-                                                        @endforeach
-                                                    </div>
-                                                </div>
-
-                                                <!-- Instructor CBTA -->
-                                                <div class="accordion-item">
-                                                    @if($lesson->instructor_cbta == 1)
-                                                    <h2 class="accordion-header">
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                            <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
-                                                                data-bs-target="#instructor-{{ $eventLesson->id }}" aria-expanded="false">
-                                                                Instructor Competency Grading
-                                                            </button>
-                                                        </div>
-                                                    </h2>
-                                                    @endif
-                                                </div>
-
-                                                <div id="instructor-{{ $eventLesson->id }}" class="accordion-collapse collapse">
-                                                    <!-- Student name aligned to the right, above the competency grading -->
-                                                    <div class="text-end pe-4 pt-2 fw-semibold">
-                                                        {{ $student->fname }} {{ $student->lname }}
-                                                    </div>
-
-                                                    <div class="accordion-body">
-                                                        @foreach($instructor_cbta as $val)
-                                                        @php
-                                                        // Find grading for this competency and lesson
-                                                        $savedGrade = collect($instructor_grading)->first(function($g) use ($val, $lesson) {
-                                                        return $g['cbta_gradings_id'] == $val['id'] && $g['lesson_id'] == $lesson->id;
-                                                        });
-                                                        @endphp
-
-                                                        <div class="custom-box">
-                                                            <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $val['id'] }}" aria-expanded="false">
-                                                                <span class="rmk">RMK</span>
-                                                                <span class="question-mark">?</span>
-                                                                <span class="title"><span class="highlight">{{ $val['competency'] }} ({{ $val['short_name'] }})</span></span>
-                                                                <input type="hidden" name="cg_lesson_id" value="{{ $lesson->id }}">
-                                                            </div>
-
-                                                            <div class="table-container">
-                                                                <div class="main-tabledesign">
-                                                                    <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
-                                                                    <table>
-                                                                        <tbody>
-                                                                            <tr>
-                                                                                @for ($i = 1; $i <= 5; $i++)
-                                                                                    @php
-                                                                                    $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
-                                                                                    @endphp
-                                                                                    <td>
-                                                                                    <label class="radio-label">
-                                                                                        <input type="radio" class="scale-radio"
-                                                                                            name="instructor_grade[{{ $lesson->id }}][{{ $val['id'] }}]"
-                                                                                            value="{{ $i }}"
-                                                                                            data-event-id="{{ $trainingEvent->id }}"
-                                                                                            data-lesson-id="{{ $lesson->id }}"
-                                                                                            data-user-id="{{ $student->id ?? '' }}"
-                                                                                            data-code="{{ $val['id'] }}"
-                                                                                            data-color-class="{{ $colorClass }}"
-                                                                                            {{-- check if saved grade matches --}}
-                                                                                            {{ isset($savedGrade['competency_value']) && $savedGrade['competency_value'] == $i ? 'checked' : '' }}>
-                                                                                        <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
-                                                                                    </label>
-                                                                                    </td>
-                                                                                    @endfor
-                                                                            </tr>
-                                                                        </tbody>
-                                                                    </table>
-                                                                    <span class="custom-radio competent comp_grade_{{ $lesson->id }}_{{ $student->id ?? '' }}"></span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- Toggleable Comment Box -->
-                                                        <div class="collapse mt-2" id="competency-box-{{ $val['id'] }}">
-                                                            <textarea name="instructor_comments[{{ $lesson->id }}][{{ $val['id'] }}]"
-                                                                rows="3"
-                                                                class="form-control"
-                                                                placeholder="Add remarks or comments on competency">{{ $savedGrade['comment'] ?? '' }}</textarea>
-                                                        </div>
-                                                        @endforeach
-                                                    </div>
-                                                </div>
-                                                <!-- ////------------------------------------Overall assessment for multi lesson------------------------------------------------- -->
-                                            
-                                                <div class="accordion-item">
-                                                    <h2 class="accordion-header">
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                        <button type="button" class="accordion-button {{ $isLocked ? 'collapsed' : '' }}" style="cursor: default;">
-                                                                Overall Assessment
-                                                            </button>
-
-                                                        </div>
-                                                    </h2>
-                                                </div>
-                                                
-                                                <div id="overall-{{ $eventLesson->id }}" class="accordion-collapse show">
-                                                    <input type="hidden" name="lesson_id" value="{{ $eventLesson->id }}">
-                                                    <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
-                                                    <input type="hidden" name="user_id" value="{{ $student->id }}">
-
-                                                    <div class="assessment-wrapper">
-                                                        <!-- Result -->
-                                                        <div class="row mb-3">
-
-                                                        <?php
-                                                                $lessonData = $eventLessons->firstWhere('lesson_id', $eventLesson->lesson_id);
-                                                            ?>
-                                                            <label class="col-sm-2 col-form-label">Result</label>
-                                                            <div class="col-sm-6  buttons">
-                                                                <table>
-                                                                    <tbody>
-                                                                        <tr>
-                                                                            <td class="overall_td">
-                                                                                <label class="radio-label">
-                                                                                    <input type="radio"
-                                                                                        name="overall_result[{{ $eventLesson->id }}]"
-                                                                                        value="Incomplete"
-                                                                                        {{ $lessonData->overall_result == 'Incomplete' ? 'checked' : '' }}>
-                                                                                    <span class="custom-radio incomplete">Incomplete</span>
-                                                                                </label>
+                                                    <div class="table-container">
+                                                        <div class="main-tabledesign">
+                                                            <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
+                                                            <table>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        @for ($i = 1; $i <= 5; $i++)
+                                                                            @php
+                                                                            $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
+                                                                            @endphp
+                                                                            <td>
+                                                                            <label class="radio-label">
+                                                                                <input type="radio" class="scale-radio"
+                                                                                    name="comp_grade[{{ $lesson->id }}][{{ $code }}]"
+                                                                                    value="{{ $i }}" data-event-id="{{ $trainingEvent->id }}" data-lesson-id="{{ $lesson->id }}" data-user-id="{{ $student->id ?? '' }}" data-code="{{ $code }}" data-color-class="{{ $colorClass }}"
+                                                                                    {{ $selectedCompGrade == $i ? 'checked' : '' }}>
+                                                                                <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
+                                                                            </label>
                                                                             </td>
-
-                                                                            <td class="overall_td">
-                                                                                <label class="radio-label">
-                                                                                    <input type="radio"
-                                                                                        name="overall_result[{{ $eventLesson->id }}]"
-                                                                                        value="Further training required"
-                                                                                        {{ $lessonData->overall_result == 'Further training required' ? 'checked' : '' }}>
-                                                                                    <span class="custom-radio ftr">FTR</span>
-                                                                                </label>
-                                                                            </td>
-                                                                                <td class="overall_td">
-                                                                                <label class="radio-label">
-                                                                                    <input type="radio"
-                                                                                        name="overall_result[{{ $eventLesson->id }}]"
-                                                                                        value="Competent"
-                                                                                        {{ $lessonData->overall_result == 'Competent' ? 'checked' : '' }} style="width:100%">
-                                                                                    <span class="custom-radio competent">Competent</span>
-                                                                                </label>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </tbody>
-                                                                </table>
-                                                            <span class="text-danger">Note: You cannot change this manually. The result will be based on the above grading. </span>
-                                                            </div>
+                                                                            @endfor
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                            <span class="custom-radio competent comp_grade_{{ $lesson->id }}_{{ $student->id ?? '' }}"></span>
                                                         </div>
-                                                
+                                                    </div>
+                                                </div>
+                                                <!-- Toggleable Comment Box -->
+                                                <div class="collapse mt-2" id="competency-box-{{ $code }}">
+                                                    <textarea name="comp_comments[{{ $lesson->id }}][{{ $code }}]" rows="3" class="form-control" placeholder="Add remarks or comments on competency">{{ $selectedCompComment }}</textarea>
+                                                </div>
+                                                @endforeach
 
-                                                        <!-- Remark -->
-                                                        <!-- <div class="row mb-3 remark-section">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="mt-3 mb-3">Lesson Summary</label>
+                                            <textarea name="lesson_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Write Lesson Summary">{{ old("lesson_summary.$lesson->id", $eventLesson->lesson_summary ?? '') }}</textarea>
+                                        </div>
+
+                                        @if(Auth::user()->role == "1")
+                                        <div>
+                                            <label class="mt-3 mb-3">Instructor Comment</label>
+                                            <textarea name="instructor_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Instructor Comment">{{ old("lesson_summary.$lesson->id", $eventLesson->instructor_comment ?? '') }}</textarea>
+                                        </div>
+                                        <i><strong> Notes: </strong> for training manager/instructors only</i>
+                                        @endif
+                                        
+                                        <!-- Examiner CBTA -->
+                                        <div class="accordion-item">
+                                            @if($lesson->examiner_cbta == 1)
+                                            <h2 class="accordion-header">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
+                                                        data-bs-target="#examiner-{{ $eventLesson->id }}" aria-expanded="false">
+                                                        Examiner Competency Grading
+                                                    </button>
+                                                </div>
+                                            </h2>
+                                            @endif
+                                        </div>
+
+                                        <div id="examiner-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                            <!-- Student name aligned to the right, above the competency grading -->
+                                            <div class="text-end pe-4 pt-2 fw-semibold">
+                                                {{ $student->fname }} {{ $student->lname }}
+                                            </div>
+
+                                            <div class="accordion-body">
+                                                @foreach($examiner_cbta as $val)
+                                                @php
+                                                // Find grading for this competency and lesson
+                                                $savedGrade = collect($examiner_grading)->first(function($g) use ($val, $lesson) {
+                                                return $g['cbta_gradings_id'] == $val['id'] && $g['lesson_id'] == $lesson->id;
+                                                });
+                                                @endphp
+
+                                                <div class="custom-box">
+                                                    <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $val['id'] }}" aria-expanded="false">
+                                                        <span class="rmk">RMK</span>
+                                                        <span class="question-mark">?</span>
+                                                        <span class="title"><span class="highlight">{{ $val['competency'] }} ({{ $val['short_name'] }})</span></span>
+                                                        <input type="hidden" name="cg_lesson_id" value="{{ $lesson->id }}">
+                                                    </div>
+
+                                                    <div class="table-container">
+                                                        <div class="main-tabledesign">
+                                                            <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
+                                                            <table>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        @for ($i = 1; $i <= 5; $i++)
+                                                                            @php
+                                                                            $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
+                                                                            @endphp
+                                                                            <td>
+                                                                            <label class="radio-label">
+                                                                                <input type="radio" class="scale-radio"
+                                                                                    name="examiner_grade[{{ $lesson->id }}][{{ $val['id'] }}]"
+                                                                                    value="{{ $i }}"
+                                                                                    data-event-id="{{ $trainingEvent->id }}"
+                                                                                    data-lesson-id="{{ $lesson->id }}"
+                                                                                    data-user-id="{{ $student->id ?? '' }}"
+                                                                                    data-code="{{ $val['id'] }}"
+                                                                                    data-color-class="{{ $colorClass }}"
+                                                                                    {{-- check if saved grade matches --}}
+                                                                                    {{ isset($savedGrade['competency_value']) && $savedGrade['competency_value'] == $i ? 'checked' : '' }}>
+                                                                                <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
+                                                                            </label>
+                                                                            </td>
+                                                                            @endfor
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                            <span class="custom-radio competent comp_grade_{{ $lesson->id }}_{{ $student->id ?? '' }}"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Toggleable Comment Box -->
+                                                <div class="collapse mt-2" id="competency-box-{{ $val['id'] }}">
+                                                    <textarea name="examiner_comments[{{ $lesson->id }}][{{ $val['id'] }}]"
+                                                        rows="3"
+                                                        class="form-control"
+                                                        placeholder="Add remarks or comments on competency">{{ $savedGrade['comment'] ?? '' }}</textarea>
+                                                </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+
+
+
+                                        <!-- Instructor CBTA -->
+                                        <div class="accordion-item">
+                                            @if($lesson->instructor_cbta == 1)
+                                            <h2 class="accordion-header">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
+                                                        data-bs-target="#instructor-{{ $eventLesson->id }}" aria-expanded="false">
+                                                        Instructor Competency Grading
+                                                    </button>
+                                                </div>
+                                            </h2>
+                                            @endif
+                                        </div>
+
+                                        <div id="instructor-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                            <!-- Student name aligned to the right, above the competency grading -->
+                                            <div class="text-end pe-4 pt-2 fw-semibold">
+                                                {{ $student->fname }} {{ $student->lname }}
+                                            </div>
+
+                                            <div class="accordion-body">
+                                                @foreach($instructor_cbta as $val)
+                                                @php
+                                                // Find grading for this competency and lesson
+                                                $savedGrade = collect($instructor_grading)->first(function($g) use ($val, $lesson) {
+                                                return $g['cbta_gradings_id'] == $val['id'] && $g['lesson_id'] == $lesson->id;
+                                                });
+                                                @endphp
+
+                                                <div class="custom-box">
+                                                    <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $val['id'] }}" aria-expanded="false">
+                                                        <span class="rmk">RMK</span>
+                                                        <span class="question-mark">?</span>
+                                                        <span class="title"><span class="highlight">{{ $val['competency'] }} ({{ $val['short_name'] }})</span></span>
+                                                        <input type="hidden" name="cg_lesson_id" value="{{ $lesson->id }}">
+                                                    </div>
+
+                                                    <div class="table-container">
+                                                        <div class="main-tabledesign">
+                                                            <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
+                                                            <table>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        @for ($i = 1; $i <= 5; $i++)
+                                                                            @php
+                                                                            $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
+                                                                            @endphp
+                                                                            <td>
+                                                                            <label class="radio-label">
+                                                                                <input type="radio" class="scale-radio"
+                                                                                    name="instructor_grade[{{ $lesson->id }}][{{ $val['id'] }}]"
+                                                                                    value="{{ $i }}"
+                                                                                    data-event-id="{{ $trainingEvent->id }}"
+                                                                                    data-lesson-id="{{ $lesson->id }}"
+                                                                                    data-user-id="{{ $student->id ?? '' }}"
+                                                                                    data-code="{{ $val['id'] }}"
+                                                                                    data-color-class="{{ $colorClass }}"
+                                                                                    {{-- check if saved grade matches --}}
+                                                                                    {{ isset($savedGrade['competency_value']) && $savedGrade['competency_value'] == $i ? 'checked' : '' }}>
+                                                                                <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
+                                                                            </label>
+                                                                            </td>
+                                                                            @endfor
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                            <span class="custom-radio competent comp_grade_{{ $lesson->id }}_{{ $student->id ?? '' }}"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Toggleable Comment Box -->
+                                                <div class="collapse mt-2" id="competency-box-{{ $val['id'] }}">
+                                                    <textarea name="instructor_comments[{{ $lesson->id }}][{{ $val['id'] }}]"
+                                                        rows="3"
+                                                        class="form-control"
+                                                        placeholder="Add remarks or comments on competency">{{ $savedGrade['comment'] ?? '' }}</textarea>
+                                                </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+
+                                        <!-- // Pilot cbta -->
+
+                                        <div class="accordion-item">
+                                            @if($lesson->pilot_cbta == 1)
+                                            <h2 class="accordion-header">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
+                                                        data-bs-target="#pilot-{{ $eventLesson->id }}" aria-expanded="false">
+                                                        Pilot Competency Grading
+                                                    </button>
+                                                </div>
+                                            </h2>
+                                            @endif
+                                        </div>
+                                        <div id="pilot-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                            <!-- Student name aligned to the right, above the competency grading -->
+                                            <div class="text-end pe-4 pt-2 fw-semibold">
+                                                {{ $student->fname }} {{ $student->lname }}
+                                            </div>
+
+                                            <div class="accordion-body">
+                                                @foreach($pilot_cbta as $val)
+                                                @php
+                                                // Find grading for this competency and lesson
+                                                $savedGrade = collect($pilot_grading)->first(function($g) use ($val, $lesson) {
+                                                return $g['cbta_gradings_id'] == $val['id'] && $g['lesson_id'] == $lesson->id;
+                                                });
+                                                @endphp
+
+                                                <div class="custom-box">
+                                                    <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $val['id'] }}" aria-expanded="false">
+                                                        <span class="rmk">RMK</span>
+                                                        <span class="question-mark">?</span>
+                                                        <span class="title"><span class="highlight">{{ $val['competency'] }} ({{ $val['short_name'] }})</span></span>
+                                                        <input type="hidden" name="cg_lesson_id" value="{{ $lesson->id }}">
+                                                    </div>
+
+                                                    <div class="table-container">
+                                                        <div class="main-tabledesign">
+                                                            <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
+                                                            <table>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        @for ($i = 1; $i <= 5; $i++)
+                                                                            @php
+                                                                            $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
+                                                                            @endphp
+                                                                            <td>
+                                                                            <label class="radio-label">
+                                                                                <input type="radio" class="scale-radio"
+                                                                                    name="pilot_grade[{{ $lesson->id }}][{{ $val['id'] }}]"
+                                                                                    value="{{ $i }}"
+                                                                                    data-event-id="{{ $trainingEvent->id }}"
+                                                                                    data-lesson-id="{{ $lesson->id }}"
+                                                                                    data-user-id="{{ $student->id ?? '' }}"
+                                                                                    data-code="{{ $val['id'] }}"
+                                                                                    data-color-class="{{ $colorClass }}"
+                                                                                    {{-- check if saved grade matches --}}
+                                                                                    {{ isset($savedGrade['competency_value']) && $savedGrade['competency_value'] == $i ? 'checked' : '' }}>
+                                                                                <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
+                                                                            </label>
+                                                                            </td>
+                                                                            @endfor
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                            <span class="custom-radio competent comp_grade_{{ $lesson->id }}_{{ $student->id ?? '' }}"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Toggleable Comment Box -->
+                                                <div class="collapse mt-2" id="competency-box-{{ $val['id'] }}">
+                                                    <textarea name="pilot_comments[{{ $lesson->id }}][{{ $val['id'] }}]"
+                                                        rows="3"
+                                                        class="form-control"
+                                                        placeholder="Add remarks or comments on competency">{{ $savedGrade['comment'] ?? '' }}</textarea>
+                                                </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                        <!-- ////------------------------------------Overall assessment for multi lesson--------------------------------------------------->
+
+
+
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <button type="button" class="accordion-button {{ $isLocked ? 'collapsed' : '' }}" style="cursor: default;">
+                                                        Overall Assessment
+                                                    </button>
+
+                                                </div>
+                                            </h2>
+                                        </div>
+
+                                        <div id="overall-{{ $eventLesson->id }}" class="accordion-collapse show">
+                                            <input type="hidden" name="lesson_id" value="{{ $eventLesson->id }}">
+                                            <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
+                                            <input type="hidden" name="user_id" value="{{ $student->id }}">
+
+                                            <div class="assessment-wrapper">
+                                                <!-- Result -->
+                                                <div class="row mb-3">
+
+                                                    <?php
+                                                    $lessonData = $eventLessons->firstWhere('lesson_id', $eventLesson->lesson_id);
+                                                    ?>
+                                                    <label class="col-sm-2 col-form-label">Result</label>
+                                                    <div class="col-sm-6  buttons">
+                                                        <table>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td class="overall_td">
+                                                                        <label class="radio-label">
+                                                                            <input type="radio"
+                                                                                name="overall_result[{{ $eventLesson->id }}]"
+                                                                                value="Incomplete"
+                                                                                {{ $lessonData->overall_result == 'Incomplete' ? 'checked' : '' }}>
+                                                                            <span class="custom-radio incomplete">Incomplete</span>
+                                                                        </label>
+                                                                    </td>
+
+                                                                    <td class="overall_td">
+                                                                        <label class="radio-label">
+                                                                            <input type="radio"
+                                                                                name="overall_result[{{ $eventLesson->id }}]"
+                                                                                value="Further training required"
+                                                                                {{ $lessonData->overall_result == 'Further training required' ? 'checked' : '' }}>
+                                                                            <span class="custom-radio ftr">FTR</span>
+                                                                        </label>
+                                                                    </td>
+                                                                    <td class="overall_td">
+                                                                        <label class="radio-label">
+                                                                            <input type="radio"
+                                                                                name="overall_result[{{ $eventLesson->id }}]"
+                                                                                value="Competent"
+                                                                                {{ $lessonData->overall_result == 'Competent' ? 'checked' : '' }} style="width:100%">
+                                                                            <span class="custom-radio competent">Competent</span>
+                                                                        </label>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <span class="text-danger">Note: You cannot change this manually. The result will be based on the above grading. </span>
+                                                    </div>
+                                                </div>
+
+
+                                                <!-- Remark -->
+                                                <!-- <div class="row mb-3 remark-section">
                                                             <label class="col-sm-2 col-form-label">Remark</label>
                                                             <div class="col-sm-10">
                                                                 <textarea class="form-control remark"
@@ -1525,375 +1614,375 @@
                                                                     placeholder="Enter your remarks here...">{{ $lessonData->overall_remark ?? '' }}</textarea>
                                                             </div>
                                                         </div> -->
-                                                    </div>
-                                                </div>
-
-
-                                                <!-- ////------------------------------------End Overall assessment for multi lesson------------------------------------------------- -->
-
-                                            
-
-                                                @if(!empty($groupedLogs[$eventLesson->lesson_id]))
-                                                @php
-                                                $lessonLogs = $groupedLogs[$eventLesson->lesson_id];
-                                                @endphp
-
-                                                <div class="accordion-body mt-3">
-                                                    <h5 class="text-primary mb-2">
-                                                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Training Logs
-                                                    </h5>
-                                                    <table class="table table-striped table-bordered align-middle mb-0">
-                                                        <thead class="table-light text-center">
-                                                            <tr>
-                                                                <th scope="col">User</th>
-                                                                <th scope="col">Lesson</th>
-                                                                <th scope="col">Status</th>
-                                                                <th scope="col">Date</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            @foreach($lessonLogs as $log)
-                                                            <tr>
-                                                                <td>{{ $log->users->fname ?? '' }} {{ $log->users->lname ?? '' }}</td>
-                                                                <td>{{ $log->lesson->lesson_title ?? '' }}</td>
-                                                                <td>{{ $log->is_locked ? 'Locked' : 'Unlocked' }}</td>
-                                                                <td>{{ $log->created_at->format('d M Y, h:i A') }}</td>
-                                                            </tr>
-                                                            @endforeach
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                                @endif
-                                                <div class="d-flex align-items-center justify-content-end">
-                                                    @if($isDisabled)
-                                                    <div>
-                                                        <span style="color:red"> You are not eligible to perform any action on this lesson </span>
-                                                    </div>
-                                                    @endif
-                                                    <div class="btn-container ms-3 mt-3 mb-3">
-                                                        <button type="submit" class="btn btn-save" id="submitGrading" {{ $isDisabled ? 'disabled' : '' }}>Save Lesson</button>
-                                                    </div>
-                                                </div>
                                             </div>
-                                        @endif
-                                        
-                                    </div>
-                                </div>
-                            </form>
-                        @endforeach
-                        
-                        <!-- Deferred Lessons section remains unchanged, assuming no redirect needed there -->
-                        
-                        @if($lessonType == 'deferred' || !$lessonType)
-                            @php
-                                $filteredDeferred = $requestedLessonId
-                                    ? $defLessonTasks->where('def_lesson_id', $requestedLessonId)
-                                    : $defLessonTasks;
-                            @endphp
-
-                            @if($filteredDeferred->isNotEmpty())
-                                <h4 class="mb-3 text-primary"><i class="bi bi-exclamation-triangle-fill me-2"></i>Deferred Lessons</h4>
-                                @foreach($filteredDeferred->groupBy('def_lesson_id') as $defLessonId => $tasks)
-                                <form action="" method="POST" id="defGradingFrom">
-                                    <input type="hidden" name="lesson_type" value="deferred" />
-                                    @php $defLesson = $tasks->first()->defLesson;
-                                    $documents = $defLesson?->instructor?->documents; // Only one row expected
-
-                                    if ($documents && $documents->licence) {
-                                    $instructor_lic_no = $documents->licence;
-                                    } elseif ($documents && $documents->licence_2) {
-                                    $instructor_lic_no = $documents->licence_2;
-                                    } else {
-                                    $instructor_lic_no = 'N/A';
-                                    }
-
-                                    @endphp
-
-                                    <?php $is_locked = $defLesson->is_locked; ?>
-                                    @csrf
-                                    <div class="accordion-item">
-                                        <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
-                                        <input type="hidden" name="tg_def_user_id" value="{{ $trainingEvent?->student_id }}">
-                                        <input type="hidden" name="tg_def_lesson_id[]" value="{{ $defLesson?->id }}">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : '' }}" @if($is_locked !=1) data-bs-toggle="collapse" data-bs-target="#def-lesson-{{ $defLesson?->id }}" aria-expanded="true" @else disabled aria-expanded="false" style="cursor: not-allowed; background-color:#f8f9fa;" @endif type="button"> {{ $defLesson->lesson_title }} {{-- Show lock inside button, after text, only for instructors --}}
-                                                @if($is_locked == 1 && auth()->user()?->is_admin != 1) <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked"> <i class="bi bi-lock-fill"></i> </span>
-                                                @endif
-                                                @php
-                                                // ✅ Get the most recent log for this lesson
-                                                $lessonLogs = $grouped_deferredLogs->get($defLessonId, collect());
-                                                $latestLog = $lessonLogs->sortByDesc('created_at')->first();
-                                                @endphp
-
-                                                @if($is_locked == 1 && $latestLog)
-                                                <small class="text-secondary ms-1">
-                                                    (Locked By - {{ $latestLog->users->fname ?? '' }} {{ $latestLog->users->lname ?? '' }},
-                                                    Time - {{ \Carbon\Carbon::parse($latestLog->created_at)->format('d M Y, h:i A') }})
-
-                                                </small>
-                                                @endif
-                                            </button>
-
-                                            @if($is_locked == 1 && auth()->user()?->is_admin == 1)
-                                            <button type="button"
-                                                class="btn btn-sm btn-outline-secondary ms-2 unlock-deflesson-btn"
-                                                data-defLesson-id="{{ $defLesson?->id }}"
-                                                data-event-id="{{ $defLesson->event_id }}"
-                                                data-lesson-type="deferred"
-                                                data-bs-toggle="tooltip"
-                                                title="Unlock this event to enable grading edits.">
-                                                <i class="bi bi-lock-fill"></i>
-                                            </button>
-                                            @endif
-                                        </h2>
-                                        <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
-                                            <div><strong>Instructor:</strong> {{ $defLesson->instructor->fname ?? '' }} {{ $defLesson->instructor->lname ?? '' }}</div>
-                                            <div><strong>Licence No:</strong> {{ $instructor_lic_no }}</div>
-                                            <div><strong>Resource:</strong> {{ $defLesson->resource->name ?? 'N/A' }}</div>
-                                            <div><strong>Lesson Date:</strong> {{ $defLesson?->lesson_date ? \Carbon\Carbon::parse($defLesson->lesson_date)->format('d/m/Y') : 'N/A' }}</div>
-                                            <div><strong>Start Time:</strong> {{ $defLesson?->start_time ? \Carbon\Carbon::parse($defLesson?->start_time)->format('h:i A') : 'N/A' }}</div>
-                                            <div><strong>End Time:</strong> {{ $defLesson?->end_time ? \Carbon\Carbon::parse($defLesson?->end_time)->format('h:i A') : 'N/A' }}</div>
-                                            <div><strong>Departure Airfield:</strong> {{ !empty($defLesson?->departure_airfield) ? strtoupper($defLesson?->departure_airfield) : 'N/A' }}</div>
-                                            <div><strong>Destination Airfield:</strong>{{ !empty($defLesson?->destination_airfield) ? strtoupper($defLesson?->destination_airfield) : 'N/A' }}</div>
                                         </div>
 
-                                        @if($is_locked == 1)
-                                            <div class="alert alert-warning mb-3">
-                                                This lesson is currently locked. Grading edits are disabled. Unclock the lesson to enable grading edits.
-                                            </div>
-                                        @else
-                                            <div id="def-lesson-{{ $defLesson?->id }}" class="accordion-collapse collapse show" data-bs-parent="#faq-group-2">
-                                                <div class="accordion-body">
-                                                    @foreach($tasks as $task)
-                                                    <div class="custom-box">
-                                                        <div class="header grade_head" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $task->id }}" aria-expanded="false">
-                                                            <div class="task-desc">
-                                                                <span class="rmk">RMK</span>
-                                                                <span class="question-mark">?</span>
-                                                                <span class="title">{{ $task->task->title ?? 'Untitled Task' }}</span>
-                                                            </div>
-                                                            <i class="grade-comment">click to enter comment</i>
-                                                        </div>
-                                                        <div class="table-container">
-                                                            <div class="main-tabledesign">
-                                                                <!-- <h5>{{ $task->user->fname }} {{ $task->user->lname }}</h5> -->
-                                                                @php
-                                                                $selectedGrade = $task->task_grade;
-                                                                $selectedComment = $task->task_comment;
-                                                                $isDeferredGraded = $gradedDefTasksMap->has($task->def_lesson_id . '_' . $task->task_id);
-                                                                @endphp
-                                                                <table>
-                                                                    <tbody>
-                                                                        <tr>
-                                                                            <td>
-                                                                                <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
-                                                                                    <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
-                                                                                    <span class="custom-radio incomplete">Incomplete</span>
-                                                                                </label>
-                                                                            </td>
-                                                                            <td>
-                                                                                <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
-                                                                                    <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
-                                                                                    <span class="custom-radio ftr">FTR</span>
-                                                                                </label>
-                                                                            </td>
-                                                                            <td>
-                                                                                <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
-                                                                                    <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Competent" {{ $selectedGrade == 'Competent' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
-                                                                                    <span class="custom-radio competent">Competent</span>
-                                                                                </label>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- Toggleable Comment Box -->
-                                                    <div class="collapse mt-2" id="comment-box-{{ $task->id }}">
-                                                        <textarea
-                                                            name="task_comment_def[{{ $task->id }}][{{ $task->def_lesson_id }}]"
-                                                            rows="3"
-                                                            class="form-control"
-                                                            placeholder="Add your remarks or feedback here..."
-                                                            @if($isDeferredGraded) readonly title="Deferred: You cannot edit this comment." @endif>
-                                                        {{ old("task_comment_def.$task->id.$task->def_lesson_id", $selectedComment) }}
-                                                        </textarea>
-                                                    </div>
+
+                                        <!-- ////------------------------------------End Overall assessment for multi lesson------------------------------------------------- -->
+
+
+
+                                        @if(!empty($groupedLogs[$eventLesson->lesson_id]))
+                                        @php
+                                        $lessonLogs = $groupedLogs[$eventLesson->lesson_id];
+                                        @endphp
+
+                                        <div class="accordion-body mt-3">
+                                            <h5 class="text-primary mb-2">
+                                                <i class="bi bi-exclamation-triangle-fill me-2"></i> Training Logs
+                                            </h5>
+                                            <table class="table table-striped table-bordered align-middle mb-0">
+                                                <thead class="table-light text-center">
+                                                    <tr>
+                                                        <th scope="col">User</th>
+                                                        <th scope="col">Lesson</th>
+                                                        <th scope="col">Status</th>
+                                                        <th scope="col">Date</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($lessonLogs as $log)
+                                                    <tr>
+                                                        <td>{{ $log->users->fname ?? '' }} {{ $log->users->lname ?? '' }}</td>
+                                                        <td>{{ $log->lesson->lesson_title ?? '' }}</td>
+                                                        <td>{{ $log->is_locked ? 'Locked' : 'Unlocked' }}</td>
+                                                        <td>{{ $log->created_at->format('d M Y, h:i A') }}</td>
+                                                    </tr>
                                                     @endforeach
-                                                </div>
-                                                <div class="accordion-item">
-                                                    @if($task->task->courseLesson->course->enable_cbta==1)
-                                                    <h2 class="accordion-header">
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                            <button type="button" class="accordion-button" data-bs-toggle="collapse"
-                                                                data-bs-target="#comptency-{{ $task->id }}" aria-expanded="false">
-                                                                Overall Competency Grading
-                                                            </button>
-                                                        </div>
-                                                    </h2>
-                                                    @endif
-                                                </div>
-                                                <div id="comptency-{{ $task->id }}" class="accordion-collapse collapse">
-                                                    <!-- Student name aligned to the right, above the competency grading -->
-                                                    <div class="text-end pe-4 pt-2 fw-semibold">
-                                                        {{ $student->fname }} {{ $student->lname }}
-                                                    </div>
-                                                    <div class="accordion-body">
-                                                        @php
-                                                        $competencies = [
-                                                        'KNO' => 'Application of knowledge',
-                                                        'PRO' => 'Application of Procedures and compliance with regulations',
-                                                        'COM' => 'Communication',
-                                                        'FPA' => 'Aeroplane flight path management - automation',
-                                                        'FPM' => 'Aeroplane flight path management - Manual Control',
-                                                        'LTW' => 'Leadership & Teamwork',
-                                                        'PSD' => 'Problem-solving - decision-making',
-                                                        'SAW' => 'Situation awareness and management of information',
-                                                        'WLM' => 'Workload Management',
-                                                        ];
-                                                        $lessonCompetencies = $def_grading[$task->defLesson->id] ?? collect();
-                                                        @endphp
-                                                        @foreach($competencies as $code => $title)
-                                                        @php
-                                                        $code = strtolower($code); // make sure it's lowercase
-                                                        $grading = $lessonCompetencies->first();
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        @endif
+                                        <div class="d-flex align-items-center justify-content-end">
+                                            @if($isDisabled)
+                                            <div>
+                                                <span style="color:red"> You are not eligible to perform any action on this lesson </span>
+                                            </div>
+                                            @endif
+                                            <div class="btn-container ms-3 mt-3 mb-3">
+                                                <button type="submit" class="btn btn-save" id="submitGrading" {{ $isDisabled ? 'disabled' : '' }}>Save Lesson</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endif
 
-                                                        $selectedCompGrade = $grading?->{$code . '_grade'} ?? null;
-                                                        $selectedCompComment = $grading?->{$code . '_comment'} ?? null;
-                                                        @endphp
+                                </div>
+                            </div>
+                        </form>
+                        @endforeach
 
-                                                        <div class="custom-box">
-                                                            <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $code }}" aria-expanded="false">
-                                                                <span class="rmk">RMK</span>
-                                                                <span class="question-mark">?</span>
-                                                                <span class="title"><span class="highlight">{{ $title }} ({{ strtoupper($code) }})</span></span>
-                                                                <input type="hidden" name="cg_lesson_id" value="{{ $task->defLesson->id }}">
-                                                            </div>
-                                                            <div class="table-container">
-                                                                <div class="main-tabledesign">
-                                                                    <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
-                                                                    <table>
-                                                                        <tbody>
-                                                                            <tr>
-                                                                                @for ($i = 1; $i <= 5; $i++)
-                                                                                    @php
-                                                                                    $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
-                                                                                    @endphp
-                                                                                    <td>
-                                                                                    <label class="radio-label">
-                                                                                        <input type="radio" class="scale-radio"
-                                                                                            name="comp_grade[{{ $task->defLesson->id }}][{{ $code }}]"
-                                                                                            value="{{ $i }}" data-event-id="{{ $trainingEvent->id }}" data-lesson-id="{{ $task->defLesson->id }}" data-user-id="{{ $student->id ?? '' }}" data-code="{{ $code }}" data-color-class="{{ $colorClass }}"
-                                                                                            {{ $selectedCompGrade == $i ? 'checked' : '' }}>
-                                                                                        <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
-                                                                                    </label>
-                                                                                    </td>
-                                                                                    @endfor
-                                                                            </tr>
-                                                                        </tbody>
-                                                                    </table>
-                                                                    <span class="custom-radio competent comp_grade_{{ $task->defLesson->id }}_{{ $student->id ?? '' }}"></span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <!-- Toggleable Comment Box -->
-                                                        <div class="collapse mt-2" id="competency-box-{{ $code }}">
-                                                            <textarea name="comp_comments[{{ $task->defLesson->id }}][{{ $code }}]" rows="3" class="form-control" placeholder="Add remarks or comments on competency">{{ $selectedCompComment }}</textarea>
-                                                        </div>
-                                                        @endforeach
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <label>Lesson Summary</label>
-                                                    <textarea name="def_lesson_summary[{{ $task->def_lesson_id }}]" rows="3" class="form-control" placeholder="Write Lesson Summary">{{ old("def_lesson_summary.$task->def_lesson_id ", $defLesson->lesson_summary ?? '') }}</textarea>
-                                                </div>
+                        <!-- Deferred Lessons section remains unchanged, assuming no redirect needed there -->
 
-                                                <div>
-                                                    <label>Instructor Comment</label>
-                                                    <textarea name="def_instructor_summary[{{ $task->def_lesson_id }}]" rows="3" class="form-control" placeholder="Instructor Comment">{{ old("def_instructor_summary.$task->def_lesson_id ", $defLesson->instructor_comment ?? '') }}</textarea>
-                                                </div>
-                                                <i><strong> Notes: </strong> for training manager/instructors only</i>
+                        @if($lessonType == 'deferred' || !$lessonType)
+                        @php
+                        $filteredDeferred = $requestedLessonId
+                        ? $defLessonTasks->where('def_lesson_id', $requestedLessonId)
+                        : $defLessonTasks;
+                        @endphp
 
-                                                <!-- // Logs -->
-                                                @if(!empty($grouped_deferredLogs) && $grouped_deferredLogs->count() > 0)
-                                                <?php
-                                                $lessonLogs = $grouped_deferredLogs->get($defLessonId, collect()); // <-- safe fallback
-                                                ?>
-                                                @if($lessonLogs->isNotEmpty())
-                                                <div class="accordion-body mt-3">
-                                                    <h5 class="text-primary mb-2">
-                                                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Training Logs
-                                                    </h5>
-                                                    <table class="table table-striped table-bordered align-middle mb-0">
-                                                        <thead class="table-light text-center">
-                                                            <tr>
-                                                                <th scope="col">User</th>
-                                                                <!-- <th scope="col">Lesson</th> -->
-                                                                <th scope="col">Status</th>
-                                                                <th scope="col">Date</th>
-                                                            </tr>
-                                                        </thead>
+                        @if($filteredDeferred->isNotEmpty())
+                        <h4 class="mb-3 text-primary"><i class="bi bi-exclamation-triangle-fill me-2"></i>Deferred Lessons</h4>
+                        @foreach($filteredDeferred->groupBy('def_lesson_id') as $defLessonId => $tasks)
+                        <form action="" method="POST" id="defGradingFrom">
+                            <input type="hidden" name="lesson_type" value="deferred" />
+                            @php $defLesson = $tasks->first()->defLesson;
+                            $documents = $defLesson?->instructor?->documents; // Only one row expected
+
+                            if ($documents && $documents->licence) {
+                            $instructor_lic_no = $documents->licence;
+                            } elseif ($documents && $documents->licence_2) {
+                            $instructor_lic_no = $documents->licence_2;
+                            } else {
+                            $instructor_lic_no = 'N/A';
+                            }
+
+                            @endphp
+
+                            <?php $is_locked = $defLesson->is_locked; ?>
+                            @csrf
+                            <div class="accordion-item">
+                                <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
+                                <input type="hidden" name="tg_def_user_id" value="{{ $trainingEvent?->student_id }}">
+                                <input type="hidden" name="tg_def_lesson_id[]" value="{{ $defLesson?->id }}">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : '' }}" @if($is_locked !=1) data-bs-toggle="collapse" data-bs-target="#def-lesson-{{ $defLesson?->id }}" aria-expanded="true" @else disabled aria-expanded="false" style="cursor: not-allowed; background-color:#f8f9fa;" @endif type="button"> {{ $defLesson->lesson_title }} {{-- Show lock inside button, after text, only for instructors --}}
+                                        @if($is_locked == 1 && auth()->user()?->is_admin != 1) <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked"> <i class="bi bi-lock-fill"></i> </span>
+                                        @endif
+                                        @php
+                                        // ✅ Get the most recent log for this lesson
+                                        $lessonLogs = $grouped_deferredLogs->get($defLessonId, collect());
+                                        $latestLog = $lessonLogs->sortByDesc('created_at')->first();
+                                        @endphp
+
+                                        @if($is_locked == 1 && $latestLog)
+                                        <small class="text-secondary ms-1">
+                                            (Locked By - {{ $latestLog->users->fname ?? '' }} {{ $latestLog->users->lname ?? '' }},
+                                            Time - {{ \Carbon\Carbon::parse($latestLog->created_at)->format('d M Y, h:i A') }})
+
+                                        </small>
+                                        @endif
+                                    </button>
+
+                                    @if($is_locked == 1 && auth()->user()?->is_admin == 1)
+                                    <button type="button"
+                                        class="btn btn-sm btn-outline-secondary ms-2 unlock-deflesson-btn"
+                                        data-defLesson-id="{{ $defLesson?->id }}"
+                                        data-event-id="{{ $defLesson->event_id }}"
+                                        data-lesson-type="deferred"
+                                        data-bs-toggle="tooltip"
+                                        title="Unlock this event to enable grading edits.">
+                                        <i class="bi bi-lock-fill"></i>
+                                    </button>
+                                    @endif
+                                </h2>
+                                <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
+                                    <div><strong>Instructor:</strong> {{ $defLesson->instructor->fname ?? '' }} {{ $defLesson->instructor->lname ?? '' }}</div>
+                                    <div><strong>Licence No:</strong> {{ $instructor_lic_no }}</div>
+                                    <div><strong>Resource:</strong> {{ $defLesson->resource->name ?? 'N/A' }}</div>
+                                    <div><strong>Lesson Date:</strong> {{ $defLesson?->lesson_date ? \Carbon\Carbon::parse($defLesson->lesson_date)->format('d/m/Y') : 'N/A' }}</div>
+                                    <div><strong>Start Time:</strong> {{ $defLesson?->start_time ? \Carbon\Carbon::parse($defLesson?->start_time)->format('h:i A') : 'N/A' }}</div>
+                                    <div><strong>End Time:</strong> {{ $defLesson?->end_time ? \Carbon\Carbon::parse($defLesson?->end_time)->format('h:i A') : 'N/A' }}</div>
+                                    <div><strong>Departure Airfield:</strong> {{ !empty($defLesson?->departure_airfield) ? strtoupper($defLesson?->departure_airfield) : 'N/A' }}</div>
+                                    <div><strong>Destination Airfield:</strong>{{ !empty($defLesson?->destination_airfield) ? strtoupper($defLesson?->destination_airfield) : 'N/A' }}</div>
+                                </div>
+
+                                @if($is_locked == 1)
+                                <div class="alert alert-warning mb-3">
+                                    This lesson is currently locked. Grading edits are disabled. Unclock the lesson to enable grading edits.
+                                </div>
+                                @else
+                                <div id="def-lesson-{{ $defLesson?->id }}" class="accordion-collapse collapse show" data-bs-parent="#faq-group-2">
+                                    <div class="accordion-body">
+                                        @foreach($tasks as $task)
+                                        <div class="custom-box">
+                                            <div class="header grade_head" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $task->id }}" aria-expanded="false">
+                                                <div class="task-desc">
+                                                    <span class="rmk">RMK</span>
+                                                    <span class="question-mark">?</span>
+                                                    <span class="title">{{ $task->task->title ?? 'Untitled Task' }}</span>
+                                                </div>
+                                                <i class="grade-comment">click to enter comment</i>
+                                            </div>
+                                            <div class="table-container">
+                                                <div class="main-tabledesign">
+                                                    <!-- <h5>{{ $task->user->fname }} {{ $task->user->lname }}</h5> -->
+                                                    @php
+                                                    $selectedGrade = $task->task_grade;
+                                                    $selectedComment = $task->task_comment;
+                                                    $isDeferredGraded = $gradedDefTasksMap->has($task->def_lesson_id . '_' . $task->task_id);
+                                                    @endphp
+                                                    <table>
                                                         <tbody>
-                                                            @foreach($lessonLogs as $log)
                                                             <tr>
-                                                                <td>{{ $log->users->fname ?? '' }} {{ $log->users->lname ?? '' }}</td>
-                                                                <!-- <td>{{ $log->lesson->lesson_title ?? '' }}</td> -->
-                                                                <td>{{ $log->is_locked ? 'Locked' : 'Unlocked' }}</td>
-                                                                <td>{{ $log->created_at->format('d M Y, h:i A') }}</td>
+                                                                <td>
+                                                                    <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
+                                                                        <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
+                                                                        <span class="custom-radio incomplete">Incomplete</span>
+                                                                    </label>
+                                                                </td>
+                                                                <td>
+                                                                    <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
+                                                                        <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
+                                                                        <span class="custom-radio ftr">FTR</span>
+                                                                    </label>
+                                                                </td>
+                                                                <td>
+                                                                    <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
+                                                                        <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Competent" {{ $selectedGrade == 'Competent' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
+                                                                        <span class="custom-radio competent">Competent</span>
+                                                                    </label>
+                                                                </td>
                                                             </tr>
-                                                            @endforeach
                                                         </tbody>
                                                     </table>
                                                 </div>
-                                                @endif
-                                                @endif
-                                                <!-- // End Logs -->
-                                                <div class="btn-container mt-4">
-                                                    <button type="submit" class="btn btn-save" id="submitDefGrading">Save Lesson</button>
-                                                </div>
                                             </div>
+                                        </div>
+                                        <!-- Toggleable Comment Box -->
+                                        <div class="collapse mt-2" id="comment-box-{{ $task->id }}">
+                                            <textarea
+                                                name="task_comment_def[{{ $task->id }}][{{ $task->def_lesson_id }}]"
+                                                rows="3"
+                                                class="form-control"
+                                                placeholder="Add your remarks or feedback here..."
+                                                @if($isDeferredGraded) readonly title="Deferred: You cannot edit this comment." @endif>
+                                            {{ old("task_comment_def.$task->id.$task->def_lesson_id", $selectedComment) }}
+                                            </textarea>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="accordion-item">
+                                        @if($task->task->courseLesson->course->enable_cbta==1)
+                                        <h2 class="accordion-header">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <button type="button" class="accordion-button" data-bs-toggle="collapse"
+                                                    data-bs-target="#comptency-{{ $task->id }}" aria-expanded="false">
+                                                    Overall Competency Grading
+                                                </button>
+                                            </div>
+                                        </h2>
                                         @endif
                                     </div>
-                                </form>
-                                @endforeach
-                            @endif
+                                    <div id="comptency-{{ $task->id }}" class="accordion-collapse collapse">
+                                        <!-- Student name aligned to the right, above the competency grading -->
+                                        <div class="text-end pe-4 pt-2 fw-semibold">
+                                            {{ $student->fname }} {{ $student->lname }}
+                                        </div>
+                                        <div class="accordion-body">
+                                            @php
+                                            $competencies = [
+                                            'KNO' => 'Application of knowledge',
+                                            'PRO' => 'Application of Procedures and compliance with regulations',
+                                            'COM' => 'Communication',
+                                            'FPA' => 'Aeroplane flight path management - automation',
+                                            'FPM' => 'Aeroplane flight path management - Manual Control',
+                                            'LTW' => 'Leadership & Teamwork',
+                                            'PSD' => 'Problem-solving - decision-making',
+                                            'SAW' => 'Situation awareness and management of information',
+                                            'WLM' => 'Workload Management',
+                                            ];
+                                            $lessonCompetencies = $def_grading[$task->defLesson->id] ?? collect();
+                                            @endphp
+                                            @foreach($competencies as $code => $title)
+                                            @php
+                                            $code = strtolower($code); // make sure it's lowercase
+                                            $grading = $lessonCompetencies->first();
+
+                                            $selectedCompGrade = $grading?->{$code . '_grade'} ?? null;
+                                            $selectedCompComment = $grading?->{$code . '_comment'} ?? null;
+                                            @endphp
+
+                                            <div class="custom-box">
+                                                <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $code }}" aria-expanded="false">
+                                                    <span class="rmk">RMK</span>
+                                                    <span class="question-mark">?</span>
+                                                    <span class="title"><span class="highlight">{{ $title }} ({{ strtoupper($code) }})</span></span>
+                                                    <input type="hidden" name="cg_lesson_id" value="{{ $task->defLesson->id }}">
+                                                </div>
+                                                <div class="table-container">
+                                                    <div class="main-tabledesign">
+                                                        <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
+                                                        <table>
+                                                            <tbody>
+                                                                <tr>
+                                                                    @for ($i = 1; $i <= 5; $i++)
+                                                                        @php
+                                                                        $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
+                                                                        @endphp
+                                                                        <td>
+                                                                        <label class="radio-label">
+                                                                            <input type="radio" class="scale-radio"
+                                                                                name="comp_grade[{{ $task->defLesson->id }}][{{ $code }}]"
+                                                                                value="{{ $i }}" data-event-id="{{ $trainingEvent->id }}" data-lesson-id="{{ $task->defLesson->id }}" data-user-id="{{ $student->id ?? '' }}" data-code="{{ $code }}" data-color-class="{{ $colorClass }}"
+                                                                                {{ $selectedCompGrade == $i ? 'checked' : '' }}>
+                                                                            <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
+                                                                        </label>
+                                                                        </td>
+                                                                        @endfor
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <span class="custom-radio competent comp_grade_{{ $task->defLesson->id }}_{{ $student->id ?? '' }}"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Toggleable Comment Box -->
+                                            <div class="collapse mt-2" id="competency-box-{{ $code }}">
+                                                <textarea name="comp_comments[{{ $task->defLesson->id }}][{{ $code }}]" rows="3" class="form-control" placeholder="Add remarks or comments on competency">{{ $selectedCompComment }}</textarea>
+                                            </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label>Lesson Summary</label>
+                                        <textarea name="def_lesson_summary[{{ $task->def_lesson_id }}]" rows="3" class="form-control" placeholder="Write Lesson Summary">{{ old("def_lesson_summary.$task->def_lesson_id ", $defLesson->lesson_summary ?? '') }}</textarea>
+                                    </div>
+
+                                    <div>
+                                        <label>Instructor Comment</label>
+                                        <textarea name="def_instructor_summary[{{ $task->def_lesson_id }}]" rows="3" class="form-control" placeholder="Instructor Comment">{{ old("def_instructor_summary.$task->def_lesson_id ", $defLesson->instructor_comment ?? '') }}</textarea>
+                                    </div>
+                                    <i><strong> Notes: </strong> for training manager/instructors only</i>
+
+                                    <!-- // Logs -->
+                                    @if(!empty($grouped_deferredLogs) && $grouped_deferredLogs->count() > 0)
+                                    <?php
+                                    $lessonLogs = $grouped_deferredLogs->get($defLessonId, collect()); // <-- safe fallback
+                                    ?>
+                                    @if($lessonLogs->isNotEmpty())
+                                    <div class="accordion-body mt-3">
+                                        <h5 class="text-primary mb-2">
+                                            <i class="bi bi-exclamation-triangle-fill me-2"></i> Training Logs
+                                        </h5>
+                                        <table class="table table-striped table-bordered align-middle mb-0">
+                                            <thead class="table-light text-center">
+                                                <tr>
+                                                    <th scope="col">User</th>
+                                                    <!-- <th scope="col">Lesson</th> -->
+                                                    <th scope="col">Status</th>
+                                                    <th scope="col">Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($lessonLogs as $log)
+                                                <tr>
+                                                    <td>{{ $log->users->fname ?? '' }} {{ $log->users->lname ?? '' }}</td>
+                                                    <!-- <td>{{ $log->lesson->lesson_title ?? '' }}</td> -->
+                                                    <td>{{ $log->is_locked ? 'Locked' : 'Unlocked' }}</td>
+                                                    <td>{{ $log->created_at->format('d M Y, h:i A') }}</td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    @endif
+                                    @endif
+                                    <!-- // End Logs -->
+                                    <div class="btn-container mt-4">
+                                        <button type="submit" class="btn btn-save" id="submitDefGrading">Save Lesson</button>
+                                    </div>
+                                </div>
+                                @endif
+                            </div>
+                        </form>
+                        @endforeach
                         @endif
-                        
+                        @endif
+
                         <!-- Custom Lessons section remains unchanged, assuming no redirect needed there -->
 
                         @if($lessonType == 'custom' || !$lessonType)
 
-                            @php
-                                $filteredCustom = $requestedLessonId
-                                    ? $customLessonTasks->where('def_lesson_id', $requestedLessonId)
-                                    : $customLessonTasks;
-                            @endphp
-                            
-                            @if($filteredCustom->isNotEmpty())
-                                <h4 class="mb-3 text-primary"><i class="bi bi-exclamation-triangle-fill me-2"></i>Custom Lessons</h4>
-                                @foreach($filteredCustom->groupBy('def_lesson_id') as $defLessonId => $tasks)
-                                    <form action="" method="POST" id="customGradingFrom">
-                                        <input type="hidden" name="lesson_type" value="custom" />
-                                        @php $defLesson = $tasks->first()->defLesson;
-                                        $documents = $defLesson?->instructor?->documents; // Only one row expected
+                        @php
+                        $filteredCustom = $requestedLessonId
+                        ? $customLessonTasks->where('def_lesson_id', $requestedLessonId)
+                        : $customLessonTasks;
+                        @endphp
 
-                                        if ($documents && $documents->licence) {
-                                        $instructor_lic_no = $documents->licence;
-                                        } elseif ($documents && $documents->licence_2) {
-                                        $instructor_lic_no = $documents->licence_2;
-                                        } else {
-                                        $instructor_lic_no = 'N/A';
-                                        }
-                                        @endphp
-                                        <?php $is_locked = $defLesson->is_locked; ?>
-                                        @csrf
-                                        <div class="accordion-item">
-                                            <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
-                                            <input type="hidden" name="tg_def_user_id" value="{{ $trainingEvent?->student_id }}">
-                                            <input type="hidden" name="tg_def_lesson_id[]" value="{{ $defLesson?->id }}">
-                                            <h2 class="accordion-header">
-                                                <!-- <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : 'collapsed' }}"
+                        @if($filteredCustom->isNotEmpty())
+                        <h4 class="mb-3 text-primary"><i class="bi bi-exclamation-triangle-fill me-2"></i>Custom Lessons</h4>
+                        @foreach($filteredCustom->groupBy('def_lesson_id') as $defLessonId => $tasks)
+                        <form action="" method="POST" id="customGradingFrom">
+                            <input type="hidden" name="lesson_type" value="custom" />
+                            @php $defLesson = $tasks->first()->defLesson;
+                            $documents = $defLesson?->instructor?->documents; // Only one row expected
+
+                            if ($documents && $documents->licence) {
+                            $instructor_lic_no = $documents->licence;
+                            } elseif ($documents && $documents->licence_2) {
+                            $instructor_lic_no = $documents->licence_2;
+                            } else {
+                            $instructor_lic_no = 'N/A';
+                            }
+                            @endphp
+                            <?php $is_locked = $defLesson->is_locked; ?>
+                            @csrf
+                            <div class="accordion-item">
+                                <input type="hidden" name="event_id" value="{{ $trainingEvent->id }}">
+                                <input type="hidden" name="tg_def_user_id" value="{{ $trainingEvent?->student_id }}">
+                                <input type="hidden" name="tg_def_lesson_id[]" value="{{ $defLesson?->id }}">
+                                <h2 class="accordion-header">
+                                    <!-- <button class="accordion-button {{ $is_locked == 1 ? 'collapsed disabled' : 'collapsed' }}"
                                                     @if($is_locked !=1)
                                                     data-bs-toggle="collapse"
                                                     data-bs-target="#def-lesson-{{ $defLesson?->id }}"
@@ -1904,263 +1993,263 @@
                                                     style="cursor: not-allowed; background-color:#f8f9fa;"
                                                     @endif
                                                     type="button"> -->
-                                                    <button class="accordion-button" type="button" aria-expanded="true" style="cursor: default;">
+                                    <button class="accordion-button" type="button" aria-expanded="true" style="cursor: default;">
 
-                                                    {{ $defLesson->lesson_title }}
+                                        {{ $defLesson->lesson_title }}
 
-                                                    @if($is_locked == 1 && auth()->user()?->is_admin != 1)
-                                                    <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
-                                                        <i class="bi bi-lock-fill"></i>
-                                                    </span>
+                                        @if($is_locked == 1 && auth()->user()?->is_admin != 1)
+                                        <span class="ms-2 text-muted" data-bs-toggle="tooltip" title="This lesson is locked">
+                                            <i class="bi bi-lock-fill"></i>
+                                        </span>
 
-                                                    @endif
-                                                    <?php
-                                                    if ($is_locked == 1) {
-                                                        $lessonLogs = $grouped_customLogs->get($defLessonId, collect());
-                                                        $latestLog = $lessonLogs->sortByDesc('created_at')->first();
-                                                    }
-                                                    ?>
+                                        @endif
+                                        <?php
+                                        if ($is_locked == 1) {
+                                            $lessonLogs = $grouped_customLogs->get($defLessonId, collect());
+                                            $latestLog = $lessonLogs->sortByDesc('created_at')->first();
+                                        }
+                                        ?>
 
-                                                    @if($is_locked == 1 && $latestLog)
-                                                    <small class="text-secondary ms-1">
-                                                        (Locked By - {{ $latestLog->users->fname ?? '' }} {{ $latestLog->users->lname ?? '' }},
-                                                        Time - {{ \Carbon\Carbon::parse($latestLog->created_at)->format('d M Y, h:i A') }})
+                                        @if($is_locked == 1 && $latestLog)
+                                        <small class="text-secondary ms-1">
+                                            (Locked By - {{ $latestLog->users->fname ?? '' }} {{ $latestLog->users->lname ?? '' }},
+                                            Time - {{ \Carbon\Carbon::parse($latestLog->created_at)->format('d M Y, h:i A') }})
 
-                                                    </small>
-                                                    @endif
-                                                </button>
+                                        </small>
+                                        @endif
+                                    </button>
 
 
-                                                @if($is_locked == 1 && auth()->user()?->is_admin == 1)
-                                                {{-- Unlock button for admin --}}
-                                                <button type="button"
-                                                    class="btn btn-sm btn-outline-secondary ms-2 unlock-deflesson-btn"
-                                                    data-defLesson-id="{{ $defLesson?->id }}"
-                                                    data-event-id="{{ $defLesson->event_id }}"
-                                                    data-lesson-type="custom"
-                                                    data-bs-toggle="tooltip"
-                                                    title="Unlock this event to enable grading edits.">
-                                                    <i class="bi bi-lock-fill"></i>
-                                                </button>
-                                                @endif
-                                            </h2>
+                                    @if($is_locked == 1 && auth()->user()?->is_admin == 1)
+                                    {{-- Unlock button for admin --}}
+                                    <button type="button"
+                                        class="btn btn-sm btn-outline-secondary ms-2 unlock-deflesson-btn"
+                                        data-defLesson-id="{{ $defLesson?->id }}"
+                                        data-event-id="{{ $defLesson->event_id }}"
+                                        data-lesson-type="custom"
+                                        data-bs-toggle="tooltip"
+                                        title="Unlock this event to enable grading edits.">
+                                        <i class="bi bi-lock-fill"></i>
+                                    </button>
+                                    @endif
+                                </h2>
 
-                                            <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
-                                                <div><strong>Instructor:</strong> {{ $defLesson->instructor->fname ?? '' }} {{ $defLesson->instructor->lname ?? '' }}</div>
-                                                <div><strong>Licence No:</strong> {{ $instructor_lic_no }}</div>
-                                                <div><strong>Resource:</strong> {{ $defLesson->resource->name ?? 'N/A' }}</div>
-                                                <div><strong>Lesson Date:</strong> {{ $defLesson?->lesson_date ? \Carbon\Carbon::parse($defLesson->lesson_date)->format('d/m/Y') : 'N/A' }}</div>
-                                                <div><strong>Start Time:</strong> {{ $defLesson?->start_time ? \Carbon\Carbon::parse($defLesson?->start_time)->format('h:i A') : 'N/A' }}</div>
-                                                <div><strong>End Time:</strong> {{ $defLesson?->end_time ? \Carbon\Carbon::parse($defLesson?->end_time)->format('h:i A') : 'N/A' }}</div>
-                                                <div><strong>Departure Airfield:</strong> {{ !empty($defLesson?->departure_airfield) ? strtoupper($defLesson?->departure_airfield) : 'N/A' }}</div>
-                                                <div><strong>Destination Airfield:</strong>{{ !empty($defLesson?->destination_airfield) ? strtoupper($defLesson?->destination_airfield) : 'N/A' }}</div>
-                                            </div>
+                                <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
+                                    <div><strong>Instructor:</strong> {{ $defLesson->instructor->fname ?? '' }} {{ $defLesson->instructor->lname ?? '' }}</div>
+                                    <div><strong>Licence No:</strong> {{ $instructor_lic_no }}</div>
+                                    <div><strong>Resource:</strong> {{ $defLesson->resource->name ?? 'N/A' }}</div>
+                                    <div><strong>Lesson Date:</strong> {{ $defLesson?->lesson_date ? \Carbon\Carbon::parse($defLesson->lesson_date)->format('d/m/Y') : 'N/A' }}</div>
+                                    <div><strong>Start Time:</strong> {{ $defLesson?->start_time ? \Carbon\Carbon::parse($defLesson?->start_time)->format('h:i A') : 'N/A' }}</div>
+                                    <div><strong>End Time:</strong> {{ $defLesson?->end_time ? \Carbon\Carbon::parse($defLesson?->end_time)->format('h:i A') : 'N/A' }}</div>
+                                    <div><strong>Departure Airfield:</strong> {{ !empty($defLesson?->departure_airfield) ? strtoupper($defLesson?->departure_airfield) : 'N/A' }}</div>
+                                    <div><strong>Destination Airfield:</strong>{{ !empty($defLesson?->destination_airfield) ? strtoupper($defLesson?->destination_airfield) : 'N/A' }}</div>
+                                </div>
 
-                                            @if($is_locked)
-                                                <div class="alert alert-warning mb-3">
-                                                    This lesson is currently locked. Grading edits are disabled. Unclock the lesson to enable grading edits.
+                                @if($is_locked)
+                                <div class="alert alert-warning mb-3">
+                                    This lesson is currently locked. Grading edits are disabled. Unclock the lesson to enable grading edits.
+                                </div>
+                                @else
+                                <div id="def-lesson-{{ $defLesson?->id }}" class="accordion-collapse collapse show" data-bs-parent="#faq-group-2">
+                                    <div class="accordion-body">
+                                        @foreach($tasks as $task)
+
+                                        <div class="custom-box">
+                                            <div class="header grade_head" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $task->id }}" aria-expanded="false">
+                                                <div class="task-desc">
+                                                    <span class="rmk">RMK</span>
+                                                    <span class="question-mark">?</span>
+                                                    <span class="title">{{ $task->task->title ?? 'Untitled Task' }}</span>
                                                 </div>
-                                            @else
-                                                <div id="def-lesson-{{ $defLesson?->id }}" class="accordion-collapse collapse show" data-bs-parent="#faq-group-2">
-                                                    <div class="accordion-body">
-                                                        @foreach($tasks as $task)
-
-                                                        <div class="custom-box">
-                                                            <div class="header grade_head" data-bs-toggle="collapse" data-bs-target="#comment-box-{{ $task->id }}" aria-expanded="false">
-                                                                <div class="task-desc">
-                                                                    <span class="rmk">RMK</span>
-                                                                    <span class="question-mark">?</span>
-                                                                    <span class="title">{{ $task->task->title ?? 'Untitled Task' }}</span>
-                                                                </div>
-                                                                <i class="grade-comment">click to enter comment</i>
-                                                            </div>
-                                                            <div class="table-container">
-                                                                <div class="main-tabledesign">
-                                                                    <!-- <h5>{{ $task->user->fname }} {{ $task->user->lname }}</h5> -->
-                                                                    @php
-                                                                    $selectedGrade = $task->task_grade;
-                                                                    $selectedComment = $task->task_comment;
-                                                                    $isDeferredGraded = $gradedDefTasksMap->has($task->def_lesson_id . '_' . $task->task_id);
-                                                                    @endphp
-                                                                    <table>
-                                                                        <tbody>
-                                                                            <tr>
-                                                                                <td>
-                                                                                    <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
-                                                                                        <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
-                                                                                        <span class="custom-radio incomplete">Incomplete</span>
-                                                                                    </label>
-                                                                                </td>
-                                                                                <td>
-                                                                                    <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
-                                                                                        <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
-                                                                                        <span class="custom-radio ftr">FTR</span>
-                                                                                    </label>
-                                                                                </td>
-                                                                                <td>
-                                                                                    <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
-                                                                                        <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Competent" {{ $selectedGrade == 'Competent' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
-                                                                                        <span class="custom-radio competent">Competent</span>
-                                                                                    </label>
-                                                                                </td>
-                                                                            </tr>
-                                                                        </tbody>
-                                                                    </table>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <!-- Toggleable Comment Box -->
-                                                        <div class="collapse mt-2" id="comment-box-{{ $task->id }}">
-                                                            <!-- <textarea name="task_comment_def[{{ $task->id }}]" rows="3" class="form-control" placeholder="Add your remarks or feedback here..." @if($isDeferredGraded) readonly title="Deferred: You cannot edit this comment." @endif>{{ old("task_comment_def.$task->id", $selectedComment) }}
+                                                <i class="grade-comment">click to enter comment</i>
+                                            </div>
+                                            <div class="table-container">
+                                                <div class="main-tabledesign">
+                                                    <!-- <h5>{{ $task->user->fname }} {{ $task->user->lname }}</h5> -->
+                                                    @php
+                                                    $selectedGrade = $task->task_grade;
+                                                    $selectedComment = $task->task_comment;
+                                                    $isDeferredGraded = $gradedDefTasksMap->has($task->def_lesson_id . '_' . $task->task_id);
+                                                    @endphp
+                                                    <table>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>
+                                                                    <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
+                                                                        <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
+                                                                        <span class="custom-radio incomplete">Incomplete</span>
+                                                                    </label>
+                                                                </td>
+                                                                <td>
+                                                                    <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
+                                                                        <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
+                                                                        <span class="custom-radio ftr">FTR</span>
+                                                                    </label>
+                                                                </td>
+                                                                <td>
+                                                                    <label class="radio-label" title="{{ $isDeferredGraded ? 'Already added to deferred task. Editing not allowed' : '' }}">
+                                                                        <input type="radio" name="task_grade_def[{{ $task->id }}][{{ $task->def_lesson_id }}]" value="Competent" {{ $selectedGrade == 'Competent' ? 'checked' : '' }} {{ $isDeferredGraded ? 'disabled' : '' }}>
+                                                                        <span class="custom-radio competent">Competent</span>
+                                                                    </label>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Toggleable Comment Box -->
+                                        <div class="collapse mt-2" id="comment-box-{{ $task->id }}">
+                                            <!-- <textarea name="task_comment_def[{{ $task->id }}]" rows="3" class="form-control" placeholder="Add your remarks or feedback here..." @if($isDeferredGraded) readonly title="Deferred: You cannot edit this comment." @endif>{{ old("task_comment_def.$task->id", $selectedComment) }}
                                                             </textarea> -->
 
-                                                            <textarea name="task_comment_def[{{ $task->id }}][{{ $task->def_lesson_id }}]"
-                                                                rows="3"
-                                                                class="form-control"
-                                                                placeholder="Add your remarks or feedback here..."
-                                                                @if($isDeferredGraded) readonly title="Deferred: You cannot edit this comment." @endif>
-                                                            {{ old("task_comment_def.$task->id.$task->def_lesson_id", $selectedComment) }}
-                                                            </textarea>
-                                                        </div>
-                                                        @endforeach
-                                                    </div>
-                                                    <div class="accordion-item">
-                                                        @if($task->task->courseLesson->course->enable_cbta==1)
-                                                        <h2 class="accordion-header">
-                                                            <div class="d-flex justify-content-between align-items-center">
-                                                                <button type="button" class="accordion-button" data-bs-toggle="collapse"
-                                                                    data-bs-target="#comptency-{{ $task->id }}" aria-expanded="false">
-                                                                    Overall Competency Grading
-                                                                </button>
-                                                            </div>
-                                                        </h2>
-                                                        @endif
-                                                    </div>
+                                            <textarea name="task_comment_def[{{ $task->id }}][{{ $task->def_lesson_id }}]"
+                                                rows="3"
+                                                class="form-control"
+                                                placeholder="Add your remarks or feedback here..."
+                                                @if($isDeferredGraded) readonly title="Deferred: You cannot edit this comment." @endif>
+                                            {{ old("task_comment_def.$task->id.$task->def_lesson_id", $selectedComment) }}
+                                            </textarea>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="accordion-item">
+                                        @if($task->task->courseLesson->course->enable_cbta==1)
+                                        <h2 class="accordion-header">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <button type="button" class="accordion-button" data-bs-toggle="collapse"
+                                                    data-bs-target="#comptency-{{ $task->id }}" aria-expanded="false">
+                                                    Overall Competency Grading
+                                                </button>
+                                            </div>
+                                        </h2>
+                                        @endif
+                                    </div>
 
-                                                    <div id="comptency-{{ $task->id }}" class="accordion-collapse collapse">
-                                                        <!-- Student name aligned to the right, above the competency grading -->
-                                                        <div class="text-end pe-4 pt-2 fw-semibold">
-                                                            {{ $student->fname }} {{ $student->lname }}
-                                                        </div>
-                                                        <div class="accordion-body">
-                                                            @php
-                                                            $competencies = [
-                                                            'KNO' => 'Application of knowledge',
-                                                            'PRO' => 'Application of Procedures and compliance with regulations',
-                                                            'COM' => 'Communication',
-                                                            'FPA' => 'Aeroplane flight path management - automation',
-                                                            'FPM' => 'Aeroplane flight path management - Manual Control',
-                                                            'LTW' => 'Leadership & Teamwork',
-                                                            'PSD' => 'Problem-solving - decision-making',
-                                                            'SAW' => 'Situation awareness and management of information',
-                                                            'WLM' => 'Workload Management',
-                                                            ];
-                                                            $lessonCompetencies = $def_grading[$task->defLesson->id] ?? collect();
-                                                            @endphp
-                                                            @foreach($competencies as $code => $title)
-                                                            @php
-                                                            $code = strtolower($code); // make sure it's lowercase
-                                                            $grading = $lessonCompetencies->first();
+                                    <div id="comptency-{{ $task->id }}" class="accordion-collapse collapse">
+                                        <!-- Student name aligned to the right, above the competency grading -->
+                                        <div class="text-end pe-4 pt-2 fw-semibold">
+                                            {{ $student->fname }} {{ $student->lname }}
+                                        </div>
+                                        <div class="accordion-body">
+                                            @php
+                                            $competencies = [
+                                            'KNO' => 'Application of knowledge',
+                                            'PRO' => 'Application of Procedures and compliance with regulations',
+                                            'COM' => 'Communication',
+                                            'FPA' => 'Aeroplane flight path management - automation',
+                                            'FPM' => 'Aeroplane flight path management - Manual Control',
+                                            'LTW' => 'Leadership & Teamwork',
+                                            'PSD' => 'Problem-solving - decision-making',
+                                            'SAW' => 'Situation awareness and management of information',
+                                            'WLM' => 'Workload Management',
+                                            ];
+                                            $lessonCompetencies = $def_grading[$task->defLesson->id] ?? collect();
+                                            @endphp
+                                            @foreach($competencies as $code => $title)
+                                            @php
+                                            $code = strtolower($code); // make sure it's lowercase
+                                            $grading = $lessonCompetencies->first();
 
-                                                            $selectedCompGrade = $grading?->{$code . '_grade'} ?? null;
-                                                            $selectedCompComment = $grading?->{$code . '_comment'} ?? null;
-                                                            @endphp
+                                            $selectedCompGrade = $grading?->{$code . '_grade'} ?? null;
+                                            $selectedCompComment = $grading?->{$code . '_comment'} ?? null;
+                                            @endphp
 
-                                                            <div class="custom-box">
-                                                                <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $code }}" aria-expanded="false">
-                                                                    <span class="rmk">RMK</span>
-                                                                    <span class="question-mark">?</span>
-                                                                    <span class="title"><span class="highlight">{{ $title }} ({{ strtoupper($code) }})</span></span>
-                                                                    <input type="hidden" name="cg_lesson_id" value="{{ $task->defLesson->id }}">
-                                                                </div>
-                                                                <div class="table-container">
-                                                                    <div class="main-tabledesign">
-                                                                        <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
-                                                                        <table>
-                                                                            <tbody>
-                                                                                <tr>
-                                                                                    @for ($i = 1; $i <= 5; $i++)
-                                                                                        @php
-                                                                                        $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
-                                                                                        @endphp
-                                                                                        <td>
-                                                                                        <label class="radio-label">
-                                                                                            <input type="radio" class="scale-radio"
-                                                                                                name="comp_grade[{{ $task->defLesson->id }}][{{ $code }}]"
-                                                                                                value="{{ $i }}" data-event-id="{{ $trainingEvent->id }}" data-lesson-id="{{ $task->defLesson->id }}" data-user-id="{{ $student->id ?? '' }}" data-code="{{ $code }}" data-color-class="{{ $colorClass }}"
-                                                                                                {{ $selectedCompGrade == $i ? 'checked' : '' }}>
-                                                                                            <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
-                                                                                        </label>
-                                                                                        </td>
-                                                                                        @endfor
-                                                                                </tr>
-                                                                            </tbody>
-                                                                        </table>
-                                                                        <span class="custom-radio competent comp_grade_{{ $task->defLesson->id }}_{{ $student->id ?? '' }}"></span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <!-- Toggleable Comment Box -->
-                                                            <div class="collapse mt-2" id="competency-box-{{ $code }}">
-                                                                <textarea name="comp_comments[{{ $task->defLesson->id }}][{{ $code }}]" rows="3" class="form-control" placeholder="Add remarks or comments on competency">{{ $selectedCompComment }}</textarea>
-                                                            </div>
-                                                            @endforeach
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <label>Lesson Summary</label>
-                                                        <textarea name="def_lesson_summary[{{ $task->def_lesson_id }}]" rows="3" class="form-control" placeholder="Write Lesson Summary">{{ old("def_lesson_summary.$task->def_lesson_id ", $defLesson->lesson_summary ?? '') }}</textarea>
-                                                    </div>
-
-                                                    <div class="mt-3">
-                                                        <label>Instructor Comment</label>
-                                                        <textarea name="def_instructor_summary[{{ $task->def_lesson_id }}]" rows="3" class="form-control" placeholder="Instructor Comment">{{ old("def_instructor_summary.$task->def_lesson_id ", $defLesson->instructor_comment ?? '') }}</textarea>
-                                                    </div>
-                                                    <i><strong> Notes: </strong> for training manager/instructors only</i>
-
-                                                    <!-- // Logs -->
-                                                    @if(!empty($grouped_customLogs) && $grouped_customLogs->count() > 0)
-                                                    <?php
-                                                    $lessonLogs = $grouped_customLogs->get($defLessonId, collect()); // <-- safe fallback
-                                                    ?>
-                                                    @if($lessonLogs->isNotEmpty())
-                                                    <div class="accordion-body mt-3">
-                                                        <h5 class="text-primary mb-2">
-                                                            <i class="bi bi-exclamation-triangle-fill me-2"></i> Training Logs
-                                                        </h5>
-                                                        <table class="table table-striped table-bordered align-middle mb-0">
-                                                            <thead class="table-light text-center">
-                                                                <tr>
-                                                                    <th scope="col">User</th>
-                                                                    <!-- <th scope="col">Lesson</th> -->
-                                                                    <th scope="col">Status</th>
-                                                                    <th scope="col">Date</th>
-                                                                </tr>
-                                                            </thead>
+                                            <div class="custom-box">
+                                                <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $code }}" aria-expanded="false">
+                                                    <span class="rmk">RMK</span>
+                                                    <span class="question-mark">?</span>
+                                                    <span class="title"><span class="highlight">{{ $title }} ({{ strtoupper($code) }})</span></span>
+                                                    <input type="hidden" name="cg_lesson_id" value="{{ $task->defLesson->id }}">
+                                                </div>
+                                                <div class="table-container">
+                                                    <div class="main-tabledesign">
+                                                        <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
+                                                        <table>
                                                             <tbody>
-                                                                @foreach($lessonLogs as $log)
                                                                 <tr>
-                                                                    <td>{{ $log->users->fname ?? '' }} {{ $log->users->lname ?? '' }}</td>
-                                                                    <!-- <td>{{ $log->lesson->lesson_title ?? '' }}</td> -->
-                                                                    <td>{{ $log->is_locked ? 'Locked' : 'Unlocked' }}</td>
-                                                                    <td>{{ $log->created_at->format('d M Y, h:i A') }}</td>
+                                                                    @for ($i = 1; $i <= 5; $i++)
+                                                                        @php
+                                                                        $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
+                                                                        @endphp
+                                                                        <td>
+                                                                        <label class="radio-label">
+                                                                            <input type="radio" class="scale-radio"
+                                                                                name="comp_grade[{{ $task->defLesson->id }}][{{ $code }}]"
+                                                                                value="{{ $i }}" data-event-id="{{ $trainingEvent->id }}" data-lesson-id="{{ $task->defLesson->id }}" data-user-id="{{ $student->id ?? '' }}" data-code="{{ $code }}" data-color-class="{{ $colorClass }}"
+                                                                                {{ $selectedCompGrade == $i ? 'checked' : '' }}>
+                                                                            <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
+                                                                        </label>
+                                                                        </td>
+                                                                        @endfor
                                                                 </tr>
-                                                                @endforeach
                                                             </tbody>
                                                         </table>
-                                                    </div>
-                                                    @endif
-                                                    @endif
-                                                    <!-- // End Logs -->
-                                                    <div class="btn-container mt-3">
-                                                        <button type="submit" class="btn btn-save" id="submitDefGrading">Save Lesson</button>
+                                                        <span class="custom-radio competent comp_grade_{{ $task->defLesson->id }}_{{ $student->id ?? '' }}"></span>
                                                     </div>
                                                 </div>
-                                            @endif
+                                            </div>
+                                            <!-- Toggleable Comment Box -->
+                                            <div class="collapse mt-2" id="competency-box-{{ $code }}">
+                                                <textarea name="comp_comments[{{ $task->defLesson->id }}][{{ $code }}]" rows="3" class="form-control" placeholder="Add remarks or comments on competency">{{ $selectedCompComment }}</textarea>
+                                            </div>
+                                            @endforeach
                                         </div>
-                                    </form>
-                                @endforeach
-                            @endif
+                                    </div>
+                                    <div>
+                                        <label>Lesson Summary</label>
+                                        <textarea name="def_lesson_summary[{{ $task->def_lesson_id }}]" rows="3" class="form-control" placeholder="Write Lesson Summary">{{ old("def_lesson_summary.$task->def_lesson_id ", $defLesson->lesson_summary ?? '') }}</textarea>
+                                    </div>
+
+                                    <div class="mt-3">
+                                        <label>Instructor Comment</label>
+                                        <textarea name="def_instructor_summary[{{ $task->def_lesson_id }}]" rows="3" class="form-control" placeholder="Instructor Comment">{{ old("def_instructor_summary.$task->def_lesson_id ", $defLesson->instructor_comment ?? '') }}</textarea>
+                                    </div>
+                                    <i><strong> Notes: </strong> for training manager/instructors only</i>
+
+                                    <!-- // Logs -->
+                                    @if(!empty($grouped_customLogs) && $grouped_customLogs->count() > 0)
+                                    <?php
+                                    $lessonLogs = $grouped_customLogs->get($defLessonId, collect()); // <-- safe fallback
+                                    ?>
+                                    @if($lessonLogs->isNotEmpty())
+                                    <div class="accordion-body mt-3">
+                                        <h5 class="text-primary mb-2">
+                                            <i class="bi bi-exclamation-triangle-fill me-2"></i> Training Logs
+                                        </h5>
+                                        <table class="table table-striped table-bordered align-middle mb-0">
+                                            <thead class="table-light text-center">
+                                                <tr>
+                                                    <th scope="col">User</th>
+                                                    <!-- <th scope="col">Lesson</th> -->
+                                                    <th scope="col">Status</th>
+                                                    <th scope="col">Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($lessonLogs as $log)
+                                                <tr>
+                                                    <td>{{ $log->users->fname ?? '' }} {{ $log->users->lname ?? '' }}</td>
+                                                    <!-- <td>{{ $log->lesson->lesson_title ?? '' }}</td> -->
+                                                    <td>{{ $log->is_locked ? 'Locked' : 'Unlocked' }}</td>
+                                                    <td>{{ $log->created_at->format('d M Y, h:i A') }}</td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    @endif
+                                    @endif
+                                    <!-- // End Logs -->
+                                    <div class="btn-container mt-3">
+                                        <button type="submit" class="btn btn-save" id="submitDefGrading">Save Lesson</button>
+                                    </div>
+                                </div>
+                                @endif
+                            </div>
+                        </form>
+                        @endforeach
+                        @endif
                         @endif
                     </div>
                 </div>
@@ -3039,7 +3128,7 @@
                 $('#normalLessonModel').modal('show');
             });
 
-            $(document).on('click', '.view-result-icon', function () {
+            $(document).on('click', '.view-result-icon', function() {
                 let quizId = $(this).data('quiz-id');
                 let userId = $(this).data('user-id');
 
@@ -3119,7 +3208,7 @@
         const cancelBtn = document.getElementById('cancelBtn');
         const actionButtons = document.getElementById('actionButtons');
 
-        editBtn.addEventListener('click', function () {
+        editBtn.addEventListener('click', function() {
             document.querySelectorAll('.editable').forEach(el => {
                 originalValues[el.name] = el.value;
                 el.removeAttribute('disabled');
@@ -3134,7 +3223,7 @@
             editBtn.classList.add('d-none');
         });
 
-        cancelBtn.addEventListener('click', function () {
+        cancelBtn.addEventListener('click', function() {
             document.querySelectorAll('.editable').forEach(el => {
                 el.value = originalValues[el.name];
                 el.setAttribute('disabled', true);
@@ -3144,60 +3233,59 @@
             editBtn.classList.remove('d-none');
         });
 
-        form.addEventListener('submit', function (e) {
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
 
             const formData = new FormData(form);
             const alertBox = document.getElementById('lessonAlert');
 
             fetch(form.action, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                    'Accept': 'application/json'
-                },
-                body: formData
-            })
-            .then(res => res.json())
-            .then(response => {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(response => {
 
-                if (response.success) {
-                    document.querySelectorAll('.editable').forEach(el => {
-                        el.setAttribute('disabled', true);
-                    });
+                    if (response.success) {
+                        document.querySelectorAll('.editable').forEach(el => {
+                            el.setAttribute('disabled', true);
+                        });
 
-                    actionButtons.classList.add('d-none');
-                    editBtn.classList.remove('d-none');
+                        actionButtons.classList.add('d-none');
+                        editBtn.classList.remove('d-none');
 
-                    document.querySelectorAll('.editable').forEach(el => {
-                        originalValues[el.name] = el.value;
-                    });
+                        document.querySelectorAll('.editable').forEach(el => {
+                            originalValues[el.name] = el.value;
+                        });
 
-                    alertBox.classList.remove('d-none', 'alert-danger');
-                    alertBox.classList.add('alert-success');
-                    alertBox.textContent = 'Lesson updated successfully';
+                        alertBox.classList.remove('d-none', 'alert-danger');
+                        alertBox.classList.add('alert-success');
+                        alertBox.textContent = 'Lesson updated successfully';
 
-                } else {
+                    } else {
+                        alertBox.classList.remove('d-none', 'alert-success');
+                        alertBox.classList.add('alert-danger');
+                        alertBox.textContent = response.message || 'Something went wrong';
+                    }
+
+                    setTimeout(() => {
+                        alertBox.classList.add('d-none');
+                    }, 3000);
+                })
+                .catch(() => {
                     alertBox.classList.remove('d-none', 'alert-success');
                     alertBox.classList.add('alert-danger');
-                    alertBox.textContent = response.message || 'Something went wrong';
-                }
+                    alertBox.textContent = 'Server error. Please try again.';
 
-                setTimeout(() => {
-                    alertBox.classList.add('d-none');
-                }, 3000);
-            })
-            .catch(() => {
-                alertBox.classList.remove('d-none', 'alert-success');
-                alertBox.classList.add('alert-danger');
-                alertBox.textContent = 'Server error. Please try again.';
-
-                setTimeout(() => {
-                    alertBox.classList.add('d-none');
-                }, 3000);
-            });
+                    setTimeout(() => {
+                        alertBox.classList.add('d-none');
+                    }, 3000);
+                });
         });
-
     </script>
 
 

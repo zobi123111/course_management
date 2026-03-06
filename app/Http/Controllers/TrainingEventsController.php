@@ -2174,6 +2174,39 @@ class TrainingEventsController extends Controller
                 }
             }
 
+            // Pilot Grading
+              if ($request->has('pilot_grade')) { 
+                foreach ($request->input('pilot_grade') as $lesson_id => $competencyGrades) {
+                    foreach ($competencyGrades as $competency_id => $grade) {
+
+                        // fetch comment if exists
+                        $comment = $request->input("pilot_comments.$lesson_id.$competency_id");
+                         
+                        $compData = [
+                            'event_id'          => $event_id,
+                            'cbta_gradings_id'  => $competency_id,
+                            'user_id'           => $gradedStudentIdForComp,
+                            'lesson_id'         => $lesson_id,
+                            'competency_value'  => $grade,
+                            'competency_type'   => 'pilot',
+                            'comment'           => $comment ?? null,
+                        ];
+
+
+                        ExaminerGrading::updateOrCreate(
+                            [
+                                'event_id' => $event_id,
+                                'lesson_id'  => $lesson_id,
+                                'cbta_gradings_id' => $competency_id,
+                                'competency_type'   => 'pilot',
+                                'user_id' => $gradedStudentIdForComp,
+                            ],
+                            $compData
+                        );
+                    }
+                }
+            }
+
             // Commit the transaction on success    
             DB::commit();
             Session::flash('message', 'Student grading updated successfully.');
@@ -3939,7 +3972,7 @@ class TrainingEventsController extends Controller
             'eventLessons' => function ($q) {
                 $q->orderBy('position', 'asc'); 
             },
-            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id,position,instructor_cbta,examiner_cbta,description,student_briefing',
+            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id,position,instructor_cbta,examiner_cbta,pilot_cbta,description,student_briefing',
             'eventLessons.instructor:id,fname,lname', 
             'eventLessons.resource:id,name',
             'trainingFeedbacks.question',
@@ -4152,7 +4185,7 @@ class TrainingEventsController extends Controller
         $course = Courses::with('resources')->find($trainingEvent->course_id);
         $resources = $course ? $course->resources : collect();
 
-        $courses = Courses::orderBy('position')->get();
+        $courses = Courses::orderBy('position')->get(); 
         $event_id =  decode_id($event_id);
 
         // $instructor_cbta = CbtaGrading::where('competency_type', 'instructor')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
@@ -4162,19 +4195,24 @@ class TrainingEventsController extends Controller
 
         $instructorQuery = CbtaGrading::where('competency_type', 'instructor');
         $examinerQuery = CbtaGrading::where('competency_type', 'examiner');
+        $pilotQuery = CbtaGrading::where('competency_type', 'pilot');
 
         if ($trainingEvent->created_at >= $dateCheck) {
             $instructorQuery->where('ou_id', $trainingEvent->ou_id);
             $examinerQuery->where('ou_id', $trainingEvent->ou_id);
+            $pilotQuery->where('ou_id', $trainingEvent->ou_id);
         }
 
         $instructor_cbta = $instructorQuery->get()->toArray();
         $examiner_cbta   = $examinerQuery->get()->toArray();
+        $pilot_cbta      = $pilotQuery->get()->toArray();
 
         $instructor_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'instructor')->get()->toArray();
 
         $examiner_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'examiner')->get()->toArray();
-        
+        $pilot_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'pilot')->get()->toArray();
+
+       // dd($pilot_grading);
 
 
         $training_logs = TrainingEventLog::with('users', 'lesson.quizzes')
@@ -4203,9 +4241,9 @@ class TrainingEventsController extends Controller
                         
 
         $grouped_customLogs = $training_custom_logs->groupBy('lesson_id');
-
+       // dd($instructor_cbta);
             
-        return view('trainings.lessonpage', compact('trainingEvent', 'lesson_id', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'lessondetails', 'deflessondetails', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs'));
+        return view('trainings.lessonpage', compact('trainingEvent', 'lesson_id', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'lessondetails', 'deflessondetails', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta','pilot_cbta', 'examiner_grading','pilot_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs'));
     }
 
 

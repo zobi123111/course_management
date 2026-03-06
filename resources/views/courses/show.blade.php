@@ -483,6 +483,12 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="enable_pilot_cbta" name="enable_pilot_cbta">
+                            <label class="form-check-label" for="enable_pilot_cbta"> Enable Pilot CBTA</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="email" class="form-label">Status<span class="text-danger">*</span></label>
                         <select class="form-select" name="status" aria-label="Default select example">
                             <option value="1" selected>Active</option>
@@ -614,6 +620,12 @@
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="edit_enable_instructor_cbta" name="edit_enable_instructor_cbta">
                             <label class="form-check-label" for="edit_enable_instructor_cbta"> Enable Instructor CBTA</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="edit_enable_pilot_cbta" name="edit_enable_pilot_cbta">
+                            <label class="form-check-label" for="edit_enable_pilot_cbta"> Enable Pilot CBTA</label>
                         </div>
                     </div>
                     <div class="form-group">
@@ -864,9 +876,14 @@ $(document).ready(function() {
                     $('#edit_enable_instructor_cbta').prop('checked', false);
                 }
                 if (response.lesson.examiner_cbta == 1){
-                        $('#edit_enable_examiner_cbta').prop('checked', true);
+                    $('#edit_enable_examiner_cbta').prop('checked', true);
                 }else{
-                        $('#edit_enable_examiner_cbta').prop('checked', false);
+                    $('#edit_enable_examiner_cbta').prop('checked', false);
+                }
+                if (response.lesson.pilot_cbta == 1){
+                    $('#edit_enable_pilot_cbta').prop('checked', true);
+                }else{
+                    $('#edit_enable_pilot_cbta').prop('checked', false);
                 }
 
                 if (response.lesson.custom_time_id) {
