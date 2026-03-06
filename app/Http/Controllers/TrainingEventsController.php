@@ -1093,6 +1093,10 @@ class TrainingEventsController extends Controller
             $instructorQuery->where('ou_id', $trainingEvent->ou_id);
             $examinerQuery->where('ou_id', $trainingEvent->ou_id);
         }
+        else{
+            $instructorQuery->whereNull('ou_id');
+            $examinerQuery->whereNull('ou_id');
+        }
 
         $instructor_cbta = $instructorQuery->get()->toArray();
         $examiner_cbta   = $examinerQuery->get()->toArray();
@@ -1380,6 +1384,10 @@ class TrainingEventsController extends Controller
         if ($trainingEvent->created_at >= $dateCheck) {
             $instructorQuery->where('ou_id', $trainingEvent->ou_id);
             $examinerQuery->where('ou_id', $trainingEvent->ou_id);
+        }
+        else{
+            $instructorQuery->whereNull('ou_id');
+            $examinerQuery->whereNull('ou_id');
         }
 
         $instructor_cbta = $instructorQuery->get()->toArray();
@@ -4166,6 +4174,10 @@ class TrainingEventsController extends Controller
         if ($trainingEvent->created_at >= $dateCheck) {
             $instructorQuery->where('ou_id', $trainingEvent->ou_id);
             $examinerQuery->where('ou_id', $trainingEvent->ou_id);
+        }
+        else{
+            $instructorQuery->whereNull('ou_id');
+            $examinerQuery->whereNull('ou_id');
         }
 
         $instructor_cbta = $instructorQuery->get()->toArray();
