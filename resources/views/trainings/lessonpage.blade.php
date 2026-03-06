@@ -26,12 +26,22 @@
             margin-bottom: 15px !important;
         }
 
-        .accordion-button::after {
+        /* hide the pseudo-element arrow only for non-toggleable buttons;
+           toggleable panels (examiner/instructor) will get their own visibility */
+        .accordion-button:not(.toggleable)::after {
             display: none;
         }
 
+        /* by default all accordion buttons are non-interactive so that
+           the parent panels stay open.  We'll selectively re-enable
+           pointer events on those we want to toggle (examiner/instructor) */
         .accordion-button {
             pointer-events: none;
+        }
+
+        /* clicking should be allowed on any button we mark with .toggleable */
+        .accordion-button.toggleable {
+            pointer-events: auto;
         }
 
         .course-dropdown .dropdown-list {
@@ -86,7 +96,9 @@
             background: #f8f9fa;
         }
 
-        .accordion-button::after {
+        .accordion-button.toggleable::after {
+            /* make sure arrow is shown for toggled panels */
+            display: inline-block;
             flex-shrink: 0;
             width: 1.25rem;
             height: 1.25rem;
@@ -1279,7 +1291,7 @@
                                                     @if($lesson->examiner_cbta == 1)
                                                     <h2 class="accordion-header">
                                                         <div class="d-flex justify-content-between align-items-center">
-                                                            <button type="button" class="accordion-button" data-bs-toggle="collapse"
+                                                            <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
                                                                 data-bs-target="#examiner-{{ $eventLesson->id }}" aria-expanded="false">
                                                                 Examiner Competency Grading
                                                             </button>
@@ -1361,7 +1373,7 @@
                                                     @if($lesson->instructor_cbta == 1)
                                                     <h2 class="accordion-header">
                                                         <div class="d-flex justify-content-between align-items-center">
-                                                            <button type="button" class="accordion-button" data-bs-toggle="collapse"
+                                                            <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
                                                                 data-bs-target="#instructor-{{ $eventLesson->id }}" aria-expanded="false">
                                                                 Instructor Competency Grading
                                                             </button>
