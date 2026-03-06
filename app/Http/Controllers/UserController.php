@@ -1137,6 +1137,7 @@ class UserController extends Controller
                         'expiry_date'        => $request->expiry_date[$index] ?? null,
                         'certificate_file'   => $filePath,
                         'admin_verification_required' => $request->licence_validation_verification_required[$index] ?? 0,
+                        'validation_non_expiring' => $request->licence_validation_non_expiring[$index] ?? 0,
                     ]);
                 }
             }
@@ -1545,6 +1546,7 @@ class UserController extends Controller
                                 'expiry_date'       => $request->edit_expiry_date[$index] ?? null,
                                 'certificate_file'  => $filePath,
                                 'admin_verification_required' => isset($request->edit_licence_validation_verification_required[$index]) ? 1 : 0,
+                                'validation_non_expiring' => isset($request->edit_licence_validation_non_expiring[$index]) ? 1 : 0,
                             ]);
                             continue;
                         }
@@ -1562,6 +1564,7 @@ class UserController extends Controller
                         'expiry_date'        => $request->edit_expiry_date[$index] ?? null,
                         'certificate_file'   => $filePath,
                         'admin_verification_required' => isset($request->edit_licence_validation_verification_required[$index]) ? 1 : 0,
+                        'validation_non_expiring' => isset($request->edit_licence_validation_non_expiring[$index]) ? 1 : 0,
                     ]);
                     // $newModel created; its id will be added by the keepIds logic below
                 }
@@ -2491,6 +2494,38 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Document invalidated successfully.'
+        ]);
+    }
+    
+    public function validationVerify(Request $request)
+    {
+        $UserId = $request->userId;
+        $licenceValidation = $request->licenceValidation;
+        $verified = $request->verified;
+
+        $uservalidation = UserLicenseValidation::where('id', $licenceValidation)->where('user_id', $UserId)->first();
+
+        $uservalidation->verified = $verified;
+
+        $uservalidation->save();
+
+        return response()->json(['success' => 'Licence verification updated successfully.']);
+    }
+
+    public function invalidateValidation(Request $request)
+    {
+        $UserId = $request->user_id;
+        $licenceValidation = $request->licenceValidation;
+
+        $uservalidation = UserLicenseValidation::where('id', $licenceValidation)->where('user_id', $UserId)->first();
+
+        $uservalidation->verified = 0;
+
+        $uservalidation->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Licence invalidated successfully.'
         ]);
     }
 
