@@ -12,8 +12,8 @@ class CbtaControlller extends Controller
     public function index()
     {
      if(auth()->user()->is_owner == 1){
-        $instructor =  CbtaGrading::with('organization_unit')->where('competency_type', 'instructor')->get();
-        $examiner =  CbtaGrading::with('organization_unit')->where('competency_type', 'examiner')->get();
+        $instructor =  CbtaGrading::with('organization_unit')->where('competency_type', 'instructor')->whereNotNull('ou_id')->get();
+        $examiner =  CbtaGrading::with('organization_unit')->where('competency_type', 'examiner')->whereNotNull('ou_id')->get();
 
      }else{
       $instructor =  CbtaGrading::with('organization_unit')->where('competency_type', 'instructor')->where('ou_id', auth()->user()->ou_id)->get();
