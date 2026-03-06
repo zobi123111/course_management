@@ -303,7 +303,6 @@ class BookingController extends Controller
             'booking_type'      => 'required|in:1,2,3',
             'resource_type'     => 'required|in:1,2,3',
             'resource'          => 'required',
-
         ];
 
         if ($request->booking_type == 2 || $request->booking_type == 3) {
@@ -442,11 +441,11 @@ class BookingController extends Controller
                 'lesson_date'        => $request->lesson_date,
                 'start_time'         => $start,
                 'end_time'           => $end,
-                'departure_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($request->departure_airfield),
-                'destination_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($request->destination_airfield,),
+                'departure_airfield' =>  strtoupper($request->departure_airfield),
+                'destination_airfield' =>  strtoupper($request->destination_airfield,),
                 'instructor_license_number' => $request->licence_number ?? null,
                 'hours_credited'    => gmdate("H:i", $creditMinutes * 60),
-                'operation1'        => $request->Operation ?? null,
+                'operation1'        => $request->operation  ?? null,
                 'role1'             => $request->role ?? null,
                 'operation2'        =>  null,
                 'role2'             =>  null,
@@ -464,14 +463,15 @@ class BookingController extends Controller
     public function update(Request $request)
     {
         $rules = [
-        // 'organizationUnits' => 'required|exists:organization_units,id',
-        'start_date'        => 'required|date',
-        'end_date'          => 'required|date|after:start_date',
-        'booking_type'      => 'required|in:1,2,3',
-        'resource_type'     => 'required|in:1,2,3',
-        'resource'          => 'required',
+            // 'organizationUnits' => 'required|exists:organization_units,id',
+            'start_date'        => 'required|date',
+            'end_date'          => 'required|date|after:start_date',
+            'booking_type'      => 'required|in:1,2,3',
+            'resource_type'     => 'required|in:1,2,3',
+            'resource'          => 'required',
 
         ];
+        //  dd($request->all()); 
 
         if ($request->booking_type == 2 || $request->booking_type == 3) {
             $rules['instructor'] = 'required';
@@ -487,24 +487,141 @@ class BookingController extends Controller
             $rules['operation'] = 'required';
             $rules['role'] = 'required';
         }
-        // dd($request->all());
-        $booking = Booking::findOrFail($request->id);
-        $booking->ou_id = $request->organizationUnits;
-        $booking->std_id = $request->student ?? Auth::user()->id;
-        $booking->resource = $request->resource_id;
-        $booking->start = $request->start;
-        $booking->end = $request->end;
-        $booking->booking_type = $request->booking_type ?? $booking->booking_type;
-        $booking->resource_type = $request->resource_type ?? $booking->resource_type;
-        $booking->instructor_id = $request->instructor_id ?? $booking->instructor_id;
-        $booking->send_email = $request->boolean('send_email') ? 1 : 0;
-        // $booking->status = 'pending';
-        $booking->save();
+
+        $validated = $request->validate($rules);
+        // dd($request->all()); 
+
+        $booking_update = array(
+            "ou_id"         => $request->organizationUnits ?? Auth::user()->ou_id,
+            "std_id"        => $request->student ?? Auth::user()->id,
+            "resource"      => $request->resource,
+            "start"         => $request->start_date,
+            "end"           => $request->end_date,
+            "booking_type"  => $request->booking_type,
+            "resource_type" => $request->resource_type,
+            "instructor_id" => $request->instructor,
+            // "send_email "   => $request->boolean('send_email') ? 1 : 0,
+        );
+
+        //  dd($booking_update);
+
+        $update_booking =  Booking::where('id', $request->id)->update($booking_update);
+
+        if ($request->booking_type == 2 || $request->booking_type == 3) {
+
+            $update_trainingEvent = array(
+                'student_id'        => $request->student,
+                'course_id'         => $request->course,
+                'lesson_ids'        => json_encode([$request->lesson]),
+                'event_date'        => $request->course_date,
+                'total_time'        => $request->total_time,
+                'std_license_number' => $request->licence_number,
+                'ou_id' => auth()->user()->is_owner ? $request->organizationUnits : auth()->user()->ou_id,
+                'entry_source' => NULL,
+                'rank'            => $request->rank ?? null,
+                'trainingEvent_type' => 1
+
+            );
+
+            $trainingEvent = TrainingEvents::where('id', $request->event_id)->first();
+
+            if ($trainingEvent) {
+                $trainingEvent->update($update_trainingEvent);
+                $event_id = $trainingEvent->id;   // use existing id
+            } else {
+                $trainingEvent = TrainingEvents::create($update_trainingEvent);
+                $event_id = $trainingEvent->id;   // new id
+            }
+
+            //  TrainingEvents::where('id', $request->event_id)->update($update_trainingEvent);
+
+            $lessonModel = \App\Models\CourseLesson::find($request->lesson);
+            $resourceModel = \App\Models\Resource::find($request->resource);
+
+            $lessonType = $lessonModel?->lesson_type;
+            $resourceName = $resourceModel?->name;
+
+            $start = $request->start_time ?? null;
+            $end = $request->end_time ?? null;
+            $creditMinutes = 0;
+
+            //Calculate credit_hours if applicable
+            //Apply logic based on lesson type and resource
+            if ($lessonType === 'groundschool' && $resourceName === 'Homestudy') {
+                // Fixed 8 hours for Homestudy
+                $creditMinutes = 480;
+                $start = '00:00';
+                $end = '08:00';
+            } elseif ($start && $end) {
+                // For all other lessons (including simulator and classroom)
+                try {
+                    $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
+                    $endTime = \Carbon\Carbon::createFromFormat('H:i', $end);
+
+                    if ($endTime->lessThan($startTime)) {
+                        $endTime->addDay(); // Handles overnight sessions
+                    }
+
+                    $creditMinutes = $startTime->diffInMinutes($endTime);
+                } catch (\Exception $e) {
+                    $creditMinutes = 0; // fallback in case of invalid time format
+                }
+            }
+
+            $update_trainingEventLesson = array(
+                'training_event_id'  => $request->event_id,
+                'lesson_id'          => $request->lesson,
+                'instructor_id'      => $request->instructor,
+                'resource_id'        => $request->resource,
+                'lesson_date'        => $request->lesson_date,
+                'start_time'         => $start,
+                'end_time'           => $end,
+                'departure_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($request->departure_airfield),
+                'destination_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($request->destination_airfield,),
+                'instructor_license_number' => $request->licence_number ?? null,
+                'hours_credited'    => gmdate("H:i", $creditMinutes * 60),
+                'operation1'        => $request->operation ?? null,
+                'role1'             => $request->role ?? null,
+                'operation2'        =>  null,
+                'role2'             =>  null,
+
+            );
+
+               $trainingEventLesson = TrainingEventLessons::where('training_event_id', $event_id)->first();
+
+                if ($trainingEventLesson) {
+
+                    TrainingEventLessons::where('training_event_id', $event_id)
+                        ->update($update_trainingEventLesson);
+
+                    $trainingEventLesson_id = $trainingEventLesson->id;  // existing id
+
+                } else {
+
+                    $update_trainingEventLesson['training_event_id'] = $event_id;
+
+                    $trainingEventLesson = TrainingEventLessons::create($update_trainingEventLesson);
+
+                    $trainingEventLesson_id = $trainingEventLesson->id; // new id
+                }
+
+            //  $update_trainingEventLesson =   TrainingEventLessons::where('training_event_id', $request->event_id)->update($update_trainingEventLesson);
+
+           Booking::where('id', $request->id)->update([
+                                'event_id' => $event_id,
+                                'course_id' => $request->course,
+                                'lesson_id' => $request->lesson,
+                                'trainingEventLesson_id' => $trainingEventLesson_id
+                            ]);
+        }
+
+
+
 
         return response()->json([
             'success' => true,
             'message' => 'Booking updated successfully',
-            'booking' => $booking
+            //'booking' => $booking
         ]);
     }
 
@@ -666,5 +783,10 @@ class BookingController extends Controller
         $booking_id = $request->id;
         $booking    =  Booking::with('trainingEventLesson', 'training_event')->where('id', $booking_id)->get();
         return response()->json(['success' => true, 'response' => $booking]);
+    }
+
+    public function trainingeventExist(Request $request)
+    {
+       dd($request->all());
     }
 }

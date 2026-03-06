@@ -18,9 +18,11 @@ class CbtaControlller extends Controller
      }else{
       $instructor =  CbtaGrading::with('organization_unit')->where('competency_type', 'instructor')->where('ou_id', auth()->user()->ou_id)->get();
       $examiner =  CbtaGrading::with('organization_unit')->where('competency_type', 'examiner')->where('ou_id', auth()->user()->ou_id)->get();
+      $pilot =  CbtaGrading::with('organization_unit')->where('competency_type', 'pilot')->where('ou_id', auth()->user()->ou_id)->get();
+
      }
       $organizationUnits  = OrganizationUnits::all();
-      return view('CBTA.show', compact('instructor', 'examiner','organizationUnits'));
+      return view('CBTA.show', compact('instructor', 'examiner','organizationUnits', 'pilot'));
     }
 
 
