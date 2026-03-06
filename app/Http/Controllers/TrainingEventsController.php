@@ -1081,8 +1081,8 @@ class TrainingEventsController extends Controller
         $courses = Courses::orderBy('position')->get();
         $event_id =  decode_id($event_id);
 
-        $instructor_cbta = CbtaGrading::where('competency_type', 'instructor')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
-        $examiner_cbta = CbtaGrading::where('competency_type', 'examiner')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
+        // $instructor_cbta = CbtaGrading::where('competency_type', 'instructor')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
+        // $examiner_cbta = CbtaGrading::where('competency_type', 'examiner')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
         
         $dateCheck = Carbon::parse('2026-02-10');
 
@@ -1372,7 +1372,7 @@ class TrainingEventsController extends Controller
 
         // $instructor_cbta = CbtaGrading::where('competency_type', 'instructor')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
         // $examiner_cbta = CbtaGrading::where('competency_type', 'examiner')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
-        $dateCheck = Carbon::parse('2026-01-01');
+        $dateCheck = Carbon::parse('2026-02-10');
 
         $instructorQuery = CbtaGrading::where('competency_type', 'instructor');
         $examinerQuery = CbtaGrading::where('competency_type', 'examiner');
@@ -4155,10 +4155,10 @@ class TrainingEventsController extends Controller
         $courses = Courses::orderBy('position')->get();
         $event_id =  decode_id($event_id);
 
-        // $instructor_cbta = CbtaGrading::where('competency_type', 'instructor')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
+        $instructor_cbta = CbtaGrading::where('competency_type', 'instructor')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
         // $examiner_cbta = CbtaGrading::where('competency_type', 'examiner')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
 
-        $dateCheck = Carbon::parse('2026-01-01');
+        $dateCheck = Carbon::parse('2026-02-10');
 
         $instructorQuery = CbtaGrading::where('competency_type', 'instructor');
         $examinerQuery = CbtaGrading::where('competency_type', 'examiner');
@@ -4170,6 +4170,8 @@ class TrainingEventsController extends Controller
 
         $instructor_cbta = $instructorQuery->get()->toArray();
         $examiner_cbta   = $examinerQuery->get()->toArray();
+
+        // dd($instructor_cbta);
 
         $instructor_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'instructor')->get()->toArray();
 
