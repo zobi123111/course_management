@@ -281,7 +281,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-12 mt-3">
+                            <div class="col-md-12 mt-3 enable_license_validation_div d-none">
 
                                 <div class="row" id="create_rhs_tag_col">
                                     <div class="col-md-12">
@@ -932,7 +932,7 @@
                     </div>
 
                         <!-- License Validation Edit Section -->
-                        <div class="col-md-12 mt-3">
+                        <div class="col-md-12 mt-3 edit_enable_license_validation_div d-none">
                             <div class="row" id="edit_rhs_tag_col">
                                 <div class="col-md-12">
                                     <div class="mb-3">
@@ -2651,12 +2651,22 @@
                             // Populate template dropdown options
                             populateValidationDropdowns(orgResponse);
 
+                            
+
                             // Then populate rows with existing data
                             if (response.license_validations && response.license_validations.length > 0) {
                                 // Show the section and "Add License Validation" button
                                 // $('#edit_rhs_tag_col').removeClass('d-none');
                                 $('#edit_enable_license_validation').addClass('d-none');
                                 $('#edit_add_license_validation').removeClass('d-none');
+
+                                let enableValidation = orgResponse?.OuSetting?.enable_licence_validation == 1;
+
+                                if (enableValidation) {
+                                    $('.edit_enable_license_validation_div').removeClass('d-none');
+                                } else {
+                                    $('.edit_enable_license_validation_div').addClass('d-none');
+                                }
 
                                 // Populate existing license validations
                                 response.license_validations.forEach(function(validation, index) {
@@ -3087,6 +3097,13 @@
                 
                 }
 
+                if (response.OuSetting && response.OuSetting.enable_licence_validation == 1) { 
+                    $('.enable_license_validation_div, .edit_enable_license_validation_div').removeClass('d-none');
+                }
+                else{
+                    $('.enable_license_validation_div, .edit_enable_license_validation_div').addClass('d-none');
+                }
+
                 populateValidationDropdowns(response);
 
                 // Existing DOB / Phone logic
@@ -3110,6 +3127,7 @@
 
                 let showDob   = response.OuSetting && response.OuSetting.show_dob == 1;
                 let showPhone = response.OuSetting && response.OuSetting.show_phone == 1;
+                let showValidation = response.OuSetting && response.OuSetting.enable_licence_validation == 1;
 
                 // ===== DOB Handling =====
                 if (showDob) {
@@ -3125,6 +3143,12 @@
                 } else {
                     $('.phone_number_div, .create_phone_number_div').hide();
                     $('#phone_number, #create_phone_number').val('');
+                }
+
+                if (showValidation) {
+                    $('.enable_license_validation_div, .edit_enable_license_validation_div').removeClass('d-none');
+                } else {
+                    $('.enable_license_validation_div, .edit_enable_license_validation_div').addClass('d-none');
                 }
 
                 populateValidationDropdowns(response);
