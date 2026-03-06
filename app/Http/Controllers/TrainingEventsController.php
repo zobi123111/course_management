@@ -4171,7 +4171,7 @@ class TrainingEventsController extends Controller
         $instructor_cbta = $instructorQuery->get()->toArray();
         $examiner_cbta   = $examinerQuery->get()->toArray();
 
-        dd($instructor_cbta);
+        // dd($instructor_cbta);
 
         $instructor_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'instructor')->get()->toArray();
 
