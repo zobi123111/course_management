@@ -15,7 +15,7 @@
         font-weight: 500;
     }
 
-    .fc-timeline-slot-cushion {
+    .fc-timeline-slot-cushion { 
         padding: 6px 0;
     }
 
@@ -192,18 +192,18 @@
                                     <a id="bookingInstructor"></a>
                                 </li>
 
-                                <li class="booking-item">
+                                <li class="booking-item" id="booking_course_li">
                                     <i class="bi bi-journal-text booking-icon text-info"
                                         data-bs-toggle="tooltip"
                                         title="Lesson"></i>
-                                    <a id="booking_course">F18: Solo Circuit Consolidation (Static data)</a>
+                                    <a id="booking_course"></a>
                                 </li>
 
-                                <li class="booking-item">
+                                <li class="booking-item" id="booking_lesson_li">
                                     <i class="bi bi-lock-fill booking-icon text-danger"
                                         data-bs-toggle="tooltip"
                                         title="Course"></i>
-                                    <a id="booking_lesson">TK CCTS 1600Z–1645Z BOOKED (Static data)</a>
+                                    <a id="booking_lesson"></a>
                                 </li>
 
                                 <li class="booking-item">
@@ -306,6 +306,7 @@
                             </select>
                         </div>
                         @endif
+                        <input type ="hidden" name="event_id" id="event_id" />
 
                         <div class="col-md-6 form-group">
                             <label>Select Student</label>
@@ -322,11 +323,13 @@
                         <div class="col-md-6 form-group">
                             <label>Start Date</label>
                             <input type="date" name="start_date" id="edit_booking_start" class="form-control mb-2">
+                            <span class="text-danger edit-error-text" id="editerror_start_date"></span>
                         </div>
 
                         <div class="col-md-6 form-group">
                             <label>End Date</label>
                             <input type="date" name="end_date" id="edit_booking_end" class="form-control mb-2">
+                            <span class="text-danger edit-error-text" id="editerror_end_date"></span>
                         </div>
                     </div>
 
@@ -338,15 +341,17 @@
                                 <option value="2">Simulator</option>
                                 <option value="3">Classroom</option>
                             </select>
+                            <span class="text-danger edit-error-text" id="editerror_resource_type"></span>
                         </div>
 
                         <div class="col-md-6 form-group">
                             <label>Booking Type</label>
                             <select id="edit_booking_type" name="booking_type" class="form-control mb-2">
-                                <option value="1">Solo</option>
+                                <option value="1">Resource</option>
                                 <option value="2">Lesson</option>
                                 <option value="3">Standby</option>
                             </select>
+                            <span class="text-danger edit-error-text" id="editerror_booking_type"></span>
                         </div>
                     </div>
 
@@ -358,11 +363,14 @@
                             <div class="col-md-6">
                                 <label>Courses</label>
                                 <select name="course" id="edit_course_booking" class="form-control mb-2"></select>
+                                <span class="text-danger edit-error-text" id="editerror_course"></span>
                             </div>
 
                             <div class="col-md-6">
                                 <label>Lesson</label>
                                 <select name="lesson" id="edit_lesson" class="form-control mb-2"></select>
+                                <span class="text-danger edit-error-text" id="editerror_lesson"></span>
+
                             </div>
                         </div>
 
@@ -374,11 +382,13 @@
                                     <option value="2">First Officer</option>
                                     <option value="3">Second Officer</option>
                                 </select>
+                            <span class="text-danger edit-error-text" id="editerror_rank"></span>
                             </div>
 
                             <div class="col-md-6">
                                 <label>Course Start Date</label>
                                 <input type="date" name="course_date" id="edit_course_date" class="form-control mb-2">
+                                <span class="text-danger edit-error-text" id="editerror_course_date"></span>
                             </div>
                         </div>
 
@@ -386,23 +396,28 @@
                             <div class="col-md-6">
                                 <label>Lesson Date</label>
                                 <input type="date" name="lesson_date" id="edit_lesson_date" class="form-control mb-2">
+                                <span class="text-danger edit-error-text" id="editerror_lesson_date"></span>
                             </div>
 
                             <div class="col-md-6">
                                 <label>Instructor Licence Number</label>
                                 <input type="text" name="licence_number" id="edit_licence_number" class="form-control mb-2" readonly>
+                                <span class="text-danger edit-error-text" id="editerror_licence_number"></span>
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6">
                                 <label>Departure Airfield</label>
-                                <input type="text" id="edit_departure_airfield" class="form-control">
+                                <input type="text" name="departure_airfield" id="edit_departure_airfield" class="form-control">
+                                <span class="text-danger edit-error-text" id="editerror_departure_airfield"></span>
+
                             </div>
 
                             <div class="col-md-6">
                                 <label>Destination Airfield</label>
-                                <input type="text" name="departure_airfield" id="edit_destination_airfield" class="form-control">
+                                <input type="text" name="destination_airfield" id="edit_destination_airfield" class="form-control">
+                                <span class="text-danger edit-error-text" id="editerror_destination_airfield"></span>
                             </div>
                         </div>
 
@@ -416,6 +431,7 @@
                                     <option value="3">PF in RHS</option>
                                     <option value="4">PM in RHS</option>
                                 </select>
+                                <span class="text-danger edit-error-text" id="editerror_operation"></span>
                             </div>
 
                             <div class="col-md-6">
@@ -425,6 +441,7 @@
                                     <option value="1">PF-Pilot Flying</option>
                                     <option value="2">PM-Pilot Monitoring</option>
                                 </select>
+                                <span class="text-danger edit-error-text" id="editerror_role"></span>
                             </div>
                         </div>
 
@@ -433,7 +450,7 @@
                                 <div class="form-group">
                                     <label>Student Licence Number</label>
                                     <input type="text" name="student_licence" id="edit_studentLicence_number" class="form-control mb-2" autocomplete="off" readonly>
-                                    <span class="text-danger error-text" id="error_student_licence"></span>
+                                    <span class="text-danger edit-error-text" id="editerror_student_licence"></span>
                                 </div>
                             </div>
 
@@ -441,7 +458,7 @@
                                 <div class="form-group">
                                     <label>Total Time (hh:mm)*</label>
                                     <input type="text" name="total_time" id="edit_total_time" class="form-control mb-2" autocomplete="off" readonly>
-                                    <span class="text-danger error-text" id="error_total_time"></span>
+                                    <span class="text-danger edit-error-text" id="editerror_total_time"></span>
                                 </div>
                             </div>
                         </div>
@@ -452,12 +469,15 @@
                         <div class="col-md-6">
                             <label>Resource</label>
                             <select name="resource" id="edit_resource" class="form-control mb-2"></select>
+                            <span class="text-danger edit-error-text" id="editerror_resource"></span>
                         </div>
 
                         <div class="col-md-6">
                             <div id="edit_instructor_wrapper" style="display:none">
                                 <label>Instructor</label>
                                 <select name="instructor" id="edit_instructor" class="form-control mb-2"></select>
+                                <span class="text-danger edit-error-text" id="editerror_instructor"></span>
+
                             </div>
                         </div>
                     </div>
@@ -467,11 +487,13 @@
                         <div class="col-md-6">
                             <label>Start Time</label>
                             <input type="time" name="start_time" id="edit_start_time" class="form-control">
+                            <span class="text-danger edit-error-text" id="editerror_start_time"></span>
                         </div>
 
                         <div class="col-md-6">
                             <label>End Time</label>
                             <input type="time" name="end_time" id="edit_end_time" class="form-control">
+                             <span class="text-danger edit-error-text" id="editerror_end_time"></span>
                         </div>
                     </div>
 
@@ -576,7 +598,7 @@
                             <div class="form-group">
                                 <label>Booking Type</label>
                                 <select id="booking_type" name="booking_type" class="form-control mb-2">
-                                    <option value="1">Solo</option>
+                                    <option value="1">Resource</option>
                                     <option value="2">Lesson</option>
                                     <option value="3">Standby</option>
                                 </select>
@@ -756,7 +778,7 @@
                         <div class="col-md-6 form-group">
                             <div class="form-group">
                                 <label>End Time</label>
-                                <input type="time" name="end_time" class="form-control lesson-start-time">
+                                <input type="time" name="end_time" class="form-control lesson-end-time">
                                 <span class="text-danger error-text" id="error_licence_number"></span>
                             </div>
                         </div>
@@ -997,8 +1019,20 @@
                         $('#resource_registration').text(e.registration);
                         $('#booking_student').text(e.student || '').attr('href', SITEURL + '/users/show/' + e.encode_std_id);
                         $('#booking_resource').text(e.resource || '').attr('href', SITEURL + '/resource/show/' + e.resource_id);
-                        $('#booking_course').text(e.course || '').attr('href', SITEURL + '/course/show/' + e.course_id);
-                        $('#booking_lesson').text(e.lesson_title || '').attr('href', `${SITEURL}/lesson-grade?lesson_id=${e.trainingEventLesson_id}&event_id=${e.event_id}`);
+
+                       
+                       console.log(e.course);
+
+                        if (e.course != '') {  
+                            $('#booking_course_li').show();
+                            $('#booking_lesson_li').show();
+                            $('#booking_course').text(e.course || '').attr('href', SITEURL + '/course/show/' + e.course_id);
+                            $('#booking_lesson').text(e.lesson_title || '').attr('href', `${SITEURL}/lesson-grade?lesson_id=${e.trainingEventLesson_id}&event_id=${e.event_id}`);
+
+                        }else{ 
+                            $('#booking_course_li').hide();
+                            $('#booking_lesson_li').hide();
+                        }
 
 
 
@@ -1163,7 +1197,7 @@
             startPicker.clear();
             endPicker.clear();
             $('#create_trainingevent_div').hide();
-            $('.add_resource').val('').trigger('change');
+            $('.add_resource').val('').trigger('change'); 
             $('#time_div').hide();
             $('#organizationUnits').val('').trigger('change');
             $('#add_student').val('').trigger('change');
@@ -1384,6 +1418,7 @@
             $("#viewBookingModal").modal("hide");
             $('#edit_booking_id').val(selectedEvent.id);
             var booking_id = $('#edit_booking_id').val();
+            $('.edit-error-text').text('');
 
             $.ajax({
                 url: SITEURL + "/calendar/edit",
@@ -1391,26 +1426,24 @@
                 data: {
                     id: booking_id
                 },
-                success: function(data) {
+                success: function(data) { 
                     var response = data.response[0];
-
                     $("#edit_organizationUnits").val(response.ou_id).trigger('change');
                     $('#edit_departure_airfield').val(response.training_event_lesson?.departure_airfield ?? '');
                     $('#edit_destination_airfield').val(response.training_event_lesson?.destination_airfield ?? '');
                     $('#edit_lesson_date').val(response.training_event_lesson?.lesson_date ?? '');
                     $('#edit_rank').val(response.training_event?.rank ?? '');
-                    
                     $('#edit_course_date').val(response.training_event?.event_date ?? '');
-
                     $('#edit_operation').val(response.training_event_lesson?.operation1 ?? '');
                     $('#edit_role').val(response.training_event_lesson?.role1 ?? '');
                     $('#edit_studentLicence_number').val(response.training_event?.std_license_number ?? '');
                     $('#edit_total_time').val(response.training_event?.total_time ?? '');
                     $('#edit_start_time').val(response.training_event_lesson?.start_time ?? '');
                     $('#edit_end_time').val(response.training_event_lesson?.end_time ?? '');
-                       
-
-                     
+               
+                    $('#event_id').val(response.event_id);
+                      
+                 
                     // Basic fields
                     $("#edit_booking_id").val(response.id);
                     $("#edit_booking_type").val(response.booking_type);
@@ -1423,12 +1456,18 @@
 
                     setTimeout(function() {
                         $("#edit_resource").val(String(response.resource)).trigger("change");
-                        //  $("#edit_student").val(response.std_id);
                         $("#edit_student").val(response.std_id).trigger('change');
-                        $("#edit_instructor").val(response.instructor_id);
+                      
+                       
 
                         $("#edit_course_booking").val(response.course_id).trigger('change');
                         $("#edit_lesson").val(response.lesson_id);
+
+                        setTimeout(function () {
+                            $("#edit_instructor").val(response.instructor_id).trigger('change');
+                         
+                        }, 300);
+                   
                      
                         window.selectedEditCourseId = response.course_id;
                         window.selectedEditLessonId = response.lesson_id;
@@ -1508,33 +1547,70 @@
             });
         });
 
+        $("#updateBookingBtn").click(function (e) {
+                    e.preventDefault();
 
-        $("#updateBookingBtn").click(function() {
-            let editbookingType = $("#edit_booking_type").val();
-            let editinstructor = $("#edit_instructor").val();
+                    let form = $('#edit_booking_form')[0];
+                    let formData = new FormData(form);
 
-            if ((editbookingType == 2 || editbookingType == 3) && !editinstructor) {
-                toastr.error('Instructor is required for Lesson or Standby booking');
-                return;
-            }
+                    // append booking id manually if needed
+                    formData.append('id', $('#edit_booking_id').val());
 
-            $.post(SITEURL + "/booking/update", {
-                id: $('#edit_booking_id').val(),
-                organizationUnits: $('#edit_organizationUnits').val(),
-                resource_id: $('#edit_resource').val(),
-                student: $('#edit_student').val(),
-                booking_type: $('#edit_booking_type').val(),
-                start: $('#edit_booking_start').val(),
-                end: $('#edit_booking_end').val(),
-                instructor_id: $('#edit_instructor').val(),
-                // send_email: $('#edit_send_email').is(':checked') ? 1 : 0
-            }, function() {
-                toastr.success("Booking Updated");
-                $('#editBookingModal').modal('hide');
-                $('#calendar').fullCalendar('refetchEvents');
-            });
-            initCalendar();
-        });
+                    $.ajax({
+                        url: SITEURL + "/booking/update",
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (response) {
+
+                            toastr.success("Booking Updated");
+
+                            $('#editBookingModal').modal('hide');
+
+                            $('#calendar').fullCalendar('refetchEvents');
+
+                            initCalendar();
+                        },
+                        error: function (xhr) {
+                              if (xhr.status === 422) {
+                                    $('.edit-error-text').text('');
+                                    $.each(xhr.responseJSON.errors, function(k, v) {
+                                        $('#editerror_' + k).text(v[0]);
+
+                                    });
+                                } else {
+                                    alert('Something went wrong');
+                                }
+                        }
+                    });
+
+                });
+
+
+        // $("#updateBookingBtn").click(function() {
+        //     let editbookingType = $("#edit_booking_type").val();
+        //     let editinstructor = $("#edit_instructor").val();
+
+           
+
+        //     $.post(SITEURL + "/booking/update", {
+        //         id: $('#edit_booking_id').val(),
+        //         organizationUnits: $('#edit_organizationUnits').val(),
+        //         resource_id: $('#edit_resource').val(),
+        //         student: $('#edit_student').val(),
+        //         booking_type: $('#edit_booking_type').val(),
+        //         start: $('#edit_booking_start').val(),
+        //         end: $('#edit_booking_end').val(),
+        //         instructor_id: $('#edit_instructor').val(),
+        //         // send_email: $('#edit_send_email').is(':checked') ? 1 : 0
+        //     }, function() {
+        //         toastr.success("Booking Updated");
+        //         $('#editBookingModal').modal('hide');
+        //         $('#calendar').fullCalendar('refetchEvents');
+        //     });
+        //     initCalendar();
+        // });
 
         // APPROVE BOOKING
         $("#approveBtn").on("click", function() {
@@ -1779,6 +1855,7 @@
                 licenseInput.val('');
                 return;
             }
+         
 
             // 🔴 Validation — course required
             if (!selectedCourseId) {
@@ -1875,7 +1952,7 @@
                             if (response.licence_number) {
                                 licenceNumberField.val(response.licence_number);
                             } else {
-                                // alert('Student Licence number not found!');
+                              
                                 licenceNumberField.val('');
                             }
 
@@ -1904,8 +1981,9 @@
             }
         });
 
-        $(document).on('change', '#edit_student', function() {
+        $(document).on('change', '#edit_student', function() { 
             var userId = $(this).val();
+           
             var licenceNumberField = $('#studentLicence_number');
             let $courses = $("#edit_course_booking");
 
@@ -1938,6 +2016,7 @@
                                 });
 
                                 /* ✅ SET SELECTED COURSE HERE */
+                            
                                 if (window.selectedEditCourseId) {
                                     $courses.val(window.selectedEditCourseId).trigger('change');
                                 }
@@ -1968,13 +2047,24 @@
             }
         });
 
+        $(document).on('focus', '#edit_booking_type', function () {
+                previous_booking_type = $(this).val(); // store previous value
+            });
+
         $(document).on('change', '#edit_booking_type', function() {
             var booking_type = $(this).val();
+            var event_id = $('#event_id').val();
+              if (event_id != '') {
+                    alert('Booking type cannot be changed because an event already exists.');
+                    $(this).val(previous_booking_type).trigger('change.select2'); // revert value
+                    return;
+                }
+
+        
             if (booking_type == 1) {
                 $('#edit_trainingevent_div').hide();
                 $('#edit_resource').val('').trigger('change');
                 $('#time_div').hide();
-
 
             } else {
                 $('#edit_trainingevent_div').show();
@@ -1982,37 +2072,39 @@
             }
         });
 
-        $(document).on('change', 'input[name="start_time"], input[name="end_time"]', function() { 
-            calculateTotalTime();
-        });
+  $(document).on('change', 'input[name="start_time"], input[name="end_time"]', function () {
+    calculateTotalTime($(this));
+});
 
-        function calculateTotalTime() {
+function calculateTotalTime(element) {
 
-            let start = $('input[name="start_time"]').val();
-            let end = $('input[name="end_time"]').val();
+    let form = element.closest('form');
 
-            if (start && end) {
+    let start = form.find('input[name="start_time"]').val();
+    let end   = form.find('input[name="end_time"]').val();
 
-                let startTime = moment(start, "HH:mm");
-                let endTime = moment(end, "HH:mm");
+    if (start && end) {
 
-                // handle next day case
-                if (endTime.isBefore(startTime)) {
-                    endTime.add(1, 'day');
-                }
+        let startTime = moment(start, "HH:mm");
+        let endTime   = moment(end, "HH:mm");
 
-                let diffMinutes = endTime.diff(startTime, 'minutes');
-
-                let hours = Math.floor(diffMinutes / 60);
-                let minutes = diffMinutes % 60;
-
-                let formatted =
-                    String(hours).padStart(2, '0') + ":" +
-                    String(minutes).padStart(2, '0');
-
-                $("#total_time").val(formatted);
-            }
+        // handle next day case
+        if (endTime.isBefore(startTime)) {
+            endTime.add(1, 'day');
         }
+
+        let diffMinutes = endTime.diff(startTime, 'minutes');
+
+        let hours = Math.floor(diffMinutes / 60);
+        let minutes = diffMinutes % 60;
+
+        let formatted =
+            String(hours).padStart(2, '0') + ":" +
+            String(minutes).padStart(2, '0');
+
+        form.find('input[name="total_time"]').val(formatted);
+    }
+}
     });
 </script>
 @endsection
