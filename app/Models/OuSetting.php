@@ -16,6 +16,7 @@ class OuSetting extends Model
             'show_phone',
             'send_email',
             'timezone',
-            'enable_tacho_fields'
+            'enable_tacho_fields',
+            'enable_licence_validation'
     ];
 }

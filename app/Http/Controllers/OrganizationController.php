@@ -401,6 +401,8 @@ class OrganizationController extends Controller
 
     public function store_org_setting(Request $request)
     {
+        // dd($request->all());
+
         $validated = $request->validate([
             'organization_unit_id' => 'required|integer|exists:organization_units,id',
             'auto_archive'         => 'required|in:0,1',
@@ -409,7 +411,7 @@ class OrganizationController extends Controller
             'show_phone'           => 'required|in:0,1',
             'enable_tacho_fields'  => 'required|in:0,1',
             'send_email'           => 'required|in:0,1',
-            'timezone'             => 'required'
+            'timezone'             => 'required',
         ]);
         
 
@@ -424,6 +426,7 @@ class OrganizationController extends Controller
                 'enable_tacho_fields'  => $validated['enable_tacho_fields'],
                 'send_email'           => $validated['send_email'],
                 'timezone'             => $validated['timezone'],
+                'enable_licence_validation' => $request->enable_licence_validation ? 1 : 0,
                 
             ]
         );

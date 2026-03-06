@@ -622,8 +622,12 @@
             font-size: 18px;
         }
 
-        .delete-btn:hover i {
+        .document_btn:hover i {
             color: #ffffff !important;
+        }
+
+        .document_btn {
+            padding: 5px 10px !important;
         }
     </style>
 
@@ -2238,15 +2242,15 @@
                                                                         </strong>
                                                                     </div>
 
-                                                                    <div class="d-flex gap-2">
+                                                                    <div class="d-flex">
                                                                         <a href="{{ asset('storage/'.$uploaded->file_path) }}"
                                                                         target="_blank"
-                                                                        class="btn btn-sm btn-outline-success">
-                                                                            <i class="text-primary fas fa-eye"></i> View
+                                                                        class="btn btn-sm btn-outline-success document_btn">
+                                                                            <i class="text-primary fas fa-eye"></i>
                                                                         </a>
 
                                                                         <button type="button"
-                                                                                class="btn btn-sm btn-outline-danger delete-btn"
+                                                                                class="btn btn-sm btn-outline-danger delete-btn document_btn"
                                                                                 onclick="deleteDocument({{ $uploaded->id }})">
                                                                             <i class="fas fa-trash"></i>
                                                                         </button>
