@@ -186,7 +186,7 @@
     </table>
 </div>
 </div>
-<h4>Instructor  Training events</h4> 
+<h4>Instructor Training events</h4> 
 <div class="card pt-4">
         <div class="card-body">
     <table class="table table-hover" id="trainingEventTable">
@@ -250,7 +250,11 @@
                             @if(checkAllowedModule('training','training.show')->isNotEmpty())
                                 <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
                                 <i class="fa fa-eye text-danger me-2"></i>
-                                </a>            
+                                </a> 
+                                
+                                <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="btn btn-sm btn-primary" title="View New Design" style="font-size:18px; cursor: pointer;">
+                                    View
+                                </a>  
                             @endif
                             @if($event->can_end_course)
                                 {{-- Active “End Course” button/icon --}}
@@ -291,7 +295,11 @@
                             @if(checkAllowedModule('training','training.show')->isNotEmpty())
                                 <a href="{{ route('training.show', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Training Event" style="font-size:18px; cursor: pointer;">
                                 <i class="fa fa-eye text-danger me-2"></i>
-                                </a>            
+                                </a>
+                                
+                                <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="btn btn-sm btn-primary" title="View New Design" style="font-size:18px; cursor: pointer;">
+                                    View
+                                </a>  
                             @endif
                             @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
                             <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
