@@ -90,6 +90,7 @@ class LessonController extends Controller
             'enable_cbta' => $request->enable_cbta ?? 0,
             'instructor_cbta' => $request->enable_instructor_cbta ?? 0,
             'examiner_cbta' => $request->enable_examiner_cbta ?? 0,
+            'pilot_cbta' => $request->enable_pilot_cbta ?? 0,
             'custom_time_id' => $request->custom_time_type ?? null,
             'student_briefing' => $request->student_briefing,
         ]);
@@ -198,6 +199,7 @@ class LessonController extends Controller
             'custom_time_id' => $request->edit_custom_time_type ?? null,
             'instructor_cbta' => $request->edit_enable_instructor_cbta ?? 0,
             'examiner_cbta' => $request->edit_enable_examiner_cbta ?? 0,
+            'pilot_cbta' => $request->edit_enable_pilot_cbta ?? 0,
             'student_briefing' => $request->edit_student_briefing,
         ]);
 
