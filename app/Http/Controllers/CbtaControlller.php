@@ -28,30 +28,45 @@ class CbtaControlller extends Controller
 
 
 
-public function save(Request $request)
-{
-    $request->validate([
-        'competency' => [
-            'required',
-            Rule::unique('cbta_gradings')->whereNull('deleted_at')
-        ],
-        'short_name' => [
-            'required',
-            Rule::unique('cbta_gradings')->whereNull('deleted_at')
-        ],
-        'competency_type' => 'required'
-    ]);
+    public function save(Request $request)
+    {
+        $ou_id = (auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+            ? $request->organization_unit
+            : auth()->user()->ou_id;
 
-    CbtaGrading::create([
-        'competency'      => $request->competency,
-        'ou_id' =>  (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->organization_unit : auth()->user()->ou_id,
-        'short_name'      => $request->short_name,
-        'competency_type' => $request->competency_type 
-    ]);
+        $request->validate([
+            'competency' => [
+                'required',
+                Rule::unique('cbta_gradings')->where(function ($query) use ($ou_id, $request) {
+                    return $query->where('ou_id', $ou_id)
+                                ->where('competency_type', $request->competency_type)
+                                ->whereNull('deleted_at');
+                }),
+            ],
+            'short_name' => [
+                'required',
+                Rule::unique('cbta_gradings')->where(function ($query) use ($ou_id, $request) {
+                    return $query->where('ou_id', $ou_id)
+                                ->where('competency_type', $request->competency_type)
+                                ->whereNull('deleted_at');
+                }),
+            ],
+            'competency_type' => 'required'
+        ]);
 
-    Session::flash('message', 'CBTA competency added successfully');
-    return response()->json(['success' => 'CBTA competency added successfully']);
-}
+        CbtaGrading::create([
+            'competency'      => $request->competency,
+            'ou_id'           => $ou_id,
+            'short_name'      => $request->short_name,
+            'competency_type' => $request->competency_type
+        ]);
+
+        Session::flash('message', 'CBTA competency added successfully');
+
+        return response()->json([
+            'success' => 'CBTA competency added successfully'
+        ]);
+    }
 
 
     public function edit(Request $request)
@@ -62,25 +77,49 @@ public function save(Request $request)
 
     public function update(Request $request)
     {
-          $this->validate(request(), [
-            'edit_competency' => 'required',
-             'edit_short_name' => 'required',
-            'edit_competency_type' => 'required'
-            ], [], 
-            [
-                'edit_competency' => 'Competency field',
-                'edit_short_name' => 'Short Name field ',
-            ]);
-    
-           CbtaGrading::where('id', $request->cbta_id)->update([
-                    'competency'      => $request->edit_competency,
-                    'ou_id' =>  (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->organization_unit : auth()->user()->ou_id,
-                    'short_name'      => $request->edit_short_name,
-                    'competency_type' => $request->edit_competency_type
-                ]);
+        $ou_id = (auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+            ? $request->organization_unit
+            : auth()->user()->ou_id;
 
-           Session::flash('message', 'CBTA competency updated successfully');
-          return response()->json(['success' => 'CBTA competency updated successfully']);
+        $request->validate([
+            'edit_competency' => [
+                'required',
+                Rule::unique('cbta_gradings', 'competency')
+                    ->ignore($request->cbta_id)
+                    ->where(function ($query) use ($ou_id, $request) {
+                        return $query->where('ou_id', $ou_id)
+                                    ->where('competency_type', $request->edit_competency_type)
+                                    ->whereNull('deleted_at');
+                    })
+            ],
+            'edit_short_name' => [
+                'required',
+                Rule::unique('cbta_gradings', 'short_name')
+                    ->ignore($request->cbta_id)
+                    ->where(function ($query) use ($ou_id, $request) {
+                        return $query->where('ou_id', $ou_id)
+                                    ->where('competency_type', $request->edit_competency_type)
+                                    ->whereNull('deleted_at');
+                    })
+            ],
+            'edit_competency_type' => 'required'
+        ], [], [
+            'edit_competency' => 'Competency field',
+            'edit_short_name' => 'Short Name field'
+        ]);
+
+        CbtaGrading::where('id', $request->cbta_id)->update([
+            'competency'      => $request->edit_competency,
+            'ou_id'           => $ou_id,
+            'short_name'      => $request->edit_short_name,
+            'competency_type' => $request->edit_competency_type
+        ]);
+
+        Session::flash('message', 'CBTA competency updated successfully');
+
+        return response()->json([
+            'success' => 'CBTA competency updated successfully'
+        ]);
     }
 
     public function delete(Request $request)
