@@ -1,5 +1,5 @@
 @section('title', 'Competency Grading')
-@section('sub-title', 'Competency Grading') 
+@section('sub-title', 'Competency Grading')
 @extends('layout.app')
 @section('content')
 
@@ -11,15 +11,15 @@
 @endif
 
 <div class="main_cont_outer">
-     
+
     <div class="create_btn ">
-         <a href="{{ url('org_setting/'.request('ou_id')) }}" class="btn btn-primary" > <i class="bi bi-arrow-left"></i> Back</a>
-       
+        <a href="{{ url('org_setting/'.request('ou_id')) }}" class="btn btn-primary"> <i class="bi bi-arrow-left"></i> Back</a>
+
         <button class="btn btn-primary create-button" id="create-cbta" data-toggle="modal"
             data-target="#orgUnitModal">Create CBTA</button>
-       
+
     </div>
-   
+
     <br>
     <div id="update_success_msg"></div>
     <div class="card pt-4">
@@ -27,117 +27,172 @@
             <nav>
                 <ul id="myTab" role="tablist"
                     class="nav nav-pills with-arrow flex-column flex-sm-row text-center bg-light border-0 rounded-nav mt-3 mb-4">
+
                     <li class="nav-item flex-sm-fill">
-                        <a class="nav-link font-weight-bold active" id="nav-home-tab" data-bs-toggle="tab"
-                            data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-all"
-                            aria-selected="true">Instructor</a>
+                        <a class="nav-link font-weight-bold active"
+                            id="nav-pilot-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#nav-pilot"
+                            role="tab"
+                            aria-controls="nav-pilot"
+                            aria-selected="true">
+                            Pilot
+                        </a>
                     </li>
+
                     <li class="nav-item flex-sm-fill">
-                        <a class="nav-link font-weight-bold" id="nav-profile-tab" data-bs-toggle="tab"
-                            data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-Approved"
-                            aria-selected="false">Examiner</a> 
+                        <a class="nav-link font-weight-bold"
+                            id="nav-instructor-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#nav-instructor"
+                            role="tab"
+                            aria-controls="nav-instructor"
+                            aria-selected="false">
+                            Instructor
+                        </a>
                     </li>
+
                     <li class="nav-item flex-sm-fill">
-                      <a class="nav-link font-weight-bold" id="nav-pilot-tab" data-bs-toggle="tab"
-                            data-bs-target="#nav-pilot" type="button" role="tab"
-                            aria-controls="nav-pilot" aria-selected="false">Pilot</a>
+                        <a class="nav-link font-weight-bold"
+                            id="nav-examiner-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#nav-examiner"
+                            role="tab"
+                            aria-controls="nav-examiner"
+                            aria-selected="false">
+                            Examiner
+                        </a>
                     </li>
 
                 </ul>
             </nav>
+
             <div class="tab-content border bg-light" id="nav-tabContent">
-                <!-- Pending Payrolls Tab -->
-                <div class="tab-pane fade active show" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
-                    <table class="table table-hover" id="instructorTable">
-                        <thead>
-                            <tr>
-                                <th scope="col">Competency</th> 
-                                <th scope="col">Short Name</th>
-                                <th scope="col">Organization Unit</th>
-                                <th scope="col">Edit</th>
-                                <th scope="col">Delete</th>
-                             
-                            </tr>
-                        </thead>
-                        @foreach ($instructor as $val)
-                        <tr>
-                            <td> {{ $val->competency }}</td>
-                            <td> {{ $val->short_name }}</td>
-                            <td>
-                                {{ optional($val->organization_unit)->org_unit_name ?? 'N/A' }}
-                            </td>
-                            <td>
-                                <i class="fa fa-edit edit-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>
-                            </td>
-                            <td>
-                             <i class="fa-solid fa-trash delete-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>
-                            </td>
-                          
-                        </tr>
-                        @endforeach
 
-                        </tbody>
+                <!-- Pilot Tab -->
+                <div class="tab-pane fade show active"
+                    id="nav-pilot"
+                    role="tabpanel"
+                    aria-labelledby="nav-pilot-tab">
 
-                    </table>
-                </div>
-                <!-- Approved Payrolls Tab -->
-                <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-                    <table class="table table-hover" id="examinerTable">
-                        <thead>
-                            <tr>
-                                <th scope="col">Competency</th>
-                                <th scope="col">Short Name</th>
-                                <th scope="col">Organization Unit</th>
-                                <th scope="col">Action</th>
-                            </tr>
-                        </thead>
-                        @foreach ($examiner as $val)
-                        <tr>
-                            <td> {{ $val->competency }}</td>
-                            <td> {{ $val->short_name }}</td>
-                            <td>
-                                {{ optional($val->organization_unit)->org_unit_name ?? 'N/A' }}
-                            </td>
-                             <td>
-                                <i class="fa fa-edit edit-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>
-                                <i class="fa-solid fa-trash delete-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>
-                            </td>
-                        </tr>
-                        @endforeach
-
-                        </tbody>
-
-                    </table>
-                </div>
-
-                <!-- // Pilot Tab -->
-                <div class="tab-pane fade" id="nav-pilot" role="tabpanel" aria-labelledby="nav-pilot-tab">
                     <table class="table table-hover" id="pilotTable">
                         <thead>
                             <tr>
-                                <th scope="col">Competency</th>
-                                <th scope="col">Short Name</th>
-                                <th scope="col">Organization Unit</th>
-                                <th scope="col">Action</th>
+                                <th>Competency</th>
+                                <th>Short Name</th>
+                                <th>Organization Unit</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
-                        @foreach ($pilot as $val)
-                        <tr>
-                            <td> {{ $val->competency }}</td>
-                            <td> {{ $val->short_name }}</td>
-                            <td>
-                                {{ optional($val->organization_unit)->org_unit_name ?? 'N/A' }}
-                            </td>
-                             <td>
-                                <i class="fa fa-edit edit-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>
-                                <i class="fa-solid fa-trash delete-cbta-icon" style="font-size:25px; cursor: pointer;" data-id = "{{ $val->id }}"></i>
-                            </td>
-                        </tr>
-                        @endforeach
 
+                        <tbody>
+                            @foreach ($pilot as $val)
+                            <tr>
+                                <td>{{ $val->competency }}</td>
+                                <td>{{ $val->short_name }}</td>
+                                <td>{{ optional($val->organization_unit)->org_unit_name ?? 'N/A' }}</td>
+                                <td>
+                                    <i class="fa fa-edit edit-cbta-icon"
+                                        style="font-size:25px;cursor:pointer;"
+                                        data-id="{{ $val->id }}"></i>
+
+                                    <i class="fa-solid fa-trash delete-cbta-icon"
+                                        style="font-size:25px;cursor:pointer;"
+                                        data-id="{{ $val->id }}"></i>
+                                </td>
+                            </tr>
+                            @endforeach
                         </tbody>
 
                     </table>
+
+                </div>
+
+
+                <!-- Instructor Tab -->
+                <div class="tab-pane fade"
+                    id="nav-instructor"
+                    role="tabpanel"
+                    aria-labelledby="nav-instructor-tab">
+
+                    <table class="table table-hover" id="instructorTable">
+                        <thead>
+                            <tr>
+                                <th>Competency</th>
+                                <th>Short Name</th>
+                                <th>Organization Unit</th>
+                                <th>Edit</th>
+                                <th>Delete</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach ($instructor as $val)
+                            <tr>
+                                <td>{{ $val->competency }}</td>
+                                <td>{{ $val->short_name }}</td>
+                                <td>{{ optional($val->organization_unit)->org_unit_name ?? 'N/A' }}</td>
+
+                                <td>
+                                    <i class="fa fa-edit edit-cbta-icon"
+                                        style="font-size:25px;cursor:pointer;"
+                                        data-id="{{ $val->id }}"></i>
+                                </td>
+
+                                <td>
+                                    <i class="fa-solid fa-trash delete-cbta-icon"
+                                        style="font-size:25px;cursor:pointer;"
+                                        data-id="{{ $val->id }}"></i>
+                                </td>
+
+                            </tr>
+                            @endforeach
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- Examiner Tab -->
+                <div class="tab-pane fade"
+                    id="nav-examiner"
+                    role="tabpanel"
+                    aria-labelledby="nav-examiner-tab">
+
+                    <table class="table table-hover" id="examinerTable">
+                        <thead>
+                            <tr>
+                                <th>Competency</th>
+                                <th>Short Name</th>
+                                <th>Organization Unit</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach ($examiner as $val)
+                            <tr>
+                                <td>{{ $val->competency }}</td>
+                                <td>{{ $val->short_name }}</td>
+                                <td>{{ optional($val->organization_unit)->org_unit_name ?? 'N/A' }}</td>
+
+                                <td>
+                                    <i class="fa fa-edit edit-cbta-icon"
+                                        style="font-size:25px;cursor:pointer;"
+                                        data-id="{{ $val->id }}"></i>
+
+                                    <i class="fa-solid fa-trash delete-cbta-icon"
+                                        style="font-size:25px;cursor:pointer;"
+                                        data-id="{{ $val->id }}"></i>
+                                </td>
+
+                            </tr>
+                            @endforeach
+                        </tbody>
+
+                    </table>
+
                 </div>
 
             </div>
@@ -150,7 +205,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="createcbtaModal">Create Organizational Unit</h5>
+                <h5 class="modal-title" id="createcbtaModal">Create Competency Grading</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -164,7 +219,7 @@
                         <select name="organization_unit" class="form-select">
                             <option value="">Select the Organization Unit</option>
                             @foreach ($organizationUnits as $val)
-                               <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>  
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -208,7 +263,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editcbtaModal">Update Organizational Unit</h5>
+                <h5 class="modal-title" id="editcbtaModal">Update Competency Grading</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -222,7 +277,7 @@
                         <select name="organization_unit" id="edit_organization_unit" class="form-select">
                             <option value="">Select the Organization Unit</option>
                             @foreach ($organizationUnits as $val)
-                               <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>  
+                            <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -236,7 +291,7 @@
                     <div class="form-group">
                         <label for="" class="form-label">Short Name</label>
                         <input type="text" name="edit_short_name" class="form-control">
-                        <div id="edit_short_name_error" class="text-danger error_e"></div> 
+                        <div id="edit_short_name_error" class="text-danger error_e"></div>
                     </div>
                     <div class="form-group">
                         <label for="" class="form-label">Competency Type<span
@@ -246,7 +301,7 @@
                             <option value="examiner">Examiner</option>
                             <option value="pilot">Pilot</option>
                         </select>
-                       
+
                     </div>
                     <div class="modal-footer">
                         <a href="#" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
@@ -266,38 +321,38 @@
 
 @section('js_scripts')
 <script>
-    $(document).ready(function () {
+    $(document).ready(function() {
 
-    // Instructor table
-    var instructorTable = $('#instructorTable').DataTable({
-        pageLength: 10,
-        lengthMenu: [10, 20, 50, 100],
-        ordering: true,
-        searching: true,
-        responsive: true
+        // Instructor table
+        var instructorTable = $('#instructorTable').DataTable({
+            pageLength: 10,
+            lengthMenu: [10, 20, 50, 100],
+            ordering: true,
+            searching: true,
+            responsive: true
+        });
+
+        // Examiner table
+        var examinerTable = $('#examinerTable').DataTable({
+            pageLength: 10,
+            lengthMenu: [10, 20, 50, 100],
+            ordering: true,
+            searching: true,
+            responsive: true
+        });
+
+        // Pilot table
+        var examinerTable = $('#pilotTable').DataTable({
+            pageLength: 10,
+            lengthMenu: [10, 20, 50, 100],
+            ordering: true,
+            searching: true,
+            responsive: true
+        });
+
+
+
     });
-
-    // Examiner table
-    var examinerTable = $('#examinerTable').DataTable({ 
-        pageLength: 10,
-        lengthMenu: [10, 20, 50, 100],
-        ordering: true,
-        searching: true,
-        responsive: true
-    });
-
-    // Pilot table
-    var examinerTable = $('#pilotTable').DataTable({ 
-        pageLength: 10,
-        lengthMenu: [10, 20, 50, 100],
-        ordering: true,
-        searching: true,
-        responsive: true
-    });
-
-  
-
-});
 
     $("#create-cbta").on('click', function() {
         $(".error_e").html('');
@@ -305,23 +360,23 @@
         $("#createcbtaModal").modal('show');
     })
 
-      $("#submitCbta").on("click", function(e) {
+    $("#submitCbta").on("click", function(e) {
         e.preventDefault();
         $(".loader").fadeIn();
-        var formData = new FormData($('#cbta_form')[0]); 
+        var formData = new FormData($('#cbta_form')[0]);
         $.ajax({
-            url: '{{ url("/custom-cbta-add") }}', 
+            url: '{{ url("/custom-cbta-add") }}',
             type: 'POST',
             data: formData,
             processData: false,
             contentType: false,
-            success: function(response) { 
-               $('#createcbtaModal').modal('hide');
-               location.reload();
+            success: function(response) {
+                $('#createcbtaModal').modal('hide');
+                location.reload();
             },
             error: function(xhr, status, error) {
                 $(".loader").fadeOut("slow");
-                var errorMessage = JSON.parse(xhr.responseText); 
+                var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
                 $.each(validationErrors, function(key, value) {
                     console.log(key);
@@ -333,12 +388,12 @@
 
     })
 
-       $(document).on('click', '.edit-cbta-icon', function() { 
+    $(document).on('click', '.edit-cbta-icon', function() {
         $('.error_e').html('');
         $("#editcbta_form")[0].reset();
         var CbtaID = $(this).data('id');
         $('#cbta_id').val(CbtaID);
-       
+
         $.ajax({
             url: "{{ url('custom-cbta-edit') }}",
             type: 'post',
@@ -350,11 +405,11 @@
                 if (response.cbta) {
                     $('input[name="edit_competency"]').val(response.cbta[0].competency || '');
                     $('input[name="edit_short_name"]').val(response.cbta[0].short_name || '');
-                    $('#edit_competency_type option[value='+response.cbta[0].competency_type +']').prop('selected', true);
+                    $('#edit_competency_type option[value=' + response.cbta[0].competency_type + ']').prop('selected', true);
                     $('#edit_organization_unit').val(response.cbta[0].ou_id);
-                     
-      
-                   
+
+
+
                 }
                 $('#editcbtaModal').modal('show');
             },
@@ -363,24 +418,24 @@
             }
         });
     });
-      // update  
-      $("#update").on("click", function(e) {
+    // update  
+    $("#update").on("click", function(e) {
         e.preventDefault();
         $(".loader").fadeIn();
-        var formData = new FormData($('#editcbta_form')[0]); 
+        var formData = new FormData($('#editcbta_form')[0]);
         $.ajax({
-            url: '{{ url("/custom-cbta-update") }}', 
+            url: '{{ url("/custom-cbta-update") }}',
             type: 'POST',
             data: formData,
             processData: false,
             contentType: false,
-            success: function(response) { 
-               $('#editcbtaModal').modal('hide');
-               location.reload();
+            success: function(response) {
+                $('#editcbtaModal').modal('hide');
+                location.reload();
             },
             error: function(xhr, status, error) {
                 $(".loader").fadeOut("slow");
-                var errorMessage = JSON.parse(xhr.responseText); 
+                var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
                 $.each(validationErrors, function(key, value) {
                     console.log(key);
@@ -393,34 +448,33 @@
     })
 
     // Delete cbta
- $(".delete-cbta-icon").on("click", function(e) {
-    e.preventDefault();
+    $(".delete-cbta-icon").on("click", function(e) {
+        e.preventDefault();
 
-    var CbtaID = $(this).data('id');
+        var CbtaID = $(this).data('id');
 
-    if (!confirm("Are you sure you want to delete this competency?")) {
-        return false; // stop if user cancels
-    }
-
-    var formData = { 
-        CbtaID: CbtaID, 
-        _token: '{{ csrf_token() }}' // add CSRF token for Laravel
-    };
-
-    $.ajax({
-        url: '{{ url("/custom-cbta-delete") }}',
-        type: 'POST',
-        data: formData,
-        success: function(response) {
-            alert("Deleted successfully!");
-            location.reload();
-        },
-        error: function(xhr, status, error) {
-            alert("Something went wrong!");
+        if (!confirm("Are you sure you want to delete this competency?")) {
+            return false; // stop if user cancels
         }
-    });
-});
 
+        var formData = {
+            CbtaID: CbtaID,
+            _token: '{{ csrf_token() }}' // add CSRF token for Laravel
+        };
+
+        $.ajax({
+            url: '{{ url("/custom-cbta-delete") }}',
+            type: 'POST',
+            data: formData,
+            success: function(response) {
+                alert("Deleted successfully!");
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                alert("Something went wrong!");
+            }
+        });
+    });
 </script>
 
 @endsection
