@@ -281,151 +281,199 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     </td> -->
 
                     <td>
+
                         {{-- ================= UK LICENCE ================= --}}
                         @if($doc && $doc->licence_file)
-                            @php
-                                if ($doc->licence_non_expiring) {
-                                    $status = 'Non-Expiring';
-                                    $color = 'success';
-                                    $date = 'Non-Expiring';
-                                } else {
-                                    $status = $doc->licence_status;
-                                    $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
-                                    $date = $doc->licence_expiry_date
-                                        ? date('d/m/Y', strtotime($doc->licence_expiry_date))
-                                        : 'N/A';
-                                }
-                                $tooltip = getTooltip($status, 'UK Licence', $date);
-                            @endphp
 
-                            <div class="mb-1">
-                                <span class="badge bg-{{ $color }} me-1"
+                        @php
+                            if ($doc->licence_non_expiring) {
+                                $status = 'Non-Expiring';
+                                $color = 'success';
+                                $date = 'Non-Expiring';
+                            } else {
+                                $status = $doc->licence_status;
+                                $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                                $date = $doc->licence_expiry_date
+                                    ? date('d/m/Y', strtotime($doc->licence_expiry_date))
+                                    : 'N/A';
+                            }
+                            $tooltip = getTooltip($status, 'UK Licence', $date);
+
+                            $ukValidations = $user->licenseValidations->where('licence_issued_to','UK');
+                        @endphp
+
+                        <div class="mb-2">
+
+                            <div class="d-flex align-items-center flex-wrap">
+
+                                <span class="badge bg-{{ $color }} me-2"
                                     data-bs-toggle="tooltip"
                                     title="{{ $tooltip }}">
                                     UK Lic
                                 </span>
 
-                                @foreach($user->licenseValidations->where('licence_issued_to', 'UK') as $lv)
-                                    @php
-                                        // DEFAULT
-                                        $lvColor = '#dc3545';
-                                        $lvTooltip = 'Expired / invalid';
+                                @if($ukValidations->count() > 0)
+                                    <button class="btn btn-sm btn-primary toggle-validation"
+                                        data-target="uk-validation-{{ $user->id }}">
+                                        + Validation
+                                    </button>
+                                @endif
 
-                                        // NON-EXPIRING (HIGHEST PRIORITY)
-                                        if ((int) $lv->validation_non_expiring === 1) {
-                                            $lvColor = '#198754';
-                                            $lvTooltip = ($lv->validation->name ?? 'Licence Validation') . ' (Non-Expiring)';
+                            </div>
 
-                                        } elseif (!empty($lv->expiry_date)) {
-                                            $lvDate = \Carbon\Carbon::parse($lv->expiry_date);
+                            {{-- VALIDATIONS --}}
+                            <div id="uk-validation-{{ $user->id }}" class="validation-box mt-1" style="display:none">
 
-                                            if ($lvDate->isPast()) {
-                                                $lvColor = '#dc3545';
-                                                $lvTooltip = 'Expired on ' . $lvDate->format('d/m/Y');
+                                @foreach($ukValidations as $lv)
 
-                                            } elseif ($lvDate->diffInDays(now()) < 90) {
-                                                $lvColor = '#ffc107';
-                                                $lvTooltip = 'Expires on ' . $lvDate->format('d/m/Y');
+                                @php
+                                    $lvColor = '#dc3545';
+                                    $lvTooltip = 'Expired / invalid';
 
-                                            } else {
-                                                if ((int) $lv->admin_verification_required === 1) {
-                                                    $lvColor = '#ffc107';
-                                                    $lvTooltip = 'Pending admin verification';
-                                                } else {
-                                                    $lvColor = '#198754';
-                                                    $lvTooltip = 'Valid till ' . $lvDate->format('d/m/Y');
-                                                }
-                                            }
+                                    if ((int) $lv->validation_non_expiring === 1) {
+                                        $lvColor = '#198754';
+                                        $lvTooltip = ($lv->validation->name ?? 'Licence Validation').' (Non-Expiring)';
+
+                                    } elseif (!empty($lv->expiry_date)) {
+
+                                        $lvDate = \Carbon\Carbon::parse($lv->expiry_date);
+
+                                        if ($lvDate->isPast()) {
+                                            $lvColor = '#dc3545';
+                                            $lvTooltip = 'Expired on '.$lvDate->format('d/m/Y');
+
+                                        } elseif ($lvDate->diffInDays(now()) < 90) {
+                                            $lvColor = '#ffc107';
+                                            $lvTooltip = 'Expires on '.$lvDate->format('d/m/Y');
 
                                         } else {
-                                            $lvColor = '#dc3545';
-                                            $lvTooltip = 'Valid (Expiry Date not entered)';
-                                        }
-                                    @endphp
 
-                                    <span class="badge ms-1"
-                                        style="background-color:{{ $lvColor }}; color:white"
-                                        data-bs-toggle="tooltip"
-                                        title="{{ $lvTooltip }}">
-                                        {{ $lv->validation->code }}
-                                    </span>
+                                            if ((int) $lv->admin_verification_required === 1) {
+                                                $lvColor = '#ffc107';
+                                                $lvTooltip = 'Pending admin verification';
+                                            } else {
+                                                $lvColor = '#198754';
+                                                $lvTooltip = 'Valid till '.$lvDate->format('d/m/Y');
+                                            }
+                                        }
+
+                                    } else {
+                                        $lvColor = '#dc3545';
+                                        $lvTooltip = 'Expired (Expiry Date not entered)';
+                                    }
+                                @endphp
+
+                                <span class="badge me-1"
+                                    style="background-color:{{ $lvColor }}; color:white"
+                                    data-bs-toggle="tooltip"
+                                    title="{{ $lvTooltip }}">
+                                    {{ $lv->validation->code }}
+                                </span>
+
                                 @endforeach
+
                             </div>
+
+                        </div>
                         @endif
 
 
                         {{-- ================= EASA LICENCE ================= --}}
                         @if($doc && $doc->licence_file_2)
-                            @php
-                                if ($doc->licence_non_expiring_2) {
-                                    $status = 'Non-Expiring';
-                                    $color = 'success';
-                                    $date = 'Non-Expiring';
-                                } else {
-                                    $status = $doc->licence_2_status;
-                                    $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
-                                    $date = $doc->licence_expiry_date_2
-                                        ? date('d/m/Y', strtotime($doc->licence_expiry_date_2))
-                                        : 'N/A';
-                                }
-                                $tooltip = getTooltip($status, 'EASA Licence', $date);
-                            @endphp
 
-                            <div>
-                                <span class="badge bg-{{ $color }}"
+                        @php
+                            if ($doc->licence_non_expiring_2) {
+                                $status = 'Non-Expiring';
+                                $color = 'success';
+                                $date = 'Non-Expiring';
+                            } else {
+                                $status = $doc->licence_2_status;
+                                $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                                $date = $doc->licence_expiry_date_2
+                                    ? date('d/m/Y', strtotime($doc->licence_expiry_date_2))
+                                    : 'N/A';
+                            }
+                            $tooltip = getTooltip($status, 'EASA Licence', $date);
+
+                            $easaValidations = $user->licenseValidations->where('licence_issued_to','EASA');
+                        @endphp
+
+                        <div>
+
+                            <div class="d-flex align-items-center flex-wrap">
+
+                                <span class="badge bg-{{ $color }} me-2"
                                     data-bs-toggle="tooltip"
                                     title="{{ $tooltip }}">
                                     EASA Lic
                                 </span>
 
-                                {{-- EASA LICENCE VALIDATIONS --}}
-                                @foreach($user->licenseValidations->where('licence_issued_to', 'EASA') as $lv)
-                                    @php
-                                        // DEFAULT
-                                        $lvColor = '#dc3545';
-                                        $lvTooltip = 'Expired / invalid';
+                                @if($easaValidations->count() > 0)
+                                    <button class="btn btn-sm btn-primary toggle-validation"
+                                        data-target="easa-validation-{{ $user->id }}">
+                                        + Validation
+                                    </button>
+                                @endif
 
-                                        // NON-EXPIRING
-                                        if ((int) $lv->validation_non_expiring === 1) {
-                                            $lvColor = '#198754';
-                                            $lvTooltip = ($lv->validation->name ?? 'Licence Validation') . ' (Non-Expiring)';
+                            </div>
 
-                                        } elseif (!empty($lv->expiry_date)) {
-                                            $lvDate = \Carbon\Carbon::parse($lv->expiry_date);
+                            <div id="easa-validation-{{ $user->id }}" class="validation-box mt-1" style="display:none">
 
-                                            if ($lvDate->isPast()) {
-                                                $lvColor = '#dc3545';
-                                                $lvTooltip = 'Expired on ' . $lvDate->format('d/m/Y');
+                               @foreach($easaValidations as $lv)
 
-                                            } elseif ($lvDate->diffInDays(now()) < 90) {
-                                                $lvColor = '#ffc107';
-                                                $lvTooltip = 'Expires on ' . $lvDate->format('d/m/Y');
+                                @php
+                                    $lvColor = '#dc3545';
+                                    $lvTooltip = 'Expired / invalid';
 
-                                            } else {
-                                                if ((int) $lv->admin_verification_required === 1) {
-                                                    $lvColor = '#ffc107';
-                                                    $lvTooltip = 'Pending admin verification';
-                                                } else {
-                                                    $lvColor = '#198754';
-                                                    $lvTooltip = 'Valid till ' . $lvDate->format('d/m/Y');
-                                                }
-                                            }
+                                    if ((int) $lv->validation_non_expiring === 1) {
+                                        $lvColor = '#198754';
+                                        $lvTooltip = ($lv->validation->name ?? 'Licence Validation').' (Non-Expiring)';
+
+                                    } elseif (!empty($lv->expiry_date)) {
+
+                                        $lvDate = \Carbon\Carbon::parse($lv->expiry_date);
+
+                                        if ($lvDate->isPast()) {
+                                            $lvColor = '#dc3545';
+                                            $lvTooltip = 'Expired on '.$lvDate->format('d/m/Y');
+
+                                        } elseif ($lvDate->diffInDays(now()) < 90) {
+                                            $lvColor = '#ffc107';
+                                            $lvTooltip = 'Expires on '.$lvDate->format('d/m/Y');
 
                                         } else {
-                                            $lvColor = '#dc3545';
-                                            $lvTooltip = 'Valid (Expiry Date not entered)';
-                                        }
-                                    @endphp
 
-                                    <span class="badge ms-1"
-                                        style="background-color:{{ $lvColor }}; color:white"
-                                        data-bs-toggle="tooltip"
-                                        title="{{ $lvTooltip }}">
-                                        {{ $lv->validation->code}}
-                                    </span>
+                                            if ((int) $lv->admin_verification_required === 1) {
+                                                $lvColor = '#ffc107';
+                                                $lvTooltip = 'Pending admin verification';
+                                            } else {
+                                                $lvColor = '#198754';
+                                                $lvTooltip = 'Valid till '.$lvDate->format('d/m/Y');
+                                            }
+
+                                        }
+
+                                    } else {
+                                        $lvColor = '#dc3545';
+                                        $lvTooltip = 'Expired (Expiry Date not entered)';
+                                    }
+                                @endphp
+
+                                <span class="badge me-1"
+                                    style="background-color:{{ $lvColor }}; color:white"
+                                    data-bs-toggle="tooltip"
+                                    title="{{ $lvTooltip }}">
+                                    {{ $lv->validation->code }}
+                                </span>
+
                                 @endforeach
+
                             </div>
+
+                        </div>
+
                         @endif
+
                     </td>
 
                     <td class="lic_rating_td">
@@ -1914,6 +1962,14 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+
+        $(document).on('click','.toggle-validation',function(){
+
+    let target = $(this).data('target');
+
+    $('#'+target).slideToggle(200);
+
+});
         $(document).ready(function() {
             $('#document_table').DataTable({
                 searching: true,

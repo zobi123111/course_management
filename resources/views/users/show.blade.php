@@ -471,7 +471,7 @@
                                         </a>
                                     @endif
 
-                                    @if($Validation->admin_verification_required == 1)
+                                    @if($Validation->admin_verification_required == 1 && $Validation->verified == 0)
                                         <div class="licensevalidations mt-3">
                                             <div class="form-check form-switch mb-0">
                                                 <input class="form-check-input validation-verify-toggle" type="checkbox" id="licence2_verify"
@@ -482,7 +482,7 @@
                                         </div>
                                     @endif
                                     @if($Validation->verified == 1)
-                                        <button class="btn btn-danger btn-sm validations-invalidate" data-user-id="{{ $Validation->user_id }}" data-licence-validation-id="{{ $Validation->id }}" data-type="licensevalidations">Invalidate</button>
+                                        <button class="btn btn-danger btn-sm validations-invalidate mt-3" data-user-id="{{ $Validation->user_id }}" data-licence-validation-id="{{ $Validation->id }}" data-type="licensevalidations">Invalidate</button>
                                     @endif
                                 </div>
                             @endforeach

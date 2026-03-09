@@ -663,6 +663,8 @@
                     <strong>NOTE:</strong> Please ensure all grading is completed carefully. Once saved, the training event will be locked.
                 </div>
             </div>
+            <h3 class="card-title mb-0">Student : {{ $trainingEvent?->student?->fname }} {{ $trainingEvent?->student?->lname }}</h3>
+
             <!-- Default Tabs -->
             <ul class="nav nav-tabs mt-3" id="myTab" role="tablist">
 
@@ -841,7 +843,7 @@
                                         <label class="form-label">Licence No</label>
                                         <input type="text"
                                             class="form-control always-disabled"
-                                            value="{{ $lesson->instructor->documents->licence ?? '' }}"
+                                            value="{{ $lesson->instructor->licence ?? $lesson->instructor->documents->licence ?? '' }}"
                                             disabled>
                                     </div>
 
@@ -868,7 +870,7 @@
                                     </div>
 
                                     <div class="col-md-6">
-                                        <label class="form-label">Off Blocks</label>
+                                        <label class="form-label">Off Blocks {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</label>
                                         <input type="time"
                                             class="form-control editable"
                                             name="start_time"
@@ -877,7 +879,7 @@
                                     </div>
 
                                     <div class="col-md-6">
-                                        <label class="form-label">On Blocks</label>
+                                        <label class="form-label">On Blocks {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</label>
                                         <input type="time"
                                             class="form-control editable"
                                             name="end_time"
@@ -886,7 +888,7 @@
                                     </div>
 
                                     <div class="col-md-6">
-                                        <label class="form-label">Takeoff</label>
+                                        <label class="form-label">Takeoff {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</label>
                                         <input type="time"
                                             class="form-control editable"
                                             name="takeoff_time"
@@ -895,7 +897,7 @@
                                     </div>
 
                                     <div class="col-md-6">
-                                        <label class="form-label">Landing</label>
+                                        <label class="form-label">Landing {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</label>
                                         <input type="time"
                                             class="form-control editable"
                                             name="landing_time"
