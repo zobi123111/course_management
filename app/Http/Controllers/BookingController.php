@@ -35,7 +35,10 @@ class BookingController extends Controller
                 ->whereHas('roles', fn($q) => $q->where('role_name', 'like', '%Student%'))
                 ->with('roles')
                 ->get();
+        }else{
+            $students = collect();
         }
+
 
         return view('calender.index', compact('organizationUnits', 'students'));
     }
@@ -296,14 +299,23 @@ class BookingController extends Controller
 
     public function store(Request $request)
     {
+      //  dd($request->all());
         $rules = [
-            // 'organizationUnits' => 'required|exists:organization_units,id',
-            'start_date'        => 'required|date',
-            'end_date'          => 'required|date|after:start_date',
+             'start_date'    => 'required|date_format:Y-m-d H:i',
+             'end_date'      => 'required|date_format:Y-m-d H:i|after:start_date',
             'booking_type'      => 'required|in:1,2,3',
             'resource_type'     => 'required|in:1,2,3',
             'resource'          => 'required',
         ];
+
+        $messages = [
+                'start_date.required' => 'Start date and time is required.',
+                'end_date.required'   => 'End date and time is required.',
+                'end_date.after'      => 'End time must be greater than start time.',
+                'booking_type.required' => 'Booking type is required.',
+                'resource_type.required' => 'Resource type is required.',
+                'resource.required' => 'Resource is required.',
+            ];
 
         if ($request->booking_type == 2 || $request->booking_type == 3) {
             $rules['instructor'] = 'required';
@@ -434,21 +446,21 @@ class BookingController extends Controller
             }
 
             $trainingEventLesson =   TrainingEventLessons::create([
-                'training_event_id'  => $trainingEvent->id,
-                'lesson_id'          => $request->lesson,
-                'instructor_id'      => $request->instructor,
-                'resource_id'        => $request->resource,
-                'lesson_date'        => $request->lesson_date,
-                'start_time'         => $start,
-                'end_time'           => $end,
-                'departure_airfield' =>  strtoupper($request->departure_airfield),
-                'destination_airfield' =>  strtoupper($request->destination_airfield,),
-                'instructor_license_number' => $request->licence_number ?? null,
-                'hours_credited'    => gmdate("H:i", $creditMinutes * 60),
-                'operation1'        => $request->operation  ?? null,
-                'role1'             => $request->role ?? null,
-                'operation2'        =>  null,
-                'role2'             =>  null,
+                'training_event_id'          => $trainingEvent->id,
+                'lesson_id'                  => $request->lesson,
+                'instructor_id'              => $request->instructor,
+                'resource_id'                => $request->resource,
+                'lesson_date'                => $request->lesson_date,
+                'start_time'                 => $start,
+                'end_time'                   => $end,
+                'departure_airfield'         =>  strtoupper($request->departure_airfield),
+                'destination_airfield'       =>  strtoupper($request->destination_airfield,),
+                'instructor_license_number'  => $request->licence_number ?? null,
+                'hours_credited'             => gmdate("H:i", $creditMinutes * 60),
+                'operation1'                 => $request->operation  ?? null,
+                'role1'                      => $request->role ?? null,
+                'operation2'                 =>  null,
+                'role2'                      =>  null,
             ]);
             $trainingEventLesson_id = $trainingEventLesson->id;
 
@@ -471,7 +483,7 @@ class BookingController extends Controller
             'resource'          => 'required',
 
         ];
-        //  dd($request->all()); 
+    
 
         if ($request->booking_type == 2 || $request->booking_type == 3) {
             $rules['instructor'] = 'required';
