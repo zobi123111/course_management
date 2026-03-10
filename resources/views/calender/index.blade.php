@@ -15,7 +15,7 @@
         font-weight: 500;
     }
 
-    .fc-timeline-slot-cushion { 
+    .fc-timeline-slot-cushion {
         padding: 6px 0;
     }
 
@@ -125,6 +125,23 @@
     span.offset_flag {
         font-size: large;
         font-weight: 600;
+    }
+
+    .tooltip-inner {
+        padding: 15px;
+        color: #000;
+        text-align: left;
+        background-color: #ffffff;
+        border-radius: .25rem;
+        border: 2px solid #a9a8a8;
+        min-width: 380px;
+        width: 100%;
+        font-size: 14px;
+    }
+
+    .calendar-tooltip .tooltip-row {
+        margin-bottom: 10px;
+        color: #000 !important;
     }
 </style>
 
@@ -306,7 +323,7 @@
                             </select>
                         </div>
                         @endif
-                        <input type ="hidden" name="event_id" id="event_id" />
+                        <input type="hidden" name="event_id" id="event_id" />
 
                         <div class="col-md-6 form-group">
                             <label>Select Student</label>
@@ -382,7 +399,7 @@
                                     <option value="2">First Officer</option>
                                     <option value="3">Second Officer</option>
                                 </select>
-                            <span class="text-danger edit-error-text" id="editerror_rank"></span>
+                                <span class="text-danger edit-error-text" id="editerror_rank"></span>
                             </div>
 
                             <div class="col-md-6">
@@ -493,7 +510,7 @@
                         <div class="col-md-6">
                             <label>End Time</label>
                             <input type="time" name="end_time" id="edit_end_time" class="form-control">
-                             <span class="text-danger edit-error-text" id="editerror_end_time"></span>
+                            <span class="text-danger edit-error-text" id="editerror_end_time"></span>
                         </div>
                     </div>
 
@@ -1020,16 +1037,14 @@
                         $('#booking_student').text(e.student || '').attr('href', SITEURL + '/users/show/' + e.encode_std_id);
                         $('#booking_resource').text(e.resource || '').attr('href', SITEURL + '/resource/show/' + e.resource_id);
 
-                       
-                       console.log(e.course);
 
-                        if (e.course != '') {  
+                        if (e.course != '') {
                             $('#booking_course_li').show();
                             $('#booking_lesson_li').show();
                             $('#booking_course').text(e.course || '').attr('href', SITEURL + '/course/show/' + e.course_id);
                             $('#booking_lesson').text(e.lesson_title || '').attr('href', `${SITEURL}/lesson-grade?lesson_id=${e.trainingEventLesson_id}&event_id=${e.event_id}`);
 
-                        }else{ 
+                        } else {
                             $('#booking_course_li').hide();
                             $('#booking_lesson_li').hide();
                         }
@@ -1056,7 +1071,6 @@
                             $("#rejectedStatus").removeClass("d-none");
 
                         } else {
-                            // pending / scheduled
                             $("#editBookingBtn, #deleteBookingBtn").removeClass("d-none");
                             $("#actionButtons").removeClass("d-none");
                         }
@@ -1115,6 +1129,142 @@
                             }, 300);
                         }
                         $('#newBookingModal').modal('show');
+                    },
+                    eventDidMount: function(info) {
+
+                        let e = info.event.extendedProps;
+                        let utc = e.utc_offset ? ` (${e.utc_offset})` : '';
+                        let start = moment(info.event.start).format('DD MMM YYYY HH:mm');
+                        let end = moment(info.event.end).format('DD MMM YYYY HH:mm');
+
+                        let tooltipContent = `<div class="calendar-tooltip">`;
+
+                        if (e.resource) {
+                            tooltipContent += `
+                                <div class="tooltip-row">
+                                    <i class="fa fa-plane text-primary me-2"></i>
+                                    <b>Resource:</b>
+                                    <a href="${SITEURL}/resource/show/${e.resource_id}" target="_blank">${e.resource}</a>
+                                </div>`;
+                        }
+
+                        if (e.student) {
+                            tooltipContent += `
+                            <div class="tooltip-row">
+                                <i class="fa fa-user text-primary me-2"></i>
+                                <b>Student:</b>
+                                <a href="${SITEURL}/users/show/${e.encode_std_id}" target="_blank">${e.student}</a>
+                            </div>`;
+                        }
+
+                        if (e.instructor) {
+                            tooltipContent += `
+                        <div class="tooltip-row">
+                            <i class="fa fa-user-tie text-primary me-2"></i>
+                            <b>Instructor:</b>
+                            <a href="${SITEURL}/users/show/${e.encode_instructor_id}" target="_blank">${e.instructor}</a>
+                        </div>`;
+                        }
+
+                        if (e.course) {
+                            tooltipContent += `
+                                <div class="tooltip-row">
+                                    <i class="fa fa-book text-primary me-2"></i>
+                                    <b>Course:</b>
+                                    <a href="${SITEURL}/course/show/${e.course_id}" target="_blank">${e.course}</a>
+                                </div>`;
+                        }
+
+                        if (e.lesson_title) {
+                            tooltipContent += `
+                            <div class="tooltip-row">
+                                <i class="fa fa-list text-primary me-2"></i>
+                                <b>Lesson:</b>
+                                <a href="${SITEURL}/lesson-grade?lesson_id=${e.trainingEventLesson_id}&event_id=${e.event_id}" target="_blank">
+                                    ${e.lesson_title}
+                                </a>
+                            </div>`;
+                            }
+
+                            if (start) {
+                            tooltipContent += `
+                            <div class="tooltip-row">
+                                <i class="fa fa-list text-primary me-2"></i>
+                                <b>Start Date:</b>
+                                <a> ${start} ${utc} </a>
+                            </div>`;
+                            }
+                            if (end) {
+                                    tooltipContent += `
+                                    <div class="tooltip-row">
+                                        <i class="fa fa-list text-primary me-2"></i>
+                                        <b>End Date:</b>
+                                        <a> ${end} ${utc}</a>
+                                    </div>`;
+                            }
+
+                        if (e.status) {
+                            tooltipContent += `
+                                    <hr>
+                                    <div class="tooltip-row">
+                                        <i class="fa fa-info-circle text-primary me-2"></i>
+                                        <b>Status:</b>  ${e.status ? e.status.charAt(0).toUpperCase() + e.status.slice(1) : ''}
+                                    </div>`;
+                        }
+
+                        if (e.send_mail !== null && e.send_mail !== undefined) {
+                            tooltipContent += `
+                                <div class="tooltip-row">
+                                    <i class="fa fa-envelope text-primary me-2"></i>
+                                    <b>Email:</b> ${e.send_mail == 1 ? 'Enabled' : 'Disabled'}
+                                </div>`;
+                        }
+
+                        tooltipContent += `</div>`;
+
+                        let tooltip = new bootstrap.Tooltip(info.el, {
+                            title: tooltipContent,
+                            html: true,
+                            placement: 'top',
+                            container: 'body',
+                            trigger: 'manual'
+                        });
+
+                        let hideTimeout;
+
+                        info.el.addEventListener("mouseenter", function() {
+
+                            clearTimeout(hideTimeout);
+                            tooltip.show();
+
+                            setTimeout(() => {
+
+                                let tooltipEl = document.querySelector('.tooltip');
+
+                                if (tooltipEl) {
+
+                                    tooltipEl.addEventListener('mouseenter', function() {
+                                        clearTimeout(hideTimeout);
+                                    });
+
+                                    tooltipEl.addEventListener('mouseleave', function() {
+                                        tooltip.hide();
+                                    });
+
+                                }
+
+                            }, 100);
+
+                        });
+
+                        info.el.addEventListener("mouseleave", function() {
+
+                            hideTimeout = setTimeout(function() {
+                                tooltip.hide();
+                            }, 400);
+
+                        });
+
                     },
                     datesSet: function() {
                         updateCalendarTitle(headerExtraInfo);
@@ -1197,7 +1347,7 @@
             startPicker.clear();
             endPicker.clear();
             $('#create_trainingevent_div').hide();
-            $('.add_resource').val('').trigger('change'); 
+            $('.add_resource').val('').trigger('change');
             $('#time_div').hide();
             $('#organizationUnits').val('').trigger('change');
             $('#add_student').val('').trigger('change');
@@ -1426,7 +1576,7 @@
                 data: {
                     id: booking_id
                 },
-                success: function(data) { 
+                success: function(data) {
                     var response = data.response[0];
                     $("#edit_organizationUnits").val(response.ou_id).trigger('change');
                     $('#edit_departure_airfield').val(response.training_event_lesson?.departure_airfield ?? '');
@@ -1440,10 +1590,10 @@
                     $('#edit_total_time').val(response.training_event?.total_time ?? '');
                     $('#edit_start_time').val(response.training_event_lesson?.start_time ?? '');
                     $('#edit_end_time').val(response.training_event_lesson?.end_time ?? '');
-               
+
                     $('#event_id').val(response.event_id);
-                      
-                 
+
+
                     // Basic fields
                     $("#edit_booking_id").val(response.id);
                     $("#edit_booking_type").val(response.booking_type);
@@ -1457,18 +1607,18 @@
                     setTimeout(function() {
                         $("#edit_resource").val(String(response.resource)).trigger("change");
                         $("#edit_student").val(response.std_id).trigger('change');
-                      
-                       
+
+
 
                         $("#edit_course_booking").val(response.course_id).trigger('change');
                         $("#edit_lesson").val(response.lesson_id);
 
-                        setTimeout(function () {
+                        setTimeout(function() {
                             $("#edit_instructor").val(response.instructor_id).trigger('change');
-                         
+
                         }, 300);
-                   
-                     
+
+
                         window.selectedEditCourseId = response.course_id;
                         window.selectedEditLessonId = response.lesson_id;
                         window.resource = response.resource;
@@ -1547,52 +1697,52 @@
             });
         });
 
-        $("#updateBookingBtn").click(function (e) {
-                    e.preventDefault();
+        $("#updateBookingBtn").click(function(e) {
+            e.preventDefault();
 
-                    let form = $('#edit_booking_form')[0];
-                    let formData = new FormData(form);
+            let form = $('#edit_booking_form')[0];
+            let formData = new FormData(form);
 
-                    // append booking id manually if needed
-                    formData.append('id', $('#edit_booking_id').val());
+            // append booking id manually if needed
+            formData.append('id', $('#edit_booking_id').val());
 
-                    $.ajax({
-                        url: SITEURL + "/booking/update",
-                        type: "POST",
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                        success: function (response) {
+            $.ajax({
+                url: SITEURL + "/booking/update",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
 
-                            toastr.success("Booking Updated");
+                    toastr.success("Booking Updated");
 
-                            $('#editBookingModal').modal('hide');
+                    $('#editBookingModal').modal('hide');
 
-                            $('#calendar').fullCalendar('refetchEvents');
+                    $('#calendar').fullCalendar('refetchEvents');
 
-                            initCalendar();
-                        },
-                        error: function (xhr) {
-                              if (xhr.status === 422) {
-                                    $('.edit-error-text').text('');
-                                    $.each(xhr.responseJSON.errors, function(k, v) {
-                                        $('#editerror_' + k).text(v[0]);
+                    initCalendar();
+                },
+                error: function(xhr) {
+                    if (xhr.status === 422) {
+                        $('.edit-error-text').text('');
+                        $.each(xhr.responseJSON.errors, function(k, v) {
+                            $('#editerror_' + k).text(v[0]);
 
-                                    });
-                                } else {
-                                    alert('Something went wrong');
-                                }
-                        }
-                    });
+                        });
+                    } else {
+                        alert('Something went wrong');
+                    }
+                }
+            });
 
-                });
+        });
 
 
         // $("#updateBookingBtn").click(function() {
         //     let editbookingType = $("#edit_booking_type").val();
         //     let editinstructor = $("#edit_instructor").val();
 
-           
+
 
         //     $.post(SITEURL + "/booking/update", {
         //         id: $('#edit_booking_id').val(),
@@ -1769,12 +1919,12 @@
                     if (response.resources && Array.isArray(response.resources)) {
                         var options = "<option value=''>Select Resource </option>";
                         response.resources.forEach(function(value) {
-                          //  options += `<option value="${value.id}">${value.name}</option>`;
-                             options += "<option data-resource='" + value.name + "' value='" + value.id + "'>" + value.name + "</option>";
+                            //  options += `<option value="${value.id}">${value.name}</option>`;
+                            options += "<option data-resource='" + value.name + "' value='" + value.id + "'>" + value.name + "</option>";
                         });
                         $resourceSelect.html(options);
                     }
-                     if (window.resource) {
+                    if (window.resource) {
                         $('#edit_resource').val(window.resource).trigger('change');
                     }
                 }
@@ -1847,15 +1997,15 @@
             let instructorId = $(this).val();
             let selectedCourseId = $('#edit_course_booking').val();
             let licenseInput = $('#edit_licence_number');
-        
-           
+
+
 
             // 🔴 Validation — instructor required
             if (!instructorId) {
                 licenseInput.val('');
                 return;
             }
-         
+
 
             // 🔴 Validation — course required
             if (!selectedCourseId) {
@@ -1952,7 +2102,7 @@
                             if (response.licence_number) {
                                 licenceNumberField.val(response.licence_number);
                             } else {
-                              
+
                                 licenceNumberField.val('');
                             }
 
@@ -1981,9 +2131,9 @@
             }
         });
 
-        $(document).on('change', '#edit_student', function() { 
+        $(document).on('change', '#edit_student', function() {
             var userId = $(this).val();
-           
+
             var licenceNumberField = $('#studentLicence_number');
             let $courses = $("#edit_course_booking");
 
@@ -2016,11 +2166,11 @@
                                 });
 
                                 /* ✅ SET SELECTED COURSE HERE */
-                            
+
                                 if (window.selectedEditCourseId) {
                                     $courses.val(window.selectedEditCourseId).trigger('change');
                                 }
-                               
+
                             }
 
                         } else {
@@ -2047,20 +2197,20 @@
             }
         });
 
-        $(document).on('focus', '#edit_booking_type', function () {
-                previous_booking_type = $(this).val(); // store previous value
-            });
+        $(document).on('focus', '#edit_booking_type', function() {
+            previous_booking_type = $(this).val(); // store previous value
+        });
 
         $(document).on('change', '#edit_booking_type', function() {
             var booking_type = $(this).val();
             var event_id = $('#event_id').val();
-              if (event_id != '') {
-                    alert('Booking type cannot be changed because an event already exists.');
-                    $(this).val(previous_booking_type).trigger('change.select2'); // revert value
-                    return;
-                }
+            if (event_id != '') {
+                alert('Booking type cannot be changed because an event already exists.');
+                $(this).val(previous_booking_type).trigger('change.select2'); // revert value
+                return;
+            }
 
-        
+
             if (booking_type == 1) {
                 $('#edit_trainingevent_div').hide();
                 $('#edit_resource').val('').trigger('change');
@@ -2072,39 +2222,38 @@
             }
         });
 
-  $(document).on('change', 'input[name="start_time"], input[name="end_time"]', function () {
-    calculateTotalTime($(this));
-});
+        $(document).on('change', 'input[name="start_time"], input[name="end_time"]', function() {
+            calculateTotalTime($(this));
+        });
 
-function calculateTotalTime(element) {
+        function calculateTotalTime(element) {
 
-    let form = element.closest('form');
+            let form = element.closest('form');
+            let start = form.find('input[name="start_time"]').val();
+            let end = form.find('input[name="end_time"]').val();
 
-    let start = form.find('input[name="start_time"]').val();
-    let end   = form.find('input[name="end_time"]').val();
+            if (start && end) {
 
-    if (start && end) {
+                let startTime = moment(start, "HH:mm");
+                let endTime = moment(end, "HH:mm");
 
-        let startTime = moment(start, "HH:mm");
-        let endTime   = moment(end, "HH:mm");
+                // handle next day case
+                if (endTime.isBefore(startTime)) {
+                    endTime.add(1, 'day');
+                }
 
-        // handle next day case
-        if (endTime.isBefore(startTime)) {
-            endTime.add(1, 'day');
+                let diffMinutes = endTime.diff(startTime, 'minutes');
+
+                let hours = Math.floor(diffMinutes / 60);
+                let minutes = diffMinutes % 60;
+
+                let formatted =
+                    String(hours).padStart(2, '0') + ":" +
+                    String(minutes).padStart(2, '0');
+
+                form.find('input[name="total_time"]').val(formatted);
+            }
         }
-
-        let diffMinutes = endTime.diff(startTime, 'minutes');
-
-        let hours = Math.floor(diffMinutes / 60);
-        let minutes = diffMinutes % 60;
-
-        let formatted =
-            String(hours).padStart(2, '0') + ":" +
-            String(minutes).padStart(2, '0');
-
-        form.find('input[name="total_time"]').val(formatted);
-    }
-}
     });
 </script>
 @endsection
