@@ -136,7 +136,7 @@ class OrganizationController extends Controller
 
         ];
        //  dd($request->organization_logo);
-        if ($request->filled('email') || $request->filled('firstname') || $request->filled('lastname')) {
+        if ($request->filled('email') && $request->filled('firstname') && $request->filled('lastname')) {
             $rules = array_merge($rules, [
                 'firstname' => 'required',
                 'lastname' => 'required',
@@ -171,7 +171,6 @@ class OrganizationController extends Controller
                 $logo_name[] = $fileName;
             }
 
-     
             $orgUnit = OrganizationUnits::create([ 
                 'org_unit_name' => $request->org_unit_name,
                 'description' => $request->description ?? null,
@@ -212,11 +211,11 @@ class OrganizationController extends Controller
                 Session::flash('error', 'Something went wrong while creating organizational unit, Please try after some time');
                 return response()->json(['error' => 'Something went wrong while creating organizational unit, Please try after some time']);
             }
-            // DB::commit(); // Commit transaction if everything is successful
+            // DB::commit();
     
             // Success response
         } catch (\Exception $e) {
-            DB::rollBack();
+            // DB::rollBack();
         
             Log::error('Error creating organizational unit and user: ' . $e->getMessage());
         
