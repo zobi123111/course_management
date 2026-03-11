@@ -837,7 +837,8 @@
 
         let SITEURL = "{{ url('/') }}";
         let calendar = null;
-        let currentMode = 'resource'; // resource | instructor | student
+        let currentMode = 'resource'; 
+        let editFormLoading = false;
 
         $.ajaxSetup({
             headers: {
@@ -1569,6 +1570,7 @@
             $('#edit_booking_id').val(selectedEvent.id);
             var booking_id = $('#edit_booking_id').val();
             $('.edit-error-text').text('');
+            editFormLoading = true;
 
             $.ajax({
                 url: SITEURL + "/calendar/edit",
@@ -1644,6 +1646,9 @@
                     );
 
                     $("#editBookingModal").modal("show");
+                     setTimeout(function() {
+                        editFormLoading = false;
+                    }, 1000);
                 },
                 error: function(xhr) {
                     toastr.error("Unable to load booking details.");
@@ -1738,29 +1743,6 @@
         });
 
 
-        // $("#updateBookingBtn").click(function() {
-        //     let editbookingType = $("#edit_booking_type").val();
-        //     let editinstructor = $("#edit_instructor").val();
-
-
-
-        //     $.post(SITEURL + "/booking/update", {
-        //         id: $('#edit_booking_id').val(),
-        //         organizationUnits: $('#edit_organizationUnits').val(),
-        //         resource_id: $('#edit_resource').val(),
-        //         student: $('#edit_student').val(),
-        //         booking_type: $('#edit_booking_type').val(),
-        //         start: $('#edit_booking_start').val(),
-        //         end: $('#edit_booking_end').val(),
-        //         instructor_id: $('#edit_instructor').val(),
-        //         // send_email: $('#edit_send_email').is(':checked') ? 1 : 0
-        //     }, function() {
-        //         toastr.success("Booking Updated");
-        //         $('#editBookingModal').modal('hide');
-        //         $('#calendar').fullCalendar('refetchEvents');
-        //     });
-        //     initCalendar();
-        // });
 
         // APPROVE BOOKING
         $("#approveBtn").on("click", function() {
@@ -1993,6 +1975,10 @@
         });
 
         $("#edit_instructor").on('change', function() {
+               if (editFormLoading) {
+                    return;
+                }
+
 
             let instructorId = $(this).val();
             let selectedCourseId = $('#edit_course_booking').val();
