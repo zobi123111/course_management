@@ -206,11 +206,16 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
         <tbody>
             <?php
                 if (!function_exists('getTooltip')) {
-                    function getTooltip($status, $type, $expiry_date) {
+                    function getTooltip($status, $type, $expiry_date, $verificationPending = false) {
+
+                        if ($verificationPending) {
+                            return "This {$type} is pending admin verification.";
+                        }
+
                         return match ($status) {
                             'Red' => "This {$type} has expired on {$expiry_date}.",
                             'Yellow' => "This {$type} will expire soon on {$expiry_date}.",
-                            'Green' => "This {$type} is valid till {$expiry_date}.",
+                            'Green' => "This {$type} is verified and valid till {$expiry_date}.",
                             'Non-Expiring' => "This {$type} does not expire.",
                             default => "Status unknown.",
                         };
@@ -281,199 +286,208 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     </td> -->
 
                     <td>
-
-                        {{-- ================= UK LICENCE ================= --}}
-                        @if($doc && $doc->licence_file)
-
-                        @php
-                            if ($doc->licence_non_expiring) {
-                                $status = 'Non-Expiring';
-                                $color = 'success';
-                                $date = 'Non-Expiring';
-                            } else {
-                                $status = $doc->licence_status;
-                                $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
-                                $date = $doc->licence_expiry_date
-                                    ? date('d/m/Y', strtotime($doc->licence_expiry_date))
-                                    : 'N/A';
-                            }
-                            $tooltip = getTooltip($status, 'UK Licence', $date);
-
-                            $ukValidations = $user->licenseValidations->where('licence_issued_to','UK');
-                        @endphp
-
-                        <div class="mb-2">
-
-                            <div class="d-flex align-items-center flex-wrap">
-
-                                <span class="badge bg-{{ $color }} me-2"
-                                    data-bs-toggle="tooltip"
-                                    title="{{ $tooltip }}">
-                                    UK Lic
-                                </span>
-
-                                @if($ukValidations->count() > 0)
-                                    <button class="btn btn-sm btn-primary toggle-validation"
-                                        data-target="uk-validation-{{ $user->id }}">
-                                        + Validation
-                                    </button>
-                                @endif
-
-                            </div>
-
-                            {{-- VALIDATIONS --}}
-                            <div id="uk-validation-{{ $user->id }}" class="validation-box mt-1" style="display:none">
-
-                                @foreach($ukValidations as $lv)
+                        @if($doc && $doc->licence_file && $doc->licence_file_2)
+                            {{-- ================= UK LICENCE ================= --}}
+                            @if($doc && $doc->licence_file)
 
                                 @php
-                                    $lvColor = '#dc3545';
-                                    $lvTooltip = 'Expired / invalid';
-
-                                    if ((int) $lv->validation_non_expiring === 1) {
-                                        $lvColor = '#198754';
-                                        $lvTooltip = ($lv->validation->name ?? 'Licence Validation').' (Non-Expiring)';
-
-                                    } elseif (!empty($lv->expiry_date)) {
-
-                                        $lvDate = \Carbon\Carbon::parse($lv->expiry_date);
-
-                                        if ($lvDate->isPast()) {
-                                            $lvColor = '#dc3545';
-                                            $lvTooltip = 'Expired on '.$lvDate->format('d/m/Y');
-
-                                        } elseif ($lvDate->diffInDays(now()) < 90) {
-                                            $lvColor = '#ffc107';
-                                            $lvTooltip = 'Expires on '.$lvDate->format('d/m/Y');
-
-                                        } else {
-
-                                            if ((int) $lv->admin_verification_required === 1) {
-                                                $lvColor = '#ffc107';
-                                                $lvTooltip = 'Pending admin verification';
-                                            } else {
-                                                $lvColor = '#198754';
-                                                $lvTooltip = 'Valid till '.$lvDate->format('d/m/Y');
-                                            }
-                                        }
-
+                                    if ($doc->licence_non_expiring) {
+                                        $status = 'Non-Expiring';
+                                        $color = 'success';
+                                        $date = 'Non-Expiring';
                                     } else {
-                                        $lvColor = '#dc3545';
-                                        $lvTooltip = 'Expired (Expiry Date not entered)';
+                                        $status = $doc->licence_status;
+                                        $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                                        $date = $doc->licence_expiry_date
+                                            ? date('d/m/Y', strtotime($doc->licence_expiry_date))
+                                            : 'N/A';
                                     }
+
+                                    $verificationPending = $user->licence_admin_verification_required == 1 && $doc->licence_verified == 0;
+
+                                    $tooltip = getTooltip($status, 'UK Licence', $date, $verificationPending);
+
+                                    $ukValidations = $user->licenseValidations->where('licence_issued_to','UK');
                                 @endphp
 
-                                <span class="badge me-1"
-                                    style="background-color:{{ $lvColor }}; color:white"
-                                    data-bs-toggle="tooltip"
-                                    title="{{ $lvTooltip }}">
-                                    {{ $lv->validation->code }}
-                                </span>
+                                <div class="mb-2">
 
-                                @endforeach
+                                    <div class="d-flex align-items-center flex-wrap">
 
-                            </div>
+                                        <span class="badge bg-{{ $color }} me-2"
+                                            data-bs-toggle="tooltip"
+                                            title="{{ $tooltip }}">
+                                            UK Lic
+                                        </span>
 
-                        </div>
-                        @endif
+                                        @if($ukValidations->count() > 0)
+                                            <button class="btn btn-sm btn-primary toggle-validation"
+                                                data-target="uk-validation-{{ $user->id }}">
+                                                + Validation
+                                            </button>
+                                        @endif
+
+                                    </div>
+
+                                    {{-- VALIDATIONS --}}
+                                    <div id="uk-validation-{{ $user->id }}" class="validation-box mt-1" style="display:none">
+
+                                        @foreach($ukValidations as $lv)
+
+                                        @php
+                                            $lvColor = '#dc3545';
+                                            $lvTooltip = 'Expired / invalid';
+
+                                            if ((int) $lv->validation_non_expiring === 1) {
+                                                $lvColor = '#198754';
+                                                $lvTooltip = ($lv->validation->name ?? 'Licence Validation').' (Non-Expiring)';
+
+                                            } elseif (!empty($lv->expiry_date)) {
+
+                                                $lvDate = \Carbon\Carbon::parse($lv->expiry_date);
+
+                                                if ($lvDate->isPast()) {
+                                                    $lvColor = '#dc3545';
+                                                    $lvTooltip = 'Expired on '.$lvDate->format('d/m/Y');
+
+                                                } elseif ($lvDate->diffInDays(now()) < 90) {
+                                                    $lvColor = '#ffc107';
+                                                    $lvTooltip = 'Expires on '.$lvDate->format('d/m/Y');
+
+                                                } else {
+
+                                                    if ((int) $lv->admin_verification_required === 1) {
+                                                        $lvColor = '#ffc107';
+                                                        $lvTooltip = 'Pending admin verification';
+                                                    } else {
+                                                        $lvColor = '#198754';
+                                                        $lvTooltip = 'Valid till '.$lvDate->format('d/m/Y');
+                                                    }
+                                                }
+
+                                            } else {
+                                                $lvColor = '#dc3545';
+                                                $lvTooltip = 'Expired (Expiry Date not entered)';
+                                            }
+                                        @endphp
+
+                                        <span class="badge me-1"
+                                            style="background-color:{{ $lvColor }}; color:white"
+                                            data-bs-toggle="tooltip"
+                                            title="{{ $lvTooltip }}">
+                                            {{ $lv->validation->code }}
+                                        </span>
+
+                                        @endforeach
+
+                                    </div>
+
+                                </div>
+                            @endif
 
 
-                        {{-- ================= EASA LICENCE ================= --}}
-                        @if($doc && $doc->licence_file_2)
-
-                        @php
-                            if ($doc->licence_non_expiring_2) {
-                                $status = 'Non-Expiring';
-                                $color = 'success';
-                                $date = 'Non-Expiring';
-                            } else {
-                                $status = $doc->licence_2_status;
-                                $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
-                                $date = $doc->licence_expiry_date_2
-                                    ? date('d/m/Y', strtotime($doc->licence_expiry_date_2))
-                                    : 'N/A';
-                            }
-                            $tooltip = getTooltip($status, 'EASA Licence', $date);
-
-                            $easaValidations = $user->licenseValidations->where('licence_issued_to','EASA');
-                        @endphp
-
-                        <div>
-
-                            <div class="d-flex align-items-center flex-wrap">
-
-                                <span class="badge bg-{{ $color }} me-2"
-                                    data-bs-toggle="tooltip"
-                                    title="{{ $tooltip }}">
-                                    EASA Lic
-                                </span>
-
-                                @if($easaValidations->count() > 0)
-                                    <button class="btn btn-sm btn-primary toggle-validation"
-                                        data-target="easa-validation-{{ $user->id }}">
-                                        + Validation
-                                    </button>
-                                @endif
-
-                            </div>
-
-                            <div id="easa-validation-{{ $user->id }}" class="validation-box mt-1" style="display:none">
-
-                               @foreach($easaValidations as $lv)
+                            {{-- ================= EASA LICENCE ================= --}}
+                            @if($doc && $doc->licence_file_2)
 
                                 @php
-                                    $lvColor = '#dc3545';
-                                    $lvTooltip = 'Expired / invalid';
-
-                                    if ((int) $lv->validation_non_expiring === 1) {
-                                        $lvColor = '#198754';
-                                        $lvTooltip = ($lv->validation->name ?? 'Licence Validation').' (Non-Expiring)';
-
-                                    } elseif (!empty($lv->expiry_date)) {
-
-                                        $lvDate = \Carbon\Carbon::parse($lv->expiry_date);
-
-                                        if ($lvDate->isPast()) {
-                                            $lvColor = '#dc3545';
-                                            $lvTooltip = 'Expired on '.$lvDate->format('d/m/Y');
-
-                                        } elseif ($lvDate->diffInDays(now()) < 90) {
-                                            $lvColor = '#ffc107';
-                                            $lvTooltip = 'Expires on '.$lvDate->format('d/m/Y');
-
-                                        } else {
-
-                                            if ((int) $lv->admin_verification_required === 1) {
-                                                $lvColor = '#ffc107';
-                                                $lvTooltip = 'Pending admin verification';
-                                            } else {
-                                                $lvColor = '#198754';
-                                                $lvTooltip = 'Valid till '.$lvDate->format('d/m/Y');
-                                            }
-
-                                        }
-
+                                    if ($doc->licence_non_expiring_2) {
+                                        $status = 'Non-Expiring';
+                                        $color = 'success';
+                                        $date = 'Non-Expiring';
                                     } else {
-                                        $lvColor = '#dc3545';
-                                        $lvTooltip = 'Expired (Expiry Date not entered)';
+                                        $status = $doc->licence_2_status;
+                                        $color = $status === 'Red' ? 'danger' : ($status === 'Yellow' ? 'warning' : 'success');
+                                        $date = $doc->licence_expiry_date_2
+                                            ? date('d/m/Y', strtotime($doc->licence_expiry_date_2))
+                                            : 'N/A';
                                     }
+
+                                    $verificationPending = $user->licence_2_admin_verification_required == 1 && $doc->licence_verified_2 == 0;
+
+                                    $tooltip = getTooltip($status, 'EASA Licence', $date, $verificationPending);
+
+                                    $easaValidations = $user->licenseValidations->where('licence_issued_to','EASA');
                                 @endphp
 
-                                <span class="badge me-1"
-                                    style="background-color:{{ $lvColor }}; color:white"
-                                    data-bs-toggle="tooltip"
-                                    title="{{ $lvTooltip }}">
-                                    {{ $lv->validation->code }}
-                                </span>
+                                <div>
 
-                                @endforeach
+                                    <div class="d-flex align-items-center flex-wrap">
 
-                            </div>
+                                        <span class="badge bg-{{ $color }} me-2"
+                                            data-bs-toggle="tooltip"
+                                            title="{{ $tooltip }}">
+                                            EASA Lic
+                                        </span>
 
-                        </div>
+                                        @if($easaValidations->count() > 0)
+                                            <button class="btn btn-sm btn-primary toggle-validation"
+                                                data-target="easa-validation-{{ $user->id }}">
+                                                + Validation
+                                            </button>
+                                        @endif
 
+                                    </div>
+
+                                    <div id="easa-validation-{{ $user->id }}" class="validation-box mt-1" style="display:none">
+
+                                    @foreach($easaValidations as $lv)
+
+                                        @php
+                                            $lvColor = '#dc3545';
+                                            $lvTooltip = 'Expired / invalid';
+
+                                            if ((int) $lv->validation_non_expiring === 1) {
+                                                $lvColor = '#198754';
+                                                $lvTooltip = ($lv->validation->name ?? 'Licence Validation').' (Non-Expiring)';
+
+                                            } elseif (!empty($lv->expiry_date)) {
+
+                                                $lvDate = \Carbon\Carbon::parse($lv->expiry_date);
+
+                                                if ($lvDate->isPast()) {
+                                                    $lvColor = '#dc3545';
+                                                    $lvTooltip = 'Expired on '.$lvDate->format('d/m/Y');
+
+                                                } elseif ($lvDate->diffInDays(now()) < 90) {
+                                                    $lvColor = '#ffc107';
+                                                    $lvTooltip = 'Expires on '.$lvDate->format('d/m/Y');
+
+                                                } else {
+
+                                                    if ((int) $lv->admin_verification_required === 1) {
+                                                        $lvColor = '#ffc107';
+                                                        $lvTooltip = 'Pending admin verification';
+                                                    } else {
+                                                        $lvColor = '#198754';
+                                                        $lvTooltip = 'Valid till '.$lvDate->format('d/m/Y');
+                                                    }
+
+                                                }
+
+                                            } else {
+                                                $lvColor = '#dc3545';
+                                                $lvTooltip = 'Expired (Expiry Date not entered)';
+                                            }
+                                        @endphp
+
+                                        <span class="badge me-1"
+                                            style="background-color:{{ $lvColor }}; color:white"
+                                            data-bs-toggle="tooltip"
+                                            title="{{ $lvTooltip }}">
+                                            {{ $lv->validation->code }}
+                                        </span>
+
+                                        @endforeach
+
+                                    </div>
+
+                                </div>
+
+                            @endif
+
+                        @else
+                            <span class="text-muted">Not Uploaded</span>
                         @endif
-
                     </td>
 
                     <td class="lic_rating_td">
@@ -573,432 +587,440 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                             unset($entry);
                         ?>
 
-                        @foreach ($groupedEASA as $entry)
-                            @if (!empty($entry['children']))
-                                <?php
-                                    $expirty_date = $entry['parent_expiry'];
-                                    $admin_verified = $entry['parent_admin_verified'];
-                                    $color = getExpiryStatus($expirty_date);
+                        @if($groupedEASA)
+                            @foreach ($groupedEASA as $entry)
+                                @if (!empty($entry['children']))
+                                    <?php
+                                        $expirty_date = $entry['parent_expiry'];
+                                        $admin_verified = $entry['parent_admin_verified'];
+                                        $color = getExpiryStatus($expirty_date);
 
-                                    if (is_null($expirty_date) || empty($expirty_date)) {
-                                        $color = "#dc3545";
-                                        $tooltip = "No expiry date entered";
-                                    } elseif ($color == "Red") {
-                                        $color = "#dc3545";
-                                        $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
-                                    } elseif ($color == "Yellow") {
-                                        $color = "#ffc107";
-                                        $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
-                                    } else {
-                                        if ($admin_verified == '1') {
-                                            $color = "#198754";
-                                            $tooltip = "This rating is verified and valid until " . date('d/m/Y', strtotime($expirty_date));
-                                        } else {
+                                        if (is_null($expirty_date) || empty($expirty_date)) {
+                                            $color = "#dc3545";
+                                            $tooltip = "No expiry date entered";
+                                        } elseif ($color == "Red") {
+                                            $color = "#dc3545";
+                                            $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
+                                        } elseif ($color == "Yellow") {
                                             $color = "#ffc107";
-                                            $tooltip = "This rating is pending admin verification and is valid until " . date('d/m/Y', strtotime($expirty_date));
-                                        }
-                                    }
-                                ?>
-
-                                @php
-                                    $opc = $opcRatingsByAircraft->get($entry['parent']->id);
-
-                                    $opcColor = null;
-                                    $opcTooltip = null;
-
-                                    if ($opc && $opc->opc_expiry_date) {
-                                        $opcDate = \Carbon\Carbon::parse($opc->opc_expiry_date);
-
-                                        if ($opcDate->isPast()) {
-                                            $opcColor = '#dc3545';
-                                            $opcTooltip = 'OPC expired on ' . $opcDate->format('d/m/Y');
-                                        } elseif ($opcDate->diffInDays(now()) < 90) {
-                                            $opcColor = '#ffc107';
-                                            $opcTooltip = 'OPC will expire on ' . $opcDate->format('d/m/Y');
+                                            $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
                                         } else {
-                                            $opcColor = '#198754';
-                                            $opcTooltip = 'OPC valid until ' . $opcDate->format('d/m/Y');
+                                            if ($admin_verified == '1') {
+                                                $color = "#198754";
+                                                $tooltip = "This rating is verified and valid until " . date('d/m/Y', strtotime($expirty_date));
+                                            } else {
+                                                $color = "#ffc107";
+                                                $tooltip = "This rating is pending admin verification and is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                            }
                                         }
-                                    }
-                                @endphp
+                                    ?>
 
-                            <?php 
-                                $training_tags = $user->training_tags->keyBy('aircraft_type'); 
-                                 $trainingTags = $user->training_tags->where('aircraft_type', $entry['parent']->id);
-                                 //dump($trainingTags);
-                            ?>
-                           
+                                    @php
+                                        $opc = $opcRatingsByAircraft->get($entry['parent']->id);
 
-                          
+                                        $opcColor = null;
+                                        $opcTooltip = null;
 
-                                <div class="collapsible">
-                                    <span class="badge" style="background-color:{{ $color }}"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-original-title="{{ $tooltip }}">
-                                        {{ $entry['parent']->name }}
-                                    </span>
+                                        if ($opc && $opc->opc_expiry_date) {
+                                            $opcDate = \Carbon\Carbon::parse($opc->opc_expiry_date);
 
-                                    @if($opcColor)
-                                        <span class="badge ms-1"
-                                            style="background-color:{{ $opcColor }}; color:white"
+                                            if ($opcDate->isPast()) {
+                                                $opcColor = '#dc3545';
+                                                $opcTooltip = 'OPC expired on ' . $opcDate->format('d/m/Y');
+                                            } elseif ($opcDate->diffInDays(now()) < 90) {
+                                                $opcColor = '#ffc107';
+                                                $opcTooltip = 'OPC will expire on ' . $opcDate->format('d/m/Y');
+                                            } else {
+                                                $opcColor = '#198754';
+                                                $opcTooltip = 'OPC valid until ' . $opcDate->format('d/m/Y');
+                                            }
+                                        }
+                                    @endphp
+
+                                <?php 
+                                    $training_tags = $user->training_tags->keyBy('aircraft_type'); 
+                                    $trainingTags = $user->training_tags->where('aircraft_type', $entry['parent']->id);
+                                    //dump($trainingTags);
+                                ?>
+                            
+
+                            
+
+                                    <div class="collapsible">
+                                        <span class="badge" style="background-color:{{ $color }}"
                                             data-bs-toggle="tooltip"
-                                            title="{{ $opcTooltip }}">
-                                            OPC
+                                            data-bs-original-title="{{ $tooltip }}">
+                                            {{ $entry['parent']->name }}
                                         </span>
-                                    @endif
-                                             {{-- Multiple Training Tags --}}
-                                        @foreach ($trainingTags as $trainingTag)
-                                            @php
-                                                $trainingColor = '#dc3545';
-                                                $trainingTooltip = 'No tag expiry date entered';
 
-                                                if (!empty($trainingTag->tag_expiry_date)) {
-                                                    $trainingDate = \Carbon\Carbon::parse($trainingTag->tag_expiry_date);
-
-                                                    if ($trainingDate->isPast()) {
-                                                        $trainingColor = '#dc3545';
-                                                        $trainingTooltip = 'Tag expired on ' . $trainingDate->format('d/m/Y');
-                                                    } elseif ($trainingDate->diffInDays(now()) < 90) {
-                                                        $trainingColor = '#ffc107';
-                                                        $trainingTooltip = 'Tag will expire on ' . $trainingDate->format('d/m/Y');
-                                                    } else {
-                                                        $trainingColor = '#198754';
-                                                        $trainingTooltip = 'Tag valid until ' . $trainingDate->format('d/m/Y');
-                                                    }
-                                                }
-                                            @endphp
-
+                                        @if($opcColor)
                                             <span class="badge ms-1"
-                                                style="background-color:{{ $trainingColor }}; color:white"
+                                                style="background-color:{{ $opcColor }}; color:white"
                                                 data-bs-toggle="tooltip"
-                                                title="{{ $trainingTooltip }}">
-                                                {{ $trainingTag->rhsTag->rhstag }}
+                                                title="{{ $opcTooltip }}">
+                                                OPC
                                             </span>
-                                        @endforeach
+                                        @endif
+                                                {{-- Multiple Training Tags --}}
+                                            @foreach ($trainingTags as $trainingTag)
+                                                @php
+                                                    $trainingColor = '#dc3545';
+                                                    $trainingTooltip = 'No tag expiry date entered';
 
-                                </div>
+                                                    if (!empty($trainingTag->tag_expiry_date)) {
+                                                        $trainingDate = \Carbon\Carbon::parse($trainingTag->tag_expiry_date);
 
-                                <div class="content">
-                                    <ul>
-                                        @foreach ($entry['children'] as $child)
-                                        <li>{{ $child->name }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @else
-                                <?php
-                                    $expirty_date = $entry['parent_expiry'];
-                                    $admin_verified = $entry['parent_admin_verified'];
-                                    $color = getExpiryStatus($expirty_date);
+                                                        if ($trainingDate->isPast()) {
+                                                            $trainingColor = '#dc3545';
+                                                            $trainingTooltip = 'Tag expired on ' . $trainingDate->format('d/m/Y');
+                                                        } elseif ($trainingDate->diffInDays(now()) < 90) {
+                                                            $trainingColor = '#ffc107';
+                                                            $trainingTooltip = 'Tag will expire on ' . $trainingDate->format('d/m/Y');
+                                                        } else {
+                                                            $trainingColor = '#198754';
+                                                            $trainingTooltip = 'Tag valid until ' . $trainingDate->format('d/m/Y');
+                                                        }
+                                                    }
+                                                @endphp
 
-                                    if (is_null($expirty_date) || empty($expirty_date)) {
-                                        $color = "#dc3545";
-                                        $tooltip = "No expiry date entered";
-                                    } elseif ($color == "Red") {
-                                        $color = "#dc3545";
-                                        $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
-                                    } elseif ($color == "Yellow") {
-                                        $color = "#ffc107";
-                                        $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
-                                    } else {
-                                        if ($admin_verified == '1') {
-                                            $color = "#198754";
-                                            $tooltip = "This rating is verified and valid until " . date('d/m/Y', strtotime($expirty_date));
-                                        } else {
+                                                <span class="badge ms-1"
+                                                    style="background-color:{{ $trainingColor }}; color:white"
+                                                    data-bs-toggle="tooltip"
+                                                    title="{{ $trainingTooltip }}">
+                                                    {{ $trainingTag->rhsTag->rhstag }}
+                                                </span>
+                                            @endforeach
+
+                                    </div>
+
+                                    <div class="content">
+                                        <ul>
+                                            @foreach ($entry['children'] as $child)
+                                            <li>{{ $child->name }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @else
+                                    <?php
+                                        $expirty_date = $entry['parent_expiry'];
+                                        $admin_verified = $entry['parent_admin_verified'];
+                                        $color = getExpiryStatus($expirty_date);
+
+                                        if (is_null($expirty_date) || empty($expirty_date)) {
+                                            $color = "#dc3545";
+                                            $tooltip = "No expiry date entered";
+                                        } elseif ($color == "Red") {
+                                            $color = "#dc3545";
+                                            $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
+                                        } elseif ($color == "Yellow") {
                                             $color = "#ffc107";
-                                            $tooltip = "This rating is pending admin verification and is valid until " . date('d/m/Y', strtotime($expirty_date));
-                                        }
-                                    }
-                                ?>
-
-                                @php
-                                    $opc = $opcRatingsByAircraft->get($entry['parent']->id);
-
-                                    $opcColor = null;
-                                    $opcTooltip = null;
-
-                                    if ($opc && $opc->opc_expiry_date) {
-                                        $opcDate = \Carbon\Carbon::parse($opc->opc_expiry_date);
-
-                                        if ($opcDate->isPast()) {
-                                            $opcColor = '#dc3545';
-                                            $opcTooltip = 'OPC expired on ' . $opcDate->format('d/m/Y');
-                                        } elseif ($opcDate->diffInDays(now()) < 90) {
-                                            $opcColor = '#ffc107';
-                                            $opcTooltip = 'OPC will expire on ' . $opcDate->format('d/m/Y');
+                                            $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
                                         } else {
-                                            $opcColor = '#198754';
-                                            $opcTooltip = 'OPC valid until ' . $opcDate->format('d/m/Y');
+                                            if ($admin_verified == '1') {
+                                                $color = "#198754";
+                                                $tooltip = "This rating is verified and valid until " . date('d/m/Y', strtotime($expirty_date));
+                                            } else {
+                                                $color = "#ffc107";
+                                                $tooltip = "This rating is pending admin verification and is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                            }
                                         }
-                                    }
-                                @endphp
-                                <div class="parent_rate">
-                                    <span class="badge" style="background-color:{{ $color }}"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-original-title="{{ $tooltip }}">
-                                        {{ $entry['parent']->name }}
-                                    </span>
+                                    ?>
 
-                                    @if($opcColor)
-                                        <span class="badge ms-1"
-                                            style="background-color:{{ $opcColor }}; color:white"
+                                    @php
+                                        $opc = $opcRatingsByAircraft->get($entry['parent']->id);
+
+                                        $opcColor = null;
+                                        $opcTooltip = null;
+
+                                        if ($opc && $opc->opc_expiry_date) {
+                                            $opcDate = \Carbon\Carbon::parse($opc->opc_expiry_date);
+
+                                            if ($opcDate->isPast()) {
+                                                $opcColor = '#dc3545';
+                                                $opcTooltip = 'OPC expired on ' . $opcDate->format('d/m/Y');
+                                            } elseif ($opcDate->diffInDays(now()) < 90) {
+                                                $opcColor = '#ffc107';
+                                                $opcTooltip = 'OPC will expire on ' . $opcDate->format('d/m/Y');
+                                            } else {
+                                                $opcColor = '#198754';
+                                                $opcTooltip = 'OPC valid until ' . $opcDate->format('d/m/Y');
+                                            }
+                                        }
+                                    @endphp
+                                    <div class="parent_rate">
+                                        <span class="badge" style="background-color:{{ $color }}"
                                             data-bs-toggle="tooltip"
-                                            title="{{ $opcTooltip }}">
-                                            OPC
+                                            data-bs-original-title="{{ $tooltip }}">
+                                            {{ $entry['parent']->name }}
                                         </span>
-                                    @endif
-                                </div>
-                            @endif
-                        @endforeach
+
+                                        @if($opcColor)
+                                            <span class="badge ms-1"
+                                                style="background-color:{{ $opcColor }}; color:white"
+                                                data-bs-toggle="tooltip"
+                                                title="{{ $opcTooltip }}">
+                                                OPC
+                                            </span>
+                                        @endif
+                                    </div>
+                                @endif
+                            @endforeach
+                        @else
+                            <span class="text-muted">Not Ratings Uploaded</span>
+                        @endif
                     </td>
 
                     {{-- Associated Ratings (Licence 2) --}}
                 
                     <td class="lic_rating_td">
                         @php
-                        $groupedEASA = [];
+                            $groupedEASA = [];
 
-                        if (isset($ratingsByLicence['licence_2'])) {
-                        foreach ($ratingsByLicence['licence_2'] as $ratings) {
-                        $child_id = $ratings->rating_id;
-                        $parent_id = $ratings->parent_id;
-                        $expiry_date = $ratings->expiry_date;
-                        $admin_verified = $ratings->admin_verified;
+                            if (isset($ratingsByLicence['licence_2'])) {
+                            foreach ($ratingsByLicence['licence_2'] as $ratings) {
+                            $child_id = $ratings->rating_id;
+                            $parent_id = $ratings->parent_id;
+                            $expiry_date = $ratings->expiry_date;
+                            $admin_verified = $ratings->admin_verified;
 
-                        if ($parent_id === null && $ratings->rating) {
-                        $groupedEASA[$child_id] = [
-                        'parent' => $ratings->rating,
-                        'children' => [],
-                        'parent_expiry' => $expiry_date,
-                        'parent_admin_verified' => $admin_verified,
-                        ];
-                        } elseif ($ratings->rating) {
-                        $parentRating = $ratings->parentRating;
-                        $childRating = $ratings->rating;
+                            if ($parent_id === null && $ratings->rating) {
+                            $groupedEASA[$child_id] = [
+                            'parent' => $ratings->rating,
+                            'children' => [],
+                            'parent_expiry' => $expiry_date,
+                            'parent_admin_verified' => $admin_verified,
+                            ];
+                            } elseif ($ratings->rating) {
+                            $parentRating = $ratings->parentRating;
+                            $childRating = $ratings->rating;
 
-                        if (!isset($groupedEASA[$parent_id])) {
-                        $groupedEASA[$parent_id] = [
-                        'parent' => $parentRating,
-                        'children' => [],
-                        'parent_expiry' => $expiry_date,
-                        'parent_admin_verified' => $admin_verified,
-                        ];
-                        }
+                            if (!isset($groupedEASA[$parent_id])) {
+                            $groupedEASA[$parent_id] = [
+                            'parent' => $parentRating,
+                            'children' => [],
+                            'parent_expiry' => $expiry_date,
+                            'parent_admin_verified' => $admin_verified,
+                            ];
+                            }
 
-                        $groupedEASA[$parent_id]['children'][] = $childRating;
-                        } else {
-                        $parentRating = $ratings->parentRating;
-                        $groupedEASA[$parent_id] = [
-                        'parent' => $parentRating,
-                        'children' => [],
-                        'parent_expiry' => $expiry_date,
-                        'parent_admin_verified' => $admin_verified,
-                        ];
-                        }
-                        }
-                        }
+                            $groupedEASA[$parent_id]['children'][] = $childRating;
+                            } else {
+                            $parentRating = $ratings->parentRating;
+                            $groupedEASA[$parent_id] = [
+                            'parent' => $parentRating,
+                            'children' => [],
+                            'parent_expiry' => $expiry_date,
+                            'parent_admin_verified' => $admin_verified,
+                            ];
+                            }
+                            }
+                            }
 
-                        // -------------------------
-                        // Sorting logic (same as controller)
-                        // -------------------------
-                        $getPriority = function ($rating) {
-                        if (!$rating) return 999;
+                            // -------------------------
+                            // Sorting logic (same as controller)
+                            // -------------------------
+                            $getPriority = function ($rating) {
+                            if (!$rating) return 999;
 
-                        $r = $rating;
+                            $r = $rating;
 
-                        if (($r->is_fixed_wing || $r->is_rotary) && !$r->is_instructor && !$r->is_examiner) {
-                        return 1;
-                        }
-                        if ($r->is_instructor) {
-                        return 2;
-                        }
-                        if ($r->is_examiner) {
-                        return 3;
-                        }
-                        return 999;
-                        };
+                            if (($r->is_fixed_wing || $r->is_rotary) && !$r->is_instructor && !$r->is_examiner) {
+                            return 1;
+                            }
+                            if ($r->is_instructor) {
+                            return 2;
+                            }
+                            if ($r->is_examiner) {
+                            return 3;
+                            }
+                            return 999;
+                            };
 
-                        // Sort parent ratings
-                        uasort($groupedEASA, function ($a, $b) use ($getPriority) {
-                            $prioA = $getPriority($a['parent'] ?? null);
-                            $prioB = $getPriority($b['parent'] ?? null);
+                            // Sort parent ratings
+                            uasort($groupedEASA, function ($a, $b) use ($getPriority) {
+                                $prioA = $getPriority($a['parent'] ?? null);
+                                $prioB = $getPriority($b['parent'] ?? null);
 
-                            if ($prioA !== $prioB) {
-                            return $prioA <=> $prioB;
-                                }
-
-                                $nameA = strtolower($a['parent']->name ?? '');
-                                $nameB = strtolower($b['parent']->name ?? '');
-                                return $nameA <=> $nameB;
-                        });
-
-                        // Sort children under each parent
-                        foreach ($groupedEASA as &$entry) {
-                            if (!empty($entry['children'])) {
-                                usort($entry['children'], function ($a, $b) use ($getPriority) {
-                                    $prioA = $getPriority($a ?? null);
-                                    $prioB = $getPriority($b ?? null);
-
-                                    if ($prioA !== $prioB) {
-                                        return $prioA <=> $prioB;
+                                if ($prioA !== $prioB) {
+                                return $prioA <=> $prioB;
                                     }
 
-                                    $nameA = strtolower($a->name ?? '');
-                                    $nameB = strtolower($b->name ?? '');
+                                    $nameA = strtolower($a['parent']->name ?? '');
+                                    $nameB = strtolower($b['parent']->name ?? '');
                                     return $nameA <=> $nameB;
-                                });
-                            }
-                        }
+                            });
 
-                        unset($entry);
+                            // Sort children under each parent
+                            foreach ($groupedEASA as &$entry) {
+                                if (!empty($entry['children'])) {
+                                    usort($entry['children'], function ($a, $b) use ($getPriority) {
+                                        $prioA = $getPriority($a ?? null);
+                                        $prioB = $getPriority($b ?? null);
+
+                                        if ($prioA !== $prioB) {
+                                            return $prioA <=> $prioB;
+                                        }
+
+                                        $nameA = strtolower($a->name ?? '');
+                                        $nameB = strtolower($b->name ?? '');
+                                        return $nameA <=> $nameB;
+                                    });
+                                }
+                            }
+
+                            unset($entry);
                         @endphp
 
-                        @foreach ($groupedEASA as $entry)
-                            @if (!empty($entry['children']))
-                                <?php
-                                    $expirty_date = $entry['parent_expiry'];
-                                    $admin_verified = $entry['parent_admin_verified'];
+                        @if($groupedEASA)
+                            @foreach ($groupedEASA as $entry)
+                                @if (!empty($entry['children']))
+                                    <?php
+                                        $expirty_date = $entry['parent_expiry'];
+                                        $admin_verified = $entry['parent_admin_verified'];
+                                        
+                                        $color = getExpiryStatus($expirty_date);
+
+                                        if (is_null($expirty_date) || empty($expirty_date)) {
+                                            $color = "#dc3545";
+                                            $tooltip = "No expiry date entered";
+                                        } elseif ($color == "Red") {
+                                            $color = "#dc3545";
+                                            $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
+                                        } elseif ($color == "Yellow") {
+                                            $color = "#ffc107";
+                                            $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
+                                        } else {
+                                            if ($admin_verified == '1') {
+                                                $color = "#198754";
+                                                $tooltip = "This rating is verified and valid until " . date('d/m/Y', strtotime($expirty_date));
+                                            } else {
+                                                $color = "#ffc107";
+                                                $tooltip = "This rating is pending admin verification and is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                            }
+                                        }
+                                    ?>
+
+                                    @php
+                                        $opc = $opcRatingsByAircraft->get($entry['parent']->id);
+
+                                        $opcColor = null;
+                                        $opcTooltip = null;
+
+                                        if ($opc && $opc->opc_expiry_date) {
+                                            $opcDate = \Carbon\Carbon::parse($opc->opc_expiry_date);
+
+                                            if ($opcDate->isPast()) {
+                                                $opcColor = '#dc3545';
+                                                $opcTooltip = 'OPC expired on ' . $opcDate->format('d/m/Y');
+                                            } elseif ($opcDate->diffInDays(now()) < 90) {
+                                                $opcColor = '#ffc107';
+                                                $opcTooltip = 'OPC will expire on ' . $opcDate->format('d/m/Y');
+                                            } else {
+                                                $opcColor = '#198754';
+                                                $opcTooltip = 'OPC valid until ' . $opcDate->format('d/m/Y');
+                                            }
+                                        }
+                                    @endphp
+
                                     
-                                    $color = getExpiryStatus($expirty_date);
 
-                                    if (is_null($expirty_date) || empty($expirty_date)) {
-                                        $color = "#dc3545";
-                                        $tooltip = "No expiry date entered";
-                                    } elseif ($color == "Red") {
-                                        $color = "#dc3545";
-                                        $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
-                                    } elseif ($color == "Yellow") {
-                                        $color = "#ffc107";
-                                        $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
-                                    } else {
-                                        if ($admin_verified == '1') {
-                                            $color = "#198754";
-                                            $tooltip = "This rating is verified and valid until " . date('d/m/Y', strtotime($expirty_date));
-                                        } else {
-                                            $color = "#ffc107";
-                                            $tooltip = "This rating is pending admin verification and is valid until " . date('d/m/Y', strtotime($expirty_date));
-                                        }
-                                    }
-                                ?>
-
-                                @php
-                                    $opc = $opcRatingsByAircraft->get($entry['parent']->id);
-
-                                    $opcColor = null;
-                                    $opcTooltip = null;
-
-                                    if ($opc && $opc->opc_expiry_date) {
-                                        $opcDate = \Carbon\Carbon::parse($opc->opc_expiry_date);
-
-                                        if ($opcDate->isPast()) {
-                                            $opcColor = '#dc3545';
-                                            $opcTooltip = 'OPC expired on ' . $opcDate->format('d/m/Y');
-                                        } elseif ($opcDate->diffInDays(now()) < 90) {
-                                            $opcColor = '#ffc107';
-                                            $opcTooltip = 'OPC will expire on ' . $opcDate->format('d/m/Y');
-                                        } else {
-                                            $opcColor = '#198754';
-                                            $opcTooltip = 'OPC valid until ' . $opcDate->format('d/m/Y');
-                                        }
-                                    }
-                                @endphp
-
-                                
-
-                                <div class="collapsible">
-                                    <span class="badge" style="background-color:{{ $color }}"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-original-title="{{ $tooltip }}">
-                                        {{ $entry['parent']->name }}
-                                    </span>
-
-                                    @if($opcColor)
-                                        <span class="badge ms-1"
-                                            style="background-color:{{ $opcColor }}; color:white"
+                                    <div class="collapsible">
+                                        <span class="badge" style="background-color:{{ $color }}"
                                             data-bs-toggle="tooltip"
-                                            title="{{ $opcTooltip }}">
-                                            OPC
+                                            data-bs-original-title="{{ $tooltip }}">
+                                            {{ $entry['parent']->name }}
                                         </span>
-                                    @endif
-                                </div>
-                                <div class="content">
-                                    <ul>
-                                        @foreach ($entry['children'] as $child)
-                                        <li>{{ $child->name }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @else
-                                <?php
-                                    $expirty_date = $entry['parent_expiry'];
-                                    $admin_verified = $entry['parent_admin_verified'];
-                                    $color = getExpiryStatus($expirty_date);
 
-                                    if (is_null($expirty_date) || empty($expirty_date)) {
-                                        $color = "#dc3545";
-                                        $tooltip = "No expiry date entered";
-                                    } elseif ($color == "Red") {
-                                        $color = "#dc3545";
-                                        $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
-                                    } elseif ($color == "Yellow") {
-                                        $color = "#ffc107";
-                                        $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
-                                    } else {
-                                        if ($admin_verified == '1') {
-                                            $color = "#198754";
-                                            $tooltip = "This rating is verified and valid until " . date('d/m/Y', strtotime($expirty_date));
-                                        } else {
+                                        @if($opcColor)
+                                            <span class="badge ms-1"
+                                                style="background-color:{{ $opcColor }}; color:white"
+                                                data-bs-toggle="tooltip"
+                                                title="{{ $opcTooltip }}">
+                                                OPC
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div class="content">
+                                        <ul>
+                                            @foreach ($entry['children'] as $child)
+                                            <li>{{ $child->name }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @else
+                                    <?php
+                                        $expirty_date = $entry['parent_expiry'];
+                                        $admin_verified = $entry['parent_admin_verified'];
+                                        $color = getExpiryStatus($expirty_date);
+
+                                        if (is_null($expirty_date) || empty($expirty_date)) {
+                                            $color = "#dc3545";
+                                            $tooltip = "No expiry date entered";
+                                        } elseif ($color == "Red") {
+                                            $color = "#dc3545";
+                                            $tooltip = "This rating has expired on " . date('d/m/Y', strtotime($expirty_date));
+                                        } elseif ($color == "Yellow") {
                                             $color = "#ffc107";
-                                            $tooltip = "This rating is pending admin verification and is valid until " . date('d/m/Y', strtotime($expirty_date));
-                                        }
-                                    }
-                                ?>
-
-                                @php
-                                    $opc = $opcRatingsByAircraft->get($entry['parent']->id);
-
-                                    $opcColor = null; 
-                                    $opcTooltip = null;
-
-                                    if ($opc && $opc->opc_expiry_date) {
-                                        $opcDate = \Carbon\Carbon::parse($opc->opc_expiry_date);
-
-                                        if ($opcDate->isPast()) {
-                                            $opcColor = '#dc3545';
-                                            $opcTooltip = 'OPC expired on ' . $opcDate->format('d/m/Y');
-                                        } elseif ($opcDate->diffInDays(now()) < 90) {
-                                            $opcColor = '#ffc107';
-                                            $opcTooltip = 'OPC will expire on ' . $opcDate->format('d/m/Y');
+                                            $tooltip = "This rating will expire soon on " . date('d/m/Y', strtotime($expirty_date));
                                         } else {
-                                            $opcColor = '#198754';
-                                            $opcTooltip = 'OPC valid until ' . $opcDate->format('d/m/Y');
+                                            if ($admin_verified == '1') {
+                                                $color = "#198754";
+                                                $tooltip = "This rating is verified and valid until " . date('d/m/Y', strtotime($expirty_date));
+                                            } else {
+                                                $color = "#ffc107";
+                                                $tooltip = "This rating is pending admin verification and is valid until " . date('d/m/Y', strtotime($expirty_date));
+                                            }
                                         }
-                                    }
-                                @endphp
+                                    ?>
 
-                                <div class="parent_rate">
-                                    <span class="badge" style="background-color:{{ $color }}"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-original-title="{{ $tooltip }}">
-                                        {{ $entry['parent']->name }}
-                                    </span>
+                                    @php
+                                        $opc = $opcRatingsByAircraft->get($entry['parent']->id);
 
-                                    @if($opcColor)
-                                        <span class="badge ms-1"
-                                            style="background-color:{{ $opcColor }}; color:white"
+                                        $opcColor = null; 
+                                        $opcTooltip = null;
+
+                                        if ($opc && $opc->opc_expiry_date) {
+                                            $opcDate = \Carbon\Carbon::parse($opc->opc_expiry_date);
+
+                                            if ($opcDate->isPast()) {
+                                                $opcColor = '#dc3545';
+                                                $opcTooltip = 'OPC expired on ' . $opcDate->format('d/m/Y');
+                                            } elseif ($opcDate->diffInDays(now()) < 90) {
+                                                $opcColor = '#ffc107';
+                                                $opcTooltip = 'OPC will expire on ' . $opcDate->format('d/m/Y');
+                                            } else {
+                                                $opcColor = '#198754';
+                                                $opcTooltip = 'OPC valid until ' . $opcDate->format('d/m/Y');
+                                            }
+                                        }
+                                    @endphp
+
+                                    <div class="parent_rate">
+                                        <span class="badge" style="background-color:{{ $color }}"
                                             data-bs-toggle="tooltip"
-                                            title="{{ $opcTooltip }}">
-                                            OPC
+                                            data-bs-original-title="{{ $tooltip }}">
+                                            {{ $entry['parent']->name }}
                                         </span>
-                                    @endif
-                                </div>
-                            @endif
-                        @endforeach
+
+                                        @if($opcColor)
+                                            <span class="badge ms-1"
+                                                style="background-color:{{ $opcColor }}; color:white"
+                                                data-bs-toggle="tooltip"
+                                                title="{{ $opcTooltip }}">
+                                                OPC
+                                            </span>
+                                        @endif
+                                    </div>
+                                @endif
+                            @endforeach
+                        @else
+                            <span class="text-muted">Not Ratings Added</span>
+                        @endif
                     </td>
                     
                     {{-- Medical 1 --}}
 
-                    <td>
+                    <!-- <td>
                         {{-- UK Medical --}}
                         @if($doc && $doc->medical_expirydate)
                             @php
@@ -1013,8 +1035,6 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                 title="{{ $tooltip }}">
                                 UK Med
                             </span>
-                        @else
-                            <!-- <span class="text-muted me-2">UK: N/A</span> -->
                         @endif
 
                         {{-- EASA Medical --}}
@@ -1031,13 +1051,153 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                 title="{{ $tooltip }}">
                                 EASA Med
                             </span>
-                        @else
-                            <!-- <span class="text-muted">EASA: N/A</span> -->
                         @endif
+                    </td> -->
+
+                    <td>
+
+                        {{-- ================= UK Medical ================= --}}
+                        @if($doc && $doc->medical_expirydate)
+
+                            @php
+                            $expirty_date = $doc->medical_expirydate;
+                            $verified = $doc->medical_verified;
+                            $adminRequired = $user->medical_adminRequired;
+
+                            $status = getExpiryStatus($expirty_date);
+
+                            if (!$expirty_date) {
+
+                                $color = "#dc3545";
+                                $tooltip = "No expiry date entered";
+
+                            } elseif ($status == "Red") {
+
+                                $color = "#dc3545";
+                                $tooltip = "Medical expired on " . date('d/m/Y', strtotime($expirty_date));
+
+                            } elseif ($status == "Yellow") {
+
+                                $color = "#ffc107";
+                                $tooltip = "Medical will expire soon on " . date('d/m/Y', strtotime($expirty_date));
+
+                            } else {
+
+                                if ($adminRequired == 1 && $verified == 0) {
+
+                                    $color = "#ffc107";
+                                    $tooltip = "Medical pending admin verification and valid until " . date('d/m/Y', strtotime($expirty_date));
+
+                                } else {
+
+                                    $color = "#198754";
+                                    $tooltip = "Medical valid until " . date('d/m/Y', strtotime($expirty_date));
+
+                                }
+                            }
+                            @endphp
+
+                            <span class="badge me-1"
+                            style="background-color:{{ $color }}; color:white"
+                            data-bs-toggle="tooltip"
+                            title="{{ $tooltip }}">
+                            UK Med
+                            </span>
+
+                        @endif
+
+
+                        {{-- ================= EASA Medical ================= --}}
+                        @if($doc && $doc->medical_expirydate_2)
+
+                            @php
+                                $expirty_date = $doc->medical_expirydate_2;
+                                $verified = $doc->medical_verified_2;
+                                $adminRequired = $user->medical_2_adminRequired;
+
+                                $status = getExpiryStatus($expirty_date);
+
+                                if (!$expirty_date) {
+
+                                    $color = "#dc3545";
+                                    $tooltip = "No expiry date entered";
+
+                                } elseif ($status == "Red") {
+
+                                    $color = "#dc3545";
+                                    $tooltip = "Medical expired on " . date('d/m/Y', strtotime($expirty_date));
+
+                                } elseif ($status == "Yellow") {
+
+                                    $color = "#ffc107";
+                                    $tooltip = "Medical will expire soon on " . date('d/m/Y', strtotime($expirty_date));
+
+                                } else {
+
+                                    if ($adminRequired == 1 && $verified == 0) {
+
+                                        $color = "#ffc107";
+                                        $tooltip = "Medical pending admin verification and valid until " . date('d/m/Y', strtotime($expirty_date));
+
+                                    } else {
+
+                                        $color = "#198754";
+                                        $tooltip = "Medical valid until " . date('d/m/Y', strtotime($expirty_date));
+
+                                    }
+                                }
+                            @endphp
+
+                            <span class="badge"
+                            style="background-color:{{ $color }}; color:white"
+                            data-bs-toggle="tooltip"
+                            title="{{ $tooltip }}">
+                            EASA Med
+                            </span>
+
+                        @endif
+
                     </td>
 
                     {{-- Passport --}}
+
                     <td>
+                        @if($doc && $doc->passport_file_uploaded)
+
+                            @php
+                                $status = $doc->passport_status;
+
+                                $verificationPending = $doc->passport_admin_verification_required == 1 && $doc->passport_verified == 0;
+
+                                $color = match ($status) {
+                                    'Red' => 'danger',
+                                    'Yellow' => 'warning',
+                                    'Green' => 'success',
+                                    default => 'secondary'
+                                };
+
+                                $date = $doc->passport_expiry_date
+                                    ? date('d/m/Y', strtotime($doc->passport_expiry_date))
+                                    : 'N/A';
+
+                                if($verificationPending){
+                                    $tooltip = "Passport uploaded – pending admin verification.";
+                                }else{
+                                    $tooltip = getTooltip($status, 'Passport', $date);
+                                }
+                            @endphp
+
+                            <span class="badge bg-{{ $color }}"
+                                data-bs-toggle="tooltip"
+                                title="{{ $tooltip }}">
+                                {{ $date }}
+                            </span>
+
+                        @else
+                            <span class="text-muted">Not Uploaded</span>
+                        @endif
+                    </td>
+                    <!-- <td>
                         @if($doc && $doc->passport_file_uploaded)
                         @php
                         $status = $doc->passport_status;
@@ -1051,7 +1211,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                         @else
                         <span class="text-muted">Not Uploaded</span>
                         @endif
-                    </td>
+                    </td> -->
 
                     {{-- View Link --}}
                     <td>

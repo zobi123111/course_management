@@ -89,16 +89,48 @@ class UserDocument extends Model
     
     public function getLicenceStatusAttribute()
     {
-        return $this->getExpiryStatus($this->licence_expiry_date, $this->licence_non_expiring);
+        $status = $this->getExpiryStatus($this->licence_expiry_date, $this->licence_non_expiring);
+
+        if ($status === 'Red') {
+            return 'Red';
+        }
+
+        if ($status === 'Yellow') {
+            return 'Yellow';
+        }
+
+        if ($this->user && $this->user->licence_admin_verification_required == 1 && $this->licence_verified == 0) {
+            return 'Yellow';
+        }
+
+        return 'Green';
     }
 
     public function getLicence2StatusAttribute()
     {
-        return $this->getExpiryStatus($this->licence_expiry_date_2, $this->licence_non_expiring_2);
+        $status = $this->getExpiryStatus($this->licence_expiry_date_2, $this->licence_non_expiring_2);
+
+        if ($status === 'Red') {
+            return 'Red';
+        }
+
+        if ($status === 'Yellow') {
+            return 'Yellow';
+        }
+
+        if ($this->user && $this->user->licence_2_admin_verification_required == 1 && $this->licence_verified_2 == 0) {
+            return 'Yellow';
+        }
+
+        return 'Green';
     }
 
     public function getPassportStatusAttribute()
     {
+        if ($this->passport_admin_verification_required == 1 && $this->passport_verified == 0) {
+            return 'Yellow';
+        }
+
         return $this->getExpiryStatus($this->passport_expiry_date);
     }
 
@@ -135,9 +167,13 @@ class UserDocument extends Model
     {
         return in_array($this->medical_2_status, ['Red', 'Yellow']);
     }
-    
+
     public function isPassportExpiring()
     {
+        if ($this->passport_admin_verification_required == 1 && $this->passport_verified == 0) {
+            return false;
+        }
+
         return in_array($this->passport_status, ['Red', 'Yellow']);
     }
 
