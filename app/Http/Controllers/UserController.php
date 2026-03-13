@@ -24,6 +24,7 @@ use App\Models\UserLicenseValidation;
 use Illuminate\Support\Facades\Validator;
 use Auth;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -2563,7 +2564,7 @@ class UserController extends Controller
 
     public function showRating()
     {
-        $allRatings = Rating::all(); // All ratings (from ratings table)
+        $allRatings = Rating::with('orgUnit')->get(); // All ratings (from ratings table)
         $organizationUnits = OrganizationUnits::all(); // For UI context
 
         // Group parent-child mappings from parent_rating table
@@ -2582,14 +2583,13 @@ class UserController extends Controller
                 'id' => $rating->id,
                 'name' => e($rating->name),
                 'parent_id' => null,
-                'ou_id' => $rating->ou_id ?? null,
+                'ou_id' => $rating->ou_id ?? '',
             ]);
         }
-
-        return view('users.ratings.show', [
-            'ratings' => $allRatings->groupBy('name'),
+        return view('users.ratings.show', [ 
+            'ratings'               => $allRatings->groupBy('id'),
             'ratingDropdownOptions' => $allRatings,
-            'organizationUnits' => $organizationUnits
+            'organizationUnits'     => $organizationUnits
         ]);
     }
 
@@ -2624,22 +2624,36 @@ class UserController extends Controller
 
     public function saveRating(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|unique:ratings,name,NULL,id,deleted_at,NULL',
-            'status' => 'required|boolean',
-            'kind_of_rating' => 'required|string|in:type_rating,class_rating,instrument_rating,instructor_rating,examiner_rating,others',
-        ]);
+      $rules = [
+        'name' => [
+            'required',
+            'string',
+            Rule::unique('ratings')->where(function ($query) use ($request) {
+                return $query->where('ou_id', $request->organization_unit)
+                             ->whereNull('deleted_at');
+            })
+        ],
+        'status' => 'required|boolean',
+        'kind_of_rating' => 'required|string|in:type_rating,class_rating,instrument_rating,instructor_rating,examiner_rating,others',
+    ];
+
+        // If owner, validate ou_id
+        if (auth()->user()->is_owner == 1) {
+            $rules['organization_unit'] = 'required|exists:organization_units,id';
+        }
+
+    $request->validate($rules);
 
         // Create new rating
         $rating = Rating::create([
+            'ou_id'   => $request->organization_unit,
             'name' => $request->name,
             'status' => $request->status,
-            'kind_of_rating' => $request->kind_of_rating,
+            'kind_of_rating' => $request->kind_of_rating, 
             'is_fixed_wing' => $request->has('is_fixed_wing'),
             'is_rotary' => $request->has('is_rotary'),
             'is_instructor' => $request->has('is_instructor'),
             'is_examiner' => $request->has('is_examiner'),
-            'ou_id' => NULL
         ]);
 
         // Save multiple parent relationships
@@ -2710,26 +2724,43 @@ class UserController extends Controller
 
     public function updateRating(Request $request)
     {
-        $request->validate([
-            'rating_id' => 'required|integer',
-            'name' => 'required|string|unique:ratings,name,' . $request->rating_id . ',id,deleted_at,NULL',
-            'status' => 'required|in:0,1',
-            'kind_of_rating' => 'required|string|in:type_rating,class_rating,instrument_rating,instructor_rating,examiner_rating,others',
-        ]);
+          $rules = [
+        'rating_id' => 'required|integer',
 
+        'name' => [
+            'required',
+            'string',
+            Rule::unique('ratings')
+                ->ignore($request->rating_id)
+                ->where(function ($query) use ($request) {
+                    return $query->where('ou_id', $request->organization_unit)
+                                 ->whereNull('deleted_at');
+                })
+        ],
+
+        'status' => 'required|in:0,1',
+        'kind_of_rating' => 'required|string|in:type_rating,class_rating,instrument_rating,instructor_rating,examiner_rating,others',
+    ];
+
+        // Owner must provide organization_unit
+        if (auth()->user()->is_owner == 1) {
+            $rules['organization_unit'] = 'required|exists:organization_units,id';
+        }
+
+        $request->validate($rules);
         $rating = Rating::find($request->rating_id);
 
         if ($rating) {
             // Update rating details
             $rating->update([
-                'name' => $request->name,
-                'status' => $request->status,
+                'ou_id'          => $request->organization_unit ?? null,
+                'name'           => $request->name,
+                'status'         => $request->status,
                 'kind_of_rating' => $request->kind_of_rating,
-                'is_fixed_wing' => $request->has('is_fixed_wing'),
-                'is_rotary' => $request->has('is_rotary'),
-                'is_instructor' => $request->has('is_instructor'),
-                'is_examiner' => $request->has('is_examiner'),
-                'ou_id' => $request->ou_id ?? null,
+                'is_fixed_wing'  => $request->has('is_fixed_wing'),
+                'is_rotary'      => $request->has('is_rotary'),
+                'is_instructor'  => $request->has('is_instructor'),
+                'is_examiner'    => $request->has('is_examiner'),
             ]);
 
             // Delete old parent relations for this rating
@@ -2837,7 +2868,7 @@ class UserController extends Controller
         // Get selected rating IDs for current OU
         $selectedRatingIds = OuRating::where('ou_id', $ou_id)->pluck('rating_id')->toArray();
 
-        return view('users.ou_show_rating', [
+        return view('users.ou_show_rating', [ 
             'ratings' => $allRatings->groupBy('name'),
             'ratingDropdownOptions' => $allRatings,
             'organizationUnits' => $organizationUnits,

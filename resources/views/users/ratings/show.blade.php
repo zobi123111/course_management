@@ -14,7 +14,7 @@
     @endif
     @if(session()->has('error'))
     <div id="errorMessage" class="alert alert-warning fade show" role="alert">
-        <i class="bi bi-check-circle me-1"></i>
+        <i class="bi bi-check-circle me-1"></i> 
         {{ session()->get('error') }}
     </div>
     @endif
@@ -36,8 +36,9 @@
                 <table class="table table-hover" id="rating_table">
                     <thead>
                         <tr>
-                            <th scope="col">#</th>
+                          
                             <th scope="col">Rating</th>
+                            <th scope="col">OU</th>
                             <th scope="col">Kind Of Rating</th>
                             <th scope="col">Rating Type</th>
                             <th scope="col">Status</th>
@@ -46,11 +47,11 @@
                     </thead>
                     <tbody>
                         @php $count = 1; @endphp
-                        @foreach($ratings as $name => $group)
-                            @php $first = $group->first(); @endphp
+                        @foreach($ratings as $name => $group) 
+                        <?php $first = $group->first(); ?>
                             <tr>
-                                <td>{{ $count++ }}</td>
-                                <td class="rating">{{ $name }}</td>
+                                <td class="rating">{{ $first->name }}  </td>
+                                <td class="rating">{{ $first->orgUnit?->org_unit_name }}</td>
                                 <td class="rating">{{ $first->kind_of_rating }}</td>
                                 <td>
                                     @if ($first->is_fixed_wing)
@@ -97,18 +98,18 @@
                     @csrf
                     <div class="row g-2 ">
                         <!-- Bootstrap Grid -->
-                        <!-- @if(auth()->user()->is_owner == 1)
+                        @if(auth()->user()->is_owner == 1)
                             <div class="form-group ">
                                 <label for="select_org_unit" class="form-label">Select Org Unit </label>
-                                <select class="form-select" name="ou_id" id="select_org_unit">
+                                <select class="form-select" name="organization_unit" id="select_org_unit">
                                     <option value="">Select Org Unit</option>
                                     @foreach($organizationUnits as $val)
                                         <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
                                     @endforeach
                                 </select>
-                                <div id="ou_id_error" class="text-danger error_e"></div>            
+                                <div id="organization_unit_error" class="text-danger error_e"></div>            
                             </div>
-                        @endif -->
+                        @endif
                         <div class="form-group">
                             <label for="parent_rating" class="form-label">Parent Rating(s)</label>
                             <select name="parent_id[]" id="parent_rating" class="form-select" multiple>
@@ -201,18 +202,18 @@
                     @csrf
                     <div class="row g-2">
                         <!-- Parent Rating Dropdown -->
-                          <!-- @if(auth()->user()->is_owner == 1)
+                          @if(auth()->user()->is_owner == 1) 
                             <div class="form-group">
                                 <label for="edit_select_org_unit" class="form-label">Select Org Unit</label>
-                                <select class="form-select" name="ou_id" id="edit_select_org_unit">
+                                <select class="form-select" name="organization_unit" id="edit_select_org_unit">
                                     <option value="">Select Org Unit</option>
                                     @foreach($organizationUnits as $val)
                                         <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
                                     @endforeach
                                 </select>
-                                <div id="ou_id_error_up" class="text-danger error_e"></div>            
+                                <div id="organization_unit_error_up" class="text-danger error_e"></div>            
                             </div>
-                        @endif -->
+                        @endif
                        <div class="form-group ">
                             <label for="parent_rating" class="form-label">Parent Rating</label>
                             <select name="parent_id[]" id="edit_parent_rating" class="form-select" multiple>
@@ -341,31 +342,31 @@
             allowClear: true,
             width: '100%'
         });
-        $('#select_org_unit').on('change', function () {
-            let selectedOuId = $(this).val();
-            let $parentRating = $('#parent_rating');
-            $parentRating.empty();
+        // $('#select_org_unit').on('change', function () {
+        //     let selectedOuId = $(this).val();
+        //     let $parentRating = $('#parent_rating');
+        //     $parentRating.empty();
 
-            if (selectedOuId) {
-                const filtered = allParentRatings.filter(r => r.ou_id == selectedOuId);
+        //     if (selectedOuId) {
+        //         const filtered = allParentRatings.filter(r => r.ou_id == selectedOuId);
 
-                if (filtered.length === 0) {
-                    $parentRating.append('<option disabled>No ratings available for this OU</option>');
-                } else {
-                    filtered.forEach(function (r) {
-                        $parentRating.append(`<option value="${r.id}">${r.name}</option>`);
-                    });
-                }
-            }
+        //         if (filtered.length === 0) {
+        //             $parentRating.append('<option disabled>No ratings available for this OU</option>');
+        //         } else {
+        //             filtered.forEach(function (r) {
+        //                 $parentRating.append(`<option value="${r.id}">${r.name}</option>`);
+        //             });
+        //         }
+        //     }
 
-            // Reinitialize Select2
-            $parentRating.select2({
-                dropdownParent: $('#ratingModal'),
-                placeholder: "Select parent rating(s)",
-                allowClear: true,
-                width: '100%'
-            });
-        });
+        //     // Reinitialize Select2
+        //     $parentRating.select2({
+        //         dropdownParent: $('#ratingModal'),
+        //         placeholder: "Select parent rating(s)",
+        //         allowClear: true,
+        //         width: '100%'
+        //     });
+        // });
 
            $('#saveRating').click(function (e) {
         e.preventDefault();
@@ -425,6 +426,7 @@
         url: "{{ url('/rating/edit') }}",
         data: { rating_id: ratingId },
         success: function (response) {
+            console.log(response);
             if (response.success) {
                 const selected = (response.selected || []).map(String); 
                 const rating = response.rating;
@@ -483,44 +485,45 @@ let previousOuId = $('#edit_select_org_unit').val();
 $('#edit_select_org_unit').on('focus', function () {
     previousOuId = $(this).val();
 });
-$('#edit_select_org_unit').on('change', function () {
-    const selectedOuId = $(this).val();
-    const $parentRating = $('#edit_parent_rating');
 
-    if (selectedOuId && selectedOuId !== previousOuId) {
-        const confirmChange = confirm("⚠️ If you change the Org Unit, all selected parent ratings will be cleared. Do you want to proceed?");
+// $('#edit_select_org_unit').on('change', function () {
+//     const selectedOuId = $(this).val();
+//     const $parentRating = $('#edit_parent_rating');
+
+//     if (selectedOuId && selectedOuId !== previousOuId) {
+//         const confirmChange = confirm("⚠️ If you change the Org Unit, all selected parent ratings will be cleared. Do you want to proceed?");
         
-        if (!confirmChange) {
-            $(this).val(previousOuId).trigger('change.select2');
-            return; 
-        }
+//         // if (!confirmChange) {
+//         //     $(this).val(previousOuId).trigger('change.select2');
+//         //     return; 
+//         // }
 
-        previousOuId = selectedOuId;
-    } else {
-        return; 
-    }
-    $parentRating.empty();
+//         previousOuId = selectedOuId;
+//     } else {
+//         return; 
+//     }
+//     $parentRating.empty();
 
-    const filtered = allParentRatings.filter(r => r.ou_id == selectedOuId);
+//     const filtered = allParentRatings.filter(r => r.ou_id == selectedOuId);
 
-    if (filtered.length === 0) {
-        $parentRating.append('<option disabled>No ratings available for this OU</option>');
-    } else {
-        filtered.forEach(function (r) {
-            $parentRating.append(`<option value="${r.id}">${r.name}</option>`);
-        });
-    }
-    if ($parentRating.hasClass('select2-hidden-accessible')) {
-        $parentRating.select2('destroy');
-    }
-    $parentRating.select2({
-        dropdownParent: $('#editRatingModal'),
-        placeholder: "Select parent rating(s)",
-        allowClear: true,
-        width: '100%'
-    });
-    $parentRating.val(null).trigger('change');
-});
+//     if (filtered.length === 0) {
+//         $parentRating.append('<option disabled>No ratings available for this OU</option>');
+//     } else {
+//         filtered.forEach(function (r) {
+//             $parentRating.append(`<option value="${r.id}">${r.name}</option>`);
+//         });
+//     }
+//     if ($parentRating.hasClass('select2-hidden-accessible')) {
+//         $parentRating.select2('destroy');
+//     }
+//     $parentRating.select2({
+//         dropdownParent: $('#editRatingModal'),
+//         placeholder: "Select parent rating(s)",
+//         allowClear: true,
+//         width: '100%'
+//     });
+//    // $parentRating.val(null).trigger('change');
+// });
 
 $(document).on('click', '#updateRating', function(e) {
    e.preventDefault();

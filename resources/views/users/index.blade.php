@@ -20,9 +20,8 @@
         }
 
         .star {
-            font-size: 30px;
+            font-size: 30px; 
             color: gray;
-            /* default color for unfilled stars */
             cursor: pointer;
         }
 
@@ -2270,8 +2269,6 @@
                         $('#licence_2_ratings').prop('checked', true);
                         $('#licence_2_ratings_container').show().empty();
                         $('#edit_licence_2_ratings').show();
-
-
 
                         licence2_selectBoxIndex = response.userRatings_licence_2.length || 0;
                         response.userRatings_licence_2.forEach(function(group, i) {
