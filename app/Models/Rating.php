@@ -15,7 +15,7 @@ class Rating extends Model
  protected $fillable = [
         'name',
         'status',
-        'kind_of_rating',
+        'kind_of_rating', 
         'is_fixed_wing',
         'is_rotary',
         'is_instructor',
@@ -74,6 +74,12 @@ public function parentLinks()
 public function childLinks()
 {
     return $this->hasMany(ParentRating::class, 'rating_id');
+}
+
+
+public function orgUnit()
+{
+    return $this->belongsTo(OrganizationUnits::class, 'ou_id', 'id');
 }
 
 

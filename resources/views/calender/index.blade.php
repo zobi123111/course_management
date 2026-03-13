@@ -143,6 +143,10 @@
         margin-bottom: 10px;
         color: #000 !important;
     }
+    .no-change{
+       pointer-events: none;
+       background-color: #e9ecef;
+   }
 </style>
 
 <div class="container-fluid mt-3">
@@ -379,13 +383,13 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <label>Courses</label>
-                                <select name="course" id="edit_course_booking" class="form-control mb-2"></select>
+                                <select name="course" id="edit_course_booking" class="form-control mb-2" ></select>
                                 <span class="text-danger edit-error-text" id="editerror_course"></span>
                             </div>
 
                             <div class="col-md-6">
                                 <label>Lesson</label>
-                                <select name="lesson" id="edit_lesson" class="form-control mb-2"></select>
+                                <select name="lesson" id="edit_lesson" class="form-control mb-2" ></select>
                                 <span class="text-danger edit-error-text" id="editerror_lesson"></span>
 
                             </div>
@@ -515,8 +519,13 @@
                     </div>
 
                 </div>
-
-                <div class="modal-footer">
+                <div class="modal-footer d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <strong>Note:</strong> If you want to change the course and lesson, click 
+                        <a id="changecourse_lesson" href="{{ url('/training') }}" class="text-primary fw-semibold">
+                            Change Course
+                        </a>
+                    </small>
                     <button type="button" id="updateBookingBtn" class="btn btn-success">
                         Update Booking
                     </button>
@@ -1580,7 +1589,7 @@
                 },
                 success: function(data) {
                     var response = data.response[0];
-                    $("#edit_organizationUnits").val(response.ou_id).trigger('change');
+                    $("#edit_organizationUnits").val(response.ou_id).trigger('change').addClass("no-change");
                     $('#edit_departure_airfield').val(response.training_event_lesson?.departure_airfield ?? '');
                     $('#edit_destination_airfield').val(response.training_event_lesson?.destination_airfield ?? '');
                     $('#edit_lesson_date').val(response.training_event_lesson?.lesson_date ?? '');
@@ -1608,18 +1617,16 @@
 
                     setTimeout(function() {
                         $("#edit_resource").val(String(response.resource)).trigger("change");
-                        $("#edit_student").val(response.std_id).trigger('change');
+                        $("#edit_student").val(response.std_id).trigger('change').addClass("no-change");
 
 
 
-                        $("#edit_course_booking").val(response.course_id).trigger('change');
-                        $("#edit_lesson").val(response.lesson_id);
+                        $("#edit_course_booking").val(response.course_id).trigger('change').addClass("no-change");
+                        $("#edit_lesson").val(response.lesson_id).addClass("no-change");
 
                         setTimeout(function() {
                             $("#edit_instructor").val(response.instructor_id).trigger('change');
-
                         }, 300);
-
 
                         window.selectedEditCourseId = response.course_id;
                         window.selectedEditLessonId = response.lesson_id;
@@ -1816,10 +1823,12 @@
             });
         });
 
-        $("#course").on('change', function() {
+        $("#course").on('change', function() { 
             let course_id = $(this).val();
             let $lesson = $("#lesson");
             var $resourceSelect = $("#resource");
+            var ou_id = $('#organizationUnits').val() ?? "{{ auth()->user()->ou_id }}";
+            var std_id = $('#add_student').val();
 
             $lesson.empty().append("<option value=''>Select Lesson</option>");
             if (!course_id) return;
@@ -1828,19 +1837,22 @@
                 url: "/course/lesson",
                 type: "POST",
                 data: {
-                    course_id: course_id
+                    course_id: course_id,
+                    ou_id:ou_id,
+                    std_id:std_id
                 },
                 dataType: "json",
                 success: function(response) {
-                    if (response.lessons) {
+               if (response.lessons) {
+                        let usedLessons = (response.usedLessonIds || []).map(Number);
                         response.lessons.forEach(i => {
+                            let disabled = usedLessons.includes(Number(i.id)) ? 'disabled' : '';
                             $lesson.append(
-                                `<option value="${i.id}">${i.lesson_title}</option>`
+                                `<option value="${i.id}" ${disabled}>${i.lesson_title}</option>`
                             );
                         });
                     }
                     let rankSelect = $("#add_rank");
-
                     if (response.enable_mp_lifus !== undefined) {
                         let enableValue = response.enable_mp_lifus;
                         // First show all options (reset)
@@ -1871,6 +1883,8 @@
             let course_id = $(this).val();
             let $lesson = $("#edit_lesson");
             var $resourceSelect = $("#edit_resource");
+            var ou_id = $('#edit_organizationUnits').val() ?? "{{ auth()->user()->ou_id }}";
+            var std_id = $('#edit_student').val();
 
             $lesson.empty().append("<option value=''>Select Lesson</option>");
             if (!course_id) return;
@@ -1879,18 +1893,22 @@
                 url: "/course/lesson",
                 type: "POST",
                 data: {
-                    course_id: course_id
+                    course_id: course_id,
+                    ou_id:ou_id,
+                    std_id:std_id
                 },
                 dataType: "json",
                 success: function(response) {
 
-                    if (response.lessons) {
-                        response.lessons.forEach(i => {
-                            $lesson.append(
-                                `<option value="${i.id}">${i.lesson_title}</option>`
-                            );
-                        });
-                    }
+                  if (response.lessons) {
+                    let usedLessons = response.usedLessonIds || [];
+                    response.lessons.forEach(i => {
+                        let disabled = usedLessons.includes(i.id) ? 'disabled' : '';
+                        $lesson.append(
+                            `<option value="${i.id}">${i.lesson_title}</option>`
+                        );
+                    });
+                }
 
                     /* ✅ SET SELECTED LESSON HERE (IMPORTANT) */
                     if (window.selectedEditLessonId) {
@@ -1974,12 +1992,12 @@
             });
         });
 
-        $("#edit_instructor").on('change', function() {
-               if (editFormLoading) {
-                    return;
-                }
+        $("#edit_instructor").on('change', function() { 
+            //    if (editFormLoading) {
+            //         return;
+            //     }
 
-
+              
             let instructorId = $(this).val();
             let selectedCourseId = $('#edit_course_booking').val();
             let licenseInput = $('#edit_licence_number');
@@ -2010,7 +2028,7 @@
                 dataType: 'json',
 
                 success: function(response) {
-
+                             console.log(response);
                     //  licenseInput.prop('readonly', false);
 
                     // 🔴 Response validation
@@ -2020,7 +2038,7 @@
                         return;
                     }
 
-                    if (response.success === true) {
+                    if (response.success === true) { 
                         if (response.instructor_licence_number) {
                             licenseInput.val(response.instructor_licence_number);
                         } else {
