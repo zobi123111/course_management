@@ -12,8 +12,11 @@
     <main id="main" class="main">
         <div id="app">
             <main class="col table-design">
-                <div class="pagetitle">
+                <div class="pagetitle d-flex justify-content-between align-items-center">
                     <h1>@yield('sub-title')</h1>
+                    <div>
+                        @yield('page-button')
+                    </div>
                 </div><!-- End Page Title -->
                 <!--begin::Main-->
                 @yield('content')

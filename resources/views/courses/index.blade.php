@@ -256,6 +256,17 @@
                         </select>
                         <div id="course_type_error" class="text-danger error_e"></div>
                     </div>
+
+                    <div class="col-md-6">
+                        <label for="course_validity" class="form-label">Course Validity </label>
+                        <select class="form-select" name="course_validity" id="course_validity" required>
+                            <option value="">Select Course Validity</option>
+                            @for ($i = 1; $i <= 12; $i++)
+                                <option value="{{ $i }}">{{ $i }} Month{{ $i > 1 ? 's' : '' }}</option>
+                            @endfor
+                        </select>
+                    </div>
+
                     <div class="col-md-12">
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="description" rows="3"></textarea>
@@ -635,6 +646,17 @@
                         </select>
                         <div id="course_type_error_up" class="text-danger error_e"></div>
                     </div>
+
+                    <div class="col-md-6">
+                        <label for="course_validity" class="form-label">Course Validity </label>
+                        <select class="form-select" name="course_validity" id="edit_course_validity" required>
+                            <option value="">Select Course Validity</option>
+                            @for ($i = 1; $i <= 12; $i++)
+                                <option value="{{ $i }}">{{ $i }} Month{{ $i > 1 ? 's' : '' }}</option>
+                            @endfor
+                        </select>
+                    </div>
+
                     <div class="col-md-12">
                         <label for="lastname" class="form-label">Description<span class="text-danger">*</span></label>
                         <textarea class="form-control" name="description" id="edit_description" rows="3"></textarea>
@@ -1286,6 +1308,7 @@
                     $('input[name="course_name"]').val(response.course.course_name);
                     $('input[name="course_id"]').val(response.course.id);
                     $('#edit_course_type').val(response.course.course_type);
+                    $('#edit_course_validity').val(response.course.course_validity);
                     $('#edit_description').val(response.course.description);
                     // $('#edit_ou_id').val(response.course.ou_id);
                     $('#edit_duration_type').val(response.course.duration_type);
