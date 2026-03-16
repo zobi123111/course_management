@@ -644,6 +644,12 @@
     }
     @endphp
 
+    @section('page-button')
+    <div>
+        <a href="/training/training-event-new-design/{{ encode_id($trainingEvent->id) }}" class="btn btn-primary me-2">Back</a>
+    </div>
+    @endsection
+
     <div class="card">
         @if(session()->has('message'))
         <div id="successMessage" class="alert alert-success fade show" role="alert">
@@ -654,9 +660,6 @@
 
         <div class="loader" style="display: none;"></div>
         <div class="card-body mt-3">
-            <div>
-                <a href="/training/training-event-new-design/{{ encode_id($trainingEvent->id) }}" class="btn btn-primary me-2">Back</a>
-            </div>
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">{{ $trainingEvent?->course?->course_name }}</h5>
                 <div class="ms-3 px-3 py-2 bg-warning text-dark rounded" style="font-size: 0.9rem; max-width: 60%; padding-top: 3px !important; padding-bottom: 3px !important;">
@@ -714,43 +717,69 @@
                                     <p>{!! keepBoldItalic($deflessondetails->student_briefing) !!}</p> -->
                                             <!-- @else -->
                                             @foreach($eventLessons as $eventLesson)
-                                            @if($requestedLessonId && $eventLesson->id != $requestedLessonId)
-                                            @continue
-                                            @endif
-
-                                            <div class="lesson-item mb-4">
-                                                <h5 class="mt-3">Lesson Title: {{ $eventLesson->lesson?->lesson_title ?? $eventLesson->lesson_title }}</h5>
-
-                                                <h5 class="mt-5">Lesson Description: </h5>
-                                                <p>
-                                                    {!! keepBoldItalic($eventLesson->lesson?->description ?? '') !!}
-                                                </p>
-
-                                                <h5 class="mt-5">Lesson Briefing:</h5>
-                                                <p>
-                                                    {!! keepBoldItalic($eventLesson->lesson?->student_briefing ?? '') !!}
-                                                </p>
-
-                                                @if($eventLesson->lesson?->briefingDocuments)
-                                                <div class="briefing-documents">
-                                                    <!-- @foreach($eventLesson->lesson->briefingDocuments as $doc)
-                                                        <div class="mb-2 d-flex justify-content-between align-items-center">
-                                                            <a class="btn btn-primary" href="{{ asset('storage/' . $doc->file_path) }}" target="_blank">
-                                                                {{ $doc->file_name }}
-                                                            </a>
-                                                        </div>
-                                                    @endforeach -->
-
-                                                    <div class="d-flex flex-row flex-wrap gap-2">
-                                                        @foreach($eventLesson->lesson->briefingDocuments as $doc)
-                                                        <a class="btn btn-primary" href="{{ asset('storage/' . $doc->file_path) }}" target="_blank">
-                                                            {{ $doc->file_name }}
-                                                        </a>
-                                                        @endforeach
-                                                    </div>
-                                                </div>
+                                                @if($requestedLessonId && $eventLesson->id != $requestedLessonId)
+                                                    @continue
                                                 @endif
-                                            </div>
+
+                                                <div class="card-body p-4">
+
+                                                    {{-- Lesson Title --}}
+                                                    <div class="d-flex align-items-center mb-3">
+                                                        <i class="bi bi-book me-2 text-primary fs-4"></i>
+                                                        <h4 class="mb-0 fw-bold">
+                                                            {{ $eventLesson->lesson?->lesson_title ?? $eventLesson->lesson_title }}
+                                                        </h4>
+                                                    </div>
+
+                                                    <hr>
+
+                                                    {{-- Lesson Description --}}
+                                                    <div class="mb-4">
+                                                        <h6 class="text-muted fw-bold mb-2">
+                                                            <i class="bi bi-card-text me-1"></i> Lesson Description
+                                                        </h6>
+
+                                                        <div class="bg-light p-3 rounded">
+                                                            {!! keepBoldItalic($eventLesson->lesson?->description ?? '') !!}
+                                                        </div>
+                                                    </div>
+
+                                                    @if($eventLesson->lesson?->student_briefing)
+                                                        {{-- Lesson Briefing --}}
+                                                        <div class="mb-4">
+                                                            <h6 class="text-muted fw-bold mb-2">
+                                                                <i class="bi bi-megaphone me-1"></i> Lesson Briefing
+                                                            </h6>
+
+                                                            <div class="bg-light p-3 rounded">
+                                                                {!! keepBoldItalic($eventLesson->lesson?->student_briefing ?? '') !!}
+                                                            </div>
+                                                        </div>
+                                                    @endif
+
+
+                                                    @if($eventLesson->lesson?->briefingDocuments && $eventLesson->lesson->briefingDocuments->count())
+                                                        {{-- Briefing Documents --}}
+                                                        <div>
+                                                            <h6 class="text-muted fw-bold mb-3">
+                                                                <i class="bi bi-file-earmark-text me-1"></i> Briefing Documents
+                                                            </h6>
+
+                                                            <div class="d-flex flex-wrap gap-2">
+                                                                @foreach($eventLesson->lesson->briefingDocuments as $doc)
+                                                                    <a class="btn btn-outline-primary btn-sm d-flex align-items-center"
+                                                                    href="{{ asset('storage/' . $doc->file_path) }}"
+                                                                    target="_blank">
+
+                                                                        <i class="bi bi-file-earmark-arrow-down me-1"></i>
+                                                                        {{ $doc->file_name }}
+                                                                    </a>
+                                                                @endforeach
+                                                            </div>
+                                                        </div>
+                                                    @endif
+
+                                                </div>
                                             @endforeach
                                             <!-- @endif -->
 

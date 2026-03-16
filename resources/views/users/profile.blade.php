@@ -827,7 +827,7 @@
                                                     <input class="form-check-input non-expiring-checkbox" type="checkbox" name="licences[{{ $index }}][validation_non_expiring]" value="1" {{ $licence->validation_non_expiring ? 'checked' : '' }}>
 
                                                     <label class="form-check-label">
-                                                        <strong>Non-Expiring Licence</strong>
+                                                        <strong>Non-Expiring Validation</strong>
                                                     </label>
                                                 </div>
 

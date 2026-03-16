@@ -158,21 +158,19 @@ class TrainingEvents extends Model
     {
         $studentId = $this->student_id;
         $allTasksGraded = $this->eventLessons->every(function ($eventLesson) use ($studentId) {
-                        if (!$eventLesson->lesson) {
-                            return false;
-                        }
+            if (!$eventLesson->lesson) {
+                return false;
+            }
 
-                        return $eventLesson->lesson->subLessons->every(function ($subLesson) use ($eventLesson, $studentId) {
-                            return \App\Models\TaskGrading::where([
-                                'event_id'      => $eventLesson->training_event_id,
-                                'lesson_id'     => $eventLesson->lesson_id,
-                                'sub_lesson_id' => $subLesson->id,
-                                'user_id'       => $studentId,
-                            ])->exists();
-                        });
-                    });
-      
-
+            return $eventLesson->lesson->subLessons->every(function ($subLesson) use ($eventLesson, $studentId) {
+                return \App\Models\TaskGrading::where([
+                    'event_id'      => $eventLesson->training_event_id,
+                    'lesson_id'     => $eventLesson->lesson_id,
+                    'sub_lesson_id' => $subLesson->id,
+                    'user_id'       => $studentId,
+                ])->exists();
+            });
+        });    
 
         // B. Check competency grading if enabled for any lesson
         $cbtaEnabled = $this->eventLessons->contains(function ($eventLesson) {
@@ -212,6 +210,14 @@ class TrainingEvents extends Model
            return $allTasksGraded && $assessmentOk && !$this->is_locked;
     }
 
+
+    public function markCourseCompleted()
+    {
+        if ($this->can_end_course && !$this->course_end_validity) {
+            $this->course_end_validity = now();
+            $this->save();
+        }
+    }
 
     public function defLessonTasks()
     {

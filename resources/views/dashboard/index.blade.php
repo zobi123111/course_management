@@ -27,6 +27,12 @@ $subTitle = "Welcome to Admin Dashboard";
         border-radius: 25px;
     }
 
+    .btn-group-sm>.btn, .btn-sm {
+        padding: 0px 5px;
+        font-size: 14px;
+        border-radius: .2rem;
+    }
+
 </style>
 <?php
 
@@ -323,7 +329,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                         @if($ukValidations->count() > 0)
                                             <button class="btn btn-sm btn-primary toggle-validation"
                                                 data-target="uk-validation-{{ $user->id }}">
-                                                + Validation
+                                                +
                                             </button>
                                         @endif
 
@@ -422,7 +428,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                         @if($easaValidations->count() > 0)
                                             <button class="btn btn-sm btn-primary toggle-validation"
                                                 data-target="easa-validation-{{ $user->id }}">
-                                                + Validation
+                                                +
                                             </button>
                                         @endif
 
