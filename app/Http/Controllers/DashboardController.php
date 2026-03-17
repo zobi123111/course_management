@@ -15,6 +15,7 @@ use App\Models\CourseGroup;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ParentRating;
 use App\Models\Quiz;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -39,7 +40,10 @@ class DashboardController extends Controller
             $group_count = Group::count();
             $folder_count = Folder::whereNull('parent_id')->with('children')->count();
             $documents = Document::with('groups')->get();
-             $trainingEvents = [];
+            $trainingEvents = [];
+            $expiringSoonEvents = collect();
+            $expiringSoonCount = 0;
+
         } elseif ($user->is_admin) {
             $user_count = User::where('ou_id', $ou_id)->count();
             $course_count = Courses::where('ou_id', $ou_id)->count();
@@ -47,7 +51,67 @@ class DashboardController extends Controller
             $folder_count = Folder::whereNull('parent_id')->where('ou_id', $ou_id)->with('children')->count();
             $documents = Document::where('ou_id', $ou_id)->with('groups')->get();
             $requestCount = BookedResource::where('ou_id', $ou_id)->count();
-            $trainingEvents = [];
+            
+            $trainingEvents = TrainingEvents::with('course')
+                ->where('ou_id', $user->ou_id)
+                ->whereNotNull('course_end_validity')
+                ->whereHas('course', function ($q) {
+                    $q->whereNotNull('course_validity');
+                })
+                ->get();
+
+            $expiringSoonEvents = $trainingEvents->filter(function ($event) {
+
+                $startDate = Carbon::parse($event->course_end_validity);
+
+                $expiryDate = $startDate->copy()
+                    ->addMonths($event->course->course_validity);
+
+                $alertDate = $expiryDate->copy()->subMonth();
+
+                return now()->between($alertDate, $expiryDate);
+            });
+
+            $expiringSoonCount = $expiringSoonEvents->count();
+
+            // $trainingEvents = TrainingEvents::with('course')
+            //     ->where('ou_id', $user->ou_id)
+            //     ->whereNotNull('course_end_validity')
+            //     ->whereHas('course', function ($q) {
+            //         $q->whereNotNull('course_validity');
+            //     })
+            //     ->get();
+
+            // $expiringSoonEvents = $trainingEvents->filter(function ($event) {
+
+            //     $startDate = Carbon::parse($event->course_end_validity);
+            //     $expiryDate = $startDate->copy()->addMonths($event->course->course_validity);
+            //     $alertDate = $expiryDate->copy()->subMonth();
+
+            //     $today = Carbon::now();
+
+            //     echo "<pre>";
+            //         print_r('startDate - ' . $startDate);
+            //     echo "<br>";'' . 
+            //         print_r('expiryDate - ' . $expiryDate);
+            //     echo "<br>";'' . 
+            //         print_r('alertDate - ' . $alertDate);
+            //     echo "<br>";'' . 
+            //         print_r('today - ' . $today);
+            //     echo "<br>";
+
+            //     echo "</pre>";
+
+            //     dd();       
+
+            //     return $today->between($alertDate, $expiryDate);
+            // });
+
+            // return [
+            //     'events' => $expiringSoonEvents,
+            //     'count'  => $expiringSoonEvents->count()
+            // ];
+
         } else {
             
             $groups = Group::all();
@@ -68,6 +132,9 @@ class DashboardController extends Controller
             ->where('ou_id', $ou_id)
             ->with('groups')
             ->get();
+
+            $expiringSoonEvents = collect();
+            $expiringSoonCount = 0;
     
             $course_count = $courses->count();
             $group_count = $filteredGroups->count();
@@ -200,7 +267,7 @@ class DashboardController extends Controller
                     ->get();
       //  dump($users);            
             
-        return view('dashboard.index', compact('user_count', 'course_count', 'group_count', 'folder_count','totalDocuments', 'quizscount', 'quizs', 'readDocuments', 'unreadDocuments', 'requestCount', 'users', 'trainingEvents', 'bookings', 'outstandingItems'
+        return view('dashboard.index', compact('user_count', 'course_count', 'group_count', 'folder_count','totalDocuments', 'quizscount', 'quizs', 'readDocuments', 'unreadDocuments', 'requestCount', 'users', 'trainingEvents', 'bookings', 'outstandingItems', 'expiringSoonEvents', 'expiringSoonCount'
         ));
     }
     

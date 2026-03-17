@@ -226,7 +226,7 @@ class TrainingEventsController extends Controller
  
 
         $trainingEvents->each(function ($event) {
-
+            $event->markCourseCompleted();
             $event->lesson_instructors = collect();
             $event->lesson_instructor_users = collect();
             $event->last_lesson_instructor_id = null;

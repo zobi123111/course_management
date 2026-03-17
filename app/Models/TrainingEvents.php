@@ -22,6 +22,7 @@ class TrainingEvents extends Model
         'opc_validity',
         'opc_extend',
         'course_end_date',
+        'course_end_validity',
         'recommended_by_instructor_id',
         'start_time',
         'end_time',
