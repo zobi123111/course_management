@@ -495,7 +495,7 @@ class BookingController extends Controller
             $rules['instructor'] = 'required';
             $rules['course'] = 'required';
             $rules['lesson'] = 'required';
-            $rules['course_date'] = 'required';
+           // $rules['course_date'] = 'required';
             $rules['rank'] = 'required';
             $rules['lesson_date'] = 'required';
         //  $rules['start_time'] = 'required';
@@ -565,7 +565,7 @@ class BookingController extends Controller
                     'student_id'        => $request->student,
                     'course_id'         => $request->course,
                     'lesson_ids'        => json_encode([$request->lesson]),
-                    'event_date'        => $request->course_date,
+                    'event_date'        => Carbon::today()->format('Y-m-d'),
                     'total_time'        => $request->total_time,
                     'std_license_number'=> $request->student_licence,
                     'ou_id'             => $ou_id,
@@ -618,7 +618,7 @@ class BookingController extends Controller
                     $creditMinutes = 0;
                 }
             }
-          //  dd($request->licence_number);
+        
             // Create lesson record
             $trainingEventLesson = TrainingEventLessons::create([
                 'training_event_id'         => $trainingEvent->id,
@@ -675,7 +675,7 @@ class BookingController extends Controller
             $rules['instructor'] = 'required';
             $rules['course'] = 'required';
             $rules['lesson'] = 'required';
-            $rules['course_date'] = 'required';
+          //  $rules['course_date'] = 'required';
             $rules['rank'] = 'required';
             $rules['lesson_date'] = 'required';
             $rules['start_time'] = 'required';
@@ -711,7 +711,7 @@ class BookingController extends Controller
                 'student_id'        => $request->student,
                 'course_id'         => $request->course,
                 'lesson_ids'        => json_encode([$request->lesson]),
-                'event_date'        => $request->course_date,
+                'event_date'        => Carbon::today()->format('Y-m-d'),
                 'total_time'        => $request->total_time,
                 'std_license_number' => $request->student_licence,
                 'ou_id' => auth()->user()->is_owner ? $request->organizationUnits : auth()->user()->ou_id,

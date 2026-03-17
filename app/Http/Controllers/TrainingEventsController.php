@@ -34,6 +34,7 @@ use App\Models\CourseCustomTime;
 use App\Models\CourseDocuments;
 use App\Models\TrainingEventDocument;
 use App\Models\UserTagRating;
+use App\Models\Booking;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -471,7 +472,8 @@ class TrainingEventsController extends Controller
     }
 
     public function createTrainingEvent(Request $request)
-    {
+    {   
+       
         //Validate base fields
         $request->validate([
             'student_id' => 'required|exists:users,id',
@@ -479,6 +481,9 @@ class TrainingEventsController extends Controller
             'event_date' => 'required|date_format:Y-m-d',
             'std_license_number' => 'nullable|string',
             'total_simulator_time' => 'nullable|date_format:H:i',
+            'event_type' => 'required|string',
+
+        
             'ou_id' => [
                 function ($attribute, $value, $fail) {
                     if (auth()->user()->is_owner == 1 && empty($value)) {
@@ -498,6 +503,8 @@ class TrainingEventsController extends Controller
             'lesson_data.0.destination_airfield' => 'destination airfield',
             'lesson_data.0.instructor_license_number' => 'instructor license number',
         ]);
+
+  
 
         $lesson_ids = collect($request->lesson_data)->pluck('lesson_id')->toArray();
 
@@ -583,7 +590,7 @@ class TrainingEventsController extends Controller
                 }
             }
 
-            TrainingEventLessons::create([
+           $training_lesson =  TrainingEventLessons::create([
                 'training_event_id' => $trainingEvent->id,
                 'lesson_id' => $lesson['lesson_id'],
                 'instructor_id' => $lesson['instructor_id'],
@@ -601,11 +608,47 @@ class TrainingEventsController extends Controller
                 'role2'         => $lesson['role_2'] ?? null,
 
             ]);
+            $training_eventlessonId = $training_lesson->id;
+            $hours_credited = gmdate("H:i", $creditMinutes * 60);
+            $instructor_license_number = $lesson['instructor_license_number'] ?? null;
+            $ou_id = $request->ou_id;
+            $lesson_date =  $lesson['lesson_date'];
+
+            //------------------------------------------
+            if($request->event_type == "calender_event")
+            {
+           if ($resourceName != "Homestudy" && !empty($lesson['resource_id'])) {
+                $bookingStart = \Carbon\Carbon::parse($lesson_date . ' ' . $start);
+                $bookingEnd   = \Carbon\Carbon::parse($lesson_date . ' ' . $end);
+                $booking_data = array(
+                        "ou_id" => $ou_id ?? Auth::user()->ou_id,
+                        "std_id" => $request->student_id ?? Auth::user()->id,
+                        "resource" => $lesson['resource_id'],
+                        "start"  => $bookingStart,
+                        "end" =>  $bookingEnd,
+                        "booking_type" => "2",
+                        "resource_type" => null,
+                        "instructor_id" => $lesson['instructor_id'],
+                        "status"  => "pending",
+                        "send_email" => 0,
+                        'event_id' => $trainingEvent->id,
+                        'course_id' => $request->course_id,
+                        'lesson_id' => $lesson['lesson_id'],
+                        'trainingEventLesson_id' => $training_lesson->id
+                );
+                Booking::create($booking_data);
+        }
+        }
+
+            ////////////////////////////////////////////
+           
         }
         $user = User::find($request->student_id);
         if ($user) {   
                 $user->update(['is_activated' => 0]);
              }
+     
+
 
         Session::flash('message', 'Training event created successfully.');
 
@@ -614,6 +657,14 @@ class TrainingEventsController extends Controller
             'message' => 'Training event created successfully',
             'trainingEvent' => $trainingEvent
         ], 201);
+    }
+
+    private function resource_booking($lesson_date , $start_time , $end_time, $training_eventlessonId)
+    {
+        $bookingStart = \Carbon\Carbon::parse($lesson_date . ' ' . $start_time);
+        $bookingEnd   = \Carbon\Carbon::parse($lesson_date . ' ' . $end_time);
+        $Booking_type = 2;
+
     }
 
     public function getTrainingEvent(Request $request)
