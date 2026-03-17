@@ -1333,28 +1333,28 @@
                                         <i><strong> Notes: </strong> for training manager/instructors only</i>
                                         @endif
                                         
-                                        <!-- Examiner CBTA -->
-                                        <div class="accordion-card">
-                                            <div class="accordion-item">
-                                                @if($lesson->examiner_cbta == 1)
-                                                <h2 class="accordion-header">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
-                                                            data-bs-target="#examiner-{{ $eventLesson->id }}" aria-expanded="false">
-                                                            Examiner Competency Grading
-                                                        </button>
-                                                    </div>
-                                                </h2>
-                                                @endif
-                                            </div>
-
-                                            <div id="examiner-{{ $eventLesson->id }}" class="accordion-collapse collapse">
-                                                <!-- Student name aligned to the right, above the competency grading -->
-                                                <div class="text-end pe-4 pt-2 fw-semibold">
-                                                    {{ $student->fname }} {{ $student->lname }}
+                                        @if($examiner_cbta)
+                                            <!-- Examiner CBTA -->
+                                            <div class="accordion-card">
+                                                <div class="accordion-item">
+                                                    @if($lesson->examiner_cbta == 1)
+                                                    <h2 class="accordion-header">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
+                                                                data-bs-target="#examiner-{{ $eventLesson->id }}" aria-expanded="false">
+                                                                Examiner Competency Grading
+                                                            </button>
+                                                        </div>
+                                                    </h2>
+                                                    @endif
                                                 </div>
 
-                                                @if($examiner_cbta)
+                                                <div id="examiner-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                                    <!-- Student name aligned to the right, above the competency grading -->
+                                                    <div class="text-end pe-4 pt-2 fw-semibold">
+                                                        {{ $student->fname }} {{ $student->lname }}
+                                                    </div>
+
                                                     <div class="accordion-body">
                                                         @foreach($examiner_cbta as $val)
                                                         @php
@@ -1415,36 +1415,36 @@
                                                         </div>
                                                         @endforeach
                                                     </div>
-                                                @else
-                                                    <div class="accordion-body">
-                                                        No Examiner Competency Grading
-                                                    </div>
-                                                @endif
+                                                </div>
                                             </div>
-                                        </div>
-
-                                        <div class="accordion-card">
-                                            <!-- Instructor CBTA -->
-                                            <div class="accordion-item">
-                                                @if($lesson->instructor_cbta == 1)
-                                                <h2 class="accordion-header">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
-                                                            data-bs-target="#instructor-{{ $eventLesson->id }}" aria-expanded="false">
-                                                            Instructor Competency Grading
-                                                        </button>
-                                                    </div>
-                                                </h2>
-                                                @endif
+                                        @else
+                                            <div class="accordion-body">
+                                                No Examiner Competency Grading
                                             </div>
+                                        @endif
 
-                                            <div id="instructor-{{ $eventLesson->id }}" class="accordion-collapse collapse">
-                                                <!-- Student name aligned to the right, above the competency grading -->
-                                                <div class="text-end pe-4 pt-2 fw-semibold">
-                                                    {{ $student->fname }} {{ $student->lname }}
+                                        @if($instructor_cbta)
+                                            <div class="accordion-card">
+                                                <!-- Instructor CBTA -->
+                                                <div class="accordion-item">
+                                                    @if($lesson->instructor_cbta == 1)
+                                                    <h2 class="accordion-header">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
+                                                                data-bs-target="#instructor-{{ $eventLesson->id }}" aria-expanded="false">
+                                                                Instructor Competency Grading
+                                                            </button>
+                                                        </div>
+                                                    </h2>
+                                                    @endif
                                                 </div>
 
-                                                @if($instructor_cbta)
+                                                <div id="instructor-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                                    <!-- Student name aligned to the right, above the competency grading -->
+                                                    <div class="text-end pe-4 pt-2 fw-semibold">
+                                                        {{ $student->fname }} {{ $student->lname }}
+                                                    </div>
+
                                                     <div class="accordion-body">
                                                         @foreach($instructor_cbta as $val)
                                                         @php
@@ -1505,36 +1505,37 @@
                                                         </div>
                                                         @endforeach
                                                     </div>
-                                                @else
-                                                    <div class="accordion-body">
-                                                        No Instructor Competency Grading
-                                                    </div>
-                                                @endif
+                                                
+                                                </div>
                                             </div>
-                                        </div>
-
-                                        <div class="accordion-card">
-                                            <!-- // Pilot cbta -->
-                                            <div class="accordion-item">
-                                                @if($lesson->pilot_cbta == 1)
-                                                <h2 class="accordion-header">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
-                                                            data-bs-target="#pilot-{{ $eventLesson->id }}" aria-expanded="false">
-                                                            Pilot Competency Grading
-                                                        </button>
-                                                    </div>
-                                                </h2>
-                                                @endif
+                                        @else
+                                            <div class="accordion-body">
+                                                No Instructor Competency Grading
                                             </div>
+                                        @endif
 
-                                            <div id="pilot-{{ $eventLesson->id }}" class="accordion-collapse collapse">
-                                                <!-- Student name aligned to the right, above the competency grading -->
-                                                <div class="text-end pe-4 pt-2 fw-semibold">
-                                                    {{ $student->fname }} {{ $student->lname }}
+                                        @if($pilot_cbta)
+                                            <div class="accordion-card">
+                                                <!-- // Pilot cbta -->
+                                                <div class="accordion-item">
+                                                    @if($lesson->pilot_cbta == 1)
+                                                    <h2 class="accordion-header">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
+                                                                data-bs-target="#pilot-{{ $eventLesson->id }}" aria-expanded="false">
+                                                                Pilot Competency Grading
+                                                            </button>
+                                                        </div>
+                                                    </h2>
+                                                    @endif
                                                 </div>
 
-                                                @if($pilot_cbta)
+                                                <div id="pilot-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                                    <!-- Student name aligned to the right, above the competency grading -->
+                                                    <div class="text-end pe-4 pt-2 fw-semibold">
+                                                        {{ $student->fname }} {{ $student->lname }}
+                                                    </div>
+
                                                     <div class="accordion-body">
                                                         @foreach($pilot_cbta as $val)
                                                         @php
@@ -1595,14 +1596,14 @@
                                                         </div>
                                                         @endforeach
                                                     </div>
-                                                @else
-                                                    <div class="accordion-body">
-                                                        No Pilot Competency Grading
-                                                    </div>
-                                                @endif
+                                                </div>
+                                                <!-- ////------------------------------------Overall assessment for multi lesson--------------------------------------------------->
                                             </div>
-                                            <!-- ////------------------------------------Overall assessment for multi lesson--------------------------------------------------->
-                                        </div>
+                                        @else
+                                            <div class="accordion-body">
+                                                No Pilot Competency Grading
+                                            </div>
+                                        @endif
 
 
 
