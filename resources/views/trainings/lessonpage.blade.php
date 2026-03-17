@@ -637,8 +637,12 @@
             border: none;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 0 12px rgba(0,0,0,0.08);
             transition: all 0.3s ease;
+        }
+
+        .accordion-card .accordion-button.toggleable {
+            padding: 0 !important;
         }
 
     </style>
