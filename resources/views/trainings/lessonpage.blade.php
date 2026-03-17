@@ -628,6 +628,19 @@
             transform: translateX(0);
             opacity: 1;
         }
+        
+        .accordion-card {
+            margin: 16px 0;
+            padding: 16px 20px;
+            background: #ffffff;
+            border-radius: 12px;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
     </style>
 
     <head>
@@ -1321,253 +1334,275 @@
                                         @endif
                                         
                                         <!-- Examiner CBTA -->
-                                        <div class="accordion-item">
-                                            @if($lesson->examiner_cbta == 1)
-                                            <h2 class="accordion-header">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
-                                                        data-bs-target="#examiner-{{ $eventLesson->id }}" aria-expanded="false">
-                                                        Examiner Competency Grading
-                                                    </button>
-                                                </div>
-                                            </h2>
-                                            @endif
-                                        </div>
-
-                                        <div id="examiner-{{ $eventLesson->id }}" class="accordion-collapse collapse">
-                                            <!-- Student name aligned to the right, above the competency grading -->
-                                            <div class="text-end pe-4 pt-2 fw-semibold">
-                                                {{ $student->fname }} {{ $student->lname }}
+                                        <div class="accordion-card">
+                                            <div class="accordion-item">
+                                                @if($lesson->examiner_cbta == 1)
+                                                <h2 class="accordion-header">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
+                                                            data-bs-target="#examiner-{{ $eventLesson->id }}" aria-expanded="false">
+                                                            Examiner Competency Grading
+                                                        </button>
+                                                    </div>
+                                                </h2>
+                                                @endif
                                             </div>
 
-                                            <div class="accordion-body">
-                                                @foreach($examiner_cbta as $val)
-                                                @php
-                                                // Find grading for this competency and lesson
-                                                $savedGrade = collect($examiner_grading)->first(function($g) use ($val, $lesson) {
-                                                return $g['cbta_gradings_id'] == $val['id'] && $g['lesson_id'] == $lesson->id;
-                                                });
-                                                @endphp
+                                            <div id="examiner-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                                <!-- Student name aligned to the right, above the competency grading -->
+                                                <div class="text-end pe-4 pt-2 fw-semibold">
+                                                    {{ $student->fname }} {{ $student->lname }}
+                                                </div>
 
-                                                <div class="custom-box">
-                                                    <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $val['id'] }}" aria-expanded="false">
-                                                        <span class="rmk">RMK</span>
-                                                        <span class="question-mark">?</span>
-                                                        <span class="title"><span class="highlight">{{ $val['competency'] }} ({{ $val['short_name'] }})</span></span>
-                                                        <input type="hidden" name="cg_lesson_id" value="{{ $lesson->id }}">
-                                                    </div>
+                                                @if($examiner_cbta)
+                                                    <div class="accordion-body">
+                                                        @foreach($examiner_cbta as $val)
+                                                        @php
+                                                        // Find grading for this competency and lesson
+                                                        $savedGrade = collect($examiner_grading)->first(function($g) use ($val, $lesson) {
+                                                        return $g['cbta_gradings_id'] == $val['id'] && $g['lesson_id'] == $lesson->id;
+                                                        });
+                                                        @endphp
 
-                                                    <div class="table-container">
-                                                        <div class="main-tabledesign">
-                                                            <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
-                                                            <table>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        @for ($i = 1; $i <= 5; $i++)
-                                                                            @php
-                                                                            $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
-                                                                            @endphp
-                                                                            <td>
-                                                                            <label class="radio-label">
-                                                                                <input type="radio" class="scale-radio"
-                                                                                    name="examiner_grade[{{ $lesson->id }}][{{ $val['id'] }}]"
-                                                                                    value="{{ $i }}"
-                                                                                    data-event-id="{{ $trainingEvent->id }}"
-                                                                                    data-lesson-id="{{ $lesson->id }}"
-                                                                                    data-user-id="{{ $student->id ?? '' }}"
-                                                                                    data-code="{{ $val['id'] }}"
-                                                                                    data-color-class="{{ $colorClass }}"
-                                                                                    {{-- check if saved grade matches --}}
-                                                                                    {{ isset($savedGrade['competency_value']) && $savedGrade['competency_value'] == $i ? 'checked' : '' }}>
-                                                                                <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
-                                                                            </label>
-                                                                            </td>
-                                                                            @endfor
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-                                                            <span class="custom-radio competent comp_grade_{{ $lesson->id }}_{{ $student->id ?? '' }}"></span>
+                                                        <div class="custom-box">
+                                                            <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $val['id'] }}" aria-expanded="false">
+                                                                <span class="rmk">RMK</span>
+                                                                <span class="question-mark">?</span>
+                                                                <span class="title"><span class="highlight">{{ $val['competency'] }} ({{ $val['short_name'] }})</span></span>
+                                                                <input type="hidden" name="cg_lesson_id" value="{{ $lesson->id }}">
+                                                            </div>
+
+                                                            <div class="table-container">
+                                                                <div class="main-tabledesign">
+                                                                    <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
+                                                                    <table>
+                                                                        <tbody>
+                                                                            <tr>
+                                                                                @for ($i = 1; $i <= 5; $i++)
+                                                                                    @php
+                                                                                    $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
+                                                                                    @endphp
+                                                                                    <td>
+                                                                                    <label class="radio-label">
+                                                                                        <input type="radio" class="scale-radio"
+                                                                                            name="examiner_grade[{{ $lesson->id }}][{{ $val['id'] }}]"
+                                                                                            value="{{ $i }}"
+                                                                                            data-event-id="{{ $trainingEvent->id }}"
+                                                                                            data-lesson-id="{{ $lesson->id }}"
+                                                                                            data-user-id="{{ $student->id ?? '' }}"
+                                                                                            data-code="{{ $val['id'] }}"
+                                                                                            data-color-class="{{ $colorClass }}"
+                                                                                            {{-- check if saved grade matches --}}
+                                                                                            {{ isset($savedGrade['competency_value']) && $savedGrade['competency_value'] == $i ? 'checked' : '' }}>
+                                                                                        <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
+                                                                                    </label>
+                                                                                    </td>
+                                                                                    @endfor
+                                                                            </tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                    <span class="custom-radio competent comp_grade_{{ $lesson->id }}_{{ $student->id ?? '' }}"></span>
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </div>
 
-                                                <!-- Toggleable Comment Box -->
-                                                <div class="collapse mt-2" id="competency-box-{{ $val['id'] }}">
-                                                    <textarea name="examiner_comments[{{ $lesson->id }}][{{ $val['id'] }}]"
-                                                        rows="3"
-                                                        class="form-control"
-                                                        placeholder="Add remarks or comments on competency">{{ $savedGrade['comment'] ?? '' }}</textarea>
-                                                </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-
-
-
-                                        <!-- Instructor CBTA -->
-                                        <div class="accordion-item">
-                                            @if($lesson->instructor_cbta == 1)
-                                            <h2 class="accordion-header">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
-                                                        data-bs-target="#instructor-{{ $eventLesson->id }}" aria-expanded="false">
-                                                        Instructor Competency Grading
-                                                    </button>
-                                                </div>
-                                            </h2>
-                                            @endif
-                                        </div>
-
-                                        <div id="instructor-{{ $eventLesson->id }}" class="accordion-collapse collapse">
-                                            <!-- Student name aligned to the right, above the competency grading -->
-                                            <div class="text-end pe-4 pt-2 fw-semibold">
-                                                {{ $student->fname }} {{ $student->lname }}
-                                            </div>
-
-                                            <div class="accordion-body">
-                                                @foreach($instructor_cbta as $val)
-                                                @php
-                                                // Find grading for this competency and lesson
-                                                $savedGrade = collect($instructor_grading)->first(function($g) use ($val, $lesson) {
-                                                return $g['cbta_gradings_id'] == $val['id'] && $g['lesson_id'] == $lesson->id;
-                                                });
-                                                @endphp
-
-                                                <div class="custom-box">
-                                                    <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $val['id'] }}" aria-expanded="false">
-                                                        <span class="rmk">RMK</span>
-                                                        <span class="question-mark">?</span>
-                                                        <span class="title"><span class="highlight">{{ $val['competency'] }} ({{ $val['short_name'] }})</span></span>
-                                                        <input type="hidden" name="cg_lesson_id" value="{{ $lesson->id }}">
-                                                    </div>
-
-                                                    <div class="table-container">
-                                                        <div class="main-tabledesign">
-                                                            <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
-                                                            <table>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        @for ($i = 1; $i <= 5; $i++)
-                                                                            @php
-                                                                            $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
-                                                                            @endphp
-                                                                            <td>
-                                                                            <label class="radio-label">
-                                                                                <input type="radio" class="scale-radio"
-                                                                                    name="instructor_grade[{{ $lesson->id }}][{{ $val['id'] }}]"
-                                                                                    value="{{ $i }}"
-                                                                                    data-event-id="{{ $trainingEvent->id }}"
-                                                                                    data-lesson-id="{{ $lesson->id }}"
-                                                                                    data-user-id="{{ $student->id ?? '' }}"
-                                                                                    data-code="{{ $val['id'] }}"
-                                                                                    data-color-class="{{ $colorClass }}"
-                                                                                    {{-- check if saved grade matches --}}
-                                                                                    {{ isset($savedGrade['competency_value']) && $savedGrade['competency_value'] == $i ? 'checked' : '' }}>
-                                                                                <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
-                                                                            </label>
-                                                                            </td>
-                                                                            @endfor
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-                                                            <span class="custom-radio competent comp_grade_{{ $lesson->id }}_{{ $student->id ?? '' }}"></span>
+                                                        <!-- Toggleable Comment Box -->
+                                                        <div class="collapse mt-2" id="competency-box-{{ $val['id'] }}">
+                                                            <textarea name="examiner_comments[{{ $lesson->id }}][{{ $val['id'] }}]"
+                                                                rows="3"
+                                                                class="form-control"
+                                                                placeholder="Add remarks or comments on competency">{{ $savedGrade['comment'] ?? '' }}</textarea>
                                                         </div>
+                                                        @endforeach
                                                     </div>
-                                                </div>
-
-                                                <!-- Toggleable Comment Box -->
-                                                <div class="collapse mt-2" id="competency-box-{{ $val['id'] }}">
-                                                    <textarea name="instructor_comments[{{ $lesson->id }}][{{ $val['id'] }}]"
-                                                        rows="3"
-                                                        class="form-control"
-                                                        placeholder="Add remarks or comments on competency">{{ $savedGrade['comment'] ?? '' }}</textarea>
-                                                </div>
-                                                @endforeach
+                                                @else
+                                                    <div class="accordion-body">
+                                                        No Examiner Competency Grading
+                                                    </div>
+                                                @endif
                                             </div>
                                         </div>
 
-                                        <!-- // Pilot cbta -->
-
-                                        <div class="accordion-item">
-                                            @if($lesson->pilot_cbta == 1)
-                                            <h2 class="accordion-header">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
-                                                        data-bs-target="#pilot-{{ $eventLesson->id }}" aria-expanded="false">
-                                                        Pilot Competency Grading
-                                                    </button>
-                                                </div>
-                                            </h2>
-                                            @endif
-                                        </div>
-                                        <div id="pilot-{{ $eventLesson->id }}" class="accordion-collapse collapse">
-                                            <!-- Student name aligned to the right, above the competency grading -->
-                                            <div class="text-end pe-4 pt-2 fw-semibold">
-                                                {{ $student->fname }} {{ $student->lname }}
+                                        <div class="accordion-card">
+                                            <!-- Instructor CBTA -->
+                                            <div class="accordion-item">
+                                                @if($lesson->instructor_cbta == 1)
+                                                <h2 class="accordion-header">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
+                                                            data-bs-target="#instructor-{{ $eventLesson->id }}" aria-expanded="false">
+                                                            Instructor Competency Grading
+                                                        </button>
+                                                    </div>
+                                                </h2>
+                                                @endif
                                             </div>
 
-                                            <div class="accordion-body">
-                                                @foreach($pilot_cbta as $val)
-                                                @php
-                                                // Find grading for this competency and lesson
-                                                $savedGrade = collect($pilot_grading)->first(function($g) use ($val, $lesson) {
-                                                return $g['cbta_gradings_id'] == $val['id'] && $g['lesson_id'] == $lesson->id;
-                                                });
-                                                @endphp
+                                            <div id="instructor-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                                <!-- Student name aligned to the right, above the competency grading -->
+                                                <div class="text-end pe-4 pt-2 fw-semibold">
+                                                    {{ $student->fname }} {{ $student->lname }}
+                                                </div>
 
-                                                <div class="custom-box">
-                                                    <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $val['id'] }}" aria-expanded="false">
-                                                        <span class="rmk">RMK</span>
-                                                        <span class="question-mark">?</span>
-                                                        <span class="title"><span class="highlight">{{ $val['competency'] }} ({{ $val['short_name'] }})</span></span>
-                                                        <input type="hidden" name="cg_lesson_id" value="{{ $lesson->id }}">
-                                                    </div>
+                                                @if($instructor_cbta)
+                                                    <div class="accordion-body">
+                                                        @foreach($instructor_cbta as $val)
+                                                        @php
+                                                        // Find grading for this competency and lesson
+                                                        $savedGrade = collect($instructor_grading)->first(function($g) use ($val, $lesson) {
+                                                        return $g['cbta_gradings_id'] == $val['id'] && $g['lesson_id'] == $lesson->id;
+                                                        });
+                                                        @endphp
 
-                                                    <div class="table-container">
-                                                        <div class="main-tabledesign">
-                                                            <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
-                                                            <table>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        @for ($i = 1; $i <= 5; $i++)
-                                                                            @php
-                                                                            $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
-                                                                            @endphp
-                                                                            <td>
-                                                                            <label class="radio-label">
-                                                                                <input type="radio" class="scale-radio"
-                                                                                    name="pilot_grade[{{ $lesson->id }}][{{ $val['id'] }}]"
-                                                                                    value="{{ $i }}"
-                                                                                    data-event-id="{{ $trainingEvent->id }}"
-                                                                                    data-lesson-id="{{ $lesson->id }}"
-                                                                                    data-user-id="{{ $student->id ?? '' }}"
-                                                                                    data-code="{{ $val['id'] }}"
-                                                                                    data-color-class="{{ $colorClass }}"
-                                                                                    {{-- check if saved grade matches --}}
-                                                                                    {{ isset($savedGrade['competency_value']) && $savedGrade['competency_value'] == $i ? 'checked' : '' }}>
-                                                                                <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
-                                                                            </label>
-                                                                            </td>
-                                                                            @endfor
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-                                                            <span class="custom-radio competent comp_grade_{{ $lesson->id }}_{{ $student->id ?? '' }}"></span>
+                                                        <div class="custom-box">
+                                                            <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $val['id'] }}" aria-expanded="false">
+                                                                <span class="rmk">RMK</span>
+                                                                <span class="question-mark">?</span>
+                                                                <span class="title"><span class="highlight">{{ $val['competency'] }} ({{ $val['short_name'] }})</span></span>
+                                                                <input type="hidden" name="cg_lesson_id" value="{{ $lesson->id }}">
+                                                            </div>
+
+                                                            <div class="table-container">
+                                                                <div class="main-tabledesign">
+                                                                    <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
+                                                                    <table>
+                                                                        <tbody>
+                                                                            <tr>
+                                                                                @for ($i = 1; $i <= 5; $i++)
+                                                                                    @php
+                                                                                    $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
+                                                                                    @endphp
+                                                                                    <td>
+                                                                                    <label class="radio-label">
+                                                                                        <input type="radio" class="scale-radio"
+                                                                                            name="instructor_grade[{{ $lesson->id }}][{{ $val['id'] }}]"
+                                                                                            value="{{ $i }}"
+                                                                                            data-event-id="{{ $trainingEvent->id }}"
+                                                                                            data-lesson-id="{{ $lesson->id }}"
+                                                                                            data-user-id="{{ $student->id ?? '' }}"
+                                                                                            data-code="{{ $val['id'] }}"
+                                                                                            data-color-class="{{ $colorClass }}"
+                                                                                            {{-- check if saved grade matches --}}
+                                                                                            {{ isset($savedGrade['competency_value']) && $savedGrade['competency_value'] == $i ? 'checked' : '' }}>
+                                                                                        <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
+                                                                                    </label>
+                                                                                    </td>
+                                                                                    @endfor
+                                                                            </tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                    <span class="custom-radio competent comp_grade_{{ $lesson->id }}_{{ $student->id ?? '' }}"></span>
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </div>
 
-                                                <!-- Toggleable Comment Box -->
-                                                <div class="collapse mt-2" id="competency-box-{{ $val['id'] }}">
-                                                    <textarea name="pilot_comments[{{ $lesson->id }}][{{ $val['id'] }}]"
-                                                        rows="3"
-                                                        class="form-control"
-                                                        placeholder="Add remarks or comments on competency">{{ $savedGrade['comment'] ?? '' }}</textarea>
-                                                </div>
-                                                @endforeach
+                                                        <!-- Toggleable Comment Box -->
+                                                        <div class="collapse mt-2" id="competency-box-{{ $val['id'] }}">
+                                                            <textarea name="instructor_comments[{{ $lesson->id }}][{{ $val['id'] }}]"
+                                                                rows="3"
+                                                                class="form-control"
+                                                                placeholder="Add remarks or comments on competency">{{ $savedGrade['comment'] ?? '' }}</textarea>
+                                                        </div>
+                                                        @endforeach
+                                                    </div>
+                                                @else
+                                                    <div class="accordion-body">
+                                                        No Instructor Competency Grading
+                                                    </div>
+                                                @endif
                                             </div>
                                         </div>
-                                        <!-- ////------------------------------------Overall assessment for multi lesson--------------------------------------------------->
+
+                                        <div class="accordion-card">
+                                            <!-- // Pilot cbta -->
+                                            <div class="accordion-item">
+                                                @if($lesson->pilot_cbta == 1)
+                                                <h2 class="accordion-header">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
+                                                            data-bs-target="#pilot-{{ $eventLesson->id }}" aria-expanded="false">
+                                                            Pilot Competency Grading
+                                                        </button>
+                                                    </div>
+                                                </h2>
+                                                @endif
+                                            </div>
+
+                                            <div id="pilot-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                                <!-- Student name aligned to the right, above the competency grading -->
+                                                <div class="text-end pe-4 pt-2 fw-semibold">
+                                                    {{ $student->fname }} {{ $student->lname }}
+                                                </div>
+
+                                                @if($pilot_cbta)
+                                                    <div class="accordion-body">
+                                                        @foreach($pilot_cbta as $val)
+                                                        @php
+                                                        // Find grading for this competency and lesson
+                                                        $savedGrade = collect($pilot_grading)->first(function($g) use ($val, $lesson) {
+                                                        return $g['cbta_gradings_id'] == $val['id'] && $g['lesson_id'] == $lesson->id;
+                                                        });
+                                                        @endphp
+
+                                                        <div class="custom-box">
+                                                            <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $val['id'] }}" aria-expanded="false">
+                                                                <span class="rmk">RMK</span>
+                                                                <span class="question-mark">?</span>
+                                                                <span class="title"><span class="highlight">{{ $val['competency'] }} ({{ $val['short_name'] }})</span></span>
+                                                                <input type="hidden" name="cg_lesson_id" value="{{ $lesson->id }}">
+                                                            </div>
+
+                                                            <div class="table-container">
+                                                                <div class="main-tabledesign">
+                                                                    <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
+                                                                    <table>
+                                                                        <tbody>
+                                                                            <tr>
+                                                                                @for ($i = 1; $i <= 5; $i++)
+                                                                                    @php
+                                                                                    $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
+                                                                                    @endphp
+                                                                                    <td>
+                                                                                    <label class="radio-label">
+                                                                                        <input type="radio" class="scale-radio"
+                                                                                            name="pilot_grade[{{ $lesson->id }}][{{ $val['id'] }}]"
+                                                                                            value="{{ $i }}"
+                                                                                            data-event-id="{{ $trainingEvent->id }}"
+                                                                                            data-lesson-id="{{ $lesson->id }}"
+                                                                                            data-user-id="{{ $student->id ?? '' }}"
+                                                                                            data-code="{{ $val['id'] }}"
+                                                                                            data-color-class="{{ $colorClass }}"
+                                                                                            {{-- check if saved grade matches --}}
+                                                                                            {{ isset($savedGrade['competency_value']) && $savedGrade['competency_value'] == $i ? 'checked' : '' }}>
+                                                                                        <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
+                                                                                    </label>
+                                                                                    </td>
+                                                                                    @endfor
+                                                                            </tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                    <span class="custom-radio competent comp_grade_{{ $lesson->id }}_{{ $student->id ?? '' }}"></span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Toggleable Comment Box -->
+                                                        <div class="collapse mt-2" id="competency-box-{{ $val['id'] }}">
+                                                            <textarea name="pilot_comments[{{ $lesson->id }}][{{ $val['id'] }}]"
+                                                                rows="3"
+                                                                class="form-control"
+                                                                placeholder="Add remarks or comments on competency">{{ $savedGrade['comment'] ?? '' }}</textarea>
+                                                        </div>
+                                                        @endforeach
+                                                    </div>
+                                                @else
+                                                    <div class="accordion-body">
+                                                        No Pilot Competency Grading
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            <!-- ////------------------------------------Overall assessment for multi lesson--------------------------------------------------->
+                                        </div>
 
 
 

@@ -9,21 +9,25 @@ use Illuminate\Validation\Rule;
 
 class CbtaControlller extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-     if(auth()->user()->is_owner == 1){
-        $instructor =  CbtaGrading::with('organization_unit')->where('competency_type', 'instructor')->whereNotNull('ou_id')->get();
-        $examiner =  CbtaGrading::with('organization_unit')->where('competency_type', 'examiner')->whereNotNull('ou_id')->get();
-        $pilot =  CbtaGrading::with('organization_unit')->where('competency_type', 'pilot')->whereNotNull('ou_id')->get();
+        $ou_id= decode_id($request->ou_id);
 
-     }else{
-      $instructor =  CbtaGrading::with('organization_unit')->where('competency_type', 'instructor')->where('ou_id', auth()->user()->ou_id)->get();
-      $examiner =  CbtaGrading::with('organization_unit')->where('competency_type', 'examiner')->where('ou_id', auth()->user()->ou_id)->get();
-      $pilot =  CbtaGrading::with('organization_unit')->where('competency_type', 'pilot')->where('ou_id', auth()->user()->ou_id)->get();
+        if(auth()->user()->is_owner == 1){
+            $instructor =  CbtaGrading::with('organization_unit')->where('competency_type', 'instructor')->where('ou_id' , $ou_id)->get();
+            $examiner =  CbtaGrading::with('organization_unit')->where('competency_type', 'examiner')->where('ou_id' , $ou_id)->get();
+            $pilot =  CbtaGrading::with('organization_unit')->where('competency_type', 'pilot')->where('ou_id' , $ou_id)->get();
 
-     }
-      $organizationUnits  = OrganizationUnits::all();
-      return view('CBTA.show', compact('instructor', 'examiner','organizationUnits', 'pilot'));
+        }else{
+            $instructor =  CbtaGrading::with('organization_unit')->where('competency_type', 'instructor')->where('ou_id', auth()->user()->ou_id)->get();
+            $examiner =  CbtaGrading::with('organization_unit')->where('competency_type', 'examiner')->where('ou_id', auth()->user()->ou_id)->get();
+            $pilot =  CbtaGrading::with('organization_unit')->where('competency_type', 'pilot')->where('ou_id', auth()->user()->ou_id)->get();
+
+        }
+
+        $organizationUnits  = OrganizationUnits::all();
+
+        return view('CBTA.show', compact('instructor', 'examiner','organizationUnits', 'pilot'));
     }
 
 
