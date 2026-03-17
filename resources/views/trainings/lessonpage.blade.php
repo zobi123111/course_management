@@ -1240,19 +1240,23 @@
                                             @endif
                                         </div>
 
-                                        <div class="accordion-item">
-                                            @if($lesson && $lesson->enable_cbta==1)
-                                            <h2 class="accordion-header">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <button type="button" class="accordion-button {{ $isLocked ? 'collapsed' : 'collapsed' }}" data-bs-toggle="collapse"
-                                                        data-bs-target="#comptency-{{ $eventLesson->id }}" aria-expanded="false">
-                                                        Overall Competency Grading
-                                                    </button>
-                                                </div>
-                                            </h2>
-                                            @endif
-                                        </div>
-                                        <div id="comptency-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                        @if($lesson && $lesson->enable_cbta==1)
+                                        <div class="accordion-card">
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <button type="button"
+                                                            class="accordion-button collapsed toggleable"
+                                                            data-bs-toggle="collapse"
+                                                            data-bs-target="#comptency-{{ $eventLesson->id }}"
+                                                            aria-expanded="false">
+                                                            Overall Competency Grading
+                                                        </button>
+                                                    </div>
+                                                </h2>
+                                            </div>
+                                        
+                                            <div id="comptency-{{ $eventLesson->id }}" class="accordion-collapse collapse">
                                             <!-- Student name aligned to the right, above the competency grading -->
                                             <div class="text-end pe-4 pt-2 fw-semibold">
                                                 {{ $student->fname }} {{ $student->lname }}
@@ -1323,20 +1327,11 @@
                                                 @endforeach
 
                                             </div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label class="mt-3 mb-3">Lesson Summary</label>
-                                            <textarea name="lesson_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Write Lesson Summary">{{ old("lesson_summary.$lesson->id", $eventLesson->lesson_summary ?? '') }}</textarea>
                                         </div>
-
-                                        @if(Auth::user()->role == "1")
-                                        <div>
-                                            <label class="mt-3 mb-3">Instructor Comment</label>
-                                            <textarea name="instructor_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Instructor Comment">{{ old("lesson_summary.$lesson->id", $eventLesson->instructor_comment ?? '') }}</textarea>
-                                        </div>
-                                        <i><strong> Notes: </strong> for training manager/instructors only</i>
                                         @endif
-                                        
+
                                         @if($lesson->examiner_cbta == 1)
                                             <!-- Examiner CBTA -->
                                             <div class="accordion-card">
@@ -1344,8 +1339,11 @@
                                                     @if($lesson->examiner_cbta == 1)
                                                     <h2 class="accordion-header">
                                                         <div class="d-flex justify-content-between align-items-center">
-                                                            <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
-                                                                data-bs-target="#examiner-{{ $eventLesson->id }}" aria-expanded="false">
+                                                            <button type="button"
+                                                                class="accordion-button collapsed toggleable"
+                                                                data-bs-toggle="collapse"
+                                                                data-bs-target="#examiner-{{ $eventLesson->id }}"
+                                                                aria-expanded="false">
                                                                 Examiner Competency Grading
                                                             </button>
                                                         </div>
@@ -1436,8 +1434,11 @@
                                                     @if($lesson->instructor_cbta == 1)
                                                     <h2 class="accordion-header">
                                                         <div class="d-flex justify-content-between align-items-center">
-                                                            <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
-                                                                data-bs-target="#instructor-{{ $eventLesson->id }}" aria-expanded="false">
+                                                            <button type="button"
+                                                                class="accordion-button collapsed toggleable"
+                                                                data-bs-toggle="collapse"
+                                                                data-bs-target="#instructor-{{ $eventLesson->id }}"
+                                                                aria-expanded="false">
                                                                 Instructor Competency Grading
                                                             </button>
                                                         </div>
@@ -1529,8 +1530,11 @@
                                                     @if($lesson->pilot_cbta == 1)
                                                     <h2 class="accordion-header">
                                                         <div class="d-flex justify-content-between align-items-center">
-                                                            <button type="button" class="accordion-button toggleable" data-bs-toggle="collapse"
-                                                                data-bs-target="#pilot-{{ $eventLesson->id }}" aria-expanded="false">
+                                                            <button type="button"
+                                                                class="accordion-button collapsed toggleable"
+                                                                data-bs-toggle="collapse"
+                                                                data-bs-target="#pilot-{{ $eventLesson->id }}"
+                                                                aria-expanded="false">
                                                                 Pilot Competency Grading
                                                             </button>
                                                         </div>
@@ -1615,6 +1619,19 @@
                                             </div>
                                         @endif
 
+                                        <div>
+                                            <label class="mt-3 mb-3">Lesson Summary</label>
+                                            <textarea name="lesson_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Write Lesson Summary">{{ old("lesson_summary.$lesson->id", $eventLesson->lesson_summary ?? '') }}</textarea>
+                                        </div>
+
+                                        @if(Auth::user()->role == "1")
+                                        <div>
+                                            <label class="mt-3 mb-3">Instructor Comment</label>
+                                            <textarea name="instructor_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Instructor Comment">{{ old("lesson_summary.$lesson->id", $eventLesson->instructor_comment ?? '') }}</textarea>
+                                        </div>
+                                        <i><strong> Notes: </strong> for training manager/instructors only</i>
+                                        @endif
+                                        
                                         <div class="accordion-item">
                                             <h2 class="accordion-header">
                                                 <div class="d-flex justify-content-between align-items-center">

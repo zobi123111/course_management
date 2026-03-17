@@ -169,6 +169,36 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
     }
 }
 ?>
+@if(auth()->user()->is_admin && isset($expiringSoonEvents) && $expiringSoonEvents->isNotEmpty())
+
+    @foreach ($expiringSoonEvents as $event)
+
+        @php
+            $expiryDate = \Carbon\Carbon::parse($event->course_end_validity)
+                ->addMonths($event->course->course_validity);
+
+            $daysLeft = now()->diffInDays($expiryDate, false);
+
+            $courseName = $event->course->course_name ?? 'Course';
+
+            $studentName = $event->student
+                ? $event->student->fname . ' ' . $event->student->lname
+                : 'N/A';
+        @endphp
+
+        @if ($daysLeft < 0)
+            @php
+                $messages[] = "❌ <strong>{$courseName}</strong> for <strong>{$studentName}</strong> has <strong>expired</strong>.";
+            @endphp
+        @else
+            @php
+                $messages[] = "⚠️ <strong>{$courseName}</strong> for <strong>{$studentName}</strong> will expire in <strong>{$daysLeft} days</strong>.";
+            @endphp
+        @endif
+
+    @endforeach
+
+@endif
 
 
 @if (!empty($messages))
