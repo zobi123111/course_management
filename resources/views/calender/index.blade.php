@@ -406,11 +406,11 @@
                                 <span class="text-danger edit-error-text" id="editerror_rank"></span>
                             </div>
 
-                            <div class="col-md-6">
+                            <!-- <div class="col-md-6">
                                 <label>Course Start Date</label>
                                 <input type="date" name="course_date" id="edit_course_date" class="form-control mb-2">
                                 <span class="text-danger edit-error-text" id="editerror_course_date"></span>
-                            </div>
+                            </div> -->
                         </div>
 
                         <div class="row">
@@ -674,13 +674,13 @@
 
                             </div>
 
-                            <div class="col-md-6 form-group">
+                            <!-- <div class="col-md-6 form-group">
                                 <div class="form-group">
                                     <label>Course Start Date</label>
                                     <input type="date" name="course_date" id="course_date" class="form-control mb-2" autocomplete="off">
                                     <span class="text-danger error-text" id="error_course_date"></span>
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
 
                         <div class="row">
@@ -1814,7 +1814,7 @@
                 success: function(response) {
                     toastr.success("Booking Deleted");
                     $("#viewBookingModal").modal("hide");
-                    $("#calendar").fullCalendar("refetchEvents");
+                   calendar.refetchEvents();
                 },
                 error: function(xhr) {
                     toastr.error("Unable to cancel booking. Please try again.");
