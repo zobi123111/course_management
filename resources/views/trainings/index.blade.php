@@ -400,37 +400,6 @@
                         <div id="event_date_error" class="text-danger error_e"></div>
                     </div>
                 </div>
-
-                <!-- <div class="col-md-6 d-none" id="opc_validity_col">
-                    <label class="form-label">OPC Validity<span class="text-danger">*</span></label>
-                    <select class="form-select" name="opc_validity_months" id="opc_validity_months">
-                        <option value="">Select Validity</option>
-                        <option value="">Select Validity</option>
-                        <option value="1">1 Month</option>
-                        <option value="2">2 Months</option>
-                        <option value="3">3 Months</option>
-                        <option value="4">4 Months</option>
-                        <option value="5">5 Months</option>
-                        <option value="6">6 Months</option>
-                        <option value="7">7 Months</option>
-                        <option value="8">8 Months</option>
-                        <option value="9">9 Months</option>
-                        <option value="10">10 Months</option>
-                        <option value="11">11 Months</option>
-                        <option value="12">12 Months</option>
-                    </select>
-                    <div id="opc_validity_error" class="text-danger error_e"></div>
-                </div> -->
-
-                <!-- <div class="col-md-6 d-none" id="opc_extend_eom_col">
-                    <label class="form-label">Validity Extension<span class="text-danger">*</span></label>
-                    <select class="form-select" name="opc_extend_eom" id="opc_extend_eom">
-                        <option value="">Select Option</option>
-                        <option value="1">Extend validity to end of month</option>
-                        <option value="0">Do not extend (exact date)</option>
-                    </select>
-                    <div id="opc_extend_eom_error" class="text-danger error_e"></div>
-                </div> -->
                 
                 <!-- // Rank -->
                 <div class="col-md-6" id="add_rank_col" >
@@ -441,8 +410,51 @@
                         <option value="3">Second Officer</option>
                     </select>
                 </div>
+               <!-- // Training type -->
+                <div class="col-md-6">
+                  <label class="form-label">Training Type<span class="text-danger">*</span></label>
+                    <select class="form-select" name="event_type" id="event_type">
+                        <option value="custom_event">Custom Event</option>
+                        <option value="calender_event">Calender Event</option>
+                    </select>
+                </div> 
+              
+                <!-- // Start time -->
+                <!-- <div class="col-md-6" id="start_date_div" style="display:none">
+                  <label class="form-label">Start Date & Time<span class="text-danger">*</span></label>
+                   <input type="text" name="start_date" id="booking_start" class="form-control mb-2 flatpickr-input" autocomplete="off">
+                     <div id="start_date_error" class="text-danger error_e"></div>
+                </div>  -->
+
+                <!-- // End time -->
+                <!-- <div class="col-md-6" id="end_date_div" style="display:none">
+                  <label class="form-label">End Date & Time<span class="text-danger">*</span></label>
+                  <input type="text" name="end_date" id="booking_end" class="form-control mb-2 flatpickr-input active" autocomplete="off">
+                   <div id="end_date_error" class="text-danger error_e"></div>
+                </div>  -->
+
+                <!-- // Resources -->
+                <!-- <div class="col-md-6" id="resource_div" style="display:none">
+                  <label class="form-label">Resources<span class="text-danger">*</span></label>
+                    <select class="form-select" name="resource" id="add_booking_resporce"></select>
+                    <div id="resource_error" class="text-danger error_e"></div>
+                </div>  -->
+
+                    <!-- // Resources type -->
+                <!-- <div class="col-md-6" id="resource_type_div" style="display:none">
+                  <label class="form-label">Resources Type<span class="text-danger">*</span></label>
+                     <select name="resource_type" id="resource_type" class="form-control mb-2">
+                        <option value="1">Aircraft</option>
+                        <option value="2">Simulator</option>
+                        <option value="3">Classroom</option>
+                    </select>                   
+                   <div id="resource_type_error" class="text-danger error_e"></div>
+                </div>  -->
+
+
+
                 <div id="lessonDetailsContainer" class="lesson-box mt-3"></div> 
-                
+
                 <!-- Total Time (Calculated) -->
                 <div class="col-md-6">
                     <label class="form-label">Total Time (hh:mm)<span class="text-danger">*</span></label>
@@ -865,7 +877,12 @@ $(document).ready(function() {
         // Select correct dropdowns based on the modal
         var studentDropdown = isEditModal ? $('#edit_select_user') : $('#select_user');
         var instructorDropdown = isEditModal ? $('#edit_select_instructor') : $('#select_instructor');
-        var resourceDropdown = isEditModal ? $('#edit_select_resource') : $('#select_resource');
+        var $resourceDropdown = isEditModal ? $('#edit_select_resource') : $('#select_resource');
+
+          var $resourceDropdown2 = isEditModal ? $('#edit_resource_booking') : $('#add_booking_resporce');
+
+      
+       $resourceDropdown2.empty().append("<option value=''>Select Resource</option>");
 
         $.ajax({
             url: "{{ url('/training/get_ou_students_instructors_resources') }}/" + ou_id, 
@@ -879,15 +896,28 @@ $(document).ready(function() {
                var isInstructorSelected = isEditModal ? $('#edit_is_instructor_checkbox').is(':checked') : $('#is_instructor_checkbox').is(':checked');
                populateUserDropdown(isEditModal, isInstructorSelected);
 
-               // Populate Resources
-               var resourceOptions = '<option value="">Select Resource</option>';
+            var resourceOptions = '<option value="">Select Resource</option>';
+               if (response.resources && response.resources.length > 0) {
+                   $.each(response.resources, function(index, resource) {
+                       var selected = 2;
+                       resourceOptions += '<option value="' + resource.id + '" ' + selected + '>' + resource.name + '</option>';
+              
+                   });
+                   
+               }
+                $resourceDropdown2.html(resourceOptions); // Update dropdown
+              
+
+
+              // Populate Resources
+              var resourceOptions = '<option value="">Select Resource</option>';
                if (response.resources && response.resources.length > 0) {
                    $.each(response.resources, function(index, resource) {
                        var selected = resource.id == selectedResource ? 'selected' : '';
                        resourceOptions += '<option value="' + resource.id + '" ' + selected + '>' + resource.name + '</option>';
                    });
                }
-               resourceDropdown.html(resourceOptions); // Update dropdown
+               $resourceDropdown.html(resourceOptions); // Update dropdown
            },
             error: function(xhr) {
                 console.error(xhr.responseText);
@@ -1099,24 +1129,6 @@ $(document).ready(function() {
     $("#submitTrainingEvent").on("click", function(e) { 
         e.preventDefault();
 
-    //    if (
-    //         !validateOpcField(
-    //             '#opc_validity_col',
-    //             '#opc_validity_months',
-    //             '#opc_validity_error',
-    //             'OPC validity is required'
-    //         )
-    //     ) return false;
-
-    //     // OPC Extend
-    //     if (
-    //         !validateOpcField(
-    //             '#opc_extend_eom_col',
-    //             '#opc_extend_eom',
-    //             '#opc_extend_eom_error',
-    //             'OPC extend field is required'
-    //         )
-    //     ) return false;
 
         $.ajax({
             url: '{{ url("/training/create") }}',
@@ -1133,10 +1145,7 @@ $(document).ready(function() {
             error: function(xhr, status, error) {
                 var errorMessage = JSON.parse(xhr.responseText);
                 var validationErrors = errorMessage.errors;
-                // $.each(validationErrors, function(key, value) {
-                //     var msg = '<p>' + value + '<p>';
-                //     $('#' + key + '_error').html(msg);
-                // })
+       
                 // Clear old errors
                 $('.error_e').html('');
                 $.each(validationErrors, function(key, value) {
@@ -1921,7 +1930,7 @@ $(document).ready(function() {
 
     });
 
-$(document).ready(function() {
+$(document).ready(function() { 
     $('#archiveToggle').on('change', function() {
         let isChecked = $(this).is(':checked');
         let url = new URL(window.location.href);
@@ -1933,6 +1942,49 @@ $(document).ready(function() {
 
         window.location.href = url.toString();
     });
+
+    // $('#event_type').on('change', function() {
+    //     let event_type =  $(this).val(); 
+       
+    //   if (event_type == "calender_event") { 
+    //     $('#start_date_div').show();
+    //     $('#end_date_div').show();
+    //     $('#resource_div').show();
+    //     $('#resource_type_div').show();
+            
+    //     } else { 
+    //         $('#start_date_div').hide();
+    //         $('#end_date_div').hide();
+    //         $('#resource_div').hide();
+    //         $('#resource_type_div').hide();
+            
+    //     }
+    // });
+        let startPicker = flatpickr("#booking_start", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            allowInput: true,
+            minuteIncrement: 15,
+            onChange: function(selectedDates) {
+                if (!selectedDates.length) return;
+                let start = moment(selectedDates[0]);
+                let end = start.clone().set({
+                    hour: 23,
+                    minute: 59
+                });
+                endPicker.setDate(end.format("YYYY-MM-DD HH:mm"), true);
+            }
+
+        });
+
+           let endPicker = flatpickr("#booking_end", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            minuteIncrement: 15,
+            allowInput: true,
+        });
 });
 
 
