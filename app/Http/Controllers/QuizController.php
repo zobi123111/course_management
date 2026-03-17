@@ -1163,32 +1163,66 @@ class QuizController extends Controller
         $userId = Auth::id();
         $finalData = [];
 
-        foreach ($quiz->quizQuestions as $qq) {
-            $questionIds = is_array($qq->question_id) ? $qq->question_id : json_decode($qq->question_id, true);
+        // foreach ($quiz->quizQuestions as $qq) {
+        //     $questionIds = is_array($qq->question_id) ? $qq->question_id : json_decode($qq->question_id, true);
 
-            if (!$questionIds) continue;
+        //     if (!$questionIds) continue;
 
-            $questions = TopicQuestion::whereIn('id', $questionIds)->get();
+        //     $questions = TopicQuestion::whereIn('id', $questionIds)->get();
 
-            foreach ($questions as $q) {
-                $userAnswer = QuizAnswer::where('quiz_id', $quiz->id)
-                    ->where('user_id', $userId)
-                    ->where('question_id', $q->id)
-                    ->value('selected_option');
-                $finalData[] = [
-                    'question_id' => $q->id,
-                    'question_text' => $q->question_text,
-                    'question_image' => $q->question_image,
-                    'question_type' => $q->question_type,
-                    'option_type' => $q->option_type,
-                    'option_A' => $q->option_A,
-                    'option_B' => $q->option_B,
-                    'option_C' => $q->option_C,
-                    'option_D' => $q->option_D,
-                    'correct_option' => $q->correct_option,
-                    'user_answer' => $userAnswer,
-                ];
-            }
+        //     foreach ($questions as $q) {
+        //         $userAnswer = QuizAnswer::where('quiz_id', $quiz->id)
+        //             ->where('user_id', $userId)
+        //             ->where('question_id', $q->id)
+        //             ->value('selected_option');
+        //         $finalData[] = [
+        //             'question_id' => $q->id,
+        //             'question_text' => $q->question_text,
+        //             'question_image' => $q->question_image,
+        //             'question_type' => $q->question_type,
+        //             'option_type' => $q->option_type,
+        //             'option_A' => $q->option_A,
+        //             'option_B' => $q->option_B,
+        //             'option_C' => $q->option_C,
+        //             'option_D' => $q->option_D,
+        //             'correct_option' => $q->correct_option,
+        //             'user_answer' => $userAnswer,
+        //         ];
+        //     }
+        // }
+
+        $questionIds = collect($quiz->quizQuestions)
+        ->flatMap(function ($qq) {
+            return is_array($qq->question_id)
+                ? $qq->question_id
+                : json_decode($qq->question_id, true);
+        })
+        ->filter()
+        ->unique()
+        ->values();
+
+        $questions = TopicQuestion::whereIn('id', $questionIds)->get();
+
+        foreach ($questions as $q) {
+            $userAnswer = QuizAnswer::where('quiz_id', $quiz->id)
+                ->where('user_id', $userId)
+                ->where('question_id', $q->id)
+                ->value('selected_option');
+
+            $finalData[] = [
+                'question_id' => $q->id,
+                'question_id' => $q->id,
+                'question_text' => $q->question_text,
+                'question_image' => $q->question_image,
+                'question_type' => $q->question_type,
+                'option_type' => $q->option_type,
+                'option_A' => $q->option_A,
+                'option_B' => $q->option_B,
+                'option_C' => $q->option_C,
+                'option_D' => $q->option_D,
+                'correct_option' => $q->correct_option,
+                'user_answer' => $userAnswer,
+            ];
         }
 
         UserQuiz::updateOrCreate(

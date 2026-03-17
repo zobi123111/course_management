@@ -2625,6 +2625,40 @@
             });
         }
 
+        document.querySelectorAll('.toggle-status').forEach(function (toggle) {
+            toggle.addEventListener('change', function () {
+                let quizId = this.getAttribute('data-id');
+                let student = this.getAttribute('data-student');
+                let trainingEvent = this.getAttribute('data-trainingEvent');
+                let status = this.checked ? 1 : 0;
+
+                fetch('{{ route('trainingquiz.updateStatus') }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: quizId,
+                        student: student,
+                        trainingEvent: trainingEvent,
+                        status: status
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log(data.message);
+                    } else {
+                        console.error('Failed to update');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                });
+            });
+        });
+
         document.getElementById('docUploadForm').addEventListener('submit', () => {
             Object.keys(fileStore).forEach(docId => {
                 const dt = new DataTransfer();
@@ -2781,39 +2815,7 @@
                 }
             }
 
-            document.querySelectorAll('.toggle-status').forEach(function (toggle) {
-                toggle.addEventListener('change', function () {
-                    let quizId = this.getAttribute('data-id');
-                    let student = this.getAttribute('data-student');
-                    let trainingEvent = this.getAttribute('data-trainingEvent');
-                    let status = this.checked ? 1 : 0;
-
-                    fetch('{{ route('trainingquiz.updateStatus') }}', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            id: quizId,
-                            student: student,
-                            trainingEvent: trainingEvent,
-                            status: status
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            console.log(data.message);
-                        } else {
-                            console.error('Failed to update');
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Error:', err);
-                    });
-                });
-            });
+            
             // $('.scale-radio').on('change', function() { 
             //     const name = $(this).attr('name');
             //     const wasChecked = $(this).data('waschecked');
