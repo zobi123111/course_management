@@ -68,6 +68,10 @@
             background: url(assets/img/double_ring.svg) 50% 50% no-repeat rgba(185, 243, 255, 0.19);
         }
       
+
+        .bi::before, [class^="bi-"]::before, [class*=" bi-"]::before {
+            line-height: 0px !important; 
+        }
       
       
         /* .dropdown-menu li a::after {
