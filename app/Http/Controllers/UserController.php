@@ -34,20 +34,17 @@ class UserController extends Controller
         $authUser = auth()->user();
         $ou_id = $authUser->ou_id;
         $is_owner = $authUser->is_owner;
-        $is_admin = $authUser->is_admin; 
-        
-
+        $is_admin = $authUser->is_admin;
+      
+       
         $organizationUnits = OrganizationUnits::all();
         $roles = Role::all();
         $rating = Rating::where('status', 1)->get();
-
-
-        $ou_id = auth()->user()->ou_id;
         if ($ou_id != null) {
             $rating = Rating::with(['ou_ratings.organization_unit'])->where('status', 1)->whereHas('ou_ratings')->get();
         }  
         
-
+        $ou_id = auth()->user()->ou_id;
         if ($request->ajax()) {
             $query = User::query()
                 ->leftJoin('roles', 'users.role', '=', 'roles.id')
@@ -126,6 +123,8 @@ class UserController extends Controller
                 ->make(true);
         }
 
+       
+        
         return view('users.index', compact('roles', 'organizationUnits', 'rating')); 
     }
 
@@ -2586,7 +2585,7 @@ class UserController extends Controller
                 'ou_id' => $rating->ou_id ?? '',
             ]);
         }
-        return view('users.ratings.show', [ 
+        return view('users.ratings.show', [  
             'ratings'               => $allRatings->groupBy('id'),
             'ratingDropdownOptions' => $allRatings,
             'organizationUnits'     => $organizationUnits
