@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Role;
 use App\Models\Page;
 use App\Models\OuSetting;
+use App\Models\Rating;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
@@ -441,8 +442,9 @@ class OrganizationController extends Controller
         $OuSetting = OuSetting::where('organization_id', $ou_id)->first();
         $validation_type = LicenceValidationType::where('ou_id', $ou_id)->where('enabled', 1)->get();
 
-        // dd($validation_type);
-        return response()->json(['OuSetting' => $OuSetting, 'validation_type' => $validation_type]);
+        $rating = Rating::where('status', 1)->where('ou_id', $ou_id)->get();
+
+        return response()->json(['OuSetting' => $OuSetting, 'validation_type' => $validation_type, 'rating' => $rating]);
     }
 
     

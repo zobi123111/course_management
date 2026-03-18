@@ -532,25 +532,28 @@ $(document).on('click', '#updateRating', function(e) {
 
     $.ajax({
     type: 'POST',
-    url: '/rating/update',
+    url: '/rating/update', 
     data: formData,
     processData: false,
     contentType: false,
     success: function(response) {
-        $(".loader").fadeOut('slow');
-        if (response.success) {
-        $('#editRatingModal').modal('hide');
-        $('#update_success_msg').html(`
-        <div class="alert alert-success fade show" role="alert">
-        <i class="bi bi-check-circle me-1"></i>
-        ${response.msg}
-        </div>
-        `).stop(true, true).fadeIn();
-        setTimeout(function() {
-        $('#update_success_msg').fadeOut('slow');
-        }, 3000);
-            }
-        },
+                $(".loader").fadeOut('slow');
+                if (response.success) {
+                $('#editRatingModal').modal('hide');
+                $('#update_success_msg').html(`
+                <div class="alert alert-success fade show" role="alert">
+                <i class="bi bi-check-circle me-1"></i>
+                ${response.msg}
+                </div>
+                `).stop(true, true).fadeIn();
+                setTimeout(function() {
+                $('#update_success_msg').fadeOut('slow');
+                location.reload();
+                }, 3000);
+
+
+                    }
+                },
     error: function(xhr, status, error) {
         $(".loader").fadeOut("slow");
         $('.error_e').html(''); // Clear previous errors
