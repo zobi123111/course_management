@@ -68,94 +68,173 @@ function decode_id($hashedId)
 //     return $allowedPages;
 // }
 
+// function getAllowedPages()
+// {
+//     $user = Auth::user();
+    
+//     if (!$user  || !$user->role) {
+//         return collect();
+//     }
+//     // Get the active role from session (fallback to the default role)
+//     $current_role = session('current_role', $user->role);
+    
+//     // If user is the owner, return all pages
+//     if ($user->is_owner) {
+//         return Page::with('modules')->orderBy('position', 'asc')->get();
+//     }  
+ 
+//     // Always allow the Dashboard page
+//     $dashboardPage = Page::with('modules')->whereHas('modules', function ($query) {
+//         $query->where('route_name', 'dashboard');
+//     })->first();
+
+
+
+//     if ($user->is_admin == 1) { 
+//         $organizationUnit = DB::table('organization_units')->where('id', $user->ou_id)->first();
+
+//         if ($organizationUnit && $organizationUnit->permission) {
+//             $allowedPageIds = json_decode($organizationUnit->permission, true);
+            
+//             if (!is_array($allowedPageIds) || empty($allowedPageIds)) {
+//                 return collect([$dashboardPage]); 
+//             }
+
+//             return Page::with('modules')
+//                 ->whereIn('id', $allowedPageIds)
+//                 ->orderBy('position', 'asc')
+//                 ->get();
+//         }
+
+//         return collect([$dashboardPage]);
+//     }
+
+//     if (empty($user->is_admin)) { 
+//         $organizationUnit = DB::table('organization_units')->where('id', $user->ou_id)->first();
+
+//         if ($organizationUnit && $organizationUnit->permission) {
+//             $allowedPageIds = json_decode($organizationUnit->permission, true);
+
+//             if (!is_array($allowedPageIds) || empty($allowedPageIds)) {
+//                 return collect($dashboardPage ? [$dashboardPage] : []);
+//             }
+
+//             $allowedPages = Page::with('modules')
+//                 ->whereIn('id', $allowedPageIds)
+//                 ->whereHas('modules', function ($query) use ($current_role) {
+//                     $query->whereHas('rolePermissions', function ($subQuery) use ($current_role) {
+//                         $subQuery->where('role_id', $current_role);
+//                     });
+//                 })
+//                 ->orderBy('position', 'asc')
+//                 ->get();
+
+//             if ($dashboardPage && !$allowedPages->contains('id', $dashboardPage->id)) {
+//                 $allowedPages->prepend($dashboardPage);
+//             }
+
+//             return $allowedPages;
+//         }
+//          // dd($dashboardPage);
+//         return collect($dashboardPage ? [$dashboardPage] : []);
+//     }
+
+
+//     // Get allowed pages based on the current role
+//     $allowedPages = Page::with('modules')
+//         ->orderBy('position', 'asc')
+//         ->whereHas('modules', function ($query) use ($current_role) {
+//             $query->whereHas('rolePermissions', function ($subQuery) use ($current_role) {
+//                 $subQuery->where('role_id', $current_role);
+//             });
+//         })
+//         ->get();
+
+//     // Ensure the dashboard page is included
+//     if ($dashboardPage && !$allowedPages->contains('id', $dashboardPage->id)) {
+//         $allowedPages->prepend($dashboardPage);
+//     }
+
+//     return $allowedPages;
+// }
+
 function getAllowedPages()
 {
     $user = Auth::user();
-    
-    if (!$user  || !$user->role) {
+ 
+    if (!$user || !$user->role) {
         return collect();
     }
-    // Get the active role from session (fallback to the default role)
-    $current_role = session('current_role', $user->role);
-    
-    // If user is the owner, return all pages
-    if ($user->is_owner) {
-        return Page::with('modules')->orderBy('position', 'asc')->get();
-    }  
  
-    // Always allow the Dashboard page
-    $dashboardPage = Page::with('modules')->whereHas('modules', function ($query) {
-        $query->where('route_name', 'dashboard');
-    })->first();
-
-
-
-    if ($user->is_admin == 1) { 
-        $organizationUnit = DB::table('organization_units')->where('id', $user->ou_id)->first();
-
-        if ($organizationUnit && $organizationUnit->permission) {
-            $allowedPageIds = json_decode($organizationUnit->permission, true);
-            
-            if (!is_array($allowedPageIds) || empty($allowedPageIds)) {
-                return collect([$dashboardPage]); 
-            }
-
-            return Page::with('modules')
-                ->whereIn('id', $allowedPageIds)
-                ->orderBy('position', 'asc')
-                ->get();
-        }
-
-        return collect([$dashboardPage]);
+    $current_role = session('current_role', $user->role);
+ 
+    $dashboardPage = Page::with('modules')
+        ->whereHas('modules', function ($query) {
+            $query->where('route_name', 'dashboard');
+        })
+        ->first();
+ 
+    if ($user->is_owner) {
+        return Page::with('modules')
+            ->orderBy('position', 'asc')
+            ->get();
     }
-
-    if (empty($user->is_admin)) { 
-        $organizationUnit = DB::table('organization_units')->where('id', $user->ou_id)->first();
-
-        if ($organizationUnit && $organizationUnit->permission) {
-            $allowedPageIds = json_decode($organizationUnit->permission, true);
-
-            if (!is_array($allowedPageIds) || empty($allowedPageIds)) {
-                return collect($dashboardPage ? [$dashboardPage] : []);
-            }
-
-            $allowedPages = Page::with('modules')
-                ->whereIn('id', $allowedPageIds)
-                ->whereHas('modules', function ($query) use ($current_role) {
-                    $query->whereHas('rolePermissions', function ($subQuery) use ($current_role) {
-                        $subQuery->where('role_id', $current_role);
-                    });
-                })
-                ->orderBy('position', 'asc')
-                ->get();
-
-            if ($dashboardPage && !$allowedPages->contains('id', $dashboardPage->id)) {
-                $allowedPages->prepend($dashboardPage);
-            }
-
-            return $allowedPages;
-        }
-         // dd($dashboardPage);
+ 
+    $organizationUnit = DB::table('organization_units')
+        ->where('id', $user->ou_id)
+        ->first();
+ 
+    if (!$organizationUnit || !$organizationUnit->permission) {
         return collect($dashboardPage ? [$dashboardPage] : []);
     }
-
-
-    // Get allowed pages based on the current role
-    $allowedPages = Page::with('modules')
-        ->orderBy('position', 'asc')
-        ->whereHas('modules', function ($query) use ($current_role) {
-            $query->whereHas('rolePermissions', function ($subQuery) use ($current_role) {
-                $subQuery->where('role_id', $current_role);
-            });
-        })
-        ->get();
-
-    // Ensure the dashboard page is included
-    if ($dashboardPage && !$allowedPages->contains('id', $dashboardPage->id)) {
-        $allowedPages->prepend($dashboardPage);
+ 
+    $allowedPageIds = json_decode($organizationUnit->permission, true);
+ 
+    if (!is_array($allowedPageIds) || empty($allowedPageIds)) {
+        return collect($dashboardPage ? [$dashboardPage] : []);
     }
-
-    return $allowedPages;
+ 
+    $query = Page::with('modules')->whereIn('id', $allowedPageIds);
+ 
+    if ((int)$user->is_admin !== 1) {
+        $query->whereHas('modules', function ($q) use ($current_role) {
+            $q->whereHas('rolePermissions', function ($sub) use ($current_role) {
+                $sub->where('role_id', $current_role);
+            });
+        });
+    }
+ 
+    $pages = $query->get();
+ 
+    $parentIds = $pages->pluck('parent_page_id')
+        ->filter()
+        ->unique()
+        ->toArray();
+ 
+    $allIds = array_unique(array_merge($allowedPageIds, $parentIds));
+ 
+    $finalQuery = Page::with('modules')->whereIn('id', $allIds);
+ 
+    if ((int)$user->is_admin !== 1) {
+        $finalQuery->where(function ($q) use ($current_role, $parentIds) {
+            $q->whereHas('modules', function ($mq) use ($current_role) {
+                $mq->whereHas('rolePermissions', function ($sub) use ($current_role) {
+                    $sub->where('role_id', $current_role);
+                });
+            })
+            ->orWhereIn('id', $parentIds);
+        });
+    }
+ 
+    $finalPages = $finalQuery
+        ->orderBy('position', 'asc')
+        ->get();
+ 
+    if ($dashboardPage && !$finalPages->contains('id', $dashboardPage->id)) {
+        $finalPages->prepend($dashboardPage);
+    }
+ 
+    return $finalPages;
 }
 
 function checkAllowedModule($pageRoute, $routeName = null)
