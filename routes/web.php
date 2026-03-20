@@ -356,6 +356,7 @@ Route::get('/training/training-event-new-design/{event_id}', [TrainingEventsCont
 Route::get('/lesson-grade', [TrainingEventsController::class, 'Lessongrade'])->name('lesson.grade');
 Route::post('/event/lessons/update', [TrainingEventsController::class, 'EventLessonUpdate'])->name('event.lesson.update');
 Route::delete('/lesson/document/delete/{id}', [LessonController::class, 'deleteBriefingDocument'])->name('lesson.document.delete');
+Route::get('/get-instructor-licence/{id}', [TrainingEventsController::class, 'getInstructorLicence'])->name('getInstructorLicence');
 
 Route::delete('/training/document/{id}', [TrainingEventsController::class, 'deleteDocument']);
 

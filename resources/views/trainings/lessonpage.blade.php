@@ -875,9 +875,10 @@
 
                                     <div class="col-md-6">
                                         <label class="form-label">Instructor</label>
-                                        <select class="form-select editable" name="instructor_id" disabled>
+                                        <select class="form-select editable" name="instructor_id" id="instructorSelect" disabled>
                                             @foreach($instructors as $inst)
                                             <option value="{{ $inst->id }}"
+                                                data-licence="{{ $inst->licence ?? $inst->documents->licence ?? '' }}"
                                                 {{ $lesson->instructor_id == $inst->id ? 'selected' : '' }}>
                                                 {{ $inst->fname }} {{ $inst->lname }}
                                             </option>
@@ -888,6 +889,7 @@
                                     <div class="col-md-6">
                                         <label class="form-label">Licence No</label>
                                         <input type="text"
+                                            id="licenceField"
                                             class="form-control always-disabled"
                                             value="{{ $lesson->instructor->licence ?? $lesson->instructor->documents->licence ?? '' }}"
                                             disabled>
@@ -895,9 +897,10 @@
 
                                     <div class="col-md-6">
                                         <label class="form-label">Resource</label>
-                                        <select class="form-select editable" name="resource_id" disabled>
+                                        <select class="form-select editable" name="resource_id" id="resourceSelect" disabled>
                                             @foreach($resources as $resource)
                                             <option value="{{ $resource->id }}"
+                                                data-name="{{ $resource->name }}"
                                                 {{ $lesson->resource_id == $resource->id ? 'selected' : '' }}>
                                                 {{ $resource->code ?? $resource->name }}
                                             </option>
@@ -915,40 +918,46 @@
 
                                     </div>
 
-                                    <div class="col-md-6">
-                                        <label class="form-label">Off Blocks {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</label>
-                                        <input type="time"
-                                            class="form-control editable"
-                                            name="start_time"
-                                            value="{{ $lesson->start_time ? \Carbon\Carbon::parse($lesson->start_time)->format('H:i') : '' }}"
-                                            disabled>
-                                    </div>
+                                    <div class="col-md-12" id="timeFieldsWrapper">
 
-                                    <div class="col-md-6">
-                                        <label class="form-label">On Blocks {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</label>
-                                        <input type="time"
-                                            class="form-control editable"
-                                            name="end_time"
-                                            value="{{ $lesson->end_time ? \Carbon\Carbon::parse($lesson->end_time)->format('H:i') : '' }}"
-                                            disabled>
-                                    </div>
+                                        <div class="row">
 
-                                    <div class="col-md-6">
-                                        <label class="form-label">Takeoff {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</label>
-                                        <input type="time"
-                                            class="form-control editable"
-                                            name="takeoff_time"
-                                            value="{{ $lesson->takeoff_time ? \Carbon\Carbon::parse($lesson->takeoff_time)->format('H:i') : '' }}"
-                                            disabled>
-                                    </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Off Blocks {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</label>
+                                                <input type="time"
+                                                    class="form-control editable"
+                                                    name="start_time"
+                                                    value="{{ $lesson->start_time ? \Carbon\Carbon::parse($lesson->start_time)->format('H:i') : '' }}"
+                                                    disabled>
+                                            </div>
 
-                                    <div class="col-md-6">
-                                        <label class="form-label">Landing {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</label>
-                                        <input type="time"
-                                            class="form-control editable"
-                                            name="landing_time"
-                                            value="{{ $lesson->landing_time ? \Carbon\Carbon::parse($lesson->landing_time)->format('H:i') : '' }}"
-                                            disabled>
+                                            <div class="col-md-6">
+                                                <label class="form-label">On Blocks {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</label>
+                                                <input type="time"
+                                                    class="form-control editable"
+                                                    name="end_time"
+                                                    value="{{ $lesson->end_time ? \Carbon\Carbon::parse($lesson->end_time)->format('H:i') : '' }}"
+                                                    disabled>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">Takeoff {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</label>
+                                                <input type="time"
+                                                    class="form-control editable"
+                                                    name="takeoff_time"
+                                                    value="{{ $lesson->takeoff_time ? \Carbon\Carbon::parse($lesson->takeoff_time)->format('H:i') : '' }}"
+                                                    disabled>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">Landing {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</label>
+                                                <input type="time"
+                                                    class="form-control editable"
+                                                    name="landing_time"
+                                                    value="{{ $lesson->landing_time ? \Carbon\Carbon::parse($lesson->landing_time)->format('H:i') : '' }}"
+                                                    disabled>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     @if($trainingEvent?->orgUnit?->Ousetting?->enable_tacho_fields)
@@ -2463,6 +2472,23 @@
                 }
             });
 
+            document.getElementById('instructorSelect').addEventListener('change', function () {
+                let selectedOption = this.options[this.selectedIndex];
+                let licence = selectedOption.getAttribute('data-licence') || '';
+
+                document.getElementById('licenceField').value = licence;
+            });
+
+            document.getElementById('instructorSelect').addEventListener('change', function () {
+                let instructorId = this.value;
+
+                fetch(`/get-instructor-licence/${instructorId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('licenceField').value = data.licence || '';
+                    });
+            });
+
             $('#addDeferredLessonModal').on('shown.bs.modal', function() {
                 $('#select_courseTask').select2({
                     dropdownParent: $('#addDeferredLessonModal'),
@@ -3325,6 +3351,36 @@
         const cancelBtn = document.getElementById('cancelBtn');
         const actionButtons = document.getElementById('actionButtons');
 
+        const resourceSelect = document.getElementById('resourceSelect');
+        const timeFields = document.getElementById('timeFieldsWrapper');
+
+        function toggleFields() {
+            if (!resourceSelect || !timeFields) return;
+
+            const selectedOption = resourceSelect.options[resourceSelect.selectedIndex];
+            const resourceName = selectedOption.getAttribute('data-name');
+
+            const hideList = ['Homestudy', 'Home Study', 'Classroom'];
+
+            if (hideList.includes(resourceName)) {
+                timeFields.style.display = 'none';
+                timeFields.querySelectorAll('input').forEach(input => {
+                    input.value = '';
+                });
+
+            } else {
+                timeFields.style.display = 'block';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            toggleFields();
+
+            if (resourceSelect) {
+                resourceSelect.addEventListener('change', toggleFields);
+            }
+        });
+
         editBtn.addEventListener('click', function() {
             document.querySelectorAll('.editable').forEach(el => {
                 originalValues[el.name] = el.value;
@@ -3338,6 +3394,8 @@
 
             actionButtons.classList.remove('d-none');
             editBtn.classList.add('d-none');
+
+            toggleFields(); 
         });
 
         cancelBtn.addEventListener('click', function() {
@@ -3348,6 +3406,8 @@
 
             actionButtons.classList.add('d-none');
             editBtn.classList.remove('d-none');
+
+            toggleFields();
         });
 
         form.addEventListener('submit', function(e) {
@@ -3382,6 +3442,10 @@
                         alertBox.classList.remove('d-none', 'alert-danger');
                         alertBox.classList.add('alert-success');
                         alertBox.textContent = 'Lesson updated successfully';
+
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
 
                     } else {
                         alertBox.classList.remove('d-none', 'alert-success');
