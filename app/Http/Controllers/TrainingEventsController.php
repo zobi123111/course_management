@@ -4311,7 +4311,25 @@ class TrainingEventsController extends Controller
         return view('trainings.lessonpage', compact('trainingEvent', 'lesson_id', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'lessondetails', 'deflessondetails', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta','pilot_cbta', 'examiner_grading','pilot_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs'));
     }
 
+    public function getInstructorLicence($id)
+    {
+        $inst = UserDocument::where('user_id', $id)->first();
 
+        if (!$inst) {
+            return response()->json([
+                'licence' => ''
+            ], 404);
+        }
+
+        $licence = $inst->licence 
+            ?? $inst->licence_2 
+            ?? '';
+
+        return response()->json([
+            'licence' => $licence
+        ]);
+    }
+    
     public function EventLessonUpdate(Request $request)
     {
         // dd($request->all());
