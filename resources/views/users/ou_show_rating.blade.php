@@ -129,7 +129,7 @@
                             <label for="firstname" class="form-label">Rating Name<span
                                     class="text-danger">*</span></label>
                             <input type="text" name="name" class="form-control">
-                            <input type="text" name="create_ou_side" value="create_ou_side">
+                            <input type="hidden" name="create_ou_side" value="create_ou_side">
                             <div id="name_error" class="text-danger error_e"></div>
                         </div>
 
