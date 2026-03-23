@@ -109,9 +109,9 @@
                                 <i class="fa fa-eye text-danger me-2"></i>
                                 </a>  
 
-                                <!-- <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="btn btn-sm btn-primary" title="View New Design" style="font-size:18px; cursor: pointer;">
-                                    View 
-                                </a>             -->
+                                <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="btn btn-sm btn-primary" title="View New Design" style="font-size:18px; cursor: pointer;">
+                                    Old View 
+                                </a>            
                             @endif
                         
                             @if($event->can_end_course) 
@@ -156,9 +156,9 @@
                             <i class="fa fa-eye text-danger me-2"></i>
                             </a>            
 
-                            <!-- <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="btn btn-sm btn-primary" title="View New Design" style="font-size:18px; cursor: pointer;">
-                                View
-                            </a>    -->
+                            <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="btn btn-sm btn-primary" title="View New Design" style="font-size:18px; cursor: pointer;">
+                                Old View
+                            </a>   
                         @endif 
                     @else   
                         {{-- This event is already locked/ended --}}
@@ -252,9 +252,9 @@
                                 <i class="fa fa-eye text-danger me-2"></i>
                                 </a> 
                                 
-                                <!-- <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="btn btn-sm btn-primary" title="View New Design" style="font-size:18px; cursor: pointer;">
-                                    View
-                                </a>   -->
+                                <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="btn btn-sm btn-primary" title="View New Design" style="font-size:18px; cursor: pointer;">
+                                    Old View
+                                </a>  
                             @endif
                             @if($event->can_end_course)
                                 {{-- Active “End Course” button/icon --}}
@@ -297,9 +297,9 @@
                                 <i class="fa fa-eye text-danger me-2"></i>
                                 </a>
                                 
-                                <!-- <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="btn btn-sm btn-primary" title="View New Design" style="font-size:18px; cursor: pointer;">
-                                    View
-                                </a>   -->
+                                <a href="{{ route('training.test-show', ['event_id' => encode_id($event->id)]) }}" class="btn btn-sm btn-primary" title="View New Design" style="font-size:18px; cursor: pointer;">
+                                    Old View
+                                </a>  
                             @endif
                             @if(checkAllowedModule('training','training.grading-list')->isNotEmpty())
                             <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">

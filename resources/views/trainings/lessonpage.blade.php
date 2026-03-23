@@ -844,22 +844,26 @@
                             <div id="lessonAlert" class="alert d-none mb-3" role="alert"></div>
                             <h5 class="card-title d-flex justify-content-between align-items-center">
                                 Lesson Details
-                                @if(checkAllowedModule('courses', 'lesson.edit')->isNotEmpty())
-                                <button type="button" class="btn btn-sm btn-primary" id="editBtn">
-                                    Edit
-                                </button>
+                                @php
+                                    $lesson = in_array($lessonType, ['custom', 'deferred'])
+                                    ? $deflessondetails
+                                    : $lessondetails;
+
+                                    $trainingEvent = in_array($lessonType, ['custom', 'deferred'])
+                                    ? $lesson?->event
+                                    : $lesson?->trainingEvent;
+                                @endphp
+                                
+                                @php $user = auth()->user(); @endphp
+
+                                @if($user && ($user->is_owner || $user->is_admin || $user->id == $lesson->instructor_id))
+                                    <button type="button" class="btn btn-sm btn-primary" id="editBtn">
+                                        Edit
+                                    </button>
                                 @endif
                             </h5>
 
-                            @php
-                            $lesson = in_array($lessonType, ['custom', 'deferred'])
-                            ? $deflessondetails
-                            : $lessondetails;
-
-                            $trainingEvent = in_array($lessonType, ['custom', 'deferred'])
-                            ? $lesson?->event
-                            : $lesson?->trainingEvent;
-                            @endphp
+                           
 
                             <form id="lessonForm" action="{{ route('event.lesson.update') }}" method="POST">
                                 @csrf
@@ -891,7 +895,10 @@
                                         <input type="text"
                                             id="licenceField"
                                             class="form-control always-disabled"
-                                            value="{{ $lesson->instructor->licence ?? $lesson->instructor->documents->licence ?? '' }}"
+                                            value="{{ $lesson->instructor->licence 
+                                            ?? $lesson->instructor->documents->licence 
+                                            ?? $lesson->instructor->documents->licence_2 
+                                            ?? '' }}"
                                             disabled>
                                     </div>
 
