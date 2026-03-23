@@ -38,7 +38,6 @@
                         <tr>
                           
                             <th scope="col">Rating</th>
-                            <th scope="col">OU</th>
                             <th scope="col">Kind Of Rating</th>
                             <th scope="col">Rating Type</th>
                             <th scope="col">Status</th>
@@ -51,7 +50,6 @@
                         <?php $first = $group->first(); ?>
                             <tr>
                                 <td class="rating">{{ $first->name }}  </td>
-                                <td class="rating">{{ $first->orgUnit?->org_unit_name }}</td>
                                 <td class="rating">{{ $first->kind_of_rating }}</td>
                                 <td>
                                     @if ($first->is_fixed_wing)
@@ -98,7 +96,7 @@
                     @csrf
                     <div class="row g-2 ">
                         <!-- Bootstrap Grid -->
-                        @if(auth()->user()->is_owner == 1)
+                        <!-- @if(auth()->user()->is_owner == 1)
                             <div class="form-group ">
                                 <label for="select_org_unit" class="form-label">Select Org Unit </label>
                                 <select class="form-select" name="organization_unit" id="select_org_unit">
@@ -109,7 +107,7 @@
                                 </select>
                                 <div id="organization_unit_error" class="text-danger error_e"></div>            
                             </div>
-                        @endif
+                        @endif -->
                         <div class="form-group">
                             <label for="parent_rating" class="form-label">Parent Rating(s)</label>
                             <select name="parent_id[]" id="parent_rating" class="form-select" multiple>
@@ -202,7 +200,7 @@
                     @csrf
                     <div class="row g-2">
                         <!-- Parent Rating Dropdown -->
-                          @if(auth()->user()->is_owner == 1) 
+                          <!-- @if(auth()->user()->is_owner == 1)  
                             <div class="form-group">
                                 <label for="edit_select_org_unit" class="form-label">Select Org Unit</label>
                                 <select class="form-select" name="organization_unit" id="edit_select_org_unit">
@@ -213,7 +211,7 @@
                                 </select>
                                 <div id="organization_unit_error_up" class="text-danger error_e"></div>            
                             </div>
-                        @endif
+                        @endif -->
                        <div class="form-group ">
                             <label for="parent_rating" class="form-label">Parent Rating</label>
                             <select name="parent_id[]" id="edit_parent_rating" class="form-select" multiple>
@@ -553,7 +551,7 @@ $(document).on('click', '#updateRating', function(e) {
 
 
                     }
-                },
+                }, 
     error: function(xhr, status, error) {
         $(".loader").fadeOut("slow");
         $('.error_e').html(''); // Clear previous errors

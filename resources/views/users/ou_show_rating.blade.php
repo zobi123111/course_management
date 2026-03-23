@@ -29,11 +29,17 @@
         </div>
     @endif
 
+<div class="mb-3">
+    <label>
+        <input type="checkbox" id="show_checked"> Show All
+    </label>
+</div>
+
     
     <div class="card pt-4">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover" id="rating_table">
+                <table class="table table-hover" id="rating_table"> 
                     <thead>
                         <tr>
                             <th scope="col">#</th>
@@ -107,7 +113,7 @@
                                 </select>
                                 <div id="ou_id_error" class="text-danger error_e"></div>            
                             </div>
-                        @endif -->
+                        @endif --> 
                         <div class="form-group">
                             <label for="parent_rating" class="form-label">Parent Rating(s)</label>
                             <select name="parent_id[]" id="parent_rating" class="form-select" multiple>
@@ -123,6 +129,7 @@
                             <label for="firstname" class="form-label">Rating Name<span
                                     class="text-danger">*</span></label>
                             <input type="text" name="name" class="form-control">
+                            <input type="text" name="create_ou_side" value="create_ou_side">
                             <div id="name_error" class="text-danger error_e"></div>
                         </div>
 
@@ -154,6 +161,7 @@
                                 <input class="form-check-input" type="checkbox" name="is_rotary" id="rotary" value="1">
                                 <label class="form-check-label" for="rotary">Rotary</label>
                             </div>
+
 
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="checkbox" name="is_instructor" id="instructor" value="1">
@@ -552,6 +560,35 @@ $('#editRatingModal').on('hidden.bs.modal', function () {
     $('#editRatingForm')[0].reset();
     $('.error_e').html('');
 });
+
+
+
+$('#show_checked').on('change', function () { 
+
+    let url = new URL(window.location.href);
+
+    if ($(this).is(':checked')) {
+        // Add query string
+        url.searchParams.set('all', 1);
+    } else {
+        // Remove query string
+        url.searchParams.delete('all');
+    }
+
+    // Redirect with updated URL
+    window.location.href = url.toString();
+});
+
+$(document).ready(function () {
+    let params = new URLSearchParams(window.location.search);
+
+    if (params.get('all') == 1) {
+        $('#show_checked').prop('checked', true);
+    }
+});
+
+
+
 })
 </script>
 @endsection

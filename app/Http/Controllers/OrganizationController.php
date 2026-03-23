@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\UserCreated;
 use App\Mail\OrgUnitCreated;
 use App\Models\LicenceValidationType;
+use Carbon\Carbon;
+use App\Models\OuRating;
 
 class OrganizationController extends Controller 
 {
@@ -441,8 +443,9 @@ class OrganizationController extends Controller
     {
         $OuSetting = OuSetting::where('organization_id', $ou_id)->first();
         $validation_type = LicenceValidationType::where('ou_id', $ou_id)->where('enabled', 1)->get();
-
-        $rating = Rating::where('status', 1)->where('ou_id', $ou_id)->get();
+            
+        $ou_ratings = OuRating::where('ou_id', $ou_id)->select('rating_id')->get();
+        $rating = Rating::where('status', 1)->whereIn('id', $ou_ratings)->get();
 
         return response()->json(['OuSetting' => $OuSetting, 'validation_type' => $validation_type, 'rating' => $rating]);
     }
