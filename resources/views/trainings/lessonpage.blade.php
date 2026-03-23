@@ -947,7 +947,7 @@
                                                     disabled>
                                             </div>
 
-                                            <div class="col-md-6">
+                                            <div class="col-md-6 mt-3">
                                                 <label class="form-label">Takeoff {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</label>
                                                 <input type="time"
                                                     class="form-control editable"
@@ -956,7 +956,7 @@
                                                     disabled>
                                             </div>
 
-                                            <div class="col-md-6">
+                                            <div class="col-md-6 mt-3">
                                                 <label class="form-label">Landing {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</label>
                                                 <input type="time"
                                                     class="form-control editable"
@@ -2495,9 +2495,8 @@
 
                             document.getElementById('licenceField').value = fetchedLicence;
 
-                            // 🔴 Show alert if still empty
                             if (!fetchedLicence) {
-                                alert('No licence value for this instructor');
+                                alert('No licence for this instructor');
                             }
                         })
                         .catch(() => {
@@ -2506,7 +2505,7 @@
                 }
 
                 if (!licence && !instructorId) {
-                    alert('No licence value for this instructor');
+                    alert('No licence for this instructor');
                 }
             });
 

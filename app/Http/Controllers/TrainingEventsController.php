@@ -474,6 +474,7 @@ class TrainingEventsController extends Controller
     public function createTrainingEvent(Request $request)
     {   
        
+        // dd($request->all());
         //Validate base fields
         $request->validate([
             'student_id' => 'required|exists:users,id',
@@ -590,7 +591,7 @@ class TrainingEventsController extends Controller
                 }
             }
 
-           $training_lesson =  TrainingEventLessons::create([
+            $training_lesson =  TrainingEventLessons::create([
                 'training_event_id' => $trainingEvent->id,
                 'lesson_id' => $lesson['lesson_id'],
                 'instructor_id' => $lesson['instructor_id'],
@@ -598,6 +599,10 @@ class TrainingEventsController extends Controller
                 'lesson_date' => $lesson['lesson_date'],
                 'start_time' => $start,
                 'end_time' => $end,
+                'start_time' => $start,
+                'end_time' => $end,
+                'takeoff_time' => $lesson['takeoff'],
+                'landing_time' => $lesson['landing'],
                 'departure_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($lesson['departure_airfield']),
                 'destination_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($lesson['destination_airfield']),
                 'instructor_license_number' => $lesson['instructor_license_number'] ?? null,
@@ -730,6 +735,7 @@ class TrainingEventsController extends Controller
 
     public function updateTrainingEvent(Request $request)
     {
+        // dd($request->all());
         $lessonData = $request->input('lesson_data', []);
         foreach ($lessonData as $key => $lesson) {
             if (!empty($lesson['start_time'])) {
@@ -868,6 +874,8 @@ class TrainingEventsController extends Controller
                     'lesson_date' => $data['lesson_date'],
                     'start_time' => $start,
                     'end_time' => $end,
+                    'takeoff_time' => $data['takeoff'],
+                    'landing_time' => $data['landing'],
                     'departure_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($data['departure_airfield']),
                     'destination_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($data['destination_airfield']),
                     'instructor_license_number' => $data['instructor_license_number'] ?? null,
@@ -1503,7 +1511,7 @@ class TrainingEventsController extends Controller
             'instructor:id,fname,lname',
             'student:id,fname,lname,licence',
             'resource:id,name',
-            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id',
+            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id','takeoff_time' ,'landing_time',
             'eventLessons.instructor:id,fname,lname',
             'eventLessons.resource:id,name',
             'trainingFeedbacks.question',
@@ -4333,6 +4341,10 @@ class TrainingEventsController extends Controller
     public function EventLessonUpdate(Request $request)
     {
         // dd($request->all());
+        $instructor_id = $request->instructor_id;
+        $doc = UserDocument::where('user_id', $instructor_id)->first();
+
+        $instructor_license_number = $doc->licence ?? $doc->licence_2 ?? null;
 
         $start = $request->start_time ?? null;
         $end = $request->end_time ?? null;
@@ -4362,7 +4374,6 @@ class TrainingEventsController extends Controller
                 'lesson_date'          => $request->lesson_date,
                 'start_time'           => $request->start_time,
                 'end_time'             => $request->end_time,
-                'hours_credited'       => gmdate("H:i", $creditMinutes * 60),
                 'departure_airfield'   => $request->departure_airfield,
                 'destination_airfield' => $request->destination_airfield,
                 'takeoff_time' => $request->takeoff_time,
@@ -4376,6 +4387,7 @@ class TrainingEventsController extends Controller
 
             $lesson->update([
                 'instructor_id'        => $request->instructor_id,
+                'instructor_license_number' => $instructor_license_number,
                 'resource_id'          => $request->resource_id,
                 'lesson_date'          => $request->lesson_date,
                 'start_time'           => $request->start_time,
