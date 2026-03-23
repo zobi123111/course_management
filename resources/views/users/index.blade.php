@@ -2148,6 +2148,7 @@
             $('.error_e').html('');
             $("#editUserForm")[0].reset();
             var userId = $(this).data('user-id');
+             x = 0;
             vdata = {
                 id: userId,
                 "_token": "{{ csrf_token() }}",
@@ -2197,16 +2198,12 @@
                                 type: 'get',
                                 url: '/get_org_setting/' + ou_id,
                                 success: function(response) {
-
                                     let rating_editData = response.rating;
-
                                     ratingsData_edit.forEach(function(item) {
                                         options += `<option value="${item.id}">${item.name}</option>`;
-
                                     });
-                                   
 
-                                    let selectBoxHtml = `
+                    let selectBoxHtml = `
                         <div class="rating-select-group border p-3 mb-3 rounded" data-index="${index}">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <button type="button" class="btn btn-danger btn-sm remove-rating-box" data-index="${index}">Remove</button>
