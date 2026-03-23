@@ -2234,19 +2234,11 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label mt-3"><strong>Upload File</strong></label>
-                                   
-                                  
-
-                               
                                    <input type="file" name="rating_file[${index}][child][]" class="form-control">
-
-
-
                                 </div>
                                 <div class="col-md-6 mt-2">
                                     ${filePath ? `<a href="${fileUrl}" target="_blank" class="btn btn-sm btn-outline-primary">View Uploaded File</a>` : ''}
                                 </div>
-                             
                         </div>`;
 
                                     $('#edit_rating_select_boxes_container').append(selectBoxHtml);

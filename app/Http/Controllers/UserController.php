@@ -1,7 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
-
+namespace App\Http\Controllers; 
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\OrganizationUnits;
@@ -29,7 +28,7 @@ use Illuminate\Validation\Rule;
 class UserController extends Controller
 {
 
-    public function getData(Request $request)
+    public function getData(Request $request) 
     {
         $authUser = auth()->user();
         $ou_id = $authUser->ou_id;
@@ -123,8 +122,6 @@ class UserController extends Controller
                 ->make(true);
         }
 
-       
-        
         return view('users.index', compact('roles', 'organizationUnits', 'rating')); 
     }
 
@@ -2588,7 +2585,7 @@ class UserController extends Controller
         return view('users.ratings.show', [  
             'ratings'               => $allRatings->groupBy('id'),
             'ratingDropdownOptions' => $allRatings,
-            'organizationUnits'     => $organizationUnits
+            'organizationUnits'     => $organizationUnits 
         ]);
     }
 
@@ -2636,16 +2633,12 @@ class UserController extends Controller
         'kind_of_rating' => 'required|string|in:type_rating,class_rating,instrument_rating,instructor_rating,examiner_rating,others',
     ];
 
-        // If owner, validate ou_id
-        if (auth()->user()->is_owner == 1) {
-            $rules['organization_unit'] = 'required|exists:organization_units,id';
-        }
+       $request->validate($rules);
 
-    $request->validate($rules);
 
         // Create new rating
         $rating = Rating::create([
-            'ou_id'   => $request->organization_unit,
+            'ou_id'   => null,
             'name' => $request->name,
             'status' => $request->status,
             'kind_of_rating' => $request->kind_of_rating, 
@@ -2665,6 +2658,16 @@ class UserController extends Controller
                 ]);
             }
         }
+
+        if($request->create_ou_side == "create_ou_side"){
+                $store_ou_rating = OuRating::create([
+                    'ou_id'     =>  auth()->user()->ou_id,
+                    'rating_id' => $rating->id
+                  
+                ]);
+
+        }
+    
 
         Session::flash('message', 'Rating saved successfully');
         return response()->json(['success' => true, 'msg' => 'Rating saved successfully.']);
@@ -2741,10 +2744,7 @@ class UserController extends Controller
         'kind_of_rating' => 'required|string|in:type_rating,class_rating,instrument_rating,instructor_rating,examiner_rating,others',
     ];
 
-        // Owner must provide organization_unit
-        if (auth()->user()->is_owner == 1) {
-            $rules['organization_unit'] = 'required|exists:organization_units,id';
-        }
+  
 
         $request->validate($rules);
         $rating = Rating::find($request->rating_id);
@@ -2752,7 +2752,7 @@ class UserController extends Controller
         if ($rating) {
             // Update rating details
             $rating->update([
-                'ou_id'          => $request->organization_unit ?? null,
+                'ou_id'          => null,
                 'name'           => $request->name,
                 'status'         => $request->status,
                 'kind_of_rating' => $request->kind_of_rating,
@@ -2848,30 +2848,68 @@ class UserController extends Controller
         ]);
     }
 
+    // public function ou_rating()
+    // {
+    //      $showall = request()->get('showall'); // get from URL (?showall=1)
+    //     $allRatings = Rating::all(); // All ratings (from ratings table)
+    //     $organizationUnits = OrganizationUnits::all(); // For UI context
+
+    //     // Group parent-child mappings from parent_rating table
+    //     $parentRelations = ParentRating::all()->groupBy('parent_id');
+
+    //     $ratingDropdownOptions = collect(); // To store formatted dropdown items
+    //     $usedIds = collect(); // To track already added children
+
+    //     // Build hierarchy from parent_rating
+    //     $this->buildFullHierarchy($parentRelations, $allRatings, null, 0, $ratingDropdownOptions, $usedIds);
+
+    //     $ou_id = auth()->user()->ou_id;
+
+    //     // Get selected rating IDs for current OU
+    //     $selectedRatingIds = OuRating::where('ou_id', $ou_id)->pluck('rating_id')->toArray();
+
+    //     return view('users.ou_show_rating', [ 
+    //         'ratings' => $allRatings->groupBy('name'),
+    //         'ratingDropdownOptions' => $allRatings,
+    //         'organizationUnits' => $organizationUnits,
+    //         'selectedRatingIds' => $selectedRatingIds 
+    //     ]);
+    // }
+
     public function ou_rating()
     {
-        $allRatings = Rating::all(); // All ratings (from ratings table)
-        $organizationUnits = OrganizationUnits::all(); // For UI context
+        $showall = request()->get('all'); // get from URL (?showall=1)
 
-        // Group parent-child mappings from parent_rating table
+        $allRatings = Rating::all();
+        $organizationUnits = OrganizationUnits::all();
+
         $parentRelations = ParentRating::all()->groupBy('parent_id');
 
-        $ratingDropdownOptions = collect(); // To store formatted dropdown items
-        $usedIds = collect(); // To track already added children
+        $ratingDropdownOptions = collect();
+        $usedIds = collect();
 
-        // Build hierarchy from parent_rating
         $this->buildFullHierarchy($parentRelations, $allRatings, null, 0, $ratingDropdownOptions, $usedIds);
 
         $ou_id = auth()->user()->ou_id;
 
-        // Get selected rating IDs for current OU
-        $selectedRatingIds = OuRating::where('ou_id', $ou_id)->pluck('rating_id')->toArray();
+        // Selected IDs
+        $selectedRatingIds = OuRating::where('ou_id', $ou_id)
+            ->pluck('rating_id')
+            ->toArray();
+
+        // ✅ Apply condition here
+        if ($showall == "1") {
+            $ratingsToShow = $allRatings;
+        } else {
+            $ratingsToShow = $allRatings->whereIn('id', $selectedRatingIds);
+        }
 
         return view('users.ou_show_rating', [ 
-            'ratings' => $allRatings->groupBy('name'),
+            'ratings' => $ratingsToShow->groupBy('name'),
             'ratingDropdownOptions' => $allRatings,
             'organizationUnits' => $organizationUnits,
-            'selectedRatingIds' => $selectedRatingIds
+            'selectedRatingIds' => $selectedRatingIds,
+            'showall' => $showall
         ]);
     }
 
