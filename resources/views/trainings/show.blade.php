@@ -2659,14 +2659,7 @@
             });
         });
 
-        document.getElementById('docUploadForm').addEventListener('submit', () => {
-            Object.keys(fileStore).forEach(docId => {
-                const dt = new DataTransfer();
-                fileStore[docId].forEach(file => dt.items.add(file));
-                document.getElementById(`file_${docId}`).files = dt.files;
-            });
-        });
-
+       
         function deleteDocument(id) {
             if (!confirm('Delete this document?')) return;
 
@@ -3628,6 +3621,14 @@
                         }
                     });
                 }
+            });
+
+            document.getElementById('docUploadForm').addEventListener('submit', () => {
+                Object.keys(fileStore).forEach(docId => {
+                    const dt = new DataTransfer();
+                    fileStore[docId].forEach(file => dt.items.add(file));
+                    document.getElementById(`file_${docId}`).files = dt.files;
+                });
             });
         });
     </script>
