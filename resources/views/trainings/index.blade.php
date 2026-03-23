@@ -1008,6 +1008,8 @@ $(document).ready(function() {
                     lesson_date: lesson.lesson_date || '',
                     start_time: lesson.start_time || '',
                     end_time: lesson.end_time || '',
+                    takeoff: lesson.takeoff || '',
+                    landing: lesson.landing || '',
                     departure_airfield: lesson.departure_airfield || '',
                     destination_airfield: lesson.destination_airfield || '',
                     instructor_license_number: lesson.instructor_license_number || '',
@@ -1259,6 +1261,13 @@ $(document).ready(function() {
                             
                             
                         }
+
+                        let takeoff = l.takeoff_time || '';
+                        let landing = l.landing_time || '';
+
+                        console.log('takeoff', takeoff);
+                        console.log('landing time', landing);
+
                         return {
                             lesson_id: l.lesson_id,
                             instructor_id: l.instructor_id || '',
@@ -1266,6 +1275,8 @@ $(document).ready(function() {
                             lesson_date: l.lesson_date || '',
                             start_time: l.start_time || '',
                             end_time: l.end_time || '',
+                            takeoff: takeoff || '',
+                            landing: landing || '',
                             departure_airfield: l.departure_airfield || '',
                             destination_airfield: l.destination_airfield || '',
                             instructor_license_number: licenceValue || '',
@@ -1355,6 +1366,19 @@ $(document).ready(function() {
                                 <label class="form-label">End Time<span class="text-danger">*</span></label>
                                 <input type="time" name="lesson_data[${lessonId}][end_time]" class="form-control lesson-end-time" data-lesson-id="${lessonId}">
                                 <div id="lesson_data_${lessonId}_end_time_error" class="text-danger error_e"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Takeoff</label>
+                                <input type="time" name="lesson_data[${lessonId}][takeoff]" class="form-control">
+                                <div id="lesson_data_${lessonId}_takeoff_error" class="text-danger error_e"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Landing</label>
+                                <input type="time" name="lesson_data[${lessonId}][landing]" class="form-control">
+                                <div id="lesson_data_${lessonId}_landing_error" class="text-danger error_e"></div>
+                            </div>  
+                            
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Departure Airfield (4-letter code)<span class="text-danger">*</span></label>
@@ -1493,6 +1517,8 @@ $(document).ready(function() {
             lesson_date = '',
             start_time = '',
             end_time = '',
+            takeoff = '',
+            landing = '',
             departure_airfield = '',
             destination_airfield = '',
             instructor_license_number = '',
@@ -1599,6 +1625,18 @@ $(document).ready(function() {
                         <input type="text" name="lesson_data[${currentIndex}][homestudy_time]" id="homestudy_time${currentIndex}" class="form-control homestudy_time" value="${hours_credited}" data-lesson-id="${currentIndex}">
                         <div id="lesson_data_${currentIndex}_end_time${errorSuffix}" class="text-danger error_e"></div>
                     </div>
+
+                    <div class="col-md-6 end-time-block">
+                        <label class="form-label">Takeoff</label>
+                        <input type="time" name="lesson_data[${currentIndex}][takeoff]" class="form-control lesson-end-time" value="${takeoff}" data-lesson-id="${currentIndex}">
+                        <div id="lesson_data_${currentIndex}_takeoff${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                    <div class="col-md-6 end-time-block">
+                        <label class="form-label">Landing</label>
+                        <input type="time" name="lesson_data[${currentIndex}][landing]" class="form-control lesson-end-time" value="${landing}" data-lesson-id="${currentIndex}">
+                        <div id="lesson_data_${currentIndex}_landing${errorSuffix}" class="text-danger error_e"></div>
+                    </div>
+                    
                     <div class="col-md-6 departure-block">
                         <label class="form-label">Departure Airfield</label>
                         <input type="text" name="lesson_data[${currentIndex}][departure_airfield]" class="form-control" maxlength="4" value="${departure_airfield}">
