@@ -163,7 +163,7 @@
                     @else   
                         {{-- This event is already locked/ended --}}
                         <span class="badge bg-secondary" data-bs-toggle="tooltip"
-                            title="This course has been ended and is locked from editingfff">
+                            title="This course has been ended and is locked from editing">
                             <i class="bi bi-lock-fill me-1"></i>Ended
                         </span>
                         <a href="{{ route('training.grading-list', ['event_id' => encode_id($event->id)]) }}" class="view-icon" title="View Grading" style="font-size:18px; cursor: pointer;">
