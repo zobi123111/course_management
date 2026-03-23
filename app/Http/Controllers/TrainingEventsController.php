@@ -1478,7 +1478,7 @@ class TrainingEventsController extends Controller
         $grouped_customLogs = $training_custom_logs->groupBy('lesson_id');
         
           
-        return view('trainings.old-show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs'));
+        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs'));
     } 
 
     public function edit_customLesson(Request $request)
@@ -4333,6 +4333,26 @@ class TrainingEventsController extends Controller
     public function EventLessonUpdate(Request $request)
     {
         // dd($request->all());
+
+        $start = $request->start_time ?? null;
+        $end = $request->end_time ?? null;
+        $creditMinutes = 0;
+        
+        if ($start && $end) {
+            try {
+                $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
+                $endTime = \Carbon\Carbon::createFromFormat('H:i', $end);
+
+                if ($endTime->lessThan($startTime)) {
+                    $endTime->addDay();
+                }
+
+                $creditMinutes = $startTime->diffInMinutes($endTime);
+            } catch (\Exception $e) {
+                $creditMinutes = 0;
+            }
+        }
+        
         if($request->has('lessontype')){
             $lesson = DefLesson::where('id', $request->id)->first();
 
@@ -4342,6 +4362,7 @@ class TrainingEventsController extends Controller
                 'lesson_date'          => $request->lesson_date,
                 'start_time'           => $request->start_time,
                 'end_time'             => $request->end_time,
+                'hours_credited'       => gmdate("H:i", $creditMinutes * 60),
                 'departure_airfield'   => $request->departure_airfield,
                 'destination_airfield' => $request->destination_airfield,
                 'takeoff_time' => $request->takeoff_time,
@@ -4359,6 +4380,7 @@ class TrainingEventsController extends Controller
                 'lesson_date'          => $request->lesson_date,
                 'start_time'           => $request->start_time,
                 'end_time'             => $request->end_time,
+                'hours_credited'       => gmdate("H:i", $creditMinutes * 60),
                 'departure_airfield'   => $request->departure_airfield,
                 'destination_airfield' => $request->destination_airfield,
                 'takeoff_time' => $request->takeoff_time,

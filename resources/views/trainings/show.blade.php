@@ -855,7 +855,9 @@
                                 <div class="row mb-3 p-3 border rounded bg-light">
                                     <div class="col-md-12">
                                         <strong><i class="text-primary fas fa-book"></i> Lesson Name:</strong>
-                                        <span class="text-primary">{{ $lesson->lesson->lesson_title ?? 'Untitled' }}</span>
+                                        <a href="/lesson-grade?lesson_id={{ encode_id($lesson->id) }}&event_id={{ encode_id($trainingEvent->id) }}" class="lesson-link" style="font-size:18px;">
+                                            <span class="text-primary">{{ $lesson->lesson->lesson_title ?? 'Untitled' }}</span>
+                                        </a>
                                     </div>
 
                                     <div class="col-md-2 mt-3">
