@@ -1511,7 +1511,7 @@ class TrainingEventsController extends Controller
             'instructor:id,fname,lname',
             'student:id,fname,lname,licence',
             'resource:id,name',
-            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id','takeoff_time' ,'landing_time',
+            'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id',
             'eventLessons.instructor:id,fname,lname',
             'eventLessons.resource:id,name',
             'trainingFeedbacks.question',
@@ -1695,6 +1695,7 @@ class TrainingEventsController extends Controller
     public function update_deferred_form(Request $request)
     {
 
+        // dd($request->all());
         if ($request->lesson_type == "custom") {
             $validatedData = $request->validate([
                 'event_id'      => 'required|integer|exists:training_events,id',
@@ -1709,6 +1710,8 @@ class TrainingEventsController extends Controller
                 'std_id'        => 'required|integer|exists:users,id',
                 'departure_airfield'   => 'nullable|string|max:4',
                 'destination_airfield' => 'nullable|string|max:4',
+                'takeoff_time'    => 'nullable',
+                'landing_time'      => 'nullable',
             ], [], [
                 'item_ids'     => 'Tasks',
                 'resource_id'  => 'Resource',
@@ -1730,6 +1733,8 @@ class TrainingEventsController extends Controller
                 'lesson_date'   => $validatedData['lesson_date'],
                 'start_time'    => $validatedData['start_time'],
                 'end_time'      => $validatedData['end_time'],
+                'takeoff_time'    => $validatedData['takeoff_time'],
+                'landing_time'      => $validatedData['landing_time'],
                 'departure_airfield'   => $validatedData['departure_airfield'],
                 'destination_airfield' => $validatedData['destination_airfield'],
                 'created_by'    => $authId,
@@ -1820,6 +1825,8 @@ class TrainingEventsController extends Controller
                 'std_id'        => 'required|integer|exists:users,id',
                 'departure_airfield'   => 'nullable|string|max:4',
                 'destination_airfield' => 'nullable|string|max:4',
+                'takeoff_time'    => 'nullable',
+                'landing_time'      => 'nullable',
             ], [], [
                 'item_ids'     => 'Tasks',
                 'resource_id'  => 'Resource',
@@ -1842,6 +1849,8 @@ class TrainingEventsController extends Controller
                 'lesson_date'   => $validatedData['lesson_date'],
                 'start_time'    => $validatedData['start_time'],
                 'end_time'      => $validatedData['end_time'],
+                'takeoff_time'    => $validatedData['takeoff_time'],
+                'landing_time'      => $validatedData['landing_time'],
                 'departure_airfield'   => $validatedData['departure_airfield'],
                 'destination_airfield' => $validatedData['destination_airfield'],
                 'created_by'    => $authId,
