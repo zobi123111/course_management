@@ -1863,6 +1863,17 @@
                                                 <input type="time" name="end_time" class="form-control">
                                                 <div id="end_time_error" class="text-danger error_e"></div>
                                             </div>
+
+                                            <div class="mb-2">
+                                                <label class="form-label">Takeoff</label>
+                                                <input type="time" class="form-control editable" name="takeoff_time">
+                                            </div>
+
+                                            <div class="mb-2">
+                                                <label class="form-label">Landing</label>
+                                                <input type="time" class="form-control editable" name="landing_time">
+                                            </div>
+
                                             <div class="mb-2">
                                                 <label class="form-label">Departure Airfield</label>
                                                 <input type="text" name="departure_airfield" class="form-control" maxlength="4" value="">
@@ -2047,6 +2058,18 @@
                                                 <input type="time" name="end_time" class="form-control" id="edit_end_time">
                                                 <div id="end_time_uperror" class="text-danger error_e"></div>
                                             </div>
+
+                                            <div class="mb-2">
+                                                <label class="form-label">Takeoff</label>
+                                                <input type="time" class="form-control editable" name="takeoff_time" id="edit_takeoff_time">
+                                            </div>
+
+                                            <div class="mb-2">
+                                                <label class="form-label">Landing</label>
+                                                <input type="time" class="form-control editable" name="landing_time" id="edit_landing_time">
+                                            </div>
+
+
                                             <div class="mb-2">
                                                 <label class="form-label">Departure Airfield</label>
                                                 <input type="text" name="departure_airfield" class="form-control" maxlength="4" id="edit_departure_airfield">
@@ -3409,6 +3432,8 @@
 
                         $('#edit_start_time').val(response.deferredLessons[0].start_time || "");
                         $('#edit_end_time').val(response.deferredLessons[0].end_time || "");
+                        $('#edit_takeoff_time').val(response.deferredLessons[0].takeoff_time || "");
+                        $('#edit_landing_time').val(response.deferredLessons[0].landing_time || "");
                         $('#edit_departure_airfield').val(response.deferredLessons[0].departure_airfield || "");
                         $('#edit_destination_airfield').val(response.deferredLessons[0].destination_airfield || "");
                         $("#edit_instructor").val(response.deferredLessons[0].instructor_id || "");
