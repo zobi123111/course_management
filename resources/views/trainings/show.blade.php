@@ -1705,7 +1705,7 @@
                                     <?php
 
                                     ?>
-                                    <strong>Total Flight Time:</strong>
+                                    <strong>Total Block Time:</strong>
                                     {{ formatSeconds($totalFlightTime) }}
                                 </p>
 
