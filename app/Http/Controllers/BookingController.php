@@ -643,7 +643,7 @@ class BookingController extends Controller
                 'event_id' => $trainingEvent->id,
                 'course_id' => $request->course,
                 'lesson_id' => $request->lesson,
-                'trainingEventLesson_id' => $trainingEventLesson->id
+                'trainingEventLesson_id' => $trainingEventLesson->id 
             ]);
 
             return response()->json([
@@ -983,6 +983,7 @@ class BookingController extends Controller
                             ->pluck('lesson_id');
 
        // $lessons = CourseLesson::where('course_id', $course_id)->whereNotIn('id', $usedLessonIds)->get();
+      // dd($usedLessonIds);
 
         $lessons = CourseLesson::where('course_id', $course_id)->get(); 
         return response()->json(['lessons' => $lessons, 'usedLessonIds' => $usedLessonIds, 'enable_mp_lifus' =>  $enable_mp_lifus, 'resources' => $course->resources]);

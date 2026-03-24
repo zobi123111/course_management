@@ -1827,7 +1827,8 @@
             let course_id = $(this).val();
             let $lesson = $("#lesson");
             var $resourceSelect = $("#resource");
-            var ou_id = $('#organizationUnits').val() ?? "{{ auth()->user()->ou_id }}";
+            let ou_val = $('#organizationUnits').val();
+            let ou_id = ou_val ? ou_val : @json(auth()->user()->ou_id);
             var std_id = $('#add_student').val();
 
             $lesson.empty().append("<option value=''>Select Lesson</option>");
@@ -1993,14 +1994,12 @@
         });
 
         $("#edit_instructor").on('change', function() { 
-            //    if (editFormLoading) {
-            //         return;
-            //     }
-
               
             let instructorId = $(this).val();
             let selectedCourseId = $('#edit_course_booking').val();
             let licenseInput = $('#edit_licence_number');
+
+        //    alert(selectedCourseId);
 
 
 

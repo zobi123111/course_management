@@ -82,7 +82,7 @@ class UserController extends Controller
                         : '<span class="badge bg-danger">Inactive</span>';
                 })
                 ->filterColumn('organization', function ($query, $keyword) {
-                    $query->where('organization_units.org_unit_name', 'LIKE', "%{$keyword}%");
+                    $query->where('organization_units.org_unit_name', 'LIKE', "%{$keyword}%"); 
                 })
                 ->addColumn('status', function ($user) {
                     return $user->status == 1 ? '<span class="badge bg-success">Active</span>'
@@ -935,8 +935,7 @@ class UserController extends Controller
 
     public function save_user(Request $request)
     {
-        // dd($request->all());
-
+       // dd($request->all());
         $validated = $request->validate([
             'firstname' => 'required',
             'lastname' => 'required',
@@ -1171,33 +1170,7 @@ class UserController extends Controller
                 'medical_file_uploaded_2' => $medicalFileUploaded_2
             ]);
 
-            // ✅ Save general ratings (already present — leave untouched)
-            // if ($request->has('rating') && is_array($request->rating)) {
-            //     foreach ($request->rating as $ratingId) {
-            //         UserRating::create([
-            //             'user_id'    => $store->id,
-            //             'rating_id'  => $ratingId,
-            //             'issue_date' => null,
-            //             'expiry_date' => null,
-            //             'file_path'  => null,
-            //             'linked_to'  => 'general' // optional, if you want to differentiate
-            //         ]);
-            //     }
-            // }
-
-            // ✅ NEW: Save Licence 1 Ratings
-            // if ($request->has('licence_1_ratings') && is_array($request->licence_1_ratings)) {
-            //     foreach ($request->licence_1_ratings as $ratingId) {
-            //         UserRating::create([
-            //             'user_id'    => $store->id,
-            //             'rating_id'  => $ratingId,
-            //             'issue_date' => null,
-            //             'expiry_date'=> null,
-            //             'file_path'  => null,
-            //             'linked_to'  => 'licence_1'
-            //         ]);
-            //     }
-            // }
+      
 
             // if ($request->has('ratings') && is_array($request->ratings)) {
             if (!empty($request->ratings)) {
@@ -1254,6 +1227,66 @@ class UserController extends Controller
                                 'expiry_date' => $expiryDate,
                                 'file_path'   => $filePath,
                                 'linked_to'   => 'licence_1',
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            // Licence 2 
+              if (!empty($request->licence_2_ratings)) {
+                foreach ($request->licence_2_ratings as  $index => $ratingGroup) {
+                    $parentId = $ratingGroup['parent'] ?? null;
+                    $childIds = $ratingGroup['child'] ?? [];
+                    $issueDates  = $request->issue_date_2_licence[$index]['child'] ?? [];
+                    $expiryDates = $request->expiry_date_2_licence[$index]['child'] ?? [];
+
+                    if ($parentId) {
+                        if (is_array($childIds) && count($childIds)) {
+                            foreach ($childIds as   $childIndex => $childId) {
+                                $issueDate  = $issueDates[$childIndex] ?? null;
+                                $expiryDate = $expiryDates[$childIndex] ?? null;
+                                $filePath   = null;
+                                $ratingFiles = $request->file('licence_file_two') ?? [];
+
+                                $file = $ratingFiles[$index]['child'][$childIndex] ?? null;
+                                if ($file) {
+                                    $originalName = $file->getClientOriginalName();
+                                    $filePath = $file->storeAs('licence_files', $originalName, 'public');
+                                }
+
+
+                                UserRating::create([
+                                    'user_id'     => $store->id,
+                                    'rating_id'   => $childId,
+                                    'parent_id'   => $parentId,
+                                    'issue_date'  => $issueDate,
+                                    'expiry_date' => $expiryDate,
+                                    'file_path'   => $filePath,
+                                    'linked_to'   => 'licence_2',
+                                ]);
+                            }
+                        } else {
+                            $issueDate  = $issueDates[0] ?? null;
+                            $expiryDate = $expiryDates[0] ?? null;
+                            $filePath   = null;
+
+                            $ratingFiles = $request->file('licence_file_two') ?? [];
+                            $file = $ratingFiles[$index]['child'][0] ?? null;
+
+                            if ($file) {
+                                $originalName = $file->getClientOriginalName();
+                                $filePath = $file->storeAs('licence_files', $originalName, 'public');
+                            }
+                            // Optional: Save just the parent with rating_id = null
+                            UserRating::create([
+                                'user_id'     => $store->id,
+                                'rating_id'   => null,
+                                'parent_id'   => $parentId,
+                                'issue_date'  => $issueDate,
+                                'expiry_date' => $expiryDate,
+                                'file_path'   => $filePath,
+                                'linked_to'   => 'licence_2',
                             ]);
                         }
                     }
@@ -1525,10 +1558,6 @@ class UserController extends Controller
                                             ->store('license_certificates', 'public');
                     }
 
-                    // if an ID was provided we should update that exact record;
-                    // this handles the case where the user changes the validation
-                    // code dropdown to a different value.  Otherwise create a
-                    // fresh row.
                     if (!empty($request->edit_validation_id[$index])) {
                         $model = UserLicenseValidation::withTrashed()
                             ->find($request->edit_validation_id[$index]);
@@ -1567,14 +1596,8 @@ class UserController extends Controller
                 }
             }
 
-            // --- remove any validations that were deleted client‑side ---
-            // Build a list of IDs we actually want to keep.  Start with
-            // whatever was explicitly submitted (existing rows).
+      
             $keepIds = array_filter($request->edit_validation_id ?? []);
-
-            // After updateOrCreate above we may have created new models; make
-            // sure their IDs are included so the subsequent delete() doesn’t
-            // soft‑delete them.
             if ($request->filled('edit_validation_code')) {
                 foreach ($request->edit_validation_code as $index => $codeId) {
                     if (empty($codeId)) {
