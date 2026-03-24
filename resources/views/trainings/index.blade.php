@@ -414,8 +414,8 @@
                 <div class="col-md-6">
                   <label class="form-label">Training Type<span class="text-danger">*</span></label>
                     <select class="form-select" name="event_type" id="event_type">
-                        <option value="custom_event">Custom Event</option>
                         <option value="calender_event">Calender Event</option>
+                        <option value="custom_event">Custom Event</option>
                     </select>
                 </div> 
               
@@ -522,7 +522,7 @@
                         <div id="ou_id_error_up" class="text-danger error_e"></div>
                     </div>
                 @endif
-                <div class="col-md-6">
+                <div class="col-md-6"> 
                     <label class="form-label">
                         <span id="edit_student_label">Select Student</span><span class="text-danger">*</span>
                     </label>
