@@ -1697,257 +1697,392 @@ class TrainingEventsController extends Controller
     }
 
 
-    public function update_deferred_form(Request $request)
-    {
+    // public function update_deferred_form(Request $request)
+    // {
 
-        // dd($request->all());
-        if ($request->lesson_type == "custom") {
-            $validatedData = $request->validate([
-                'event_id'      => 'required|integer|exists:training_events,id',
-                'lesson_title'  => 'required|string|max:255',
-                'select_courseTask'      => 'required|array',
-                'select_courseTask.*'    => 'integer|exists:sub_lessons,id',
-                'lesson_date'   => 'required|date',
-                'start_time'    => 'required|date_format:H:i',
-                'end_time'      => 'required|date_format:H:i|after:start_time',
-                'resource_id'   => 'required|integer|exists:resources,id',
-                'instructor_id' => 'required|integer|exists:users,id',
-                'std_id'        => 'required|integer|exists:users,id',
-                'departure_airfield'   => 'nullable|string|max:4',
-                'destination_airfield' => 'nullable|string|max:4',
-                'takeoff_time'    => 'nullable',
-                'landing_time'      => 'nullable',
-            ], [], [
-                'item_ids'     => 'Tasks',
-                'resource_id'  => 'Resource',
-                'instructor_id' => 'Instructor'
-            ]);
+    //     // dd($request->all());
+    //     if ($request->lesson_type == "custom") {
+    //         $validatedData = $request->validate([
+    //             'event_id'      => 'required|integer|exists:training_events,id',
+    //             'lesson_title'  => 'required|string|max:255',
+    //             'select_courseTask'      => 'required|array',
+    //             'select_courseTask.*'    => 'integer|exists:sub_lessons,id',
+    //             'lesson_date'   => 'required|date',
+    //             'start_time'    => 'required|date_format:H:i',
+    //             'end_time'      => 'required|date_format:H:i|after:start_time',
+    //             'resource_id'   => 'required|integer|exists:resources,id',
+    //             'instructor_id' => 'required|integer|exists:users,id',
+    //             'std_id'        => 'required|integer|exists:users,id',
+    //             'departure_airfield'   => 'nullable|string|max:4',
+    //             'destination_airfield' => 'nullable|string|max:4',
+    //             'takeoff_time'    => 'nullable',
+    //             'landing_time'      => 'nullable',
+    //         ], [], [
+    //             'item_ids'     => 'Tasks',
+    //             'resource_id'  => 'Resource',
+    //             'instructor_id' => 'Instructor'
+    //         ]);
 
-            $eventId = $validatedData['event_id'];
-            $studentId = $validatedData['std_id'];
-            $authId = auth()->id();
-            $deferredLessons_id = $request->deferredLessons_id;
+    //         $eventId = $validatedData['event_id'];
+    //         $studentId = $validatedData['std_id'];
+    //         $authId = auth()->id();
+    //         $deferredLessons_id = $request->deferredLessons_id;
 
-            $update_deffered_lesson = [
-                'event_id'      => $eventId,
-                'user_id'       => $studentId,
-                'task_ids'      => $validatedData['select_courseTask'],
-                'instructor_id' => $validatedData['instructor_id'],
-                'resource_id'   => $validatedData['resource_id'],
-                'lesson_title'  => $validatedData['lesson_title'],
-                'lesson_date'   => $validatedData['lesson_date'],
-                'start_time'    => $validatedData['start_time'],
-                'end_time'      => $validatedData['end_time'],
-                'takeoff_time'    => $validatedData['takeoff_time'],
-                'landing_time'      => $validatedData['landing_time'],
-                'departure_airfield'   => $validatedData['departure_airfield'],
-                'destination_airfield' => $validatedData['destination_airfield'],
-                'created_by'    => $authId,
-                'lesson_type'   => $request->lesson_type,
-                'operation'     => $request->edit_operation ?? 0,
+    //         $update_deffered_lesson = [
+    //             'event_id'      => $eventId,
+    //             'user_id'       => $studentId,
+    //             'task_ids'      => $validatedData['select_courseTask'],
+    //             'instructor_id' => $validatedData['instructor_id'],
+    //             'resource_id'   => $validatedData['resource_id'],
+    //             'lesson_title'  => $validatedData['lesson_title'],
+    //             'lesson_date'   => $validatedData['lesson_date'],
+    //             'start_time'    => $validatedData['start_time'],
+    //             'end_time'      => $validatedData['end_time'],
+    //             'takeoff_time'    => $validatedData['takeoff_time'],
+    //             'landing_time'      => $validatedData['landing_time'],
+    //             'departure_airfield'   => $validatedData['departure_airfield'],
+    //             'destination_airfield' => $validatedData['destination_airfield'],
+    //             'created_by'    => $authId,
+    //             'lesson_type'   => $request->lesson_type,
+    //             'operation'     => $request->edit_operation ?? 0,
                
 
-            ];
+    //         ];
 
-            // Update lesson details
-            DefLesson::where('id', $deferredLessons_id)->update($update_deffered_lesson);
+    //         // Update lesson details
+    //         DefLesson::where('id', $deferredLessons_id)->update($update_deffered_lesson);
 
-            $selectedTasks = $validatedData['select_courseTask'];
+    //         $selectedTasks = $validatedData['select_courseTask'];
 
-            // Remove tasks not in new selection
-            DefLessonTask::where('def_lesson_id', $deferredLessons_id)
-                ->whereNotIn('task_id', $selectedTasks)
-                ->delete();
+    //         // Remove tasks not in new selection
+    //         DefLessonTask::where('def_lesson_id', $deferredLessons_id)
+    //             ->whereNotIn('task_id', $selectedTasks)
+    //             ->delete();
 
-            foreach ($selectedTasks as $taskId) {
-                // Check if already exists
-                $exists = DefLessonTask::where([
-                    'def_lesson_id' => $deferredLessons_id,
-                    'event_id'      => $eventId,
-                    'user_id'       => $studentId,
-                    'task_id'       => $taskId,
-                ])->exists();
+    //         foreach ($selectedTasks as $taskId) {
+    //             // Check if already exists
+    //             $exists = DefLessonTask::where([
+    //                 'def_lesson_id' => $deferredLessons_id,
+    //                 'event_id'      => $eventId,
+    //                 'user_id'       => $studentId,
+    //                 'task_id'       => $taskId,
+    //             ])->exists();
 
-                if (!$exists) {
-                    // Calculate credit minutes
-                    $get_lesson_id = SubLesson::where('id', $taskId)->value('lesson_id');
-                    $lessonType  = CourseLesson::where('id', $get_lesson_id)->value('lesson_type');
+    //             if (!$exists) {
+    //                 // Calculate credit minutes
+    //                 $get_lesson_id = SubLesson::where('id', $taskId)->value('lesson_id');
+    //                 $lessonType  = CourseLesson::where('id', $get_lesson_id)->value('lesson_type');
 
-                    $start = $validatedData['start_time'] ?? null;
-                    $end = $validatedData['end_time'] ?? null;
-                    $creditMinutes = 0;
+    //                 $start = $validatedData['start_time'] ?? null;
+    //                 $end = $validatedData['end_time'] ?? null;
+    //                 $creditMinutes = 0;
 
-                    if ($lessonType === 'groundschool' && $validatedData['resource_id'] == 3) {
-                        $creditMinutes = 480;
-                        $start = '00:00';
-                        $end = '08:00';
-                    } elseif ($start && $end) {
-                        try {
-                            $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
-                            $endTime = \Carbon\Carbon::createFromFormat('H:i', $end);
+    //                 if ($lessonType === 'groundschool' && $validatedData['resource_id'] == 3) {
+    //                     $creditMinutes = 480;
+    //                     $start = '00:00';
+    //                     $end = '08:00';
+    //                 } elseif ($start && $end) {
+    //                     try {
+    //                         $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
+    //                         $endTime = \Carbon\Carbon::createFromFormat('H:i', $end);
 
-                            if ($endTime->lessThan($startTime)) {
-                                $endTime->addDay();
-                            }
+    //                         if ($endTime->lessThan($startTime)) {
+    //                             $endTime->addDay();
+    //                         }
 
-                            $creditMinutes = $startTime->diffInMinutes($endTime);
-                        } catch (\Exception $e) {
-                            $creditMinutes = 0;
-                        }
-                    }
+    //                         $creditMinutes = $startTime->diffInMinutes($endTime);
+    //                     } catch (\Exception $e) {
+    //                         $creditMinutes = 0;
+    //                     }
+    //                 }
 
-                    DefLessonTask::create([
-                        'def_lesson_id' => $deferredLessons_id,
-                        'event_id'      => $eventId,
-                        'user_id'       => $studentId,
-                        'task_id'       => $taskId,
-                        'hours_credited' => gmdate("H:i", $creditMinutes * 60),
-                        'created_by'    => $authId,
-                    ]);
-                }
-            }
+    //                 DefLessonTask::create([
+    //                     'def_lesson_id' => $deferredLessons_id,
+    //                     'event_id'      => $eventId,
+    //                     'user_id'       => $studentId,
+    //                     'task_id'       => $taskId,
+    //                     'hours_credited' => gmdate("H:i", $creditMinutes * 60),
+    //                     'created_by'    => $authId,
+    //                 ]);
+    //             }
+    //         }
 
 
 
-            return response()->json([
-                'success' => true,
-                'message' => $request->lesson_type
-            ], 201);
-        }
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => $request->lesson_type
+    //         ], 201);
+    //     }
 
-        // Deferred Lessn 
-        else {
-            $validatedData = $request->validate([
-                'event_id'      => 'required|integer|exists:training_events,id',
-                'lesson_title'  => 'required|string|max:255',
-                'item_ids'      => 'required|array',
-                'item_ids.*'    => 'integer|exists:sub_lessons,id',
-                'lesson_date'   => 'required|date',
-                'start_time'    => 'required|date_format:H:i',
-                'end_time'      => 'required|date_format:H:i|after:start_time',
-                'resource_id'   => 'required|integer|exists:resources,id',
-                'instructor_id' => 'required|integer|exists:users,id',
-                'std_id'        => 'required|integer|exists:users,id',
-                'departure_airfield'   => 'nullable|string|max:4',
-                'destination_airfield' => 'nullable|string|max:4',
-                'takeoff_time'    => 'nullable',
-                'landing_time'      => 'nullable',
-            ], [], [
-                'item_ids'     => 'Tasks',
-                'resource_id'  => 'Resource',
-                'instructor_id' => 'Instructor'
-            ]);
+    //     // Deferred Lessn 
+    //     else {
+    //         $validatedData = $request->validate([
+    //             'event_id'      => 'required|integer|exists:training_events,id',
+    //             'lesson_title'  => 'required|string|max:255',
+    //             'item_ids'      => 'required|array',
+    //             'item_ids.*'    => 'integer|exists:sub_lessons,id',
+    //             'lesson_date'   => 'required|date',
+    //             'start_time'    => 'required|date_format:H:i',
+    //             'end_time'      => 'required|date_format:H:i|after:start_time',
+    //             'resource_id'   => 'required|integer|exists:resources,id',
+    //             'instructor_id' => 'required|integer|exists:users,id',
+    //             'std_id'        => 'required|integer|exists:users,id',
+    //             'departure_airfield'   => 'nullable|string|max:4',
+    //             'destination_airfield' => 'nullable|string|max:4',
+    //             'takeoff_time'    => 'nullable',
+    //             'landing_time'      => 'nullable',
+    //         ], [], [
+    //             'item_ids'     => 'Tasks',
+    //             'resource_id'  => 'Resource',
+    //             'instructor_id' => 'Instructor'
+    //         ]);
 
-            $eventId = $validatedData['event_id'];
-            $studentId = $validatedData['std_id'];
-            $authId = auth()->id();
-            $deferredLessons_id = $request->deferredLessons_id;
+    //         $eventId = $validatedData['event_id'];
+    //         $studentId = $validatedData['std_id'];
+    //         $authId = auth()->id();
+    //         $deferredLessons_id = $request->deferredLessons_id;
 
            
-            $update_deffered_lesson = [
+    //         $update_deffered_lesson = [
+    //             'event_id'      => $eventId,
+    //             'user_id'       => $studentId,
+    //             'task_ids'      => $validatedData['item_ids'],
+    //             'instructor_id' => $validatedData['instructor_id'],
+    //             'resource_id'   => $validatedData['resource_id'],
+    //             'lesson_title'  => $validatedData['lesson_title'],
+    //             'lesson_date'   => $validatedData['lesson_date'],
+    //             'start_time'    => $validatedData['start_time'],
+    //             'end_time'      => $validatedData['end_time'],
+    //             'takeoff_time'    => $validatedData['takeoff_time'],
+    //             'landing_time'      => $validatedData['landing_time'],
+    //             'departure_airfield'   => $validatedData['departure_airfield'],
+    //             'destination_airfield' => $validatedData['destination_airfield'],
+    //             'created_by'    => $authId,
+    //             'lesson_type'   => $request->lesson_type,
+    //             'operation'     => $request->edit_operation ?? 0,
+    //         ];
+
+    //         // Update lesson details
+    //           DefLesson::where('id', $deferredLessons_id)->update($update_deffered_lesson);
+
+    //         $selectedTasks = $validatedData['item_ids'];
+
+    //         // Restore Def task
+
+    //         $existingTasks = DefLessonTask::where('def_lesson_id', $deferredLessons_id)
+    //             ->pluck('task_id')
+    //             ->toArray();
+
+
+
+    //         $tasksToAdd = array_diff($existingTasks, $selectedTasks);
+    //         foreach ($tasksToAdd as $val) {
+    //             $def_task = array(
+    //                 'event_id' => $eventId,
+    //                 'user_id'  => $studentId,
+    //                 'task_id'  => $val,
+    //                 'created_by' => $authId
+    //             );
+    //             DefTask::create($def_task);
+    //         }
+    //         // Remove tasks not in new selection
+    //         DefLessonTask::where('def_lesson_id', $deferredLessons_id)
+    //             ->whereNotIn('task_id', $selectedTasks)
+    //             ->delete();
+
+    //         foreach ($selectedTasks as $taskId) {
+    //             // Check if already exists
+    //             $exists = DefLessonTask::where([
+    //                 'def_lesson_id' => $deferredLessons_id,
+    //                 'event_id'      => $eventId,
+    //                 'user_id'       => $studentId,
+    //                 'task_id'       => $taskId,
+    //             ])->exists();
+
+    //             if (!$exists) {
+    //                 // Calculate credit minutes
+    //                 $get_lesson_id = SubLesson::where('id', $taskId)->value('lesson_id');
+    //                 $lessonType  = CourseLesson::where('id', $get_lesson_id)->value('lesson_type');
+
+    //                 $start = $validatedData['start_time'] ?? null;
+    //                 $end = $validatedData['end_time'] ?? null;
+    //                 $creditMinutes = 0;
+
+    //                 if ($lessonType === 'groundschool' && $validatedData['resource_id'] == 3) {
+    //                     $creditMinutes = 480;
+    //                     $start = '00:00';
+    //                     $end = '08:00';
+    //                 } elseif ($start && $end) {
+    //                     try {
+    //                         $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
+    //                         $endTime = \Carbon\Carbon::createFromFormat('H:i', $end);
+
+    //                         if ($endTime->lessThan($startTime)) {
+    //                             $endTime->addDay();
+    //                         }
+
+    //                         $creditMinutes = $startTime->diffInMinutes($endTime);
+    //                     } catch (\Exception $e) {
+    //                         $creditMinutes = 0;
+    //                     }
+    //                 }
+
+    //                 DefLessonTask::create([
+    //                     'def_lesson_id' => $deferredLessons_id,
+    //                     'event_id'      => $eventId,
+    //                     'user_id'       => $studentId,
+    //                     'task_id'       => $taskId,
+    //                     'hours_credited' => gmdate("H:i", $creditMinutes * 60),
+    //                     'created_by'    => $authId,
+    //                 ]);
+    //             }
+
+    //             DefTask::where('event_id', $eventId)->where('user_id', $studentId)->where('task_id', $taskId)->delete();
+    //         }
+
+
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => $request->lesson_type
+    //         ], 201);
+    //     }
+    // }
+    public function update_deferred_form(Request $request)
+    {
+        // COMMON VALIDATION RULES FOR BOTH TYPES
+        $rules = [
+            'event_id'      => 'required|integer|exists:training_events,id',
+            'lesson_title'  => 'required|string|max:255',
+            'lesson_date'   => 'required|date',
+            'start_time'    => 'required|date_format:H:i',
+            'end_time'      => 'required|date_format:H:i|after:start_time',
+            'resource_id'   => 'required|integer|exists:resources,id',
+            'instructor_id' => 'required|integer|exists:users,id',
+            'std_id'        => 'required|integer|exists:users,id',
+            'departure_airfield'   => 'nullable|string|max:4',
+            'destination_airfield' => 'nullable|string|max:4',
+            'takeoff_time'   => 'nullable',
+            'landing_time'   => 'nullable',
+        ];
+
+        if ($request->lesson_type == "custom") {
+            $rules["select_courseTask"] = "required|array";
+            $rules["select_courseTask.*"] = "integer|exists:sub_lessons,id";
+        } else {
+            $rules["item_ids"] = "required|array";
+            $rules["item_ids.*"] = "integer|exists:sub_lessons,id";
+        }
+
+        $validatedData = $request->validate($rules);
+
+        // CORE VARIABLES
+        $eventId  = $validatedData['event_id'];
+        $studentId = $validatedData['std_id'];
+        $authId = auth()->id();
+        $deferredLessons_id = $request->deferredLessons_id;
+
+        // SELECTED TASK IDs BASED ON TYPE
+        $selectedTasks = $request->lesson_type == "custom"
+            ? $validatedData['select_courseTask']
+            : $validatedData['item_ids'];
+
+        // UPDATE MAIN DEFERRED LESSON RECORD
+        DefLesson::where("id", $deferredLessons_id)->update([
+            'event_id'      => $eventId,
+            'user_id'       => $studentId,
+            'task_ids'      => $selectedTasks,
+            'instructor_id' => $validatedData['instructor_id'],
+            'resource_id'   => $validatedData['resource_id'],
+            'lesson_title'  => $validatedData['lesson_title'],
+            'lesson_date'   => $validatedData['lesson_date'],
+            'start_time'    => $validatedData['start_time'],
+            'end_time'      => $validatedData['end_time'],
+            'takeoff_time'  => $validatedData['takeoff_time'],
+            'landing_time'  => $validatedData['landing_time'],
+            'departure_airfield'   => $validatedData['departure_airfield'],
+            'destination_airfield' => $validatedData['destination_airfield'],
+            'lesson_type'   => $request->lesson_type,
+            'operation'     => $request->edit_operation ?? 0,
+            'created_by'    => $authId,
+        ]);
+
+        // REMOVE OLD TASKS NO LONGER SELECTED
+        DefLessonTask::where('def_lesson_id', $deferredLessons_id)
+            ->whereNotIn('task_id', $selectedTasks)
+            ->delete();
+
+        // ITERATE ALL SELECTED TASKS
+        foreach ($selectedTasks as $taskId) {
+
+            // 1. CALCULATE CREDIT MINUTES (ALWAYS)
+            $get_lesson_id = SubLesson::where('id', $taskId)->value('lesson_id');
+            $lessonType  = CourseLesson::where('id', $get_lesson_id)->value('lesson_type');
+
+            $start = $validatedData['start_time'] ?? null;
+            $end   = $validatedData['end_time'] ?? null;
+            $creditMinutes = 0;
+
+            if ($lessonType === 'groundschool' && $validatedData['resource_id'] == 3) {
+                $creditMinutes = 480; // 8 hours fixed
+            } elseif ($start && $end) {
+                try {
+                    $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
+                    $endTime   = \Carbon\Carbon::createFromFormat('H:i', $end);
+
+                    if ($endTime->lessThan($startTime)) {
+                        $endTime->addDay();
+                    }
+                    $creditMinutes = $startTime->diffInMinutes($endTime);
+                } catch (\Exception $e) {
+                    $creditMinutes = 0;
+                }
+            }
+
+            $creditHHMM = sprintf('%02d:%02d', floor($creditMinutes / 60), $creditMinutes % 60);
+
+            // 2. CHECK IF TASK EXISTS
+            $exists = DefLessonTask::where([
+                'def_lesson_id' => $deferredLessons_id,
                 'event_id'      => $eventId,
                 'user_id'       => $studentId,
-                'task_ids'      => $validatedData['item_ids'],
-                'instructor_id' => $validatedData['instructor_id'],
-                'resource_id'   => $validatedData['resource_id'],
-                'lesson_title'  => $validatedData['lesson_title'],
-                'lesson_date'   => $validatedData['lesson_date'],
-                'start_time'    => $validatedData['start_time'],
-                'end_time'      => $validatedData['end_time'],
-                'takeoff_time'    => $validatedData['takeoff_time'],
-                'landing_time'      => $validatedData['landing_time'],
-                'departure_airfield'   => $validatedData['departure_airfield'],
-                'destination_airfield' => $validatedData['destination_airfield'],
-                'created_by'    => $authId,
-                'lesson_type'   => $request->lesson_type,
-                'operation'     => $request->edit_operation ?? 0,
-            ];
+                'task_id'       => $taskId,
+            ])->exists();
 
-            // Update lesson details
-              DefLesson::where('id', $deferredLessons_id)->update($update_deffered_lesson);
-
-            $selectedTasks = $validatedData['item_ids'];
-
-            // Restore Def task
-
-            $existingTasks = DefLessonTask::where('def_lesson_id', $deferredLessons_id)
-                ->pluck('task_id')
-                ->toArray();
-
-
-
-            $tasksToAdd = array_diff($existingTasks, $selectedTasks);
-            foreach ($tasksToAdd as $val) {
-                $def_task = array(
-                    'event_id' => $eventId,
-                    'user_id'  => $studentId,
-                    'task_id'  => $val,
-                    'created_by' => $authId
-                );
-                DefTask::create($def_task);
-            }
-            // Remove tasks not in new selection
-            DefLessonTask::where('def_lesson_id', $deferredLessons_id)
-                ->whereNotIn('task_id', $selectedTasks)
-                ->delete();
-
-            foreach ($selectedTasks as $taskId) {
-                // Check if already exists
-                $exists = DefLessonTask::where([
+            // 3. INSERT OR UPDATE
+            if (!$exists) {
+                DefLessonTask::create([
                     'def_lesson_id' => $deferredLessons_id,
                     'event_id'      => $eventId,
                     'user_id'       => $studentId,
                     'task_id'       => $taskId,
-                ])->exists();
-
-                if (!$exists) {
-                    // Calculate credit minutes
-                    $get_lesson_id = SubLesson::where('id', $taskId)->value('lesson_id');
-                    $lessonType  = CourseLesson::where('id', $get_lesson_id)->value('lesson_type');
-
-                    $start = $validatedData['start_time'] ?? null;
-                    $end = $validatedData['end_time'] ?? null;
-                    $creditMinutes = 0;
-
-                    if ($lessonType === 'groundschool' && $validatedData['resource_id'] == 3) {
-                        $creditMinutes = 480;
-                        $start = '00:00';
-                        $end = '08:00';
-                    } elseif ($start && $end) {
-                        try {
-                            $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
-                            $endTime = \Carbon\Carbon::createFromFormat('H:i', $end);
-
-                            if ($endTime->lessThan($startTime)) {
-                                $endTime->addDay();
-                            }
-
-                            $creditMinutes = $startTime->diffInMinutes($endTime);
-                        } catch (\Exception $e) {
-                            $creditMinutes = 0;
-                        }
-                    }
-
-                    DefLessonTask::create([
-                        'def_lesson_id' => $deferredLessons_id,
-                        'event_id'      => $eventId,
-                        'user_id'       => $studentId,
-                        'task_id'       => $taskId,
-                        'hours_credited' => gmdate("H:i", $creditMinutes * 60),
-                        'created_by'    => $authId,
-                    ]);
-                }
-
-                DefTask::where('event_id', $eventId)->where('user_id', $studentId)->where('task_id', $taskId)->delete();
+                    'hours_credited' => $creditHHMM,
+                    'created_by'    => $authId,
+                ]);
+            } else {
+                DefLessonTask::where([
+                    'def_lesson_id' => $deferredLessons_id,
+                    'event_id'      => $eventId,
+                    'user_id'       => $studentId,
+                    'task_id'       => $taskId,
+                ])->update([
+                    'hours_credited' => $creditHHMM
+                ]);
             }
 
-
-
-            return response()->json([
-                'success' => true,
-                'message' => $request->lesson_type
-            ], 201);
+            // DELETE FROM DefTask ONCE MOVED TO DefLessonTask
+            DefTask::where([
+                'event_id' => $eventId,
+                'user_id'  => $studentId,
+                'task_id'  => $taskId,
+            ])->delete();
         }
+
+        return response()->json([
+            'success' => true,
+            'message' => $request->lesson_type
+        ], 201);
     }
 
 
