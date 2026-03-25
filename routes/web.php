@@ -141,8 +141,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/training/get-recom-instructors/{id}', [TrainingEventsController::class, 'getEventInstructors'])->name('training.getRecommendedInstructors');
     Route::post('/training/unlocked', [TrainingEventsController::class, 'unlocked_trainingEvent'])->name('training.unlocked');
     Route::post('/training/submit_normal_items', [TrainingEventsController::class, 'submit_normal_items'])->name('submit_normal_items.unlocked');
-
-     Route::post('/training/get_lessonId', [TrainingEventsController::class, 'get_lessonId'])->name('get_lessonId.unlocked');
+    Route::post('/training/get_lessonId', [TrainingEventsController::class, 'get_lessonId'])->name('get_lessonId.unlocked');
+    Route::post('/save_validate_tag', [TrainingEventsController::class, 'save_validate_tag']);
 
 
     //Grading feedback routes
@@ -267,7 +267,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     Route::post('/training/delete', [TrainingEventsController::class, 'deleteTrainingEvent'])->name('training.delete');
     Route::post('/training/backToDeferredLesson', [TrainingEventsController::class, 'backToDeferredLesson'])->name('backToDeferredLesson.delete');
     // Route::get('/training/get_ou_groups_and_instructors/', [TrainingEventsController::class, 'getOrgGroupsAndInstructors'])->name('training.get_ou_groups_and_instructors');
-    Route::get('/training/show/{event_id}', [TrainingEventsController::class, 'showTrainingEvent'])->name('training.show'); 
+    Route::get('/training/show/{event_id}', [TrainingEventsController::class, 'showTrainingEvent'])->name('training.show');  
     Route::post('/training/store_grading', [TrainingEventsController::class, 'createGrading'])->name('training.store_grading'); 
     Route::post('/training/overall_assessment', [TrainingEventsController::class, 'storeOverallAssessment'])->name('training.overall_assessment');
     // Route::get('/grading', [TrainingEventsController::class, 'getStudentGrading'])->name('grading.list');

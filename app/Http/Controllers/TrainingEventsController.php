@@ -35,6 +35,7 @@ use App\Models\CourseDocuments;
 use App\Models\TrainingEventDocument;
 use App\Models\UserTagRating;
 use App\Models\Booking;
+use App\Models\ValidateTrainingTag;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -1194,10 +1195,14 @@ class TrainingEventsController extends Controller
                         
 
         $grouped_customLogs = $training_custom_logs->groupBy('lesson_id');
-        
-          
-        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs'));
-    }
+        $course_tags   = UserTagRating::with('rhsTag')->where('course_id', $trainingEvent->course_id)->get();
+
+        $validate_tags = ValidateTrainingTag::where('event_id', $trainingEvent->id)
+                            ->where('course_id', $trainingEvent->course_id)
+                            ->pluck('validate_status', 'tag_id');  
+
+        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs','course_tags', 'validate_tags'));
+    } 
 
     public function TestshowTrainingEvent(Request $request, $event_id)
     {
@@ -3546,6 +3551,7 @@ class TrainingEventsController extends Controller
                 ->where('aircraft_type', $event->course->opc_aircraft)
                 ->latest('opc_expiry_date')
                 ->first();
+          //  dd($opcRating);  
 
             $currentExpiry = $opcRating?->opc_expiry_date
                 ? Carbon::parse($opcRating->opc_expiry_date)
@@ -3570,35 +3576,77 @@ class TrainingEventsController extends Controller
             ]);
         }
 
-          $course = Courses::with(['userTagRatings.rhsTag'])->findOrFail($event->course->id);
-            if (!empty($course->userTagRatings)) {
-                foreach ($course->userTagRatings as $row) {
+          
 
-                    $months     = (int) $row->tag_validity;
-                    $expiryDate = $completionDate->copy()->addMonths($months);
-                    $tag_id     = $row->tag_id;
+        //   dd($event->id);
+        //   dd($course->userTagRatings);
+        //   $validate_tags =  ValidateTrainingTag::where('event_id', $event->id)->where('course_id', $event->course->id)->select('tag_id')->get();
+        //   $validatedTagIds = $validate_tags->pluck('tag_id')->toArray();
+        //   dump($validate_tags);
 
-                    Training_tags::updateOrCreate(
-                        [
-                            'user_id'       => $event->student_id,
-                            'event_id'      => $id,
-                            'course_id'     => $event->course->id,
-                            'tag_id'        => $tag_id,
-                            'aircraft_type' => $event->course->opc_aircraft,
-                        ],
-                        [
-                            'tag_expiry_date' => $expiryDate,
-                        ]
-                    );
-                }
-            }
+        //   $course = Courses::with(['userTagRatings.rhsTag'])->findOrFail($event->course->id);
+        //   dd($course->userTagRatings);
 
+        //     if (!empty($course->userTagRatings)) {
+        //         foreach ($course->userTagRatings as $row) {
+        //             $months     = (int) $row->tag_validity;
+        //             $expiryDate = $completionDate->copy()->addMonths($months);
+        //             $tag_id     = $row->tag_id;
 
-         
+        //             Training_tags::updateOrCreate(
+        //                 [
+        //                     'user_id'       => $event->student_id,
+        //                     'event_id'      => $id,
+        //                     'course_id'     => $event->course->id,
+        //                     'tag_id'        => $tag_id,
+        //                     'aircraft_type' => $event->course->opc_aircraft,
+        //                 ],
+        //                 [
+        //                     'tag_expiry_date' => $expiryDate,
+        //                 ]
+        //             );
+        //         }
+        //     }
 
+        //----------------------------------------------
+        $validate_tags = ValidateTrainingTag::where('event_id', $event->id)
+                        ->where('course_id', $event->course->id)
+                        ->where('validate_status', 1)
+                        ->select('tag_id')
+                        ->get();
 
+                    $validatedTagIds = $validate_tags->pluck('tag_id')->toArray();
 
+                    $course = Courses::with(['userTagRatings.rhsTag'])
+                        ->findOrFail($event->course->id);
 
+                    // 🔥 Filter only tags present in validate_tags
+                    $filteredTags = $course->userTagRatings->whereIn('tag_id', $validatedTagIds);
+                 
+
+                    if ($filteredTags->isNotEmpty()) {
+
+                        foreach ($filteredTags as $row) {
+
+                            $months     = (int) $row->tag_validity;
+                            $expiryDate = $completionDate->copy()->addMonths($months);
+                            $tag_id     = $row->tag_id;
+    
+
+                            Training_tags::updateOrCreate(
+                                [
+                                    'user_id'       => $event->student_id,
+                                    'event_id'      => $id,
+                                    'course_id'     => $event->course->id,
+                                    'tag_id'        => $tag_id,
+                                    'aircraft_type' => $event->course->opc_aircraft,
+                                ],
+                                [
+                                    'tag_expiry_date' => $expiryDate,
+                                ]
+                            );
+                        }
+                    }
 
         return redirect()
             ->route('training.index')
@@ -4626,4 +4674,55 @@ class TrainingEventsController extends Controller
         }
     }
 
+    public function save_validate_tag(Request $request)
+    {
+        try {
+
+            // 1️⃣ Validate input
+            $request->validate([
+                'event_id'   => 'required|integer',
+                'course_id'  => 'required|integer',
+                'tag_id'     => 'required|integer',
+                'is_checked' => 'required|in:0,1',
+            ]);
+
+            // 2️⃣ Values used to locate the record
+            $conditions = [
+                'event_id'  => $request->event_id,
+                'course_id' => $request->course_id,
+                'tag_id'    => $request->tag_id,
+            ];
+
+            // 3️⃣ Values to update
+            $values = [
+                'validate_status' => $request->is_checked
+            ];
+
+            // 4️⃣ Update or insert
+            ValidateTrainingTag::updateOrCreate($conditions, $values);
+
+            return response()->json([
+                'status'  => 'success',
+                'message' => 'Tag updated successfully'
+            ], 200);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            // 422 Validation error response
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Validation failed',
+                'errors'  => $e->errors()
+            ], 422);
+
+        } catch (\Throwable $e) {
+
+            // 500 Server error response
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Something went wrong',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
 }
