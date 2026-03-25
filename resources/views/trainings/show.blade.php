@@ -895,7 +895,7 @@
                                         {{ date('h:i A', strtotime($lesson->start_time)) }}
                                     </div> -->
                             <div class="col-md-2 mt-3">
-                                <strong><i class="text-primary fas fa-clock"></i> Start:</strong><br>
+                                <strong><i class="text-primary fas fa-clock"></i> Off blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
                                 @if(!empty($lesson->start_time) && $lesson->start_time !== '00:00:00')
                                 {{ date('h:i A', strtotime($lesson->start_time)) }}
                                 @elseif($lesson->start_time === '00:00:00')
@@ -905,7 +905,7 @@
                                 @endif
                             </div>
                             <div class="col-md-2 mt-3">
-                                <strong><i class="text-primary fas fa-clock"></i> End:</strong><br>
+                                <strong><i class="text-primary fas fa-clock"></i> On blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
                                 @if(!empty($lesson->end_time) && $lesson->end_time !== '00:00:00')
                                 {{ date('h:i A', strtotime($lesson->end_time)) }}
                                 @elseif($lesson->end_time === '00:00:00')
@@ -1234,12 +1234,12 @@
                             </div>
 
                             <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-clock"></i> Start:</strong><br>
+                                <strong><i class="text-primary fas fa-clock"></i> Off blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
                                 {{ date('h:i A', strtotime($def->start_time)) }}
                             </div>
 
                             <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-clock"></i> End:</strong><br>
+                                <strong><i class="text-primary fas fa-clock"></i> On blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
                                 {{ date('h:i A', strtotime($def->end_time)) }}
                             </div>
 
@@ -1374,12 +1374,12 @@
                             </div>
 
                             <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-clock"></i> Start:</strong><br>
+                                <strong><i class="text-primary fas fa-clock"></i> Off blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
                                 {{ date('h:i A', strtotime($def->start_time)) }}
                             </div>
 
                             <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-clock"></i> End:</strong><br>
+                                <strong><i class="text-primary fas fa-clock"></i> On blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
                                 {{ date('h:i A', strtotime($def->end_time)) }}
                             </div>
 
@@ -1706,14 +1706,26 @@
                                 </p> -->
                                 <?php
 
-                                $totalFlightTime = $totals['flight']['credited'] + $totals['deferred'] + $totals['customDuration'];
+                                    $totalblockTime = $totals['flight']['credited'] + $totals['deferred'] + $totals['customDuration'];
 
+                                    $totalFlightTime = $trainingEvent->eventLessons
+                                    ->where('lesson.lesson_type', 'flight')
+                                    ->reduce(function ($carry, $lesson) {
+                                        $takeoff  = strtotime($lesson->takeoff_time);
+                                        $landing  = strtotime($lesson->landing_time);
+
+                                        if ($takeoff && $landing && $landing > $takeoff) {
+                                            $carry += ($landing - $takeoff);
+                                        }
+                                        return $carry;
+                                    }, 0);
                                 ?>
                                 <p>
-                                    <?php
-
-                                    ?>
                                     <strong>Total Block Time:</strong>
+                                    {{ formatSeconds($totalblockTime) }}
+                                </p>
+                                <p>
+                                    <strong>Total flight Time:</strong>
                                     {{ formatSeconds($totalFlightTime) }}
                                 </p>
 
