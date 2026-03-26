@@ -1708,17 +1708,42 @@
 
                                     $totalblockTime = $totals['flight']['credited'] + $totals['deferred'] + $totals['customDuration'];
 
-                                    $totalFlightTime = $trainingEvent->eventLessons
-                                    ->where('lesson.lesson_type', 'flight')
-                                    ->reduce(function ($carry, $lesson) {
-                                        $takeoff  = strtotime($lesson->takeoff_time);
-                                        $landing  = strtotime($lesson->landing_time);
+                                    // $totalFlightTime = $trainingEvent->eventLessons
+                                    // ->where('lesson.lesson_type', 'flight')
+                                    // ->reduce(function ($carry, $lesson) {
+                                    //     $takeoff  = strtotime($lesson->takeoff_time);
+                                    //     $landing  = strtotime($lesson->landing_time);
 
-                                        if ($takeoff && $landing && $landing > $takeoff) {
-                                            $carry += ($landing - $takeoff);
-                                        }
-                                        return $carry;
-                                    }, 0);
+                                    //     if ($takeoff && $landing && $landing > $takeoff) {
+                                    //         $carry += ($landing - $takeoff);
+                                    //     }
+                                    //     return $carry;
+                                    // }, 0);
+
+                                    $eventLessonFlightTime = $trainingEvent->eventLessons
+                                        ->where('lesson.lesson_type', 'flight')
+                                        ->reduce(function ($carry, $lesson) {
+                                            $takeoff = strtotime($lesson->takeoff_time);
+                                            $landing = strtotime($lesson->landing_time);
+
+                                            if ($takeoff && $landing && $landing > $takeoff) {
+                                                $carry += ($landing - $takeoff);
+                                            }
+                                            return $carry;
+                                        }, 0);
+
+                                    $defFlightTime = $trainingEvent->defLessons
+                                        ->reduce(function ($carry, $task) {
+                                            $takeoff = strtotime($task->takeoff_time);
+                                            $landing = strtotime($task->landing_time);
+
+                                            if ($takeoff && $landing && $landing > $takeoff) {
+                                                $carry += ($landing - $takeoff);
+                                            }
+                                            return $carry;
+                                        }, 0);
+
+                                    $totalFlightTime = $eventLessonFlightTime + $defFlightTime;
                                 ?>
                                 <p>
                                     <strong>Total Block Time:</strong>
