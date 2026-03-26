@@ -711,6 +711,15 @@
                                 </div>
                             </div>
 
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <strong><i class="text-primary fas fa-book"></i> Course Start Date:</strong>
+                                    <span class="">
+                                        {{ $trainingEvent->event_date ? \Carbon\Carbon::parse($trainingEvent->event_date)->format('d/m/Y') : 'N/A' }}
+                                    </span>
+                                </div>
+                            </div>
+
                             @if($trainingEvent->course?->duration_value && $trainingEvent->course?->duration_type)
                             <div class="mb-3">
                                 <strong><i class="text-primary fas fa-hourglass-half"></i> Course Total Duration:</strong>
