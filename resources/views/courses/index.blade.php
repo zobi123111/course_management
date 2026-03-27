@@ -559,6 +559,10 @@
                     <div class="form-group">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="enable_cbta" name="enable_cbta">
+                            <label class="form-check-label" for="enable_cbta"> Enable CBTA </label>
+                        </div>
+                        <!-- <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="enable_cbta" name="enable_cbta">
                             <label class="form-check-label" for="enable_cbta"> Enable Pilot Competencies </label>
                         </div>
                         <div class="form-check">
@@ -568,7 +572,7 @@
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="examiner" name="examiner_cbta">
                             <label class="form-check-label" for="examiner"> Enable Examiner Competencies </label>
-                        </div>
+                        </div> -->
                         <div class="form-check">
                           <input class="form-check-input" type="checkbox" value="1"  name="auto_archive">
                           <label class="form-check-label" for="auto_archive">Auto Archive</label>
@@ -976,6 +980,10 @@
 
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" value="1" id="edit_enable_cbta" name="edit_enable_cbta">
+                        <label class="form-check-label" for="edit_enable_cbta"> Enable CBTA </label>
+                    </div>
+                    <!-- <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="edit_enable_cbta" name="edit_enable_cbta">
                         <label class="form-check-label" for="edit_enable_cbta"> Enable Pilot Competencies </label>
                     </div>
                     <div class="form-check">
@@ -985,7 +993,7 @@
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" value="1" id="edit_examiner" name="edit_examiner_cbta">
                         <label class="form-check-label" for="examiner"> Enable Examiner Competencies </label>
-                    </div>
+                    </div> -->
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" value="1" id="auto_archive" name="auto_archive">
                         <label class="form-check-label" for="auto_archive">Auto Archive</label>

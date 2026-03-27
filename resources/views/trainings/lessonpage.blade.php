@@ -1258,7 +1258,7 @@
 
                                         <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
 
-                                        @if($lesson && $lesson->enable_cbta==1)
+                                        <!-- @if($lesson && $lesson->enable_cbta==1)
                                             <div class="accordion-card">
                                                 <div class="accordion-item">
                                                     <h2 class="accordion-header">
@@ -1275,7 +1275,6 @@
                                                 </div>
                                             
                                                 <div id="comptency-{{ $eventLesson->id }}" class="accordion-collapse collapse">
-                                                    <!-- Student name aligned to the right, above the competency grading -->
                                                     <div class="text-end pe-4 pt-2 fw-semibold">
                                                         {{ $student->fname }} {{ $student->lname }}
                                                     </div>
@@ -1357,7 +1356,6 @@
                                                                 </div>
                                                             </div>
 
-                                                            <!-- Toggleable Comment Box -->
                                                             <div class="collapse mt-2" id="competency-box-{{ $codeLower }}">
                                                                 <textarea name="comp_comments[{{ $lesson->id }}][{{ $codeLower }}]" rows="3" class="form-control" placeholder="Add remarks or comments on competency">{{ $selectedCompComment }}</textarea>
                                                             </div>
@@ -1368,7 +1366,7 @@
                                             </div>
                                         @else
                                             <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">                                        
-                                        @endif
+                                        @endif -->
                                         
 
                                         @if($lesson->examiner_cbta == 1)
@@ -1942,7 +1940,7 @@
                                         </div>
                                         @endforeach
                                     </div>
-                                    <div class="accordion-item">
+                                    <!-- <div class="accordion-item">
                                         @if($task->task->courseLesson->course->enable_cbta==1)
                                         <h2 class="accordion-header">
                                             <div class="d-flex justify-content-between align-items-center">
@@ -1955,7 +1953,6 @@
                                         @endif
                                     </div>
                                     <div id="comptency-{{ $task->id }}" class="accordion-collapse collapse">
-                                        <!-- Student name aligned to the right, above the competency grading -->
                                         <div class="text-end pe-4 pt-2 fw-semibold">
                                             {{ $student->fname }} {{ $student->lname }}
                                         </div>
@@ -2017,13 +2014,97 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <!-- Toggleable Comment Box -->
                                             <div class="collapse mt-2" id="competency-box-{{ $code }}">
                                                 <textarea name="comp_comments[{{ $task->defLesson->id }}][{{ $code }}]" rows="3" class="form-control" placeholder="Add remarks or comments on competency">{{ $selectedCompComment }}</textarea>
                                             </div>
                                             @endforeach
                                         </div>
-                                    </div>
+                                    </div> -->
+                                    @if($task->task->courseLesson->course->enable_cbta==1)
+                                        <div class="accordion-card">
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <button type="button" class="accordion-button collapsed toggleable" data-bs-toggle="collapse" data-bs-target="#comptency-{{ $task->id }}" aria-expanded="false">
+                                                            Overall Competency Grading
+                                                        </button>
+                                                    </div>
+                                                </h2>
+                                            </div>
+                                        
+                                            <div id="comptency-{{ $task->id }}" class="accordion-collapse collapse">
+                                                <!-- Student name aligned to the right, above the competency grading -->
+                                                <div class="text-end pe-4 pt-2 fw-semibold">
+                                                    {{ $student->fname }} {{ $student->lname }}
+                                                </div>
+
+                                                <div class="accordion-body">
+                                                    @php
+                                                    $competencies = [
+                                                    'KNO' => 'Application of knowledge',
+                                                    'PRO' => 'Application of Procedures and compliance with regulations',
+                                                    'COM' => 'Communication',
+                                                    'FPA' => 'Aeroplane flight path management - automation',
+                                                    'FPM' => 'Aeroplane flight path management - Manual Control',
+                                                    'LTW' => 'Leadership & Teamwork',
+                                                    'PSD' => 'Problem-solving - decision-making',
+                                                    'SAW' => 'Situation awareness and management of information',
+                                                    'WLM' => 'Workload Management',
+                                                    ];
+                                                    $lessonCompetencies = $def_grading[$task->defLesson->id] ?? collect();
+                                                    @endphp
+                                                    @foreach($competencies as $code => $title)
+                                                    @php
+                                                    $code = strtolower($code); // make sure it's lowercase
+                                                    $grading = $lessonCompetencies->first();
+
+                                                    $selectedCompGrade = $grading?->{$code . '_grade'} ?? null;
+                                                    $selectedCompComment = $grading?->{$code . '_comment'} ?? null;
+                                                    @endphp
+
+                                                    <div class="custom-box">
+                                                        <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $code }}" aria-expanded="false">
+                                                            <span class="rmk">RMK</span>
+                                                            <span class="question-mark">?</span>
+                                                            <span class="title"><span class="highlight">{{ $title }} ({{ strtoupper($code) }})</span></span>
+                                                            <input type="hidden" name="cg_lesson_id" value="{{ $task->defLesson->id }}">
+                                                        </div>
+                                                        <div class="table-container">
+                                                            <div class="main-tabledesign">
+                                                                <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
+                                                                <table>
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            @for ($i = 1; $i <= 5; $i++)
+                                                                                @php
+                                                                                $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
+                                                                                @endphp
+                                                                                <td>
+                                                                                <label class="radio-label">
+                                                                                    <input type="radio" class="scale-radio"
+                                                                                        name="comp_grade[{{ $task->defLesson->id }}][{{ $code }}]"
+                                                                                        value="{{ $i }}" data-event-id="{{ $trainingEvent->id }}" data-lesson-id="{{ $task->defLesson->id }}" data-user-id="{{ $student->id ?? '' }}" data-code="{{ $code }}" data-color-class="{{ $colorClass }}"
+                                                                                        {{ $selectedCompGrade == $i ? 'checked' : '' }}>
+                                                                                    <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
+                                                                                </label>
+                                                                                </td>
+                                                                                @endfor
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                                <span class="custom-radio competent comp_grade_{{ $task->defLesson->id }}_{{ $student->id ?? '' }}"></span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="collapse mt-2" id="competency-box-{{ $code }}">
+                                                        <textarea name="comp_comments[{{ $task->defLesson->id }}][{{ $code }}]" rows="3" class="form-control" placeholder="Add remarks or comments on competency">{{ $selectedCompComment }}</textarea>
+                                                    </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+
                                     <div>
                                         <label>Lesson Summary</label>
                                         <textarea name="def_lesson_summary[{{ $task->def_lesson_id }}]" rows="3" class="form-control" placeholder="Write Lesson Summary">{{ old("def_lesson_summary.$task->def_lesson_id ", $defLesson->lesson_summary ?? '') }}</textarea>
@@ -2244,7 +2325,8 @@
                                         </div>
                                         @endforeach
                                     </div>
-                                    <div class="accordion-item">
+
+                                    <!-- <div class="accordion-item">
                                         @if($task->task->courseLesson->course->enable_cbta==1)
                                         <h2 class="accordion-header">
                                             <div class="d-flex justify-content-between align-items-center">
@@ -2258,7 +2340,6 @@
                                     </div>
 
                                     <div id="comptency-{{ $task->id }}" class="accordion-collapse collapse">
-                                        <!-- Student name aligned to the right, above the competency grading -->
                                         <div class="text-end pe-4 pt-2 fw-semibold">
                                             {{ $student->fname }} {{ $student->lname }}
                                         </div>
@@ -2321,13 +2402,99 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <!-- Toggleable Comment Box -->
                                             <div class="collapse mt-2" id="competency-box-{{ $code }}">
                                                 <textarea name="comp_comments[{{ $task->defLesson->id }}][{{ $code }}]" rows="3" class="form-control" placeholder="Add remarks or comments on competency">{{ $selectedCompComment }}</textarea>
                                             </div>
                                             @endforeach
                                         </div>
-                                    </div>
+                                    </div> -->
+
+                                    @if($task->task->courseLesson->course->enable_cbta==1)
+                                        <div class="accordion-card">
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <button type="button" class="accordion-button collapsed toggleable" data-bs-toggle="collapse" data-bs-target="#comptency-{{ $task->id }}" aria-expanded="false">
+                                                            Overall Competency Grading
+                                                        </button>
+                                                    </div>
+                                                </h2>
+                                            </div>
+                                        
+                                            <div id="comptency-{{ $task->id }}" class="accordion-collapse collapse">
+                                                <!-- Student name aligned to the right, above the competency grading -->
+                                                <div class="text-end pe-4 pt-2 fw-semibold">
+                                                    {{ $student->fname }} {{ $student->lname }}
+                                                </div>
+
+                                                <div class="accordion-body">
+                                                    @php
+                                                    $competencies = [
+                                                    'KNO' => 'Application of knowledge',
+                                                    'PRO' => 'Application of Procedures and compliance with regulations',
+                                                    'COM' => 'Communication',
+                                                    'FPA' => 'Aeroplane flight path management - automation',
+                                                    'FPM' => 'Aeroplane flight path management - Manual Control',
+                                                    'LTW' => 'Leadership & Teamwork',
+                                                    'PSD' => 'Problem-solving - decision-making',
+                                                    'SAW' => 'Situation awareness and management of information',
+                                                    'WLM' => 'Workload Management',
+                                                    ];
+                                                    $lessonCompetencies = $def_grading[$task->defLesson->id] ?? collect();
+                                                    @endphp
+                                                    @foreach($competencies as $code => $title)
+                                                    @php
+                                                    $code = strtolower($code); // make sure it's lowercase
+                                                    $grading = $lessonCompetencies->first();
+
+                                                    $selectedCompGrade = $grading?->{$code . '_grade'} ?? null;
+                                                    $selectedCompComment = $grading?->{$code . '_comment'} ?? null;
+
+                                                    @endphp
+
+                                                    <div class="custom-box">
+                                                        <div class="header" data-bs-toggle="collapse" data-bs-target="#competency-box-{{ $code }}" aria-expanded="false">
+                                                            <span class="rmk">RMK</span>
+                                                            <span class="question-mark">?</span>
+                                                            <span class="title"><span class="highlight">{{ $title }} ({{ strtoupper($code) }})</span></span>
+                                                            <input type="hidden" name="cg_lesson_id" value="{{ $task->defLesson->id }}">
+                                                        </div>
+                                                        <div class="table-container">
+                                                            <div class="main-tabledesign">
+                                                                <input type="hidden" name="cg_user_id" value="{{ $student->id ?? '' }}">
+                                                                <table>
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            @for ($i = 1; $i <= 5; $i++)
+                                                                                @php
+                                                                                $colorClass=$i==1 ? 'incomplete' : ($i==2 ? 'ftr' : 'competent' );
+                                                                                @endphp
+                                                                                <td>
+                                                                                <label class="radio-label">
+                                                                                    <input type="radio" class="scale-radio"
+                                                                                        name="comp_grade[{{ $task->defLesson->id }}][{{ $code }}]"
+                                                                                        value="{{ $i }}" data-event-id="{{ $trainingEvent->id }}" data-lesson-id="{{ $task->defLesson->id }}" data-user-id="{{ $student->id ?? '' }}" data-code="{{ $code }}" data-color-class="{{ $colorClass }}"
+                                                                                        {{ $selectedCompGrade == $i ? 'checked' : '' }}>
+                                                                                    <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
+                                                                                </label>
+                                                                                </td>
+                                                                                @endfor
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                                <span class="custom-radio competent comp_grade_{{ $task->defLesson->id }}_{{ $student->id ?? '' }}"></span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="collapse mt-2" id="competency-box-{{ $code }}">
+                                                        <textarea name="comp_comments[{{ $task->defLesson->id }}][{{ $code }}]" rows="3" class="form-control" placeholder="Add remarks or comments on competency">{{ $selectedCompComment }}</textarea>
+                                                    </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+
                                     <div>
                                         <label>Lesson Summary</label>
                                         <textarea name="def_lesson_summary[{{ $task->def_lesson_id }}]" rows="3" class="form-control" placeholder="Write Lesson Summary">{{ old("def_lesson_summary.$task->def_lesson_id ", $defLesson->lesson_summary ?? '') }}</textarea>

@@ -462,14 +462,14 @@
                         </div>
                         <div id="grade_type_error" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="enable_cbta" name="enable_cbta">
                             <label class="form-check-label" for="enable_cbta">
                                 Enable CBTA
                             </label>
                         </div>
-                    </div> 
+                    </div>  -->
                     <div class="form-group">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="enable_examiner_cbta" name="enable_examiner_cbta">
