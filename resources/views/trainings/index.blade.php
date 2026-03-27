@@ -1626,12 +1626,12 @@ $(document).ready(function() {
                         <div id="lesson_data_${currentIndex}_end_time${errorSuffix}" class="text-danger error_e"></div>
                     </div>
 
-                    <div class="col-md-6 end-time-block">
+                    <div class="col-md-6 takeoff-time-block">
                         <label class="form-label">Takeoff</label>
                         <input type="time" name="lesson_data[${currentIndex}][takeoff]" class="form-control lesson-end-time" value="${takeoff}" data-lesson-id="${currentIndex}">
                         <div id="lesson_data_${currentIndex}_takeoff${errorSuffix}" class="text-danger error_e"></div>
                     </div>
-                    <div class="col-md-6 end-time-block">
+                    <div class="col-md-6 land-time-block">
                         <label class="form-label">Landing</label>
                         <input type="time" name="lesson_data[${currentIndex}][landing]" class="form-control lesson-end-time" value="${landing}" data-lesson-id="${currentIndex}">
                         <div id="lesson_data_${currentIndex}_landing${errorSuffix}" class="text-danger error_e"></div>
@@ -1724,6 +1724,8 @@ $(document).ready(function() {
         const $resourceSelect = $box.find('.resource-selector');
         const $startBlock = $box.find('.start-time-block');
         const $endBlock = $box.find('.end-time-block');
+        const $takeofftimeBlock = $box.find('.takeoff-time-block');
+        const $landtimeBlock = $box.find('.land-time-block');
         const $departureBlock = $box.find('.departure-block');
         const $destinationBlock = $box.find('.destination-block');
         const $simTimeBox = $box.find('.total-simulator-time-box');
@@ -1736,6 +1738,8 @@ $(document).ready(function() {
                 if (resourceName === 'Classroom') {
                     $startBlock.show();
                     $endBlock.show();
+                    $takeofftimeBlock.hide();
+                    $landtimeBlock.hide();
                     $departureBlock.hide();
                     $destinationBlock.hide();
                     $simTimeBox.hide();
@@ -1747,7 +1751,8 @@ $(document).ready(function() {
                     $destinationBlock.hide();
                     $simTimeBox.hide();
                     $homestudy_time.show();
-                   
+                    $takeofftimeBlock.hide();
+                    $landtimeBlock.hide();                   
                 }
             } else if (lessonType === 'simulator') {
                 $startBlock.show();
@@ -1756,6 +1761,8 @@ $(document).ready(function() {
                 $destinationBlock.show();
                 $simTimeBox.show();
                 $homestudy_time.hide();
+                $takeofftimeBlock.show();
+                $landtimeBlock.show();
                 $('#homestudy_time').val('');
                 calculateTotalSimulatorTime();
             } else {
@@ -1766,6 +1773,8 @@ $(document).ready(function() {
                 $simTimeBox.hide();
                 $homestudy_time.hide();
                 $('#homestudy_time').val('');
+                $takeofftimeBlock.show();
+                $landtimeBlock.show();
                 
             }
         }

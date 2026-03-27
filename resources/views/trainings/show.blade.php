@@ -1753,10 +1753,22 @@
                                         }, 0);
 
                                     $totalFlightTime = $eventLessonFlightTime + $defFlightTime;
+
+                                    $blockDuration = $eventLessonFlightTime + $defFlightTime;
+
+                                    // Block Credited (counts toward course requirement)
+                                    $blockCredited = $totals['flight']['credited']
+                                                    + $totals['deferred']
+                                                    + $totals['customDuration'];
                                 ?>
-                                <p>
+                                <!-- <p>
                                     <strong>Total Block Time:</strong>
                                     {{ formatSeconds($totalblockTime) }}
+                                </p> -->
+                                <p>
+                                    <strong>Total Block Time:</strong>
+                                    Duration: {{ formatSeconds($blockDuration) }} |
+                                    Credited: {{ formatSeconds($blockCredited) }}
                                 </p>
                                 <p>
                                     <strong>Total flight Time:</strong>
