@@ -602,14 +602,14 @@
                         </div>
                         <div id="edit_grade_type_error_up" class="text-danger error_e"></div>
                     </div>
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="edit_enable_cbta" name="edit_enable_cbta">
                             <label class="form-check-label" for="edit_enable_cbta">
                                 Enable CBTA 
                             </label>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="form-group">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="edit_enable_examiner_cbta" name="edit_enable_examiner_cbta">
