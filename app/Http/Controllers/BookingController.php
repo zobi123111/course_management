@@ -497,7 +497,7 @@ class BookingController extends Controller
             $rules['lesson'] = 'required';
            // $rules['course_date'] = 'required';
             $rules['rank'] = 'required';
-            $rules['lesson_date'] = 'required';
+           // $rules['lesson_date'] = 'required';
         //  $rules['start_time'] = 'required';
         //  $rules['end_time'] = 'required';
             $rules['departure_airfield'] = 'required';
@@ -511,7 +511,7 @@ class BookingController extends Controller
         }
 
         $validated = $request->validate($rules);
-
+        $lesson_date = \Carbon\Carbon::parse($request->start_date)->format('Y-m-d');
         $start = Carbon::parse($request->start_date);
         $end   = Carbon::parse($request->end_date);
 
@@ -625,7 +625,7 @@ class BookingController extends Controller
                 'lesson_id'                 => $request->lesson,
                 'instructor_id'             => $request->instructor,
                 'resource_id'               => $request->resource,
-                'lesson_date'               => $request->lesson_date,
+                'lesson_date'               => $lesson_date,
                 'start_time'                => $startTime,
                 'end_time'                  => $endTime,
                 'departure_airfield'        => strtoupper($request->departure_airfield),
@@ -677,7 +677,7 @@ class BookingController extends Controller
             $rules['lesson'] = 'required';
           //  $rules['course_date'] = 'required';
             $rules['rank'] = 'required';
-            $rules['lesson_date'] = 'required';
+           // $rules['lesson_date'] = 'required';
             $rules['start_time'] = 'required';
             $rules['end_time'] = 'required';
             $rules['departure_airfield'] = 'required';
@@ -765,13 +765,14 @@ class BookingController extends Controller
                     $creditMinutes = 0; // fallback in case of invalid time format
                 }
             }
+            $lesson_date = \Carbon\Carbon::parse($request->start_date)->format('Y-m-d');
 
             $update_trainingEventLesson = array(
                 'training_event_id'  => $request->event_id,
                 'lesson_id'          => $request->lesson,
                 'instructor_id'      => $request->instructor,
                 'resource_id'        => $request->resource,
-                'lesson_date'        => $request->lesson_date,
+                'lesson_date'        => $lesson_date,
                 'start_time'         => $start,
                 'end_time'           => $end,
                 'departure_airfield' => ($lessonType === 'groundschool' && in_array($resourceName, ['Classroom', 'Homestudy'])) ? null : strtoupper($request->departure_airfield),

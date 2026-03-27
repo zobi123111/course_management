@@ -414,11 +414,11 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6">
+                            <!-- <div class="col-md-6">
                                 <label>Lesson Date</label>
                                 <input type="date" name="lesson_date" id="edit_lesson_date" class="form-control mb-2">
                                 <span class="text-danger edit-error-text" id="editerror_lesson_date"></span>
-                            </div>
+                            </div> -->
 
                             <div class="col-md-6">
                                 <label>Instructor Licence Number</label>
@@ -684,13 +684,13 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 form-group">
+                            <!-- <div class="col-md-6 form-group">
                                 <div class="form-group">
                                     <label>Lesson Date</label>
                                     <input type="date" name="lesson_date" id="lesson_date" class="form-control mb-2" autocomplete="off">
                                     <span class="text-danger error-text" id="error_lesson_date"></span>
                                 </div>
-                            </div>
+                            </div> -->
                             <div class="col-md-6 form-group">
                                 <div class="form-group">
                                     <label>Instructor Licence Number</label>
