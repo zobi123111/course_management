@@ -1615,31 +1615,37 @@
                             $('#edit_trainingevent_div').show();
                         }
 
+                       
+                        setTimeout(function() {
+                          $("#edit_course_booking").val(response.course_id);
+                        //  $("#edit_course_booking").trigger("change");
+                         
+                        }, 700);
+
                         setTimeout(function() {
                             $("#edit_resource").val(String(response.resource)).trigger("change");
                             $("#edit_student").val(response.std_id).trigger('change').addClass("no-change");
 
 
-
-                            
+                            console.log(response.lesson_id);    
                             $("#edit_lesson").val(response.lesson_id).addClass("no-change");
+                             edit_instructor(response.course_id);
 
-                            // setTimeout(function() {
-                            //     $("#edit_instructor").val(response.instructor_id).trigger('change');
-                            //     editFormLoading = false; 
-                            //     alert("dfs");
-                            // }, 300);
-                               setTimeout(function() {
+                           
+                           setTimeout(function () {
                                 $("#edit_instructor").val(response.instructor_id);
-                                editFormLoading = false;
-                                $("#edit_instructor").trigger("change");
-                                $("#edit_course_booking").val(response.course_id).trigger('change').addClass("no-change");
-                            }, 300);
+                                window.selectedEditCourseId = response.course_id;
+                                window.selectedEditLessonId = response.lesson_id;
 
-                            window.selectedEditCourseId = response.course_id;
-                            window.selectedEditLessonId = response.lesson_id;
+                                editFormLoading = false;
+
+                                $("#edit_instructor").trigger("change");  // 🔵 Now course exists
+                            }, 500);
+
+                             window.selectedEditCourseId = response.course_id;
+                             window.selectedEditLessonId = response.lesson_id;
                             window.resource = response.resource;
-                        }, 500);
+                        }, 600);
 
 
                         // Instructor toggle
@@ -1673,10 +1679,72 @@
             });
         });
 
-           $("#edit_instructor").on('change', function() { 
-              
+        $("#edit_course_booking").on('change', function() {  console.log("asdas");
+             console.log("second click");
+            let course_id = $(this).val();
+        
+           // alert(course_id);
+            let $lesson = $("#edit_lesson");
+            var $resourceSelect = $("#edit_resource");
+            var ou_id = $('#edit_organizationUnits').val() ?? "{{ auth()->user()->ou_id }}";
+            var std_id = $('#edit_student').val();
+
+            $lesson.empty().append("<option value=''>Select Lesson</option>");
+            if (!course_id) return;
+
+            $.ajax({
+                url: "/course/lesson",
+                type: "POST",
+                data: {
+                    course_id: course_id,
+                    ou_id:ou_id,
+                    std_id:std_id
+                },
+                dataType: "json",
+                success: function(response) {
+
+                  if (response.lessons) {
+                    let usedLessons = response.usedLessonIds || [];
+                    response.lessons.forEach(i => {
+                        let disabled = usedLessons.includes(i.id) ? 'disabled' : '';
+                        $lesson.append(
+                            `<option value="${i.id}">${i.lesson_title}</option>`
+                        );
+                    });
+                }
+
+                    /* ✅ SET SELECTED LESSON HERE (IMPORTANT) */
+                    if (window.selectedEditLessonId) {
+                        console.log("selectedEditLessonId");
+                        console.log(selectedEditLessonId);
+                        $lesson.val(window.selectedEditLessonId).trigger('change');
+                    }
+
+                    // Resources
+                    if (response.resources && Array.isArray(response.resources)) {
+                        var options = "<option value=''>Select Resource </option>";
+                        response.resources.forEach(function(value) {
+                            //  options += `<option value="${value.id}">${value.name}</option>`;
+                            options += "<option data-resource='" + value.name + "' value='" + value.id + "'>" + value.name + "</option>";
+                        });
+                        $resourceSelect.html(options);
+                    }
+                    if (window.resource) {
+                        $('#edit_resource').val(window.resource).trigger('change');
+                    }
+                }
+            });
+        });
+
+    
+
+        function edit_instructor(course_id)
+        {
+            $("#edit_instructor").on('change', function() { 
             let instructorId = $(this).val();
-            let selectedCourseId = $('#edit_course_booking').val();
+            let selectedCourseId = course_id
+         
+       
             let licenseInput = $('#edit_licence_number');
             if (editFormLoading) {
                     return;
@@ -1706,7 +1774,7 @@
                 dataType: 'json',
 
                 success: function(response) {
-                             console.log(response);
+                            
                     //  licenseInput.prop('readonly', false);
 
                     // 🔴 Response validation
@@ -1737,6 +1805,10 @@
                 }
             });
         }); 
+
+        }
+
+     
 
 
         $("#edit_organizationUnits").on('change', function() {
@@ -1953,58 +2025,7 @@
             });
         });
 
-        $("#edit_course_booking").on('change', function() {
-
-            let course_id = $(this).val();
-            let $lesson = $("#edit_lesson");
-            var $resourceSelect = $("#edit_resource");
-            var ou_id = $('#edit_organizationUnits').val() ?? "{{ auth()->user()->ou_id }}";
-            var std_id = $('#edit_student').val();
-
-            $lesson.empty().append("<option value=''>Select Lesson</option>");
-            if (!course_id) return;
-
-            $.ajax({
-                url: "/course/lesson",
-                type: "POST",
-                data: {
-                    course_id: course_id,
-                    ou_id:ou_id,
-                    std_id:std_id
-                },
-                dataType: "json",
-                success: function(response) {
-
-                  if (response.lessons) {
-                    let usedLessons = response.usedLessonIds || [];
-                    response.lessons.forEach(i => {
-                        let disabled = usedLessons.includes(i.id) ? 'disabled' : '';
-                        $lesson.append(
-                            `<option value="${i.id}">${i.lesson_title}</option>`
-                        );
-                    });
-                }
-
-                    /* ✅ SET SELECTED LESSON HERE (IMPORTANT) */
-                    if (window.selectedEditLessonId) {
-                        $lesson.val(window.selectedEditLessonId).trigger('change');
-                    }
-
-                    // Resources
-                    if (response.resources && Array.isArray(response.resources)) {
-                        var options = "<option value=''>Select Resource </option>";
-                        response.resources.forEach(function(value) {
-                            //  options += `<option value="${value.id}">${value.name}</option>`;
-                            options += "<option data-resource='" + value.name + "' value='" + value.id + "'>" + value.name + "</option>";
-                        });
-                        $resourceSelect.html(options);
-                    }
-                    if (window.resource) {
-                        $('#edit_resource').val(window.resource).trigger('change');
-                    }
-                }
-            });
-        });
+      
 
         $("#booking_instructor").on('change', function() {
 
@@ -2144,7 +2165,7 @@
             }
         });
 
-        $(document).on('change', '#edit_student', function() {
+        $(document).on('change', '#edit_student', function() { console.log("append courses");
             var userId = $(this).val();
 
             var licenceNumberField = $('#studentLicence_number');
@@ -2177,6 +2198,10 @@
                                         `<option value="${i.id}">${i.course_name}</option>`
                                     );
                                 });
+
+                                console.log("now ");
+
+
 
                                 /* ✅ SET SELECTED COURSE HERE */
 
