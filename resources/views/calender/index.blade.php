@@ -1624,9 +1624,15 @@
                             $("#edit_course_booking").val(response.course_id).trigger('change').addClass("no-change");
                             $("#edit_lesson").val(response.lesson_id).addClass("no-change");
 
-                            setTimeout(function() {
-                                $("#edit_instructor").val(response.instructor_id).trigger('change');
-                                editFormLoading = false; 
+                            // setTimeout(function() {
+                            //     $("#edit_instructor").val(response.instructor_id).trigger('change');
+                            //     editFormLoading = false; 
+                            //     alert("dfs");
+                            // }, 300);
+                               setTimeout(function() {
+                                $("#edit_instructor").val(response.instructor_id);
+                                editFormLoading = false;
+                                $("#edit_instructor").trigger("change");
                             }, 300);
 
                             window.selectedEditCourseId = response.course_id;
@@ -1656,6 +1662,7 @@
                         $("#editBookingModal").modal("show");
                         setTimeout(function() {
                             editFormLoading = false;
+                          //  alert("love");
                         }, 1000);
                     },
                 error: function(xhr) {
