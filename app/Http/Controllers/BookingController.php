@@ -569,7 +569,7 @@ class BookingController extends Controller
                     'total_time'        => $request->total_time,
                     'std_license_number'=> $request->student_licence,
                     'ou_id'             => $ou_id,
-                    'entry_source'      => NULL,
+                    'entry_source'      => $request->add_instructor_training == 1 ? "instructor" : null,
                     'rank'              => $request->rank ?? null,
                     'trainingEvent_type'=> 1
                 ]);
@@ -715,7 +715,7 @@ class BookingController extends Controller
                 'total_time'        => $request->total_time,
                 'std_license_number' => $request->student_licence,
                 'ou_id' => auth()->user()->is_owner ? $request->organizationUnits : auth()->user()->ou_id,
-                'entry_source' => NULL,
+                // 'entry_source' => NULL,
                 'rank'            => $request->rank ?? null,
                 'trainingEvent_type' => 1
 
@@ -915,17 +915,35 @@ class BookingController extends Controller
 
     public function getstudents(Request $request)
     {
+      //  dump($request->instructor_checkbox);
+      
         $ou_id = auth()->user()->ou_id;
         $role = auth()->user()->role;
         $is_admin = auth()->user()->is_admin;
         $is_owner = auth()->user()->is_owner;
-        $students = User::where('ou_id', $request->ou_id)
-            ->where(function ($q) {
-                $q->where('is_admin', false)->orWhereNull('is_admin');
-            })
-            ->whereHas('roles', fn($q) => $q->where('role_name', 'like', '%Student%'))
-            ->with('roles')
-            ->get();
+
+        if($request->instructor_checkbox == 1){
+            $students = User::where('ou_id', $request->ou_id)
+                    ->where(function ($q) {
+                        $q->where('is_admin', false)->orWhereNull('is_admin');
+                    })
+                    ->whereHas('roles', fn($q) => $q->where('role_name', 'like', '%Instructor%'))
+                    ->with('roles')
+                    ->get();
+
+        }
+        elseif($request->instructor_checkbox == 0){
+                 $students = User::where('ou_id', $request->ou_id)
+                    ->where(function ($q) {
+                        $q->where('is_admin', false)->orWhereNull('is_admin');
+                    })
+                   // ->whereHas('roles', fn($q) => $q->where('role_name', 'like', '%Student%'))
+                    ->with('roles')
+                    ->get();
+        }
+   
+   
+        
         $id = auth()->id();
 
         $ato_num = OrganizationUnits::where('id', $request->ou_id)->get();
@@ -994,11 +1012,9 @@ class BookingController extends Controller
     {
         $booking_id = $request->id;
         $booking    =  Booking::with('trainingEventLesson', 'training_event')->where('id', $booking_id)->get();
+       // dd($booking);
         return response()->json(['success' => true, 'response' => $booking]);
     }
 
-    public function trainingeventExist(Request $request)
-    {
-       dd($request->all());
-    }
+   
 }
