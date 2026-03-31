@@ -1587,83 +1587,148 @@
                 data: {
                     id: booking_id
                 },
-                success: function(data) {
-                    var response = data.response[0];
-                    $("#edit_organizationUnits").val(response.ou_id).trigger('change').addClass("no-change");
-                    $('#edit_departure_airfield').val(response.training_event_lesson?.departure_airfield ?? '');
-                    $('#edit_destination_airfield').val(response.training_event_lesson?.destination_airfield ?? '');
-                    $('#edit_lesson_date').val(response.training_event_lesson?.lesson_date ?? '');
-                    $('#edit_rank').val(response.training_event?.rank ?? '');
-                    $('#edit_course_date').val(response.training_event?.event_date ?? '');
-                    $('#edit_operation').val(response.training_event_lesson?.operation1 ?? '');
-                    $('#edit_role').val(response.training_event_lesson?.role1 ?? '');
-                    $('#edit_studentLicence_number').val(response.training_event?.std_license_number ?? '');
-                    $('#edit_total_time').val(response.training_event?.total_time ?? '');
-                    $('#edit_start_time').val(response.training_event_lesson?.start_time ?? '');
-                    $('#edit_end_time').val(response.training_event_lesson?.end_time ?? '');
+                    success: function(data) {
+                        var response = data.response[0];
+                        $("#edit_organizationUnits").val(response.ou_id).trigger('change').addClass("no-change");
+                        $('#edit_departure_airfield').val(response.training_event_lesson?.departure_airfield ?? '');
+                        $('#edit_destination_airfield').val(response.training_event_lesson?.destination_airfield ?? '');
+                        $('#edit_lesson_date').val(response.training_event_lesson?.lesson_date ?? '');
+                        $('#edit_rank').val(response.training_event?.rank ?? '');
+                        $('#edit_course_date').val(response.training_event?.event_date ?? '');
+                        $('#edit_operation').val(response.training_event_lesson?.operation1 ?? '');
+                        $('#edit_role').val(response.training_event_lesson?.role1 ?? '');
+                        $('#edit_studentLicence_number').val(response.training_event?.std_license_number ?? '');
+                        $('#edit_total_time').val(response.training_event?.total_time ?? '');
+                        $('#edit_start_time').val(response.training_event_lesson?.start_time ?? '');
+                        $('#edit_end_time').val(response.training_event_lesson?.end_time ?? '');
 
-                    $('#event_id').val(response.event_id);
-
-
-                    // Basic fields
-                    $("#edit_booking_id").val(response.id);
-                    $("#edit_booking_type").val(response.booking_type);
-                    // $('#edit_rank').val(response.course_id);
-                    if (response.booking_type == 1) {
-                        $('#edit_trainingevent_div').hide();
-                    } else {
-                        $('#edit_trainingevent_div').show();
-                    }
-
-                    setTimeout(function() {
-                        $("#edit_resource").val(String(response.resource)).trigger("change");
-                        $("#edit_student").val(response.std_id).trigger('change').addClass("no-change");
+                        $('#event_id').val(response.event_id);
 
 
-
-                        $("#edit_course_booking").val(response.course_id).trigger('change').addClass("no-change");
-                        $("#edit_lesson").val(response.lesson_id).addClass("no-change");
+                        // Basic fields
+                        $("#edit_booking_id").val(response.id);
+                        $("#edit_booking_type").val(response.booking_type);
+                        // $('#edit_rank').val(response.course_id);
+                        if (response.booking_type == 1) {
+                            $('#edit_trainingevent_div').hide();
+                        } else {
+                            $('#edit_trainingevent_div').show();
+                        }
 
                         setTimeout(function() {
-                            editFormLoading = false; 
-                            $("#edit_instructor").val(response.instructor_id).trigger('change');
-                        }, 300);
-
-                        window.selectedEditCourseId = response.course_id;
-                        window.selectedEditLessonId = response.lesson_id;
-                        window.resource = response.resource;
-                    }, 500);
+                            $("#edit_resource").val(String(response.resource)).trigger("change");
+                            $("#edit_student").val(response.std_id).trigger('change').addClass("no-change");
 
 
-                    // Instructor toggle
-                    if (response.booking_type == 1) {
-                        $("#edit_instructor_wrapper").hide();
-                    } else {
-                        $("#edit_instructor_wrapper").show();
-                    }
 
-                    // Date pickers
-                    editStartPicker.setDate(
-                        moment(response.start).format("YYYY-MM-DD HH:mm"),
-                        true
-                    );
+                            $("#edit_course_booking").val(response.course_id).trigger('change').addClass("no-change");
+                            $("#edit_lesson").val(response.lesson_id).addClass("no-change");
 
-                    editEndPicker.setDate(
-                        moment(response.end).format("YYYY-MM-DD HH:mm"),
-                        true
-                    );
+                            setTimeout(function() {
+                                $("#edit_instructor").val(response.instructor_id).trigger('change');
+                                editFormLoading = false; 
+                            }, 300);
 
-                    $("#editBookingModal").modal("show");
-                     setTimeout(function() {
-                        editFormLoading = false;
-                    }, 1000);
-                },
+                            window.selectedEditCourseId = response.course_id;
+                            window.selectedEditLessonId = response.lesson_id;
+                            window.resource = response.resource;
+                        }, 500);
+
+
+                        // Instructor toggle
+                        if (response.booking_type == 1) {
+                            $("#edit_instructor_wrapper").hide();
+                        } else {
+                            $("#edit_instructor_wrapper").show();
+                        }
+
+                        // Date pickers
+                        editStartPicker.setDate(
+                            moment(response.start).format("YYYY-MM-DD HH:mm"),
+                            true
+                        );
+
+                        editEndPicker.setDate(
+                            moment(response.end).format("YYYY-MM-DD HH:mm"),
+                            true
+                        );
+
+                        $("#editBookingModal").modal("show");
+                        setTimeout(function() {
+                            editFormLoading = false;
+                        }, 1000);
+                    },
                 error: function(xhr) {
                     toastr.error("Unable to load booking details.");
                     console.error(xhr.responseText);
                 }
             });
         });
+
+           $("#edit_instructor").on('change', function() { 
+              
+            let instructorId = $(this).val();
+            let selectedCourseId = $('#edit_course_booking').val();
+            let licenseInput = $('#edit_licence_number');
+            if (editFormLoading) {
+                    return;
+                }
+
+            // 🔴 Validation — instructor required
+            if (!instructorId) {
+                licenseInput.val('');
+                return;
+            }
+
+
+            // 🔴 Validation — course required
+            if (!selectedCourseId) {
+                alert("Select the course first.");
+                $(this).val('');
+                licenseInput.val('');
+                return;
+            }
+
+            // 🔵 Disable while loading
+            licenseInput.prop('readonly', true).val('Loading...');
+
+            $.ajax({
+                url: "{{ url('/training/get_instructor_license_no') }}/" + instructorId + "/" + selectedCourseId,
+                type: 'GET',
+                dataType: 'json',
+
+                success: function(response) {
+                             console.log(response);
+                    //  licenseInput.prop('readonly', false);
+
+                    // 🔴 Response validation
+                    if (!response || typeof response !== "object") {
+                        licenseInput.val('');
+                        alert("Invalid response received.");
+                        return;
+                    }
+
+                    if (response.success === true) { 
+                        if (response.instructor_licence_number) {
+                            licenseInput.val(response.instructor_licence_number);
+                        } else {
+                            licenseInput.val('');
+                            alert("Instructor licence number not found.");
+                        }
+
+                    } else {
+                        licenseInput.val('');
+                        alert(response.message || "Instructor not found.");
+                    }
+                },
+
+                error: function(xhr) {
+                    // licenseInput.prop('readonly', false).val('');
+                    console.error(xhr);
+                    alert("Server error while fetching licence number.");
+                }
+            });
+        }); 
 
 
         $("#edit_organizationUnits").on('change', function() {
@@ -1994,70 +2059,7 @@
             });
         });
 
-        $("#edit_instructor").on('change', function() { 
-              
-            let instructorId = $(this).val();
-            let selectedCourseId = $('#edit_course_booking').val();
-            let licenseInput = $('#edit_licence_number');
-            if (editFormLoading) {
-                    return;
-                }
-
-            // 🔴 Validation — instructor required
-            if (!instructorId) {
-                licenseInput.val('');
-                return;
-            }
-
-
-            // 🔴 Validation — course required
-            if (!selectedCourseId) {
-                alert("Select the course first.");
-                $(this).val('');
-                licenseInput.val('');
-                return;
-            }
-
-            // 🔵 Disable while loading
-            licenseInput.prop('readonly', true).val('Loading...');
-
-            $.ajax({
-                url: "{{ url('/training/get_instructor_license_no') }}/" + instructorId + "/" + selectedCourseId,
-                type: 'GET',
-                dataType: 'json',
-
-                success: function(response) {
-                             console.log(response);
-                    //  licenseInput.prop('readonly', false);
-
-                    // 🔴 Response validation
-                    if (!response || typeof response !== "object") {
-                        licenseInput.val('');
-                        alert("Invalid response received.");
-                        return;
-                    }
-
-                    if (response.success === true) { 
-                        if (response.instructor_licence_number) {
-                            licenseInput.val(response.instructor_licence_number);
-                        } else {
-                            licenseInput.val('');
-                            alert("Instructor licence number not found.");
-                        }
-
-                    } else {
-                        licenseInput.val('');
-                        alert(response.message || "Instructor not found.");
-                    }
-                },
-
-                error: function(xhr) {
-                    // licenseInput.prop('readonly', false).val('');
-                    console.error(xhr);
-                    alert("Server error while fetching licence number.");
-                }
-            });
-        });
+     
 
         $(".add_resource").on('change', function() {
             let resource = $(this).find(':selected').data('resource');
