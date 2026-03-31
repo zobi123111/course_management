@@ -1998,10 +1998,9 @@
             let instructorId = $(this).val();
             let selectedCourseId = $('#edit_course_booking').val();
             let licenseInput = $('#edit_licence_number');
-
-        //    alert(selectedCourseId);
-
-
+            if (isEditFormPreloading) {
+                    return;
+                }
 
             // 🔴 Validation — instructor required
             if (!instructorId) {
@@ -2012,7 +2011,7 @@
 
             // 🔴 Validation — course required
             if (!selectedCourseId) {
-                alert("select the course first.");
+                alert("Select the course first.");
                 $(this).val('');
                 licenseInput.val('');
                 return;
