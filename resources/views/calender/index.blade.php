@@ -2012,7 +2012,7 @@
 
             // 🔴 Validation — course required
             if (!selectedCourseId) {
-                alert("Please select course first.");
+                alert("select the course first.");
                 $(this).val('');
                 licenseInput.val('');
                 return;
