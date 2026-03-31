@@ -1621,7 +1621,7 @@
 
 
 
-                            $("#edit_course_booking").val(response.course_id).trigger('change').addClass("no-change");
+                            
                             $("#edit_lesson").val(response.lesson_id).addClass("no-change");
 
                             // setTimeout(function() {
@@ -1633,6 +1633,7 @@
                                 $("#edit_instructor").val(response.instructor_id);
                                 editFormLoading = false;
                                 $("#edit_instructor").trigger("change");
+                                $("#edit_course_booking").val(response.course_id).trigger('change').addClass("no-change");
                             }, 300);
 
                             window.selectedEditCourseId = response.course_id;
