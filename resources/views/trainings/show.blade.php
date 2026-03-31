@@ -1780,7 +1780,8 @@
                                 <p>
                                     <strong>Custom ({{ $name }}):</strong>
                                     Allotted: {{ $custom['allotted'] }} |
-                                    Credited: {{ formatSeconds($custom['credited']) }}
+                                    <!-- Credited: {{ formatSeconds($custom['credited']) }} -->
+                                    Credited: {{ formatSeconds($totalFlightTime) }}
                                 </p>
                                 @endforeach
                                 @endif

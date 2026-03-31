@@ -645,6 +645,13 @@
             padding: 0 !important;
         }
 
+        .details-card-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #012970;
+            font-family: "Poppins", sans-serif;
+        }
+
     </style>
 
     <head>
@@ -838,12 +845,12 @@
                 </div>
                 @endif
 
-                <div class="tab-pane fade mt-3 @if(in_array($lessonType, ['deferred', 'custom'])) active show @endif" id="Lesson" role="tabpanel" aria-labelledby="Lesson-tab">
+                <!-- <div class="tab-pane fade mt-3 @if(in_array($lessonType, ['deferred', 'custom'])) active show @endif" id="Lesson" role="tabpanel" aria-labelledby="Lesson-tab">
                     <div class="card">
                         <div class="card-body">
                             <div id="lessonAlert" class="alert d-none mb-3" role="alert"></div>
-                            <h5 class="card-title d-flex justify-content-between align-items-center">
-                                Lesson Details
+                            <h5 class="details-card-title d-flex justify-content-between align-items-center mt-3">
+                                Lesson Details {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}
                                 @php
                                     $lesson = in_array($lessonType, ['custom', 'deferred'])
                                     ? $deflessondetails
@@ -863,7 +870,9 @@
                                 @endif
                             </h5>
 
-                           
+                            <h5 class="details-card-title d-flex justify-content-between align-items-center mb-3">
+                                Operation :  {{ \Carbon\Carbon::parse($lesson->lesson_date)->format('Y-m-d') }}
+                            </h5>
 
                             <form id="lessonForm" action="{{ route('event.lesson.update') }}" method="POST">
                                 @csrf
@@ -915,22 +924,12 @@
                                         </select>
                                     </div>
 
-                                    <div class="col-md-6">
-                                        <label class="form-label">Lesson Date</label>
-                                        <input type="date"
-                                            class="form-control editable"
-                                            name="lesson_date"
-                                            value="{{ \Carbon\Carbon::parse($lesson->lesson_date)->format('Y-m-d') }}"
-                                            disabled>
-
-                                    </div>
-
                                     <div class="col-md-12" id="timeFieldsWrapper">
 
                                         <div class="row">
 
-                                            <div class="col-md-6">
-                                                <label class="form-label">Off Blocks {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</label>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Off Blocks</label>
                                                 <input type="time"
                                                     class="form-control editable"
                                                     name="start_time"
@@ -938,8 +937,8 @@
                                                     disabled>
                                             </div>
 
-                                            <div class="col-md-6">
-                                                <label class="form-label">On Blocks {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</label>
+                                            <div class="col-md-3">
+                                                <label class="form-label">On Blocks</label>
                                                 <input type="time"
                                                     class="form-control editable"
                                                     name="end_time"
@@ -947,8 +946,8 @@
                                                     disabled>
                                             </div>
 
-                                            <div class="col-md-6 mt-3">
-                                                <label class="form-label">Takeoff {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</label>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Takeoff</label>
                                                 <input type="time"
                                                     class="form-control editable"
                                                     name="takeoff_time"
@@ -956,8 +955,8 @@
                                                     disabled>
                                             </div>
 
-                                            <div class="col-md-6 mt-3">
-                                                <label class="form-label">Landing {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</label>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Landing</label>
                                                 <input type="time"
                                                     class="form-control editable"
                                                     name="landing_time"
@@ -1012,6 +1011,195 @@
                                             disabled>
                                     </div>
 
+                                </div>
+
+                                <div class="mt-4 d-none" id="actionButtons">
+                                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                                    <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div> -->
+                <div class="tab-pane fade mt-3 @if(in_array($lessonType, ['deferred', 'custom'])) active show @endif" id="Lesson" role="tabpanel" aria-labelledby="Lesson-tab">
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="lessonAlert" class="alert d-none mb-3" role="alert"></div>
+                            <h5 class="details-card-title d-flex justify-content-between align-items-center mt-3">
+                                Lesson Details {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}
+
+                                @php
+                                    $lesson = in_array($lessonType, ['custom', 'deferred']) ? $deflessondetails : $lessondetails;
+                                    $trainingEvent = in_array($lessonType, ['custom', 'deferred']) ? $lesson?->event : $lesson?->trainingEvent;
+                                @endphp
+
+                                @php $user = auth()->user(); @endphp
+
+                                @if($user && ($user->is_owner || $user->is_admin || $user->id == $lesson->instructor_id))
+                                    <button type="button" class="btn btn-sm btn-primary" id="editBtn">Edit</button>
+                                @endif
+                            </h5>
+
+                            <h5 class="details-card-title d-flex justify-content-between align-items-center mb-3">
+                                Lesson Date :  {{ \Carbon\Carbon::parse($lesson->lesson_date)->format('Y-m-d') }}
+                            </h5>
+
+                            <form id="lessonForm" action="{{ route('event.lesson.update') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="id" value="{{ $lesson->id }}">
+
+                                <div class="row g-3">
+
+                                    @if($lessonType == 'custom')
+                                        <input type="hidden" name="lessontype" value="custom">
+                                    @elseif ($lessonType == 'deferred')
+                                        <input type="hidden" name="lessontype" value="deferred">
+                                    @endif
+
+                                    <!-- <div class="col-md-4">
+                                        <label class="form-label">Lesson Date</label>
+                                        <input type="date"
+                                            class="form-control editable"
+                                            name="lesson_date"
+                                            value="{{ $lesson->lesson_date }}"
+                                            disabled>
+                                    </div> -->
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Instructor</label>
+                                        <select class="form-select editable" name="instructor_id" id="instructorSelect" disabled>
+                                            @foreach($instructors as $inst)
+                                            <option value="{{ $inst->id }}"
+                                                data-licence="{{ $inst->licence ?? $inst->documents->licence ?? '' }}"
+                                                {{ $lesson->instructor_id == $inst->id ? 'selected' : '' }}>
+                                                {{ $inst->fname }} {{ $inst->lname }}
+                                            </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Licence No</label>
+                                        <input type="text"
+                                            id="licenceField"
+                                            class="form-control always-disabled"
+                                            value="{{ $lesson->instructor->licence 
+                                                ?? $lesson->instructor->documents->licence 
+                                                ?? $lesson->instructor->documents->licence_2 
+                                                ?? '' }}"
+                                            disabled>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Resource</label>
+                                        <select class="form-select editable" name="resource_id" id="resourceSelect" disabled>
+                                            @foreach($resources as $resource)
+                                            <option value="{{ $resource->id }}"
+                                                {{ $lesson->resource_id == $resource->id ? 'selected' : '' }}>
+                                                {{ $resource->code ?? $resource->name }}
+                                            </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Operation</label>
+                                        @php
+                                            $eventType = $trainingEvent?->course->enable_mp_lifus;
+                                        @endphp
+
+                                        <select class="form-select editable" name="operation" id="operationSelect" disabled>
+                                            @if($eventType == 1)
+                                                <option value="1" {{ $lesson->operation1 == '1' ? 'selected' : '' }}>PF LHS</option>
+                                                <option value="2" {{ $lesson->operation1 == '2' ? 'selected' : '' }}>PF RHS</option>
+
+                                            @elseif($eventType == 2 || $eventType == 3)
+                                                <option value="1" {{ $lesson->operation1 == '1' ? 'selected' : '' }}>PF LHS</option>
+                                                <option value="2" {{ $lesson->operation1 == '2' ? 'selected' : '' }}>PM LHS</option>
+                                                <option value="3" {{ $lesson->operation1 == '3' ? 'selected' : '' }}>PF RHS</option>
+                                                <option value="4" {{ $lesson->operation1 == '4' ? 'selected' : '' }}>PM RHS</option>
+                                            @endif
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Departure Airfield</label>
+                                        <input type="text"
+                                            class="form-control editable"
+                                            name="departure_airfield"
+                                            value="{{ $lesson->departure_airfield }}"
+                                            disabled>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Destination Airfield</label>
+                                        <input type="text"
+                                            class="form-control editable"
+                                            name="destination_airfield"
+                                            value="{{ $lesson->destination_airfield }}"
+                                            disabled>
+                                    </div>
+
+                                    
+                                    <div class="col-md-3">
+                                        <label class="form-label">Off Blocks</label>
+                                        <input type="time"
+                                            class="form-control editable"
+                                            name="start_time"
+                                            value="{{ $lesson->start_time ? \Carbon\Carbon::parse($lesson->start_time)->format('H:i') : '' }}"
+                                            disabled>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Takeoff</label>
+                                        <input type="time"
+                                            class="form-control editable"
+                                            name="takeoff_time"
+                                            value="{{ $lesson->takeoff_time ? \Carbon\Carbon::parse($lesson->takeoff_time)->format('H:i') : '' }}"
+                                            disabled>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Landing</label>
+                                        <input type="time"
+                                            class="form-control editable"
+                                            name="landing_time"
+                                            value="{{ $lesson->landing_time ? \Carbon\Carbon::parse($lesson->landing_time)->format('H:i') : '' }}"
+                                            disabled>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">On Blocks</label>
+                                        <input type="time"
+                                            class="form-control editable"
+                                            name="end_time"
+                                            value="{{ $lesson->end_time ? \Carbon\Carbon::parse($lesson->end_time)->format('H:i') : '' }}"
+                                            disabled>
+                                    </div>
+
+                                    @if($trainingEvent?->orgUnit?->Ousetting?->enable_tacho_fields)
+                                        <div class="col-md-3">
+                                            <label class="form-label">Tacho Start</label>
+                                            <input type="text"
+                                                class="form-control editable"
+                                                name="tacho_start_time"
+                                                value="{{ str_pad(number_format($lesson->tacho_start_time, 2, '.', ''), 7, '0', STR_PAD_LEFT) }}"
+                                                pattern="^\d{4}\.\d{2}$"
+                                                placeholder="0000.00"
+                                                disabled>
+                                        </div>
+
+                                        <div class="col-md-3">
+                                            <label class="form-label">Tacho Stop</label>
+                                            <input type="text"
+                                                class="form-control editable"
+                                                name="tacho_stop_time"
+                                                value="{{ str_pad(number_format($lesson->tacho_stop_time, 2, '.', ''), 7, '0', STR_PAD_LEFT) }}"
+                                                pattern="^\d{4}\.\d{2}$"
+                                                placeholder="0000.00"
+                                                disabled>
+                                        </div>
+                                    @endif
                                 </div>
 
                                 <div class="mt-4 d-none" id="actionButtons">
@@ -3658,3 +3846,4 @@
 
 
     @endsection
+    
