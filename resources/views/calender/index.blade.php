@@ -1998,7 +1998,7 @@
             let instructorId = $(this).val();
             let selectedCourseId = $('#edit_course_booking').val();
             let licenseInput = $('#edit_licence_number');
-            if (isEditFormPreloading) {
+            if (editFormLoading) {
                     return;
                 }
 
