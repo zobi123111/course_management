@@ -1625,6 +1625,7 @@
                         $("#edit_lesson").val(response.lesson_id).addClass("no-change");
 
                         setTimeout(function() {
+                            editFormLoading = false; 
                             $("#edit_instructor").val(response.instructor_id).trigger('change');
                         }, 300);
 
