@@ -143,10 +143,11 @@
         margin-bottom: 10px;
         color: #000 !important;
     }
-    .no-change{
-       pointer-events: none;
-       background-color: #e9ecef;
-   }
+
+    .no-change {
+        pointer-events: none;
+        background-color: #e9ecef;
+    }
 </style>
 
 <div class="container-fluid mt-3">
@@ -312,9 +313,13 @@
 
             <form id="edit_booking_form">
                 <div class="modal-body">
-
+                    <div class="text-end">
+                        <div class="form-check d-inline-block">
+                            <input type="checkbox" class="form-check-input" id="instructor_training">
+                            <label for="instructor_training" class="form-check-label">Instructor Training</label>
+                        </div>
+                    </div>
                     <input type="hidden" id="edit_booking_id">
-
                     <div class="row">
                         @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                         <div class="col-md-6 form-group">
@@ -383,13 +388,13 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <label>Courses</label>
-                                <select name="course" id="edit_course_booking" class="form-control mb-2" ></select>
+                                <select name="course" id="edit_course_booking" class="form-control mb-2"></select>
                                 <span class="text-danger edit-error-text" id="editerror_course"></span>
                             </div>
 
                             <div class="col-md-6">
                                 <label>Lesson</label>
-                                <select name="lesson" id="edit_lesson" class="form-control mb-2" ></select>
+                                <select name="lesson" id="edit_lesson" class="form-control mb-2"></select>
                                 <span class="text-danger edit-error-text" id="editerror_lesson"></span>
 
                             </div>
@@ -521,7 +526,7 @@
                 </div>
                 <div class="modal-footer d-flex justify-content-between align-items-center">
                     <small class="text-muted">
-                        <strong>Note:</strong> If you want to change the course and lesson, click 
+                        <strong>Note:</strong> If you want to change the course and lesson, click
                         <a id="changecourse_lesson" href="{{ url('/training') }}" class="text-primary fw-semibold">
                             Change Course
                         </a>
@@ -549,7 +554,12 @@
             </div>
             <form id="booking_form">
                 <div class="modal-body">
-
+                    <div style="text-align: right;">
+                        <label class="form-check-label">
+                            <input type="checkbox" name="add_instructor_training" value="1" class="form-check-input" id="add_instructor_training">
+                            Instructor Training
+                        </label>
+                    </div>
                     <div class="row">
                         @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                         <div class="col-md-6 form-group">
@@ -569,7 +579,7 @@
                         <div class="col-md-6 form-group">
                             <div class="form-group">
                                 @if(auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1)
-                                <label>Select Student</label>
+                                <label id="student_label_name">Select Student</label>
                                 <select id="add_student" name="student" class="form-control mb-2">
                                     <option value="">Select Student</option>
                                     @foreach ($students as $val)
@@ -846,7 +856,7 @@
 
         let SITEURL = "{{ url('/') }}";
         let calendar = null;
-        let currentMode = 'resource'; 
+        let currentMode = 'resource';
         let editFormLoading = false;
 
         $.ajaxSetup({
@@ -1194,24 +1204,24 @@
                                     ${e.lesson_title}
                                 </a>
                             </div>`;
-                            }
+                        }
 
-                            if (start) {
+                        if (start) {
                             tooltipContent += `
                             <div class="tooltip-row">
                                 <i class="fa fa-list text-primary me-2"></i>
                                 <b>Start Date:</b>
                                 <a> ${start} ${utc} </a>
                             </div>`;
-                            }
-                            if (end) {
-                                    tooltipContent += `
+                        }
+                        if (end) {
+                            tooltipContent += `
                                     <div class="tooltip-row">
                                         <i class="fa fa-list text-primary me-2"></i>
                                         <b>End Date:</b>
                                         <a> ${end} ${utc}</a>
                                     </div>`;
-                            }
+                        }
 
                         if (e.status) {
                             tooltipContent += `
@@ -1411,6 +1421,15 @@
             var $resourceSelect = $("#resource");
             var $student = $("#add_student");
             let $instructor = $("#booking_instructor");
+          
+            let $instructor_checkbox = $("#add_instructor_training");
+            let instructor_checkbox = 0; // ✅ Declare variable
+
+            if ($instructor_checkbox.is(":checked")) {
+                instructor_checkbox = 1;
+            } else {
+                instructor_checkbox = 0;
+            }
             //  let $courses = $("#course");
 
             $groupSelect.empty().append("<option value=''>Select Group</option>").trigger("change");
@@ -1425,12 +1444,13 @@
                 url: "/group/students/",
                 type: "GET",
                 data: {
-                    'ou_id': ou_id
+                    'ou_id': ou_id,
+                    'instructor_checkbox' :instructor_checkbox
                 },
                 dataType: "json", // Ensures response is treated as JSON
                 success: function(response) {
                     if (response.students && Array.isArray(response.students)) {
-                        var options = "<option value=''>Select Student</option>";
+                         var options = "<option value=''>Select Student</option>";
                         response.students.forEach(function(value) {
                             options += "<option value='" + value.id + "'>" + value.fname + ' ' + value.lname +
                                 "</option>";
@@ -1587,91 +1607,93 @@
                 data: {
                     id: booking_id
                 },
-                    success: function(data) {
-                        var response = data.response[0];
-                        $("#edit_organizationUnits").val(response.ou_id).trigger('change').addClass("no-change");
-                        $('#edit_departure_airfield').val(response.training_event_lesson?.departure_airfield ?? '');
-                        $('#edit_destination_airfield').val(response.training_event_lesson?.destination_airfield ?? '');
-                        $('#edit_lesson_date').val(response.training_event_lesson?.lesson_date ?? '');
-                        $('#edit_rank').val(response.training_event?.rank ?? '');
-                        $('#edit_course_date').val(response.training_event?.event_date ?? '');
-                        $('#edit_operation').val(response.training_event_lesson?.operation1 ?? '');
-                        $('#edit_role').val(response.training_event_lesson?.role1 ?? '');
-                        $('#edit_studentLicence_number').val(response.training_event?.std_license_number ?? '');
-                        $('#edit_total_time').val(response.training_event?.total_time ?? '');
-                        $('#edit_start_time').val(response.training_event_lesson?.start_time ?? '');
-                        $('#edit_end_time').val(response.training_event_lesson?.end_time ?? '');
+                success: function(data) {
+                    var response = data.response[0];
+                    $("#edit_organizationUnits").val(response.ou_id).trigger('change').addClass("no-change");
+                    $('#edit_departure_airfield').val(response.training_event_lesson?.departure_airfield ?? '');
+                    $('#edit_destination_airfield').val(response.training_event_lesson?.destination_airfield ?? '');
+                    $('#edit_lesson_date').val(response.training_event_lesson?.lesson_date ?? '');
+                    $('#edit_rank').val(response.training_event?.rank ?? '');
+                    $('#edit_course_date').val(response.training_event?.event_date ?? '');
+                    $('#edit_operation').val(response.training_event_lesson?.operation1 ?? '');
+                    $('#edit_role').val(response.training_event_lesson?.role1 ?? '');
+                    $('#edit_studentLicence_number').val(response.training_event?.std_license_number ?? '');
+                    $('#edit_total_time').val(response.training_event?.total_time ?? '');
+                    $('#edit_start_time').val(response.training_event_lesson?.start_time ?? '');
+                    $('#edit_end_time').val(response.training_event_lesson?.end_time ?? '');
 
-                        $('#event_id').val(response.event_id);
+                    $('#event_id').val(response.event_id);
+                    if (response.training_event.entry_source == "instructor") { 
+                        $("#instructor_training").prop("checked", true);
+                    } else { 
+                        $("#instructor_training").prop("checked", false);
+                    }
 
 
-                        // Basic fields
-                        $("#edit_booking_id").val(response.id);
-                        $("#edit_booking_type").val(response.booking_type);
-                        // $('#edit_rank').val(response.course_id);
-                        if (response.booking_type == 1) {
-                            $('#edit_trainingevent_div').hide();
-                        } else {
-                            $('#edit_trainingevent_div').show();
-                        }
+                    // Basic fields
+                    $("#edit_booking_id").val(response.id);
+                    $("#edit_booking_type").val(response.booking_type);
+                    // $('#edit_rank').val(response.course_id);
+                    if (response.booking_type == 1) {
+                        $('#edit_trainingevent_div').hide();
+                    } else {
+                        $('#edit_trainingevent_div').show();
+                    }
 
-                       
-                        setTimeout(function() {
-                          $("#edit_course_booking").val(response.course_id);
+
+                    setTimeout(function() {
+                        $("#edit_course_booking").val(response.course_id).addClass("no-change");;
                         //  $("#edit_course_booking").trigger("change");
-                         
-                        }, 700);
+
+                    }, 700);
+
+                    setTimeout(function() {
+                        $("#edit_resource").val(String(response.resource)).trigger("change");
+                        $("#edit_student").val(response.std_id).trigger('change').addClass("no-change");
+                        $("#edit_lesson").val(response.lesson_id).addClass("no-change");
+                        edit_instructor(response.course_id);
+
 
                         setTimeout(function() {
-                            $("#edit_resource").val(String(response.resource)).trigger("change");
-                            $("#edit_student").val(response.std_id).trigger('change').addClass("no-change");
+                            $("#edit_instructor").val(response.instructor_id);
+                            window.selectedEditCourseId = response.course_id;
+                            window.selectedEditLessonId = response.lesson_id;
 
-
-                            console.log(response.lesson_id);    
-                            $("#edit_lesson").val(response.lesson_id).addClass("no-change");
-                             edit_instructor(response.course_id);
-
-                           
-                           setTimeout(function () {
-                                $("#edit_instructor").val(response.instructor_id);
-                                window.selectedEditCourseId = response.course_id;
-                                window.selectedEditLessonId = response.lesson_id;
-
-                                editFormLoading = false;
-
-                                $("#edit_instructor").trigger("change");  // 🔵 Now course exists
-                            }, 500);
-
-                             window.selectedEditCourseId = response.course_id;
-                             window.selectedEditLessonId = response.lesson_id;
-                            window.resource = response.resource;
-                        }, 600);
-
-
-                        // Instructor toggle
-                        if (response.booking_type == 1) {
-                            $("#edit_instructor_wrapper").hide();
-                        } else {
-                            $("#edit_instructor_wrapper").show();
-                        }
-
-                        // Date pickers
-                        editStartPicker.setDate(
-                            moment(response.start).format("YYYY-MM-DD HH:mm"),
-                            true
-                        );
-
-                        editEndPicker.setDate(
-                            moment(response.end).format("YYYY-MM-DD HH:mm"),
-                            true
-                        );
-
-                        $("#editBookingModal").modal("show");
-                        setTimeout(function() {
                             editFormLoading = false;
-                          //  alert("love");
-                        }, 1000);
-                    },
+
+                            $("#edit_instructor").trigger("change"); // 🔵 Now course exists
+                        }, 500);
+
+                        window.selectedEditCourseId = response.course_id;
+                        window.selectedEditLessonId = response.lesson_id;
+                        window.resource = response.resource;
+                    }, 600);
+
+
+                    // Instructor toggle
+                    if (response.booking_type == 1) {
+                        $("#edit_instructor_wrapper").hide();
+                    } else {
+                        $("#edit_instructor_wrapper").show();
+                    }
+
+                    // Date pickers
+                    editStartPicker.setDate(
+                        moment(response.start).format("YYYY-MM-DD HH:mm"),
+                        true
+                    );
+
+                    editEndPicker.setDate(
+                        moment(response.end).format("YYYY-MM-DD HH:mm"),
+                        true
+                    );
+
+                    $("#editBookingModal").modal("show");
+                    setTimeout(function() {
+                        editFormLoading = false;
+                        //  alert("love");
+                    }, 1000);
+                },
                 error: function(xhr) {
                     toastr.error("Unable to load booking details.");
                     console.error(xhr.responseText);
@@ -1679,11 +1701,8 @@
             });
         });
 
-        $("#edit_course_booking").on('change', function() {  console.log("asdas");
-             console.log("second click");
+        $("#edit_course_booking").on('change', function() {
             let course_id = $(this).val();
-        
-           // alert(course_id);
             let $lesson = $("#edit_lesson");
             var $resourceSelect = $("#edit_resource");
             var ou_id = $('#edit_organizationUnits').val() ?? "{{ auth()->user()->ou_id }}";
@@ -1697,26 +1716,24 @@
                 type: "POST",
                 data: {
                     course_id: course_id,
-                    ou_id:ou_id,
-                    std_id:std_id
+                    ou_id: ou_id,
+                    std_id: std_id
                 },
                 dataType: "json",
                 success: function(response) {
 
-                  if (response.lessons) {
-                    let usedLessons = response.usedLessonIds || [];
-                    response.lessons.forEach(i => {
-                        let disabled = usedLessons.includes(i.id) ? 'disabled' : '';
-                        $lesson.append(
-                            `<option value="${i.id}">${i.lesson_title}</option>`
-                        );
-                    });
-                }
+                    if (response.lessons) {
+                        let usedLessons = response.usedLessonIds || [];
+                        response.lessons.forEach(i => {
+                            let disabled = usedLessons.includes(i.id) ? 'disabled' : '';
+                            $lesson.append(
+                                `<option value="${i.id}">${i.lesson_title}</option>`
+                            );
+                        });
+                    }
 
                     /* ✅ SET SELECTED LESSON HERE (IMPORTANT) */
                     if (window.selectedEditLessonId) {
-                        console.log("selectedEditLessonId");
-                        console.log(selectedEditLessonId);
                         $lesson.val(window.selectedEditLessonId).trigger('change');
                     }
 
@@ -1736,79 +1753,78 @@
             });
         });
 
-    
 
-        function edit_instructor(course_id)
-        {
-            $("#edit_instructor").on('change', function() { 
-            let instructorId = $(this).val();
-            let selectedCourseId = course_id
-         
-       
-            let licenseInput = $('#edit_licence_number');
-            if (editFormLoading) {
+
+        function edit_instructor(course_id) {
+            $("#edit_instructor").on('change', function() {
+                let instructorId = $(this).val();
+                let selectedCourseId = course_id
+
+
+                let licenseInput = $('#edit_licence_number');
+                if (editFormLoading) {
                     return;
                 }
 
-            // 🔴 Validation — instructor required
-            if (!instructorId) {
-                licenseInput.val('');
-                return;
-            }
+                // 🔴 Validation — instructor required
+                if (!instructorId) {
+                    licenseInput.val('');
+                    return;
+                }
 
 
-            // 🔴 Validation — course required
-            if (!selectedCourseId) {
-                alert("Select the course first.");
-                $(this).val('');
-                licenseInput.val('');
-                return;
-            }
+                // 🔴 Validation — course required
+                if (!selectedCourseId) {
+                    alert("Select the course first.");
+                    $(this).val('');
+                    licenseInput.val('');
+                    return;
+                }
 
-            // 🔵 Disable while loading
-            licenseInput.prop('readonly', true).val('Loading...');
+                // 🔵 Disable while loading
+                licenseInput.prop('readonly', true).val('Loading...');
 
-            $.ajax({
-                url: "{{ url('/training/get_instructor_license_no') }}/" + instructorId + "/" + selectedCourseId,
-                type: 'GET',
-                dataType: 'json',
+                $.ajax({
+                    url: "{{ url('/training/get_instructor_license_no') }}/" + instructorId + "/" + selectedCourseId,
+                    type: 'GET',
+                    dataType: 'json',
 
-                success: function(response) {
-                            
-                    //  licenseInput.prop('readonly', false);
+                    success: function(response) {
 
-                    // 🔴 Response validation
-                    if (!response || typeof response !== "object") {
-                        licenseInput.val('');
-                        alert("Invalid response received.");
-                        return;
-                    }
+                        //  licenseInput.prop('readonly', false);
 
-                    if (response.success === true) { 
-                        if (response.instructor_licence_number) {
-                            licenseInput.val(response.instructor_licence_number);
-                        } else {
+                        // 🔴 Response validation
+                        if (!response || typeof response !== "object") {
                             licenseInput.val('');
-                            alert("Instructor licence number not found.");
+                            alert("Invalid response received.");
+                            return;
                         }
 
-                    } else {
-                        licenseInput.val('');
-                        alert(response.message || "Instructor not found.");
-                    }
-                },
+                        if (response.success === true) {
+                            if (response.instructor_licence_number) {
+                                licenseInput.val(response.instructor_licence_number);
+                            } else {
+                                licenseInput.val('');
+                               // alert("Instructor licence number not found.");
+                            }
 
-                error: function(xhr) {
-                    // licenseInput.prop('readonly', false).val('');
-                    console.error(xhr);
-                    alert("Server error while fetching licence number.");
-                }
+                        } else {
+                            licenseInput.val('');
+                            alert(response.message || "Instructor not found.");
+                        }
+                    },
+
+                    error: function(xhr) {
+                        // licenseInput.prop('readonly', false).val('');
+                        console.error(xhr);
+                        alert("Server error while fetching licence number.");
+                    }
+                });
             });
-        }); 
 
         }
 
-     
+
 
 
         $("#edit_organizationUnits").on('change', function() {
@@ -1960,7 +1976,7 @@
                 success: function(response) {
                     toastr.success("Booking Deleted");
                     $("#viewBookingModal").modal("hide");
-                   calendar.refetchEvents();
+                    calendar.refetchEvents();
                 },
                 error: function(xhr) {
                     toastr.error("Unable to cancel booking. Please try again.");
@@ -1969,12 +1985,12 @@
             });
         });
 
-        $("#course").on('change', function() { 
+        $("#course").on('change', function() {
             let course_id = $(this).val();
             let $lesson = $("#lesson");
             var $resourceSelect = $("#resource");
             let ou_val = $('#organizationUnits').val();
-            let ou_id = ou_val ? ou_val : @json(auth()->user()->ou_id);
+            let ou_id = ou_val ? ou_val : @json(auth()-> user()-> ou_id);
             var std_id = $('#add_student').val();
 
             $lesson.empty().append("<option value=''>Select Lesson</option>");
@@ -1985,12 +2001,12 @@
                 type: "POST",
                 data: {
                     course_id: course_id,
-                    ou_id:ou_id,
-                    std_id:std_id
+                    ou_id: ou_id,
+                    std_id: std_id
                 },
                 dataType: "json",
                 success: function(response) {
-               if (response.lessons) {
+                    if (response.lessons) {
                         let usedLessons = (response.usedLessonIds || []).map(Number);
                         response.lessons.forEach(i => {
                             let disabled = usedLessons.includes(Number(i.id)) ? 'disabled' : '';
@@ -2025,7 +2041,7 @@
             });
         });
 
-      
+
 
         $("#booking_instructor").on('change', function() {
 
@@ -2088,7 +2104,7 @@
             });
         });
 
-     
+
 
         $(".add_resource").on('change', function() {
             let resource = $(this).find(':selected').data('resource');
@@ -2165,7 +2181,7 @@
             }
         });
 
-        $(document).on('change', '#edit_student', function() { console.log("append courses");
+        $(document).on('change', '#edit_student', function() {
             var userId = $(this).val();
 
             var licenceNumberField = $('#studentLicence_number');
@@ -2198,13 +2214,6 @@
                                         `<option value="${i.id}">${i.course_name}</option>`
                                     );
                                 });
-
-                                console.log("now ");
-
-
-
-                                /* ✅ SET SELECTED COURSE HERE */
-
                                 if (window.selectedEditCourseId) {
                                     $courses.val(window.selectedEditCourseId).trigger('change');
                                 }
@@ -2292,6 +2301,21 @@
                 form.find('input[name="total_time"]').val(formatted);
             }
         }
+
+        $('#add_instructor_training').click(function() {
+                let isChecked = $(this).is(":checked");
+
+                if (isChecked) {
+                    $("#student_label_name").text("Select Instructor");
+                    $("#add_student option[value='']").text("Select Instructor");
+                } else {
+                    $("#student_label_name").text("Select Student");
+                    $("#add_student option[value='']").text("Select Student");
+                }
+                    
+                        $("#organizationUnits").trigger("change");
+                        
+                    });
     });
 </script>
 @endsection
