@@ -1202,6 +1202,20 @@
                                     @endif
                                 </div>
 
+                                <div class="mt-4">
+                                    <h5>Additional Sectors</h5>
+
+                                    
+                                    <button type="button" class="btn btn-primary btn-sm mt-3" id="addSectorBtn" disabled>
+                                        Add Sector
+                                    </button>
+                                    <div id="sectorContainer">
+                                        @foreach($lesson->sectors ?? [] as $sector)
+                                            @include('sector-row', ['sector' => $sector])
+                                        @endforeach
+                                    </div>
+                                </div>
+
                                 <div class="mt-4 d-none" id="actionButtons">
                                     <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
                                     <button type="submit" class="btn btn-sm btn-primary">Save</button>
@@ -3689,6 +3703,71 @@
                 }
             });
         });
+
+        $(document).ready(function() {
+            $("#editBtn").on("click", function() {
+                $(".editable").prop("disabled", false);
+                $("#addSectorBtn").prop("disabled", false);
+                $(".removeSectorBtn").prop("disabled", false);
+            });
+
+            $("#addSectorBtn").on("click", function() {
+
+                let html = `
+                <div class="sector-row border rounded p-3 mt-3">
+                    <div class="row g-3">
+
+                        <div class="col-md-3">
+                            <label>Date</label>
+                            <input type="date" class="form-control editable" name="sectors[][lesson_date]">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>Departure</label>
+                            <input type="text" class="form-control editable" name="sectors[][departure_airfield]">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>Destination</label>
+                            <input type="text" class="form-control editable" name="sectors[][destination_airfield]">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>Off Blocks</label>
+                            <input type="time" class="form-control editable" name="sectors[][start_time]">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>Takeoff</label>
+                            <input type="time" class="form-control editable" name="sectors[][takeoff_time]">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>Landing</label>
+                            <input type="time" class="form-control editable" name="sectors[][landing_time]">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>On Blocks</label>
+                            <input type="time" class="form-control editable" name="sectors[][end_time]">
+                        </div>
+
+                    </div>
+
+                    <button type="button" class="btn btn-danger btn-sm mt-2 removeSectorBtn">Remove</button>
+                </div>`;
+
+                $("#sectorContainer").append(html);
+            });
+
+            $(document).on("click", ".removeSectorBtn", function() {
+                $(this).closest(".sector-row").remove();
+            });
+        });
+
+        $(document).on("click", ".removeSectorBtn", function () {
+            $(this).closest(".sector-row").remove();
+        });
     </script>
 
     <script>
@@ -3725,6 +3804,7 @@
         const editBtn = document.getElementById('editBtn');
         const cancelBtn = document.getElementById('cancelBtn');
         const actionButtons = document.getElementById('actionButtons');
+        const addSectorBtn = document.getElementById('addSectorBtn');
 
         const resourceSelect = document.getElementById('resourceSelect');
         const timeFields = document.getElementById('timeFieldsWrapper');
@@ -3781,6 +3861,13 @@
 
             actionButtons.classList.add('d-none');
             editBtn.classList.remove('d-none');
+            addSectorBtn.setAttribute("disabled", true);
+
+            $("#sectorContainer .sector-row").each(function() {
+                if ($(this).find('input[name="sectors[][lesson_date]"]').length > 0) {
+                    $(this).remove();
+                }
+            });
 
             toggleFields();
         });
@@ -3809,6 +3896,7 @@
 
                         actionButtons.classList.add('d-none');
                         editBtn.classList.remove('d-none');
+                        addSectorBtn.setAttribute("disabled", true);
 
                         document.querySelectorAll('.editable').forEach(el => {
                             originalValues[el.name] = el.value;
