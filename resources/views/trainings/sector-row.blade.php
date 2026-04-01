@@ -23,16 +23,14 @@
                    value="{{ $sector->destination_airfield ?? '' }}" disabled>
         </div>
 
+        @php
+            $eventType = $trainingEvent?->course->enable_mp_lifus;
+            $op = $sector->operation ?? null;
+        @endphp
+
         <div class="col-md-3">
             <label class="form-label">Operation</label>
-
-            @php
-                $eventType = $trainingEvent?->course->enable_mp_lifus;
-                $op = $sector->operation ?? null;
-            @endphp
-
-            <select class="form-select editable" 
-                    name="sectors[{{ $index }}][operation]" disabled>
+            <select class="form-select editable" name="sectors[{{ $index }}][operation]" disabled>
 
                 @if($eventType == 1)
                     <option value="1" {{ $op == '1' ? 'selected' : '' }}>PF LHS</option>

@@ -3737,7 +3737,7 @@
                         </div>
 
                         <div class="col-md-3">
-                            <label class="form-label">Operation</label>
+                            <label>Operation</label>
                             <select class="form-select editable" name="sectors[${sectorIndex}][operation]">
                                 @php $eventType = $trainingEvent?->course->enable_mp_lifus; @endphp
 
