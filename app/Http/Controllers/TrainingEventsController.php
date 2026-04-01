@@ -35,6 +35,7 @@ use App\Models\CourseDocuments;
 use App\Models\TrainingEventDocument;
 use App\Models\UserTagRating;
 use App\Models\Booking;
+use App\Models\LessonSector;
 use App\Models\ValidateTrainingTag;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -4588,6 +4589,37 @@ class TrainingEventsController extends Controller
             ]);
         }
 
+        LessonSector::where('lesson_id', $lesson->id)->delete();
+
+        if ($request->has('sectors') && is_array($request->sectors)) {
+
+            foreach ($request->sectors as $sector) {
+
+                // Ignore empty rows
+                if (
+                    empty($sector['lesson_date']) &&
+                    empty($sector['departure_airfield']) &&
+                    empty($sector['destination_airfield']) &&
+                    empty($sector['start_time']) &&
+                    empty($sector['takeoff_time']) &&
+                    empty($sector['landing_time']) &&
+                    empty($sector['end_time'])
+                ) {
+                    continue;
+                }
+
+                LessonSector::create([
+                    'lesson_id'           => $lesson->id,
+                    'lesson_date'         => $sector['lesson_date'] ?? null,
+                    'departure_airfield'  => $sector['departure_airfield'] ?? null,
+                    'destination_airfield'=> $sector['destination_airfield'] ?? null,
+                    'start_time'          => $sector['start_time'] ?? null,
+                    'takeoff_time'        => $sector['takeoff_time'] ?? null,
+                    'landing_time'        => $sector['landing_time'] ?? null,
+                    'end_time'            => $sector['end_time'] ?? null,
+                ]);
+            }
+        }
 
         return response()->json([
             'success' => true

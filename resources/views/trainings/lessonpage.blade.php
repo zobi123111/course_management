@@ -1205,18 +1205,15 @@
                                 <div class="mt-4">
                                     <h5>Additional Sectors</h5>
 
-                                    
-                                    <button type="button" class="btn btn-primary btn-sm mt-3" id="addSectorBtn" disabled>
-                                        Add Sector
-                                    </button>
                                     <div id="sectorContainer">
-                                        @foreach($lesson->sectors ?? [] as $sector)
-                                            @include('sector-row', ['sector' => $sector])
+                                        @foreach($lesson->sectors as $index => $sector)
+                                            @include('trainings.sector-row', ['sector' => $sector, 'index' => $index])
                                         @endforeach
                                     </div>
                                 </div>
 
                                 <div class="mt-4 d-none" id="actionButtons">
+                                    <button type="button" class="btn btn-primary" id="addSectorBtn" disabled>Add Sector</button>
                                     <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
                                     <button type="submit" class="btn btn-sm btn-primary">Save</button>
                                 </div>
@@ -3704,14 +3701,18 @@
             });
         });
 
-        $(document).ready(function() {
-            $("#editBtn").on("click", function() {
+        $(document).ready(function () {
+
+            let sectorIndex = $(".sector-row").length; 
+            // Starts from existing sectors if editing
+
+            $("#editBtn").on("click", function () {
                 $(".editable").prop("disabled", false);
                 $("#addSectorBtn").prop("disabled", false);
                 $(".removeSectorBtn").prop("disabled", false);
             });
 
-            $("#addSectorBtn").on("click", function() {
+            $("#addSectorBtn").on("click", function () {
 
                 let html = `
                 <div class="sector-row border rounded p-3 mt-3">
@@ -3719,37 +3720,44 @@
 
                         <div class="col-md-3">
                             <label>Date</label>
-                            <input type="date" class="form-control editable" name="sectors[][lesson_date]">
+                            <input type="date" class="form-control editable" 
+                                name="sectors[${sectorIndex}][lesson_date]">
                         </div>
 
                         <div class="col-md-3">
                             <label>Departure</label>
-                            <input type="text" class="form-control editable" name="sectors[][departure_airfield]">
+                            <input type="text" class="form-control editable" 
+                                name="sectors[${sectorIndex}][departure_airfield]">
                         </div>
 
                         <div class="col-md-3">
                             <label>Destination</label>
-                            <input type="text" class="form-control editable" name="sectors[][destination_airfield]">
+                            <input type="text" class="form-control editable" 
+                                name="sectors[${sectorIndex}][destination_airfield]">
                         </div>
 
                         <div class="col-md-3">
                             <label>Off Blocks</label>
-                            <input type="time" class="form-control editable" name="sectors[][start_time]">
+                            <input type="time" class="form-control editable" 
+                                name="sectors[${sectorIndex}][start_time]">
                         </div>
 
                         <div class="col-md-3">
                             <label>Takeoff</label>
-                            <input type="time" class="form-control editable" name="sectors[][takeoff_time]">
+                            <input type="time" class="form-control editable" 
+                                name="sectors[${sectorIndex}][takeoff_time]">
                         </div>
 
                         <div class="col-md-3">
                             <label>Landing</label>
-                            <input type="time" class="form-control editable" name="sectors[][landing_time]">
+                            <input type="time" class="form-control editable" 
+                                name="sectors[${sectorIndex}][landing_time]">
                         </div>
 
                         <div class="col-md-3">
                             <label>On Blocks</label>
-                            <input type="time" class="form-control editable" name="sectors[][end_time]">
+                            <input type="time" class="form-control editable" 
+                                name="sectors[${sectorIndex}][end_time]">
                         </div>
 
                     </div>
@@ -3758,15 +3766,12 @@
                 </div>`;
 
                 $("#sectorContainer").append(html);
+                sectorIndex++; // increment for next one
             });
 
-            $(document).on("click", ".removeSectorBtn", function() {
+            $(document).on("click", ".removeSectorBtn", function () {
                 $(this).closest(".sector-row").remove();
             });
-        });
-
-        $(document).on("click", ".removeSectorBtn", function () {
-            $(this).closest(".sector-row").remove();
         });
     </script>
 
@@ -3862,6 +3867,7 @@
             actionButtons.classList.add('d-none');
             editBtn.classList.remove('d-none');
             addSectorBtn.setAttribute("disabled", true);
+            $(".removeSectorBtn").prop("disabled", true);
 
             $("#sectorContainer .sector-row").each(function() {
                 if ($(this).find('input[name="sectors[][lesson_date]"]').length > 0) {
