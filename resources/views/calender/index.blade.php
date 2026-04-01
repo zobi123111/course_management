@@ -1654,15 +1654,37 @@
                         edit_instructor(response.course_id);
 
 
+                       
                         setTimeout(function() {
-                            $("#edit_instructor").val(response.instructor_id);
-                            window.selectedEditCourseId = response.course_id;
-                            window.selectedEditLessonId = response.lesson_id;
+                          $("#edit_course_booking").val(response.course_id);
+                        //  $("#edit_course_booking").trigger("change");
+                         
+                        }, 700);
 
-                            editFormLoading = false;
+                        setTimeout(function() {
+                            $("#edit_resource").val(String(response.resource)).trigger("change");
+                            $("#edit_student").val(response.std_id).trigger('change').addClass("no-change");
 
-                            $("#edit_instructor").trigger("change"); // 🔵 Now course exists
-                        }, 500);
+
+                            console.log(response.lesson_id);    
+                            $("#edit_lesson").val(response.lesson_id).addClass("no-change");
+                             edit_instructor(response.course_id);
+
+                           
+                           setTimeout(function () {
+                                $("#edit_instructor").val(response.instructor_id);
+                                window.selectedEditCourseId = response.course_id;
+                                window.selectedEditLessonId = response.lesson_id;
+
+                                editFormLoading = false;
+
+                                $("#edit_instructor").trigger("change");  // 🔵 Now course exists
+                            }, 500);
+
+                             window.selectedEditCourseId = response.course_id;
+                             window.selectedEditLessonId = response.lesson_id;
+                            window.resource = response.resource;
+                        }, 600);
 
                         window.selectedEditCourseId = response.course_id;
                         window.selectedEditLessonId = response.lesson_id;
@@ -1701,8 +1723,11 @@
             });
         });
 
-        $("#edit_course_booking").on('change', function() {
+        $("#edit_course_booking").on('change', function() {  console.log("asdas");
+             console.log("second click");
             let course_id = $(this).val();
+        
+           // alert(course_id);
             let $lesson = $("#edit_lesson");
             var $resourceSelect = $("#edit_resource");
             var ou_id = $('#edit_organizationUnits').val() ?? "{{ auth()->user()->ou_id }}";
@@ -1716,8 +1741,8 @@
                 type: "POST",
                 data: {
                     course_id: course_id,
-                    ou_id: ou_id,
-                    std_id: std_id
+                    ou_id:ou_id,
+                    std_id:std_id
                 },
                 dataType: "json",
                 success: function(response) {
@@ -1752,8 +1777,6 @@
                 }
             });
         });
-
-
 
         function edit_instructor(course_id) {
             $("#edit_instructor").on('change', function() {
@@ -1822,10 +1845,7 @@
                 });
             });
 
-        }
-
-
-
+        }  
 
         $("#edit_organizationUnits").on('change', function() {
             let ou_id = $(this).val();
@@ -2042,7 +2062,6 @@
         });
 
 
-
         $("#booking_instructor").on('change', function() {
 
             let instructorId = $(this).val();
@@ -2181,7 +2200,7 @@
             }
         });
 
-        $(document).on('change', '#edit_student', function() {
+        $(document).on('change', '#edit_student', function() { console.log("append courses");
             var userId = $(this).val();
 
             var licenceNumberField = $('#studentLicence_number');
