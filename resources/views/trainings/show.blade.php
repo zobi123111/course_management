@@ -1752,7 +1752,37 @@
                                             return $carry;
                                         }, 0);
 
-                                    $totalFlightTime = $eventLessonFlightTime + $defFlightTime;
+                                    $totalcustomFlightTime = $eventLessonFlightTime + $defFlightTime;
+
+                                    $totalSectorTime = 0;
+
+                                    foreach ($trainingEvent->eventLessons as $lesson) {
+                                        if ($lesson->sectors && $lesson->sectors->count() > 0) {
+                                            foreach ($lesson->sectors as $sector) {
+                                                $start = strtotime($sector->start_time);
+                                                $end   = strtotime($sector->end_time);
+
+                                                if ($start && $end && $end > $start) {
+                                                    $totalSectorTime += ($end - $start);
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    foreach ($trainingEvent->defLessons as $task) {
+                                        if ($task->sectors && $task->sectors->count() > 0) {
+                                            foreach ($task->sectors as $sector) {
+                                                $start = strtotime($sector->start_time);
+                                                $end   = strtotime($sector->end_time);
+
+                                                if ($start && $end && $end > $start) {
+                                                    $totalSectorTime += ($end - $start);
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    $totalFlightTime = $totalcustomFlightTime + $totalSectorTime;
 
                                     $blockDuration = $eventLessonFlightTime + $defFlightTime;
 
@@ -1781,7 +1811,7 @@
                                     <strong>Custom ({{ $name }}):</strong>
                                     Allotted: {{ $custom['allotted'] }} |
                                     <!-- Credited: {{ formatSeconds($custom['credited']) }} -->
-                                    Credited: {{ formatSeconds($totalFlightTime) }}
+                                    Credited: {{ formatSeconds($totalcustomFlightTime) }}
                                 </p>
                                 @endforeach
                                 @endif
