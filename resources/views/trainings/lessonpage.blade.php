@@ -3869,8 +3869,8 @@
             addSectorBtn.setAttribute("disabled", true);
             $(".removeSectorBtn").prop("disabled", true);
 
-            $("#sectorContainer .sector-row").each(function() {
-                if ($(this).find('input[name="sectors[][lesson_date]"]').length > 0) {
+            $("#sectorContainer .sector-row").each(function () {
+                if (!$(this).attr("data-existing")) {
                     $(this).remove();
                 }
             });
