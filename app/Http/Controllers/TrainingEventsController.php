@@ -4600,6 +4600,7 @@ class TrainingEventsController extends Controller
                     empty($sector['lesson_date']) &&
                     empty($sector['departure_airfield']) &&
                     empty($sector['destination_airfield']) &&
+                    empty($sector['operation']) &&
                     empty($sector['start_time']) &&
                     empty($sector['takeoff_time']) &&
                     empty($sector['landing_time']) &&
@@ -4613,6 +4614,7 @@ class TrainingEventsController extends Controller
                     'lesson_date'         => $sector['lesson_date'] ?? null,
                     'departure_airfield'  => $sector['departure_airfield'] ?? null,
                     'destination_airfield'=> $sector['destination_airfield'] ?? null,
+                    'operation'           => $sector['operation'] ?? null,
                     'start_time'          => $sector['start_time'] ?? null,
                     'takeoff_time'        => $sector['takeoff_time'] ?? null,
                     'landing_time'        => $sector['landing_time'] ?? null,
