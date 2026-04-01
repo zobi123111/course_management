@@ -3737,9 +3737,33 @@
                         </div>
 
                         <div class="col-md-3">
+                            <label class="form-label">Operation</label>
+                            <select class="form-select editable" name="sectors[${sectorIndex}][operation]">
+                                @php $eventType = $trainingEvent?->course->enable_mp_lifus; @endphp
+
+                                @if($eventType == 1)
+                                    <option value="1">PF LHS</option>
+                                    <option value="2">PF RHS</option>
+
+                                @elseif($eventType == 2 || $eventType == 3)
+                                    <option value="1">PF LHS</option>
+                                    <option value="2">PM LHS</option>
+                                    <option value="3">PF RHS</option>
+                                    <option value="4">PM RHS</option>
+                                @endif
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
                             <label>Off Blocks</label>
                             <input type="time" class="form-control editable" 
                                 name="sectors[${sectorIndex}][start_time]">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>On Blocks</label>
+                            <input type="time" class="form-control editable" 
+                                name="sectors[${sectorIndex}][end_time]">
                         </div>
 
                         <div class="col-md-3">
@@ -3752,12 +3776,6 @@
                             <label>Landing</label>
                             <input type="time" class="form-control editable" 
                                 name="sectors[${sectorIndex}][landing_time]">
-                        </div>
-
-                        <div class="col-md-3">
-                            <label>On Blocks</label>
-                            <input type="time" class="form-control editable" 
-                                name="sectors[${sectorIndex}][end_time]">
                         </div>
 
                     </div>
