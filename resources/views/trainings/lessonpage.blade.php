@@ -1203,8 +1203,6 @@
                                 </div>
 
                                 <div class="mt-4">
-                                    <h5>Additional Sectors</h5>
-
                                     <div id="sectorContainer">
                                         @foreach($lesson->sectors as $index => $sector)
                                             @include('trainings.sector-row', ['sector' => $sector, 'index' => $index])
@@ -1214,8 +1212,10 @@
 
                                 <div class="mt-4 d-none" id="actionButtons">
                                     <button type="button" class="btn btn-primary" id="addSectorBtn" disabled>Add Sector</button>
-                                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
-                                    <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                                        <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                                    </div>
                                 </div>
                             </form>
                         </div>
