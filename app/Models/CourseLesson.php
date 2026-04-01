@@ -68,4 +68,8 @@ class CourseLesson extends Model
         return $this->hasMany(LessonBriefingDocument::class, 'lesson_id');
     }
 
+    public function sectors()
+    {
+        return $this->hasMany(LessonSector::class, 'lesson_id');
+    }
 }

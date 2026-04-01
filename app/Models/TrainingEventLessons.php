@@ -74,6 +74,11 @@ class TrainingEventLessons extends Model
     {
         return $this->hasMany(Booking::class, 'trainingEventLesson_id', 'id');
     }
+
+    public function sectors()
+    {
+        return $this->hasMany(LessonSector::class, 'lesson_id', 'id');
+    }
     
 
 }
