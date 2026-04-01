@@ -16,6 +16,7 @@ class LessonSector extends Model
         'lesson_date',
         'departure_airfield',
         'destination_airfield',
+        'operation',
         'start_time',
         'takeoff_time',
         'landing_time',
