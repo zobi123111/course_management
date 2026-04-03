@@ -1056,15 +1056,6 @@
                                         <input type="hidden" name="lessontype" value="deferred">
                                     @endif
 
-                                    <!-- <div class="col-md-4">
-                                        <label class="form-label">Lesson Date</label>
-                                        <input type="date"
-                                            class="form-control editable"
-                                            name="lesson_date"
-                                            value="{{ $lesson->lesson_date }}"
-                                            disabled>
-                                    </div> -->
-
                                     <div class="col-md-4">
                                         <label class="form-label">Instructor</label>
                                         <select class="form-select editable" name="instructor_id" id="instructorSelect" disabled>
@@ -1204,7 +1195,34 @@
 
                                 <div class="mt-4">
                                     <div id="sectorContainer">
-                                        @foreach($lesson->sectors as $index => $sector)
+                                        @php
+                                            $activeSectors = $lesson->sectors ?? collect();
+
+                                            if ($lessonType === 'deferred') {
+                                                $activeSectors = $lesson->deferredSectors;
+                                            }
+
+                                            if ($lessonType === 'custom') {
+                                                $activeSectors = $lesson->customSectors;
+                                            }
+                                        @endphp
+
+                                        @if($activeSectors->isNotEmpty())
+                                            <h5 class="details-card-title d-flex justify-content-between align-items-center mb-3">
+                                                Additional Sectors
+                                            </h5>
+                                            <div>
+                                                
+                                            </div>
+                                        @endif
+
+                                        @if($lessonType == 'custom')
+                                            <input type="hidden" name="lessontype" value="custom">
+                                        @elseif ($lessonType == 'deferred')
+                                            <input type="hidden" name="lessontype" value="deferred">
+                                        @endif
+
+                                        @foreach($activeSectors as $index => $sector)
                                             @include('trainings.sector-row', ['sector' => $sector, 'index' => $index])
                                         @endforeach
                                     </div>
@@ -1220,6 +1238,107 @@
                             </form>
                         </div>
                     </div>
+
+                    @if($lesson->CreditedTime && $lesson->CreditedTime->count() > 0)
+                        @if ($lessonType !== 'deferred' && $lessonType !== 'custom')
+                            <div class="card">
+                                <div class="card-body">
+                                        <h5 class="details-card-title d-flex justify-content-between align-items-center mb-3">
+                                            Credited Time
+                                        </h5>
+
+                                    {{-- Existing Custom Times --}}
+                                    @if($lesson->CreditedTime && $lesson->CreditedTime->count())
+                                        <div class="mt-4">
+                                            <h5>Existing Custom Times</h5>
+
+                                            @foreach($lesson->CreditedTime as $ct)
+                                                <div class="border p-3 rounded mb-2 custom-time-row" data-id="{{ $ct->id }}">
+                                                    <div class="row g-3 align-items-end">
+
+                                                        <div class="col-md-4">
+                                                            <label class="form-label">Custom Name</label>
+                                                            <input type="text" class="form-control custom-name" value="{{ $ct->name }}" disabled>
+                                                        </div>
+
+                                                        <div class="col-md-4">
+                                                            <label class="form-label">Credited</label>
+                                                            <input type="text" class="form-control credited" name="hours" data-original="{{ $ct->hours }}" value="{{ $ct->hours }}" disabled>
+                                                        </div>
+
+                                                        <!-- BUTTONS HERE (on the same row) -->
+                                                        <div class="col-md-4">
+                                                            <div class="d-flex gap-2">
+                                                                <button class="btn btn-sm btn-primary editExistingBtn">Edit</button>
+                                                                <button class="btn btn-sm btn-danger deleteExistingBtn">Delete</button>
+                                                                <button class="btn btn-sm btn-success d-none saveExistingBtn">Save</button>
+                                                                <button class="btn btn-sm btn-secondary d-none cancelExistingBtn">Cancel</button>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+
+                                    @php
+                                        $customCount = $lesson->customTime->count() ?? 0;
+                                        $creditedCount = $lesson->CreditedTime->count() ?? 0;
+                                    @endphp
+
+                                    @if($creditedCount < $customCount)
+                                        <button class="btn btn-primary mt-3" id="showAddFormBtn">Add Custom Time</button>
+                                    @endif
+
+                                    {{-- Add Custom Time Form --}}
+                                    <form id="customtimeForm" action="{{ route('lesson.custometime.update') }}" method="POST" class="mt-4 d-none">
+                                        @csrf
+                                        <input type="hidden" name="id" value="{{ $lesson->id }}">
+                                        <input type="hidden" name="training_event_id" value="{{ $lesson->training_event_id }}">
+
+                                        <div id="customTimeContainer"></div>
+
+                                        <button type="button" class="btn btn-success btn-sm mt-2" id="addNewCustomTimeRow">+ ADD ROW</button>
+
+                                        <div class="mt-4 d-flex justify-content-end gap-2">
+                                            <button type="button" class="btn btn-secondary" id="cancelFormBtn">Cancel</button>
+                                            <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                                        </div>
+                                    </form>
+
+                                    <template id="customTimeTemplate">
+                                        <div class="row g-3 border p-3 rounded mb-2 custom-time-add-row">
+
+                                            <div class="col-md-4">
+                                                <label class="form-label">Custom Time Name</label>
+                                                <select class="form-select customTimeSelect" name="custom_time_id[]">
+                                                    <option value="">Select Custom Time</option>
+                                                    @foreach($lesson->customTime as $ct)
+                                                        @if(!$lesson->CreditedTime->contains('custom_time_id', $ct->id))
+                                                            <option value="{{ $ct->id }}">{{ $ct->name }}</option>
+                                                        @endif
+                                                    @endforeach
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <label class="form-label">Credited Custom Time</label>
+                                                <input type="text" class="form-control" name="custom_time_credited[]">
+                                            </div>
+
+                                            <div class="col-md-4 d-flex align-items-end">
+                                                <button type="button" class="btn btn-danger btn-sm removeRowBtn">Remove</button>
+                                            </div>
+
+                                        </div>
+                                    </template>
+
+                                </div>
+                            </div>
+                        @endif
+                    @endif                        
+
                 </div>
 
                 <div class="tab-pane fade p-3 " id="overview" role="tabpanel" aria-labelledby="overview-tab">
@@ -1318,6 +1437,23 @@
                                         <div><strong>Departure Airfield:</strong> {{ !empty($eventLesson->departure_airfield) ? $eventLesson->departure_airfield : 'N/A' }}</div>
                                         <div><strong>Destination Airfield:</strong> {{ !empty($eventLesson->destination_airfield) ? $eventLesson->destination_airfield : 'N/A' }}</div>
                                     </div>
+                                    @if($eventLesson->sectors->isNotEmpty())
+                                        <h5 class="details-card-title d-flex justify-content-between align-items-center mb-3"> Additional Sectors </h5>
+
+                                        <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
+                                            @foreach($eventLesson->sectors as $sector)
+                                                <div><strong>Instructor:</strong> {{ $eventLesson->instructor->fname ?? '' }} {{ $eventLesson->instructor->lname ?? '' }}</div>
+                                                <div><strong>Licence No:</strong> {{ !empty($eventLesson->instructor_license_number) ? $eventLesson->instructor_license_number : 'N/A' }}</div>
+                                                <div><strong>Resource:</strong> {{ $sector->resourceData->name ?? 'N/A' }}</div>
+                                                <div><strong>Lesson Date:</strong> {{ ($sector->lesson_date) ? date('d/m/Y', strtotime($sector->lesson_date)) : 'N/A' }}</div>
+                                                <div><strong>Start Time:</strong> {{ ($sector->start_time) ? date('h:i A', strtotime($sector->start_time)) : 'N/A' }}</div>
+                                                <div><strong>End Time:</strong> {{ ($sector->end_time) ? date('h:i A', strtotime($sector->end_time)) : 'N/A' }}</div>
+                                                <div><strong>Departure Airfield:</strong> {{ !empty($sector->departure_airfield) ? $sector->departure_airfield : 'N/A' }}</div>
+                                                <div><strong>Destination Airfield:</strong> {{ !empty($sector->destination_airfield) ? $sector->destination_airfield : 'N/A' }}</div>
+                                            @endforeach
+                                        </div>
+
+                                    @endif
 
                                     @if($isLocked)
                                     <div class="alert alert-warning mb-3">
@@ -2812,7 +2948,7 @@
 
     @section('js_scripts')
 
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function() {
             // Ensure all .tab-pane elements live inside #myTabContent to avoid layout gaps
@@ -3701,10 +3837,12 @@
             });
         });
 
+
         $(document).ready(function () {
 
             let sectorIndex = $(".sector-row").length; 
-            // Starts from existing sectors if editing
+            let instructorName  = $("#instructorSelect option:selected").text().trim();
+            let instructorLicence = $("#licenceField").val();
 
             $("#editBtn").on("click", function () {
                 $(".editable").prop("disabled", false);
@@ -3717,6 +3855,25 @@
                 let html = `
                 <div class="sector-row border rounded p-3 mt-3">
                     <div class="row g-3">
+
+                        <div class="col-md-4">
+                            <label>Instructor</label>
+                            <input type="text" class="form-control" value="${instructorName}" disabled>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label>Licence No</label>
+                            <input type="text" class="form-control" value="${instructorLicence}" disabled>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label>Resource</label>
+                            <select class="form-select editable" name="sectors[${sectorIndex}][resource_id]">
+                                @foreach($resources as $resource)
+                                    <option value="{{ $resource->id }}">{{ $resource->code ?? $resource->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
 
                         <div class="col-md-3">
                             <label>Date</label>
@@ -3761,12 +3918,6 @@
                         </div>
 
                         <div class="col-md-3">
-                            <label>On Blocks</label>
-                            <input type="time" class="form-control editable" 
-                                name="sectors[${sectorIndex}][end_time]">
-                        </div>
-
-                        <div class="col-md-3">
                             <label>Takeoff</label>
                             <input type="time" class="form-control editable" 
                                 name="sectors[${sectorIndex}][takeoff_time]">
@@ -3776,6 +3927,12 @@
                             <label>Landing</label>
                             <input type="time" class="form-control editable" 
                                 name="sectors[${sectorIndex}][landing_time]">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>On Blocks</label>
+                            <input type="time" class="form-control editable" 
+                                name="sectors[${sectorIndex}][end_time]">
                         </div>
 
                     </div>
@@ -3954,6 +4111,181 @@
                     }, 3000);
                 });
         });
+
+        $(document).ready(function () {
+            // $(document).on('click', '.editExistingBtn', function () {
+            //     let row = $(this).closest('.custom-time-row');
+            //     row.find('input').prop('disabled', false);
+            //     row.find('.saveExistingBtn, .cancelExistingBtn').removeClass('d-none');
+            //     $(this).addClass('d-none');
+            // });
+
+            $(document).on('click', '.editExistingBtn', function () {
+                let row = $(this).closest('.custom-time-row');
+                row.find('.credited').prop('disabled', false);
+                row.find('.saveExistingBtn, .cancelExistingBtn').removeClass('d-none');
+                row.find('.deleteExistingBtn').addClass('d-none');
+                $(this).addClass('d-none');
+            });
+
+            $(document).on('click', '.saveExistingBtn', function () {
+                let row   = $(this).closest('.custom-time-row');
+                let id    = row.data('id');
+                let value = row.find('.credited').val();
+
+                $.ajax({
+                    url: "/lesson/customtime/update/" + id,
+                    type: "POST",
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr("content"),
+                        credited: value
+                    },
+                    success: function (resp) {
+                        Swal.fire({
+                            title: "Updated!",
+                            text: "Credited hours updated successfully.",
+                            icon: "success",
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+
+                        row.find('.credited').prop('disabled', true);
+                        row.find('.saveExistingBtn, .cancelExistingBtn').addClass('d-none');
+                        row.find('.editExistingBtn, .deleteExistingBtn').removeClass('d-none');
+                    },
+                    error: function () {
+                        Swal.fire("Error", "Failed to update.", "error");
+                    }
+                });
+            });
+
+            $(document).on('click', '.deleteExistingBtn', function () {
+                let row = $(this).closest('.custom-time-row');
+                let id = row.data('id');
+
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You want to delete this custom time?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "Yes, delete it!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "/lesson/customtime/delete/" + id,
+                            type: "DELETE",
+                            data: {
+                                _token: $('meta[name="csrf-token"]').attr("content"),
+                            },
+                            success: function (resp) {
+
+                                Swal.fire({
+                                    title: "Deleted!",
+                                    text: "Custom time has been removed.",
+                                    icon: "success",
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    location.reload();
+                                });
+
+                            },
+                            error: function () {
+                                Swal.fire("Error", "Something went wrong.", "error");
+                            }
+                        });
+                    }
+                });
+            });
+
+           $(document).on('click', '.cancelExistingBtn', function () {
+                let row = $(this).closest('.custom-time-row');
+
+                let original = row.find('.credited').data('original');
+                row.find('.credited').val(original);
+
+                row.find('.credited').prop('disabled', true);
+                row.find('.saveExistingBtn, .cancelExistingBtn').addClass('d-none');
+                row.find('.editExistingBtn, .deleteExistingBtn').removeClass('d-none');
+            });
+
+            $('#showAddFormBtn').click(function () {
+                $('#customtimeForm').removeClass('d-none');
+                addNewRow();
+            });
+
+            $('#addNewCustomTimeRow').click(function () {
+                addNewRow();
+            });
+
+            function addNewRow() {
+                let html = $('#customTimeTemplate').html();
+                $('#customTimeContainer').append(html);
+                refreshAddRowButton();
+                refreshSelectOptions();
+            }
+
+            $(document).on('click', '.removeRowBtn', function () {
+                $(this).closest('.custom-time-add-row').remove();
+                refreshAddRowButton();
+                refreshSelectOptions();
+            });
+
+            $(document).on('change', '.customTimeSelect', function () {
+                refreshSelectOptions();
+                refreshAddRowButton();
+            });
+
+            function refreshSelectOptions() {
+                let selectedValues = [];
+
+                $('.customTimeSelect').each(function () {
+                    let val = $(this).val();
+                    if (val !== "") selectedValues.push(val);
+                });
+
+                $('.customTimeSelect').each(function () {
+                    let current = $(this).val();
+
+                    $(this).find('option').each(function () {
+                        let val = $(this).val();
+
+                        if (val !== "" && val !== current && selectedValues.includes(val)) {
+                            $(this).prop('disabled', true);
+                        } else {
+                            $(this).prop('disabled', false);
+                        }
+                    });
+                });
+            }
+
+            function refreshAddRowButton() {
+                let totalOptions = $('#customTimeTemplate')
+                    .find('select option')
+                    .not(':first')
+                    .length;
+
+                let usedRows = $('.customTimeSelect').length;
+
+                if (usedRows >= totalOptions) {
+                    $('#addNewCustomTimeRow').hide();
+                } else {
+                    $('#addNewCustomTimeRow').show();
+                }
+            }
+
+            $('#cancelFormBtn').click(function () {
+                $('#customTimeContainer').empty();
+                $('#customtimeForm').addClass('d-none');
+                $('#addNewCustomTimeRow').show();
+            });
+
+        });
+
+        
+        
     </script>
 
 

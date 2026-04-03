@@ -429,13 +429,31 @@
                         <div id="lesson_type_error" class="text-danger error_e"></div>
                     </div>
 
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label class="form-label">Custom Time Type</label>
                         <div>
                             @if ($course->customTimes->count())
                                 @foreach ($course->customTimes as $customTime)
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" name="custom_time_type" id="custom_time_{{ $customTime->id }}" value="{{ $customTime->id }}">
+                                        <label class="form-check-label" for="custom_time_{{ $customTime->id }}">
+                                            {{ $customTime->name }} ({{ $customTime->hours }} hrs)
+                                        </label>
+                                    </div>
+                                @endforeach
+                            @else
+                                <p class="text-muted">No custom time types configured for this course.</p>
+                            @endif
+                        </div>
+                    </div> -->
+
+                    <div class="form-group">
+                        <label class="form-label">Custom Time Type</label>
+                        <div>
+                            @if ($course->customTimes->count())
+                                @foreach ($course->customTimes as $customTime)
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" name="custom_time_type[]" id="custom_time_{{ $customTime->id }}" value="{{ $customTime->id }}">
                                         <label class="form-check-label" for="custom_time_{{ $customTime->id }}">
                                             {{ $customTime->name }} ({{ $customTime->hours }} hrs)
                                         </label>
@@ -569,7 +587,7 @@
                         <div id="edit_lesson_type_error_up" class="text-danger error_e"></div>
                     </div>
 
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label class="form-label">Custom Time Type</label>
                         <div>
                             @if ($course->customTimes->count())
@@ -582,6 +600,27 @@
                                         <div id="edit_custom_time_type_error_up" class="text-danger error_e"></div>
                                     </div>
                                 @endforeach
+                            @else
+                                <p class="text-muted">No custom time types configured for this course.</p>
+                            @endif
+                        </div>
+                    </div> -->
+
+                    <div class="form-group">
+                        <label class="form-label">Custom Time Type</label>
+                        <div>
+                            @if ($course->customTimes->count())
+                                @foreach ($course->customTimes as $customTime)
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" name="edit_custom_time_type[]" id="edit_custom_time_{{ $customTime->id }}" value="{{ $customTime->id }}">
+                                        <label class="form-check-label" for="edit_custom_time_{{ $customTime->id }}">
+                                            {{ $customTime->name }} ({{ $customTime->hours }} hrs)
+                                        </label>
+                                    </div>
+                                @endforeach
+                                
+                                <div id="edit_custom_time_type_error_up" class="text-danger error_e"></div>
+
                             @else
                                 <p class="text-muted">No custom time types configured for this course.</p>
                             @endif
@@ -886,9 +925,15 @@ $(document).ready(function() {
                     $('#edit_enable_pilot_cbta').prop('checked', false);
                 }
 
-                if (response.lesson.custom_time_id) {
-                    $('#edit_custom_time_'+response.lesson.custom_time_id).prop('checked', true);  
+                // if (response.lesson.custom_time_id) {
+                //     $('#edit_custom_time_'+response.lesson.custom_time_id).prop('checked', true);  
+                // }
+                console.log(response.lesson.lessoncustom_time);
 
+                if (response.lesson.lessoncustom_time && Array.isArray(response.lesson.lessoncustom_time)) {
+                    response.lesson.lessoncustom_time.forEach(function(item) {
+                        $('#edit_custom_time_' + item.custom_time_id).prop('checked', true);
+                    });
                 }
 
                 // Set the correct grading type radio button

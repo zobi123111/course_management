@@ -355,6 +355,9 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
 Route::get('/training/training-event-old-design/{event_id}', [TrainingEventsController::class, 'TestshowTrainingEvent'])->name('training.test-show'); 
 Route::get('/lesson-grade', [TrainingEventsController::class, 'Lessongrade'])->name('lesson.grade');
 Route::post('/event/lessons/update', [TrainingEventsController::class, 'EventLessonUpdate'])->name('event.lesson.update');
+Route::post('/lesson/custometime/update', [TrainingEventsController::class, 'LessonCustomeTimeUpdate'])->name('lesson.custometime.update');
+Route::post('/lesson/customtime/update/{id}', [TrainingEventsController::class, 'updateCustomTime'])->name('lesson.customtime.update');
+Route::delete('/lesson/customtime/delete/{id}', [TrainingEventsController::class, 'deleteCustomTime']);
 Route::delete('/lesson/document/delete/{id}', [LessonController::class, 'deleteBriefingDocument'])->name('lesson.document.delete');
 Route::get('/get-instructor-licence/{id}', [TrainingEventsController::class, 'getInstructorLicence'])->name('getInstructorLicence');
 

@@ -2,6 +2,37 @@
 
     <div class="row g-3">
 
+        <div class="col-md-4">
+            <label class="form-label">Instructor show</label>
+            <input type="text" class="form-control" 
+                value="{{ optional($lesson->instructor)->fname }} {{ optional($lesson->instructor)->lname }}" 
+                disabled>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Licence No</label>
+            <input type="text" class="form-control"
+                value="{{ 
+                    optional($lesson->instructor)->licence 
+                    ?? optional(optional($lesson->instructor)->documents)->licence 
+                    ?? optional(optional($lesson->instructor)->documents)->licence_2 
+                    ?? '' 
+                }}" 
+                disabled>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Resource</label>
+            <select class="form-select editable" 
+                name="sectors[{{ $index }}][resource_id]" disabled>
+                @foreach($resources as $resource)
+                    <option value="{{ $resource->id }}"
+                        {{ $sector->resource == $resource->id ? 'selected' : '' }}>
+                        {{ $resource->code ?? $resource->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
         <div class="col-md-3">
             <label class="form-label">Date</label>
             <input type="date" class="form-control editable" 
@@ -54,13 +85,6 @@
         </div>
 
         <div class="col-md-3">
-            <label class="form-label">On Blocks</label>
-            <input type="time" class="form-control editable" 
-                   name="sectors[{{ $index }}][end_time]" 
-                   value="{{ $sector->end_time ?? '' }}" disabled>
-        </div>
-
-        <div class="col-md-3">
             <label class="form-label">Takeoff</label>
             <input type="time" class="form-control editable" 
                    name="sectors[{{ $index }}][takeoff_time]" 
@@ -72,6 +96,13 @@
             <input type="time" class="form-control editable" 
                    name="sectors[{{ $index }}][landing_time]" 
                    value="{{ $sector->landing_time ?? '' }}" disabled>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">On Blocks</label>
+            <input type="time" class="form-control editable" 
+                   name="sectors[{{ $index }}][end_time]" 
+                   value="{{ $sector->end_time ?? '' }}" disabled>
         </div>
 
     </div>

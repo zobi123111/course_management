@@ -99,6 +99,25 @@ class DefLesson extends Model
         return $this->hasMany(DeferredGrading::class, 'deflesson_id', 'id');
     }
 
+    public function customTime()
+    {
+        return $this->hasMany(LessonCustomTime::class, 'lesson_id', 'lesson_id');
+    }
 
+    public function CreditedTime()
+    {
+        return $this->hasMany(LessonTimeCredited::class, 'lesson_id', 'lesson_id');
+    }
 
+    public function deferredSectors()
+    {
+        return $this->hasMany(LessonSector::class, 'lesson_id')
+                    ->where('lesson_type', 'deferred');
+    }
+
+    public function customSectors()
+    {
+        return $this->hasMany(LessonSector::class, 'lesson_id')
+                    ->where('lesson_type', 'custom');
+    }
 }
