@@ -49,6 +49,10 @@
         margin-bottom: 15px;
         background-color: #fff;
     }
+
+    .rating-select-group {
+        min-height: 501px;
+    }
 </style>
 
 <div class="main_cont_outer">
@@ -501,16 +505,18 @@
                         <div class="mt-3">
                             <label for="passport_checkbox" class="form-label">Passport</label>
                             <input type="checkbox" name="passport_checkbox" id="passport_checkbox" class="ms-2">
-                            <label for="passport_verification_required" class="form-label ms-4">Admin Verification
-                                required?</label>
-                            <input type="checkbox" name="passport_verification_required"
-                                id="passport_verification_required" class="ms-2" value="1">
+                            <label for="passport_verification_required" class="form-label ms-4">Admin Verification required?</label>
+                            <input type="checkbox" name="passport_verification_required" id="passport_verification_required" class="ms-2" value="1">
                         </div>
-                        <input type="text" name="passport" id="passport" class="form-control" style="display: none;"
-                            placeholder="Enter Passport Number">
+                        <input type="text" name="passport" id="passport" class="form-control" style="display: none;" placeholder="Enter Passport Number">
                         <div id="passport_error" class="text-danger error_e"></div>
-                        <input type="file" name="passport_file" id="passport_file" class="form-control mt-3"
-                            style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+
+                        <div class="mt-3" id="passport_expiry_div" style="display: none;">
+                            <label for="passport_expiry_date" class="form-label">Expiry Date <span class="text-danger"></span></label>
+                            <input type="date" class="form-control" name="passport_expiry_date" id="passport_expiry_date" style="display: none;">
+                        </div>
+
+                        <input type="file" name="passport_file" id="passport_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
                         <div id="passport_file_error" class="text-danger error_e"></div>
                     </div>
 
@@ -872,15 +878,17 @@
                         <label for="edit_passport_checkbox" class="form-label">Passport</label>
                         <input type="checkbox" name="edit_passport_checkbox" id="edit_passport_checkbox"
                             class="ms-2">
-                        <label for="edit_passport_verification_required" class="form-label ms-4">Admin Verification
-                            required?</label>
-                        <input type="checkbox" name="edit_passport_verification_required"
-                            id="edit_passport_verification_required" class="ms-2" value="1">
-                        <input type="text" name="edit_passport" id="edit_passport" class="form-control"
-                            style="display: none;" placeholder="Enter Passport Number">
+                        <label for="edit_passport_verification_required" class="form-label ms-4">Admin Verification required?</label>
+                        <input type="checkbox" name="edit_passport_verification_required" id="edit_passport_verification_required" class="ms-2" value="1">
+                        <input type="text" name="edit_passport" id="edit_passport" class="form-control" style="display: none;" placeholder="Enter Passport Number">
                         <div id="edit_passport_error_up" class="text-danger error_e"></div>
-                        <input type="file" name="edit_passport_file" id="edit_passport_file"
-                            class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                        
+                        <div class="mt-3" id="edit_passport_expiry_div" style="display: none;">
+                            <label class="form-label">Expiry Date <span class="text-danger"></span></label>
+                            <input type="date" class="form-control" name="edit_passport_expiry_date" id="edit_passport_expiry_date" style="display: none;">
+                        </div>
+
+                        <input type="file" name="edit_passport_file" id="edit_passport_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
                         <div id="edit_passport_file_error_up" class="text-danger error_e"></div>
 
                         <div class="col-md-6 mt-2" id="passport_file_display" style="display:none;">
@@ -1841,13 +1849,19 @@
         $('#passport_checkbox').change(function() {
             if (this.checked) {
                 $('#passport').show().prop('required', true);
+                $('#passport_expiry_div').show();
+                $('#passport_expiry_date').show().prop('required', true);
                 $('#passport_file').show().prop('required', true);
             } else {
                 $('#passport').hide().prop('required', false);
+                $('#passport_expiry_div').hide();
+                $('#passport_expiry_date').hide().prop('required', false);
                 $('#passport_file').hide().prop('required', false);
                 $('#passport').val('');
+                $('#passport_expiry_date').val('');
                 $('#passport_file').val('');
                 $('#passport_error').hide().prop('required', false);
+                $('#passport_expiry_date_error').hide().prop('required', false);
                 $('#passport_file_error').hide().prop('required', false);
             }
         });
@@ -2092,9 +2106,12 @@
         $('#edit_passport_checkbox').change(function() {
             if (this.checked) {
                 $('#edit_passport').show().prop('required', true);
+                $('#edit_passport_expiry_div').show();
+                $('#edit_passport_expiry_date').show().prop('required', false);
                 $('#edit_passport_file').show().prop('required', true);
             } else {
                 $('#edit_passport').hide().prop('required', false);
+                $('#edit_passport_expiry_div').hide();
                 $('#edit_passport_file').hide().prop('required', false);
                 $('#edit_passport').val('');
                 $('#edit_passport_file').val('');
@@ -2503,11 +2520,15 @@
                     if (response.user.passport_required) {
                         $('#edit_passport_checkbox').prop('checked', true);
                         $('#edit_passport').val(document.passport).show().prop('required', true);
+                        $('#edit_passport_expiry_div').show();
+                        $('#edit_passport_expiry_date').val(document.passport_expiry_date).show().prop('required', true);
                         $('#edit_passport_file').show().prop('required', true);
                     } else {
                         $('#edit_passport_checkbox').prop('checked', false);
                         $('#edit_passport').hide().prop('required', false);
-                        $('#passport_file').hide().prop('required', false);
+                        $('#edit_passport_expiry_div').hide();
+                        $('#edit_passport_expiry_date').hide().prop('required', false);
+                        $('#edit_passport_file').hide().prop('required', false);
 
                     }
 
