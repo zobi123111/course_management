@@ -80,5 +80,14 @@ class TrainingEventLessons extends Model
         return $this->hasMany(LessonSector::class, 'lesson_id', 'id');
     }
     
-
+    public function customTime()
+    {
+        return $this->hasMany(LessonCustomTime::class, 'lesson_id', 'lesson_id');
+    }
+    
+    public function CreditedTime()
+    {
+        return $this->hasMany(LessonTimeCredited::class, 'lesson_id', 'lesson_id');
+    }
+    
 }

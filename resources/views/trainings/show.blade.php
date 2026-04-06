@@ -863,194 +863,306 @@
 
 
                         @if($normalLessons->count())
-                        <h4 class="mb-3 text-success">
-                            <i class="text-primary bi bi-patch-question-fill me-2"></i>
-                            Lessons
-                        </h4>
-                        @foreach($normalLessons as $lesson)
-                        <div class="row mb-3 p-3 border rounded bg-light">
-                            <div class="col-md-12">
-                                <strong><i class="text-primary fas fa-book"></i> Lesson Name:</strong>
-                                <a href="/lesson-grade?lesson_id={{ encode_id($lesson->id) }}&event_id={{ encode_id($trainingEvent->id) }}" class="lesson-link" style="font-size:18px;">
-                                    <span class="text-primary">{{ $lesson->lesson->lesson_title ?? 'Untitled' }}</span>
-                                </a>
-                            </div>
+                            <h4 class="mb-3 text-success">
+                                <i class="text-primary bi bi-patch-question-fill me-2"></i>
+                                Lessons
+                            </h4>
+                            @foreach($normalLessons as $lesson)
+                                <div class="row mb-3 p-3 border rounded bg-light">
+                                    <div class="col-md-12">
+                                        <strong><i class="text-primary fas fa-book"></i> Lesson Name:</strong>
+                                        <a href="/lesson-grade?lesson_id={{ encode_id($lesson->id) }}&event_id={{ encode_id($trainingEvent->id) }}" class="lesson-link" style="font-size:18px;">
+                                            <span class="text-primary">{{ $lesson->lesson->lesson_title ?? 'Untitled' }}</span>
+                                        </a>
+                                    </div>
 
-                            <div class="col-md-2 mt-3">
-                                <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
-                                {{ optional($lesson->instructor)->fname }} {{ optional($lesson->instructor)->lname }}
-                            </div>
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
+                                        {{ optional($lesson->instructor)->fname }} {{ optional($lesson->instructor)->lname }}
+                                    </div>
 
-                            <div class="col-md-2 mt-3">
-                                <strong><i class="text-primary bi bi-card-text"></i> License:</strong>
-                                {{ $lesson->instructor_license_number ?? 'N/A' }}
-                            </div>
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="text-primary bi bi-card-text"></i> License:</strong>
+                                        {{ $lesson->instructor_license_number ?? 'N/A' }}
+                                    </div>
 
-                            <div class="col-md-2 mt-3">
-                                <strong><i class="text-primary fas fa-toolbox"></i> Resource:</strong><br>
-                                {{ optional($lesson->resource)->name ?? 'N/A' }}
-                            </div>
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="text-primary fas fa-toolbox"></i> Resource:</strong><br>
+                                        {{ optional($lesson->resource)->name ?? 'N/A' }}
+                                    </div>
 
-                            <div class="col-md-2 mt-3">
-                                <strong><i class="text-primary fas fa-calendar-day"></i> Date:</strong><br>
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="text-primary fas fa-calendar-day"></i> Date:</strong><br>
 
-                                @if(!empty($lesson->lesson_date))
-                                {{ date('d-m-Y', strtotime($lesson->lesson_date)) }}
-                                @endif
-                            </div>
+                                        @if(!empty($lesson->lesson_date))
+                                        {{ date('d-m-Y', strtotime($lesson->lesson_date)) }}
+                                        @endif
+                                    </div>
 
-                            <!-- <div class="col-md-2 mt-3">
+                                    <!-- <div class="col-md-2 mt-3">
                                         <strong><i class="text-primary fas fa-clock"></i> Start:</strong><br>
                                         {{ date('h:i A', strtotime($lesson->start_time)) }}
                                     </div> -->
-                            <div class="col-md-2 mt-3">
-                                <strong><i class="text-primary fas fa-clock"></i> Off blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
-                                @if(!empty($lesson->start_time) && $lesson->start_time !== '00:00:00')
-                                {{ date('h:i A', strtotime($lesson->start_time)) }}
-                                @elseif($lesson->start_time === '00:00:00')
-                                {{ $lesson->start_time }}
-                                @else
-                                -
-                                @endif
-                            </div>
-                            <div class="col-md-2 mt-3">
-                                <strong><i class="text-primary fas fa-clock"></i> On blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
-                                @if(!empty($lesson->end_time) && $lesson->end_time !== '00:00:00')
-                                {{ date('h:i A', strtotime($lesson->end_time)) }}
-                                @elseif($lesson->end_time === '00:00:00')
-                                {{ $lesson->end_time }}
-                                @else
-                                -
-                                @endif
-                            </div>
+                                    
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="text-primary fas fa-clock"></i> Off blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                        @if(!empty($lesson->start_time) && $lesson->start_time !== '00:00:00')
+                                        {{ date('h:i A', strtotime($lesson->start_time)) }}
+                                        @elseif($lesson->start_time === '00:00:00')
+                                        {{ $lesson->start_time }}
+                                        @else
+                                        -
+                                        @endif
+                                    </div>
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="text-primary fas fa-clock"></i> On blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                        @if(!empty($lesson->end_time) && $lesson->end_time !== '00:00:00')
+                                        {{ date('h:i A', strtotime($lesson->end_time)) }}
+                                        @elseif($lesson->end_time === '00:00:00')
+                                        {{ $lesson->end_time }}
+                                        @else
+                                        -
+                                        @endif
+                                    </div>
 
-                            <!-- <div class="col-md-2 mt-2">
+                                    <!-- <div class="col-md-2 mt-2">
                                         <strong><i class="text-primary fas fa-clock"></i> End:</strong><br>
                                         {{ date('h:i A', strtotime($lesson->end_time)) }}
                                     </div> -->
 
-                            <div class="col-md-2 mt-3">
-                                <strong><i class="text-primary fas fa-plane-departure"></i> Departure:</strong><br>
-                                {{ $lesson->departure_airfield ?? 'N/A' }}
-                            </div>
-
-                            <div class="col-md-2 mt-3">
-                                <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
-                                {{ $lesson->destination_airfield ?? 'N/A' }}
-                            </div>
-
-                            <div class="col-md-2 mt-3">
-                                @php $lessonType = $lesson?->lesson?->lesson_type ?? null; @endphp
-                                <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
-                                {{ ucfirst($lessonType) ?? 'N/A' }}
-                            </div>
-
-                            @if($lessonType === 'groundschool')
-                            <div class="col-md-2 mt-3">
-                                <strong><i class="text-primary fas fa-hourglass-half"></i> Duration:</strong><br>
-                                {{ $trainingEvent->course->groundschool_hours ?? 'N/A' }}
-                            </div>
-                            @elseif($lessonType === 'simulator')
-                            <div class="col-md-2 mt-3">
-                                <strong><i class="text-primary fas fa-hourglass-half"></i> Duration:</strong><br>
-                                {{ $trainingEvent->course->simulator_hours ?? 'N/A' }}
-                            </div>
-                            @endif
-
-                            <div class="col-md-2 mt-3">
-                                <strong><i class="text-primary fas fa-hourglass-half"></i> Credited Hours:</strong><br>
-                                {{ $lesson->hours_credited ?? '00:00' }}
-                            </div>
-
-
-                            <!-- // Operation -->
-                            <?php // dump($lesson->operation1); 
-                            ?>
-                            @if(!empty($lesson->operation1))
-                            <div class="col-md-2 mt-3">
-                                <strong><i class="text-primary fas fa-hourglass-half"></i> Operation:</strong><br>
-                                @if($lesson->operation1 == 1)
-                                PF in LHS
-                                @elseif($lesson->operation1 == 2)
-                                PM in LHS
-                                @elseif($lesson->operation1 == 3)
-                                PF in RHS
-                                @elseif($lesson->operation1 == 4)
-                                PM in RHS
-                                @endif
-                            </div>
-                            @endif
-
-                            <!-- // Rank -->
-                            @if(!empty($lesson->rank))
-                            <div class="col-md-2 mt-3">
-                                <strong><i class="text-primary fas fa-hourglass-half"></i> Rank:</strong><br>
-                                @if($lesson->rank == 1)
-                                Captain
-                                @elseif($lesson->rank == 2)
-                                First Officer
-                                @elseif($lesson->rank == 3)
-                                Second Officer
-                                @endif
-                            </div>
-                            @endif
-
-
-                            @php
-                            $customTime = $lesson->lesson->customTime ?? null;
-                            @endphp
-
-                            @if($customTime)
-                            <div class="col-md-6 mt-2">
-                                <strong><i class="text-primary fas fa-clock"></i> Custom Time:</strong><br>
-                                <span>Name: {{ $customTime->name }}</span><br>
-                                <span>Allotted: {{ $customTime->given_hours }}</span><br>
-                                <span>Credited: {{ $lesson->custom_hours_credited ?? '00:00' }}</span>
-                            </div>
-                            @endif
-
-                            <!-- {{-- Lesson Summary --}} -->
-                            @if(!empty($lesson->lesson_summary))
-                            <div class="col-md-12 mt-3">
-                                <div class="card shadow-sm border-0">
-                                    <div class="card-header bg-primary text-white py-0">
-                                        <i class="text-primary bi bi-journal-text me-2"></i> Lesson Summary
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="text-primary fas fa-plane-departure"></i> Departure:</strong><br>
+                                        {{ $lesson->departure_airfield ?? 'N/A' }}
                                     </div>
-                                    <div class="card-body">
-                                        @if(!empty($lesson->lesson_summary))
-                                        <p class="mb-0 text-muted">
-                                            {{ $lesson->lesson_summary }}
-                                        </p>
-                                        @else
-                                        <p class="mb-0 text-muted fst-italic">No Lesson summary provided.</p>
+
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
+                                        {{ $lesson->destination_airfield ?? 'N/A' }}
+                                    </div>
+
+                                    <div class="col-md-2 mt-3">
+                                        @php $lessonType = $lesson?->lesson?->lesson_type ?? null; @endphp
+                                        <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
+                                        {{ ucfirst($lessonType) ?? 'N/A' }}
+                                    </div>
+
+                                    @if($lessonType === 'groundschool')
+                                        <div class="col-md-2 mt-3">
+                                            <strong><i class="text-primary fas fa-hourglass-half"></i> Duration:</strong><br>
+                                            {{ $trainingEvent->course->groundschool_hours ?? 'N/A' }}
+                                        </div>
+                                    @elseif($lessonType === 'simulator')
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Duration:</strong><br>
+                                        {{ $trainingEvent->course->simulator_hours ?? 'N/A' }}
+                                    </div>
+                                    @endif
+
+                                    @php
+                                        $credited = $lesson->hours_credited ?? '00:00';
+
+                                        list($ch, $cm) = explode(':', $credited);
+                                        $totalMinutes = ($ch * 60) + $cm;
+
+                                        foreach($lesson->sectors as $sector) {
+                                            if(!empty($sector->start_time) && !empty($sector->end_time) && 
+                                            $sector->start_time !== '00:00:00' && $sector->end_time !== '00:00:00') 
+                                            {
+                                                $start = strtotime($sector->start_time);
+                                                $end   = strtotime($sector->end_time);
+
+                                                if($end > $start) {
+                                                    $diffMin = ($end - $start) / 60; // difference in minutes
+                                                    $totalMinutes += $diffMin;
+                                                }
+                                            }
+                                        }
+
+                                        $finalHours = floor($totalMinutes / 60);
+                                        $finalMinutes = $totalMinutes % 60;
+                                        $finalTime = sprintf('%02d:%02d', $finalHours, $finalMinutes);
+                                    @endphp
+                                    <div class="col-md-2 mt-3">
+                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Credited Hours:</strong><br>
+                                        <!-- {{ $lesson->hours_credited ?? '00:00' }} -->
+                                        {{ $finalTime }}
+                                    </div>
+
+
+                                    <!-- // Operation -->
+                                    <?php // dump($lesson->operation1); 
+                                    ?>
+                                    @if(!empty($lesson->operation1))
+                                        <div class="col-md-2 mt-3">
+                                            <strong><i class="text-primary fas fa-hourglass-half"></i> Operation:</strong><br>
+                                            @if($lesson->operation1 == 1)
+                                            PF in LHS
+                                            @elseif($lesson->operation1 == 2)
+                                            PM in LHS
+                                            @elseif($lesson->operation1 == 3)
+                                            PF in RHS
+                                            @elseif($lesson->operation1 == 4)
+                                            PM in RHS
+                                            @endif
+                                        </div>
+                                    @endif
+
+                                    <!-- // Rank -->
+                                    @if(!empty($lesson->rank))
+                                        <div class="col-md-2 mt-3">
+                                            <strong><i class="text-primary fas fa-hourglass-half"></i> Rank:</strong><br>
+                                            @if($lesson->rank == 1)
+                                            Captain
+                                            @elseif($lesson->rank == 2)
+                                            First Officer
+                                            @elseif($lesson->rank == 3)
+                                            Second Officer
+                                            @endif
+                                        </div>
+                                    @endif
+
+                                    <div class="col-md-2 mt-3"></div>
+
+
+                                    <!-- @php
+                                        $customTime = $lesson->lesson->customTime ?? null;
+                                    @endphp
+
+                                    @if($customTime)
+                                    <div class="col-md-6 mt-2">
+                                        <strong><i class="text-primary fas fa-clock"></i> Custom Time:</strong><br>
+                                        <span>Name: {{ $customTime->name }}</span><br>
+                                        <span>Allotted: {{ $customTime->given_hours }}</span><br>
+                                        <span>Credited: {{ $lesson->custom_hours_credited ?? '00:00' }}</span>
+                                    </div>
+                                    @endif -->
+                                    @php
+                                        $singleCustomTime = $lesson->lesson->customTime ?? null;
+                                        $multipleCustomTimes = $lesson->lesson->lessoncustomTime ?? collect();
+                                    @endphp
+
+                                    @if($singleCustomTime)
+                                        <div class="col-md-3 mt-2">
+                                            <strong><i class="text-primary fas fa-clock"></i> Custom Time:</strong><br>
+                                            <span>Name: {{ $singleCustomTime->name }}</span><br>
+                                            <span>Allotted: {{ $singleCustomTime->given_hours ?? $singleCustomTime->hours }}</span><br>
+                                            <span>Credited: {{ $lesson->custom_hours_credited ?? '00:00' }}</span>
+                                        </div>
+                                    @elseif($multipleCustomTimes->count())
+                                        @foreach($multipleCustomTimes as $ct)
+                                            <div class="col-md-2 mt-2">
+                                                <strong><i class="text-primary fas fa-clock"></i> Custom Time(s):</strong><br>
+                                                <div class="mb-1">
+                                                    <span>Name: {{ $ct->name }}</span><br>
+                                                    <span>Allotted: {{ $ct->given_hours ?? $ct->hours }}</span><br>
+                                                    <span>Credited: {{ $lesson->custom_hours_credited ?? '00:00' }}</span>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    @endif
+
+
+                                    @if($lesson->sectors->isNotEmpty())
+                                        <h5 class="details-card-title d-flex justify-content-between align-items-center mt-3"> <strong> Additional Sectors </strong></h5>
+
+                                        <div class="row mb-3 p-3 border rounded bg-light">
+                                            @foreach($lesson->sectors as $sector)
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
+                                                    {{ optional($lesson->instructor)->fname }} {{ optional($lesson->instructor)->lname }}
+                                                </div>
+
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary bi bi-card-text"></i> License:</strong>
+                                                    {{ $lesson->instructor_license_number ?? 'N/A' }}
+                                                </div>
+
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary fas fa-toolbox"></i> Resource:</strong><br>
+                                                    {{ $sector->resourceData->name ?? 'N/A' }}
+                                                </div>
+
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary fas fa-calendar-day"></i> Date:</strong><br>
+
+                                                    @if(!empty($sector->lesson_date))
+                                                    {{ date('d-m-Y', strtotime($sector->lesson_date)) }}
+                                                    @endif
+                                                </div>
+                                                
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary fas fa-clock"></i> Off blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                                    @if(!empty($sector->start_time) && $sector->start_time !== '00:00:00')
+                                                        {{ date('h:i A', strtotime($sector->start_time)) }}
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </div>
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary fas fa-clock"></i> On blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                                    @if(!empty($sector->end_time) && $sector->end_time !== '00:00:00')
+                                                        {{ date('h:i A', strtotime($sector->end_time)) }}
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </div>
+
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary fas fa-plane-departure"></i> Departure:</strong><br>
+                                                    {{ $sector->departure_airfield ?? 'N/A' }}
+                                                </div>
+
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
+                                                    {{ $sector->destination_airfield ?? 'N/A' }}
+                                                </div>
+                                            @endforeach
+                                        </div>
+
+                                    @endif
+                                    <!-- {{-- Lesson Summary --}} -->
+                                    @if(!empty($lesson->lesson_summary))
+                                        <div class="col-md-12 mt-3">
+                                            <div class="card shadow-sm border-0">
+                                                <div class="card-header bg-primary text-white py-0">
+                                                    <i class="text-primary bi bi-journal-text me-2"></i> Lesson Summary
+                                                </div>
+                                                <div class="card-body">
+                                                    @if(!empty($lesson->lesson_summary))
+                                                    <p class="mb-0 text-muted">
+                                                        {{ $lesson->lesson_summary }}
+                                                    </p>
+                                                    @else
+                                                    <p class="mb-0 text-muted fst-italic">No Lesson summary provided.</p>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    @if(Auth::user()->role == "1")
+                                        <!-- //  Instructor Comment -->
+                                        @if(!empty($lesson->instructor_comment))
+                                            <div class="col-md-12 mt-3">
+                                                <div class="card shadow-sm border-0">
+                                                    <div class="card-header bg-primary text-white py-0">
+                                                        <i class="text-primary bi bi-journal-text me-2"></i> Instructor Comment
+                                                    </div>
+                                                    <div class="card-body">
+                                                        @if(!empty($lesson->instructor_comment ))
+                                                        <p class="mb-0 text-muted">
+                                                            {{ $lesson->instructor_comment }}
+                                                        </p>
+                                                        @else
+                                                        <p class="mb-0 text-muted fst-italic">No Instructor Comment provided.</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
                                         @endif
-                                    </div>
+                                    @endif
                                 </div>
-                            </div>
-                            @endif
-                            @if(Auth::user()->role == "1")
-                            <!-- //  Instructor Comment -->
-                            @if(!empty($lesson->instructor_comment))
-                            <div class="col-md-12 mt-3">
-                                <div class="card shadow-sm border-0">
-                                    <div class="card-header bg-primary text-white py-0">
-                                        <i class="text-primary bi bi-journal-text me-2"></i> Instructor Comment
-                                    </div>
-                                    <div class="card-body">
-                                        @if(!empty($lesson->instructor_comment ))
-                                        <p class="mb-0 text-muted">
-                                            {{ $lesson->instructor_comment }}
-                                        </p>
-                                        @else
-                                        <p class="mb-0 text-muted fst-italic">No Instructor Comment provided.</p>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
-                            @endif
-                        </div>
-                        @endforeach
+                            @endforeach
                         @endif
 
                         @if($quizLessons->count())
@@ -1190,145 +1302,205 @@
                         @endif
 
                         @if($deferredLessons->isNotEmpty())
-                        <strong><i class="text-primary fas fa-exclamation-circle"></i> Deferred Lessons:</strong>
-                        @foreach($deferredLessons as $def)
+                            <strong><i class="text-primary fas fa-exclamation-circle"></i> Deferred Lessons:</strong>
+                            @foreach($deferredLessons as $def)
 
-                        @php
-                        $start = strtotime($def->start_time);
-                        $end = strtotime($def->end_time);
-                        $duration = max(0, $end - $start);
+                                @php
+                                    $start = strtotime($def->start_time);
+                                    $end = strtotime($def->end_time);
+                                    $duration = max(0, $end - $start);
 
-                        $documents = $def?->instructor?->documents;
+                                    $documents = $def?->instructor?->documents;
 
-                        if ($documents && !empty($documents->licence_2)) {
-                        $instructor_lic_no = $documents->licence_2;
-                        } elseif ($documents && !empty($documents->licence)) {
-                        $instructor_lic_no = $documents->licence;
-                        } else {
-                        $instructor_lic_no = 'N/A';
-                        }
-                        @endphp
-                        <div class="row mb-3 p-3 border rounded bg-light shadow-sm">
-                            <div class="col-md-6 mb-2">
-                                <strong><i class="text-primary fas fa-book"></i> Lesson Name:</strong>
-                                <span class="text-primary">{{ $def->lesson_title ?? 'Untitled' }}</span>
-                            </div>
+                                    if ($documents && !empty($documents->licence_2)) {
+                                        $instructor_lic_no = $documents->licence_2;
+                                    } elseif ($documents && !empty($documents->licence)) {
+                                        $instructor_lic_no = $documents->licence;
+                                    } else {
+                                        $instructor_lic_no = 'N/A';
+                                    }
+                                @endphp
 
-                            @if(Auth::user()->role == "1")
-                            <div class="col-md-6 mb-2" style="text-align:end">
-                                <button id="edit_deferred_lesson" class="btn btn-primary" data-event_id="{{ $def->event_id }}" data-deferred-lesson-id="{{$def->id }}" data-lesson-Type="deferred">Edit</button>
-
-                                <button id="delete_deferred_lesson" class="btn btn-danger" data-event_id="{{ $def->event_id }}" data-deferred-lesson-id="{{$def->id }}" data-lesson-Type="deferred">Delete</button>
-                            </div>
-                            @endif
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
-                                {{ optional($def->instructor)->fname }} {{ optional($def->instructor)->lname }}
-                            </div>
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary bi bi-card-text"></i> License:</strong>
-                                {{ $instructor_lic_no }}
-                            </div>
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-toolbox"></i> Resource:</strong><br>
-                                {{ $def->resource->name ?? 'N/A' }}
-                            </div>
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-calendar-day"></i> Date:</strong><br>
-                                {{ date('d-m-Y', strtotime($def->lesson_date)) }}
-                            </div>
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-clock"></i> Off blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
-                                {{ date('h:i A', strtotime($def->start_time)) }}
-                            </div>
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-clock"></i> On blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
-                                {{ date('h:i A', strtotime($def->end_time)) }}
-                            </div>
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-plane-departure"></i> Departure:</strong><br>
-                                {{ strtoupper($def->departure_airfield) ?? 'N/A' }}
-                            </div>
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
-                                {{ strtoupper($def->destination_airfield) ?? 'N/A' }}
-                            </div>
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
-
-                                {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
-
-                            </div>
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-hourglass-half"></i> Credited Hours:</strong><br>
-                                {{ $def->defLesson->hours_credited ?? '00:00' }}
-                            </div>
-                            @if($def->operation != 0)
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-hourglass-half"></i> Operation:</strong><br>
-                                @if($def->operation == 1)
-                                PF in LHS
-                                @elseif($def->operation == 2)
-                                PM in LHS
-                                @elseif($def->operation == 3)
-                                PF in RHS
-                                @elseif($def->operation == 4)
-                                PM in RHS
-                                @else
-                                N/A
-                                @endif
-                            </div>
-                            @endif
-
-                            <!-- {{-- Lesson Summary --}} -->
-                            @if(!empty($def->lesson_summary))
-                            <div class="col-md-12 mt-3">
-                                <div class="card shadow-sm border-0">
-                                    <div class="card-header bg-primary text-white py-0">
-                                        <i class="text-primary bi bi-journal-text me-2"></i> Lesson Summary
+                                <div class="row mb-3 p-3 border rounded bg-light shadow-sm">
+                                    <div class="col-md-6 mb-2">
+                                        <strong><i class="text-primary fas fa-book"></i> Lesson Name:</strong>
+                                        <span class="text-primary">{{ $def->lesson_title ?? 'Untitled' }}</span>
                                     </div>
-                                    <div class="card-body">
-                                        @if(!empty($def->lesson_summary))
-                                        <p class="mb-0 text-muted">
-                                            {{ $def->lesson_summary }}
-                                        </p>
-                                        @else
-                                        <p class="mb-0 text-muted fst-italic">No Lesson summary provided.</p>
-                                        @endif
+
+                                    @if(Auth::user()->role == "1")
+                                    <div class="col-md-6 mb-2" style="text-align:end">
+                                        <button id="edit_deferred_lesson" class="btn btn-primary" data-event_id="{{ $def->event_id }}" data-deferred-lesson-id="{{$def->id }}" data-lesson-Type="deferred">Edit</button>
+
+                                        <button id="delete_deferred_lesson" class="btn btn-danger" data-event_id="{{ $def->event_id }}" data-deferred-lesson-id="{{$def->id }}" data-lesson-Type="deferred">Delete</button>
                                     </div>
+                                    @endif
+
+                                    <div class="col-md-2 mt-2">
+                                        <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
+                                        {{ optional($def->instructor)->fname }} {{ optional($def->instructor)->lname }}
+                                    </div>
+
+                                    <div class="col-md-2 mt-2">
+                                        <strong><i class="text-primary bi bi-card-text"></i> License:</strong>
+                                        {{ $instructor_lic_no }}
+                                    </div>
+
+                                    <div class="col-md-2 mt-2">
+                                        <strong><i class="text-primary fas fa-toolbox"></i> Resource:</strong><br>
+                                        {{ $def->resource->name ?? 'N/A' }}
+                                    </div>
+
+                                    <div class="col-md-2 mt-2">
+                                        <strong><i class="text-primary fas fa-calendar-day"></i> Date:</strong><br>
+                                        {{ date('d-m-Y', strtotime($def->lesson_date)) }}
+                                    </div>
+
+                                    <div class="col-md-2 mt-2">
+                                        <strong><i class="text-primary fas fa-clock"></i> Off blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                        {{ date('h:i A', strtotime($def->start_time)) }}
+                                    </div>
+
+                                    <div class="col-md-2 mt-2">
+                                        <strong><i class="text-primary fas fa-clock"></i> On blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                        {{ date('h:i A', strtotime($def->end_time)) }}
+                                    </div>
+
+                                    <div class="col-md-2 mt-2">
+                                        <strong><i class="text-primary fas fa-plane-departure"></i> Departure:</strong><br>
+                                        {{ strtoupper($def->departure_airfield) ?? 'N/A' }}
+                                    </div>
+
+                                    <div class="col-md-2 mt-2">
+                                        <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
+                                        {{ strtoupper($def->destination_airfield) ?? 'N/A' }}
+                                    </div>
+                                    <div class="col-md-2 mt-2">
+                                        <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
+
+                                        {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
+
+                                    </div>
+                                    <div class="col-md-2 mt-2">
+                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Credited Hours:</strong><br>
+                                        {{ $def->defLesson->hours_credited ?? '00:00' }}
+                                    </div>
+                                    @if($def->operation != 0)
+                                        <div class="col-md-2 mt-2">
+                                            <strong><i class="text-primary fas fa-hourglass-half"></i> Operation:</strong><br>
+                                            @if($def->operation == 1)
+                                                PF in LHS
+                                            @elseif($def->operation == 2)
+                                                PM in LHS
+                                            @elseif($def->operation == 3)
+                                                PF in RHS
+                                            @elseif($def->operation == 4)
+                                                PM in RHS
+                                            @else
+                                                N/A
+                                            @endif
+                                        </div>
+                                    @endif
+
+                                    @if($def->deferredSectors->isNotEmpty())
+                                        <h5 class="details-card-title d-flex justify-content-between align-items-center mt-3"> <strong> Additional Sectors </strong> </h5>
+
+                                        <div class="row mb-3 p-3 border rounded bg-light">
+                                            @foreach($def->deferredSectors as $sector)
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
+                                                    {{ optional($def->instructor)->fname }} {{ optional($def->instructor)->lname }}
+                                                </div>
+
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary bi bi-card-text"></i> License:</strong>
+                                                    {{ $instructor_lic_no }}
+                                                </div>
+
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary fas fa-toolbox"></i> Resource:</strong><br>
+                                                    {{ $sector->resourceData->name ?? 'N/A' }}
+                                                </div>
+
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary fas fa-calendar-day"></i> Date:</strong><br>
+
+                                                    @if(!empty($sector->lesson_date))
+                                                        {{ date('d-m-Y', strtotime($sector->lesson_date)) }}
+                                                    @endif
+                                                </div>
+                                                
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary fas fa-clock"></i> Off blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                                    @if(!empty($sector->start_time) && $sector->start_time !== '00:00:00')
+                                                        {{ date('h:i A', strtotime($sector->start_time)) }}
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </div>
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary fas fa-clock"></i> On blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                                    @if(!empty($sector->end_time) && $sector->end_time !== '00:00:00')
+                                                        {{ date('h:i A', strtotime($sector->end_time)) }}
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </div>
+
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary fas fa-plane-departure"></i> Departure:</strong><br>
+                                                    {{ $sector->departure_airfield ?? 'N/A' }}
+                                                </div>
+
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
+                                                    {{ $sector->destination_airfield ?? 'N/A' }}
+                                                </div>
+                                            @endforeach
+                                        </div>
+
+                                    @endif
+
+                                    <!-- {{-- Lesson Summary --}} -->
+                                    @if(!empty($def->lesson_summary))
+                                        <div class="col-md-12 mt-3">
+                                            <div class="card shadow-sm border-0">
+                                                <div class="card-header bg-primary text-white py-0">
+                                                    <i class="text-primary bi bi-journal-text me-2"></i> Lesson Summary
+                                                </div>
+                                                <div class="card-body">
+                                                    @if(!empty($def->lesson_summary))
+                                                        <p class="mb-0 text-muted">
+                                                            {{ $def->lesson_summary }}
+                                                        </p>
+                                                    @else
+                                                        <p class="mb-0 text-muted fst-italic">No Lesson summary provided.</p>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    <!-- //  Instructor Comment -->
+                                    @if(!empty($def->instructor_comment))
+                                        <div class="col-md-12 mt-3">
+                                            <div class="card shadow-sm border-0">
+                                                <div class="card-header bg-primary text-white py-0">
+                                                    <i class="text-primary bi bi-journal-text me-2"></i> Instructor Comment
+                                                </div>
+                                                <div class="card-body">
+                                                    @if(!empty($def->instructor_comment ))
+                                                        <p class="mb-0 text-muted">
+                                                            {{ $def->instructor_comment }}
+                                                        </p>
+                                                    @else
+                                                        <p class="mb-0 text-muted fst-italic">No Instructor Comment provided.</p>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
                                 </div>
-                            </div>
-                            @endif
-
-                            <!-- //  Instructor Comment -->
-                            @if(!empty($def->instructor_comment))
-                            <div class="col-md-12 mt-3">
-                                <div class="card shadow-sm border-0">
-                                    <div class="card-header bg-primary text-white py-0">
-                                        <i class="text-primary bi bi-journal-text me-2"></i> Instructor Comment
-                                    </div>
-                                    <div class="card-body">
-                                        @if(!empty($def->instructor_comment ))
-                                        <p class="mb-0 text-muted">
-                                            {{ $def->instructor_comment }}
-                                        </p>
-                                        @else
-                                        <p class="mb-0 text-muted fst-italic">No Instructor Comment provided.</p>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
-                        </div>
-                        @endforeach
+                            @endforeach
                         @endif
 
                         <!--  -- Custom Lesson   -->
@@ -1337,18 +1509,19 @@
                         <strong class="mt-3"><i class="text-primary fas fa-exclamation-circle"></i> Custom Lessons:</strong>
                         @foreach($customLessons as $def)
                         @php
-                        $start = strtotime($def->start_time);
-                        $end = strtotime($def->end_time);
-                        $duration = max(0, $end - $start);
+                            $start = strtotime($def->start_time);
+                            $end = strtotime($def->end_time);
+                            $duration = max(0, $end - $start);
 
-                        $documents = $def?->instructor?->documents;
-                        if ($documents && $documents->licence) {
-                        $instructor_lic_no = $documents->licence;
-                        } elseif ($documents && $documents->licence_2) {
-                        $instructor_lic_no = $documents->licence_2;
-                        } else {
-                        $instructor_lic_no = 'N/A';
-                        }
+                            $documents = $def?->instructor?->documents;
+
+                            if ($documents && $documents->licence) {
+                                $instructor_lic_no = $documents->licence;
+                            } elseif ($documents && $documents->licence_2) {
+                                $instructor_lic_no = $documents->licence_2;
+                            } else {
+                                $instructor_lic_no = 'N/A';
+                            }
                         @endphp
 
                         <div class="row mb-3 p-3 border rounded bg-light shadow-sm">
@@ -1414,19 +1587,77 @@
                             <div class="col-md-2 mt-2">
                                 <strong><i class="text-primary fas fa-hourglass-half"></i> Operation:</strong><br>
                                 @if($def->operation == 1)
-                                PF in LHS
+                                    PF in LHS
                                 @elseif($def->operation == 2)
-                                PM in LHS
+                                    PM in LHS
                                 @elseif($def->operation == 3)
-                                PF in RHS
+                                    PF in RHS
                                 @elseif($def->operation == 4)
-                                PM in RHS
+                                    PM in RHS
                                 @else
-                                N/A
+                                    N/A
                                 @endif
                             </div>
                             @endif
 
+                            @if($def->customSectors->isNotEmpty())
+                                <h5 class="details-card-title d-flex justify-content-between align-items-center mt-3"> <strong> Additional Sectors </strong> </h5>
+
+                                <div class="row mb-3 p-3 border rounded bg-light">
+                                    @foreach($def->customSectors as $sector)
+                                        <div class="col-md-2 mt-3">
+                                            <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
+                                            {{ optional($def->instructor)->fname }} {{ optional($def->instructor)->lname }}
+                                        </div>
+
+                                        <div class="col-md-2 mt-3">
+                                            <strong><i class="text-primary bi bi-card-text"></i> License:</strong>
+                                            {{ $instructor_lic_no }}
+                                        </div>
+
+                                        <div class="col-md-2 mt-3">
+                                            <strong><i class="text-primary fas fa-toolbox"></i> Resource:</strong><br>
+                                            {{ $sector->resourceData->name ?? 'N/A' }}
+                                        </div>
+
+                                        <div class="col-md-2 mt-3">
+                                            <strong><i class="text-primary fas fa-calendar-day"></i> Date:</strong><br>
+
+                                            @if(!empty($sector->lesson_date))
+                                            {{ date('d-m-Y', strtotime($sector->lesson_date)) }}
+                                            @endif
+                                        </div>
+                                        
+                                        <div class="col-md-2 mt-3">
+                                            <strong><i class="text-primary fas fa-clock"></i> Off blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                            @if(!empty($sector->start_time) && $sector->start_time !== '00:00:00')
+                                                {{ date('h:i A', strtotime($sector->start_time)) }}
+                                            @else
+                                                -
+                                            @endif
+                                        </div>
+                                        <div class="col-md-2 mt-3">
+                                            <strong><i class="text-primary fas fa-clock"></i> On blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                            @if(!empty($sector->end_time) && $sector->end_time !== '00:00:00')
+                                                {{ date('h:i A', strtotime($sector->end_time)) }}
+                                            @else
+                                                -
+                                            @endif
+                                        </div>
+
+                                        <div class="col-md-2 mt-3">
+                                            <strong><i class="text-primary fas fa-plane-departure"></i> Departure:</strong><br>
+                                            {{ $sector->departure_airfield ?? 'N/A' }}
+                                        </div>
+
+                                        <div class="col-md-2 mt-3">
+                                            <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
+                                            {{ $sector->destination_airfield ?? 'N/A' }}
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                            @endif
                             <!-- {{-- Lesson Summary --}} -->
                             @if(!empty($def->lesson_summary))
                             <div class="col-md-12 mt-3">
@@ -1508,141 +1739,236 @@
                                 @if($trainingEvent?->course?->course_type === 'one_event')
 
                                 @php
-                                $lessonType = $eventLesson?->lesson?->lesson_type ?? null;
-                                $credited = strtotime("1970-01-01 {$eventLesson?->hours_credited}") ?: 0;
-                                $customCredited = strtotime("1970-01-01 {$eventLesson?->custom_hours_credited}") ?: 0;
-                                $customTime = $eventLesson?->lesson?->customTime ?? null;
-                                $totals = [
-                                'groundschool' => ['duration' => 0, 'credited' => 0],
-                                'simulator' => ['duration' => 0, 'credited' => 0],
-                                'flight' => ['credited' => 0],
-                                'custom' => [],
-                                'deferred' => 0,
-                                ];
+                                    $lessonType = $eventLesson?->lesson?->lesson_type ?? null;
+                                    $credited = strtotime("1970-01-01 {$eventLesson?->hours_credited}") ?: 0;
+                                    $customCredited = strtotime("1970-01-01 {$eventLesson?->custom_hours_credited}") ?: 0;
+                                    
+                                    $singleCustomTime = $eventLesson?->lesson?->customTime ?? null;
+                                    $multiCustomTimes = $eventLesson?->lesson?->lessoncustomTime ?? collect();
 
-                                if ($lessonType === 'groundschool') {
-                                $groundschoolLessons = $trainingEvent->eventLessons->filter(function ($lesson) {
-                                return $lesson->lesson?->lesson_type === 'groundschool';
-                                });
-                                $totals['groundschool']['duration'] = ($trainingEvent->course->groundschool_hours ?? 0) * $groundschoolLessons->count();
-                                $totals['groundschool']['credited'] = $credited;
-                                } elseif ($lessonType === 'simulator') {
-                                $totals['simulator']['duration'] = $trainingEvent->course->simulator_hours ?? 0;
-                                $totals['simulator']['credited'] = $credited;
-                                } elseif ($lessonType === 'flight') {
-                                $totals['flight']['credited'] = $credited;
-                                }
+                                    if ($singleCustomTime) {
+                                        $totals['custom'][$singleCustomTime->name]['allotted'] = $singleCustomTime->hours;
+                                        $totals['custom'][$singleCustomTime->name]['credited'] = $customCredited;
+                                    }
+                                    if ($multiCustomTimes->count()) {
+                                        foreach ($multiCustomTimes as $ct) {
+                                            $name = $ct->name;
 
-                                if ($customTime) {
-                                $totals['custom'][$customTime->name]['allotted'] = $customTime->given_hours;
-                                $totals['custom'][$customTime->name]['credited'] = $customCredited;
-                                }
+                                            $totals['custom'][$name]['allotted'] = $ct->hours;
+                                            $totals['custom'][$name]['credited'] = ($totals['custom'][$name]['credited'] ?? 0) + $customCredited;
+                                        }
+                                    }
 
-                                if(isset($deferredLessons) && $deferredLessons->isNotEmpty()) {
-                                foreach($deferredLessons as $defLesson) {
-                                $start = strtotime($defLesson->start_time);
-                                $end = strtotime($defLesson->end_time);
-                                $duration = max(0, $end - $start);
-                                $totals['deferred'] += $duration;
-                                }
-                                }
+                                    $totals = [
+                                        'groundschool' => ['duration' => 0, 'credited' => 0],
+                                        'simulator' => ['duration' => 0, 'credited' => 0],
+                                        'flight' => ['credited' => 0],
+                                        'custom' => [],
+                                        'deferred' => 0,
+                                    ];
+
+                                    if ($lessonType === 'groundschool') {
+                                        $groundschoolLessons = $trainingEvent->eventLessons->filter(function ($lesson) {
+                                        return $lesson->lesson?->lesson_type === 'groundschool';
+                                        });
+                                        $totals['groundschool']['duration'] = ($trainingEvent->course->groundschool_hours ?? 0) * $groundschoolLessons->count();
+                                        $totals['groundschool']['credited'] = $credited;
+                                    } elseif ($lessonType === 'simulator') {
+                                        $totals['simulator']['duration'] = $trainingEvent->course->simulator_hours ?? 0;
+                                        $totals['simulator']['credited'] = $credited;
+                                    } elseif ($lessonType === 'flight') {
+                                        $totals['flight']['credited'] = $credited;
+                                    }
+
+
+                                    if(isset($deferredLessons) && $deferredLessons->isNotEmpty()) {
+                                        foreach($deferredLessons as $defLesson) {
+                                            $start = strtotime($defLesson->start_time);
+                                            $end = strtotime($defLesson->end_time);
+                                            $duration = max(0, $end - $start);
+                                            $totals['deferred'] += $duration;
+                                        }
+                                    }
                                 @endphp
 
-                                @if($totals['groundschool']['duration'] || $totals['groundschool']['credited'])
-                                <p>
-                                    <strong>Ground School:</strong>
-                                    Duration: {{ $totals['groundschool']['duration'] ?? 'N/A' }} |
-                                    Credited: {{ formatSeconds($totals['groundschool']['credited']) }}
-                                </p>
-                                @endif
+                                    @if($totals['groundschool']['duration'] || $totals['groundschool']['credited'])
+                                    <p>
+                                        <strong>Ground School:</strong>
+                                        Duration: {{ $totals['groundschool']['duration'] ?? 'N/A' }} |
+                                        Credited: {{ formatSeconds($totals['groundschool']['credited']) }}
+                                    </p>
+                                    @endif
 
-                                @if($totals['simulator']['duration'] || $totals['simulator']['credited'])
-                                <p>
-                                    <strong>Simulator:</strong>
-                                    Duration: {{ $totals['simulator']['duration'] ?? 'N/A' }} |
-                                    Credited: {{ formatSeconds($totals['simulator']['credited']) }}
-                                </p>
-                                @endif
+                                    @if($totals['simulator']['duration'] || $totals['simulator']['credited'])
+                                    <p>
+                                        <strong>Simulator:</strong>
+                                        Duration: {{ $totals['simulator']['duration'] ?? 'N/A' }} |
+                                        Credited: {{ formatSeconds($totals['simulator']['credited']) }}
+                                    </p>
+                                    @endif
 
                                 <!-- <p>
                                         <strong>Flight:</strong>
                                         Credited: {{ formatSeconds($totals['flight']['credited']) }}
                                     </p> -->
 
-                                @if(!empty($totals['custom']))
-                                @foreach($totals['custom'] as $name => $custom)
-                                <p>
-                                    <strong>Custom ({{ $name }}):</strong>
-                                    Allotted: {{ $custom['allotted'] }} |
-                                    Credited: {{ formatSeconds($custom['credited']) }}
-                                </p>
-                                @endforeach
-                                @endif
+                                    @if(!empty($totals['custom']))
+                                    @foreach($totals['custom'] as $name => $custom)
+                                    <p>
+                                        <strong>Custom ({{ $name }}):</strong>
+                                        Allotted: {{ $custom['allotted'] }} |
+                                        Credited: {{ formatSeconds($custom['credited']) }}
+                                    </p>
+                                    @endforeach
+                                    @endif
 
-                                <?php
-                                $totalFlightTime = $totals['flight']['credited'] + $totals['deferred'];
-                                ?>
+                                    <?php
+                                        $totalFlightTime = $totals['flight']['credited'] + $totals['deferred'];
+                                    ?>
 
-                                <p>
-                                    <strong>Total Flight Time:</strong>
-                                    {{ formatSeconds($totalFlightTime) }}
-                                </p>
+                                    <p>
+                                        <strong>Total Flight Time:</strong>
+                                        {{ formatSeconds($totalFlightTime) }}
+                                    </p>
 
-                                <!-- @if($totals['deferred'] > 0)
-                                        <p>
-                                            <strong>Deferred Lessons:</strong>
-                                            Credited: {{ formatSeconds($totals['deferred']) }}
-                                        </p>
-                                    @endif -->
+                                    <!-- @if($totals['deferred'] > 0)
+                                            <p>
+                                                <strong>Deferred Lessons:</strong>
+                                                Credited: {{ formatSeconds($totals['deferred']) }}
+                                            </p>
+                                        @endif -->
 
                                 @else
                                 <?php
-                                $totals = [
-                                    'groundschool' => ['duration' => 0, 'credited' => 0],
-                                    'simulator' => ['duration' => 0, 'credited' => 0],
-                                    'flight' => ['credited' => 0],
-                                    'custom' => [],
-                                    'deferred' => 0,
-                                    'customDuration' => 0,
-                                ];
+                                    $totals = [
+                                        'groundschool' => ['duration' => 0, 'credited' => 0],
+                                        'simulator' => ['duration' => 0, 'credited' => 0],
+                                        'flight' => ['credited' => 0],
+                                        'custom' => [],
+                                        'deferred' => 0,
+                                        'customDuration' => 0,
+                                    ];
 
-                                $groundschoolLessons = $trainingEvent->eventLessons->filter(function ($lesson) {
-                                    return $lesson->lesson?->lesson_type === 'groundschool';
-                                });
+                                    $groundschoolLessons = $trainingEvent->eventLessons->filter(function ($lesson) {
+                                        return $lesson->lesson?->lesson_type === 'groundschool';
+                                    });
 
-                                $totals['groundschool']['duration'] = ($trainingEvent->course->groundschool_hours ?? 0);
+                                    $totals['groundschool']['duration'] = ($trainingEvent->course->groundschool_hours ?? 0);
+                                ?>
+
+                                <?php
+                                    $totals = [
+                                        'groundschool' => ['duration' => 0, 'credited' => 0],
+                                        'simulator'    => ['duration' => 0, 'credited' => 0],
+                                        'flight'       => ['credited' => 0],
+                                        'custom'       => [],
+                                        'deferred'     => 0,
+                                        'customDuration' => 0,
+                                    ];
+
+                                    foreach ($trainingEvent->eventLessons as $eventLesson) {
+
+                                        $customTimes = $eventLesson->lesson?->lessoncustomTime ?? collect();
+
+                                        foreach ($customTimes as $ct) {
+                                            $name = $ct->name;
+                                            $totals['custom'][$name]['allotted'] = $ct->hours;
+
+                                            $totals['custom'][$name]['credited'] = $totals['custom'][$name]['credited'] ?? 0;
+                                        }
+
+                                        foreach ($eventLesson->CreditedTime as $creditRow) {
+
+                                            $name = $creditRow->name;
+                                            $seconds = strtotime("1970-01-01 {$creditRow->hours}") - strtotime("1970-01-01 00:00");
+
+                                            if (isset($totals['custom'][$name])) {
+                                                $totals['custom'][$name]['credited'] += $seconds;
+                                            }
+                                        }
+                                    }
+
+                                    $lessonType = $eventLesson?->lesson?->lesson_type ?? null;
+                                    $credited = strtotime("1970-01-01 {$eventLesson?->hours_credited}") ?: 0;
+
+                                    $groundschoolLessons = $trainingEvent->eventLessons->filter(function ($lesson) {
+                                        return $lesson->lesson?->lesson_type === 'groundschool';
+                                    });
+
+                                    $totals['groundschool']['duration'] = $trainingEvent->course->groundschool_hours ?? 0;
+
+                                    if ($lessonType === 'simulator') {
+                                        $totals['simulator']['duration'] = $trainingEvent->course->simulator_hours ?? 0;
+                                        $totals['simulator']['credited'] = $credited;
+                                    }
+
+                                    if ($lessonType === 'flight') {
+                                        $totals['flight']['credited'] = $credited;
+                                    }
+
+                                    if (isset($deferredLessons) && $deferredLessons->isNotEmpty()) {
+                                        foreach ($deferredLessons as $defLesson) {
+                                            $start = strtotime($defLesson->start_time);
+                                            $end   = strtotime($defLesson->end_time);
+                                            $totals['deferred'] += max(0, $end - $start);
+                                        }
+                                    }
+
                                 ?>
 
 
                                 @foreach($trainingEvent->eventLessons as $lesson)
-                                <?php
-                                if (!function_exists('toSeconds')) {
-                                    function toSeconds(?string $time): int
-                                    {
-                                        if (!$time) return 0;
-                                        [$h, $m] = array_pad(explode(':', $time), 2, 0);
-                                        return ($h * 3600) + ($m * 60);
-                                    }
-                                }
-                                $type = $lesson->lesson?->lesson_type ?? '';
-                                $credited = toSeconds($lesson->hours_credited);
+                                    <?php
+                                        if (!function_exists('toSeconds')) {
+                                            function toSeconds(?string $time): int
+                                            {
+                                                if (!$time) return 0;
+                                                [$h, $m] = array_pad(explode(':', $time), 2, 0);
+                                                return ($h * 3600) + ($m * 60);
+                                            }
+                                        }
+                                        $type = $lesson->lesson?->lesson_type ?? '';
+                                        $credited = toSeconds($lesson->hours_credited);
 
-                                if ($type === 'groundschool') {
-                                    $totals['groundschool']['credited'] += $credited;
-                                } elseif ($type === 'simulator') {
-                                    $totals['simulator']['duration'] = $trainingEvent->course->simulator_hours ?? 0;
-                                    $totals['simulator']['credited'] += $credited;
-                                } elseif ($type === 'flight') {
+                                        if ($type === 'groundschool') {
+                                            $totals['groundschool']['credited'] += $credited;
+                                        } elseif ($type === 'simulator') {
+                                            $totals['simulator']['duration'] = $trainingEvent->course->simulator_hours ?? 0;
+                                            $totals['simulator']['credited'] += $credited;
+                                        } elseif ($type === 'flight') {
 
-                                    $totals['flight']['credited'] += $credited;
-                                }
+                                            $totals['flight']['credited'] += $credited;
+                                        }
 
-                                if ($lesson->lesson?->customTime) {
-                                    $custom = $lesson->lesson->customTime;
-                                    $totals['custom'][$custom->name]['allotted'] = $custom->hours;
-                                    $totals['custom'][$custom->name]['credited'] = ($totals['custom'][$custom->name]['credited'] ?? 0) + strtotime("1970-01-01 {$lesson->custom_hours_credited}");
-                                }
-                                ?>
+                                        // if ($lesson->lesson?->customTime) {
+                                        //     $custom = $lesson->lesson->customTime;
+                                        //     $totals['custom'][$custom->name]['allotted'] = $custom->hours;
+                                        //     $totals['custom'][$custom->name]['credited'] = ($totals['custom'][$custom->name]['credited'] ?? 0) + strtotime("1970-01-01 {$lesson->custom_hours_credited}");
+                                        // }
+                                        // $singleCustom = $lesson->lesson?->customTime ?? null;
+                                        $multiCustom = $lesson->lesson?->lessoncustomTime ?? collect();
+                                        $credited = strtotime("1970-01-01 {$lesson->custom_hours_credited}") ?: 0;
+
+                                        // Single
+                                        // if ($singleCustom) {
+                                        //     $name = $singleCustom->name;
+
+                                        //     $totals['custom'][$name]['allotted'] = $singleCustom->hours;
+                                        //     $totals['custom'][$name]['credited'] =
+                                        //         ($totals['custom'][$name]['credited'] ?? 0) + $credited;
+                                        // }
+
+                                        // Multiple
+                                        if ($multiCustom->count()) {
+                                            foreach ($multiCustom as $ct) {
+                                                $name = $ct->name;
+
+                                                $totals['custom'][$name]['allotted'] = $ct->hours ?? $ct->hours;
+                                                $totals['custom'][$name]['credited'] =
+                                                    ($totals['custom'][$name]['credited'] ?? 0) + $credited;
+                                            }
+                                        }
+                                    ?>
                                 @endforeach
 
                                 @if(isset($deferredLessons) && $deferredLessons->isNotEmpty())
@@ -1759,11 +2085,49 @@
                                     foreach ($trainingEvent->eventLessons as $lesson) {
                                         if ($lesson->sectors && $lesson->sectors->count() > 0) {
                                             foreach ($lesson->sectors as $sector) {
+                                                $start = strtotime($sector->takeoff_time);
+                                                $end   = strtotime($sector->landing_time);
+
+                                                if ($start && $end && $end > $start) {
+                                                    $totalSectorTime += ($end - $start);
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    foreach ($trainingEvent->defLessons as $task) {
+                                        if ($task->sectors && $task->sectors->count() > 0) {
+                                            foreach ($task->sectors as $sector) {
+                                                $start = strtotime($sector->takeoff_time);
+                                                $end   = strtotime($sector->landing_time);
+
+                                                if ($start && $end && $end > $start) {
+                                                    $totalSectorTime += ($end - $start);
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    $totalFlightTime = $totalcustomFlightTime + $totalSectorTime;
+
+                                    // $blockDuration = $eventLessonFlightTime + $defFlightTime;
+                                    $blockDuration = $trainingEvent->course->duration_value * 3600;
+
+                                    // Block Credited (counts toward course requirement)
+                                    $TotalBlockCredited = $totals['flight']['credited']
+                                                    + $totals['deferred']
+                                                    + $totals['customDuration'];
+
+                                    $totalSectorblockTime = 0;
+
+                                    foreach ($trainingEvent->eventLessons as $lesson) {
+                                        if ($lesson->sectors && $lesson->sectors->count() > 0) {
+                                            foreach ($lesson->sectors as $sector) {
                                                 $start = strtotime($sector->start_time);
                                                 $end   = strtotime($sector->end_time);
 
                                                 if ($start && $end && $end > $start) {
-                                                    $totalSectorTime += ($end - $start);
+                                                    $totalSectorblockTime += ($end - $start);
                                                 }
                                             }
                                         }
@@ -1776,44 +2140,40 @@
                                                 $end   = strtotime($sector->end_time);
 
                                                 if ($start && $end && $end > $start) {
-                                                    $totalSectorTime += ($end - $start);
+                                                    $totalSectorblockTime += ($end - $start);
                                                 }
                                             }
                                         }
                                     }
 
-                                    $totalFlightTime = $totalcustomFlightTime + $totalSectorTime;
-
-                                    $blockDuration = $eventLessonFlightTime + $defFlightTime;
-
-                                    // Block Credited (counts toward course requirement)
-                                    $blockCredited = $totals['flight']['credited']
-                                                    + $totals['deferred']
-                                                    + $totals['customDuration'];
+                                    $blockCredited = $totalSectorblockTime + $TotalBlockCredited;
                                 ?>
                                 <!-- <p>
                                     <strong>Total Block Time:</strong>
                                     {{ formatSeconds($totalblockTime) }}
                                 </p> -->
+
+                                @if($trainingEvent->course->duration_type == 'hours')
+                                    <p>
+                                        <strong>Total Block Time:</strong>
+                                        Duration: {{ formatSeconds($blockDuration) }} |
+                                        Credited: {{ formatSeconds($blockCredited) }}
+                                    </p>
+                                @endif
                                 <p>
-                                    <strong>Total Block Time:</strong>
-                                    Duration: {{ formatSeconds($blockDuration) }} |
-                                    Credited: {{ formatSeconds($blockCredited) }}
-                                </p>
-                                <p>
-                                    <strong>Total flight Time:</strong>
+                                    <strong>Total flight Time: </strong>
                                     {{ formatSeconds($totalFlightTime) }}
                                 </p>
 
                                 @if(!empty($totals['custom']))
-                                @foreach($totals['custom'] as $name => $custom)
-                                <p>
-                                    <strong>Custom ({{ $name }}):</strong>
-                                    Allotted: {{ $custom['allotted'] }} |
-                                    <!-- Credited: {{ formatSeconds($custom['credited']) }} -->
-                                    Credited: {{ formatSeconds($totalcustomFlightTime) }}
-                                </p>
-                                @endforeach
+                                    @foreach($totals['custom'] as $name => $custom)
+                                    <p>
+                                        <strong>Custom ({{ $name }}):</strong>
+                                        Allotted: {{ $custom['allotted'] }} |
+                                        Credited: {{ formatSeconds($custom['credited']) }}
+                                        <!-- Credited: {{ formatSeconds($totalcustomFlightTime) }} -->
+                                    </p>
+                                    @endforeach
                                 @endif
 
 

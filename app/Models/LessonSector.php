@@ -17,6 +17,8 @@ class LessonSector extends Model
         'departure_airfield',
         'destination_airfield',
         'operation',
+        'resource',
+        'lesson_type',
         'start_time',
         'takeoff_time',
         'landing_time',
@@ -26,5 +28,10 @@ class LessonSector extends Model
     public function lesson()
     {
         return $this->belongsTo(CourseLesson::class, 'lesson_id');
+    }
+
+    public function resourceData()
+    {
+        return $this->belongsTo(Resource::class, 'resource', 'id');
     }
 }

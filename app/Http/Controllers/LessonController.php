@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CourseCustomTime;
 use App\Models\SubLesson;
 use Illuminate\Http\Request;
 use App\Models\CourseLesson;
@@ -9,6 +10,7 @@ use App\Models\Courses;
 use App\Models\CoursePrerequisite;
 use App\Models\CoursePrerequisiteDetail;
 use App\Models\LessonBriefingDocument;
+use App\Models\LessonCustomTime;
 use App\Models\TrainingEvents;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -91,9 +93,11 @@ class LessonController extends Controller
             'instructor_cbta' => $request->enable_instructor_cbta ?? 0,
             'examiner_cbta' => $request->enable_examiner_cbta ?? 0,
             'pilot_cbta' => $request->enable_pilot_cbta ?? 0,
-            'custom_time_id' => $request->custom_time_type ?? null,
+            // 'custom_time_id' => $request->custom_time_type ?? null,
             'student_briefing' => $request->student_briefing,
         ]);
+        
+        $this->syncLessonCustomTimes($lesson, $request->custom_time_type);
 
         if ($request->hasFile('briefing_documents')) {
             foreach ($request->file('briefing_documents') as $file) {
@@ -119,10 +123,11 @@ class LessonController extends Controller
         return response()->json(['status' => 'success']);
     }
 
-
     public function getLesson(Request $request)
     {
-        $lesson = CourseLesson::with('prerequisites', 'briefingDocuments')->findOrFail(decode_id($request->id));
+        $lesson = CourseLesson::with('prerequisites', 'briefingDocuments', 'lessoncustomTime')->findOrFail(decode_id($request->id));
+
+        // dd($lesson);
         return response()->json(['lesson'=> $lesson]);
 
     }
@@ -161,10 +166,9 @@ class LessonController extends Controller
         return view('lesson.show', compact('lesson', 'quizs', 'organizationUnits', 'courses', 'breadcrumbs', 'lessonPrerequisiteDetails'));
     }
 
-
     public function updateLesson(Request $request)
     {
-       //  dd($request->all());
+        // dd($request->all());
         // Validate request data
         $request->validate([
             'edit_lesson_title' => 'required',
@@ -196,12 +200,14 @@ class LessonController extends Controller
             'enable_cbta' => $request->edit_enable_cbta ?? 0, // Update enable_cbta
             'lesson_type' => $request->edit_lesson_type,
             'enable_prerequisites' => (int) $request->input('enable_prerequisites', 0), 
-            'custom_time_id' => $request->edit_custom_time_type ?? null,
+            // 'custom_time_id' => $request->edit_custom_time_type ?? null,
             'instructor_cbta' => $request->edit_enable_instructor_cbta ?? 0,
             'examiner_cbta' => $request->edit_enable_examiner_cbta ?? 0,
             'pilot_cbta' => $request->edit_enable_pilot_cbta ?? 0,
             'student_briefing' => $request->edit_student_briefing,
         ]);
+
+        $this->syncLessonCustomTimes($lesson, $request->edit_custom_time_type);
 
         if ($request->edit_grade_type === 'percentage') {
             SubLesson::where('lesson_id', $lesson->id)->update(['grade_type' => null]);
@@ -247,8 +253,40 @@ class LessonController extends Controller
         Session::flash('message', 'Lesson updated successfully.');
         return response()->json(['success' => 'Lesson updated successfully.']);
     }
-    
 
+    private function syncLessonCustomTimes($lesson, $selectedIds)
+    {
+        $selectedIds = $selectedIds ?? [];
+
+        $existing = LessonCustomTime::where('lesson_id', $lesson->id)
+            ->pluck('custom_time_id')
+            ->toArray();
+
+        $toDelete = array_diff($existing, $selectedIds);
+
+        if (!empty($toDelete)) {
+            LessonCustomTime::where('lesson_id', $lesson->id)
+                ->whereIn('custom_time_id', $toDelete)
+                ->delete();
+        }
+
+        $selectedTimes = CourseCustomTime::where('course_id', $lesson->course_id)->whereIn('id', $selectedIds)->get();
+
+        foreach ($selectedTimes as $t) {
+            LessonCustomTime::updateOrCreate(
+                [
+                    'lesson_id' => $lesson->id,
+                    'custom_time_id' => $t->id,
+                ],
+                [
+                    'course_id' => $t->course_id,
+                    'name' => $t->name,
+                    'hours' => $t->hours,
+                ]
+            );
+        }
+    }
+    
     public function deleteBriefingDocument(Request $request)
     {
         $doc = LessonBriefingDocument::findOrFail($request->id);

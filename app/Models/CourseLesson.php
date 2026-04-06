@@ -72,4 +72,10 @@ class CourseLesson extends Model
     {
         return $this->hasMany(LessonSector::class, 'lesson_id');
     }
+
+    public function lessoncustomTime()
+    {
+        return $this->hasMany(LessonCustomTime::class, 'lesson_id');
+    }
+
 }
