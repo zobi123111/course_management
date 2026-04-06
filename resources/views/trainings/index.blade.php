@@ -934,8 +934,6 @@ $(document).ready(function() {
 
     $(document).on('change', '#select_user, #edit_select_user', function() {
         var userId = $(this).val();
-        // alert(userId);
-        // Determine which modal is being used
         var isEditModal = $(this).attr('id') === 'edit_select_user';
 
         // Select the correct fields based on the modal
@@ -965,6 +963,7 @@ $(document).ready(function() {
 
                         // Update courses dropdown
                         var courseOptions = '<option value="">Select Course</option>'; // Default option
+                        console.log(response.courses);
                         if (response.courses && response.courses.length > 0) {
                             $.each(response.courses, function(index, course) {
                                 var selected = course.id == selectedCourseId ? 'selected' : '';
@@ -1023,8 +1022,7 @@ $(document).ready(function() {
         }
    
         let selectedStudentId = $('#select_user').val() || $('#edit_select_user').val();
-        var edit_ou_id = isEditForm ? $('#edit_ou_id').val() : $('#select_org_unit').val(); 
-     //   var edit_ou_id = $('#edit_ou_id').val();
+        var edit_ou_id = isEditForm ? $('#edit_ou_id').val() : $('#select_org_unit').val();
         $.ajax({
             url: '{{ url("/training/get_course_lessons") }}',
             type: 'GET', 
@@ -1039,6 +1037,7 @@ $(document).ready(function() {
                     
                      all_instructors = response.all_ou_instructor;
                      course = response.course;
+                     console.log(course);
 
                     // 🔹 OPC dropdown toggle
                     if (course.opc == 1) {
@@ -1053,16 +1052,13 @@ $(document).ready(function() {
                     function toggleRankOptions(selectSelector, enableValue) {
                         const rankSelect = $(selectSelector);
                         
-
                         if (enableValue == 0 || enableValue == 1) {
                             // Single Pilot (SP Event)
                             rankSelect.find("option[value='2'], option[value='3']").hide();
                             rankSelect.find("option[value='1']").show();
                             rankSelect.val("1"); // Default to Captain
                         } 
-                        else if (enableValue == 2 || enableValue == 3) {
-                            // Multi Pilot (MP or SP+MP Event)
-                            // rankSelect.find("option[value='1']").hide();   
+                        else if (enableValue == 2 || enableValue == 3) { 
                             rankSelect.find("option[value='2'], option[value='3']").show();
                         }
                     }
@@ -1489,13 +1485,10 @@ $(document).ready(function() {
 
     $('#editTrainingEventModal').on('shown.bs.modal', async function () {
         initializeSelect2();
-       // $('#edit_ou_id').trigger('change');
 
         await new Promise(resolve => setTimeout(resolve, 300));
-        // $('#edit_select_user').trigger('change');
 
         await new Promise(resolve => setTimeout(resolve, 300));
-        //$('#edit_select_course').trigger('change');
     });
 
 
@@ -1949,7 +1942,7 @@ $(document).ready(function() {
         }
     });
 
-    $(document).on("click", ".archive-course-btn", function () { 
+    $(document).on("click", ".archive-course-btn", function () {  
         let event_id = $(this).data('event-id');
         // Ask confirmation first
         if (!confirm("Are you sure you want to archive this event ? This action is irreversible and cannot be undone.")) {
@@ -1963,7 +1956,7 @@ $(document).ready(function() {
 
         $.ajax({
             type: "POST",
-            url: "{{ url('archive_trainingEvent') }}",
+            url: "{{ url('archive_trainingEvent') }}", 
             data: vdata,
             success: function (response) {
                 if (response.status == true) {

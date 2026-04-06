@@ -72,16 +72,16 @@ class CourseController extends Controller
         $userId = Auth::user()->id;
         $ouId = Auth::user()->ou_id;
         $role = Auth::user()->role;
-        if (checkAllowedModule('courses', 'course.index')->isNotEmpty() && Auth()->user()->is_owner == 1) {
-            // dd("if working");
-            // $courses = Courses::all();
-            $courses = Courses::orderBy('position')->get();
+        if (checkAllowedModule('courses', 'course.index')->isNotEmpty() && Auth()->user()->is_owner == 1) { 
+            $courses = Courses::where('archive_trainingCourse', null)->orderBy('position')->get();
+            // dd($courses);
             $groups = Group::all();
             $resource  = Resource::all();
 
             $ratings = Rating::with(['ou_ratings.organization_unit'])->where('status', 1)->get();
-        } elseif (checkAllowedModule('courses', 'course.index')->isNotEmpty() && Auth()->user()->is_admin ==  0) {
+       
 
+        } elseif (checkAllowedModule('courses', 'course.index')->isNotEmpty() && Auth()->user()->is_admin ==  0) {
             $groups = Group::all();
             $resource  = Resource::all();
 
@@ -90,20 +90,21 @@ class CourseController extends Controller
                 return in_array($userId, $userIds);
             });
             $groupIds = $filteredGroups->pluck('id')->toArray();
-
+          
             $courses = Courses::whereIn('id', function ($query) use ($groupIds) {
                 $query->select('courses_id')
                     ->from('courses_group')
-                    ->whereIn('group_id', $groupIds);
-            })->where('status', 1)->orderBy('position')->get();
-            //  dump($courses);    
+                    ->whereIn('group_id', $groupIds)
+                    ->where('archive_trainingCourse', null);
+            })->where('status', 1)->orderBy('position')->get();  
+          
 
             $ratings = Rating::with(['ou_ratings.organization_unit'])->where('status', 1)->get();
         } else {
             if ($role == 1 && empty($ouId)) {
-                $courses = Courses::all();
+                $courses = Courses::where('archive_trainingCourse', null)->get();
             } else {
-                $courses = Courses::where('ou_id', $ouId)->orderBy('position')->get();
+                $courses = Courses::where('archive_trainingCourse', null)->where('ou_id', $ouId)->orderBy('position')->get();
             }
             $groups = Group::where('ou_id', $ouId)->get();
             $resource  = Resource::where('ou_id', $ouId)->get();

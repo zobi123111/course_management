@@ -79,7 +79,7 @@ class TrainingEventsController extends Controller
             // Super Admin: Get all data
             $resources = Resource::all();
             // $courses = Courses::all();
-            $courses = Courses::orderBy('position')->get();
+            $courses = Courses::where('archive_trainingCourse', null)->orderBy('position')->get();
             $groups = Group::all();
 
             $instructors = User::whereHas('roles', function ($query) {
@@ -125,7 +125,7 @@ class TrainingEventsController extends Controller
             // Regular User: Get data within their organizational unit
             $resources = Resource::where('ou_id', $currentUser->ou_id)->get();
             // $courses = Courses::where('ou_id', $currentUser->ou_id)->get();
-            $courses = Courses::where('ou_id', $currentUser->ou_id)->orderBy('position')->get(); 
+            $courses = Courses::where('archive_trainingCourse', null)->where('ou_id', $currentUser->ou_id)->orderBy('position')->get(); 
             $groups = Group::where('ou_id', $currentUser->ou_id)->get();
 
             $instructors = User::where('ou_id', $currentUser->ou_id)
@@ -190,7 +190,7 @@ class TrainingEventsController extends Controller
         } else {  
             // Default Case: Users with limited access within their organization
             $resources = Resource::where('ou_id', $currentUser->ou_id)->get();
-            $courses = Courses::where('ou_id', $currentUser->ou_id)->orderBy('position')->get();
+            $courses = Courses::where('archive_trainingCourse', null)->where('ou_id', $currentUser->ou_id)->orderBy('position')->get();
             $groups = Group::where('ou_id', $currentUser->ou_id)->get();
 
             $instructors = User::where('ou_id', $currentUser->ou_id)
@@ -319,14 +319,15 @@ class TrainingEventsController extends Controller
     {
         $user = User::with('documents')->find($user_id);
         $groups = Group::where('ou_id', $ou_id)
-            ->whereJsonContains('user_ids', strval($user_id)) // Ensure user_id is a string
-            ->pluck('id'); // Get only the group IDs
+                ->whereJsonContains('user_ids', strval($user_id)) 
+                ->pluck('id'); 
 
-        $courses = Courses::with('groups') // Load only the groups relationship
-            ->whereHas('groups', function ($query) use ($groups) {
-                $query->whereIn('groups.id', $groups);
-            })
-            ->get();
+        $courses = Courses::with('groups') 
+                ->whereNull('archive_trainingCourse')
+                ->whereHas('groups', function ($query) use ($groups) {
+                    $query->whereIn('groups.id', $groups);
+                })
+                ->get();
         if ($user) {
             return response()->json(['success' => true, 'licence_number' => $user->licence ?: $user->licence_2, 'courses' => $courses]);
         } else {
@@ -373,13 +374,11 @@ class TrainingEventsController extends Controller
 
     public function getCourseLessons(Request $request)
     {
-       
         $student_id = $request->selectedStudentId;
         $ou_id = $request->ou_id ?? Auth::user()->ou_id;
 
-        $course = Courses::with(['courseLessons', 'resources'])->find($request->course_id);
-     
-
+        $course = Courses::with(['courseLessons', 'resources'])->whereNull('archive_trainingCourse')->find($request->course_id);
+       
         $get_licence = UserDocument::where('user_id', $student_id)->select('licence', 'licence_2')->first();
 
         $uk_licence = $get_licence->licence ?? null;
