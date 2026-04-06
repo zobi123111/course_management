@@ -782,7 +782,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     ?>
 
                                     @php
-                                        $opc = $opcRatingsByAircraft->get($entry['parent']->id);
+                                         $parent = $entry['parent'] ?? null;
+ 
+                                        if (!$parent){
+                                            continue;
+                                        }
+ 
+                                        $opc = $opcRatingsByAircraft->get($parent->id);
 
                                         $opcColor = null;
                                         $opcTooltip = null;
@@ -956,7 +962,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     ?>
 
                                     @php
-                                        $opc = $opcRatingsByAircraft->get($entry['parent']->id);
+                                         $parent = $entry['parent'] ?? null;
+ 
+                                        if (!$parent){
+                                            continue;
+                                        }
+ 
+                                        $opc = $opcRatingsByAircraft->get($parent->id);
 
                                         $opcColor = null;
                                         $opcTooltip = null;
@@ -1029,8 +1041,14 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     ?>
 
                                     @php
-                                        $opc = $opcRatingsByAircraft->get($entry['parent']->id);
 
+                                        $parent = $entry['parent'] ?? null;
+ 
+                                        if (!$parent){
+                                            continue;
+                                        }
+ 
+                                        $opc = $opcRatingsByAircraft->get($parent->id);
                                         $opcColor = null; 
                                         $opcTooltip = null;
 
