@@ -315,9 +315,56 @@
         </div>
     </div>
 </form>
-
-
 <!-- End of Delete Model -->
+
+
+<!-- Start already exist rating model  -->
+<!-- Separate Modal: Rating Already Assigned -->
+<div class="modal fade" id="ratingAssignedModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+
+            <!-- Header -->
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Rating Already Assigned
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body">
+                <p class="mb-3 fs-6">
+                    This rating is already assigned to the following users.<br>
+                    <strong>Please remove the rating from these users before deleting it.</strong>
+                </p>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 60px;">#</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ratingAssignedUsers">
+                            <!-- Filled dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- End already exist rating model  -->
 @endsection
 
 @section('js_scripts')
@@ -588,16 +635,24 @@ $(document).on('click', '.delete-icon', function() {
                  console.log(data.message); 
                  console.log(data.names);
                   if (data.exists === true) {
-                let userList = data.names.join(", ");
-                alert(
-                    "Rating already exists for: " + userList +
-                    ".\nFirst remove it from these users, then you will get permission to delete."
-                );
 
+                    let rows = "";
+                    data.users.forEach((u, i) => {
+                        rows += `
+                            <tr>
+                                <td>${i + 1}</td>
+                                <td>${u.name}</td>
+                                <td>${u.email}</td>
+                            </tr>
+                        `;
+                    });
+
+                    $("#ratingAssignedUsers").html(rows);
+                    $("#ratingAssignedModal").modal("show");
                 }
-                 else{
-                    $('#deleteRatingModal').modal('show');
-                 }
+                else {
+                    $("#deleteRatingModal").modal("show");
+                }
             }
 
      });
