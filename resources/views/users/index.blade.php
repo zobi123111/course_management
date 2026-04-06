@@ -53,6 +53,9 @@
     .rating-select-group {
         min-height: 501px;
     }
+    .edit-lic-height{
+        min-height: 135px;
+    }
 </style>
 
 <div class="main_cont_outer">
@@ -234,12 +237,13 @@
                             <label for="licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
                             <input type="checkbox" name="licence_verification_required" id="licence_verification_required" class="ms-2" value="1">
                         </div>
-                        <input type="text" name="licence" id="licence" class="form-control mt-2" style="display: none;" placeholder="Enter UK Licence Number">
-                        <div id="licence_error" class="text-danger error_e"></div>
+                        <div id="first_licence_section" class="mt-3">
+                            <input type="text" name="licence" id="licence" class="form-control" style="display: none;" placeholder="Enter UK Licence Number">
+                            <div id="licence_error" class="text-danger error_e"></div>
 
-                        <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
-                        <div id="licence_file_error" class="text-danger error_e"></div>
-
+                            <input type="file" name="licence_file" id="licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                            <div id="licence_file_error" class="text-danger error_e"></div>
+                        </div>
                         <div id="licence_rating_section" class="mt-3">
                             <label class="form-label">Select Ratings for UK Licence</label>
                             <input type="checkbox" id="uk_licence" />
@@ -710,12 +714,14 @@
                                 <label for="edit_licence_verification_required" class="form-label ms-4">Admin Verification required?</label>
                                 <input type="checkbox" name="edit_licence_verification_required" id="edit_licence_verification_required" class="ms-2" value="1">
                             </div>
-                            <input type="text" name="edit_licence" id="edit_licence" class="form-control" style="display: none;" placeholder="Enter UK Licence Number">
-                            <div id="edit_licence_error_up" class="text-danger error_e"></div>
-                            <input type="file" name="edit_licence_file" id="edit_licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
-                            <div id="edit_licence_file_error_up" class="text-danger error_e"></div>
-                            <div class="col-md-6 mt-2" id="uk_licence_file" style="display: none;">
-                                <a target="_blank" class="btn btn-sm btn-outline-primary">View Uploaded File</a>
+                             <div id="first_licence_section" class="mt-3 edit-lic-height">
+                                <input type="text" name="edit_licence" id="edit_licence" class="form-control" style="display: none;" placeholder="Enter UK Licence Number">
+                                <div id="edit_licence_error_up" class="text-danger error_e"></div>
+                                <input type="file" name="edit_licence_file" id="edit_licence_file" class="form-control mt-3" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+                                <div id="edit_licence_file_error_up" class="text-danger error_e"></div>
+                                <div class="col-md-6 mt-2" id="uk_licence_file" style="display: none;">
+                                    <a target="_blank" class="btn btn-sm btn-outline-primary">View Uploaded File</a>
+                                </div>
                             </div>
 
                             <div id="edit_licence_rating_section" class="mt-3" style="display: none;">
@@ -737,16 +743,17 @@
                                 <input type="checkbox" name="edit_licence_2_verification_required" id="edit_licence_2_verification_required" class="ms-2" value="1">
                             </div>
 
-                            <div id="edit_second_licence_section" style="display: none;">
+                            <div id="edit_second_licence_section" class="mt-3 edit-lic-height" style="display: none;">
                                 <input type="text" name="edit_licence_2" id="edit_licence_2" class="form-control edit_licence_2" placeholder="Enter EASA Licence Number">
                                 <div id="edit_licence_2_error" class="text-danger error_e"></div>
 
                                 <input type="file" name="edit_licence_file_2" id="edit_licence_file_2" class="form-control mt-3" accept=".pdf,.jpg,.jpeg,.png">
                                 <div id="edit_licence_file_2_error" class="text-danger error_e"></div>
+                                 <div class="col-md-6 mt-2" id="easa_licence_file" style="display:none;">
+                                    <a target="_blank" class="btn btn-sm btn-outline-primary">View Uploaded File</a>
+                                </div>
                             </div>
-                            <div class="col-md-6 mt-2" id="easa_licence_file" style="display:none;">
-                                <a target="_blank" class="btn btn-sm btn-outline-primary">View Uploaded File</a>
-                            </div>
+                           
 
                             <div id="edit_licence_2_rating_section" class="mt-3">
                                 <label class="form-label">Select Ratings for EASA Licence</label>
