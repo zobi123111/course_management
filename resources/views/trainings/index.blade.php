@@ -963,7 +963,6 @@ $(document).ready(function() {
 
                         // Update courses dropdown
                         var courseOptions = '<option value="">Select Course</option>'; // Default option
-                        console.log(response.courses);
                         if (response.courses && response.courses.length > 0) {
                             $.each(response.courses, function(index, course) {
                                 var selected = course.id == selectedCourseId ? 'selected' : '';

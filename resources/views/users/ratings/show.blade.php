@@ -120,7 +120,7 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="firstname" class="form-label">Rating Name<span
+                            <label for="firstname" class="form-label">Rating Name<span 
                                     class="text-danger">*</span></label>
                             <input type="text" name="name" class="form-control">
                             <div id="name_error" class="text-danger error_e"></div>
@@ -572,7 +572,36 @@ $(document).on('click', '.delete-icon', function() {
      var rating = $(this).closest('tr').find('.rating').text();
      $('#ratingId').val(ratingId);
      $('#append_name').text(rating);
-     $('#deleteRatingModal').modal('show');
+
+    vdata = {
+        "_token": "{{ csrf_token() }}",
+        "ratingId": ratingId
+        }
+    
+
+     $.ajax({
+            url: "{{ url('check_ratingExist') }}",
+            data:vdata,
+            type:"post",
+            success:function(data){
+                 console.log(data.exists);  
+                 console.log(data.message); 
+                 console.log(data.names);
+                  if (data.exists === true) {
+                let userList = data.names.join(", ");
+                alert(
+                    "Rating already exists for: " + userList +
+                    ".\nFirst remove it from these users, then you will get permission to delete."
+                );
+
+                }
+                 else{
+                    $('#deleteRatingModal').modal('show');
+                 }
+            }
+
+     });
+    
 });
 
 ['#successMessage', '#errorMessage'].forEach(function(selector) {
