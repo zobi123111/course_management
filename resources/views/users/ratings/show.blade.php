@@ -325,7 +325,7 @@
         <div class="modal-content">
 
             <!-- Header -->
-            <div class="modal-header bg-warning text-dark">
+            <div class="modal-header" style="background-color:#06377e; color:white">
                 <h5 class="modal-title">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>
                     Rating Already Assigned
