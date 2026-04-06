@@ -3055,27 +3055,30 @@ class UserController extends Controller
 
     }
 
-  public function check_ratingExist(Request $request)
-{
-    $rating_id = decode_id($request->ratingId);
+    public function check_ratingExist(Request $request)
+    {
+        $rating_id = decode_id($request->ratingId);
 
-    // Fetch ratings with user relation
-    $ratingExist = UserRating::with('user')
-                        ->where('parent_id', $rating_id)
-                        ->get();
+        // Fetch ratings with user relation
+        $ratingExist = UserRating::with('user')
+                            ->where('parent_id', $rating_id)
+                            ->get();
 
-    // Collect only valid user names
-    $names = $ratingExist->map(function($item){
-        if ($item->user) {
-            return trim($item->user->fname . ' ' . $item->user->lname);
-        }
-        return null; // skip null users
-    })->filter()->values(); // remove null values
+        // Collect valid user details (name + email)
+        $users = $ratingExist->map(function($item){
+            if ($item->user) {
+                return [
+                    'name'  => trim($item->user->fname . ' ' . $item->user->lname),
+                    'email' => $item->user->email
+                ];
+            }
+            return null;
+        })->filter()->values(); // remove null values
 
-    return response()->json([
-        'exists' => $names->count() > 0,
-        'names'  => $names,
-        'message' => $names->count() > 0 ? 'Rating Exists for user': 'Rating Not Found for user'
-    ]);
-}
+        return response()->json([
+            'exists' => $users->count() > 0,
+            'users'  => $users, // changed from names → users
+            'message' => $users->count() > 0 ? 'Rating Exists for user' : 'Rating Not Found for user'
+        ]);
+    }
 }
