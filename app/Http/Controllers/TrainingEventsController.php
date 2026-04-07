@@ -2615,6 +2615,21 @@ class TrainingEventsController extends Controller
         // Group by lesson_id
         $instructorGrouped = $instructorGradings->groupBy('lesson_id');
 
+        $competencyType = 'pilot';
+
+        $pilot_grading = CbtaGrading::with([
+            'examinerGrading.courseLesson' // loads CourseLesson inside examinerGrading
+        ])->whereHas('examinerGrading', function ($query) use ($event_id, $userId, $competencyType) {
+            $query->where('event_id', $event_id)
+                ->where('user_id', $userId)
+                ->where('competency_type', $competencyType);
+        })->get();
+
+        $pilot_grading = $pilot_grading->pluck('examinerGrading')->flatten();
+
+        // Group by lesson_id
+        $pilotGrouped = $pilot_grading->groupBy('lesson_id');
+
         if ($event) { 
             $event->student_feedback_submitted = $event->trainingFeedbacks()->where('user_id', auth()->user()->id)->exists();
             // abort(404, 'Training Event not found.'); 
@@ -2652,7 +2667,7 @@ class TrainingEventsController extends Controller
         ];
       
 
-        return view('trainings.grading-list', compact('event', 'userId', 'defLessonGrading', 'CustomLessonGrading', 'examinerGrouped', 'instructorGrouped', 'reviews','allLessonsGraded','user_name', 'breadcrumbs'));
+        return view('trainings.grading-list', compact('event', 'userId', 'defLessonGrading', 'CustomLessonGrading', 'examinerGrouped', 'instructorGrouped', 'pilotGrouped','reviews','allLessonsGraded','user_name', 'breadcrumbs'));
     }
 
     // public function unlockEventGarding(Request $request, $event_id)
@@ -2720,6 +2735,7 @@ class TrainingEventsController extends Controller
         // ])->findOrFail($event_id);
         $event = TrainingEvents::with([
             'course:id,course_name',
+            'course.courseLessons',
             'orgUnit:id,org_unit_name,org_logo',
             'instructor:id,fname,lname',
             'student:id,fname,lname',
@@ -2832,6 +2848,21 @@ class TrainingEventsController extends Controller
                     ->where('competency_type', $instructor);
             })
             ->get();
+
+        $pilot = 'pilot';
+        $pilot_grading = CbtaGrading::with(['examinerGrading' => function ($query) use ($event_id, $userID, $pilot, $lesson_id) {
+            $query->where('event_id', $event_id)
+                ->where('user_id', $userID)
+                ->where('lesson_id', $lesson_id)
+                ->where('competency_type', $pilot);
+        }])
+            ->whereHas('examinerGrading', function ($query) use ($event_id, $userID, $pilot, $lesson_id) {
+                $query->where('event_id', $event_id)
+                    ->where('user_id', $userID)
+                    ->where('lesson_id', $lesson_id)
+                    ->where('competency_type', $pilot);
+            })
+            ->get();
         
           
 
@@ -2842,7 +2873,8 @@ class TrainingEventsController extends Controller
             'lesson' => $lesson,
             'eventLesson' => $eventLesson,
             'examiner_grading' => $examiner_grading,
-            'instructor_grading' => $instructor_grading
+            'instructor_grading' => $instructor_grading,
+            'pilot_grading' => $pilot_grading,
         ]);
 
         $filename = 'Lesson_Report_' . Str::slug($lesson->lesson_title) . '.pdf';  
