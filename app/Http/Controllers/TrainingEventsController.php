@@ -3114,226 +3114,223 @@ class TrainingEventsController extends Controller
     // }
 
     public function generateCertificate($event)
-{
+    {
 
 
-    if (!function_exists('formatSeconds')) {
-        function formatSeconds(int $seconds): string
-        {
-            $h = floor($seconds / 3600);
-            $m = floor(($seconds % 3600) / 60);
+        if (!function_exists('formatSeconds')) {
+            function formatSeconds(int $seconds): string
+            {
+                $h = floor($seconds / 3600);
+                $m = floor(($seconds % 3600) / 60);
 
-            return sprintf('%02d:%02d', $h, $m);
+                return sprintf('%02d:%02d', $h, $m);
+            }
         }
-    }
-    $eventId = decode_id($event);
-    $event = TrainingEvents::with([
-        'eventLessons',
-        'eventLessons.sectors',
-        'eventLessons.CreditedTime',
-        'defLessons',
-        'defLessons.deferredSectors',
-        'defLessons.customSectors',
-        'recommendedInstructor'
-    ])->findOrFail($eventId);
+        $eventId = decode_id($event);
+        $event = TrainingEvents::with([
+            'eventLessons',
+            'eventLessons.sectors',
+            'eventLessons.CreditedTime',
+            'defLessons',
+            'defLessons.deferredSectors',
+            'defLessons.customSectors',
+            'recommendedInstructor'
+        ])->findOrFail($eventId);
 
-    $student = $event->student;  
-    $course = $event->course;
-    $firstLesson = $event->firstLesson;
+        $student = $event->student;  
+        $course = $event->course;
+        $firstLesson = $event->firstLesson;
 
-    // Helper function
-    if (!function_exists('toSeconds')) {
-        function toSeconds(?string $time): int {
-            if (!$time) return 0;
-            [$h, $m] = array_pad(explode(':', $time), 2, 0);
-            return ($h * 3600) + ($m * 60);
+        // Helper function
+        if (!function_exists('toSeconds')) {
+            function toSeconds(?string $time): int {
+                if (!$time) return 0;
+                [$h, $m] = array_pad(explode(':', $time), 2, 0);
+                return ($h * 3600) + ($m * 60);
+            }
         }
-    }
 
-    /* -------------------------------------------------------
-        SAME TOTAL CALCULATIONS AS BLADE
-       ------------------------------------------------------- */
+        /* -------------------------------------------------------
+            SAME TOTAL CALCULATIONS AS BLADE
+        ------------------------------------------------------- */
 
-    $totals = [
-        'flight'            => 0,
-        'deferred'          => 0,
-        'customDuration'    => 0,
-        'lessonCreditedTime'=> 0
-    ];
+        $totals = [
+            'flight'            => 0,
+            'deferred'          => 0,
+            'customDuration'    => 0,
+            'lessonCreditedTime'=> 0
+        ];
 
-    /* -------------------------
-       FLIGHT / SIM / GROUND
-    ------------------------- */
-    foreach ($event->eventLessons as $lesson) {
+        /* -------------------------
+        FLIGHT / SIM / GROUND
+        ------------------------- */
+        foreach ($event->eventLessons as $lesson) {
 
-        $type = $lesson->lesson->lesson_type ?? null;
+            $type = $lesson->lesson->lesson_type ?? null;
 
-        // Hours credited
-        $credited = toSeconds($lesson->hours_credited);
+            // Hours credited
+            $credited = toSeconds($lesson->hours_credited);
 
-        if ($type === 'flight') {
-            $totals['flight'] += $credited;
+            if ($type === 'flight') {
+                $totals['flight'] += $credited;
+            }
+
+            /* -------------------------
+                LESSON CREDITED TIME TABLE
+            ------------------------- */
+            foreach ($lesson->CreditedTime as $ct) {
+                $sec = toSeconds($ct->hours);
+                $totals['lessonCreditedTime'] += $sec;
+            }
         }
 
         /* -------------------------
-            LESSON CREDITED TIME TABLE
+        DEFERRED LESSON DURATION
         ------------------------- */
-        foreach ($lesson->CreditedTime as $ct) {
-            $sec = toSeconds($ct->hours);
-            $totals['lessonCreditedTime'] += $sec;
-        }
-    }
-
-    /* -------------------------
-       DEFERRED LESSON DURATION
-    ------------------------- */
-    foreach ($event->defLessons as $def) {
-        $start = strtotime($def->start_time);
-        $end   = strtotime($def->end_time);
-        if ($start && $end && $end > $start) {
-            $totals['deferred'] += ($end - $start);
-        }
-    }
-
-    /* -------------------------
-       CUSTOM SECTORS PER DEF LESSON
-    ------------------------- */
-    foreach ($event->defLessons as $def) {
-
-        // deferred sectors
-        foreach ($def->deferredSectors as $sec) {
-            $s = strtotime($sec->start_time);
-            $e = strtotime($sec->end_time);
-            if ($s && $e && $e > $s) {
-                $totals['customDuration'] += ($e - $s);
-            }
-        }
-
-        // custom sectors
-        foreach ($def->customSectors as $sec) {
-            $s = strtotime($sec->start_time);
-            $e = strtotime($sec->end_time);
-            if ($s && $e && $e > $s) {
-                $totals['customDuration'] += ($e - $s);
-            }
-        }
-    }
-
-    /* -------------------------
-       SECTOR BLOCK TIME
-    ------------------------- */
-    $totalSectorblockTime = 0;
-
-    foreach ($event->eventLessons as $lesson) {
-        foreach ($lesson->sectors as $sector) {
-            $start = strtotime($sector->start_time);
-            $end = strtotime($sector->end_time);
+        foreach ($event->defLessons as $def) {
+            $start = strtotime($def->start_time);
+            $end   = strtotime($def->end_time);
             if ($start && $end && $end > $start) {
-                $totalSectorblockTime += ($end - $start);
+                $totals['deferred'] += ($end - $start);
             }
         }
+
+        /* -------------------------
+        CUSTOM SECTORS PER DEF LESSON
+        ------------------------- */
+        foreach ($event->defLessons as $def) {
+
+            // deferred sectors
+            foreach ($def->deferredSectors as $sec) {
+                $s = strtotime($sec->start_time);
+                $e = strtotime($sec->end_time);
+                if ($s && $e && $e > $s) {
+                    $totals['customDuration'] += ($e - $s);
+                }
+            }
+
+            // custom sectors
+            foreach ($def->customSectors as $sec) {
+                $s = strtotime($sec->start_time);
+                $e = strtotime($sec->end_time);
+                if ($s && $e && $e > $s) {
+                    $totals['customDuration'] += ($e - $s);
+                }
+            }
+        }
+
+        /* -------------------------
+        SECTOR BLOCK TIME
+        ------------------------- */
+        $totalSectorblockTime = 0;
+
+        foreach ($event->eventLessons as $lesson) {
+            foreach ($lesson->sectors as $sector) {
+                $start = strtotime($sector->start_time);
+                $end = strtotime($sector->end_time);
+                if ($start && $end && $end > $start) {
+                    $totalSectorblockTime += ($end - $start);
+                }
+            }
+        }
+
+        foreach ($event->defLessons as $def) {
+            foreach ($def->deferredSectors as $s) {
+                $start = strtotime($s->start_time);
+                $end   = strtotime($s->end_time);
+                if ($start && $end && $end > $start) {
+                    $totalSectorblockTime += ($end - $start);
+                }
+            }
+
+            foreach ($def->customSectors as $s) {
+                $start = strtotime($s->start_time);
+                $end   = strtotime($s->end_time);
+                if ($start && $end && $end > $start) {
+                    $totalSectorblockTime += ($end - $start);
+                }
+            }
+        }
+
+        /* -------------------------
+        SECTOR FLIGHT TIME
+        ------------------------- */
+        $sectorFlightTime = 0;
+
+        foreach ($event->eventLessons as $lesson) {
+            foreach ($lesson->sectors as $sector) {
+                $t  = strtotime($sector->takeoff_time);
+                $l  = strtotime($sector->landing_time);
+                if ($t && $l && $l > $t) {
+                    $sectorFlightTime += ($l - $t);
+                }
+            }
+        }
+
+        /* -------------------------------------------------------
+            FINAL FORMULAS (same as Blade)
+        ------------------------------------------------------- */
+
+        // Total Flight Time
+        $totalFlightTime =
+            $totals['flight'] +
+            $totals['deferred'] +
+            $totals['customDuration'] +
+            $sectorFlightTime;
+
+        // Total Block Credited (blade logic)
+        $TotalBlockCredited =
+            $totals['flight'] +
+            $totals['deferred'] +
+            $totals['customDuration'] +
+            $sectorFlightTime +
+            $totals['lessonCreditedTime'];
+
+        // Add sector block time
+        $blockCredited = $totalSectorblockTime + $TotalBlockCredited;
+
+        // Duration (hours * 3600)
+        $blockDuration = $course->duration_value * 3600;
+
+        // Convert to readable for PDF
+        $totalFlightTimeFormatted = formatSeconds($totalFlightTime);
+        $blockCreditedFormatted   = formatSeconds($blockCredited);
+        $blockDurationFormatted   = formatSeconds($blockDuration);
+
+        /* -------------------------------------------------------
+            KEEP YOUR EXISTING PDF VALUES
+        ------------------------------------------------------- */
+
+        $hoursOfGroundschool = "0 hrs"; // unchanged by request
+        $flightTime = $event->total_time ?? "00:00";
+        $simulatorTime = $event->simulator_time ?? "00:00";
+
+        /* -------------------------------------------------------
+            GENERATE PDF
+        ------------------------------------------------------- */
+
+        $recommendedBy = $event->recommendedInstructor;
+
+        $pdf = PDF::loadView('trainings.course-completion-certificate', [
+            'event' => $event,
+            'student' => $student,
+            'course' => $course,
+            'firstLesson' => $firstLesson,
+
+            // Your existing fields
+            'hoursOfGroundschool' => $hoursOfGroundschool,
+            'flightTime' => $flightTime,
+            'simulatorTime' => $simulatorTime,
+            'recommendedBy' => $recommendedBy,
+            // NEW block & flight time
+            'totalFlightTimeFormatted' => $totalFlightTimeFormatted,
+            'blockCreditedFormatted'   => $blockCreditedFormatted,
+            'blockDurationFormatted'   => $blockDurationFormatted,
+        ]);
+
+        $filename = 'Certificate_' . Str::slug($student->fname . ' ' . $student->lname) . '.pdf';
+        return $pdf->download($filename);
     }
-
-    foreach ($event->defLessons as $def) {
-        foreach ($def->deferredSectors as $s) {
-            $start = strtotime($s->start_time);
-            $end   = strtotime($s->end_time);
-            if ($start && $end && $end > $start) {
-                $totalSectorblockTime += ($end - $start);
-            }
-        }
-
-        foreach ($def->customSectors as $s) {
-            $start = strtotime($s->start_time);
-            $end   = strtotime($s->end_time);
-            if ($start && $end && $end > $start) {
-                $totalSectorblockTime += ($end - $start);
-            }
-        }
-    }
-
-    /* -------------------------
-       SECTOR FLIGHT TIME
-    ------------------------- */
-    $sectorFlightTime = 0;
-
-    foreach ($event->eventLessons as $lesson) {
-        foreach ($lesson->sectors as $sector) {
-            $t  = strtotime($sector->takeoff_time);
-            $l  = strtotime($sector->landing_time);
-            if ($t && $l && $l > $t) {
-                $sectorFlightTime += ($l - $t);
-            }
-        }
-    }
-
-    /* -------------------------------------------------------
-        FINAL FORMULAS (same as Blade)
-       ------------------------------------------------------- */
-
-    // Total Flight Time
-    $totalFlightTime =
-        $totals['flight'] +
-        $totals['deferred'] +
-        $totals['customDuration'] +
-        $sectorFlightTime;
-
-    // Total Block Credited (blade logic)
-    $TotalBlockCredited =
-        $totals['flight'] +
-        $totals['deferred'] +
-        $totals['customDuration'] +
-        $sectorFlightTime +
-        $totals['lessonCreditedTime'];
-
-    // Add sector block time
-    $blockCredited = $totalSectorblockTime + $TotalBlockCredited;
-
-    // Duration (hours * 3600)
-    $blockDuration = $course->duration_value * 3600;
-
-    // Convert to readable for PDF
-    $totalFlightTimeFormatted = formatSeconds($totalFlightTime);
-    $blockCreditedFormatted   = formatSeconds($blockCredited);
-    $blockDurationFormatted   = formatSeconds($blockDuration);
-
-    /* -------------------------------------------------------
-        KEEP YOUR EXISTING PDF VALUES
-       ------------------------------------------------------- */
-
-    $hoursOfGroundschool = "0 hrs"; // unchanged by request
-    $flightTime = $event->total_time ?? "00:00";
-    $simulatorTime = $event->simulator_time ?? "00:00";
-
-    /* -------------------------------------------------------
-        GENERATE PDF
-       ------------------------------------------------------- */
-
-        $recommendedBy = trim(
-            ($event->recommendedInstructor->fname ?? '') . ' ' .
-            ($event->recommendedInstructor->lname ?? '')
-        );
-
-    $pdf = PDF::loadView('trainings.course-completion-certificate', [
-        'event' => $event,
-        'student' => $student,
-        'course' => $course,
-        'firstLesson' => $firstLesson,
-
-        // Your existing fields
-        'hoursOfGroundschool' => $hoursOfGroundschool,
-        'flightTime' => $flightTime,
-        'simulatorTime' => $simulatorTime,
-        'recommendedBy' => $recommendedBy,
-        // NEW block & flight time
-        'totalFlightTimeFormatted' => $totalFlightTimeFormatted,
-        'blockCreditedFormatted'   => $blockCreditedFormatted,
-        'blockDurationFormatted'   => $blockDurationFormatted,
-    ]);
-
-    $filename = 'Certificate_' . Str::slug($student->fname . ' ' . $student->lname) . '.pdf';
-    return $pdf->download($filename);
-}
 
 
     public function storeDeferredLessons(Request $request)

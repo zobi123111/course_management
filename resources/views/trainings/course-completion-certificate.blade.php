@@ -120,10 +120,10 @@
         <tr style="background-color: #f8f9fa;">
           <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;"> Instructor (Recommendation):</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">
-            @if ($recommendedBy)
-              {{ $recommendedBy->fname }} {{ $recommendedBy->lname }}
+            @if (is_object($recommendedBy) && isset($recommendedBy->fname) && isset($recommendedBy->lname))
+              {{ $recommendedBy->fname }} {{ $recommendedBy->lname ?? '' }}
             @else
-                &nbsp;
+              --
             @endif
           </td>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Licence Number:</th>
