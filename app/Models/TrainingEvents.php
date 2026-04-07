@@ -118,7 +118,7 @@ class TrainingEvents extends Model
                     'resources.name as resource_name', 
                     'course_lessons.lesson_type'
                 )
-                ->with('instructorDocuments'); 
+                ->with('instructorDocuments', 'sectors'); 
         }
 
 

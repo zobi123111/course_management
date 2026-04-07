@@ -763,6 +763,67 @@
                 </div>
                 @endif
 
+                @if(!$pilotGrouped->isEmpty())
+                <div class="mb-4">
+                    @if(auth()->user()->role != 3)
+                    <h5 class="text-primary d-flex justify-content-between align-items-center"
+                        data-bs-toggle="collapse"
+                        href="#pilot_competencyGrading"
+                        role="button"
+                        aria-expanded="false">
+                        <span><i class="bi bi-bar-chart-steps me-2"></i>Pilot Competency Grading</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </h5>
+                    @endif
+
+                    <div class="collapse" id="pilot_competencyGrading">
+                        @if($pilotGrouped->isEmpty())
+                        <p class="text-muted">No Pilot Competency grading available.</p>
+                        @else
+                        @foreach($pilotGrouped as $lessonId => $gradings)
+                        @php
+                        $lessonTitle = $gradings->first()->courseLesson->lesson_title ?? 'Unknown Lesson';
+                        @endphp
+
+                        <h6 class="mt-3 text-success">
+                            <i class="bi bi-journal-text me-1"></i> {{ $lessonTitle }}
+                        </h6>
+
+                        <div class="mb-4">
+                            <div class="table-responsive">
+                                <table class="table table-bordered align-middle text-center shadow-sm">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Competency</th>
+                                            <th>Grade</th>
+                                            <th>Comment</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($gradings as $instructor)
+                                        @php
+                                        $grade = $instructor->competency_value;
+                                        $badgeClass = 'bg-secondary';
+                                        if ($grade == 1) $badgeClass = 'grade-incomplete';
+                                        elseif ($grade == 2) $badgeClass = 'grade-ftr';
+                                        elseif (in_array($grade, [3,4,5])) $badgeClass = 'grade-competent';
+                                        @endphp
+                                        <tr>
+                                            <td><strong>{{ strtoupper($instructor->cbta->short_name ?? '-') }}</strong></td>
+                                            <td><span class="badge {{ $badgeClass }}">{{ $grade ?? 'N/A' }}</span></td>
+                                            <td class="text-start">{{ $instructor->comment ?? '-' }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        @endforeach
+                        @endif
+                    </div>
+                </div>
+                @endif
+
                 <!-- // End Instructor Grading -->
 
 

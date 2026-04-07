@@ -1708,48 +1708,36 @@
                         {{-- Event Summary Section --}}
                         <div class="card shadow-sm mt-4 border-primary">
                             <div class="card-header bg-primary text-white">
-                                <strong>
-                                    <!-- <i class="text-primary fas fa-clock"></i>  -->
-                                    Event Summary
-                                </strong>
+                                <strong><i class="fas fa-clock"></i> Event Summary</strong>
                             </div>
-                            <div class="card-body mt-3">
+                            <div class="card-body">
 
                                 {{-- Total Course Duration --}}
                                 @if($trainingEvent->course?->duration_value && $trainingEvent->course?->duration_type)
                                 @php
-                                $value = $trainingEvent->course->duration_value;
-                                $type = $trainingEvent->course->duration_type;
-
-                                $label = match($type) {
-                                'hours' => $value == 1 ? 'hour' : 'hours',
-                                'events' => $value == 1 ? 'event' : 'events',
-                                default => '',
-                                };
+                                    $value = $trainingEvent->course->duration_value;
+                                    $type = $trainingEvent->course->duration_type;
+                                    $label = match($type) {
+                                        'hours' => $value == 1 ? 'hour' : 'hours',
+                                        'events' => $value == 1 ? 'event' : 'events',
+                                        default => '',
+                                    };
                                 @endphp
                                 <p>
-                                    <strong><i class="text-primary fas fa-hourglass-half"></i> Total Course Duration:</strong>
+                                    <strong><i class="fas fa-hourglass-half"></i> Total Course Duration:</strong>
                                     <span class="badge bg-success text-white">{{ $value }} {{ $label }}</span>
                                 </p>
                                 @endif
 
-
                                 {{-- Time Tracking --}}
-
                                 @if($trainingEvent?->course?->course_type === 'one_event')
 
                                 @php
                                     $lessonType = $eventLesson?->lesson?->lesson_type ?? null;
                                     $credited = strtotime("1970-01-01 {$eventLesson?->hours_credited}") ?: 0;
                                     $customCredited = strtotime("1970-01-01 {$eventLesson?->custom_hours_credited}") ?: 0;
-                                    
-                                    $singleCustomTime = $eventLesson?->lesson?->customTime ?? null;
                                     $multiCustomTimes = $eventLesson?->lesson?->lessoncustomTime ?? collect();
 
-                                    if ($singleCustomTime) {
-                                        $totals['custom'][$singleCustomTime->name]['allotted'] = $singleCustomTime->hours;
-                                        $totals['custom'][$singleCustomTime->name]['credited'] = $customCredited;
-                                    }
                                     if ($multiCustomTimes->count()) {
                                         foreach ($multiCustomTimes as $ct) {
                                             $name = $ct->name;
@@ -1759,17 +1747,18 @@
                                         }
                                     }
 
+                                    
                                     $totals = [
                                         'groundschool' => ['duration' => 0, 'credited' => 0],
-                                        'simulator' => ['duration' => 0, 'credited' => 0],
-                                        'flight' => ['credited' => 0],
-                                        'custom' => [],
-                                        'deferred' => 0,
+                                        'simulator'    => ['duration' => 0, 'credited' => 0],
+                                        'flight'       => ['credited' => 0],
+                                        'custom'       => [],
+                                        'deferred'     => 0,
                                     ];
 
                                     if ($lessonType === 'groundschool') {
                                         $groundschoolLessons = $trainingEvent->eventLessons->filter(function ($lesson) {
-                                        return $lesson->lesson?->lesson_type === 'groundschool';
+                                            return $lesson->lesson?->lesson_type === 'groundschool';
                                         });
                                         $totals['groundschool']['duration'] = ($trainingEvent->course->groundschool_hours ?? 0) * $groundschoolLessons->count();
                                         $totals['groundschool']['credited'] = $credited;
@@ -1780,39 +1769,38 @@
                                         $totals['flight']['credited'] = $credited;
                                     }
 
+                                    if ($customTime) {
+                                        $totals['custom'][$customTime->name]['allotted'] = $customTime->given_hours;
+                                        $totals['custom'][$customTime->name]['credited'] = $customCredited;
+                                    }
 
-                                    if(isset($deferredLessons) && $deferredLessons->isNotEmpty()) {
-                                        foreach($deferredLessons as $defLesson) {
+                                    if (isset($deferredLessons) && $deferredLessons->isNotEmpty()) {
+                                        foreach ($deferredLessons as $defLesson) {
                                             $start = strtotime($defLesson->start_time);
-                                            $end = strtotime($defLesson->end_time);
+                                            $end   = strtotime($defLesson->end_time);
                                             $duration = max(0, $end - $start);
                                             $totals['deferred'] += $duration;
                                         }
                                     }
                                 @endphp
 
-                                    @if($totals['groundschool']['duration'] || $totals['groundschool']['credited'])
-                                    <p>
-                                        <strong>Ground School:</strong>
-                                        Duration: {{ $totals['groundschool']['duration'] ?? 'N/A' }} |
-                                        Credited: {{ formatSeconds($totals['groundschool']['credited']) }}
-                                    </p>
-                                    @endif
+                                @if($totals['groundschool']['duration'] || $totals['groundschool']['credited'])
+                                <p>
+                                    <strong>Ground School:</strong>
+                                    Duration: {{ $totals['groundschool']['duration'] ?? 'N/A' }} |
+                                    Credited: {{ formatSeconds($totals['groundschool']['credited']) }}
+                                </p>
+                                @endif
 
-                                    @if($totals['simulator']['duration'] || $totals['simulator']['credited'])
-                                    <p>
-                                        <strong>Simulator:</strong>
-                                        Duration: {{ $totals['simulator']['duration'] ?? 'N/A' }} |
-                                        Credited: {{ formatSeconds($totals['simulator']['credited']) }}
-                                    </p>
-                                    @endif
+                                @if($totals['simulator']['duration'] || $totals['simulator']['credited'])
+                                <p>
+                                    <strong>Simulator:</strong>
+                                    Duration: {{ $totals['simulator']['duration'] ?? 'N/A' }} |
+                                    Credited: {{ formatSeconds($totals['simulator']['credited']) }}
+                                </p>
+                                @endif
 
-                                <!-- <p>
-                                        <strong>Flight:</strong>
-                                        Credited: {{ formatSeconds($totals['flight']['credited']) }}
-                                    </p> -->
-
-                                    @if(!empty($totals['custom']))
+                                @if(!empty($totals['custom']))
                                     @foreach($totals['custom'] as $name => $custom)
                                     <p>
                                         <strong>Custom ({{ $name }}):</strong>
@@ -1820,51 +1808,213 @@
                                         Credited: {{ formatSeconds($custom['credited']) }}
                                     </p>
                                     @endforeach
-                                    @endif
+                                @endif
 
-                                    <?php
-                                        $totalFlightTime = $totals['flight']['credited'] + $totals['deferred'];
-                                    ?>
-
-                                    <p>
-                                        <strong>Total Flight Time:</strong>
-                                        {{ formatSeconds($totalFlightTime) }}
-                                    </p>
-
-                                    <!-- @if($totals['deferred'] > 0)
-                                            <p>
-                                                <strong>Deferred Lessons:</strong>
-                                                Credited: {{ formatSeconds($totals['deferred']) }}
-                                            </p>
-                                        @endif -->
+                                <?php
+                                    $totalFlightTime = $totals['flight']['credited'] + $totals['deferred'];
+                                ?>
+                                <p>
+                                    <strong>Total Flight Time:</strong>
+                                    {{ formatSeconds($totalFlightTime) }}
+                                </p>
 
                                 @else
+
+                                {{-- ===== MULTI-EVENT BRANCH ===== --}}
                                 <?php
                                     $totals = [
-                                        'groundschool' => ['duration' => 0, 'credited' => 0],
-                                        'simulator' => ['duration' => 0, 'credited' => 0],
-                                        'flight' => ['credited' => 0],
-                                        'custom' => [],
-                                        'deferred' => 0,
+                                        'groundschool'   => ['duration' => 0, 'credited' => 0],
+                                        'simulator'      => ['duration' => 0, 'credited' => 0],
+                                        'flight'         => ['credited' => 0],
+                                        'custom'         => [],
+                                        'deferred'       => 0,
                                         'customDuration' => 0,
+                                        'lessonCreditedTime' => 0,
                                     ];
 
                                     $groundschoolLessons = $trainingEvent->eventLessons->filter(function ($lesson) {
                                         return $lesson->lesson?->lesson_type === 'groundschool';
                                     });
-
                                     $totals['groundschool']['duration'] = ($trainingEvent->course->groundschool_hours ?? 0);
                                 ?>
 
+                                @foreach($trainingEvent->eventLessons as $lesson)
                                 <?php
-                                    $totals = [
-                                        'groundschool' => ['duration' => 0, 'credited' => 0],
-                                        'simulator'    => ['duration' => 0, 'credited' => 0],
-                                        'flight'       => ['credited' => 0],
-                                        'custom'       => [],
-                                        'deferred'     => 0,
-                                        'customDuration' => 0,
-                                    ];
+                                    if (!function_exists('toSeconds')) {
+                                        function toSeconds(?string $time): int
+                                        {
+                                            if (!$time) return 0;
+                                            [$h, $m] = array_pad(explode(':', $time), 2, 0);
+                                            return ($h * 3600) + ($m * 60);
+                                        }
+                                    }
+
+                                    $type     = $lesson->lesson?->lesson_type ?? '';
+                                    $credited = toSeconds($lesson->hours_credited);
+
+                                    if ($type === 'groundschool') {
+                                        $totals['groundschool']['credited'] += $credited;
+                                    } elseif ($type === 'simulator') {
+                                        $totals['simulator']['duration'] = $trainingEvent->course->simulator_hours ?? 0;
+                                        $totals['simulator']['credited'] += $credited;
+                                    } elseif ($type === 'flight') {
+                                        $totals['flight']['credited'] += $credited;
+                                    }
+
+                                    if ($lesson->lesson?->customTime) {
+                                        $custom = $lesson->lesson->customTime;
+                                        $totals['custom'][$custom->name]['allotted'] = $custom->hours;
+                                        $totals['custom'][$custom->name]['credited'] =
+                                            ($totals['custom'][$custom->name]['credited'] ?? 0)
+                                            + strtotime("1970-01-01 {$lesson->custom_hours_credited}");
+                                    }
+                                ?>
+                                @endforeach
+
+                                @if(isset($deferredLessons) && $deferredLessons->isNotEmpty())
+                                    @foreach($deferredLessons as $defLesson)
+                                    <?php
+                                        $lessonType = $defLesson?->deftasks?->subddddLesson?->courseLesson?->lesson_type;
+                                        $start      = strtotime($defLesson->start_time);
+                                        $end        = strtotime($defLesson->end_time);
+                                        $duration   = max(0, $end - $start);
+
+                                        if ($lessonType === 'flight') {
+                                            $totals['deferred'] += $duration;
+                                        } elseif ($lessonType === 'groundschool') {
+                                            $totals['flight']['credited'] += $credited;
+                                        } elseif ($lessonType === 'simulator') {
+                                            $totals['flight']['credited'] += $credited;
+                                        }
+                                    ?>
+                                    @endforeach
+                                @endif
+
+                                @if(isset($customLessons) && $customLessons->isNotEmpty())
+                                    @foreach($customLessons as $custom)
+                                    <?php
+                                        $lessonType = $custom?->deftasks?->subddddLesson?->courseLesson?->lesson_type;
+                                        if ($lessonType === 'flight') {
+                                            $start        = strtotime($custom->start_time);
+                                            $end          = strtotime($custom->end_time);
+                                            $cus_duration = max(0, $end - $start);
+                                            if (!isset($totals['customDuration'])) {
+                                                $totals['customDuration'] = 0;
+                                            }
+                                            $totals['customDuration'] += $cus_duration;
+                                        }
+                                    ?>
+                                    @endforeach
+                                @endif
+
+                                @if($totals['groundschool']['duration'] || $totals['groundschool']['credited'])
+                                <p>
+                                    <strong>Ground School:</strong>
+                                    Duration: {{ number_format($totals['groundschool']['duration'], 2) ?? 'N/A' }} |
+                                    Credited: {{ formatSeconds($totals['groundschool']['credited']) }}
+                                </p>
+                                @endif
+
+                                @if($totals['simulator']['duration'] || $totals['simulator']['credited'])
+                                <p>
+                                    <strong>Simulator:</strong>
+                                    Duration: {{ $totals['simulator']['duration'] ?? 'N/A' }} |
+                                    Credited: {{ formatSeconds($totals['simulator']['credited']) }}
+                                </p>
+                                @endif
+
+                                <?php
+                                    $totalFlightTime = $totals['flight']['credited']
+                                                    + $totals['deferred']
+                                                    + $totals['customDuration'];
+
+
+                                    $blockDuration = $trainingEvent->course->duration_value * 3600;
+
+                                    $totalSectorblockTime = 0;
+
+                                    foreach ($trainingEvent->eventLessons as $lesson) {
+                                        if ($lesson->sectors && $lesson->sectors->count() > 0) {
+                                            foreach ($lesson->sectors as $sector) {
+                                                $start = strtotime($sector->start_time);
+                                                $end   = strtotime($sector->end_time);
+                                                if ($start && $end && $end > $start) {
+                                                    $totalSectorblockTime += ($end - $start);
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    foreach ($trainingEvent->defLessons as $task) {
+
+                                        if ($task->deferredSectors && $task->deferredSectors->count() > 0) {
+                                            foreach ($task->deferredSectors as $sector) {
+                                                $start = strtotime($sector->start_time);
+                                                $end   = strtotime($sector->end_time);
+                                                if ($start && $end && $end > $start) {
+                                                    $totalSectorblockTime += ($end - $start);
+                                                }
+                                            }
+                                        }
+
+                                        if ($task->customSectors && $task->customSectors->count() > 0) {
+                                            foreach ($task->customSectors as $sector) {
+                                                $start = strtotime($sector->start_time);
+                                                $end   = strtotime($sector->end_time);
+                                                if ($start && $end && $end > $start) {
+                                                    $totalSectorblockTime += ($end - $start);
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    $sectorFlightTime = 0;
+
+                                    foreach ($trainingEvent->eventLessons as $lesson) {
+                                        if ($lesson->sectors && $lesson->sectors->count() > 0) {
+                                            foreach ($lesson->sectors as $sector) {
+
+                                                $takeoff = strtotime($sector->takeoff_time);
+                                                $landing = strtotime($sector->landing_time);
+
+                                                if ($takeoff && $landing && $landing > $takeoff) {
+                                                    $sectorFlightTime += ($landing - $takeoff);
+                                                }
+                                            }
+                                        }
+
+                                        foreach ($lesson->CreditedTime as $creditRow) {
+
+                                            $name = $creditRow->name;
+
+                                            // Convert HH:MM → seconds
+                                            $seconds = strtotime("1970-01-01 {$creditRow->hours}") - strtotime("1970-01-01 00:00");
+
+                                            // Add into custom totals (existing behavior)
+                                            if (isset($totals['custom'][$name])) {
+                                                $totals['custom'][$name]['credited'] += $seconds;
+                                            }
+
+                                            // NEW — add into TOTAL lesson credited time
+                                            $totals['lessonCreditedTime'] =
+                                                ($totals['lessonCreditedTime'] ?? 0) + $seconds;
+                                        }
+                                    }
+
+
+                                    $TotalBlockCredited = $totals['flight']['credited']
+                                                        + $totals['deferred']
+                                                        + $totals['customDuration']
+                                                        + $sectorFlightTime
+                                                        + $totals['lessonCreditedTime'];
+
+                                    
+                                    $totalFlightTime = $totals['flight']['credited']
+                                                        + $totals['deferred']
+                                                        + $totals['customDuration']
+                                                        + $sectorFlightTime;
+
+                                    $blockCredited = $totalSectorblockTime + $TotalBlockCredited;
 
                                     foreach ($trainingEvent->eventLessons as $eventLesson) {
 
@@ -1888,280 +2038,23 @@
                                         }
                                     }
 
-                                    $lessonType = $eventLesson?->lesson?->lesson_type ?? null;
-                                    $credited = strtotime("1970-01-01 {$eventLesson?->hours_credited}") ?: 0;
-
-                                    $groundschoolLessons = $trainingEvent->eventLessons->filter(function ($lesson) {
-                                        return $lesson->lesson?->lesson_type === 'groundschool';
-                                    });
-
-                                    $totals['groundschool']['duration'] = $trainingEvent->course->groundschool_hours ?? 0;
-
-                                    if ($lessonType === 'simulator') {
-                                        $totals['simulator']['duration'] = $trainingEvent->course->simulator_hours ?? 0;
-                                        $totals['simulator']['credited'] = $credited;
-                                    }
-
-                                    if ($lessonType === 'flight') {
-                                        $totals['flight']['credited'] = $credited;
-                                    }
-
-                                    if (isset($deferredLessons) && $deferredLessons->isNotEmpty()) {
-                                        foreach ($deferredLessons as $defLesson) {
-                                            $start = strtotime($defLesson->start_time);
-                                            $end   = strtotime($defLesson->end_time);
-                                            $totals['deferred'] += max(0, $end - $start);
-                                        }
-                                    }
-
+                                    
                                 ?>
 
-
-                                @foreach($trainingEvent->eventLessons as $lesson)
-                                    <?php
-                                        if (!function_exists('toSeconds')) {
-                                            function toSeconds(?string $time): int
-                                            {
-                                                if (!$time) return 0;
-                                                [$h, $m] = array_pad(explode(':', $time), 2, 0);
-                                                return ($h * 3600) + ($m * 60);
-                                            }
-                                        }
-                                        $type = $lesson->lesson?->lesson_type ?? '';
-                                        $credited = toSeconds($lesson->hours_credited);
-
-                                        if ($type === 'groundschool') {
-                                            $totals['groundschool']['credited'] += $credited;
-                                        } elseif ($type === 'simulator') {
-                                            $totals['simulator']['duration'] = $trainingEvent->course->simulator_hours ?? 0;
-                                            $totals['simulator']['credited'] += $credited;
-                                        } elseif ($type === 'flight') {
-
-                                            $totals['flight']['credited'] += $credited;
-                                        }
-
-                                        // if ($lesson->lesson?->customTime) {
-                                        //     $custom = $lesson->lesson->customTime;
-                                        //     $totals['custom'][$custom->name]['allotted'] = $custom->hours;
-                                        //     $totals['custom'][$custom->name]['credited'] = ($totals['custom'][$custom->name]['credited'] ?? 0) + strtotime("1970-01-01 {$lesson->custom_hours_credited}");
-                                        // }
-                                        // $singleCustom = $lesson->lesson?->customTime ?? null;
-                                        $multiCustom = $lesson->lesson?->lessoncustomTime ?? collect();
-                                        $credited = strtotime("1970-01-01 {$lesson->custom_hours_credited}") ?: 0;
-
-                                        // Single
-                                        // if ($singleCustom) {
-                                        //     $name = $singleCustom->name;
-
-                                        //     $totals['custom'][$name]['allotted'] = $singleCustom->hours;
-                                        //     $totals['custom'][$name]['credited'] =
-                                        //         ($totals['custom'][$name]['credited'] ?? 0) + $credited;
-                                        // }
-
-                                        // Multiple
-                                        if ($multiCustom->count()) {
-                                            foreach ($multiCustom as $ct) {
-                                                $name = $ct->name;
-
-                                                $totals['custom'][$name]['allotted'] = $ct->hours ?? $ct->hours;
-                                                $totals['custom'][$name]['credited'] =
-                                                    ($totals['custom'][$name]['credited'] ?? 0) + $credited;
-                                            }
-                                        }
-                                    ?>
-                                @endforeach
-
-                                @if(isset($deferredLessons) && $deferredLessons->isNotEmpty())
-                                @foreach($deferredLessons as $defLesson)
-
-                                <?php $lessonType = $defLesson?->deftasks?->subddddLesson?->courseLesson?->lesson_type;
-                                ?>
-                                <?php
-                                $start = strtotime($defLesson->start_time);
-                                $end = strtotime($defLesson->end_time);
-                                $duration = max(0, $end - $start);
-
-                                if ($lessonType === 'flight') {
-                                    // $totals['flight']['credited'] += $credited;
-                                    $totals['deferred'] += $duration;
-                                } elseif ($lessonType === 'groundschool') {
-                                    $totals['flight']['credited'] += $credited;
-                                } elseif ($lessonType === 'simulator') {
-                                    $totals['flight']['credited'] += $credited;
-                                }
-
-                                ?>
-                                @endforeach
-                                @endif
-
-                                @if(isset($customLessons) && $customLessons->isNotEmpty())
-                                @foreach($customLessons as $custom)
-
-                                <?php
-
-                                $lessonType = $custom?->deftasks?->subddddLesson?->courseLesson?->lesson_type;
-
-                                if ($lessonType === 'flight') {
-                                    $start = strtotime($custom->start_time);
-                                    $end = strtotime($custom->end_time);
-
-                                    $cus_duration = max(0, $end - $start);
-
-                                    if (!isset($totals['customDuration'])) {
-                                        $totals['customDuration'] = 0;
-                                    }
-                                    $totals['customDuration'] += $cus_duration;
-                                }
-                                ?>
-
-                                @endforeach
-                                @endif
-
-
-
-                                @if($totals['groundschool']['duration'] || $totals['groundschool']['credited'])
-                                <p>
-                                    <strong>Ground School:</strong>
-                                    Duration: {{ number_format($totals['groundschool']['duration'], 2) ?? 'N/A' }} |
-                                    Credited: {{ formatSeconds($totals['groundschool']['credited']) }}
-                                </p>
-                                @endif
-
-                                @if($totals['simulator']['duration'] || $totals['simulator']['credited'])
-                                <p>
-                                    <strong>Simulator:</strong>
-                                    Duration: {{ $totals['simulator']['duration'] ?? 'N/A' }} |
-                                    Credited: {{ formatSeconds($totals['simulator']['credited']) }}
-                                </p>
-                                @endif
-
-                                <!-- <p>
-                                    <strong>Flight:</strong>
-                                    Credited: {{ formatSeconds($totals['flight']['credited']) }}
-                                </p> -->
-                                <?php
-
-                                    $totalblockTime = $totals['flight']['credited'] + $totals['deferred'] + $totals['customDuration'];
-
-                                    // $totalFlightTime = $trainingEvent->eventLessons
-                                    // ->where('lesson.lesson_type', 'flight')
-                                    // ->reduce(function ($carry, $lesson) {
-                                    //     $takeoff  = strtotime($lesson->takeoff_time);
-                                    //     $landing  = strtotime($lesson->landing_time);
-
-                                    //     if ($takeoff && $landing && $landing > $takeoff) {
-                                    //         $carry += ($landing - $takeoff);
-                                    //     }
-                                    //     return $carry;
-                                    // }, 0);
-
-                                    $eventLessonFlightTime = $trainingEvent->eventLessons
-                                        ->where('lesson.lesson_type', 'flight')
-                                        ->reduce(function ($carry, $lesson) {
-                                            $takeoff = strtotime($lesson->takeoff_time);
-                                            $landing = strtotime($lesson->landing_time);
-
-                                            if ($takeoff && $landing && $landing > $takeoff) {
-                                                $carry += ($landing - $takeoff);
-                                            }
-                                            return $carry;
-                                        }, 0);
-
-                                    $defFlightTime = $trainingEvent->defLessons
-                                        ->reduce(function ($carry, $task) {
-                                            $takeoff = strtotime($task->takeoff_time);
-                                            $landing = strtotime($task->landing_time);
-
-                                            if ($takeoff && $landing && $landing > $takeoff) {
-                                                $carry += ($landing - $takeoff);
-                                            }
-                                            return $carry;
-                                        }, 0);
-
-                                    $totalcustomFlightTime = $eventLessonFlightTime + $defFlightTime;
-
-                                    $totalSectorTime = 0;
-
-                                    foreach ($trainingEvent->eventLessons as $lesson) {
-                                        if ($lesson->sectors && $lesson->sectors->count() > 0) {
-                                            foreach ($lesson->sectors as $sector) {
-                                                $start = strtotime($sector->takeoff_time);
-                                                $end   = strtotime($sector->landing_time);
-
-                                                if ($start && $end && $end > $start) {
-                                                    $totalSectorTime += ($end - $start);
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    foreach ($trainingEvent->defLessons as $task) {
-                                        if ($task->sectors && $task->sectors->count() > 0) {
-                                            foreach ($task->sectors as $sector) {
-                                                $start = strtotime($sector->takeoff_time);
-                                                $end   = strtotime($sector->landing_time);
-
-                                                if ($start && $end && $end > $start) {
-                                                    $totalSectorTime += ($end - $start);
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    $totalFlightTime = $totalcustomFlightTime + $totalSectorTime;
-
-                                    // $blockDuration = $eventLessonFlightTime + $defFlightTime;
-                                    $blockDuration = $trainingEvent->course->duration_value * 3600;
-
-                                    // Block Credited (counts toward course requirement)
-                                    $TotalBlockCredited = $totals['flight']['credited']
-                                                    + $totals['deferred']
-                                                    + $totals['customDuration'];
-
-                                    $totalSectorblockTime = 0;
-
-                                    foreach ($trainingEvent->eventLessons as $lesson) {
-                                        if ($lesson->sectors && $lesson->sectors->count() > 0) {
-                                            foreach ($lesson->sectors as $sector) {
-                                                $start = strtotime($sector->start_time);
-                                                $end   = strtotime($sector->end_time);
-
-                                                if ($start && $end && $end > $start) {
-                                                    $totalSectorblockTime += ($end - $start);
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    foreach ($trainingEvent->defLessons as $task) {
-                                        if ($task->sectors && $task->sectors->count() > 0) {
-                                            foreach ($task->sectors as $sector) {
-                                                $start = strtotime($sector->start_time);
-                                                $end   = strtotime($sector->end_time);
-
-                                                if ($start && $end && $end > $start) {
-                                                    $totalSectorblockTime += ($end - $start);
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    $blockCredited = $totalSectorblockTime + $TotalBlockCredited;
-                                ?>
-                                <!-- <p>
-                                    <strong>Total Block Time:</strong>
-                                    {{ formatSeconds($totalblockTime) }}
-                                </p> -->
-
+                                {{-- Total Block Time (only shown when course duration is in hours) --}}
                                 @if($trainingEvent->course->duration_type == 'hours')
-                                    <p>
-                                        <strong>Total Block Time:</strong>
-                                        Duration: {{ formatSeconds($blockDuration) }} |
-                                        Credited: {{ formatSeconds($blockCredited) }}
-                                    </p>
-                                @endif
                                 <p>
-                                    <strong>Total flight Time: </strong>
+                                    <strong>
+                                        Total Block Time:
+                                    </strong>
+                                    Duration: {{ formatSeconds($blockDuration) }} |
+                                    Credited: {{ formatSeconds($blockCredited) }}
+                                </p>
+                                @endif
+
+                                {{-- Total Flight Time (old correct logic preserved) --}}
+                                <p>
+                                    <strong>Total Flight Time:</strong>
                                     {{ formatSeconds($totalFlightTime) }}
                                 </p>
 
@@ -2171,17 +2064,8 @@
                                         <strong>Custom ({{ $name }}):</strong>
                                         Allotted: {{ $custom['allotted'] }} |
                                         Credited: {{ formatSeconds($custom['credited']) }}
-                                        <!-- Credited: {{ formatSeconds($totalcustomFlightTime) }} -->
                                     </p>
                                     @endforeach
-                                @endif
-
-
-                                @if($totals['deferred'] > 0)
-                                <!-- <p>
-                                        <strong>Deferred Lessons:</strong>
-                                        Credited: {{ formatSeconds($totals['deferred']) }}
-                                    </p> -->
                                 @endif
 
                                 @endif

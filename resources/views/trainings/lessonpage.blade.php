@@ -1239,7 +1239,6 @@
                         </div>
                     </div>
 
-                    @if($lesson->CreditedTime && $lesson->CreditedTime->count() > 0)
                         @if ($lessonType !== 'deferred' && $lessonType !== 'custom')
                             <div class="card">
                                 <div class="card-body">
@@ -1287,9 +1286,8 @@
                                         $creditedCount = $lesson->CreditedTime->count() ?? 0;
                                     @endphp
 
-                                    @if($creditedCount < $customCount)
-                                        <button class="btn btn-primary mt-3" id="showAddFormBtn">Add Custom Time</button>
-                                    @endif
+                                    
+                                    <button class="btn btn-primary mt-3" id="showAddFormBtn">Add Custom Time</button>
 
                                     {{-- Add Custom Time Form --}}
                                     <form id="customtimeForm" action="{{ route('lesson.custometime.update') }}" method="POST" class="mt-4 d-none">
@@ -1337,7 +1335,6 @@
                                 </div>
                             </div>
                         @endif
-                    @endif                        
 
                 </div>
 
