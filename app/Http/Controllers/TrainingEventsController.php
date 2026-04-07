@@ -2959,159 +2959,381 @@ class TrainingEventsController extends Controller
     }
 
 
-    public function generateCertificate($event)
-    {
-        $eventId = decode_id($event); // decode the ID
-        $event = TrainingEvents::with('eventLessons', 'recommendedInstructor')->findOrFail($eventId);
-        $student = $event->student;  
-        $course = $event->course;
-        $firstLesson = $event->firstLesson;
+    // public function generateCertificate($event)
+    // {
+    //     $eventId = decode_id($event); // decode the ID
+    //     $event = TrainingEvents::with('eventLessons', 'recommendedInstructor')->findOrFail($eventId);
+    //     $student = $event->student;  
+    //     $course = $event->course;
+    //     $firstLesson = $event->firstLesson;
 
-        $lessons = $event->eventLessons;
-        $deferredLessons = DefLesson::where('event_id', $eventId)->get();
+    //     $lessons = $event->eventLessons;
+    //     $deferredLessons = DefLesson::where('event_id', $eventId)->get();
 
-        $totals = [
-            'flight' => 0,
-            'deferred' => 0,
-        ];
+    //     $totals = [
+    //         'flight' => 0,
+    //         'deferred' => 0,
+    //     ];
 
-        foreach ($lessons as $lesson) {
-            $lessonType = $lesson->lesson?->lesson_type ?? null;
+    //     foreach ($lessons as $lesson) {
+    //         $lessonType = $lesson->lesson?->lesson_type ?? null;
 
-            if ($lessonType === 'flight') {
-                $credited = strtotime("1970-01-01 {$lesson->hours_credited}") ?: 0;
-                $totals['flight'] += $credited;
-            }
-        }
+    //         if ($lessonType === 'flight') {
+    //             $credited = strtotime("1970-01-01 {$lesson->hours_credited}") ?: 0;
+    //             $totals['flight'] += $credited;
+    //         }
+    //     }
 
-        foreach ($deferredLessons as $defLesson) {
-            $start = strtotime($defLesson->start_time);
-            $end = strtotime($defLesson->end_time);
-            $duration = max(0, $end - $start);
-            $totals['deferred'] += $duration;
-        }
+    //     foreach ($deferredLessons as $defLesson) {
+    //         $start = strtotime($defLesson->start_time);
+    //         $end = strtotime($defLesson->end_time);
+    //         $duration = max(0, $end - $start);
+    //         $totals['deferred'] += $duration;
+    //     }
 
-        $totalFlightTimeSeconds = $totals['flight'] + $totals['deferred'];
+    //     $totalFlightTimeSeconds = $totals['flight'] + $totals['deferred'];
 
-        $hours = floor($totalFlightTimeSeconds / 3600);
-        $minutes = floor(($totalFlightTimeSeconds % 3600) / 60);
-        $totalFlightTimeFormatted = "{$hours}h {$minutes}m";
+    //     $hours = floor($totalFlightTimeSeconds / 3600);
+    //     $minutes = floor(($totalFlightTimeSeconds % 3600) / 60);
+    //     $totalFlightTimeFormatted = "{$hours}h {$minutes}m";
 
 
 
-        // Calculate Hours of Groundschool (sum of hours_credited where lesson type is groundschool)
-        $hoursOfGroundschoolMinutes = $event->eventLessons
-            ->filter(function ($lesson) {
-                return $lesson->lesson_type === 'groundschool';
-            })
-            ->sum(function ($lesson) {
-                // safely convert hours_credited string to minutes
-                $time = $lesson->hours_credited ?? '00:00:00';
-                [$hours, $minutes, $seconds] = array_pad(explode(':', $time), 3, 0);
-                return ($hours * 60) + $minutes; // ignore seconds for simplicity
-            });
+    //     // Calculate Hours of Groundschool (sum of hours_credited where lesson type is groundschool)
+    //     $hoursOfGroundschoolMinutes = $event->eventLessons
+    //         ->filter(function ($lesson) {
+    //             return $lesson->lesson_type === 'groundschool';
+    //         })
+    //         ->sum(function ($lesson) {
+    //             // safely convert hours_credited string to minutes
+    //             $time = $lesson->hours_credited ?? '00:00:00';
+    //             [$hours, $minutes, $seconds] = array_pad(explode(':', $time), 3, 0);
+    //             return ($hours * 60) + $minutes; // ignore seconds for simplicity
+    //         });
 
-        // Convert to "Xhrs Ymins"
-        $hoursOfGroundschool = floor($hoursOfGroundschoolMinutes / 60) . 'hrs ' . ($hoursOfGroundschoolMinutes % 60) . 'mins';
+    //     // Convert to "Xhrs Ymins"
+    //     $hoursOfGroundschool = floor($hoursOfGroundschoolMinutes / 60) . 'hrs ' . ($hoursOfGroundschoolMinutes % 60) . 'mins';
 
-        // Hours, Flight and Simulator (from TrainingEvents table)
-        $flightTime = $event->total_time ?? 0; // e.g., "10:00"
-        $simulatorTime = $event->simulator_time ?? 0; // e.g., "2.00"
+    //     // Hours, Flight and Simulator (from TrainingEvents table)
+    //     $flightTime = $event->total_time ?? 0; // e.g., "10:00"
+    //     $simulatorTime = $event->simulator_time ?? 0; // e.g., "2.00"
 
-        $recommendedBy = $event->recommendedInstructor; 
-        $licence1 = null;
-        $licence2 = null;
+    //     $recommendedBy = $event->recommendedInstructor; 
+    //     $licence1 = null;
+    //     $licence2 = null;
 
-        if (!empty($event) && !empty($event->recommendedInstructor)) {
-            $recommendedBy = $event->recommendedInstructor;
+    //     if (!empty($event) && !empty($event->recommendedInstructor)) {
+    //         $recommendedBy = $event->recommendedInstructor;
 
-            if (!empty($recommendedBy->id)) {
-                $document_info = UserDocument::where('user_id', $recommendedBy->id)->get();
+    //         if (!empty($recommendedBy->id)) {
+    //             $document_info = UserDocument::where('user_id', $recommendedBy->id)->get();
 
-                if ($document_info && $document_info->count() > 0) {
-                    // safely access first record and its property
-                    $firstDocument = $document_info->first();
+    //             if ($document_info && $document_info->count() > 0) {
+    //                 // safely access first record and its property
+    //                 $firstDocument = $document_info->first();
 
-                    if (!empty($firstDocument->licence)) {
-                        $licence1 = $firstDocument->licence;
-                    }
-                    if (!empty($firstDocument->licence_2)) {
-                        $licence2 = $firstDocument->licence_2;
-                    }
-                }
-            }
-        }
+    //                 if (!empty($firstDocument->licence)) {
+    //                     $licence1 = $firstDocument->licence;
+    //                 }
+    //                 if (!empty($firstDocument->licence_2)) {
+    //                     $licence2 = $firstDocument->licence_2;
+    //                 }
+    //             }
+    //         }
+    //     }
 
-        // Progress breakdown from task_grading
+    //     // Progress breakdown from task_grading
        
 
-        $grades = TaskGrading::where('user_id', $student->id)
-                    ->when($eventId, fn($q) => $q->where('event_id', $eventId))
-                    ->get(['sub_lesson_id', 'task_grade']);
-        $total = $grades->count();
+    //     $grades = TaskGrading::where('user_id', $student->id)
+    //                 ->when($eventId, fn($q) => $q->where('event_id', $eventId))
+    //                 ->get(['sub_lesson_id', 'task_grade']);
+    //     $total = $grades->count();
 
-         // 2️⃣ Fetch DefLessonTask records for comparison
-        $defTasks = DefLessonTask::where('user_id', $student->id)
-                    ->when($eventId, fn($q) => $q->where('event_id', $eventId))
-                    ->get(['task_id', 'task_grade']);
+    //      // 2️⃣ Fetch DefLessonTask records for comparison
+    //     $defTasks = DefLessonTask::where('user_id', $student->id)
+    //                 ->when($eventId, fn($q) => $q->where('event_id', $eventId))
+    //                 ->get(['task_id', 'task_grade']);
 
-        $normalizedGrades = $grades->map(function ($g) {
-                                $g->task_grade = strtolower((string) $g->task_grade);
-                                return $g;
-                            });
+    //     $normalizedGrades = $grades->map(function ($g) {
+    //                             $g->task_grade = strtolower((string) $g->task_grade);
+    //                             return $g;
+    //                         });
 
-        $normalizedDef = $defTasks->map(function ($d) {
-                        $d->task_grade = strtolower((string) $d->task_grade);
-                        return $d;
-                    });
+    //     $normalizedDef = $defTasks->map(function ($d) {
+    //                     $d->task_grade = strtolower((string) $d->task_grade);
+    //                     return $d;
+    //                 });
 
-        $progress = [
-                    'total'      => $normalizedGrades->count(),
-                    'incomplete' => 0,
-                    'further'    => 0,
-                    'competent'  => 0,
-                ];
+    //     $progress = [
+    //                 'total'      => $normalizedGrades->count(),
+    //                 'incomplete' => 0,
+    //                 'further'    => 0,
+    //                 'competent'  => 0,
+    //             ];
 
-        foreach ($normalizedGrades as $grade) {
-                        $matchingDef = $normalizedDef->firstWhere('task_id', $grade->sub_lesson_id);
+    //     foreach ($normalizedGrades as $grade) {
+    //                     $matchingDef = $normalizedDef->firstWhere('task_id', $grade->sub_lesson_id);
 
-                        if ($matchingDef) {
-                            $finalGrade = $matchingDef->task_grade ?: 'incomplete';
-                        } else {
-                            $finalGrade = $grade->task_grade;
-                        }
+    //                     if ($matchingDef) {
+    //                         $finalGrade = $matchingDef->task_grade ?: 'incomplete';
+    //                     } else {
+    //                         $finalGrade = $grade->task_grade;
+    //                     }
 
-                        if (in_array($finalGrade, ['1', 'incomplete'])) {
-                            $progress['incomplete']++;
-                        } elseif (in_array($finalGrade, ['2', 'further training required'])) {
-                            $progress['further']++;
-                        } elseif (in_array($finalGrade, ['3', '4', '5', 'competent'])) {
-                            $progress['competent']++;
-                        }
-                    }
+    //                     if (in_array($finalGrade, ['1', 'incomplete'])) {
+    //                         $progress['incomplete']++;
+    //                     } elseif (in_array($finalGrade, ['2', 'further training required'])) {
+    //                         $progress['further']++;
+    //                     } elseif (in_array($finalGrade, ['3', '4', '5', 'competent'])) {
+    //                         $progress['competent']++;
+    //                     }
+    //                 }
                  
-                    $student->progress = $progress;
+    //                 $student->progress = $progress;
       
          
-      //  return view('trainings.course-completion-certificate', compact('event', 'student', 'course', 'firstLesson', 'hoursOfGroundschool', 'flightTime', 'simulatorTime', 'recommendedBy', 'licence1'));
+    //   //  return view('trainings.course-completion-certificate', compact('event', 'student', 'course', 'firstLesson', 'hoursOfGroundschool', 'flightTime', 'simulatorTime', 'recommendedBy', 'licence1'));
 
-        $pdf = PDF::loadView('trainings.course-completion-certificate', [
-            'event' => $event,
-            'student' => $student,
-            'course' => $course,
-            'firstLesson' => $firstLesson,
-            'hoursOfGroundschool' => $hoursOfGroundschool,
-            'flightTime' => $flightTime,
-            'simulatorTime' => $simulatorTime, 
-            'recommendedBy' => $event->recommendedInstructor,
-            'licence1' => $licence1,
-            'licence2' => $licence2,
-            'totalFlightTimeFormatted' => $totalFlightTimeFormatted,
-        ]);
+    //     $pdf = PDF::loadView('trainings.course-completion-certificate', [
+    //         'event' => $event,
+    //         'student' => $student,
+    //         'course' => $course,
+    //         'firstLesson' => $firstLesson,
+    //         'hoursOfGroundschool' => $hoursOfGroundschool,
+    //         'flightTime' => $flightTime,
+    //         'simulatorTime' => $simulatorTime, 
+    //         'recommendedBy' => $event->recommendedInstructor,
+    //         'licence1' => $licence1,
+    //         'licence2' => $licence2,
+    //         'totalFlightTimeFormatted' => $totalFlightTimeFormatted,
+    //     ]);
 
-        $filename = 'Certificate_' . Str::slug($student->fname . ' ' . $student->lname) . '.pdf';
-        return $pdf->download($filename); 
+    //     $filename = 'Certificate_' . Str::slug($student->fname . ' ' . $student->lname) . '.pdf';
+    //     return $pdf->download($filename); 
+    // }
+
+    public function generateCertificate($event)
+{
+
+
+    if (!function_exists('formatSeconds')) {
+        function formatSeconds(int $seconds): string
+        {
+            $h = floor($seconds / 3600);
+            $m = floor(($seconds % 3600) / 60);
+
+            return sprintf('%02d:%02d', $h, $m);
+        }
     }
+    $eventId = decode_id($event);
+    $event = TrainingEvents::with([
+        'eventLessons',
+        'eventLessons.sectors',
+        'eventLessons.CreditedTime',
+        'defLessons',
+        'defLessons.deferredSectors',
+        'defLessons.customSectors',
+        'recommendedInstructor'
+    ])->findOrFail($eventId);
+
+    $student = $event->student;  
+    $course = $event->course;
+    $firstLesson = $event->firstLesson;
+
+    // Helper function
+    if (!function_exists('toSeconds')) {
+        function toSeconds(?string $time): int {
+            if (!$time) return 0;
+            [$h, $m] = array_pad(explode(':', $time), 2, 0);
+            return ($h * 3600) + ($m * 60);
+        }
+    }
+
+    /* -------------------------------------------------------
+        SAME TOTAL CALCULATIONS AS BLADE
+       ------------------------------------------------------- */
+
+    $totals = [
+        'flight'            => 0,
+        'deferred'          => 0,
+        'customDuration'    => 0,
+        'lessonCreditedTime'=> 0
+    ];
+
+    /* -------------------------
+       FLIGHT / SIM / GROUND
+    ------------------------- */
+    foreach ($event->eventLessons as $lesson) {
+
+        $type = $lesson->lesson->lesson_type ?? null;
+
+        // Hours credited
+        $credited = toSeconds($lesson->hours_credited);
+
+        if ($type === 'flight') {
+            $totals['flight'] += $credited;
+        }
+
+        /* -------------------------
+            LESSON CREDITED TIME TABLE
+        ------------------------- */
+        foreach ($lesson->CreditedTime as $ct) {
+            $sec = toSeconds($ct->hours);
+            $totals['lessonCreditedTime'] += $sec;
+        }
+    }
+
+    /* -------------------------
+       DEFERRED LESSON DURATION
+    ------------------------- */
+    foreach ($event->defLessons as $def) {
+        $start = strtotime($def->start_time);
+        $end   = strtotime($def->end_time);
+        if ($start && $end && $end > $start) {
+            $totals['deferred'] += ($end - $start);
+        }
+    }
+
+    /* -------------------------
+       CUSTOM SECTORS PER DEF LESSON
+    ------------------------- */
+    foreach ($event->defLessons as $def) {
+
+        // deferred sectors
+        foreach ($def->deferredSectors as $sec) {
+            $s = strtotime($sec->start_time);
+            $e = strtotime($sec->end_time);
+            if ($s && $e && $e > $s) {
+                $totals['customDuration'] += ($e - $s);
+            }
+        }
+
+        // custom sectors
+        foreach ($def->customSectors as $sec) {
+            $s = strtotime($sec->start_time);
+            $e = strtotime($sec->end_time);
+            if ($s && $e && $e > $s) {
+                $totals['customDuration'] += ($e - $s);
+            }
+        }
+    }
+
+    /* -------------------------
+       SECTOR BLOCK TIME
+    ------------------------- */
+    $totalSectorblockTime = 0;
+
+    foreach ($event->eventLessons as $lesson) {
+        foreach ($lesson->sectors as $sector) {
+            $start = strtotime($sector->start_time);
+            $end = strtotime($sector->end_time);
+            if ($start && $end && $end > $start) {
+                $totalSectorblockTime += ($end - $start);
+            }
+        }
+    }
+
+    foreach ($event->defLessons as $def) {
+        foreach ($def->deferredSectors as $s) {
+            $start = strtotime($s->start_time);
+            $end   = strtotime($s->end_time);
+            if ($start && $end && $end > $start) {
+                $totalSectorblockTime += ($end - $start);
+            }
+        }
+
+        foreach ($def->customSectors as $s) {
+            $start = strtotime($s->start_time);
+            $end   = strtotime($s->end_time);
+            if ($start && $end && $end > $start) {
+                $totalSectorblockTime += ($end - $start);
+            }
+        }
+    }
+
+    /* -------------------------
+       SECTOR FLIGHT TIME
+    ------------------------- */
+    $sectorFlightTime = 0;
+
+    foreach ($event->eventLessons as $lesson) {
+        foreach ($lesson->sectors as $sector) {
+            $t  = strtotime($sector->takeoff_time);
+            $l  = strtotime($sector->landing_time);
+            if ($t && $l && $l > $t) {
+                $sectorFlightTime += ($l - $t);
+            }
+        }
+    }
+
+    /* -------------------------------------------------------
+        FINAL FORMULAS (same as Blade)
+       ------------------------------------------------------- */
+
+    // Total Flight Time
+    $totalFlightTime =
+        $totals['flight'] +
+        $totals['deferred'] +
+        $totals['customDuration'] +
+        $sectorFlightTime;
+
+    // Total Block Credited (blade logic)
+    $TotalBlockCredited =
+        $totals['flight'] +
+        $totals['deferred'] +
+        $totals['customDuration'] +
+        $sectorFlightTime +
+        $totals['lessonCreditedTime'];
+
+    // Add sector block time
+    $blockCredited = $totalSectorblockTime + $TotalBlockCredited;
+
+    // Duration (hours * 3600)
+    $blockDuration = $course->duration_value * 3600;
+
+    // Convert to readable for PDF
+    $totalFlightTimeFormatted = formatSeconds($totalFlightTime);
+    $blockCreditedFormatted   = formatSeconds($blockCredited);
+    $blockDurationFormatted   = formatSeconds($blockDuration);
+
+    /* -------------------------------------------------------
+        KEEP YOUR EXISTING PDF VALUES
+       ------------------------------------------------------- */
+
+    $hoursOfGroundschool = "0 hrs"; // unchanged by request
+    $flightTime = $event->total_time ?? "00:00";
+    $simulatorTime = $event->simulator_time ?? "00:00";
+
+    /* -------------------------------------------------------
+        GENERATE PDF
+       ------------------------------------------------------- */
+
+        $recommendedBy = trim(
+            ($event->recommendedInstructor->fname ?? '') . ' ' .
+            ($event->recommendedInstructor->lname ?? '')
+        );
+
+    $pdf = PDF::loadView('trainings.course-completion-certificate', [
+        'event' => $event,
+        'student' => $student,
+        'course' => $course,
+        'firstLesson' => $firstLesson,
+
+        // Your existing fields
+        'hoursOfGroundschool' => $hoursOfGroundschool,
+        'flightTime' => $flightTime,
+        'simulatorTime' => $simulatorTime,
+        'recommendedBy' => $recommendedBy,
+        // NEW block & flight time
+        'totalFlightTimeFormatted' => $totalFlightTimeFormatted,
+        'blockCreditedFormatted'   => $blockCreditedFormatted,
+        'blockDurationFormatted'   => $blockDurationFormatted,
+    ]);
+
+    $filename = 'Certificate_' . Str::slug($student->fname . ' ' . $student->lname) . '.pdf';
+    return $pdf->download($filename);
+}
 
 
     public function storeDeferredLessons(Request $request)

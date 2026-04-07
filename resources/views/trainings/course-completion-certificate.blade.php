@@ -35,14 +35,25 @@
 }
   </style>
 </head>
-    @php
-        $progress = $student->progress;
-        $total = max(1, $progress['total']); // avoid division by zero
-        $incompletePercent = round(($progress['incomplete'] / $total) * 100);
-        $furtherPercent = round(($progress['further'] / $total) * 100);
-        $competentPercent = 100 - ($incompletePercent + $furtherPercent);
-    @endphp
-    
+  
+
+     @php
+    $progress = $student->progress ?? [
+        'total' => 0,
+        'incomplete' => 0,
+        'further' => 0,
+    ];
+
+    // Ensure numeric values
+    $total       = max(1, (int) ($progress['total'] ?? 0));
+    $incomplete  = (int) ($progress['incomplete'] ?? 0);
+    $further     = (int) ($progress['further'] ?? 0);
+
+    // Calculate percentages
+    $incompletePercent = round(($incomplete / $total) * 100);
+    $furtherPercent    = round(($further / $total) * 100);
+    $competentPercent  = 100 - ($incompletePercent + $furtherPercent);
+@endphp
 <body style=" margin: 0; font-family: Arial, sans-serif;">
   <div class="certificate" style="max-width: 800px; background-color: white; padding: 20px 40px 20px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.15); color: #000;">
     <div style="text-align: center; margin-bottom: 10px;">
@@ -118,6 +129,16 @@
           <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Licence Number:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">
               {{ !empty($licence1) ? $licence1 : (!empty($licence2) ? $licence2 : 'N/A') }}
+          </td>
+        </tr>
+        <tr style="background-color: #f8f9fa;">
+          <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Total BLock Time (Duration):</th>
+          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">
+              {{ $blockDurationFormatted }}
+          </td>
+          <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Total BLock Time (Credited):</th>
+          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">
+              {{ $blockCreditedFormatted }}
           </td>
         </tr>
         <tr style="background-color: #f8f9fa;">
