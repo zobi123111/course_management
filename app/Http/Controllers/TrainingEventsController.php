@@ -81,7 +81,7 @@ class TrainingEventsController extends Controller
             // Super Admin: Get all data
             $resources = Resource::all();
             // $courses = Courses::all();
-            $courses = Courses::where('archive_trainingCourse', null)->orderBy('position')->get();
+            $courses = Courses::orderBy('position')->get();
             $groups = Group::all();
 
             $instructors = User::whereHas('roles', function ($query) {
@@ -127,7 +127,7 @@ class TrainingEventsController extends Controller
             // Regular User: Get data within their organizational unit
             $resources = Resource::where('ou_id', $currentUser->ou_id)->get();
             // $courses = Courses::where('ou_id', $currentUser->ou_id)->get();
-            $courses = Courses::where('archive_trainingCourse', null)->where('ou_id', $currentUser->ou_id)->orderBy('position')->get(); 
+            $courses = Courses::where('ou_id', $currentUser->ou_id)->orderBy('position')->get(); 
             $groups = Group::where('ou_id', $currentUser->ou_id)->get();
 
             $instructors = User::where('ou_id', $currentUser->ou_id)
@@ -192,7 +192,7 @@ class TrainingEventsController extends Controller
         } else {  
             // Default Case: Users with limited access within their organization
             $resources = Resource::where('ou_id', $currentUser->ou_id)->get();
-            $courses = Courses::where('archive_trainingCourse', null)->where('ou_id', $currentUser->ou_id)->orderBy('position')->get();
+            $courses = Courses::where('ou_id', $currentUser->ou_id)->orderBy('position')->get();
             $groups = Group::where('ou_id', $currentUser->ou_id)->get();
 
             $instructors = User::where('ou_id', $currentUser->ou_id)
@@ -321,15 +321,14 @@ class TrainingEventsController extends Controller
     {
         $user = User::with('documents')->find($user_id);
         $groups = Group::where('ou_id', $ou_id)
-                ->whereJsonContains('user_ids', strval($user_id)) 
-                ->pluck('id'); 
+            ->whereJsonContains('user_ids', strval($user_id)) // Ensure user_id is a string
+            ->pluck('id'); // Get only the group IDs
 
-        $courses = Courses::with('groups') 
-                ->whereNull('archive_trainingCourse')
-                ->whereHas('groups', function ($query) use ($groups) {
-                    $query->whereIn('groups.id', $groups);
-                })
-                ->get();
+        $courses = Courses::with('groups') // Load only the groups relationship
+            ->whereHas('groups', function ($query) use ($groups) {
+                $query->whereIn('groups.id', $groups);
+            })
+            ->get();
         if ($user) {
             return response()->json(['success' => true, 'licence_number' => $user->licence ?: $user->licence_2, 'courses' => $courses]);
         } else {
@@ -376,11 +375,13 @@ class TrainingEventsController extends Controller
 
     public function getCourseLessons(Request $request)
     {
+       
         $student_id = $request->selectedStudentId;
         $ou_id = $request->ou_id ?? Auth::user()->ou_id;
 
-        $course = Courses::with(['courseLessons', 'resources'])->whereNull('archive_trainingCourse')->find($request->course_id);
-       
+        $course = Courses::with(['courseLessons', 'resources'])->find($request->course_id);
+     
+
         $get_licence = UserDocument::where('user_id', $student_id)->select('licence', 'licence_2')->first();
 
         $uk_licence = $get_licence->licence ?? null;
@@ -928,10 +929,6 @@ class TrainingEventsController extends Controller
             'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id,position,instructor_cbta,examiner_cbta',
             'eventLessons.instructor:id,fname,lname', 
             'eventLessons.resource:id,name',
-            'eventLessons.sectors' => function ($q) {
-                $q->with('resourceData');
-            },
-            'eventLessons.CreditedTime',
             'trainingFeedbacks.question',
             'documents',
             'studentDocument'
@@ -1085,13 +1082,13 @@ class TrainingEventsController extends Controller
 
         $deferredTaskIds = collect($getFirstdeftTasks)->pluck('sub_lesson_id')->toArray();
 
-        $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson', 'deferredSectors'])
+        $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson'])
             ->where('event_id', $trainingEvent->id)
             ->where('lesson_type', "deferred")
             ->orderBy('id', 'desc')
             ->get();
 
-        $customLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson', 'customSectors'])
+        $customLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson'])
             ->where('event_id', $trainingEvent->id)
             ->where('lesson_type', "custom")
             ->orderBy('id', 'desc')
@@ -2615,6 +2612,21 @@ class TrainingEventsController extends Controller
         // Group by lesson_id
         $instructorGrouped = $instructorGradings->groupBy('lesson_id');
 
+        $competencyType = 'pilot';
+
+        $pilot_grading = CbtaGrading::with([
+            'examinerGrading.courseLesson' // loads CourseLesson inside examinerGrading
+        ])->whereHas('examinerGrading', function ($query) use ($event_id, $userId, $competencyType) {
+            $query->where('event_id', $event_id)
+                ->where('user_id', $userId)
+                ->where('competency_type', $competencyType);
+        })->get();
+
+        $pilot_grading = $pilot_grading->pluck('examinerGrading')->flatten();
+
+        // Group by lesson_id
+        $pilotGrouped = $pilot_grading->groupBy('lesson_id');
+
         if ($event) { 
             $event->student_feedback_submitted = $event->trainingFeedbacks()->where('user_id', auth()->user()->id)->exists();
             // abort(404, 'Training Event not found.'); 
@@ -2652,7 +2664,7 @@ class TrainingEventsController extends Controller
         ];
       
 
-        return view('trainings.grading-list', compact('event', 'userId', 'defLessonGrading', 'CustomLessonGrading', 'examinerGrouped', 'instructorGrouped', 'reviews','allLessonsGraded','user_name', 'breadcrumbs'));
+        return view('trainings.grading-list', compact('event', 'userId', 'defLessonGrading', 'CustomLessonGrading', 'examinerGrouped', 'instructorGrouped', 'pilotGrouped','reviews','allLessonsGraded','user_name', 'breadcrumbs'));
     }
 
     // public function unlockEventGarding(Request $request, $event_id)
@@ -2720,6 +2732,7 @@ class TrainingEventsController extends Controller
         // ])->findOrFail($event_id);
         $event = TrainingEvents::with([
             'course:id,course_name',
+            'course.courseLessons',
             'orgUnit:id,org_unit_name,org_logo',
             'instructor:id,fname,lname',
             'student:id,fname,lname',
@@ -2832,8 +2845,21 @@ class TrainingEventsController extends Controller
                     ->where('competency_type', $instructor);
             })
             ->get();
-        
-          
+
+        $pilot = 'pilot';
+        $pilot_grading = CbtaGrading::with(['examinerGrading' => function ($query) use ($event_id, $userID, $pilot, $lesson_id) {
+            $query->where('event_id', $event_id)
+                ->where('user_id', $userID)
+                ->where('lesson_id', $lesson_id)
+                ->where('competency_type', $pilot);
+        }])
+            ->whereHas('examinerGrading', function ($query) use ($event_id, $userID, $pilot, $lesson_id) {
+                $query->where('event_id', $event_id)
+                    ->where('user_id', $userID)
+                    ->where('lesson_id', $lesson_id)
+                    ->where('competency_type', $pilot);
+            })
+            ->get();
 
        //  return view('trainings.lesson-report', compact('event', 'lesson', 'eventLesson','examiner_grading', 'instructor_grading'));
 
@@ -2842,7 +2868,8 @@ class TrainingEventsController extends Controller
             'lesson' => $lesson,
             'eventLesson' => $eventLesson,
             'examiner_grading' => $examiner_grading,
-            'instructor_grading' => $instructor_grading
+            'instructor_grading' => $instructor_grading,
+            'pilot_grading' => $pilot_grading,
         ]);
 
         $filename = 'Lesson_Report_' . Str::slug($lesson->lesson_title) . '.pdf';  
@@ -4207,14 +4234,14 @@ class TrainingEventsController extends Controller
         $event_id = $request->event_id;
         $lesson_id = $request->lesson_id;
 
-        $lessondetails = TrainingEventLessons::where('id', decode_id($lesson_id))->where('training_event_id', decode_id($event_id))->with('customTime', 'CreditedTime')->first();
+        $lessondetails = TrainingEventLessons::where('id', decode_id($lesson_id))->where('training_event_id', decode_id($event_id))->first();
 
         // if ($lessondetails->is_locked) {
         //     return redirect()->back()->with('error', 'You need to unlock the lesson first.');
         // }
-        $deflessondetails = DefLesson::where('id', decode_id($lesson_id))->where('event_id', decode_id($event_id))->with('customTime', 'CreditedTime')->first();
+        $deflessondetails = DefLesson::where('id', decode_id($lesson_id))->where('event_id', decode_id($event_id))->first();
 
-        // dd($lessondetails);
+        // dd($deflessondetails);
 
         $trainingEvent = TrainingEvents::with([
             'course:id,course_name,enable_mp_lifus,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num,instructor_cbta,examiner_cbta,enable_mp_lifus',
@@ -4606,7 +4633,6 @@ class TrainingEventsController extends Controller
                     empty($sector['departure_airfield']) &&
                     empty($sector['destination_airfield']) &&
                     empty($sector['operation']) &&
-                    empty($sector['resource_id']) &&
                     empty($sector['start_time']) &&
                     empty($sector['takeoff_time']) &&
                     empty($sector['landing_time']) &&
@@ -4621,8 +4647,6 @@ class TrainingEventsController extends Controller
                     'departure_airfield'  => $sector['departure_airfield'] ?? null,
                     'destination_airfield'=> $sector['destination_airfield'] ?? null,
                     'operation'           => $sector['operation'] ?? null,
-                    'resource'            => $sector['resource_id'] ?? null,
-                    'lesson_type'         => $request->lessontype ?? null,
                     'start_time'          => $sector['start_time'] ?? null,
                     'takeoff_time'        => $sector['takeoff_time'] ?? null,
                     'landing_time'        => $sector['landing_time'] ?? null,
@@ -4703,6 +4727,7 @@ class TrainingEventsController extends Controller
             'message' => 'Custom Time Deleted Successfully'
         ]);
     }
+
 
 
     public function archive_trainingEvent(Request $request)
