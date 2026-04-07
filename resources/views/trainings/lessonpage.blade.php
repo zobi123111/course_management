@@ -1239,6 +1239,7 @@
                         </div>
                     </div>
 
+                    @if($lesson->CreditedTime && $lesson->CreditedTime->count() > 0)
                         @if ($lessonType !== 'deferred' && $lessonType !== 'custom')
                             <div class="card">
                                 <div class="card-body">
@@ -1286,7 +1287,6 @@
                                         $creditedCount = $lesson->CreditedTime->count() ?? 0;
                                     @endphp
 
-                                    
                                     @if($creditedCount < $customCount)
                                         <button class="btn btn-primary mt-3" id="showAddFormBtn">Add Custom Time</button>
                                     @endif
@@ -1337,6 +1337,7 @@
                                 </div>
                             </div>
                         @endif
+                    @endif                        
 
                 </div>
 
