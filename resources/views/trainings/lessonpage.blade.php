@@ -1287,7 +1287,9 @@
                                     @endphp
 
                                     
-                                    <button class="btn btn-primary mt-3" id="showAddFormBtn">Add Custom Time</button>
+                                    @if($creditedCount < $customCount)
+                                        <button class="btn btn-primary mt-3" id="showAddFormBtn">Add Custom Time</button>
+                                    @endif
 
                                     {{-- Add Custom Time Form --}}
                                     <form id="customtimeForm" action="{{ route('lesson.custometime.update') }}" method="POST" class="mt-4 d-none">
