@@ -62,15 +62,16 @@
 
         <strong>Resource :</strong> {{ $eventLesson?->resource_name ?? 'N/A' }}<br>
         @php
-        $resource = $eventLesson?->resource ?? $event?->resource;
+            $resource = $eventLesson?->resource ?? $event?->resource;
         @endphp
         @if ($resource)
-        <strong>Aircraft:</strong> {{ $resource->type ?? $resource->class ?? 'N/A' }}<br>
-        <strong>Reg:</strong> {{ $resource->registration ?? 'N/A' }}<br>
+            <strong>Aircraft:</strong> {{ $resource->type ?? $resource->class ?? 'N/A' }}<br>
+            <strong>Reg:</strong> {{ $resource->registration ?? 'N/A' }}<br>
         @else
-        <strong>Aircraft:</strong> N/A<br>
-        <strong>Reg:</strong> N/A<br>
+            <strong>Aircraft:</strong> N/A<br>
+            <strong>Reg:</strong> N/A<br>
         @endif
+
         @if(!empty($eventLesson->operation1))
 
            <strong>Operation :</strong>  
@@ -87,28 +88,42 @@
         @endif
         <!-- // Rank -->
         @if(!empty($event->rank))
-        <strong>Rank :</strong>    
-                @if($event->rank == 1)
-                    Captain
-                @elseif($event->rank == 2)
-                    First Officer
-                @elseif($event->rank == 3)
-                    Second Officer
-                @endif<br>
+            <strong>Rank :</strong>    
+            @if($event->rank == 1)
+                Captain
+            @elseif($event->rank == 2)
+                First Officer
+            @elseif($event->rank == 3)
+                Second Officer
+            @endif<br>
         @endif
         <!-- ATO Num -->
         
-      @if(!empty($event->course->ato_num)) 
-        @php
-            $atoNum = $event->course->ato_num;
-            // Remove prefixes "easa-" or "uk-" (case-insensitive)
-            $atoNum = preg_replace('/^(easa-|uk-)/i', '', $atoNum);
-        @endphp
-        <strong>ATO Num:</strong> {{ strtoupper($atoNum) }}
-    @endif
-
-  
+        @if(!empty($event->course->ato_num)) 
+            @php
+                $atoNum = $event->course->ato_num;
+                // Remove prefixes "easa-" or "uk-" (case-insensitive)
+                $atoNum = preg_replace('/^(easa-|uk-)/i', '', $atoNum);
+            @endphp
+            <strong>ATO Num:</strong> {{ strtoupper($atoNum) }}
+        @endif
     </div>
+
+    @if($eventLesson->sectors->isNotEmpty())
+        <div>
+            <h2>Additional Sectors</h2>
+            @foreach($eventLesson->sectors as $sector)
+                <div><strong>Instructor:</strong> {{ $eventLesson->instructor->fname ?? '' }} {{ $eventLesson->instructor->lname ?? '' }}</div>
+                <div><strong>Licence No:</strong> {{ !empty($eventLesson->instructor_license_number) ? $eventLesson->instructor_license_number : 'N/A' }}</div>
+                <div><strong>Resource:</strong> {{ $sector->resourceData->name ?? 'N/A' }}</div>
+                <div><strong>Lesson Date:</strong> {{ ($sector->lesson_date) ? date('d/m/Y', strtotime($sector->lesson_date)) : 'N/A' }}</div>
+                <div><strong>Start Time:</strong> {{ ($sector->start_time) ? date('h:i A', strtotime($sector->start_time)) : 'N/A' }}</div>
+                <div><strong>End Time:</strong> {{ ($sector->end_time) ? date('h:i A', strtotime($sector->end_time)) : 'N/A' }}</div>
+                <div><strong>Departure Airfield:</strong> {{ !empty($sector->departure_airfield) ? $sector->departure_airfield : 'N/A' }}</div>
+                <div><strong>Destination Airfield:</strong> {{ !empty($sector->destination_airfield) ? $sector->destination_airfield : 'N/A' }}</div>
+            @endforeach
+        </div>
+    @endif
 
     <div class="section">
         <h2>Tasks Completed</h2>
