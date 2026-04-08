@@ -490,7 +490,9 @@ $(document).ready(function () {
             animation: { animateScale: true, animateRotate: true }
         }
     });
+
 });
+ 
 </script>
 
 @endsection
