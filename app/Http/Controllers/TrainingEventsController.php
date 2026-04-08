@@ -2549,7 +2549,8 @@ class TrainingEventsController extends Controller
                     $query->with([
                         'lesson:id,lesson_title,enable_cbta',
                         'instructor:id,fname,lname',
-                        'quizzes.lesson:id,lesson_title'
+                        'quizzes.lesson:id,lesson_title',
+                        'sectors'
                     ]);
                 }
             ])
@@ -2584,26 +2585,26 @@ class TrainingEventsController extends Controller
         $event_id = $event->id;
 
  
+        // Examiner grading
         $competencyType = 'examiner';
 
         $examiner_grading = CbtaGrading::with([
-            'examinerGrading.courseLesson' // loads CourseLesson inside examinerGrading
+            'examinerGrading.courseLesson'
         ])->whereHas('examinerGrading', function ($query) use ($event_id, $userId, $competencyType) {
             $query->where('event_id', $event_id)
                 ->where('user_id', $userId)
                 ->where('competency_type', $competencyType);
         })->get();
 
-        // Flatten examinerGrading into one collection
         $examinerGradings = $examiner_grading->pluck('examinerGrading')->flatten();
-
-        // Group by lesson_id
         $examinerGrouped = $examinerGradings->groupBy('lesson_id');
  
+        
+        // Instructor grading
         $competencyType = 'instructor';
 
         $instructor_grading = CbtaGrading::with([
-            'examinerGrading.courseLesson' // loads CourseLesson inside examinerGrading
+            'examinerGrading.courseLesson'
         ])->whereHas('examinerGrading', function ($query) use ($event_id, $userId, $competencyType) {
             $query->where('event_id', $event_id)
                 ->where('user_id', $userId)
@@ -2611,24 +2612,31 @@ class TrainingEventsController extends Controller
         })->get();
 
         $instructorGradings = $instructor_grading->pluck('examinerGrading')->flatten();
-
-        // Group by lesson_id
         $instructorGrouped = $instructorGradings->groupBy('lesson_id');
 
+        
+        // Pilot grading
         $competencyType = 'pilot';
 
-        $pilot_grading = CbtaGrading::with([
-            'examinerGrading.courseLesson' // loads CourseLesson inside examinerGrading
-        ])->whereHas('examinerGrading', function ($query) use ($event_id, $userId, $competencyType) {
-            $query->where('event_id', $event_id)
-                ->where('user_id', $userId)
-                ->where('competency_type', $competencyType);
-        })->get();
+        // $pilot_grading = CbtaGrading::with([
+        //     'examinerGrading.courseLesson'
+        // ])->whereHas('examinerGrading', function ($query) use ($event_id, $userId, $competencyType) {
+        //     $query->where('event_id', $event_id)
+        //         ->where('user_id', $userId)
+        //         ->where('competency_type', $competencyType);
+        // })->get();
 
-        $pilot_grading = $pilot_grading->pluck('examinerGrading')->flatten();
+        $pilot_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $userId)->where('competency_type', 'pilot')->get();
 
-        // Group by lesson_id
+        // $pilotgradings = $pilot_grading->pluck('examinerGrading')->flatten();
+
+
+
         $pilotGrouped = $pilot_grading->groupBy('lesson_id');
+        // dd($pilotGrouped);
+
+
+
 
         if ($event) { 
             $event->student_feedback_submitted = $event->trainingFeedbacks()->where('user_id', auth()->user()->id)->exists();
@@ -2745,6 +2753,8 @@ class TrainingEventsController extends Controller
                     ->with([
                         'instructor:id,fname,lname',
                         'resource:id,name,type,class,registration',
+                        'deferredSectors',
+                        'customSectors',
                         'deferredGradings' => function ($q) use ($userId) {
                             $q->where('user_id', $userId);
                         },
@@ -2769,6 +2779,7 @@ class TrainingEventsController extends Controller
         $tasks = $event->defLessonTasks;
        //  return view('trainings.deferred-lesson-report', compact('event', 'eventLesson', 'tasks'));
         
+    //    dd($eventLesson);
         $pdf = PDF::loadView('trainings.deferred-lesson-report', [
             'event' => $event,
             'eventLesson' => $eventLesson,
@@ -2807,6 +2818,7 @@ class TrainingEventsController extends Controller
             },
             'eventLessons.instructor:id,fname,lname',
             'eventLessons.resource:id,id,name,type,class,registration',
+            'eventLessons.sectors.resourceData',
         ])->findOrFail($event_id);
 
 
