@@ -27,19 +27,39 @@
 <div class="card pt-4">
     <div class="card-body">
         {{-- OU Filter for Owner --}}
-        <div class="row mb-3">
-            @if(auth()->user()->is_owner == 1) 
-                <div class="col-md-4">
-                    <label for="ou_filter" class="form-label">Select Organization Unit:</label>
-                    <select id="ou_filter" class="form-select" onchange="filterCoursesByOU(this.value)">
-                        <option value="">All OUs</option>
-                        @foreach($ous as $ou)
-                            <option value="{{ $ou->id }}">{{ $ou->org_unit_name }}</option>
-                        @endforeach
-                    </select>
+       <div class="row mb-3">
+    <div class="d-flex justify-content-between align-items-end">
+
+        {{-- LEFT SIDE: Select Organization Unit --}}
+        @if(auth()->user()->is_owner == 1) 
+            <div class="col-md-4">
+                <label for="ou_filter" class="form-label">Select Organization Unit:</label>
+                <select id="ou_filter" class="form-select" onchange="filterCoursesByOU(this.value)">
+                    <option value="">All OUs</option>
+                    @foreach($ous as $ou)
+                        <option value="{{ $ou->id }}">{{ $ou->org_unit_name }}</option>
+                    @endforeach
+                </select>
+            </div>
+        @endif
+
+        {{-- RIGHT SIDE: Archive Toggle --}}
+        @if (auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1)
+            <div class="col-md-2 d-flex justify-content-end">
+                <div class="form-check form-switch">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           id="archiveToggle"
+                           {{ request('archive') == '1' ? 'checked' : '' }}>
+                    <label class="form-check-label fw-medium ms-2" for="archiveToggle">
+                        Archive
+                    </label>
                 </div>
-            @endif
-        </div>
+            </div>
+        @endif
+
+    </div>
+</div>
 
         {{-- Courses List --}}
         <div class="row" id="course_list">
@@ -168,5 +188,17 @@
         });
     @endforeach
 });
+
+   $('#archiveToggle').on('change', function() { 
+        let isChecked = $(this).is(':checked');
+        let url = new URL(window.location.href);
+      if (isChecked) { 
+            url.searchParams.set('archive', '1');
+        } else { 
+            url.searchParams.delete('archive');
+        }
+
+        window.location.href = url.toString();
+    });
 </script>
 @endsection

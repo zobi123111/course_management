@@ -76,13 +76,15 @@ class ReportsController extends Controller
     {
         $user = auth()->user();
         $userOuId = $user->ou_id;
+        $archive = request('archive');
 
         $events = TrainingEvents::with(['course', 'student'])
             ->when($user->is_owner != 1, function ($query) use ($userOuId) {
                 $query->where('ou_id', $userOuId)
                     ->whereNull('deleted_at');
             })
-            ->where('archive', null)
+
+            ->where('archive', $archive)
             ->orderByDesc('course_end_date') 
             ->get();
           
@@ -336,7 +338,7 @@ class ReportsController extends Controller
         $breadcrumbs = [
             ['title' => 'Report', 'url' => route('reports.index')],
             ['title' => "$course->course_name", 'url' => url('reports/course/'.$hashedId)],  
-        ];
+        ]; 
        
         return view('reports.course_detail', compact('course', 'students', 'showArchived', 'showFailing', 'chartData', 'employees','breadcrumbs', 'courseSummary'));
     } 
