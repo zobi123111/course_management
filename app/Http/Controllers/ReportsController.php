@@ -82,8 +82,8 @@ class ReportsController extends Controller
                 $query->where('ou_id', $userOuId)
                     ->whereNull('deleted_at');
             })
-           // ->orderBy('id', 'asc')
-            ->orderByDesc('course_end_date')
+            ->where('archive', null)
+            ->orderByDesc('course_end_date') 
             ->get();
           
 
@@ -251,32 +251,26 @@ class ReportsController extends Controller
                     return $d;
                 });
 
-           // dd($normalizedGrades->count());
-               
-            //   $progress = [
-            //         'total' => $normalizedGrades->count(),
-            //         'incomplete' => 0,
-            //         'further' => 0,
-            //         'competent' => 0,
-            //     ];
+           
             $progress = [
                     'total' => $totalSubLessons,
                     'incomplete' => 0,
                     'further' => 0,
                     'competent' => 0,
+                    'N/A'       => 0
                 ];
 
 
              foreach ($normalizedGrades as $grade) {
-             //   dump($grade);
                         $matchingDef = $normalizedDef->firstWhere('task_id', $grade->sub_lesson_id);
                         if ($matchingDef) {
                             $finalGrade = $matchingDef->task_grade ?: 'incomplete';
                         } else {
                             $finalGrade = $grade->task_grade;
                         }
-                       // dump($finalGrade);
-
+                        if ($finalGrade === 'not applicable') {
+                            $progress['N/A']++;
+                        } 
                         if (in_array($finalGrade, ['1', 'incomplete'])) {
                             $progress['incomplete']++;
                         } elseif (in_array($finalGrade, ['2', 'further training required'])) {
@@ -335,18 +329,15 @@ class ReportsController extends Controller
 
             // 3️⃣ Separate Summary Array
             $courseSummary = [
-                'total_enrolled' => $totalEnrolled,
+                'total_enrolled'           => $totalEnrolled,
                 'completed_last_12_months' => $completedLast12Months,
             ];
          
-
-
         $breadcrumbs = [
             ['title' => 'Report', 'url' => route('reports.index')],
             ['title' => "$course->course_name", 'url' => url('reports/course/'.$hashedId)],  
         ];
        
-     
         return view('reports.course_detail', compact('course', 'students', 'showArchived', 'showFailing', 'chartData', 'employees','breadcrumbs', 'courseSummary'));
     } 
 
