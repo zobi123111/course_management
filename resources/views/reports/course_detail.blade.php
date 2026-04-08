@@ -242,7 +242,6 @@
                     <tbody>
                         <?php $course_id = Request::segment(3); ?>
                         @foreach ($employees as $student)
-                        <?php // dump($student); ?>
                       <tr class="clickable-row {{ $student->show_alert ? 'row-alert' : '' }}  {{ ($showArchived && $student->is_activated != 0) ? 'archived-row' : '' }}" 
                             data-href="{{ route('training.grading-list', ['event_id' => encode_id($student->event_id)]) }}" 
                             style="cursor: pointer;">
@@ -261,9 +260,10 @@
                                     $progress = $student->progress;
                                     $total = max(1, $progress['total']); 
                                     $incompletePercent = round(($progress['incomplete'] / $total) * 100);
-                                    $furtherPercent = round(($progress['further'] / $total) * 100);
-                                    //$competentPercent = 100 - ($incompletePercent + $furtherPercent);
-                                    $competentPercent  = round(($progress['competent'] / $total) * 100);
+                                    $furtherPercent    = round(($progress['further'] / $total) * 100);
+                                    $competentPlusNA   = $progress['competent'] + $progress['N/A'];
+                                    $competentPercent  = round(($competentPlusNA / $total) * 100);
+                                    
                                 ?>
 
                                 <div class="d-flex justify-content-center status-group progress" style="height: 30px;">
@@ -288,7 +288,7 @@
                                         <div class="progress-bar status-box" role="progressbar"
                                             style="width: {{ $competentPercent }}%; background-color: #008000; color: #000; font-weight: 700; font-size: 11px;"
                                             title="Competent">
-                                            {{ $competentPercent . '%' }}
+                                             {{ $competentPercent . '%' }}
                                         </div>
                                     @endif 
                                 </div>
