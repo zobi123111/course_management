@@ -68,7 +68,7 @@
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="toggleArchived" {{ $showArchived ? 'checked' : '' }}>
                     <strong><label class="form-check-label" for="toggleArchived">
-                        Show Archived Students
+                         Archived
                     </label></strong>
                 </div>
             </div>
@@ -118,7 +118,7 @@
                     <div class="card-body p-4">
 
                         <h5 class="text-center text-primary mb-4 fw-bold">
-                            Course Completion Overview
+                            Course Completion Overview 
                         </h5>
 
                         <!-- Stats Row -->
