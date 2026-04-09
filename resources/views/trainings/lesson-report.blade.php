@@ -49,82 +49,118 @@
         </tr>
     </table>
     <hr>
-   
-    <div class="section">
-        <strong>Date:</strong> {{ date('M d, Y', strtotime($eventLesson?->lesson_date)) }}<br>
-        <strong>Student Name:</strong> {{ $event?->student?->fname }} {{ $event?->student?->lname }}<br>
-        <strong>Instructor Name:</strong> {{ $eventLesson?->instructor?->fname }} {{ $eventLesson?->instructor?->lname }}<br>
-        <strong>Start Time:</strong> {{ date('h:i A', strtotime($eventLesson?->start_time)) }}<br>
-        <strong>End Time:</strong> {{ date('h:i A', strtotime($eventLesson?->end_time)) }}<br>
-        <strong>Total Lesson Time:</strong> {{ \Carbon\Carbon::parse($eventLesson?->end_time)->diffInMinutes(\Carbon\Carbon::parse($eventLesson?->start_time)) }} minutes<br>
-        <strong>Departure Airfield:</strong> {{ $eventLesson?->departure_airfield ?? 'N/A' }}<br>
-        <strong>Destination Airfield:</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}<br>
 
-        <strong>Resource :</strong> {{ $eventLesson?->resource_name ?? 'N/A' }}<br>
-        @php
-            $resource = $eventLesson?->resource ?? $event?->resource;
-        @endphp
-        @if ($resource)
-            <strong>Aircraft:</strong> {{ $resource->type ?? $resource->class ?? 'N/A' }}<br>
-            <strong>Reg:</strong> {{ $resource->registration ?? 'N/A' }}<br>
-        @else
-            <strong>Aircraft:</strong> N/A<br>
-            <strong>Reg:</strong> N/A<br>
-        @endif
+    <table width="100%" cellspacing="0" cellpadding="0" style="border-collapse: collapse; border: none;">
+        <tr>
+            <td width="40%" valign="top" style="padding-right: 15px; border: none;">
+                <div class="section" style="border: none;">
+                    <strong>Date:</strong> {{ date('M d, Y', strtotime($eventLesson?->lesson_date)) }}<br>
+                    <strong>Student Name:</strong> {{ $event?->student?->fname }} {{ $event?->student?->lname }}<br>
+                    <strong>Instructor Name:</strong> {{ $eventLesson?->instructor?->fname }} {{ $eventLesson?->instructor?->lname }}<br>
+                    <strong>Off-Blocks Time:</strong> {{ date('h:i A', strtotime($eventLesson?->start_time)) }}<br>
+                    <strong>On-Blocks Time:</strong> {{ date('h:i A', strtotime($eventLesson?->end_time)) }}<br>
+                    <strong>Total Blocks Time:</strong> {{ $blockCreditedFormatted }}<br>
+                    <strong>Total Flight Time:</strong> {{ $totalFlightTimeFormatted }}<br>
 
-        @if(!empty($eventLesson->operation1))
+                    @php
+                        $block = \Carbon\Carbon::parse($eventLesson?->end_time)->diffInMinutes(\Carbon\Carbon::parse($eventLesson?->start_time));
+                    @endphp
 
-           <strong>Operation :</strong>  
-               @if($eventLesson->operation1 == 1)
-                    PF in LHS
-                @elseif($eventLesson->operation1 == 2)
-                    PM in LHS
-                @elseif($eventLesson->operation1 == 3)
-                    PF in RHS
-                @elseif($eventLesson->operation1 == 4) 
-                    PM in RHS
-                @endif
-            <br>
-        @endif
-        <!-- // Rank -->
-        @if(!empty($event->rank))
-            <strong>Rank :</strong>    
-            @if($event->rank == 1)
-                Captain
-            @elseif($event->rank == 2)
-                First Officer
-            @elseif($event->rank == 3)
-                Second Officer
-            @endif<br>
-        @endif
-        <!-- ATO Num -->
-        
-        @if(!empty($event->course->ato_num)) 
-            @php
-                $atoNum = $event->course->ato_num;
-                // Remove prefixes "easa-" or "uk-" (case-insensitive)
-                $atoNum = preg_replace('/^(easa-|uk-)/i', '', $atoNum);
-            @endphp
-            <strong>ATO Num:</strong> {{ strtoupper($atoNum) }}
-        @endif
-    </div>
+                    <strong>Total Block Time:</strong> {{ $block }} minutes<br>
+                    <strong>Departure Airfield:</strong> {{ $eventLesson?->departure_airfield ?? 'N/A' }}<br>
+                    <strong>Arrival Airfield:</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}<br>
+                    <strong>Resource :</strong> {{ $eventLesson?->resource_name ?? 'N/A' }}<br>
 
-    @if($eventLesson->sectors->isNotEmpty())
-        <div>
-            <h2>Additional Sectors</h2>
-            @foreach($eventLesson->sectors as $sector)
-                <div><strong>Instructor:</strong> {{ $eventLesson->instructor->fname ?? '' }} {{ $eventLesson->instructor->lname ?? '' }}</div>
-                <div><strong>Licence No:</strong> {{ !empty($eventLesson->instructor_license_number) ? $eventLesson->instructor_license_number : 'N/A' }}</div>
-                <div><strong>Resource:</strong> {{ $sector->resourceData->name ?? 'N/A' }}</div>
-                <div><strong>Lesson Date:</strong> {{ ($sector->lesson_date) ? date('d/m/Y', strtotime($sector->lesson_date)) : 'N/A' }}</div>
-                <div><strong>Start Time:</strong> {{ ($sector->start_time) ? date('h:i A', strtotime($sector->start_time)) : 'N/A' }}</div>
-                <div><strong>End Time:</strong> {{ ($sector->end_time) ? date('h:i A', strtotime($sector->end_time)) : 'N/A' }}</div>
-                <div><strong>Departure Airfield:</strong> {{ !empty($sector->departure_airfield) ? $sector->departure_airfield : 'N/A' }}</div>
-                <div><strong>Destination Airfield:</strong> {{ !empty($sector->destination_airfield) ? $sector->destination_airfield : 'N/A' }}</div>
-            @endforeach
-        </div>
-    @endif
+                    @php
+                        $resource = $eventLesson?->resource ?? $event?->resource;
+                    @endphp
 
+                    @if ($resource)
+                        <strong>Aircraft:</strong> {{ $resource->type ?? $resource->class ?? 'N/A' }}<br>
+                        <strong>Reg:</strong> {{ $resource->registration ?? 'N/A' }}<br>
+                    @endif
+
+                    @if(!empty($eventLesson->operation1))
+                        <strong>Operation :</strong>
+                        @if($eventLesson->operation1 == 1) PF in LHS
+                        @elseif($eventLesson->operation1 == 2) PM in LHS
+                        @elseif($eventLesson->operation1 == 3) PF in RHS
+                        @elseif($eventLesson->operation1 == 4) PM in RHS
+                        @endif
+                        <br>
+                    @endif
+
+                    @if(!empty($event->rank))
+                        <strong>Rank :</strong>
+                        @if($event->rank == 1) Captain
+                        @elseif($event->rank == 2) First Officer
+                        @elseif($event->rank == 3) Second Officer
+                        @endif
+                        <br>
+                    @endif
+
+                    @if(!empty($event->course->ato_num))
+                        @php
+                            $atoNum = preg_replace('/^(easa-|uk-)/i', '', $event->course->ato_num);
+                        @endphp
+                        <strong>ATO Num:</strong> {{ strtoupper($atoNum) }}
+                    @endif
+                </div>
+            </td>
+
+            <!-- RIGHT: Sectors Grid -->
+            <td width="60%" valign="top" style="border: none;">
+                <table width="100%" cellspacing="0" cellpadding="10" style="border-collapse: collapse; border: none;">
+                    <tr>
+                        @foreach($eventLesson->sectors as $sector)
+
+                            @php
+                                $eventType = $enable_mp_lifus;
+                                $op = $sector->operation;
+
+                                $operationName = 'N/A';
+
+                                if ($eventType == 1) {
+                                    $operationName = match($op) {
+                                        1 => 'PF LHS',
+                                        2 => 'PF RHS',
+                                        default => 'N/A'
+                                    };
+                                }
+                                elseif ($eventType == 2 || $eventType == 3) {
+                                    $operationName = match($op) {
+                                        1 => 'PF LHS',
+                                        2 => 'PM LHS',
+                                        3 => 'PF RHS',
+                                        4 => 'PM RHS',
+                                        default => 'N/A'
+                                    };
+                                }
+                            @endphp
+
+                            <td width="50%" valign="top" style="border: none; padding-bottom: 10px;">
+                                <h3 style="margin: 0 0 5px 0;">Sector #{{ $loop->iteration }}</h3>
+                                <strong>Instructor:</strong> {{ $eventLesson->instructor->fname }} {{ $eventLesson->instructor->lname }}<br>
+                                <strong>Licence No:</strong> {{ $eventLesson->instructor_license_number ?? 'N/A' }}<br>
+                                <strong>Resource:</strong> {{ $sector->resourceData->name ?? 'N/A' }}<br>
+                                <strong>Opration:</strong> {{ $operationName }}<br>
+                                <strong>Lesson Date:</strong> {{ $sector->lesson_date ? date('d/m/Y', strtotime($sector->lesson_date)) : 'N/A' }}<br>
+                                <strong>Off Block Time:</strong> {{ $sector->start_time ? date('h:i A', strtotime($sector->start_time)) : 'N/A' }}<br>
+                                <strong>On Block Time:</strong> {{ $sector->end_time ? date('h:i A', strtotime($sector->end_time)) : 'N/A' }}<br>
+                                <strong>Departure Airfield:</strong> {{ $sector->departure_airfield ?? 'N/A' }}<br>
+                                <strong>Arrival Airfield:</strong> {{ $sector->destination_airfield ?? 'N/A' }}<br>
+                            </td>
+
+                            @if($loop->iteration % 2 == 0)
+                                </tr><tr>
+                            @endif
+                        @endforeach
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    
     <div class="section">
         <h2>Tasks Completed</h2>
         @if($event->taskGradings->isNotEmpty() && $event->taskGradings->pluck('subLesson')->filter()->isNotEmpty())
