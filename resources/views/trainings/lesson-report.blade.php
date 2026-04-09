@@ -206,46 +206,34 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if($examiner_grading->isNotEmpty())
-                    @foreach($examiner_grading as $grading)
-                    @php
-                    $grade = $grading->examinerGrading[0]->competency_value ?? null;
-                    $badgeClass = 'bg-secondary'; // default
+                    @if(!empty($examiner_grading))
+                        @foreach($examiner_grading as $item)
+                            @php
+                                $grade = $item['graded_value'];
+                                $badgeClass = 'bg-secondary';
 
-                    if ($grade == 1) {
-                    $badgeClass = 'grade-incomplete';
-                    } elseif ($grade == 2) {
-                    $badgeClass = 'grade-ftr';
-                    } elseif (in_array($grade, [3, 4, 5])) {
-                    $badgeClass = 'grade-competent';
-                    }
-                    @endphp
-                    <tr>
-                        <td><strong>{{ strtoupper($grading->short_name) }}</strong></td>
-                        <td>
-                            <span class="badge {{ $badgeClass }}">
-                                {{ $grading->examinerGrading[0]->competency_value ?? 'N/A' }}
-                            </span>
-                        </td>
-                        <td class="text-start">{{ $grading->examinerGrading[0]->comment ?? '-' }}</td>
-                    </tr>
-                    @endforeach
+                                if ($grade == 1) $badgeClass = 'grade-incomplete';
+                                elseif ($grade == 2) $badgeClass = 'grade-ftr';
+                                elseif (in_array($grade, [3,4,5])) $badgeClass = 'grade-competent';
+                            @endphp
+                            <tr>
+                                <td><strong>{{ strtoupper($item['short_name']) }}</strong></td>
+                                <td><span class="badge {{ $badgeClass }}">{{ $grade ?? '' }}</span></td>
+                                <td class="text-start">{{ $item['comment'] ?? '' }}</td>
+                            </tr>
+                        @endforeach
                     @else
-                    <tr>
-                        <td colspan="3" class="text-center text-muted">No Examiner Grading Found</td>
-                    </tr>
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">No Examiner Grading Found</td>
+                        </tr>
                     @endif
                 </tbody>
             </table>
         </div>
     @endif
-  
-
-
     <!-- // End Examiner competency grading  -->
 
     <!-- // Instructor competency grading  -->
- 
     @if($lesson->instructor_cbta == 1) 
         <div class="section">
             <h2>Instructor Competency</h2>
@@ -258,40 +246,34 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if($instructor_grading->isNotEmpty())
-                    @foreach($instructor_grading as $grading)
-                    @php
-                    $grade = $grading->examinerGrading[0]->competency_value ?? null;
-                    $badgeClass = 'bg-secondary'; // default
+                    @if(!empty($instructor_grading))
+                        @foreach($instructor_grading as $item)
+                            @php
+                                $grade = $item['graded_value'];
+                                $badgeClass = 'bg-secondary';
 
-                    if ($grade == 1) {
-                    $badgeClass = 'grade-incomplete';
-                    } elseif ($grade == 2) {
-                    $badgeClass = 'grade-ftr';
-                    } elseif (in_array($grade, [3, 4, 5])) {
-                    $badgeClass = 'grade-competent';
-                    }
-                    @endphp
-                    <tr>
-                        <td><strong>{{ strtoupper($grading->short_name) }}</strong></td>
-                        <td>
-                            <span class="badge {{ $badgeClass }}">
-                                {{ $grading->examinerGrading[0]->competency_value ?? 'N/A' }}
-                            </span>
-                        </td>
-                        <td class="text-start">{{ $grading->examinerGrading[0]->comment ?? '-' }}</td>
-                    </tr>
-                    @endforeach
+                                if ($grade == 1) $badgeClass = 'grade-incomplete';
+                                elseif ($grade == 2) $badgeClass = 'grade-ftr';
+                                elseif (in_array($grade, [3,4,5])) $badgeClass = 'grade-competent';
+                            @endphp
+                            <tr>
+                                <td><strong>{{ strtoupper($item['short_name']) }}</strong></td>
+                                <td><span class="badge {{ $badgeClass }}">{{ $grade ?? '' }}</span></td>
+                                <td class="text-start">{{ $item['comment'] ?? '' }}</td>
+                            </tr>
+                        @endforeach
                     @else
-                    <tr>
-                        <td colspan="3" class="text-center text-muted">No Instructor Grading Found</td>
-                    </tr>
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">No Instructor Grading Found</td>
+                        </tr>
                     @endif
                 </tbody>
             </table>
         </div>
     @endif
+    <!-- // End Instructor competency grading  -->
 
+    <!-- // Pilot competency grading  -->
     @if($lesson->pilot_cbta == 1) 
         <div class="section">
             <h2>Pilot Competency</h2>
@@ -304,30 +286,25 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if($pilot_grading->isNotEmpty())
-                    @foreach($pilot_grading as $grading)
-                    @php
-                    $grade = $grading->examinerGrading[0]->competency_value ?? null;
-                    $badgeClass = 'bg-secondary'; // default
+                    @if(!empty($pilot_grading))
+                        @foreach($pilot_grading as $item)
+                            @php
+                                $grade = $item['graded_value'];
+                                $badgeClass = 'bg-secondary';
 
-                    if ($grade == 1) {
-                    $badgeClass = 'grade-incomplete';
-                    } elseif ($grade == 2) {
-                    $badgeClass = 'grade-ftr';
-                    } elseif (in_array($grade, [3, 4, 5])) {
-                    $badgeClass = 'grade-competent';
-                    }
-                    @endphp
-                    <tr>
-                        <td><strong>{{ strtoupper($grading->short_name) }}</strong></td>
-                        <td>
-                            <span class="badge {{ $badgeClass }}">
-                                {{ $grading->examinerGrading[0]->competency_value ?? 'N/A' }}
-                            </span>
-                        </td>
-                        <td class="text-start">{{ $grading->examinerGrading[0]->comment ?? '-' }}</td>
-                    </tr>
-                    @endforeach
+                                if ($grade == 1) $badgeClass = 'grade-incomplete';
+                                elseif ($grade == 2) $badgeClass = 'grade-ftr';
+                                elseif (in_array($grade, [3,4,5])) $badgeClass = 'grade-competent';
+                            @endphp
+
+                            <tr>
+                                <tr>
+                                    <td><strong>{{ strtoupper($item['short_name']) }}</strong></td>
+                                    <td><span class="badge {{ $badgeClass }}">{{ $grade ?? '' }}</span></td>
+                                    <td class="text-start">{{ $item['comment'] ?? '' }}</td>
+                                </tr>
+                            </tr>
+                        @endforeach
                     @else
                     <tr>
                         <td colspan="3" class="text-center text-muted">No Pilot Grading Found</td>
@@ -337,9 +314,9 @@
             </table>
         </div>
     @endif
+    <!-- // End Pilot competency grading  -->
 
 
-    <!-- // End Instructor competency grading  -->
     @if($event->overallAssessments->isNotEmpty())
 
     @endif
