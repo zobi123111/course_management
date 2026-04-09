@@ -1065,8 +1065,8 @@
                                     @if($lesson->sectors->isNotEmpty())
                                         <h5 class="details-card-title d-flex justify-content-between align-items-center mt-3"> <strong> Additional Sectors </strong></h5>
 
-                                        <div class="row mb-3 p-3 border rounded bg-light">
-                                            @foreach($lesson->sectors as $sector)
+                                        @foreach($lesson->sectors as $sector)
+                                            <div class="row mb-3 p-3 border rounded bg-light">
                                                 <div class="col-md-2 mt-3">
                                                     <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
                                                     {{ optional($lesson->instructor)->fname }} {{ optional($lesson->instructor)->lname }}
@@ -1116,8 +1116,8 @@
                                                     <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
                                                     {{ $sector->destination_airfield ?? 'N/A' }}
                                                 </div>
-                                            @endforeach
-                                        </div>
+                                            </div>
+                                        @endforeach
 
                                     @endif
                                     <!-- {{-- Lesson Summary --}} -->
@@ -1404,8 +1404,8 @@
                                     @if($def->deferredSectors->isNotEmpty())
                                         <h5 class="details-card-title d-flex justify-content-between align-items-center mt-3"> <strong> Additional Sectors </strong> </h5>
 
-                                        <div class="row mb-3 p-3 border rounded bg-light">
-                                            @foreach($def->deferredSectors as $sector)
+                                        @foreach($def->deferredSectors as $sector)
+                                            <div class="row mb-3 p-3 border rounded bg-light">
                                                 <div class="col-md-2 mt-3">
                                                     <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
                                                     {{ optional($def->instructor)->fname }} {{ optional($def->instructor)->lname }}
@@ -1455,8 +1455,8 @@
                                                     <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
                                                     {{ $sector->destination_airfield ?? 'N/A' }}
                                                 </div>
-                                            @endforeach
-                                        </div>
+                                            </div>
+                                        @endforeach
 
                                     @endif
 
@@ -1604,8 +1604,8 @@
                             @if($def->customSectors->isNotEmpty())
                                 <h5 class="details-card-title d-flex justify-content-between align-items-center mt-3"> <strong> Additional Sectors </strong> </h5>
 
-                                <div class="row mb-3 p-3 border rounded bg-light">
-                                    @foreach($def->customSectors as $sector)
+                                @foreach($def->customSectors as $sector)
+                                    <div class="row mb-3 p-3 border rounded bg-light">
                                         <div class="col-md-2 mt-3">
                                             <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
                                             {{ optional($def->instructor)->fname }} {{ optional($def->instructor)->lname }}
@@ -1655,8 +1655,8 @@
                                             <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
                                             {{ $sector->destination_airfield ?? 'N/A' }}
                                         </div>
-                                    @endforeach
-                                </div>
+                                    </div>
+                                @endforeach
 
                             @endif
                             <!-- {{-- Lesson Summary --}} -->
