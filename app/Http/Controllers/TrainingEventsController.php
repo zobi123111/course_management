@@ -3268,10 +3268,10 @@ class TrainingEventsController extends Controller
 
         // Total Block Credited (blade logic)
         $TotalBlockCredited =
-            $lessonFlightTime +
+            // $lessonFlightTime +
             $totals['deferred'] +
             $totals['customDuration'] +
-            $sectorFlightTime +
+            // $sectorFlightTime +
             $totals['lessonCreditedTime'];
 
         // Add sector block time
@@ -5354,6 +5354,24 @@ class TrainingEventsController extends Controller
 
             foreach ($request->sectors as $sector) {
 
+                $resourceid = $sector['resource_id'];
+                $resource = Resource::find($resourceid);
+                $resourceName = $resource?->name ?? '';
+
+                $groundschoolResources = ['Homestudy', 'Home Study', 'Classroom'];
+
+                $takeoff = $sector['takeoff_time'];
+                $landing = $sector['landing_time'];
+
+                if (in_array($resourceName, $groundschoolResources)) {
+                    $takeoff =  null;
+                    $landing = null;
+                }
+                else{
+                    $takeoff = $sector['takeoff_time'];
+                    $landing = $sector['landing_time'];
+                }
+
                 // Ignore empty rows
                 if (
                     empty($sector['lesson_date']) &&
@@ -5378,8 +5396,8 @@ class TrainingEventsController extends Controller
                     'resource'            => $sector['resource_id'] ?? null,
                     'lesson_type'         => $request->lessontype ?? null,
                     'start_time'          => $sector['start_time'] ?? null,
-                    'takeoff_time'        => $sector['takeoff_time'] ?? null,
-                    'landing_time'        => $sector['landing_time'] ?? null,
+                    'takeoff_time'        => $takeoff ?? null,
+                    'landing_time'        => $landing ?? null,
                     'end_time'            => $sector['end_time'] ?? null,
                 ]);
             }
