@@ -132,7 +132,7 @@
 
                             <td width="50%" valign="top" style="border: none; padding-bottom: 10px;">
                                 <h3 style="margin: 0 0 5px 0;">Sector {{ $loop->iteration }} - ({{ $sector->lesson_date ? date('d/m/Y', strtotime($sector->lesson_date)) : 'N/A' }})</h3>
-                                <strong>Resource:</strong> {{ $sector->resourceData->name ?? 'N/A' }}<br>
+                                <strong>Reg:</strong> {{ $sector->resourceData->name ?? 'N/A' }}<br>
                                 <strong>Opration:</strong> {{ $operationName }}<br>
                                 <strong>Departure Airfield:</strong> {{ $sector->departure_airfield ?? 'N/A' }}<br>
                                 <strong>Off Block Time:</strong> {{ $sector->start_time ? date('h:i A', strtotime($sector->start_time)) : 'N/A' }}<br>
