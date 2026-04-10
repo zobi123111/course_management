@@ -249,7 +249,7 @@
                                 @if($student->show_alert)
                                     <i class="fas fa-exclamation-triangle me-1" style="color: #dc3545 !important;" title="Nearing 6-month deadline"></i>
                                 @endif
-                                {{ $student->fname }} {{ $student->lname }} - {{$student->event_id}}
+                                {{ $student->fname }} {{ $student->lname }}
                             </td>  
                             <td>{{ $student->email ?? 'N/A' }}</td>
                             <td>{{ $student->event_date ? \Carbon\Carbon::parse($student->event_date)->format('d-m-Y') : '--' }}</td>
