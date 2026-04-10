@@ -76,7 +76,7 @@
                         @php
                             $atoNum = preg_replace('/^(easa-|uk-)/i', '', $event->course->ato_num);
                         @endphp
-                        <strong>ATO Number:</strong> {{ strtoupper($atoNum) }}
+                        <strong>ATO Number:</strong> {{ strtoupper($atoNum) }} <br>
                     @endif
                     @if(!empty($eventLesson->operation1))
                         <strong>Operation :</strong>
