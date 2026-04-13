@@ -22,7 +22,7 @@
         </div>
         <div class="col-md-4">
             <label class="form-label">Resource</label>
-            <select class="form-select editable" 
+            <select class="form-select editable" id="resourceSelect2"
                 name="sectors[{{ $index }}][resource_id]" disabled>
                 @foreach($resources as $resource)
                     <option value="{{ $resource->id }}"
@@ -78,7 +78,7 @@
         </div>
 
         <div class="col-md-3">
-            <label class="form-label">Off Blocks</label>
+            <label class="form-label start-label">Start</label>
             <input type="time" class="form-control editable" 
                    name="sectors[{{ $index }}][start_time]" 
                    value="{{ $sector->start_time ?? '' }}" disabled>
@@ -99,7 +99,7 @@
         </div>
 
         <div class="col-md-3">
-            <label class="form-label">On Blocks</label>
+            <label class="form-label end-label">Finish</label>
             <input type="time" class="form-control editable" 
                    name="sectors[{{ $index }}][end_time]" 
                    value="{{ $sector->end_time ?? '' }}" disabled>
