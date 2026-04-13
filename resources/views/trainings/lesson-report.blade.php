@@ -62,21 +62,23 @@
                     @endphp
                     @if ($resource)
                         <strong>Aircraft:</strong> {{ $resource->type ?? $resource->class ?? 'N/A' }}<br>
-                        <strong>Reg:</strong> {{ $resource->registration ?? 'N/A' }}<br>
-                    @endif
-                    @if(!empty($event->rank))
-                        <strong>Rank :</strong>
-                        @if($event->rank == 1) Captain
-                        @elseif($event->rank == 2) First Officer
-                        @elseif($event->rank == 3) Second Officer
+
+                        @if(!empty($event->rank))
+                            <strong>Rank :</strong>
+                            @if($event->rank == 1) Captain
+                            @elseif($event->rank == 2) First Officer
+                            @elseif($event->rank == 3) Second Officer
+                            @endif
+                            <br>
                         @endif
-                        <br>
-                    @endif
-                    @if(!empty($event->course->ato_num))
-                        @php
-                            $atoNum = preg_replace('/^(easa-|uk-)/i', '', $event->course->ato_num);
-                        @endphp
-                        <strong>ATO Number:</strong> {{ strtoupper($atoNum) }} <br>
+
+                        @if(!empty($event->course->ato_num))
+                            @php
+                                $atoNum = preg_replace('/^(easa-|uk-)/i', '', $event->course->ato_num);
+                            @endphp
+                            <strong>ATO Number:</strong> {{ strtoupper($atoNum) }} <br>
+                        @endif
+                        <strong>Reg:</strong> {{ $resource->registration ?? 'N/A' }}<br>
                     @endif
                     @if(!empty($eventLesson->operation1))
                         <strong>Operation :</strong>
@@ -87,6 +89,8 @@
                         @endif
                         <br>
                     @endif
+                    <strong>Departure :</strong> {{ $eventLesson?->departure_airfield ?? 'N/A' }}<br>
+                    <strong>Arrival :</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}<br>
                     <strong>Total Blocks Time:</strong> {{ $blockCreditedFormatted }}<br>
                     <strong>Total Flight Time:</strong> {{ $totalFlightTimeFormatted }}<br>
                     <strong>Off-Blocks Time:</strong>{{ \Carbon\Carbon::parse($eventLesson->start_time)->format('H:i') }} <br>
@@ -94,12 +98,14 @@
                     @php
                         $block = \Carbon\Carbon::parse($eventLesson?->end_time)->diffInMinutes(\Carbon\Carbon::parse($eventLesson?->start_time));
                     @endphp
-                    <strong>Departure :</strong> {{ $eventLesson?->departure_airfield ?? 'N/A' }}<br>
-                    <strong>Arrival :</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}<br>
+                   
                 </div>
             </td>
+        </tr>
+    </table>
 
-            <!-- RIGHT: Sectors Grid -->
+    <table width="100%" cellspacing="0" cellpadding="0" style="border-collapse: collapse; border: none;">
+        <tr>
             <td width="60%" valign="top" style="border: none;">
                 <table width="100%" cellspacing="0" cellpadding="10" style="border-collapse: collapse; border: none;">
                     <tr>
@@ -134,17 +140,12 @@
                                 <strong>Reg:</strong> {{ $sector->resourceData->name ?? 'N/A' }}<br>
                                 <strong>Opration:</strong> {{ $operationName }}<br>
                                 <strong>Departure:</strong> {{ $sector->departure_airfield ?? 'N/A' }}<br>
-                                <strong>Off Block Time:</strong>
-                                {{ $sector->start_time ? \Carbon\Carbon::parse($sector->start_time)->format('H:i') : 'N/A' }}<br>
-                                <strong>On Block Time:</strong>
-                                {{ $sector->end_time ? \Carbon\Carbon::parse($sector->end_time)->format('H:i') : 'N/A' }}<br>
                                 <strong>Arrival:</strong> {{ $sector->destination_airfield ?? 'N/A' }}<br>
+                                <strong>Off Block Time:</strong> {{ $sector->start_time ? \Carbon\Carbon::parse($sector->start_time)->format('H:i') : 'N/A' }}<br>
+                                <strong>On Block Time:</strong> {{ $sector->end_time ? \Carbon\Carbon::parse($sector->end_time)->format('H:i') : 'N/A' }}<br>
                                 @if($sector->takeoff_time && $sector->landing_time)
-                                    <strong>Takeoff Time:</strong>
-                                    {{ $sector->takeoff_time ? \Carbon\Carbon::parse($sector->takeoff_time)->format('H:i') : 'N/A' }}<br>
-
-                                    <strong>Landing Time:</strong>
-                                    {{ $sector->landing_time ? \Carbon\Carbon::parse($sector->landing_time)->format('H:i') : 'N/A' }}<br>
+                                    <strong>Takeoff Time:</strong> {{ $sector->takeoff_time ? \Carbon\Carbon::parse($sector->takeoff_time)->format('H:i') : 'N/A' }}<br>
+                                    <strong>Landing Time:</strong>{{ $sector->landing_time ? \Carbon\Carbon::parse($sector->landing_time)->format('H:i') : 'N/A' }}<br>
                                 @endif
                             </td>
 

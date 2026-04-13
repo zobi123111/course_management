@@ -1133,7 +1133,7 @@
 
                                     
                                     <div class="col-md-3">
-                                        <label class="form-label">Off Blocks</label>
+                                        <label class="form-label start-label">Off Block</label>
                                         <input type="time"
                                             class="form-control editable"
                                             name="start_time"
@@ -1160,7 +1160,7 @@
                                     </div>
 
                                     <div class="col-md-3">
-                                        <label class="form-label">On Blocks</label>
+                                        <label class="form-label end-label">On Block</label>
                                         <input type="time"
                                             class="form-control editable"
                                             name="end_time"
@@ -3912,7 +3912,7 @@
                         </div>
 
                         <div class="col-md-3">
-                            <label>Off Blocks</label>
+                            <label class="start-label">Start</label>
                             <input type="time" class="form-control editable" 
                                 name="sectors[${sectorIndex}][start_time]">
                         </div>
@@ -3930,7 +3930,7 @@
                         </div>
 
                         <div class="col-md-3">
-                            <label>On Blocks</label>
+                            <label class="end-label">Finish</label>
                             <input type="time" class="form-control editable" 
                                 name="sectors[${sectorIndex}][end_time]">
                         </div>
@@ -3940,8 +3940,11 @@
                     <button type="button" class="btn btn-danger btn-sm mt-2 removeSectorBtn">Remove</button>
                 </div>`;
 
+                // $("#sectorContainer").append(html);
+                // sectorIndex++; // increment for next one
                 $("#sectorContainer").append(html);
-                sectorIndex++; // increment for next one
+                sectorIndex++;
+                toggleSectorFields();
             });
 
             $(document).on("click", ".removeSectorBtn", function () {
@@ -3989,27 +3992,103 @@
         const resourceSelect = document.getElementById('resourceSelect');
         const timeFields = document.getElementById('timeFieldsWrapper');
 
+        // function toggleFields() {
+        //     if (!resourceSelect || !timeFields) return;
+
+        //     const selectedOption = resourceSelect.options[resourceSelect.selectedIndex];
+        //     const resourceName = selectedOption.getAttribute('data-name');
+
+        //     const hideList = ['Homestudy', 'Home Study', 'Classroom'];
+
+        //     if (hideList.includes(resourceName)) {
+        //         timeFields.style.display = 'none';
+        //         timeFields.querySelectorAll('input').forEach(input => {
+        //             input.value = '';
+        //         });
+
+        //     } else {
+        //         timeFields.style.display = 'block';
+        //     }
+        // }
         function toggleFields() {
-            if (!resourceSelect || !timeFields) return;
+            if (!resourceSelect) return;
 
-            const selectedOption = resourceSelect.options[resourceSelect.selectedIndex];
-            const resourceName = selectedOption.getAttribute('data-name');
-
+            const resourceName = resourceSelect.options[resourceSelect.selectedIndex].text.trim();
             const hideList = ['Homestudy', 'Home Study', 'Classroom'];
 
-            if (hideList.includes(resourceName)) {
-                timeFields.style.display = 'none';
-                timeFields.querySelectorAll('input').forEach(input => {
-                    input.value = '';
-                });
+            const isGroundschool = hideList.includes(resourceName);
+
+            // Fields
+            const opField = document.getElementById("operationSelect")?.closest('.col-md-4');
+            const depField = document.querySelector('input[name="departure_airfield"]')?.closest('.col-md-4');
+            const destField = document.querySelector('input[name="destination_airfield"]')?.closest('.col-md-4');
+            const takeoffField = document.querySelector('input[name="takeoff_time"]')?.closest('.col-md-3');
+            const landingField = document.querySelector('input[name="landing_time"]')?.closest('.col-md-3');
+
+            // Rename Off/On Blocks
+            const startLabel = document.querySelector('.start-label');
+            const endLabel = document.querySelector('.end-label');
+
+            if (isGroundschool) {
+
+                if (opField) opField.style.display = "none";
+                if (depField) depField.style.display = "none";
+                if (destField) destField.style.display = "none";
+                if (takeoffField) takeoffField.style.display = "none";
+                if (landingField) landingField.style.display = "none";
+
+                if (startLabel) startLabel.textContent = "Start";
+                if (endLabel) endLabel.textContent = "Finish";
 
             } else {
-                timeFields.style.display = 'block';
+                if (opField) opField.style.display = "";
+                if (depField) depField.style.display = "";
+                if (destField) destField.style.display = "";
+                if (takeoffField) takeoffField.style.display = "";
+                if (landingField) landingField.style.display = "";
+                if (startLabel) startLabel.textContent = "Off Blocks";
+                if (endLabel) endLabel.textContent = "On Blocks";
+                
             }
         }
 
+        function toggleSectorFields() {
+            $("#sectorContainer .sector-row").each(function () {
+
+                let row = $(this);
+
+                // ⭐ Get this sector's own resource value
+                let resourceName = row.find('select[name*="[resource_id]"] option:selected').text().trim();
+
+                const hideList = ['Homestudy', 'Home Study', 'Classroom'];
+                const isGroundschool = hideList.includes(resourceName);
+
+                // ⭐ Hide only inside this row
+                row.find('select[name*="[operation]"]').closest('.col-md-3').toggle(!isGroundschool);
+                row.find('input[name*="[departure_airfield]"]').closest('.col-md-3').toggle(!isGroundschool);
+                row.find('input[name*="[destination_airfield]"]').closest('.col-md-3').toggle(!isGroundschool);
+                row.find('input[name*="[takeoff_time]"]').closest('.col-md-3').toggle(!isGroundschool);
+                row.find('input[name*="[landing_time]"]').closest('.col-md-3').toggle(!isGroundschool);
+
+                // ⭐ Rename only inside this row
+                row.find('.start-label').text(isGroundschool ? "Start" : "Off Blocks");
+                row.find('.end-label').text(isGroundschool ? "Finish" : "On Blocks");
+            });
+        }
+
+        resourceSelect.addEventListener('change', function () {
+            toggleFields();
+            toggleSectorFields();
+        });
+
+        $(document).on("change", "select[name*='[resource_id]']", function () {
+            toggleSectorFields();
+        });
+
         document.addEventListener('DOMContentLoaded', function () {
             toggleFields();
+            toggleSectorFields();
+
 
             if (resourceSelect) {
                 resourceSelect.addEventListener('change', toggleFields);
