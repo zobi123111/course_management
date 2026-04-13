@@ -5199,7 +5199,7 @@ class TrainingEventsController extends Controller
         $courses = Courses::orderBy('position')->get(); 
         $event_id =  decode_id($event_id);
 
-        $instructor_cbta = CbtaGrading::where('competency_type', 'instructor')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
+        // $instructor_cbta = CbtaGrading::where('competency_type', 'instructor')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
         // $examiner_cbta = CbtaGrading::where('competency_type', 'examiner')->where('ou_id', $trainingEvent->ou_id)->get()->toArray();
 
         $dateCheck = Carbon::parse('2026-02-10');
@@ -5216,20 +5216,41 @@ class TrainingEventsController extends Controller
         else{
             $instructorQuery->whereNull('ou_id');
             $examinerQuery->whereNull('ou_id');
+            $pilotQuery->whereNull('ou_id');
         }
 
         $instructor_cbta = $instructorQuery->get()->toArray();
         $examiner_cbta   = $examinerQuery->get()->toArray();
         $pilot_cbta      = $pilotQuery->get()->toArray();
 
-        // dd($instructor_cbta);
+    //    dd($pilot_cbta);
 
-        $instructor_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'instructor')->get()->toArray();
 
-        $examiner_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'examiner')->get()->toArray();
-        $pilot_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'pilot')->get()->toArray();
+        // $instructor_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'instructor')->get()->toArray();
+        // $examiner_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'examiner')->get()->toArray();
+        // $pilot_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $student->id)->where('competency_type', 'pilot')->get()->toArray();
+        $examiner_grading = ExaminerGrading::where([
+            'event_id' => $event_id,
+            'user_id' => $student->id,
+            'competency_type' => 'examiner',
+            'lesson_id' => $lesson_id
+        ])->get()->keyBy('cbta_gradings_id')->toArray();
 
-       // dd($pilot_grading);
+        $instructor_grading = ExaminerGrading::where([
+            'event_id' => $event_id,
+            'user_id' => $student->id,
+            'competency_type' => 'instructor',
+            'lesson_id' => $lesson_id
+        ])->get()->keyBy('cbta_gradings_id')->toArray();
+
+        $pilot_grading = ExaminerGrading::where([
+            'event_id' => $event_id,
+            'user_id' => $student->id,
+            'competency_type' => 'pilot',
+            'lesson_id' => $lesson_id
+        ])->get()->keyBy('cbta_gradings_id')->toArray();
+
+        // dd($pilot_grading);
 
 
         $training_logs = TrainingEventLog::with('users', 'lesson.quizzes')
