@@ -2965,9 +2965,10 @@ class TrainingEventsController extends Controller
         $instructor_cbta = $instructorQuery->get();
         $pilot_cbta = $pilotQuery->get();
 
-        $getGradings = function ($type, $role) use ($event_id, $userId) {
+        $getGradings = function ($type, $role) use ($event_id, $userId, $lesson_id) {
             return ExaminerGrading::where('event_id', $event_id)
                 ->where('user_id', $userId)
+                ->where('lesson_id', $lesson_id)
                 ->where('lesson_type', $type)
                 ->where('competency_type', $role)
                 ->get();
@@ -2977,13 +2978,7 @@ class TrainingEventsController extends Controller
         $deferredExaminer = $getGradings('deferred', 'examiner');
         $deferredInstructor = $getGradings('deferred', 'instructor');
         $deferredPilot = $getGradings('deferred', 'pilot');
-
-        // dd(
-        //     $deferredExaminer,
-        //     $deferredInstructor,
-        //     $deferredPilot
-        // );
-
+        
         // Custom
         $customExaminer = $getGradings('custom', 'examiner');
         $customInstructor = $getGradings('custom', 'instructor');
@@ -3012,9 +3007,9 @@ class TrainingEventsController extends Controller
         $lessonid = $defLesson->id;
 
         if($lessontype === 'deferred'){
-            // $ExaminerFinal   = $buildFinal($examiner_cbta, $deferredExaminer);
-            // $InstructorFinal = $buildFinal($instructor_cbta, $deferredInstructor);
-            // $PilotFinal      = $buildFinal($pilot_cbta, $deferredPilot);
+            $ExaminerFinal   = $buildFinal($examiner_cbta, $deferredExaminer);
+            $InstructorFinal = $buildFinal($instructor_cbta, $deferredInstructor);
+            $PilotFinal      = $buildFinal($pilot_cbta, $deferredPilot);
 
             // Examiner Final
             $ExaminerFinal = [];
@@ -3052,6 +3047,7 @@ class TrainingEventsController extends Controller
                     $PilotFinal[] = [
                         'short_name'   => $cbta->short_name,
                         'competency'   => $cbta->competency,
+                        'lesson_id'    => $grading ? $grading->lesson_id : 'N/A',
                         'graded_value' => $grading ? $grading->competency_value : 'N/A',
                         'comment'      => $grading ? $grading->comment : '',
                     ];
@@ -3100,6 +3096,7 @@ class TrainingEventsController extends Controller
                     $PilotFinal[] = [
                         'short_name'   => $cbta->short_name,
                         'competency'   => $cbta->competency,
+                        'lesson_id'    => $grading ? $grading->lesson_id : 'N/A',
                         'graded_value' => $grading ? $grading->competency_value : 'N/A',
                         'comment'      => $grading ? $grading->comment : '',
                     ];
