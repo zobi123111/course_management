@@ -120,4 +120,9 @@ class DefLesson extends Model
         return $this->hasMany(LessonSector::class, 'lesson_id')
                     ->where('lesson_type', 'custom');
     }
+
+    public function cbtaGrading()
+    {
+        return $this->belongsTo(CbtaGrading::class, 'cbta_gradings_id');
+    }
 }

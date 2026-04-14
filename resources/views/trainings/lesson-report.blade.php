@@ -39,7 +39,7 @@
         <tr>
             <td style="border: none; text-align: left; vertical-align: top;">
                 <h1 style="display: inline-block; margin: 0;">Lesson Report -</h1> 
-                <h2 style="display: inline-block; margin: 0 0 3px 9px;">{{ $lesson->lesson_title }}</h2>
+                <h2 style="display: inline-block; margin: 0 0 3px 9px;">{{ $event->eventLessons[0]->lesson->lesson_title }}</h2>
             </td>
             <td style="border: none; text-align: right; vertical-align: top;">
                 @if($event?->orgUnit?->org_logo)
@@ -191,44 +191,41 @@
         <p><strong>No Data Available</strong></p>
         @endif
     </div>
-        @if($event->eventLessons[0]->lesson->enable_cbta == 1)
-                <div class="section">
-                    <h2>Competencies</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Competency</th>
-                                <th>Grade</th>
-                                <th>Comment</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if(!empty($event->competencyGradings) && count($event->competencyGradings) > 0)
-                            @foreach($event->competencyGradings as $competency)
-                            @foreach(['kno','pro','com','fpa','fpm','ltw','psd','saw','wlm'] as $comp)
-                            <tr>
-                                <td>{{ strtoupper($comp) }}</td>
-                                <td>{{ !empty($competency->{$comp.'_grade'}) ? $competency->{$comp.'_grade'} : 'N/A' }}</td>
-                                <td>{{ !empty($competency->{$comp.'_comment'}) ? $competency->{$comp.'_comment'} : '-' }}</td>
-                            </tr>
-                            @endforeach
-                            @endforeach
-                            @else
-                            <tr>
-                                <td colspan="3" class="text-center text-muted">No Competency Grading Found</td>
-                            </tr>
-                            @endif
-                        </tbody>
-                    </table>
-                </div>
-        @endif
 
-  
-
-
+    @if($event->eventLessons[0]->lesson->enable_cbta == 1)
+            <div class="section">
+                <h2>Competencies</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Competency</th>
+                            <th>Grade</th>
+                            <th>Comment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if(!empty($event->competencyGradings) && count($event->competencyGradings) > 0)
+                        @foreach($event->competencyGradings as $competency)
+                        @foreach(['kno','pro','com','fpa','fpm','ltw','psd','saw','wlm'] as $comp)
+                        <tr>
+                            <td>{{ strtoupper($comp) }}</td>
+                            <td>{{ !empty($competency->{$comp.'_grade'}) ? $competency->{$comp.'_grade'} : 'N/A' }}</td>
+                            <td>{{ !empty($competency->{$comp.'_comment'}) ? $competency->{$comp.'_comment'} : '-' }}</td>
+                        </tr>
+                        @endforeach
+                        @endforeach
+                        @else
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">No Competency Grading Found</td>
+                        </tr>
+                        @endif
+                    </tbody>
+                </table>
+            </div>
+    @endif
 
     <!-- // Examiner competency grading  -->
-    @if($lesson->examiner_cbta == 1) 
+    @if($event->eventLessons[0]->lesson->examiner_cbta == 1) 
         <div class="section">
             <h2>Examiner Competency</h2>
             <table>
@@ -268,7 +265,7 @@
     <!-- // End Examiner competency grading  -->
 
     <!-- // Instructor competency grading  -->
-    @if($lesson->instructor_cbta == 1) 
+    @if($event->eventLessons[0]->lesson->instructor_cbta == 1) 
         <div class="section">
             <h2>Instructor Competency</h2>
             <table>
@@ -308,7 +305,7 @@
     <!-- // End Instructor competency grading  -->
 
     <!-- // Pilot competency grading  -->
-    @if($lesson->pilot_cbta == 1) 
+    @if($event->eventLessons[0]->lesson->pilot_cbta == 1) 
         <div class="section">
             <h2>Pilot Competency</h2>
             <table>

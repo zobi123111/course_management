@@ -2389,7 +2389,7 @@ class TrainingEventsController extends Controller
             }
 
             // Pilot Grading
-              if ($request->has('pilot_grade')) { 
+            if ($request->has('pilot_grade')) { 
                 foreach ($request->input('pilot_grade') as $lesson_id => $competencyGrades) {
                     foreach ($competencyGrades as $competency_id => $grade) {
 
@@ -2538,7 +2538,7 @@ class TrainingEventsController extends Controller
                     $query->where('user_id', $userId);
                 },
                 'deferredGradings' => function ($query) {
-                    $query->with('defLesson:id,lesson_title');
+                    $query->with('defLesson:id,lesson_title','lesson_type');
                 },
                 'course:id,course_name,enable_feedback',
                 'group:id,name',
@@ -2593,14 +2593,15 @@ class TrainingEventsController extends Controller
         if ($event->created_at >= $dateCheck) {
             $instructorQuery->where('ou_id', $event->ou_id);
             $examinerQuery->where('ou_id', $event->ou_id);
-            $pilotQuery->where('ou_id', $event->ou_id);
+            // $pilotQuery->where('ou_id', $event->ou_id);
         }
         else{
             $instructorQuery->whereNull('ou_id');
             $examinerQuery->whereNull('ou_id');
-            $pilotQuery->whereNull('ou_id');
+            // $pilotQuery->whereNull('ou_id');
         }
 
+        $pilotQuery->where('ou_id', $trainingEvent->ou_id);
         $instructor_cbta = $instructorQuery->get()->toArray();
         $examiner_cbta   = $examinerQuery->get()->toArray();
         $pilot_cbta   = $pilotQuery->get()->toArray();
@@ -2608,93 +2609,219 @@ class TrainingEventsController extends Controller
 
         $competencyType = 'examiner';
 
-        $examiner_grading = CbtaGrading::with([
-            'examinerGrading.courseLesson'
-        ])->whereHas('examinerGrading', function ($query) use ($event_id, $userId, $competencyType) {
-            $query->where('event_id', $event_id)
-                ->where('user_id', $userId)
-                ->where('competency_type', $competencyType);
-        })->get();
+        // $examiner_grading = CbtaGrading::with([
+        //     'examinerGrading.courseLesson'
+        // ])->whereHas('examinerGrading', function ($query) use ($event_id, $userId, $competencyType) {
+        //     $query->where('event_id', $event_id)
+        //         ->where('user_id', $userId)
+        //         ->whereNull('lesson_type')
+        //         ->where('competency_type', $competencyType);
+        // })->get();
 
-        $examinerGradings = $examiner_grading->pluck('examinerGrading')->flatten();
-        $examinerGrouped = $examinerGradings->groupBy('lesson_id');
+        // $examinerGradings = $examiner_grading->pluck('examinerGrading')->flatten();
+        // $examinerGrouped = $examinerGradings->groupBy('lesson_id');
+
+        $examiner_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $userId)->where('competency_type', 'examiner')->whereNull('lesson_type')->get();
+        $examinerGrouped = $examiner_grading->groupBy('lesson_id');
  
         // Instructor grading
         $competencyType = 'instructor';
 
-        $instructor_grading = CbtaGrading::with([
-            'examinerGrading.courseLesson'
-        ])->whereHas('examinerGrading', function ($query) use ($event_id, $userId, $competencyType) {
-            $query->where('event_id', $event_id)
-                ->where('user_id', $userId)
-                ->where('competency_type', $competencyType);
-        })->get();
+        // $instructor_grading = CbtaGrading::with([
+        //     'examinerGrading.courseLesson'
+        // ])->whereHas('examinerGrading', function ($query) use ($event_id, $userId, $competencyType) {
+        //     $query->where('event_id', $event_id)
+        //         ->where('user_id', $userId)
+        //         ->whereNull('lesson_type')
+        //         ->where('competency_type', $competencyType);
+        // })->get();
 
-        $instructorGradings = $instructor_grading->pluck('examinerGrading')->flatten();
-        $instructorGrouped = $instructorGradings->groupBy('lesson_id');
+        // $instructorGradings = $instructor_grading->pluck('examinerGrading')->flatten();
+        // $instructorGrouped = $instructorGradings->groupBy('lesson_id');
+
+        $instructor_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $userId)->where('competency_type', 'instructor')->whereNull('lesson_type')->get();
+        $instructorGrouped = $instructor_grading->groupBy('lesson_id');
+
+        // dd($instructorGrouped);
 
         // Pilot grading
         $competencyType = 'pilot';
-        $pilot_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $userId)->where('competency_type', 'pilot')->get();
+        $pilot_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $userId)->where('competency_type', 'pilot')->whereNull('lesson_type')->get();
         $pilotGrouped = $pilot_grading->groupBy('lesson_id');
 
-
-        
         $examinerFinal = [];
 
-        foreach ($examiner_cbta as $comp) {
+        foreach ($examinerGrouped as $lessonId => $gradings) {
 
-            $lessonGrading = $examinerGradings
-                ->where('cbta_gradings_id', $comp['id'])
-                ->first();
+            $lessonTitle = optional($gradings->first()->courseLesson)->lesson_title;
 
-            $examinerFinal[] = [
-                'id'            => $comp['id'],
-                'competency'    => $comp['competency'],
-                'short_name'    => $comp['short_name'],
-                'graded_value'  => $lessonGrading->competency_value ?? "N/A",
-                'lesson_id'     => $lessonGrading->lesson_id ?? null,
-                'comment'       => $lessonGrading->comment ?? null,
+            $examinerFinal[$lessonId] = [
+                'lesson_title' => $lessonTitle,
+                'data' => []
             ];
+
+            foreach ($examiner_cbta as $comp) {
+
+                $lessonGrading = $gradings
+                    ->where('cbta_gradings_id', $comp['id'])
+                    ->first();
+
+                $examinerFinal[$lessonId]['data'][] = [
+                    'id'            => $comp['id'],
+                    'competency'    => $comp['competency'],
+                    'short_name'    => $comp['short_name'],
+                    'graded_value'  => $lessonGrading->competency_value ?? "N/A",
+                    'comment'       => $lessonGrading->comment ?? null,
+                ];
+            }
         }
 
         $instructorFinal = [];
 
-        foreach ($instructor_cbta as $comp) {
+        foreach ($instructorGrouped as $lessonId => $gradings) {
 
-            $lessonGrading = $instructorGradings->where('cbta_gradings_id', $comp['id'])->first();
+            $lessonTitle = optional($gradings->first()->courseLesson)->lesson_title;
 
-            $instructorFinal[] = [
-                'id'            => $comp['id'],
-                'competency'    => $comp['competency'],
-                'short_name'    => $comp['short_name'],
-                'graded_value'  => $lessonGrading->competency_value ?? "N/A",
-                'lesson_id'     => $lessonGrading->lesson_id ?? null,
-                'comment'       => $lessonGrading->comment ?? null,
+            $instructorFinal[$lessonId] = [
+                'lesson_title' => $lessonTitle,
+                'data' => []
             ];
+
+            foreach ($instructor_cbta as $comp) {
+
+                $lessonGrading = $gradings
+                    ->where('cbta_gradings_id', $comp['id'])
+                    ->first();
+
+                $instructorFinal[$lessonId]['data'][] = [
+                    'id'            => $comp['id'],
+                    'competency'    => $comp['competency'],
+                    'short_name'    => $comp['short_name'],
+                    'graded_value'  => $lessonGrading->competency_value ?? "N/A",
+                    'comment'       => $lessonGrading->comment ?? null,
+                ];
+            }
         }
 
         $pilotFinal = [];
 
-        foreach ($pilot_cbta as $comp) {
+        foreach ($pilotGrouped as $lessonId => $gradings) {
 
-            $lessonGrading = $pilot_grading->where('cbta_gradings_id', $comp['id'])->first();
+            $lessonTitle = CourseLesson::find($lessonId)?->lesson_title;
 
-            $pilotFinal[] = [
-                'id'            => $comp['id'],
-                'competency'    => $comp['competency'],
-                'short_name'    => $comp['short_name'],
-                'graded_value'  => $lessonGrading->competency_value ?? "N/A",
-                'lesson_id'     => $lessonGrading->lesson_id ?? null,
-                'comment'       => $lessonGrading->comment ?? null,
+            $pilotFinal[$lessonId] = [
+                'lesson_title' => $lessonTitle,
+                'data' => []
             ];
+
+            foreach ($pilot_cbta as $comp) {
+
+                $lessonGrading = $gradings
+                    ->where('cbta_gradings_id', $comp['id'])
+                    ->first();
+
+                $pilotFinal[$lessonId]['data'][] = [
+                    'id'            => $comp['id'],
+                    'competency'    => $comp['competency'],
+                    'short_name'    => $comp['short_name'],
+                    'graded_value'  => $lessonGrading->competency_value ?? "N/A",
+                    'comment'       => $lessonGrading->comment ?? null,
+                ];
+            }
         }
 
-        // dd(
-        //     $examinerFinal,
-        //     $instructorFinal,
-        //     $pilotFinal
-        // );
+        $deferred_grading = ExaminerGrading::where('event_id', $event_id)
+            ->where('user_id', $userId)
+            ->where('lesson_type', 'deferred')
+            ->with('cbta')
+            ->get();
+
+        $deferredGrouped = $deferred_grading->groupBy(['lesson_id', 'competency_type']);
+
+        $deferredFinal = [];
+
+        foreach ($deferredGrouped as $lessonId => $types) {
+
+            foreach ($types as $type => $records) {
+
+                // pick correct CBTA list
+                $cbtaList = match ($type) {
+                    'examiner'   => $examiner_cbta,
+                    'instructor' => $instructor_cbta,
+                    'pilot'      => $pilot_cbta,
+                    default      => []
+                };
+
+                $lessonTitle = $records->first()->defLesson->lesson_title ?? 'Unknown Lesson';
+
+                $deferredFinal[$type][$lessonId] = [
+                    'lesson_title' => $lessonTitle,
+                    'data' => []
+                ];
+
+                foreach ($cbtaList as $comp) {
+
+                    $lessonGrading = $records
+                        ->where('cbta_gradings_id', $comp['id'])
+                        ->first();
+
+                    $deferredFinal[$type][$lessonId]['data'][] = [
+                        'id'            => $comp['id'],
+                        'competency'    => $comp['competency'],
+                        'short_name'    => $comp['short_name'],
+                        'graded_value'  => $lessonGrading->competency_value ?? "N/A",
+                        'comment'       => $lessonGrading->comment ?? null,
+                    ];
+                }
+            }
+        }
+
+        $custom_grading = ExaminerGrading::where('event_id', $event_id)
+            ->where('user_id', $userId)
+            ->where('lesson_type', 'custom')
+            ->with('cbta')
+            ->get();
+
+        // dd($custom_grading);
+
+        $customGrouped = $custom_grading->groupBy(['lesson_id', 'competency_type']);
+
+        $customFinal = [];
+
+        foreach ($customGrouped as $lessonId => $types) {
+
+            foreach ($types as $type => $records) {
+
+                $cbtaList = match ($type) {
+                    'examiner'   => $examiner_cbta,
+                    'instructor' => $instructor_cbta,
+                    'pilot'      => $pilot_cbta,
+                    default      => []
+                };
+
+                $lessonTitle = $records->first()->defLesson->lesson_title ?? 'Unknown Lesson';
+
+                $customFinal[$type][$lessonId] = [
+                    'lesson_title' => $lessonTitle,
+                    'data' => []
+                ];
+
+                foreach ($cbtaList as $comp) {
+
+                    $lessonGrading = $records
+                        ->where('cbta_gradings_id', $comp['id'])
+                        ->first();
+
+                    $customFinal[$type][$lessonId]['data'][] = [
+                        'id'            => $comp['id'],
+                        'competency'    => $comp['competency'],
+                        'short_name'    => $comp['short_name'],
+                        'graded_value'  => $lessonGrading->competency_value ?? "N/A",
+                        'comment'       => $lessonGrading->comment ?? null,
+                    ];
+                }
+            }
+        }
 
         if ($event) { 
             $event->student_feedback_submitted = $event->trainingFeedbacks()->where('user_id', auth()->user()->id)->exists();
@@ -2733,7 +2860,7 @@ class TrainingEventsController extends Controller
         ];
       
 
-        return view('trainings.grading-list', compact('event', 'userId', 'defLessonGrading', 'CustomLessonGrading', 'examinerFinal', 'instructorFinal', 'pilotFinal','reviews','allLessonsGraded','user_name', 'breadcrumbs'));
+        return view('trainings.grading-list', compact('event', 'userId', 'defLessonGrading', 'CustomLessonGrading', 'deferredFinal', 'customFinal', 'examinerFinal', 'instructorFinal', 'pilotFinal','reviews','allLessonsGraded','user_name', 'breadcrumbs'));
     }
 
     // public function unlockEventGarding(Request $request, $event_id)
@@ -2779,26 +2906,6 @@ class TrainingEventsController extends Controller
     {
         $userId = $userID;
 
-        // Fetch Training Event with related Def Lessons and Def Lesson Tasks
-        // $event = TrainingEvents::with([
-        //     'course:id,course_name', 
-        //     'orgUnit:id,org_unit_name,org_logo',
-        //     'instructor:id,fname,lname',
-        //     'student:id,fname,lname',
-        //     'resource:id,name,type,class,registration',
-        //     'defLessons' => function ($query) use ($lesson_id) {
-        //         $query->where('id', $lesson_id)
-        //             ->with([
-        //                 'instructor:id,fname,lname',
-        //                 'resource:id,name,type,class,registration'
-        //             ]);
-        //     },
-        //     'defLessonTasks' => function ($query) use ($userId, $lesson_id) {
-        //         $query->where('user_id', $userId)
-        //             ->where('def_lesson_id', $lesson_id)
-        //             ->with('task:id,title,grade_type,description');
-        //     },
-        // ])->findOrFail($event_id);
         $event = TrainingEvents::with([
             'course:id,course_name',
             'course.courseLessons',
@@ -2835,13 +2942,178 @@ class TrainingEventsController extends Controller
             abort(404, 'Deferred lesson not found for this training event.');
         }
         $tasks = $event->defLessonTasks;
-       //  return view('trainings.deferred-lesson-report', compact('event', 'eventLesson', 'tasks'));
         
-    //    dd($eventLesson);
+
+        // =========================
+        $dateCheck = Carbon::parse('2026-02-10');
+
+        $examinerQuery = CbtaGrading::where('competency_type', 'examiner');
+        $instructorQuery = CbtaGrading::where('competency_type', 'instructor');
+        $pilotQuery = CbtaGrading::where('competency_type', 'pilot');
+
+        if ($event->created_at >= $dateCheck) {
+            $examinerQuery->where('ou_id', $event->ou_id);
+            $instructorQuery->where('ou_id', $event->ou_id);
+        } else {
+            $examinerQuery->whereNull('ou_id');
+            $instructorQuery->whereNull('ou_id');
+        }
+
+        $pilotQuery->where('ou_id', $event->ou_id);
+
+        $examiner_cbta = $examinerQuery->get();
+        $instructor_cbta = $instructorQuery->get();
+        $pilot_cbta = $pilotQuery->get();
+
+        $getGradings = function ($type, $role) use ($event_id, $userId) {
+            return ExaminerGrading::where('event_id', $event_id)
+                ->where('user_id', $userId)
+                ->where('lesson_type', $type)
+                ->where('competency_type', $role)
+                ->get();
+        };
+
+        // Deferred
+        $deferredExaminer = $getGradings('deferred', 'examiner');
+        $deferredInstructor = $getGradings('deferred', 'instructor');
+        $deferredPilot = $getGradings('deferred', 'pilot');
+
+        // dd(
+        //     $deferredExaminer,
+        //     $deferredInstructor,
+        //     $deferredPilot
+        // );
+
+        // Custom
+        $customExaminer = $getGradings('custom', 'examiner');
+        $customInstructor = $getGradings('custom', 'instructor');
+        $customPilot = $getGradings('custom', 'pilot');
+
+        $buildFinal = function ($cbtaList, $gradingCollection) {
+
+            return $cbtaList->map(function ($comp) use ($gradingCollection) {
+
+                $grade = $gradingCollection
+                    ->where('cbta_gradings_id', $comp->id)
+                    ->first();
+
+                return [
+                    'short_name'   => $comp->short_name,
+                    'competency'   => $comp->competency,
+                    'graded_value' => $grade->competency_value ?? 'N/A',
+                    'comment'      => $grade->comment ?? null,
+                ];
+            })->toArray();
+        };
+
+
+        $lesson = DefLesson::where('id' , $lesson_id)->where('event_id', $event_id)->first();
+        $lessontype = $lesson->lesson_type;
+        $lessonid = $defLesson->id;
+
+        if($lessontype === 'deferred'){
+            // $ExaminerFinal   = $buildFinal($examiner_cbta, $deferredExaminer);
+            // $InstructorFinal = $buildFinal($instructor_cbta, $deferredInstructor);
+            // $PilotFinal      = $buildFinal($pilot_cbta, $deferredPilot);
+
+            // Examiner Final
+            $ExaminerFinal = [];
+            if ($deferredExaminer->isNotEmpty()) {
+                foreach ($examiner_cbta as $cbta) {
+                    $grading = $deferredExaminer->firstWhere('cbta_gradings_id', $cbta->id);
+                    $ExaminerFinal[] = [
+                        'short_name'   => $cbta->short_name,
+                        'competency'   => $cbta->competency,
+                        'graded_value' => $grading ? $grading->competency_value : 'N/A',
+                        'comment'      => $grading ? $grading->comment : '',
+                    ];
+                }
+            }
+
+            // Instructor Final
+            $InstructorFinal = [];
+            if ($deferredInstructor->isNotEmpty()) {
+                foreach ($instructor_cbta as $cbta) {
+                    $grading = $deferredInstructor->firstWhere('cbta_gradings_id', $cbta->id);
+                    $InstructorFinal[] = [
+                        'short_name'   => $cbta->short_name,
+                        'competency'   => $cbta->competency,
+                        'graded_value' => $grading ? $grading->competency_value : 'N/A',
+                        'comment'      => $grading ? $grading->comment : '',
+                    ];
+                }
+            }
+
+            // Pilot Final
+            $PilotFinal = [];
+            if ($deferredPilot->isNotEmpty()) {
+                foreach ($pilot_cbta as $cbta) {
+                    $grading = $deferredPilot->firstWhere('cbta_gradings_id', $cbta->id);
+                    $PilotFinal[] = [
+                        'short_name'   => $cbta->short_name,
+                        'competency'   => $cbta->competency,
+                        'graded_value' => $grading ? $grading->competency_value : 'N/A',
+                        'comment'      => $grading ? $grading->comment : '',
+                    ];
+                }
+            }
+        }
+
+        if($lessontype === 'custom'){
+            // $ExaminerFinal   = $buildFinal($examiner_cbta, $customExaminer);
+            // $InstructorFinal = $buildFinal($instructor_cbta, $customInstructor);
+            // $PilotFinal      = $buildFinal($pilot_cbta, $customPilot);
+
+            // Examiner Final
+            $ExaminerFinal = [];
+            if ($customExaminer->isNotEmpty()) {
+                foreach ($examiner_cbta as $cbta) {
+                    $grading = $customExaminer->firstWhere('cbta_gradings_id', $cbta->id);
+                    $ExaminerFinal[] = [
+                        'short_name'   => $cbta->short_name,
+                        'competency'   => $cbta->competency,
+                        'graded_value' => $grading ? $grading->competency_value : 'N/A',
+                        'comment'      => $grading ? $grading->comment : '',
+                    ];
+                }
+            }
+
+            // Instructor Final
+            $InstructorFinal = [];
+            if ($customInstructor->isNotEmpty()) {
+                foreach ($instructor_cbta as $cbta) {
+                    $grading = $customInstructor->firstWhere('cbta_gradings_id', $cbta->id);
+                    $InstructorFinal[] = [
+                        'short_name'   => $cbta->short_name,
+                        'competency'   => $cbta->competency,
+                        'graded_value' => $grading ? $grading->competency_value : 'N/A',
+                        'comment'      => $grading ? $grading->comment : '',
+                    ];
+                }
+            }
+
+            // Pilot Final
+            $PilotFinal = [];
+            if ($customPilot->isNotEmpty()) {
+                foreach ($pilot_cbta as $cbta) {
+                    $grading = $customPilot->firstWhere('cbta_gradings_id', $cbta->id);
+                    $PilotFinal[] = [
+                        'short_name'   => $cbta->short_name,
+                        'competency'   => $cbta->competency,
+                        'graded_value' => $grading ? $grading->competency_value : 'N/A',
+                        'comment'      => $grading ? $grading->comment : '',
+                    ];
+                }
+            }
+        }
+        
         $pdf = PDF::loadView('trainings.deferred-lesson-report', [
             'event' => $event,
             'eventLesson' => $eventLesson,
             'tasks' => $tasks,
+            'ExaminerFinal' => $ExaminerFinal,
+            'InstructorFinal' => $InstructorFinal,
+            'PilotFinal' => $PilotFinal,
         ]);
 
         $filename = 'Deferred_Lesson_Report_' . Str::slug($defLesson->lesson_title) . '.pdf';
@@ -2946,53 +3218,43 @@ class TrainingEventsController extends Controller
         if ($event->created_at >= $dateCheck) {
             $instructorQuery->where('ou_id', $event->ou_id);
             $examinerQuery->where('ou_id', $event->ou_id);
-            $pilotQuery->where('ou_id', $event->ou_id);
+            // $pilotQuery->where('ou_id', $event->ou_id);
         }
         else{
             $instructorQuery->whereNull('ou_id');
             $examinerQuery->whereNull('ou_id');
-            $pilotQuery->whereNull('ou_id');
+            // $pilotQuery->whereNull('ou_id');
         }
 
+        $pilotQuery->where('ou_id', $event->ou_id);
         $instructor_cbta = $instructorQuery->get()->toArray();
         $examiner_cbta   = $examinerQuery->get()->toArray();
         $pilot_cbta   = $pilotQuery->get()->toArray();
 
-
-        $competencyType = 'examiner';
-
-        $examiner_grading = CbtaGrading::with([
-            'examinerGrading.courseLesson'
-        ])->whereHas('examinerGrading', function ($query) use ($event_id, $userId, $competencyType) {
-            $query->where('event_id', $event_id)
-                ->where('user_id', $userId)
-                ->where('competency_type', $competencyType);
-        })->get();
-
-        $examinerGradings = $examiner_grading->pluck('examinerGrading')->flatten();
-        $examinerGrouped = $examinerGradings->groupBy('lesson_id');
+        // Examiner grading
+        $examinerGradings = ExaminerGrading::where('event_id', $event_id)
+                            ->where('user_id', $userId)
+                            ->where('lesson_id', $lesson_id)
+                            ->whereNull('lesson_type')
+                            ->where('competency_type', 'examiner')
+                            ->get();
  
         // Instructor grading
-        $competencyType = 'instructor';
-
-        $instructor_grading = CbtaGrading::with([
-            'examinerGrading.courseLesson'
-        ])->whereHas('examinerGrading', function ($query) use ($event_id, $userId, $competencyType) {
-            $query->where('event_id', $event_id)
-                ->where('user_id', $userId)
-                ->where('competency_type', $competencyType);
-        })->get();
-
-        $instructorGradings = $instructor_grading->pluck('examinerGrading')->flatten();
-        $instructorGrouped = $instructorGradings->groupBy('lesson_id');
+        $instructorGradings = ExaminerGrading::where('event_id', $event_id)
+                                ->where('user_id', $userId)
+                                ->where('lesson_id', $lesson_id)
+                                ->whereNull('lesson_type')
+                                ->where('competency_type', 'instructor')
+                                ->get();
 
         // Pilot grading
-        $competencyType = 'pilot';
-        $pilot_grading = ExaminerGrading::where('event_id', $event_id)->where('user_id', $userId)->where('competency_type', 'pilot')->get();
-        $pilotGrouped = $pilot_grading->groupBy('lesson_id');
+        $pilot_grading = ExaminerGrading::where('event_id', $event_id)
+                            ->where('user_id', $userId)
+                            ->where('lesson_id', $lesson_id)
+                            ->whereNull('lesson_type')
+                            ->where('competency_type', 'pilot')
+                            ->get();
 
-
-        
         $examinerFinal = [];
 
         foreach ($examiner_cbta as $comp) {
@@ -3042,7 +3304,7 @@ class TrainingEventsController extends Controller
                 'comment'       => $lessonGrading->comment ?? null,
             ];
         }
-        
+
         if (!function_exists('toSeconds')) {
             function toSeconds(?string $time): int {
                 if (!$time) return 0;
@@ -4064,31 +4326,133 @@ class TrainingEventsController extends Controller
 
                 // Grading 
                 $gradedStudentIdForComp = $request->input('cg_user_id');
-                if ($request->has('comp_grade')) {
-                    foreach ($request->input('comp_grade') as $lesson_id => $competencyGrades) {
-                        $compData = [
-                            'event_id'   => $event_id,
-                            'lesson_id'  => $lesson_id,
-                            'user_id'    => $gradedStudentIdForComp,
-                            'created_by' => auth()->user()->id,
-                        ];
+                // if ($request->has('comp_grade')) {
+                //     foreach ($request->input('comp_grade') as $lesson_id => $competencyGrades) {
+                //         $compData = [
+                //             'event_id'   => $event_id,
+                //             'lesson_id'  => $lesson_id,
+                //             'user_id'    => $gradedStudentIdForComp,
+                //             'created_by' => auth()->user()->id,
+                //         ];
 
-                        foreach ($competencyGrades as $code => $grade) {
-                            $gradeColumn   = strtolower($code) . '_grade';
-                            $commentColumn = strtolower($code) . '_comment';
+                //         foreach ($competencyGrades as $code => $grade) {
+                //             $gradeColumn   = strtolower($code) . '_grade';
+                //             $commentColumn = strtolower($code) . '_comment';
 
-                            $compData[$gradeColumn]   = $grade;
-                            $compData[$commentColumn] = $request->input("comp_comments.$lesson_id.$code", null);
+                //             $compData[$gradeColumn]   = $grade;
+                //             $compData[$commentColumn] = $request->input("comp_comments.$lesson_id.$code", null);
+                //         }
+
+                //         DeferredGrading::updateOrCreate(
+                //             [
+                //                 'event_id'    => $event_id,
+                //                 'deflesson_id' => $lesson_id,
+                //                 'user_id'     => $gradedStudentIdForComp,
+                //             ],
+                //             $compData
+                //         );
+                //     }
+                // }
+
+                // Examiner CBTA Grading
+                if ($request->has('examiner_grade')) {
+                    foreach ($request->input('examiner_grade') as $lesson_id => $competencyGrades) {
+                        foreach ($competencyGrades as $competency_id => $grade) {
+
+                            // fetch comment if exists
+                            $comment = $request->input("examiner_comments.$lesson_id.$competency_id");
+
+                            $compData = [
+                                'event_id'          => $event_id,
+                                'cbta_gradings_id'  => $competency_id,
+                                'user_id'           => $gradedStudentIdForComp,
+                                'lesson_id'         => $lesson_id,
+                                'competency_value'  => $grade,
+                                'competency_type'   => 'examiner',
+                                'comment'           => $comment ?? null,
+                            ];
+
+
+                            ExaminerGrading::updateOrCreate(
+                                [
+                                    'event_id' => $event_id,
+                                    'cbta_gradings_id' => $competency_id,
+                                    'lesson_id'         => $lesson_id,
+                                    'competency_type'   => 'examiner',
+                                    'lesson_type'   => $lesson_type,
+                                    'user_id' => $gradedStudentIdForComp,
+                                ],
+                                $compData
+                            );
                         }
+                    }
+                }
 
-                        DeferredGrading::updateOrCreate(
-                            [
-                                'event_id'    => $event_id,
-                                'deflesson_id' => $lesson_id,
-                                'user_id'     => $gradedStudentIdForComp,
-                            ],
-                            $compData
-                        );
+                // Instructor Grading 
+                if ($request->has('instructor_grade')) { 
+                    foreach ($request->input('instructor_grade') as $lesson_id => $competencyGrades) {
+                        foreach ($competencyGrades as $competency_id => $grade) {
+
+                            // fetch comment if exists
+                            $comment = $request->input("instructor_comments.$lesson_id.$competency_id");
+                            
+                            $compData = [
+                                'event_id'          => $event_id,
+                                'cbta_gradings_id'  => $competency_id,
+                                'user_id'           => $gradedStudentIdForComp,
+                                'lesson_id'         => $lesson_id,
+                                'competency_value'  => $grade,
+                                'competency_type'   => 'instructor',
+                                'comment'           => $comment ?? null,
+                            ];
+
+
+                            ExaminerGrading::updateOrCreate(
+                                [
+                                    'event_id' => $event_id,
+                                    'lesson_id'  => $lesson_id,
+                                    'cbta_gradings_id' => $competency_id,
+                                    'competency_type'   => 'instructor',
+                                    'lesson_type'   => $lesson_type,
+                                    'user_id' => $gradedStudentIdForComp,
+                                ],
+                                $compData
+                            );
+                        }
+                    }
+                }
+
+                // Pilot Grading
+                if ($request->has('pilot_grade')) { 
+                    foreach ($request->input('pilot_grade') as $lesson_id => $competencyGrades) {
+                        foreach ($competencyGrades as $competency_id => $grade) {
+
+                            // fetch comment if exists
+                            $comment = $request->input("pilot_comments.$lesson_id.$competency_id");
+                            
+                            $compData = [
+                                'event_id'          => $event_id,
+                                'cbta_gradings_id'  => $competency_id,
+                                'user_id'           => $gradedStudentIdForComp,
+                                'lesson_id'         => $lesson_id,
+                                'competency_value'  => $grade,
+                                'competency_type'   => 'pilot',
+                                'comment'           => $comment ?? null,
+                            ];
+
+
+                            ExaminerGrading::updateOrCreate(
+                                [
+                                    'event_id' => $event_id,
+                                    'lesson_id'  => $lesson_id,
+                                    'cbta_gradings_id' => $competency_id,
+                                    'competency_type'   => 'pilot',
+                                    'lesson_type'   => $lesson_type,
+                                    'user_id' => $gradedStudentIdForComp,
+                                ],
+                                $compData
+                            );
+                        }
                     }
                 }
                

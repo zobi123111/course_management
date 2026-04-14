@@ -86,6 +86,223 @@
                             <h5 class="mb-0 fw-bold text-dark"> {{ $user_name->fname ?? '' }} {{ $user_name->lname ?? '' }}</h5>
                         </div>
                     </div>
+
+                    <h5 class="text-primary mb-3">
+                    <strong>Training Event Lesson </strong>
+                </h5>
+
+                <!-- // Examiner Grading -->
+                @if(!empty($examinerFinal))
+                    <div class="mb-4">
+                        @if(auth()->user()->role != 3)
+                        <h5 class="text-primary d-flex justify-content-between align-items-center"
+                            data-bs-toggle="collapse"
+                            href="#examinercompetencyGrading"
+                            role="button"
+                            aria-expanded="false">
+                            <span><i class="bi bi-bar-chart-steps me-2"></i>Examiner Competency Grading</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </h5>
+                        @endif
+
+                        <div class="collapse" id="examinercompetencyGrading">
+                            @foreach($examinerFinal as $lessonId => $gradings)
+                                <!-- Lesson Title -->
+                                <h6 class="mt-4 text-dark">
+                                    <i class="bi bi-book me-1"></i>
+                                    {{ $gradings['lesson_title'] ?? 'Unknown Lesson' }}
+                                </h6>
+
+                                <div class="table-responsive mb-3">
+                                    <table class="table table-bordered text-center">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Competency</th>
+                                                <th>Grade</th>
+                                                <th>Comment</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                           @foreach($gradings['data'] as $item)
+                                                @php
+                                                    $grade = $item['graded_value'];
+                                                    $badgeClass = 'bg-secondary';
+
+                                                    if ($grade == 1) $badgeClass = 'grade-incomplete';
+                                                    elseif ($grade == 2) $badgeClass = 'grade-ftr';
+                                                    elseif (in_array($grade, [3,4,5])) $badgeClass = 'grade-competent';
+                                                @endphp
+                                                <tr>
+                                                    <td><strong>{{ strtoupper($item['short_name']) }}</strong></td>
+                                                    <td><span class="badge {{ $badgeClass }}">{{ $grade }}</span></td>
+                                                    <td class="text-start">{{ $item['comment'] ?? '' }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+                <!-- // End Examiner Grading -->
+
+                <!-- Instructor Rating  -->
+                @if(!empty($instructorFinal))
+                    <div class="mb-4">
+                        @if(auth()->user()->role != 3)
+                        <h5 class="text-primary d-flex justify-content-between align-items-center"
+                            data-bs-toggle="collapse"
+                            href="#ins_competencyGrading"
+                            role="button"
+                            aria-expanded="false">
+                            <span><i class="bi bi-bar-chart-steps me-2"></i>Instructor Competency Grading</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </h5>
+                        @endif
+
+                        <div class="collapse" id="ins_competencyGrading">
+                            @foreach($instructorFinal as $lessonId => $gradings)
+
+                                <h6 class="mt-4 text-dark">
+                                    <i class="bi bi-book me-1"></i>
+                                    {{ $gradings['lesson_title'] ?? 'Unknown Lesson' }}
+                                </h6>
+
+                                <div class="table-responsive mb-3">
+                                    <table class="table table-bordered text-center">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Competency</th>
+                                                <th>Grade</th>
+                                                <th>Comment</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($gradings['data'] as $item)
+                                                @php
+                                                    $grade = $item['graded_value'];
+                                                    $badgeClass = 'bg-secondary';
+
+                                                    if ($grade == 1) $badgeClass = 'grade-incomplete';
+                                                    elseif ($grade == 2) $badgeClass = 'grade-ftr';
+                                                    elseif (in_array($grade, [3,4,5])) $badgeClass = 'grade-competent';
+                                                @endphp
+                                                <tr>
+                                                    <td><strong>{{ strtoupper($item['short_name']) }}</strong></td>
+                                                    <td><span class="badge {{ $badgeClass }}">{{ $grade }}</span></td>
+                                                    <td class="text-start">{{ $item['comment'] ?? '' }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+                <!-- // End Instructor Grading -->
+
+                <!-- Pilot Rating -->
+                @if(!empty($pilotFinal))
+                    <div class="mb-4">
+                        @if(auth()->user()->role != 3)
+                        <h5 class="text-primary d-flex justify-content-between align-items-center"
+                            data-bs-toggle="collapse"
+                            href="#pilot_competencyGrading"
+                            role="button"
+                            aria-expanded="false">
+                            <span><i class="bi bi-bar-chart-steps me-2"></i>Pilot Competency Grading</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </h5>
+                        @endif
+
+                        <div class="collapse" id="pilot_competencyGrading">
+                            @foreach($pilotFinal as $lessonId => $gradings)
+
+                                <h6 class="mt-4 text-dark">
+                                    <i class="bi bi-book me-1"></i>
+                                    {{ $gradings['lesson_title'] ?? 'Unknown Lesson' }}
+                                </h6>
+
+                                <div class="table-responsive mb-3">
+                                    <table class="table table-bordered text-center">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Competency</th>
+                                                <th>Grade</th>
+                                                <th>Comment</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($gradings['data'] as $item)
+                                                @php
+                                                    $grade = $item['graded_value'];
+                                                    $badgeClass = 'bg-secondary';
+
+                                                    if ($grade == 1) $badgeClass = 'grade-incomplete';
+                                                    elseif ($grade == 2) $badgeClass = 'grade-ftr';
+                                                    elseif (in_array($grade, [3,4,5])) $badgeClass = 'grade-competent';
+                                                @endphp
+                                                <tr>
+                                                    <td><strong>{{ strtoupper($item['short_name']) }}</strong></td>
+                                                    <td><span class="badge {{ $badgeClass }}">{{ $grade }}</span></td>
+                                                    <td class="text-start">{{ $item['comment'] ?? '' }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+                <!-- End Pilot Rating -->
+
+                <!-- Overall Assessments -->
+                @if(!$event->overallAssessments->isEmpty())
+                <div class="mb-4">
+                    <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#overallAssessments" role="button" aria-expanded="false" aria-controls="overallAssessments">
+                        <span><i class="bi bi-award me-2"></i>Overall Assessments</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </h5>
+                    <div class="collapse" id="overallAssessments">
+                        @if($event->overallAssessments->isEmpty())
+                        <p class="text-muted">No overall assessments available.</p>
+                        @else
+                        <ul class="list-group shadow-sm">
+                            @foreach($event->overallAssessments as $assessment)
+                            <li class="list-group-item">
+                                <strong><i class="bi bi-check-circle-fill me-1"></i>Result:</strong>
+                                @php
+                                $resultClass = 'bg-secondary'; // default
+
+                                if ($assessment->result === 'Incomplete') {
+                                $resultClass = 'grade-incomplete';
+                                } elseif ($assessment->result === 'Further training required') {
+                                $resultClass = 'grade-ftr';
+                                } elseif ($assessment->result === 'Competent') {
+                                $resultClass = 'grade-competent';
+                                }
+                                @endphp
+                                <span class="badge {{ $resultClass }}">
+                                    {{ $assessment->result ?? 'N/A' }}
+                                </span>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="bi bi-chat-left-dots me-1"></i>Remarks: {{ $assessment->remarks ?? 'No remarks' }}
+                                </small>
+                            </li>
+                            @endforeach
+                        </ul>
+                        @endif
+                    </div>
+                </div>
+                @endif
                 
                     <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#taskGrading" role="button" aria-expanded="false" aria-controls="taskGrading">
                         <span><i class="bi bi-card-checklist me-2"></i>Task Based Grading</span>
@@ -289,6 +506,11 @@
                 <!-- // Deffered Lesson -->
                 @if(!$defLessonGrading->isEmpty())
                 <div class="mb-4">
+
+                    <h5 class="text-primary mb-3">
+                        <strong>Deferred Lesson </strong>
+                    </h5>
+                        
                     <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#defLessonGrading" role="button" aria-expanded="false" aria-controls="defLessonGrading">
                         <span><i class="bi bi-exclamation-circle me-2"></i>Deferred Lesson Grading</span>
                         <i class="bi bi-chevron-down"></i>
@@ -386,7 +608,7 @@
                                 @endif
 
                                 <!-- Deferred Competency Grading -->
-                                <div class="mb-4">
+                                <!-- <div class="mb-4">
                                     <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#deferredcompetencyGrading{{ $defLesson->id }}" role="button" aria-expanded="false" aria-controls="deferredcompetencyGrading123">
                                         <span><i class="bi bi-bar-chart-steps me-2"></i>Deferred Competency Grading</span>
                                         <i class="bi bi-chevron-down"></i>
@@ -457,7 +679,7 @@
                                         @endforeach
                                         @endif
                                     </div>
-                                </div>
+                                </div> -->
                                 <!-- End Deferred Competency Grading -->
 
                             </ul>
@@ -470,13 +692,192 @@
                 @endif
                 <!-- // End Deffered Lesson -->
 
+                @if(!empty($deferredFinal['examiner']))
+                    <div class="mb-4">
 
+                        <h5 class="text-primary d-flex justify-content-between align-items-center"
+                            data-bs-toggle="collapse"
+                            href="#deferredExaminerGrading"
+                            role="button">
+                            <span><i class="bi bi-bar-chart-steps me-2"></i>Deferred Examiner Competency Grading</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </h5>
 
+                        <div class="collapse" id="deferredExaminerGrading">
+
+                            @foreach($deferredFinal['examiner'] as $lessonId => $gradings)
+
+                                <h6 class="mt-4 text-dark">
+                                    <i class="bi bi-book me-1"></i>
+                                    {{ $gradings['lesson_title'] ?? 'Unknown Lesson' }}
+                                </h6>
+
+                                <div class="table-responsive mb-3">
+                                    <table class="table table-bordered text-center">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Competency</th>
+                                                <th>Grade</th>
+                                                <th>Comment</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            @foreach($gradings['data'] as $item)
+
+                                                @php
+                                                    $grade = $item['graded_value'];
+                                                    $badgeClass = 'bg-secondary';
+
+                                                    if ($grade == 1) $badgeClass = 'grade-incomplete';
+                                                    elseif ($grade == 2) $badgeClass = 'grade-ftr';
+                                                    elseif (in_array($grade, [3,4,5])) $badgeClass = 'grade-competent';
+                                                @endphp
+
+                                                <tr>
+                                                    <td><strong>{{ strtoupper($item['short_name']) }}</strong></td>
+                                                    <td><span class="badge {{ $badgeClass }}">{{ $grade }}</span></td>
+                                                    <td class="text-start">{{ $item['comment'] ?? '' }}</td>
+                                                </tr>
+
+                                            @endforeach
+
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            @endforeach
+
+                        </div>
+                    </div>
+                @endif
+
+                @if(!empty($deferredFinal['instructor']))
+                    <div class="mb-4">
+
+                        <h5 class="text-primary d-flex justify-content-between align-items-center"
+                            data-bs-toggle="collapse"
+                            href="#deferredInstructorGrading"
+                            role="button">
+                            <span><i class="bi bi-bar-chart-steps me-2"></i>Deferred Instructor Competency Grading</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </h5>
+
+                        <div class="collapse" id="deferredInstructorGrading">
+
+                            @foreach($deferredFinal['instructor'] as $lessonId => $gradings)
+
+                                <h6 class="mt-4 text-dark">
+                                    <i class="bi bi-book me-1"></i>
+                                    {{ $gradings['lesson_title'] ?? 'Unknown Lesson' }}
+                                </h6>
+
+                                <div class="table-responsive mb-3">
+                                    <table class="table table-bordered text-center">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Competency</th>
+                                                <th>Grade</th>
+                                                <th>Comment</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            @foreach($gradings['data'] as $item)
+
+                                                @php
+                                                    $grade = $item['graded_value'];
+                                                    $badgeClass = 'bg-secondary';
+
+                                                    if ($grade == 1) $badgeClass = 'grade-incomplete';
+                                                    elseif ($grade == 2) $badgeClass = 'grade-ftr';
+                                                    elseif (in_array($grade, [3,4,5])) $badgeClass = 'grade-competent';
+                                                @endphp
+
+                                                <tr>
+                                                    <td><strong>{{ strtoupper($item['short_name']) }}</strong></td>
+                                                    <td><span class="badge {{ $badgeClass }}">{{ $grade }}</span></td>
+                                                    <td class="text-start">{{ $item['comment'] ?? '' }}</td>
+                                                </tr>
+
+                                            @endforeach
+
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            @endforeach
+
+                        </div>
+                    </div>
+                @endif
+
+                @if(!empty($deferredFinal['pilot']))
+                    <div class="mb-4">
+
+                        <h5 class="text-primary d-flex justify-content-between align-items-center"
+                            data-bs-toggle="collapse"
+                            href="#deferredPilotGrading"
+                            role="button">
+                            <span><i class="bi bi-bar-chart-steps me-2"></i>Deferred Pilot Competency Grading</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </h5>
+
+                        <div class="collapse" id="deferredPilotGrading">
+
+                            @foreach($deferredFinal['pilot'] as $lessonId => $gradings)
+
+                                <h6 class="mt-4 text-dark">
+                                    <i class="bi bi-book me-1"></i>
+                                    {{ $gradings['lesson_title'] ?? 'Unknown Lesson' }}
+                                </h6>
+
+                                <div class="table-responsive mb-3">
+                                    <table class="table table-bordered text-center">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Competency</th>
+                                                <th>Grade</th>
+                                                <th>Comment</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            @foreach($gradings['data'] as $item)
+
+                                                @php
+                                                    $grade = $item['graded_value'];
+                                                    $badgeClass = 'bg-secondary';
+
+                                                    if ($grade == 1) $badgeClass = 'grade-incomplete';
+                                                    elseif ($grade == 2) $badgeClass = 'grade-ftr';
+                                                    elseif (in_array($grade, [3,4,5])) $badgeClass = 'grade-competent';
+                                                @endphp
+
+                                                <tr>
+                                                    <td><strong>{{ strtoupper($item['short_name']) }}</strong></td>
+                                                    <td><span class="badge {{ $badgeClass }}">{{ $grade }}</span></td>
+                                                    <td class="text-start">{{ $item['comment'] ?? '' }}</td>
+                                                </tr>
+
+                                            @endforeach
+
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            @endforeach
+
+                        </div>
+                    </div>
+                @endif
 
                 <!-- // Custom Lesson -->
-
                 @if(!$CustomLessonGrading->isEmpty())
                 <div class="mb-4">
+                    <h5 class="text-primary mb-3">
+                        <strong>Custom Lesson </strong>
+                    </h5>
                     <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#cusLessonGrading{{ $defLesson->id ?? '' }}" role="button" aria-expanded="false" aria-controls="cusLessonGrading">
                         <span><i class="bi bi-exclamation-circle me-2"></i>Custom Lesson Grading</span>
                         <i class="bi bi-chevron-down"></i>
@@ -575,7 +976,7 @@
 
 
                                 <!-- Custom Competency Grading -->
-                                <div class="mb-4">
+                                <!-- <div class="mb-4">
                                     <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#deferredcompetencyGrading{{ $defLesson->id }}" role="button" aria-expanded="false" aria-controls="deferredcompetencyGrading123">
                                         <span><i class="bi bi-bar-chart-steps me-2"></i>Custom Competency Grading</span>
                                         <i class="bi bi-chevron-down"></i>
@@ -648,7 +1049,7 @@
                                         @endforeach
                                         @endif
                                     </div>
-                                </div>
+                                </div> -->
                                 <!-- End Custom Competency Grading -->
                             </ul>
                         </div>
@@ -659,29 +1060,28 @@
                 @endif
                 <!-- // End Custom Lesson -->
 
-                <!-- // Examiner Grading -->
-                @if(!empty($examinerFinal))
+                @if(!empty($customFinal['examiner']))
                     <div class="mb-4">
-                        @if(auth()->user()->role != 3)
+
                         <h5 class="text-primary d-flex justify-content-between align-items-center"
                             data-bs-toggle="collapse"
-                            href="#examinercompetencyGrading"
-                            role="button"
-                            aria-expanded="false">
-                            <span><i class="bi bi-bar-chart-steps me-2"></i>Examiner Competency Grading</span>
+                            href="#customExaminerGrading"
+                            role="button">
+                            <span><i class="bi bi-bar-chart-steps me-2"></i>Custom Examiner Competency Grading</span>
                             <i class="bi bi-chevron-down"></i>
                         </h5>
-                        @endif
 
-                        <div class="collapse" id="examinercompetencyGrading">
+                        <div class="collapse" id="customExaminerGrading">
 
-                            <div class="mt-3 text-success">
-                                <i class="bi bi-journal-text me-1"></i> Competencies
-                            </div>
+                            @foreach($customFinal['examiner'] as $lessonId => $gradings)
 
-                            <div class="mb-4">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered align-middle text-center shadow-sm">
+                                <h6 class="mt-4 text-dark">
+                                    <i class="bi bi-book me-1"></i>
+                                    {{ $gradings['lesson_title'] ?? 'Unknown Lesson' }}
+                                </h6>
+
+                                <div class="table-responsive mb-3">
+                                    <table class="table table-bordered text-center">
                                         <thead class="table-light">
                                             <tr>
                                                 <th>Competency</th>
@@ -689,9 +1089,10 @@
                                                 <th>Comment</th>
                                             </tr>
                                         </thead>
-
                                         <tbody>
-                                            @foreach($examinerFinal as $item)
+
+                                            @foreach($gradings['data'] as $item)
+
                                                 @php
                                                     $grade = $item['graded_value'];
                                                     $badgeClass = 'bg-secondary';
@@ -703,181 +1104,140 @@
 
                                                 <tr>
                                                     <td><strong>{{ strtoupper($item['short_name']) }}</strong></td>
-                                                    <td><span class="badge {{ $badgeClass }}">{{ $grade ?? '' }}</span></td>
+                                                    <td><span class="badge {{ $badgeClass }}">{{ $grade }}</span></td>
                                                     <td class="text-start">{{ $item['comment'] ?? '' }}</td>
                                                 </tr>
-                                            @endforeach
-                                        </tbody>
 
+                                            @endforeach
+
+                                        </tbody>
                                     </table>
                                 </div>
-                            </div>
 
-                        </div>
-                    </div>
-                @endif
-                <!-- // End Examiner Grading -->
-
-                <!-- Instructor Rating  -->
-                @if(!empty($instructorFinal))
-                    <div class="mb-4">
-                        @if(auth()->user()->role != 3)
-                        <h5 class="text-primary d-flex justify-content-between align-items-center"
-                            data-bs-toggle="collapse"
-                            href="#ins_competencyGrading"
-                            role="button"
-                            aria-expanded="false">
-                            <span><i class="bi bi-bar-chart-steps me-2"></i>Instructor Competency Grading</span>
-                            <i class="bi bi-chevron-down"></i>
-                        </h5>
-                        @endif
-
-                        <div class="collapse" id="ins_competencyGrading">
-
-                            <div class="mt-3 text-success">
-                                <i class="bi bi-journal-text me-1"></i> Competencies
-                            </div>
-
-                            <div class="mb-4">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered align-middle text-center shadow-sm">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Competency</th>
-                                                <th>Grade</th>
-                                                <th>Comment</th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody>
-                                            @foreach($instructorFinal as $item)
-                                                @php
-                                                    $grade = $item['graded_value'];
-                                                    $badgeClass = 'bg-secondary';
-
-                                                    if ($grade == 1) $badgeClass = 'grade-incomplete';
-                                                    elseif ($grade == 2) $badgeClass = 'grade-ftr';
-                                                    elseif (in_array($grade, [3,4,5])) $badgeClass = 'grade-competent';
-                                                @endphp
-
-                                                <tr>
-                                                    <td><strong>{{ strtoupper($item['short_name']) }}</strong></td>
-                                                    <td><span class="badge {{ $badgeClass }}">{{ $grade ?? '' }}</span></td>
-                                                    <td class="text-start">{{ $item['comment'] ?? '' }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-
-                                    </table>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                @endif
-                <!-- // End Instructor Grading -->
-
-                <!-- Pilot Rating -->
-                @if(!empty($pilotFinal))
-                    <div class="mb-4">
-                        @if(auth()->user()->role != 3)
-                        <h5 class="text-primary d-flex justify-content-between align-items-center"
-                            data-bs-toggle="collapse"
-                            href="#pilot_competencyGrading"
-                            role="button"
-                            aria-expanded="false">
-                            <span><i class="bi bi-bar-chart-steps me-2"></i>Pilot Competency Grading</span>
-                            <i class="bi bi-chevron-down"></i>
-                        </h5>
-                        @endif
-
-                        <div class="collapse" id="pilot_competencyGrading">
-
-                            <div class="mt-3 text-success">
-                                <i class="bi bi-journal-text me-1"></i> Competencies
-                            </div>
-
-                            <div class="mb-4">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered align-middle text-center shadow-sm">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Competency</th>
-                                                <th>Grade</th>
-                                                <th>Comment</th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody>
-                                            @foreach($pilotFinal as $row)
-                                                @php
-                                                    $grade = $row['graded_value'];
-                                                    $badgeClass = match (true) {
-                                                        $grade == 1 => 'grade-incomplete',
-                                                        $grade == 2 => 'grade-ftr',
-                                                        in_array($grade, [3,4,5]) => 'grade-competent',
-                                                        default => 'bg-secondary'
-                                                    };
-                                                @endphp
-
-                                                <tr>
-                                                    <td><strong>{{ strtoupper($row['short_name']) }}</strong></td>
-                                                    <td><span class="badge {{ $badgeClass }}">{{ $grade ?? '' }}</span></td>
-                                                    <td class="text-start">{{ $row['comment'] ?? '' }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-
-                                    </table>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                @endif
-                <!-- End Pilot Rating -->
-
-
-
-                <!-- Overall Assessments -->
-                @if(!$event->overallAssessments->isEmpty())
-                <div class="mb-4">
-                    <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#overallAssessments" role="button" aria-expanded="false" aria-controls="overallAssessments">
-                        <span><i class="bi bi-award me-2"></i>Overall Assessments</span>
-                        <i class="bi bi-chevron-down"></i>
-                    </h5>
-                    <div class="collapse" id="overallAssessments">
-                        @if($event->overallAssessments->isEmpty())
-                        <p class="text-muted">No overall assessments available.</p>
-                        @else
-                        <ul class="list-group shadow-sm">
-                            @foreach($event->overallAssessments as $assessment)
-                            <li class="list-group-item">
-                                <strong><i class="bi bi-check-circle-fill me-1"></i>Result:</strong>
-                                @php
-                                $resultClass = 'bg-secondary'; // default
-
-                                if ($assessment->result === 'Incomplete') {
-                                $resultClass = 'grade-incomplete';
-                                } elseif ($assessment->result === 'Further training required') {
-                                $resultClass = 'grade-ftr';
-                                } elseif ($assessment->result === 'Competent') {
-                                $resultClass = 'grade-competent';
-                                }
-                                @endphp
-                                <span class="badge {{ $resultClass }}">
-                                    {{ $assessment->result ?? 'N/A' }}
-                                </span>
-                                <br>
-                                <small class="text-muted">
-                                    <i class="bi bi-chat-left-dots me-1"></i>Remarks: {{ $assessment->remarks ?? 'No remarks' }}
-                                </small>
-                            </li>
                             @endforeach
-                        </ul>
-                        @endif
+
+                        </div>
                     </div>
-                </div>
+                @endif
+
+                @if(!empty($customFinal['instructor']))
+                    <div class="mb-4">
+
+                        <h5 class="text-primary d-flex justify-content-between align-items-center"
+                            data-bs-toggle="collapse"
+                            href="#customInstructorGrading"
+                            role="button">
+                            <span><i class="bi bi-bar-chart-steps me-2"></i>Custom Instructor Competency Grading</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </h5>
+
+                        <div class="collapse" id="customInstructorGrading">
+
+                            @foreach($customFinal['instructor'] as $lessonId => $gradings)
+
+                                <h6 class="mt-4 text-dark">
+                                    <i class="bi bi-book me-1"></i>
+                                    {{ $gradings['lesson_title'] ?? 'Unknown Lesson' }}
+                                </h6>
+
+                                <div class="table-responsive mb-3">
+                                    <table class="table table-bordered text-center">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Competency</th>
+                                                <th>Grade</th>
+                                                <th>Comment</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            @foreach($gradings['data'] as $item)
+
+                                                @php
+                                                    $grade = $item['graded_value'];
+                                                    $badgeClass = 'bg-secondary';
+
+                                                    if ($grade == 1) $badgeClass = 'grade-incomplete';
+                                                    elseif ($grade == 2) $badgeClass = 'grade-ftr';
+                                                    elseif (in_array($grade, [3,4,5])) $badgeClass = 'grade-competent';
+                                                @endphp
+
+                                                <tr>
+                                                    <td><strong>{{ strtoupper($item['short_name']) }}</strong></td>
+                                                    <td><span class="badge {{ $badgeClass }}">{{ $grade }}</span></td>
+                                                    <td class="text-start">{{ $item['comment'] ?? '' }}</td>
+                                                </tr>
+
+                                            @endforeach
+
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            @endforeach
+
+                        </div>
+                    </div>
+                @endif
+
+                @if(!empty($customFinal['pilot']))
+                    <div class="mb-4">
+
+                        <h5 class="text-primary d-flex justify-content-between align-items-center"
+                            data-bs-toggle="collapse"
+                            href="#customPilotGrading"
+                            role="button">
+                            <span><i class="bi bi-bar-chart-steps me-2"></i>Custom Pilot Competency Grading</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </h5>
+
+                        <div class="collapse" id="customPilotGrading">
+
+                            @foreach($customFinal['pilot'] as $lessonId => $gradings)
+
+                                <h6 class="mt-4 text-dark">
+                                    <i class="bi bi-book me-1"></i>
+                                    {{ $gradings['lesson_title'] ?? 'Unknown Lesson' }}
+                                </h6>
+
+                                <div class="table-responsive mb-3">
+                                    <table class="table table-bordered text-center">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Competency</th>
+                                                <th>Grade</th>
+                                                <th>Comment</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            @foreach($gradings['data'] as $item)
+
+                                                @php
+                                                    $grade = $item['graded_value'];
+                                                    $badgeClass = 'bg-secondary';
+
+                                                    if ($grade == 1) $badgeClass = 'grade-incomplete';
+                                                    elseif ($grade == 2) $badgeClass = 'grade-ftr';
+                                                    elseif (in_array($grade, [3,4,5])) $badgeClass = 'grade-competent';
+                                                @endphp
+
+                                                <tr>
+                                                    <td><strong>{{ strtoupper($item['short_name']) }}</strong></td>
+                                                    <td><span class="badge {{ $badgeClass }}">{{ $grade }}</span></td>
+                                                    <td class="text-start">{{ $item['comment'] ?? '' }}</td>
+                                                </tr>
+
+                                            @endforeach
+
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            @endforeach
+
+                        </div>
+                    </div>
                 @endif
 
             </div>
