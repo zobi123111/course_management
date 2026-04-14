@@ -21,7 +21,8 @@ class ExaminerGrading extends Model
         'competency_type',
         'comment',
         'competency_value',
-        'lesson_id'
+        'lesson_id',
+        'lesson_type',
     ];
 
     public function cbta(): BelongsTo
@@ -29,9 +30,14 @@ class ExaminerGrading extends Model
         return $this->belongsTo(CbtaGrading::class, 'cbta_gradings_id');
     }
 
-   public function courseLesson(): BelongsTo
+    public function courseLesson(): BelongsTo
     {
         return $this->belongsTo(CourseLesson::class, 'lesson_id', 'id');
+    }
+
+    public function defLesson(): BelongsTo
+    {
+        return $this->belongsTo(DefLesson::class, 'lesson_id', 'id');
     }
     
 }

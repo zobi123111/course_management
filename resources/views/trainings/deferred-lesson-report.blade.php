@@ -120,8 +120,9 @@
       
 
          
+        @if(!empty($ExaminerFinal)) 
             <div class="section">
-                <h2>Competencies</h2>
+                <h2>Examiner Competency</h2>
                 <table>
                     <thead>
                         <tr>
@@ -131,25 +132,107 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if($event->defLessons->isNotEmpty() && $event->defLessons[0]->deferredGradings->isNotEmpty())
-                        @foreach($event->defLessons[0]->deferredGradings as $competency)
-                            @foreach(['kno','pro','com','fpa','fpm','ltw','psd','saw','wlm'] as $comp)
-                                <tr>
-                                    <td>{{ strtoupper($comp) }}</td>
-                                    <td>{{ $competency[$comp.'_grade'] ?? 'N/A' }}</td>
-                                    <td>{{ $competency[$comp.'_comment'] ?? '-' }}</td>
-                                </tr>
-                            @endforeach
+                        @foreach($ExaminerFinal as $item)
+                            @php
+                                $grade = $item['graded_value'];
+                                $badgeClass = 'bg-secondary';
+
+                                if ($grade === 'N/A' || $grade === null) {
+                                    $badgeClass = 'bg-secondary';
+                                } elseif ((int)$grade == 1) {
+                                    $badgeClass = 'grade-incomplete';
+                                } elseif ((int)$grade == 2) {
+                                    $badgeClass = 'grade-ftr';
+                                } elseif (in_array((int)$grade, [3, 4, 5])) {
+                                    $badgeClass = 'grade-competent';
+                                }
+                            @endphp
+                            <tr>
+                                <td><strong>{{ strtoupper($item['short_name']) }}</strong></td>
+                                <td><span class="badge {{ $badgeClass }}">{{ $grade }}</span></td>
+                                <td>{{ $item['comment'] ?? '' }}</td>
+                            </tr>
                         @endforeach
-                        @else
-                        <tr>
-                            <td colspan="3" class="text-center text-muted">No Competency Grading Found</td>
-                        </tr>
-                        @endif
                     </tbody>
                 </table>
             </div>
+        @endif
 
+        @if(!empty($InstructorFinal)) 
+            <div class="section">
+                <h2>Instructor Competency</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Competency</th>
+                            <th>Grade</th>
+                            <th>Comment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($InstructorFinal as $item)
+                            @php
+                                $grade = $item['graded_value'];
+                                $badgeClass = 'bg-secondary';
+
+                                if ($grade === 'N/A' || $grade === null) {
+                                    $badgeClass = 'bg-secondary';
+                                } elseif ((int)$grade == 1) {
+                                    $badgeClass = 'grade-incomplete';
+                                } elseif ((int)$grade == 2) {
+                                    $badgeClass = 'grade-ftr';
+                                } elseif (in_array((int)$grade, [3, 4, 5])) {
+                                    $badgeClass = 'grade-competent';
+                                }
+                            @endphp
+                            <tr>
+                                <td><strong>{{ strtoupper($item['short_name']) }}</strong></td>
+                                <td><span class="badge {{ $badgeClass }}">{{ $grade }}</span></td>
+                                <td>{{ $item['comment'] ?? '' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+
+        @if(!empty($PilotFinal)) 
+            <div class="section">
+                <h2>Pilot Competency</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Competency</th>
+                            <th>Grade</th>
+                            <th>Comment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($PilotFinal as $item)
+                            @php
+                                $grade = $item['graded_value'];
+                                $badgeClass = 'bg-secondary';
+
+                                if ($grade === 'N/A' || $grade === null) {
+                                    $badgeClass = 'bg-secondary';
+                                } elseif ((int)$grade == 1) {
+                                    $badgeClass = 'grade-incomplete';
+                                } elseif ((int)$grade == 2) {
+                                    $badgeClass = 'grade-ftr';
+                                } elseif (in_array((int)$grade, [3, 4, 5])) {
+                                    $badgeClass = 'grade-competent';
+                                }
+                            @endphp
+                            <tr>
+                                <td><strong>{{ strtoupper($item['short_name']) }}</strong></td>
+                                <td><span class="badge {{ $badgeClass }}">{{ $grade }}</span></td>
+                                <td>{{ $item['comment'] ?? '' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
         
         <div class="section">
             <!-- @if(!empty($event->overallAssessments) && count($event->overallAssessments) > 0)
