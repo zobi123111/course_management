@@ -829,38 +829,32 @@
 
 
                         @php
-                        $eventLesson = null;
+                            $eventLesson = null;
                         @endphp
                         <!-- <pre> -->
                         @if($trainingEvent?->course?->course_type === 'one_event' && $trainingEvent->eventLessons->count())
 
-
-
-                        @php
-                        $eventLesson = $trainingEvent->eventLessons->first() ?? null;
-                        $lessons = collect([$eventLesson]);
-                        @endphp
+                            @php
+                                $eventLesson = $trainingEvent->eventLessons->first() ?? null;
+                                $lessons = collect([$eventLesson]);
+                            @endphp
 
                         @else
-                        @php
-                        $lessons = $trainingEvent->eventLessons;
-                        @endphp
+                            @php
+                                $lessons = $trainingEvent->eventLessons;
+                            @endphp
                         @endif
 
                         @php
 
-                        $quizLessons = $lessons->filter(function ($lesson) {
-                        return $lesson?->lesson?->quizzes?->count() > 0;
-                        });
+                            $quizLessons = $lessons->filter(function ($lesson) {
+                                return $lesson?->lesson?->quizzes?->count() > 0;
+                             });
 
-                        $normalLessons = $lessons->reject(function ($lesson) {
-                        return $lesson?->lesson?->quizzes?->count() > 0;
-                        });
-
-
+                            $normalLessons = $lessons->reject(function ($lesson) {
+                                return $lesson?->lesson?->quizzes?->count() > 0;
+                            });
                         @endphp
-
-
 
                         @if($normalLessons->count())
                             <h4 class="mb-3 text-success">
@@ -1067,6 +1061,7 @@
 
                                         @foreach($lesson->sectors as $sector)
                                             <div class="row mb-3 p-3 border rounded bg-light">
+                                                <h6 class="details-card-title d-flex justify-content-between align-items-center"> <strong> Sector {{ $loop->iteration }} : </strong></h6>
                                                 <div class="col-md-2 mt-3">
                                                     <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
                                                     {{ optional($lesson->instructor)->fname }} {{ optional($lesson->instructor)->lname }}
@@ -1406,6 +1401,7 @@
 
                                         @foreach($def->deferredSectors as $sector)
                                             <div class="row mb-3 p-3 border rounded bg-light">
+                                                <h6 class="details-card-title d-flex justify-content-between align-items-center"> <strong> Sector {{ $loop->iteration }} : </strong></h6>
                                                 <div class="col-md-2 mt-3">
                                                     <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
                                                     {{ optional($def->instructor)->fname }} {{ optional($def->instructor)->lname }}
@@ -1606,6 +1602,7 @@
 
                                 @foreach($def->customSectors as $sector)
                                     <div class="row mb-3 p-3 border rounded bg-light">
+                                        <h6 class="details-card-title d-flex justify-content-between align-items-center"> <strong> Sector {{ $loop->iteration }} : </strong></h6>
                                         <div class="col-md-2 mt-3">
                                             <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
                                             {{ optional($def->instructor)->fname }} {{ optional($def->instructor)->lname }}
