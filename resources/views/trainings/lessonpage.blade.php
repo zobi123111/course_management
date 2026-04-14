@@ -1093,7 +1093,30 @@
                                         </select>
                                     </div>
 
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Date</label>
+                                        <input type="date" class="form-control always-disabled" name="lesson_date" value="{{ \Carbon\Carbon::parse($lesson->lesson_date)->format('Y-m-d') }}" disabled>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Departure</label>
+                                        <input type="text"
+                                            class="form-control editable"
+                                            name="departure_airfield"
+                                            value="{{ $lesson->departure_airfield }}"
+                                            disabled>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Destination</label>
+                                        <input type="text"
+                                            class="form-control editable"
+                                            name="destination_airfield"
+                                            value="{{ $lesson->destination_airfield }}"
+                                            disabled>
+                                    </div>
+
+                                    <div class="col-md-3">
                                         <label class="form-label">Operation</label>
                                         @php
                                             $eventType = $trainingEvent?->course->enable_mp_lifus;
@@ -1112,25 +1135,6 @@
                                             @endif
                                         </select>
                                     </div>
-
-                                    <div class="col-md-4">
-                                        <label class="form-label">Departure Airfield</label>
-                                        <input type="text"
-                                            class="form-control editable"
-                                            name="departure_airfield"
-                                            value="{{ $lesson->departure_airfield }}"
-                                            disabled>
-                                    </div>
-
-                                    <div class="col-md-4">
-                                        <label class="form-label">Destination Airfield</label>
-                                        <input type="text"
-                                            class="form-control editable"
-                                            name="destination_airfield"
-                                            value="{{ $lesson->destination_airfield }}"
-                                            disabled>
-                                    </div>
-
                                     
                                     <div class="col-md-3">
                                         <label class="form-label start-label">Off Block</label>
