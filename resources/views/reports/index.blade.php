@@ -45,7 +45,7 @@
 
         {{-- RIGHT SIDE: Archive Toggle --}}
         @if (auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1)
-            <div class="col-md-2 d-flex justify-content-end">
+            <!-- <div class="col-md-2 d-flex justify-content-end">
                 <div class="form-check form-switch">
                     <input class="form-check-input"
                            type="checkbox"
@@ -55,7 +55,7 @@
                         Archive
                     </label>
                 </div>
-            </div>
+            </div> -->
         @endif
 
     </div>
