@@ -61,19 +61,24 @@ class ReportsController extends Controller
                                 ];
                             }
 
+                       
+
                             // Step 2: Count frequency of course_id in old_course_id
                             $freq = [];
                             foreach ($old_course_id as $item) {
                                 $freq[$item['course_id']] = ($freq[$item['course_id']] ?? 0) + 1;
                             }
-
+                            
+                            
                             // Step 3: Remove old_course_id items where course_id is duplicate
                             $old_course_id = array_filter($old_course_id, function ($item) use ($freq) {
-                                return $freq[$item['course_id']] === 1; // keep only unique ones
+                                return $freq[$item['course_id']] >=1; // keep only unique ones
                             });
 
+                           // dump($old_course_id);
                             // Re-index after filter
                             $old_course_id = array_values($old_course_id);
+                           
 
                             // Step 4: Merge arrays based on event_id (if needed)
                             $merged = [];
@@ -87,9 +92,7 @@ class ReportsController extends Controller
                                 $merged[$item['event_id']]['old_course_id'] = $item['course_id'];
                             }
 
-                           //  dump($old_course_id);
-                            // dump($merged);
-                            // Get all event_ids to remove
+                        
                             $removeIds = array_column($old_course_id, 'event_id');
 
                             // Remove events from original collection
@@ -146,7 +149,7 @@ class ReportsController extends Controller
             return $course;
         });
     
-
+        
         $ous = $user->is_owner ? OrganizationUnits::select('id', 'org_unit_name')->get() : [];
         return view('reports.index', compact('courses', 'ous'));
     }
@@ -372,7 +375,7 @@ class ReportsController extends Controller
 
     // dump($course);
 
-        /* ============================================================
+        /* ============================================================ 
         TRAINING EVENTS BASED ON showArchived FILTER
         ============================================================ */
         if ($showArchived) { 
