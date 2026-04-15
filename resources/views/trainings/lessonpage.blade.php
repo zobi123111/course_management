@@ -670,6 +670,7 @@
 
     @section('page-button')
     <div>
+        <a href="{{ route('training.index') }}" class="btn btn-primary me-2">Training Events</a>
         <a href="/training/show/{{ encode_id($trainingEvent->id) }}" class="btn btn-primary me-2">Back</a>
     </div>
     @endsection
@@ -4461,9 +4462,9 @@
             const isGroundschool = hideList.includes(resourceName);
 
             // Fields
-            const opField = document.getElementById("operationSelect")?.closest('.col-md-4');
-            const depField = document.querySelector('input[name="departure_airfield"]')?.closest('.col-md-4');
-            const destField = document.querySelector('input[name="destination_airfield"]')?.closest('.col-md-4');
+            const opField = document.getElementById("operationSelect")?.closest('.col-md-3');
+            const depField = document.querySelector('input[name="departure_airfield"]')?.closest('.col-md-3');
+            const destField = document.querySelector('input[name="destination_airfield"]')?.closest('.col-md-3');
             const takeoffField = document.querySelector('input[name="takeoff_time"]')?.closest('.col-md-3');
             const landingField = document.querySelector('input[name="landing_time"]')?.closest('.col-md-3');
 

@@ -246,16 +246,16 @@
                         <input type="text" name="course_name" class="form-control">
                         <div id="course_name_error" class="text-danger error_e"></div>
                     </div>
-                    <div class="col-md-6">
-                        <label for="course_type" class="form-label">Course Type<span
-                                class="text-danger">*</span></label>
+                    <!-- <div class="col-md-6">
+                        <label for="course_type" class="form-label">Course Type<span class="text-danger">*</span></label>
                         <select class="form-select" name="course_type" id="course_type" required>
                             <option value="">Select Course Type</option>
                             <option value="one_event">One Event</option>
                             <option value="multi_lesson">Multiple Lesson</option>
                         </select>
                         <div id="course_type_error" class="text-danger error_e"></div>
-                    </div>
+                    </div> -->
+                    <input type="hidden" name="course_type" value="multi_lesson">
 
                     <div class="col-md-6">
                         <label for="course_validity" class="form-label">Course Validity </label>
@@ -282,8 +282,8 @@
                                 class="text-danger">*</span></label>
                         <select class="form-select" name="duration_type" id="duration_type">
                             <option value="">Select Duration Type</option>
-                            <option value="hours">Hours</option>
-                            <option value="events">Events</option>
+                            <option value="hours" selected>Hours</option>
+                            <!-- <option value="events">Events</option> -->
                         </select>
                         <input type="number" name="duration_value" class="form-control mt-2"
                             placeholder="Enter number of hours/events">
@@ -640,7 +640,7 @@
                         <input type="hidden" name="course_id" class="form-control">
                         <div id="course_name_error_up" class="text-danger error_e"></div>
                     </div>
-                    <div class="col-md-6">
+                    <!-- <div class="col-md-6">
                         <label for="course_type" class="form-label">Course Type<span
                                 class="text-danger">*</span></label>
                         <select class="form-select" name="course_type" id="edit_course_type" required>
@@ -649,7 +649,8 @@
                             <option value="multi_lesson">Multiple Lesson</option>
                         </select>
                         <div id="course_type_error_up" class="text-danger error_e"></div>
-                    </div>
+                    </div> -->
+                    <input type="hidden" name="course_type" value="multi_lesson">
 
                     <div class="col-md-6">
                         <label for="course_validity" class="form-label">Course Validity </label>
@@ -675,8 +676,8 @@
                         <label for="duration" class="form-label">Course Duration<span class="text-danger">*</span></label>
                         <select class="form-select" name="duration_type" id="edit_duration_type">
                             <option value="">Select Duration Type</option>
-                            <option value="hours">Hours</option>
-                            <option value="events">Events</option>
+                            <option value="hours" selected>Hours</option>
+                            <!-- <option value="events">Events</option> -->
                         </select>
                         <input type="number" name="duration_value" class="form-control mt-2" id="edit_duration_value"
                             placeholder="Enter number of hours/events">
@@ -1315,11 +1316,11 @@
                     // Populate course data
                     $('input[name="course_name"]').val(response.course.course_name);
                     $('input[name="course_id"]').val(response.course.id);
-                    $('#edit_course_type').val(response.course.course_type);
+                    // $('#edit_course_type').val(response.course.course_type);
                     $('#edit_course_validity').val(response.course.course_validity);
                     $('#edit_description').val(response.course.description);
                     // $('#edit_ou_id').val(response.course.ou_id);
-                    $('#edit_duration_type').val(response.course.duration_type);
+                    // $('#edit_duration_type').val(response.course.duration_type);
                     $('#edit_duration_value').val(response.course.duration_value);
                     $('#edit_status').val(response.course.status);
                     $('#edit_select_org_unit').val(response.course.ou_id).trigger('change');
