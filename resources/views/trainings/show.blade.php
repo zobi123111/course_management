@@ -720,6 +720,15 @@
                                 </div>
                             </div>
 
+                            <!-- <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <strong><i class="text-primary fas fa-book"></i> OU Timezone:</strong>
+                                    <span class="">
+                                        {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}
+                                    </span>
+                                </div>
+                            </div> -->
+
                             @if($trainingEvent->course?->duration_value && $trainingEvent->course?->duration_type)
                             <div class="mb-3">
                                 <strong><i class="text-primary fas fa-hourglass-half"></i> Course Total Duration:</strong>
@@ -832,7 +841,7 @@
                             $eventLesson = null;
                         @endphp
                         <!-- <pre> -->
-                        @if($trainingEvent?->course?->course_type === 'one_event' && $trainingEvent->eventLessons->count())
+                        <!-- @if($trainingEvent?->course?->course_type === 'one_event' && $trainingEvent->eventLessons->count())
 
                             @php
                                 $eventLesson = $trainingEvent->eventLessons->first() ?? null;
@@ -840,6 +849,11 @@
                             @endphp
 
                         @else
+                            @php
+                                $lessons = $trainingEvent->eventLessons;
+                            @endphp
+                        @endif -->
+                        @if($trainingEvent->eventLessons->count())
                             @php
                                 $lessons = $trainingEvent->eventLessons;
                             @endphp
@@ -868,6 +882,15 @@
                                         <a href="/lesson-grade?lesson_id={{ encode_id($lesson->id) }}&event_id={{ encode_id($trainingEvent->id) }}" class="lesson-link" style="font-size:18px;">
                                             <span class="text-primary">{{ $lesson->lesson->lesson_title ?? 'Untitled' }}</span>
                                         </a>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-12">
+                                            <strong><i class="text-primary fas fa-clock"></i> OU Timezone:</strong>
+                                            <span class="">
+                                                {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}
+                                            </span>
+                                        </div>
                                     </div>
 
                                     <div class="col-md-2 mt-3">
@@ -899,7 +922,7 @@
                                     </div> -->
                                     
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="text-primary fas fa-clock"></i> Off blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                        <strong><i class="text-primary fas fa-clock"></i> Off blocks:</strong><br>
                                         @if(!empty($lesson->start_time) && $lesson->start_time !== '00:00:00')
                                         {{ date('h:i A', strtotime($lesson->start_time)) }}
                                         @elseif($lesson->start_time === '00:00:00')
@@ -909,7 +932,7 @@
                                         @endif
                                     </div>
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="text-primary fas fa-clock"></i> On blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                        <strong><i class="text-primary fas fa-clock"></i> On blocks:</strong><br>
                                         @if(!empty($lesson->end_time) && $lesson->end_time !== '00:00:00')
                                         {{ date('h:i A', strtotime($lesson->end_time)) }}
                                         @elseif($lesson->end_time === '00:00:00')
@@ -925,12 +948,12 @@
                                     </div> -->
 
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="text-primary fas fa-plane-departure"></i> Departure:</strong><br>
+                                        <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
                                         {{ $lesson->departure_airfield ?? 'N/A' }}
                                     </div>
 
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
+                                        <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
                                         {{ $lesson->destination_airfield ?? 'N/A' }}
                                     </div>
 
@@ -977,7 +1000,7 @@
                                         $finalTime = sprintf('%02d:%02d', $finalHours, $finalMinutes);
                                     @endphp
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Block Credited Hours:</strong><br>
+                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong><br>
                                         <!-- {{ $lesson->hours_credited ?? '00:00' }} -->
                                         {{ $finalTime }}
                                     </div>
@@ -1086,7 +1109,7 @@
                                                 </div>
                                                 
                                                 <div class="col-md-2 mt-3">
-                                                    <strong><i class="text-primary fas fa-clock"></i> Off blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                                    <strong><i class="text-primary fas fa-clock"></i> Off blocks:</strong><br>
                                                     @if(!empty($sector->start_time) && $sector->start_time !== '00:00:00')
                                                         {{ date('h:i A', strtotime($sector->start_time)) }}
                                                     @else
@@ -1094,7 +1117,7 @@
                                                     @endif
                                                 </div>
                                                 <div class="col-md-2 mt-3">
-                                                    <strong><i class="text-primary fas fa-clock"></i> On blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                                    <strong><i class="text-primary fas fa-clock"></i> On blocks:</strong><br>
                                                     @if(!empty($sector->end_time) && $sector->end_time !== '00:00:00')
                                                         {{ date('h:i A', strtotime($sector->end_time)) }}
                                                     @else
@@ -1103,14 +1126,62 @@
                                                 </div>
 
                                                 <div class="col-md-2 mt-3">
-                                                    <strong><i class="text-primary fas fa-plane-departure"></i> Departure:</strong><br>
+                                                    <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
                                                     {{ $sector->departure_airfield ?? 'N/A' }}
                                                 </div>
 
                                                 <div class="col-md-2 mt-3">
-                                                    <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
+                                                    <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
                                                     {{ $sector->destination_airfield ?? 'N/A' }}
                                                 </div>
+
+                                                <div class="col-md-2 mt-3">
+                                                    @php $lessonType = $lesson?->lesson?->lesson_type ?? null; @endphp
+                                                    <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
+                                                    {{ ucfirst($lessonType) ?? 'N/A' }}
+                                                </div>
+
+                                                @php
+                                                    $totalMinutes = 0;
+
+                                                    if(!empty($sector->start_time) && !empty($sector->end_time) && 
+                                                    $sector->start_time !== '00:00:00' && $sector->end_time !== '00:00:00') 
+                                                    {
+                                                        $start = strtotime($sector->start_time);
+                                                        $end   = strtotime($sector->end_time);
+
+                                                        if($end > $start) {
+                                                            $diffMin = ($end - $start) / 60; // difference in minutes
+                                                            $totalMinutes += $diffMin;
+                                                        }
+                                                    }
+                                                    
+                                                    $sectorfinalHours = floor($totalMinutes / 60);
+                                                    $sectorfinalMinutes = $totalMinutes % 60;
+                                                    $sectorfinalTime = sprintf('%02d:%02d', $sectorfinalHours, $sectorfinalMinutes);
+                                                @endphp
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong><br>
+                                                    <!-- {{ $lesson->hours_credited ?? '00:00' }} -->
+                                                    {{ $sectorfinalTime }}
+                                                </div>
+
+                                                <!-- // Operation -->
+                                                @if(!empty($lesson->operation1))
+                                                    <div class="col-md-2 mt-3">
+                                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Operation:</strong><br>
+                                                        @if($sector->operation == 1)
+                                                            PF in LHS
+                                                        @elseif($sector->operation == 2)
+                                                            PM in LHS
+                                                        @elseif($sector->operation == 3)
+                                                            PF in RHS
+                                                        @elseif($sector->operation == 4)
+                                                            PM in RHS
+                                                        @endif
+                                                    </div>
+                                                @endif
+
                                             </div>
                                         @endforeach
 
@@ -1330,6 +1401,15 @@
                                     </div>
                                     @endif
 
+                                    <div class="row mb-3">
+                                        <div class="col-md-12">
+                                            <strong><i class="text-primary fas fa-clock"></i> OU Timezone:</strong>
+                                            <span class="">
+                                                {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}
+                                            </span>
+                                        </div>
+                                    </div>
+
                                     <div class="col-md-2 mt-2">
                                         <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
                                         {{ optional($def->instructor)->fname }} {{ optional($def->instructor)->lname }}
@@ -1351,22 +1431,22 @@
                                     </div>
 
                                     <div class="col-md-2 mt-2">
-                                        <strong><i class="text-primary fas fa-clock"></i> Off blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                        <strong><i class="text-primary fas fa-clock"></i> Off blocks:</strong><br>
                                         {{ date('h:i A', strtotime($def->start_time)) }}
                                     </div>
 
                                     <div class="col-md-2 mt-2">
-                                        <strong><i class="text-primary fas fa-clock"></i> On blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                        <strong><i class="text-primary fas fa-clock"></i> On blocks:</strong><br>
                                         {{ date('h:i A', strtotime($def->end_time)) }}
                                     </div>
 
                                     <div class="col-md-2 mt-2">
-                                        <strong><i class="text-primary fas fa-plane-departure"></i> Departure:</strong><br>
+                                        <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
                                         {{ strtoupper($def->departure_airfield) ?? 'N/A' }}
                                     </div>
 
                                     <div class="col-md-2 mt-2">
-                                        <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
+                                        <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
                                         {{ strtoupper($def->destination_airfield) ?? 'N/A' }}
                                     </div>
                                     <div class="col-md-2 mt-2">
@@ -1426,7 +1506,7 @@
                                                 </div>
                                                 
                                                 <div class="col-md-2 mt-3">
-                                                    <strong><i class="text-primary fas fa-clock"></i> Off blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                                    <strong><i class="text-primary fas fa-clock"></i> Off blocks:</strong><br>
                                                     @if(!empty($sector->start_time) && $sector->start_time !== '00:00:00')
                                                         {{ date('h:i A', strtotime($sector->start_time)) }}
                                                     @else
@@ -1434,7 +1514,7 @@
                                                     @endif
                                                 </div>
                                                 <div class="col-md-2 mt-3">
-                                                    <strong><i class="text-primary fas fa-clock"></i> On blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                                    <strong><i class="text-primary fas fa-clock"></i> On blocks:</strong><br>
                                                     @if(!empty($sector->end_time) && $sector->end_time !== '00:00:00')
                                                         {{ date('h:i A', strtotime($sector->end_time)) }}
                                                     @else
@@ -1443,14 +1523,60 @@
                                                 </div>
 
                                                 <div class="col-md-2 mt-3">
-                                                    <strong><i class="text-primary fas fa-plane-departure"></i> Departure:</strong><br>
+                                                    <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
                                                     {{ $sector->departure_airfield ?? 'N/A' }}
                                                 </div>
 
                                                 <div class="col-md-2 mt-3">
-                                                    <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
+                                                    <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
                                                     {{ $sector->destination_airfield ?? 'N/A' }}
                                                 </div>
+
+                                                <div class="col-md-2 mt-3">
+                                                    @php $lessonType = $lesson?->lesson?->lesson_type ?? null; @endphp
+                                                    <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
+                                                    {{ ucfirst($lessonType) ?? 'N/A' }}
+                                                </div>
+
+                                                @php
+                                                    $totalMinutes = 0;
+
+                                                    if(!empty($sector->start_time) && !empty($sector->end_time) && 
+                                                    $sector->start_time !== '00:00:00' && $sector->end_time !== '00:00:00') 
+                                                    {
+                                                        $start = strtotime($sector->start_time);
+                                                        $end   = strtotime($sector->end_time);
+
+                                                        if($end > $start) {
+                                                            $diffMin = ($end - $start) / 60;
+                                                            $totalMinutes += $diffMin;
+                                                        }
+                                                    }
+                                                    
+                                                    $sectorfinalHours = floor($totalMinutes / 60);
+                                                    $sectorfinalMinutes = $totalMinutes % 60;
+                                                    $sectorfinalTime = sprintf('%02d:%02d', $sectorfinalHours, $sectorfinalMinutes);
+                                                @endphp
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong><br>
+                                                    {{ $sectorfinalTime }}
+                                                </div>
+
+                                                <!-- // Operation -->
+                                                @if(!empty($lesson->operation1))
+                                                    <div class="col-md-2 mt-3">
+                                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Operation:</strong><br>
+                                                        @if($sector->operation == 1)
+                                                            PF in LHS
+                                                        @elseif($sector->operation == 2)
+                                                            PM in LHS
+                                                        @elseif($sector->operation == 3)
+                                                            PF in RHS
+                                                        @elseif($sector->operation == 4)
+                                                            PM in RHS
+                                                        @endif
+                                                    </div>
+                                                @endif
                                             </div>
                                         @endforeach
 
@@ -1531,6 +1657,15 @@
                                 <button id="delete_custom_lesson" class="btn btn-danger" data-event_id="{{ $def->event_id }}" data-custom-lesson-id="{{$def->id }}" data-lesson-Type="custom">Delete</button>
                             </div>
 
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <strong><i class="text-primary fas fa-clock"></i> OU Timezone:</strong>
+                                    <span class="">
+                                        {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}
+                                    </span>
+                                </div>
+                            </div>
+
                             <div class="col-md-2 mt-2">
                                 <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
                                 {{ optional($def->instructor)->fname }} {{ optional($def->instructor)->lname }}
@@ -1552,22 +1687,22 @@
                             </div>
 
                             <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-clock"></i> Off blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                <strong><i class="text-primary fas fa-clock"></i> Off blocks:</strong><br>
                                 {{ date('h:i A', strtotime($def->start_time)) }}
                             </div>
 
                             <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-clock"></i> On blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                <strong><i class="text-primary fas fa-clock"></i> On blocks:</strong><br>
                                 {{ date('h:i A', strtotime($def->end_time)) }}
                             </div>
 
                             <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-plane-departure"></i> Departure:</strong><br>
+                                <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
                                 {{ strtoupper($def->departure_airfield) ?? 'N/A' }}
                             </div>
 
                             <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
+                                <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
                                 {{ strtoupper($def->destination_airfield) ?? 'N/A' }}
                             </div>
                             <div class="col-md-2 mt-2">
@@ -1627,7 +1762,7 @@
                                         </div>
                                         
                                         <div class="col-md-2 mt-3">
-                                            <strong><i class="text-primary fas fa-clock"></i> Off blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                            <strong><i class="text-primary fas fa-clock"></i> Off blocks:</strong><br>
                                             @if(!empty($sector->start_time) && $sector->start_time !== '00:00:00')
                                                 {{ date('h:i A', strtotime($sector->start_time)) }}
                                             @else
@@ -1635,7 +1770,7 @@
                                             @endif
                                         </div>
                                         <div class="col-md-2 mt-3">
-                                            <strong><i class="text-primary fas fa-clock"></i> On blocks: {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}</strong><br>
+                                            <strong><i class="text-primary fas fa-clock"></i> On blocks:</strong><br>
                                             @if(!empty($sector->end_time) && $sector->end_time !== '00:00:00')
                                                 {{ date('h:i A', strtotime($sector->end_time)) }}
                                             @else
@@ -1644,14 +1779,54 @@
                                         </div>
 
                                         <div class="col-md-2 mt-3">
-                                            <strong><i class="text-primary fas fa-plane-departure"></i> Departure:</strong><br>
+                                            <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
                                             {{ $sector->departure_airfield ?? 'N/A' }}
                                         </div>
 
                                         <div class="col-md-2 mt-3">
-                                            <strong><i class="text-primary fas fa-plane-arrival"></i> Destination:</strong><br>
+                                            <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
                                             {{ $sector->destination_airfield ?? 'N/A' }}
                                         </div>
+
+                                        @php
+                                            $totalMinutes = 0;
+
+                                            if(!empty($sector->start_time) && !empty($sector->end_time) && 
+                                            $sector->start_time !== '00:00:00' && $sector->end_time !== '00:00:00') 
+                                            {
+                                                $start = strtotime($sector->start_time);
+                                                $end   = strtotime($sector->end_time);
+
+                                                if($end > $start) {
+                                                    $diffMin = ($end - $start) / 60;
+                                                    $totalMinutes += $diffMin;
+                                                }
+                                            }
+                                            
+                                            $sectorfinalHours = floor($totalMinutes / 60);
+                                            $sectorfinalMinutes = $totalMinutes % 60;
+                                            $sectorfinalTime = sprintf('%02d:%02d', $sectorfinalHours, $sectorfinalMinutes);
+                                        @endphp
+                                        <div class="col-md-2 mt-3">
+                                            <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong><br>
+                                            {{ $sectorfinalTime }}
+                                        </div>
+
+                                        <!-- // Operation -->
+                                        @if(!empty($lesson->operation1))
+                                            <div class="col-md-2 mt-3">
+                                                <strong><i class="text-primary fas fa-hourglass-half"></i> Operation:</strong><br>
+                                                @if($sector->operation == 1)
+                                                    PF in LHS
+                                                @elseif($sector->operation == 2)
+                                                    PM in LHS
+                                                @elseif($sector->operation == 3)
+                                                    PF in RHS
+                                                @elseif($sector->operation == 4)
+                                                    PM in RHS
+                                                @endif
+                                            </div>
+                                        @endif
                                     </div>
                                 @endforeach
 
@@ -3117,7 +3292,8 @@
                         @endforeach
                         @endif
                     </div>
-                     <div class="card shadow-sm border-0 p-3 lesson-item">
+
+                    <!-- <div class="card shadow-sm border-0 p-3 lesson-item">
                         <h5 class="mb-3 fw-semibold text-primary">Validate Tags</h5>
 
                         <?php $event_id = $trainingEvent->id; ?>
@@ -3142,7 +3318,34 @@
                                 </div>
                             @endforeach
                         @endif
-                    </div>
+                    </div> -->
+
+                    @if(!$course_tags->isEmpty())
+
+                        <div class="card shadow-sm border-0 p-3 lesson-item">
+                            <h5 class="mb-3 fw-semibold text-primary">Validate Tags</h5>
+
+                            <?php $event_id = $trainingEvent->id; ?>
+
+                            @foreach ($course_tags as $row)
+                                <div class="form-check mb-2">
+                                    <input 
+                                        class="form-check-input validate-tag"
+                                        data-event-id="{{ $event_id }}"
+                                        data-course-id="{{ $row->course_id }}"
+                                        data-tag-id="{{ $row->tag_id }}"
+                                        type="checkbox"
+                                        id="{{ $row->rhsTag->id }}"
+                                        {{ isset($validate_tags[$row->tag_id]) && $validate_tags[$row->tag_id] == 1 ? 'checked' : '' }}
+                                    >
+                                    <label class="form-check-label" for="{{ $row->rhsTag->id }}">
+                                        {{ $row->rhsTag->rhstag }}
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+
+                    @endif
             </div>
             </div>
             <div class="tab-pane fade" id="student-{{ $student->id ?? '' }}" role="tabpanel" aria-labelledby="student-tab-{{ $student->id ?? '' }}">

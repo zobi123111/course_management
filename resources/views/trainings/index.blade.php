@@ -646,7 +646,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary close_btn" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" id="confirmCourseEnding" class="btn btn-primary">End Course</button>
+                    <button type="submit" id="confirmCourseEnding" class="btn btn-danger">Delete</button>
                 </div>
             </div>
         </div>
