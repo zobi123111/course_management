@@ -2538,7 +2538,7 @@ class TrainingEventsController extends Controller
                     $query->where('user_id', $userId);
                 },
                 'deferredGradings' => function ($query) {
-                    $query->with('defLesson:id,lesson_title','lesson_type');
+                    $query->with('defLesson:id,lesson_title');
                 },
                 'course:id,course_name,enable_feedback',
                 'group:id,name',
