@@ -87,9 +87,135 @@
                         </div>
                     </div>
 
-                    <h5 class="text-primary mb-3">
-                    <strong>Training Event Lesson </strong>
+                    <h5 class="text-primary mb-3" style="color: #000000 !important;">
+                        <strong>Training Event Lesson </strong>
+                    </h5>
+
+                <h5 class="text-primary d-flex justify-content-between align-items-center mb-4" data-bs-toggle="collapse" href="#taskGrading" role="button" aria-expanded="false" aria-controls="taskGrading">
+                    <span><i class="bi bi-card-checklist me-2"></i>Task Based Grading</span>
+                    <i class="bi bi-chevron-down"></i>
                 </h5>
+                <div class="collapse" id="taskGrading">
+
+                    @if($event->taskGradings->isEmpty())
+                        <p class="text-muted">No task grading available.</p>
+                    @else
+                        @php
+                            $groupedTasks = $event->taskGradings->groupBy('lesson_id');
+                            $lessonMeta = $event->eventLessons->keyBy('lesson_id');
+                        @endphp
+
+                        @foreach($groupedTasks as $lessonId => $tasks)
+                            @php
+                                $meta = $lessonMeta[$lessonId] ?? null;
+                            @endphp
+
+                            <div class="mb-3 card-body shadow-sm">
+                                <?php
+                                $lesson['title'] = $tasks->first()->lesson?->lesson_title;
+
+                                ?>
+                                <div class="fw-bold text-secondary mb-2">
+                                    <i class="bi bi-book me-1"></i>Lesson: {{ $tasks->first()->lesson?->lesson_title ?? 'N/A' }}
+                                    @if($meta)
+                                    <br><small class="text-muted">
+                                        <i class="bi bi-person-video3 me-1"></i>Instructor: {{ $meta->instructor?->fname }} {{ $meta->instructor?->lname }} |
+                                        <i class="bi bi-calendar-date me-1"></i>Date: {{ date('M d, Y', strtotime($meta->lesson_date)) }} |
+                                        <i class="bi bi-clock me-1"></i>Time: {{ date('h:i A', strtotime($meta->start_time)) }} - {{ date('h:i A', strtotime($meta->end_time)) }}
+                                    </small>
+                                    @endif
+                                </div>
+
+                                <div class="fw-bold text-secondary mb-2">
+                                    @if($meta && $meta->sectors && $meta->sectors->isNotEmpty())
+                                        <p class="m-0" style="font-size: 15px;"></i> Additional Sectors:</p>
+                                        @foreach($meta->sectors as $sector)
+                                            <small class="text-muted">
+                                                <i class="bi bi-person-video3 me-1"></i>Instructor: {{ $meta->instructor?->fname }} {{ $meta->instructor?->lname }} |
+                                                <i class="bi bi-calendar-date me-1"></i>Date: {{ date('M d, Y', strtotime($sector->lesson_date)) }} |
+                                                <i class="bi bi-clock me-1"></i>Time: {{ date('h:i A', strtotime($sector->start_time)) }} - {{ date('h:i A', strtotime($sector->end_time)) }}
+                                            </small>
+                                        @endforeach
+                                    @endif
+                                </div>
+                                <ul class="list-group shadow-sm">
+                                    @foreach($tasks as $task)
+
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span><i class="bi bi-chevron-double-right me-1"></i>{{ $task->subLesson?->title ?? 'N/A' }}</span>
+                                        @php
+                                        $grade = $task->task_grade ?? null;
+
+                                        // Default class
+                                        $gradeClass = 'bg-secondary';
+
+                                        if (in_array($grade, ['Incomplete', 'Further training required', 'Not Applicable'])) {
+                                        $gradeClass = match($grade) {
+                                        'Incomplete' => 'grade-incomplete',
+                                        'Not Applicable' => 'bg-secondary', 
+                                        'Further training required' => 'grade-ftr',
+                                        };
+                                        } elseif (in_array($grade, [1, 2, 3, 4, 5])) {
+                                        $gradeClass = match((int) $grade) {
+                                        1 => 'grade-incomplete',
+                                        2 => 'grade-ftr',
+                                        3, 4, 5 => 'grade-competent',
+                                        };
+                                        } elseif (is_numeric($grade)) {
+                                        // fallback for other numeric values (if ever)
+                                        $gradeClass = 'grade-competent';
+                                        } else {
+                                        $gradeClass = 'grade-competent';
+                                        }
+                                        @endphp
+
+
+                                        <span class="badge {{ $gradeClass }}">
+                                            {{ $task->task_grade ?? 'N/A' }}
+                                        </span>
+                                    </li>
+                                    @endforeach
+                                </ul>
+                                <div>
+                                </div>
+                                
+                                <!-- {{-- Lesson Summary --}} -->
+
+                                @if(!empty($meta?->lesson_summary))
+                                <div class="col-md-12 mt-3">
+                                    <div class="card shadow-sm border-0" style="margin-bottom: 15px !important;">
+                                        <div class="card-header bg-primary text-white py-0">
+                                            <i class="bi bi-journal-text me-2"></i> Lesson Summary
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="mb-0 text-muted">
+                                                {{ $meta->lesson_summary }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
+
+                                {{-- Instructor Comment --}}
+                                @if(!empty($meta?->instructor_comment))
+                                <div class="col-md-12">
+                                    <div class="card shadow-sm border-0" style="margin-bottom: 15px !important;">
+                                        <div class="card-header bg-primary text-white py-0">
+                                            <i class="bi bi-chat-square-text me-2"></i> Instructor Comment
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="mb-0 text-muted">
+                                                {{ $meta->instructor_comment }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
+                            </div>
+                        @endforeach
+                    @endif
+                </div>
+
 
                 <!-- // Examiner Grading -->
                 @if(!empty($examinerFinal))
@@ -303,130 +429,6 @@
                     </div>
                 </div>
                 @endif
-                
-                    <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#taskGrading" role="button" aria-expanded="false" aria-controls="taskGrading">
-                        <span><i class="bi bi-card-checklist me-2"></i>Task Based Grading</span>
-                        <i class="bi bi-chevron-down"></i>
-                    </h5>
-                    <div class="collapse" id="taskGrading">
-
-                        @if($event->taskGradings->isEmpty())
-                        <p class="text-muted">No task grading available.</p>
-                        @else
-                        @php
-                        $groupedTasks = $event->taskGradings->groupBy('lesson_id');
-                        $lessonMeta = $event->eventLessons->keyBy('lesson_id');
-                        @endphp
-                        @foreach($groupedTasks as $lessonId => $tasks)
-                        @php
-                        $meta = $lessonMeta[$lessonId] ?? null;
-                        @endphp
-
-                        <div class="mb-3">
-                            <?php
-                            $lesson['title'] = $tasks->first()->lesson?->lesson_title;
-
-                            ?>
-                            <div class="fw-bold text-secondary mb-2">
-                                <i class="bi bi-book me-1"></i>Lesson: {{ $tasks->first()->lesson?->lesson_title ?? 'N/A' }}
-                                @if($meta)
-                                <br><small class="text-muted">
-                                    <i class="bi bi-person-video3 me-1"></i>Instructor: {{ $meta->instructor?->fname }} {{ $meta->instructor?->lname }} |
-                                    <i class="bi bi-calendar-date me-1"></i>Date: {{ date('M d, Y', strtotime($meta->lesson_date)) }} |
-                                    <i class="bi bi-clock me-1"></i>Time: {{ date('h:i A', strtotime($meta->start_time)) }} - {{ date('h:i A', strtotime($meta->end_time)) }}
-                                </small>
-                                @endif
-                            </div>
-
-                            <div class="fw-bold text-secondary mb-2">
-                                @if($meta && $meta->sectors && $meta->sectors->isNotEmpty())
-                                    <p class="m-0" style="font-size: 15px;"></i> Additional Sectors:</p>
-                                    @foreach($meta->sectors as $sector)
-                                        <small class="text-muted">
-                                            <i class="bi bi-person-video3 me-1"></i>Instructor: {{ $meta->instructor?->fname }} {{ $meta->instructor?->lname }} |
-                                            <i class="bi bi-calendar-date me-1"></i>Date: {{ date('M d, Y', strtotime($sector->lesson_date)) }} |
-                                            <i class="bi bi-clock me-1"></i>Time: {{ date('h:i A', strtotime($sector->start_time)) }} - {{ date('h:i A', strtotime($sector->end_time)) }}
-                                        </small>
-                                    @endforeach
-                                @endif
-                            </div>
-                            <ul class="list-group shadow-sm">
-                                @foreach($tasks as $task)
-
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span><i class="bi bi-chevron-double-right me-1"></i>{{ $task->subLesson?->title ?? 'N/A' }}</span>
-                                    @php
-                                    $grade = $task->task_grade ?? null;
-
-                                    // Default class
-                                    $gradeClass = 'bg-secondary';
-
-                                    if (in_array($grade, ['Incomplete', 'Further training required', 'Not Applicable'])) {
-                                    $gradeClass = match($grade) {
-                                    'Incomplete' => 'grade-incomplete',
-                                    'Not Applicable' => 'bg-secondary', 
-                                    'Further training required' => 'grade-ftr',
-                                    };
-                                    } elseif (in_array($grade, [1, 2, 3, 4, 5])) {
-                                    $gradeClass = match((int) $grade) {
-                                    1 => 'grade-incomplete',
-                                    2 => 'grade-ftr',
-                                    3, 4, 5 => 'grade-competent',
-                                    };
-                                    } elseif (is_numeric($grade)) {
-                                    // fallback for other numeric values (if ever)
-                                    $gradeClass = 'grade-competent';
-                                    } else {
-                                    $gradeClass = 'grade-competent';
-                                    }
-                                    @endphp
-
-
-                                    <span class="badge {{ $gradeClass }}">
-                                        {{ $task->task_grade ?? 'N/A' }}
-                                    </span>
-                                </li>
-                                @endforeach
-                            </ul>
-                            <div>
-                            </div>
-                          
-                            <!-- {{-- Lesson Summary --}} -->
-
-                            @if(!empty($meta?->lesson_summary))
-                            <div class="col-md-12 mt-3">
-                                <div class="card shadow-sm border-0">
-                                    <div class="card-header bg-primary text-white py-0">
-                                        <i class="bi bi-journal-text me-2"></i> Lesson Summary
-                                    </div>
-                                    <div class="card-body">
-                                        <p class="mb-0 text-muted">
-                                            {{ $meta->lesson_summary }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
-
-                            {{-- Instructor Comment --}}
-                            @if(!empty($meta?->instructor_comment))
-                            <div class="col-md-12 mt-3">
-                                <div class="card shadow-sm border-0">
-                                    <div class="card-header bg-primary text-white py-0">
-                                        <i class="bi bi-chat-square-text me-2"></i> Instructor Comment
-                                    </div>
-                                    <div class="card-body">
-                                        <p class="mb-0 text-muted">
-                                            {{ $meta->instructor_comment }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
-                        </div>
-                        @endforeach
-                        @endif
-                    </div>
                 </div>
 
                 <!-- Competency Grading -->
@@ -507,12 +509,12 @@
                 @if(!$defLessonGrading->isEmpty())
                 <div class="mb-4">
 
-                    <h5 class="text-primary mb-3">
+                    <h5 class="text-primary mb-3" style="color: #000000 !important;">
                         <strong>Deferred Lesson </strong>
                     </h5>
                         
                     <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#defLessonGrading" role="button" aria-expanded="false" aria-controls="defLessonGrading">
-                        <span><i class="bi bi-exclamation-circle me-2"></i>Deferred Lesson Grading</span>
+                        <span><i class="bi bi-card-checklist  me-2"></i>Deferred Lesson Grading</span>
                         <i class="bi bi-chevron-down"></i>
                     </h5>
                     <div class="collapse" id="defLessonGrading">
@@ -525,7 +527,7 @@
                         $defLesson = $tasks->first()?->defLesson;
                         $instructor = $defLesson?->instructor;
                         @endphp
-                        <div class="mb-3">
+                        <div class="card-body shadow-sm mb-3">
                             <div class="fw-bold text-secondary mb-2">
                                 <i class="bi bi-book me-1"></i>Deferred Lesson: {{ $defLesson?->lesson_title ?? 'N/A' }}
                                 @if($defLesson)
@@ -875,11 +877,11 @@
                 <!-- // Custom Lesson -->
                 @if(!$CustomLessonGrading->isEmpty())
                 <div class="mb-4">
-                    <h5 class="text-primary mb-3">
+                    <h5 class="text-primary mb-3" style="color: #000000 !important;">
                         <strong>Custom Lesson </strong>
                     </h5>
                     <h5 class="text-primary d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#cusLessonGrading{{ $defLesson->id ?? '' }}" role="button" aria-expanded="false" aria-controls="cusLessonGrading">
-                        <span><i class="bi bi-exclamation-circle me-2"></i>Custom Lesson Grading</span>
+                        <span><i class="bi bi-card-checklist me-2"></i>Custom Lesson Grading</span>
                         <i class="bi bi-chevron-down"></i>
                     </h5>
                     <div class="collapse" id="cusLessonGrading{{ $defLesson->id ?? '' }}">
@@ -891,7 +893,7 @@
                         $defLesson = $tasks->first()?->defLesson;
                         $instructor = $defLesson?->instructor;
                         @endphp
-                        <div class="mb-3">
+                        <div class="card-body shadow-sm mb-3">
                             <div class="fw-bold text-secondary mb-2">
                                 <i class="bi bi-book me-1"></i>Custom Lesson: {{ $defLesson?->lesson_title ?? 'N/A' }}
                                 @if($defLesson)
@@ -1359,34 +1361,59 @@
                 @endif
 
 
-                <!-- // Deferred lesson -->
-                @if($event->defLessonTasks->isNotEmpty())
+                @php
+                    $deferredLessons = $event->defLessonTasks->filter(function ($item) {
+                        return $item->defLesson->lesson_type === 'deferred';
+                    });
 
-                <div class="mb-4">
-                    <h5 class="text-primary">
-                        <i class="bi bi-file-earmark-pdf me-2"></i>Download Deffered Lesson Reports
+                    $customLessons = $event->defLessonTasks->filter(function ($item) {
+                        return $item->defLesson->lesson_type === 'custom';
+                    });
+                @endphp
 
-                    </h5>
-                    <ul class="list-group shadow-sm">
-                        @foreach($event->defLessonTasks as $eventLesson)
-
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>
-                                <i class="bi bi-book me-1"></i>{{ $eventLesson->lesson_title ?? 'N/A' }}
-                            </span>
-                            <a href="{{ route('lesson.deffered.report.download', ['event_id' => $event->id, 'lesson_id' => $eventLesson->def_lesson_id, 'userID' => $event->student_id]) }}"
-                                class="btn btn-outline-secondary btn-sm">
-                                <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
-                            </a>
-
-                        </li>
-                        @endforeach
-                    </ul>
-                </div>
+                @if($deferredLessons->isNotEmpty())
+                    <div class="mb-4">
+                        <h5 class="text-primary">
+                            <i class="bi bi-file-earmark-pdf me-2"></i>Download Deferred Lesson Reports
+                        </h5>
+                        <ul class="list-group shadow-sm">
+                            @foreach($deferredLessons as $eventLesson)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    <i class="bi bi-book me-1"></i>{{ $eventLesson->lesson_title ?? 'N/A' }}
+                                </span>
+                                <a href="{{ route('lesson.deffered.report.download', ['event_id' => $event->id, 'lesson_id' => $eventLesson->def_lesson_id, 'userID' => $event->student_id]) }}"
+                                    class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
+                                </a>
+                            </li>
+                            @endforeach
+                        </ul>
+                    </div>
                 @endif
-            </div>
 
-            <!-- <div class="card-footer d-flex justify-content-between align-items-center bg-light p-3">
+                @if($customLessons->isNotEmpty())
+                    <div class="mb-4">
+                        <h5 class="text-primary">
+                            <i class="bi bi-file-earmark-pdf me-2"></i>Download Custom Lesson Reports
+                        </h5>
+                        <ul class="list-group shadow-sm">
+                            @foreach($customLessons as $eventLesson)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    <i class="bi bi-book me-1"></i>{{ $eventLesson->lesson_title ?? 'N/A' }}
+                                </span>
+                                <a href="{{ route('lesson.deffered.report.download', ['event_id' => $event->id, 'lesson_id' => $eventLesson->def_lesson_id, 'userID' => $event->student_id]) }}"
+                                    class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
+                                </a>
+                            </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <!-- <div class="card-footer d-flex justify-content-between align-items-center bg-light p-3">
                     <span>
                         <i class="bi bi-clock-history me-1"></i>
                         {{ date('h:i A', strtotime($event->start_time)) }} - {{ date('h:i A', strtotime($event->end_time)) }}

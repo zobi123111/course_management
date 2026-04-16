@@ -354,7 +354,7 @@
 
     {{-- Lesson Summary Section --}}
     <div class="section">
-        <h2>Lesson Comment</h2>
+        <h2>Lesson Summary</h2>
         <p><strong>Result:</strong> {{ $event->eventLessons[0]->lesson_summary ?? '' }}</p>
     </div>
 
