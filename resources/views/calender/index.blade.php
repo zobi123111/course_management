@@ -1640,7 +1640,7 @@
                         $('#edit_trainingevent_div').show();
                     }
 
-                   alert(response.course_id);
+                 
                     setTimeout(function() {
                         $("#edit_course_booking").val(response.course_id).addClass("no-change");;
                         //  $("#edit_course_booking").trigger("change");
