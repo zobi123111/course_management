@@ -1623,7 +1623,7 @@
                     $('#edit_end_time').val(response.training_event_lesson?.end_time ?? '');
 
                     $('#event_id').val(response.event_id);
-                    if (response.training_event.entry_source == "instructor") { 
+                    if (response.training_event && response.training_event.entry_source== "instructor") { 
                         $("#instructor_training").prop("checked", true);
                     } else { 
                         $("#instructor_training").prop("checked", false);
@@ -1640,13 +1640,13 @@
                         $('#edit_trainingevent_div').show();
                     }
 
-
+                   alert(response.course_id);
                     setTimeout(function() {
                         $("#edit_course_booking").val(response.course_id).addClass("no-change");;
                         //  $("#edit_course_booking").trigger("change");
 
                     }, 700);
-
+                   
                     setTimeout(function() {
                         $("#edit_resource").val(String(response.resource)).trigger("change");
                         $("#edit_student").val(response.std_id).trigger('change').addClass("no-change");
