@@ -122,7 +122,7 @@
          
         @if(!empty($ExaminerFinal)) 
             <div class="section">
-                <h2>Examiner Competency</h2>
+                <h2>Examiner Competencies</h2>
                 <table>
                     <thead>
                         <tr>
@@ -160,7 +160,7 @@
 
         @if(!empty($InstructorFinal)) 
             <div class="section">
-                <h2>Instructor Competency</h2>
+                <h2>Instructor Competencies</h2>
                 <table>
                     <thead>
                         <tr>
@@ -198,7 +198,7 @@
 
         @if(!empty($PilotFinal)) 
             <div class="section">
-                <h2>Pilot Competency</h2>
+                <h2>Pilot Competencies</h2>
                 <table>
                     <thead>
                         <tr>
@@ -247,16 +247,16 @@
 
    {{-- Lesson Summary Section --}}
     <div class="section">
-        <h2>Lesson Summary</h2>
-        <p><strong>Result:</strong> {{ $event->defLessons[0]->lesson_summary ?? '' }}</p>
+        <h2>Lesson Summary :</h2>
+        <p>{{ $event->defLessons[0]->lesson_summary ?? '' }}</p>
     </div>
 
     {{-- Instructor Comment Section --}}
  
     @if(Auth::user()->role != 3)
     <div class="section">
-        <h2>Instructor Comment</h2>
-        <p><strong>Result:</strong> {{ $event->defLessons[0]->instructor_comment ?? '' }}</p>
+        <h2>Instructor Comment :</h2>
+        <p>{{ $event->defLessons[0]->instructor_comment ?? '' }}</p>
     </div>
     @endif
 </body>

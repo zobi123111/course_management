@@ -227,7 +227,7 @@
     <!-- // Examiner competency grading  -->
     @if($event->eventLessons[0]->lesson->examiner_cbta == 1) 
         <div class="section">
-            <h2>Examiner Competency</h2>
+            <h2>Examiner Competencies</h2>
             <table>
                 <thead>
                     <tr>
@@ -267,7 +267,7 @@
     <!-- // Instructor competency grading  -->
     @if($event->eventLessons[0]->lesson->instructor_cbta == 1) 
         <div class="section">
-            <h2>Instructor Competency</h2>
+            <h2>Instructor Competencies</h2>
             <table>
                 <thead>
                     <tr>
@@ -307,7 +307,7 @@
     <!-- // Pilot competency grading  -->
     @if($event->eventLessons[0]->lesson->pilot_cbta == 1) 
         <div class="section">
-            <h2>Pilot Competency</h2>
+            <h2>Pilot Competencies</h2>
             <table>
                 <thead>
                     <tr>
@@ -354,15 +354,15 @@
 
     {{-- Lesson Summary Section --}}
     <div class="section">
-        <h2>Lesson Summary</h2>
-        <p><strong>Result:</strong> {{ $event->eventLessons[0]->lesson_summary ?? '' }}</p>
+        <h2>Lesson Summary :</h2>
+        <p>{{ $event->eventLessons[0]->lesson_summary ?? '' }}</p>
     </div>
 
     {{-- Instructor Comment Section --}}
-     @if($event->entry_source == "instructor") 
+    @if($event->entry_source == "instructor") 
     <div class="section">
-        <h2>Instructor Comment</h2>
-        <p><strong>Result:</strong> {{ $event->eventLessons[0]->instructor_comment ?? '' }}</p>
+        <h2>Instructor Comment :</h2>
+        <p>{{ $event->eventLessons[0]->instructor_comment ?? '' }}</p>
     </div>
     @endif
 
