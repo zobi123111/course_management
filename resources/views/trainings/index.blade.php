@@ -371,7 +371,7 @@
                     <label class="form-label">
                         <span id="student_label">Select Student</span><span class="text-danger">*</span>
                     </label>
-                    <select class="form-select" name="student_id" id="select_user">
+                    <select class="form-select" name="student_id" id="select_user" disabled>
                         <option value="">Select Student</option>
                         @foreach($students as $val)
                             <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
@@ -383,7 +383,7 @@
                 <!-- Select Course -->
                 <div class="col-md-6">
                     <label class="form-label">Select Course<span class="text-danger">*</span></label>
-                    <select class="form-select" name="course_id" id="select_course">
+                    <select class="form-select" name="course_id" id="select_course" disabled>
                         <option value="">Select Course</option>
                         @foreach($courses as $val)
                         <option value="{{ $val->id }}">{{ $val->course_name }}</option>
@@ -502,7 +502,7 @@
                 @csrf
                 <div class="col-12 d-flex justify-content-end">
                     <div class="form-check mt-2">
-                        <input class="form-check-input" type="checkbox" id="edit_is_instructor_checkbox">
+                        <input class="form-check-input" type="checkbox" id="edit_is_instructor_checkbox" disabled>
                         <input type="hidden" name="entry_source" id="edit_entry_source" value="">
                         <label class="form-check-label" for="edit_is_instructor_checkbox">
                             Instructor Training
@@ -513,7 +513,7 @@
                 @if(auth()->user()->is_owner == 1)
                     <div class="col-md-6">
                         <label class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                        <select class="form-select select_org_unit" name="ou_id" id="edit_ou_id">
+                        <select class="form-select select_org_unit" name="ou_id" id="edit_ou_id" disabled>
                             <option value="">Select Org Unit</option>
                             @foreach($organizationUnits as $val)
                                 <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
@@ -526,7 +526,7 @@
                     <label class="form-label">
                         <span id="edit_student_label">Select Student</span><span class="text-danger">*</span>
                     </label>
-                    <select class="form-select" name="student_id" id="edit_select_user">
+                    <select class="form-select" name="student_id" id="edit_select_user" disabled>
                         <option value="">Select Student</option>
                         @foreach($students as $val)
                         <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
@@ -536,7 +536,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Select Course<span class="text-danger">*</span></label>
-                    <select class="form-select" name="course_id" id="edit_select_course">
+                    <select class="form-select" name="course_id" id="edit_select_course" disabled>
                         <option value="">Select Course</option>
                         @foreach($courses as $val)
                             <option value="{{ $val->id }}">{{ $val->course_name }}</option>
@@ -1878,6 +1878,50 @@ $(document).ready(function() {
             $('#successMessage').fadeOut('slow');
         }, 2000);
     });
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const orgUnit = document.getElementById('select_org_unit'); // may be null if not owner
+        const user = document.getElementById('select_user');
+        const course = document.getElementById('select_course');
+
+        // Initial state
+        if (orgUnit) {
+            user.disabled = true;
+            course.disabled = true;
+        } else {
+            // If org unit not present (non-owner), allow user selection
+            user.disabled = false;
+            course.disabled = true;
+        }
+
+        // Org Unit change
+        if (orgUnit) {
+            orgUnit.addEventListener('change', function () {
+                if (this.value) {
+                    user.disabled = false;
+                } else {
+                    user.disabled = true;
+                    course.disabled = true;
+
+                    user.value = '';
+                    course.value = '';
+                }
+            });
+        }
+
+        // User change
+        user.addEventListener('change', function () {
+            if (this.value) {
+                course.disabled = false;
+            } else {
+                course.disabled = true;
+                course.value = '';
+            }
+        });
+
+    });
+    
 
     const studentsdata = @json($students);   
 
