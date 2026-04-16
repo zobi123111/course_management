@@ -187,25 +187,52 @@ class ReportsController extends Controller
             // Use only active events in course
             $trainingEvents = $course->trainingEvents->filter(fn($e) => $e->student && $e->student->is_activated == 0);
         }
-
      
         /* ============================================================
         EVENT MAP (Needed for progress & dates)
         ============================================================ */
-        $eventMap = $trainingEvents
-            ->keyBy('student_id')
-            ->map(fn($event) => [
-                'event_id'        => $event->id,
-                'event_date'      => $event->event_date,
-                'course_end_date' => $event->course_end_date,
-            ]);
+        // $eventMap = $trainingEvents
+        //     ->keyBy('student_id')
+        //     ->map(fn($event) => [
+        //         'event_id'        => $event->id,
+        //         'event_date'      => $event->event_date,
+        //         'course_end_date' => $event->course_end_date,
+        //     ]);
+
+            // $eventMap = $trainingEvents
+            // ->groupBy('student_id')
+            // ->map(function ($events) {
+            //     return $events->map(function ($event) {
+            //         return [
+            //             'event_id'        => $event->id,
+            //             'event_date'      => $event->event_date,
+            //             'course_end_date' => $event->course_end_date,
+            //         ];
+            //     });
+            // });
+
 
        // dump($trainingEvents);
 
         /* ============================================================
         EMPLOYEES (student list)
         ============================================================ */
-        $employees = $trainingEvents->pluck('student')->filter()->unique('id')->values();
+        // $employees = $trainingEvents->pluck('student')->filter()->values();
+       $employees = $trainingEvents->map(function ($event) {
+            if (!$event->student) {
+                return null;
+            }
+
+            // ✅ CLONE the student (this is the key fix)
+            $student = clone $event->student;
+
+            $student->event_id = $event->id;
+            $student->event_date = $event->event_date;
+            $student->course_end_date = $event->course_end_date;
+
+            return $student;
+        })->filter()->values();
+        
       // dump($employees);
         /* ============================================================
         ACTIVE STUDENTS & FAILING FILTER
@@ -234,12 +261,7 @@ class ReportsController extends Controller
         /* ============================================================
         STUDENT PROGRESS & COMPLETION LOGIC
         ============================================================ */
-        $students->transform(function ($student) use ($eventMap, $totalSubLessons) {
-
-            // Assign event details
-            $student->event_id        = $eventMap[$student->id]['event_id']        ?? null;
-            $student->event_date      = $eventMap[$student->id]['event_date']      ?? null;
-            $student->course_end_date = $eventMap[$student->id]['course_end_date'] ?? null;
+        $students->transform(function ($student) use ($totalSubLessons) {
 
             // Alert logic
             $student->show_alert = false;
@@ -324,9 +346,9 @@ class ReportsController extends Controller
         /* ============================================================
         CHART DATA
         ============================================================ */
-    //----------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------
 
-    //-----------------------------------------------------------------------------------------------------------------
+        //-----------------------------------------------------------------------------------------------------------------
         // $chartData = [
         //     'enrolled'    => $students->count(),
         //     'completed'   => $students->filter(fn($s) => $s->is_completed)->count(),
@@ -391,18 +413,32 @@ class ReportsController extends Controller
             ->get();
 
      
-        $eventMap = $trainingEvents
-            ->keyBy('student_id')
-            ->map(fn($event) => [
-                'event_id'        => $event->id,
-                'event_date'      => $event->event_date,
-                'course_end_date' => $event->course_end_date,
-            ]);
+        // $eventMap = $trainingEvents
+        //     ->keyBy('student_id')
+        //     ->map(fn($event) => [
+        //         'event_id'        => $event->id,
+        //         'event_date'      => $event->event_date,
+        //         'course_end_date' => $event->course_end_date,
+        //     ]);
+
+        $employees = $trainingEvents->map(function ($event) {
+            if (!$event->student) {
+                return null;
+            }
+
+            $student = clone $event->student;
+
+            $student->event_id = $event->id;
+            $student->event_date = $event->event_date;
+            $student->course_end_date = $event->course_end_date;
+
+            return $student;
+        })->filter()->values();
 
         /* ============================================================
         EMPLOYEES (student list)
         ============================================================ */
-        $employees = $trainingEvents->pluck('student')->filter()->unique('id')->values();
+        // $employees = $trainingEvents->pluck('student')->filter()->values();
 
         /* ============================================================
         ACTIVE STUDENTS & FAILING FILTER
@@ -431,12 +467,12 @@ class ReportsController extends Controller
         /* ============================================================
         STUDENT PROGRESS & COMPLETION LOGIC
         ============================================================ */
-        $students->transform(function ($student) use ($eventMap, $totalSubLessons) {
+             $students->transform(function ($student) use ($totalSubLessons) {
 
             // Assign event details
-            $student->event_id        = $eventMap[$student->id]['event_id']        ?? null;
-            $student->event_date      = $eventMap[$student->id]['event_date']      ?? null;
-            $student->course_end_date = $eventMap[$student->id]['course_end_date'] ?? null;
+            // $student->event_id        = $eventMap[$student->id]['event_id']        ?? null;
+            // $student->event_date      = $eventMap[$student->id]['event_date']      ?? null;
+            // $student->course_end_date = $eventMap[$student->id]['course_end_date'] ?? null;
 
             // Alert logic
             $student->show_alert = false;

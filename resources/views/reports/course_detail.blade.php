@@ -129,7 +129,7 @@
 
 
                 <div class="col-lg-6" style="margin-left: 197px;">
-                    <div class="card border-0 shadow-lg" style="border-radius: 20px;">
+                    <div class="card border-0 shadow-lg mt-3" style="border-radius: 20px;">
                         <div class="card-body p-4">
 
                             <h5 class="text-center text-primary mb-4 fw-bold">
@@ -265,7 +265,7 @@
                     </thead>
                     <tbody>
                         <?php $course_id = Request::segment(3); ?>
-                        @foreach ($employees as $student)
+                        @foreach ($students as $student)
                         <tr class="clickable-row {{ $student->show_alert ? 'row-alert' : '' }}  {{ ($showArchived && $student->is_activated != 0) ? 'archived-row' : '' }}"
                             data-href="{{ route('training.grading-list', ['event_id' => encode_id($student->event_id)]) }}"
                             style="cursor: pointer;">
@@ -292,6 +292,27 @@
                                 // dump($furtherPercent);
                                 // dump($competentPercent);
 
+                                ?>
+
+                                <?php
+                                    $progress = $student->progress;
+
+                                    $total = max(1, $progress['total']);
+
+                                    $incomplete = $progress['incomplete'];
+                                    $further    = $progress['further'];
+                                    $competentPlusNA = $progress['competent'] + $progress['N/A'];
+
+                                    // Calculate raw percentages (no rounding yet)
+                                    $incompletePercent = ($incomplete / $total) * 100;
+                                    $furtherPercent    = ($further / $total) * 100;
+
+                                    // Round first two
+                                    $incompletePercent = round($incompletePercent);
+                                    $furtherPercent    = round($furtherPercent);
+
+                                    // Force last one to balance total = 100
+                                    $competentPercent = max(0, 100 - ($incompletePercent + $furtherPercent));
                                 ?>
 
                                 <div class="d-flex justify-content-center status-group progress" style="height: 30px;">
