@@ -652,6 +652,14 @@
     }
     @endphp
 
+
+    @section('page-button')
+    
+    <div>
+        <a href="{{ route('training.index') }}" class="btn btn-primary me-2">Training Events</a>
+    </div>
+
+    @endsection
     <div class="card">
         @if(session()->has('message'))
         <div id="successMessage" class="alert alert-success fade show" role="alert">
@@ -886,7 +894,7 @@
 
                                     <div class="row mb-3">
                                         <div class="col-md-12">
-                                            <strong><i class="text-primary fas fa-clock"></i> OU Timezone:</strong>
+                                            <strong><i class="text-primary fas fa-clock"></i> Timezone:</strong>
                                             <span class="">
                                                 {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}
                                             </span>
@@ -1435,7 +1443,7 @@
 
                                     <div class="row mb-3">
                                         <div class="col-md-12">
-                                            <strong><i class="text-primary fas fa-clock"></i> OU Timezone:</strong>
+                                            <strong><i class="text-primary fas fa-clock"></i> Timezone:</strong>
                                             <span class="">
                                                 {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}
                                             </span>
@@ -1722,7 +1730,7 @@
 
                             <div class="row mb-3">
                                 <div class="col-md-12">
-                                    <strong><i class="text-primary fas fa-clock"></i> OU Timezone:</strong>
+                                    <strong><i class="text-primary fas fa-clock"></i> Timezone:</strong>
                                     <span class="">
                                         {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}
                                     </span>
