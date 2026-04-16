@@ -8,7 +8,7 @@
     }
 
     .row-alert .fa {
-        color: #721c24 !important; 
+        color: #721c24 !important;
     }
 
     #flash-message {
@@ -19,7 +19,7 @@
 
     .status-group .status-box {
         padding: 8px 16px;
-        border: 1px solid #dee2e6; 
+        border: 1px solid #dee2e6;
         border-right: none;
         display: flex;
         align-items: center;
@@ -27,18 +27,22 @@
         min-width: 50px;
         font-weight: bold;
     }
+
     .archived-row {
-        background-color: #d19898 !important; /* Light red for non-archived when showing archived */
+        background-color: #d19898 !important;
+        /* Light red for non-archived when showing archived */
     }
 
     .archived-row:hover {
-        background-color: #ffcccc !important; /* Slightly darker red on hover */
+        background-color: #ffcccc !important;
+        /* Slightly darker red on hover */
     }
 
     .row-alert {
-        background-color: #fff3cd !important; /* Keep alert yellow styling */
+        background-color: #fff3cd !important;
+        /* Keep alert yellow styling */
     }
-</style> 
+</style>
 @section('content')
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb">
@@ -56,30 +60,23 @@
 <div class="container mt-4">
     <div class="card">
         <div class="card-body">
-            <div class="backbtn" style= "display: flex; justify-content: space-between;">
+            <div class="backbtn" style="display: flex; justify-content: space-between;">
                 <h3 class="text-primary mt-4">{{ $course->course_name }}</h3>
                 <a href="{{ route('reports.index') }}" class="btn btn-secondary mt-4 " style=" border-radius: 26px;"><i class="bi bi-arrow-left-circle-fill"></i> Back to Reports</a>
             </div>
 
             <div id="flash-message" class="alert mt-3"></div>
-
-            <!-- Toggle Show Archived and Show Failing -->
-            <div class="d-flex gap-4 mb-2 mt-2">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="toggleArchived" {{ $showArchived ? 'checked' : '' }}>
-                    <strong><label class="form-check-label" for="toggleArchived">
-                         Archived
-                    </label></strong>
-                </div>
-            </div>
-
             <!-- Pie Chart + Legend Section Styled Like Example -->
-            <div class="row mt-3 justify-content-center">
+            <div class="row mt-3 align-items-start">
+                
                 <div class="col-6 col-md-3 mb-2 text-center">
                     <div class="text-center my-3">
+                        <h5 class="text-center text-primary fw-bold mb-3">
+                                Overall Overview
+                        </h5>
                         <!-- Chart Canvas -->
-                        <div id="pieChartContainer" class="mx-auto" style="width: 250px; height: 250px;">
-                            <canvas id="studentChart" width="250" height="250"></canvas>
+                        <div id="pieChartContainer" class="mx-auto" style="width: 220px; height: 220px;">
+                            <canvas id="studentChart" width="220" height="220"></canvas>
                         </div>
 
                         <!-- Legend Badges Below Pie Chart -->
@@ -99,130 +96,141 @@
                         </div>
                     </div>
                 </div>
-             <?php 
-                    $totalCourses          = $courseSummary['total_enrolled'];
-                    $completedLast12Months = $courseSummary['completed_last_12_months'];
+                <?php
+                $totalCourses          = $courseSummary['total_enrolled'];
+                $completedLast12Months = $courseSummary['completed_last_12_months'];
 
-                    if ($totalCourses > 0) {
-                        $percentageCompleted = round(($completedLast12Months / $totalCourses) * 100);
-                    } else {
-                        $percentageCompleted = 0;
-                    }
+                if ($totalCourses > 0) {
+                    $percentageCompleted = round(($completedLast12Months / $totalCourses) * 100);
+                } else {
+                    $percentageCompleted = 0;
+                }
 
-                    $percentageRemaining = 100 - $percentageCompleted;
+                $percentageRemaining = 100 - $percentageCompleted;
                 ?>
 
 
-            <div class="col-lg-6">
-                <div class="card border-0 shadow-lg" style="border-radius: 20px;">
-                    <div class="card-body p-4">
 
-                        <h5 class="text-center text-primary mb-4 fw-bold">
-                            Course Completion Overview 
-                        </h5>
 
-                        <!-- Stats Row -->
-                        <div class="row text-center mb-4">
+                <div class="col-lg-6" style="margin-left: 197px;">
+                    <div class="card border-0 shadow-lg" style="border-radius: 20px;">
+                        <div class="card-body p-4">
 
-                            <!-- Total -->
-                            <div class="col-6">
-                                <div class="p-3 text-white rounded-4"
-                                    style="background: linear-gradient(135deg,#007bff,#0056b3);">
-                                    <h6 class="mb-1">Total Courses</h6>
-                                    <h3 class="fw-bold mb-0">
-                                        <i class="bi bi-book-fill me-1"></i>
-                                        {{ $totalCourses }}
-                                    </h3>
+                            <h5 class="text-center text-primary mb-4 fw-bold">
+                                Course Completion Overview (In Last 12 Months)
+                            </h5>
+
+                            <!-- Stats Row -->
+                            <div class="row text-center mb-4">
+
+                                <!-- Total -->
+                                <div class="col-6">
+                                    <div class="p-3 text-white rounded-4"
+                                        style="background: linear-gradient(135deg,#007bff,#0056b3);">
+                                        <h6 class="mb-1">Total Courses</h6>
+                                        <h3 class="fw-bold mb-0">
+                                            <i class="bi bi-book-fill me-1"></i>
+                                            {{ $totalCourses }}
+                                        </h3>
+                                    </div>
                                 </div>
+
+                                <!-- Completed -->
+                                <div class="col-6">
+                                    <div class="p-3 text-white rounded-4"
+                                        style="background: linear-gradient(135deg,#28a745,#1e7e34);">
+                                        <h6 class="mb-1">Completed (In Last 12 Months)</h6>
+                                        <h3 class="fw-bold mb-0">
+                                            <i class="bi bi-check-circle-fill me-1"></i>
+                                            {{ $completedLast12Months }}
+                                        </h3>
+                                    </div>
+                                </div>
+
                             </div>
 
-                            <!-- Completed -->
-                            <div class="col-6">
-                                <div class="p-3 text-white rounded-4"
-                                    style="background: linear-gradient(135deg,#28a745,#1e7e34);">
-                                    <h6 class="mb-1">Completed (In Last 12 Months)</h6>
-                                    <h3 class="fw-bold mb-0">
-                                        <i class="bi bi-check-circle-fill me-1"></i>
-                                        {{ $completedLast12Months }}
-                                    </h3>
-                                </div>
+                            <!-- Progress Label -->
+                            <div class="d-flex justify-content-between mb-2 px-2">
+                                <small class="fw-semibold text-success">
+                                    {{ $percentageCompleted }}% Completed
+                                </small>
+                                <small class="fw-semibold text-warning">
+                                    {{ $percentageRemaining }}% Remaining
+                                </small>
                             </div>
 
-                        </div>
+                            <!-- Progress Bar -->
+                            <div class="progress" style="height: 28px; border-radius: 30px; overflow: hidden;">
 
-                        <!-- Progress Label -->
-                        <div class="d-flex justify-content-between mb-2 px-2">
-                            <small class="fw-semibold text-success">
-                                {{ $percentageCompleted }}% Completed
-                            </small>
-                            <small class="fw-semibold text-warning">
-                                {{ $percentageRemaining }}% Remaining
-                            </small>
-                        </div>
-
-                        <!-- Progress Bar -->
-                        <div class="progress" style="height: 28px; border-radius: 30px; overflow: hidden;">
-
-                            <!-- Completed -->
-                            @if($percentageCompleted > 0)
-                            <div class="progress-bar progress-bar-striped progress-bar"
-                                role="progressbar"
-                                style="width: {{ $percentageCompleted }}%;
+                                <!-- Completed -->
+                                @if($percentageCompleted > 0)
+                                <div class="progress-bar progress-bar-striped progress-bar"
+                                    role="progressbar"
+                                    style="width: {{ $percentageCompleted }}%;
                                     background: linear-gradient(90deg,#28a745,#20c997);
                                     font-weight:600;">
-                                {{ $percentageCompleted }}%
-                            </div>
-                            @endif
+                                    {{ $percentageCompleted }}%
+                                </div>
+                                @endif
 
-                            <!-- Remaining -->
-                            @if($percentageRemaining > 0)
-                            <div class="progress-bar"
-                                role="progressbar"
-                                style="width: {{ $percentageRemaining }}%;
+                                <!-- Remaining -->
+                                @if($percentageRemaining > 0)
+                                <div class="progress-bar"
+                                    role="progressbar"
+                                    style="width: {{ $percentageRemaining }}%;
                                     background: #ffc107;
                                     color:#000;
                                     font-weight:600;">
-                                {{ $percentageRemaining }}%
-                            </div>
-                            @endif
-
-                        </div>
-
-                        <!-- Legend Section -->
-                        <div class="mt-4 pt-3 border-top">
-                            <div class="d-flex justify-content-center gap-4">
-
-                                <!-- Completed Legend -->
-                                <div class="form-check d-flex align-items-center">
-                                    <input class="form-check-input me-2"
-                                        type="checkbox"
-                                        checked
-                                        disabled
-                                        style="background-color:#28a745; border-color:#28a745;">
-                                    <label class="form-check-label fw-semibold text-success">
-                                        Completed (Green)
-                                    </label>
+                                    {{ $percentageRemaining }}%
                                 </div>
-
-                                <!-- Remaining Legend -->
-                                <div class="form-check d-flex align-items-center">
-                                    <input class="form-check-input me-2"
-                                        type="checkbox"
-                                        checked
-                                        disabled
-                                        style="background-color:#ffc107; border-color:#ffc107;">
-                                    <label class="form-check-label fw-semibold text-warning">
-                                        Remaining (Yellow)
-                                    </label>
-                                </div>
+                                @endif
 
                             </div>
-                        </div>
 
+                            <!-- Legend Section -->
+                            <div class="mt-4 pt-3 border-top">
+                                <div class="d-flex justify-content-center gap-4">
+
+                                    <!-- Completed Legend -->
+                                    <div class="form-check d-flex align-items-center">
+                                        <input class="form-check-input me-2"
+                                            type="checkbox"
+                                            checked
+                                            disabled
+                                            style="background-color:#28a745; border-color:#28a745;">
+                                        <label class="form-check-label fw-semibold text-success">
+                                            Completed (Green)
+                                        </label>
+                                    </div>
+
+                                    <!-- Remaining Legend -->
+                                    <div class="form-check d-flex align-items-center">
+                                        <input class="form-check-input me-2"
+                                            type="checkbox"
+                                            checked
+                                            disabled
+                                            style="background-color:#ffc107; border-color:#ffc107;">
+                                        <label class="form-check-label fw-semibold text-warning">
+                                            Remaining (Yellow)
+                                        </label>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
-            </div>
 
+            </div>
+            <!-- Toggle Show Archived and Show Failing -->
+            <div class="d-flex gap-4 mb-2 mt-2">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="toggleArchived" {{ $showArchived ? 'checked' : '' }}>
+                    <strong><label class="form-check-label" for="toggleArchived">
+                            Archived
+                        </label></strong>
+                </div>
             </div>
 
             @if($employees->count())
@@ -242,71 +250,77 @@
                     <tbody>
                         <?php $course_id = Request::segment(3); ?>
                         @foreach ($employees as $student)
-                      <tr class="clickable-row {{ $student->show_alert ? 'row-alert' : '' }}  {{ ($showArchived && $student->is_activated != 0) ? 'archived-row' : '' }}" 
-                            data-href="{{ route('training.grading-list', ['event_id' => encode_id($student->event_id)]) }}" 
+                        <tr class="clickable-row {{ $student->show_alert ? 'row-alert' : '' }}  {{ ($showArchived && $student->is_activated != 0) ? 'archived-row' : '' }}"
+                            data-href="{{ route('training.grading-list', ['event_id' => encode_id($student->event_id)]) }}"
                             style="cursor: pointer;">
                             <td class="expiry">
                                 @if($student->show_alert)
-                                    <i class="fas fa-exclamation-triangle me-1" style="color: #dc3545 !important;" title="Nearing 6-month deadline"></i>
+                                <i class="fas fa-exclamation-triangle me-1" style="color: #dc3545 !important;" title="Nearing 6-month deadline"></i>
                                 @endif
                                 {{ $student->fname }} {{ $student->lname }}
-                            </td>  
+                            </td>
                             <td>{{ $student->email ?? 'N/A' }}</td>
                             <td>{{ $student->event_date ? \Carbon\Carbon::parse($student->event_date)->format('d-m-Y') : '--' }}</td>
                             <td>{{ $student->course_end_date ? \Carbon\Carbon::parse($student->course_end_date)->format('d-m-Y') : '--' }}</td>
-                      
-                            <td class="no-click"> 
-                              <?php 
-                                    $progress = $student->progress;
-                                    $total = max(1, $progress['total']); 
-                                    $incompletePercent = round(($progress['incomplete'] / $total) * 100);
-                                    $furtherPercent    = round(($progress['further'] / $total) * 100);
-                                    $competentPlusNA   = $progress['competent'] + $progress['N/A'];
-                                    $competentPercent  = round(($competentPlusNA / $total) * 100);
-                                    
+
+                            <td class="no-click">
+                                <?php
+                                $progress = $student->progress;
+                               // dump($progress);
+                                $total = max(1, $progress['total']);
+                                $incompletePercent = round(($progress['incomplete'] / $total) * 100);
+                                $furtherPercent    = round(($progress['further'] / $total) * 100);
+                                $competentPlusNA   = $progress['competent'] + $progress['N/A'];
+                                $competentPercent  = round(($competentPlusNA / $total) * 100);
+                                // dump($incompletePercent);
+                                // dump($furtherPercent);
+                                // dump($competentPercent);
+
                                 ?>
 
                                 <div class="d-flex justify-content-center status-group progress" style="height: 30px;">
-                                    @if ($incompletePercent > 0)
-                                        <div class="progress-bar status-box" role="progressbar"
-                                            style="width: {{ $incompletePercent }}%; background-color: #FFFF00; color: #000; font-weight: 700; font-size: 11px;"
-                                            title="Incomplete">
-                                            {{ $incompletePercent . '%' }}
-                                        </div>
-                                    @endif
-                                   
-                                  
-                                    @if ($furtherPercent > 0) 
-                                        <div class="progress-bar status-box" role="progressbar"
-                                            style="width: {{ $furtherPercent }}%; background-color: #ffc107; color: #000; font-weight: 700; font-size: 11px;"
-                                            title="Further Training Required">
-                                            {{ $furtherPercent . '%' }}
-                                        </div>
+                                    @if ($incompletePercent > 0) 
+                               
+                                    <div class="progress-bar status-box" role="progressbar"
+                                        style="width: {{ $incompletePercent }}%; background-color: #FFFF00; color: #000; font-weight: 700; font-size: 11px;"
+                                        title="Incomplete">
+                                        {{ $incompletePercent . '%' }} 
+                                    </div>
                                     @endif
 
-                                    @if ($competentPercent > 0)
-                                        <div class="progress-bar status-box" role="progressbar"
-                                            style="width: {{ $competentPercent }}%; background-color: #008000; color: #000; font-weight: 700; font-size: 11px;"
-                                            title="Competent">
-                                             {{ $competentPercent . '%' }}
-                                        </div>
-                                    @endif 
+
+                                    @if ($furtherPercent > 0)  
+                                    <div class="progress-bar status-box" role="progressbar"
+                                        style="width: {{ $furtherPercent }}%; background-color: #ffc107; color: #000; font-weight: 700; font-size: 11px;"
+                                        title="Further Training Required">
+                                        {{ $furtherPercent . '%' }}  
+                                    </div>
+                                    @endif
+
+                                    @if ($competentPercent > 0) 
+                                    <div class="progress-bar status-box" role="progressbar"
+                                        style="width: {{ $competentPercent }}%; background-color: #008000; color: #000; font-weight: 700; font-size: 11px;"
+                                        title="Competent">
+                                        {{ $competentPercent . '%' }} 
+                                    </div>
+                                    @endif
+                                  
                                 </div>
                             </td>
                             <td>
-                                <?php  $course_id =  Request::segment(3);?>
-                                   <a href="{{ route('training.grading-list', [
+                                <?php $course_id =  Request::segment(3); ?>
+                                <a href="{{ route('training.grading-list', [
                                             'event_id' => encode_id($student->event_id),
                                             'course_id' => $course_id
-                                        ]) }}" 
-                                        class="view-icon" 
-                                        title="View Record" 
-                                        style="font-size:18px; cursor: pointer;">
-                                            <i class="fa fa-eye text-danger"></i>
-                                        </a>
+                                        ]) }}"
+                                    class="view-icon"
+                                    title="View Record"
+                                    style="font-size:18px; cursor: pointer;">
+                                    <i class="fa fa-eye text-danger"></i>
+                                </a>
 
-                                 <a href="{{ route('training.certificate', ['event' => encode_id($student->event_id)]) }}" style="font-size:18px; cursor: pointer;">
-                                    <i class="bi bi-card-heading"></i> 
+                                <a href="{{ route('training.certificate', ['event' => encode_id($student->event_id)]) }}" style="font-size:18px; cursor: pointer;">
+                                    <i class="bi bi-card-heading"></i>
                                 </a>
                             </td>
                         </tr>
@@ -315,7 +329,7 @@
                 </table>
             </div>
             @else
-                <p class="text-muted">No students found for this course.</p>
+            <p class="text-muted">No students found for this course.</p>
             @endif
         </div>
     </div>
@@ -444,7 +458,7 @@ $(document).ready(function () {
     const ctx = document.getElementById('studentChart').getContext('2d');
 
     const rawData = {
-        enrolled: {{ $chartData['enrolled'] }},
+      //  enrolled: {{ $chartData['enrolled'] }},
         completed: {{ $chartData['completed'] }},
         archived: {{ $chartData['is_activated'] ?? 0 }},
         active: {{ $chartData['active'] ?? 0 }},
