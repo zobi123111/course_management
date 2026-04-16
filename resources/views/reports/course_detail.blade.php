@@ -1,6 +1,6 @@
 @extends('layout.app')
 @section('title', 'Course Report')
-@section('sub-title', 'Students Enrolled In Course')
+@section('sub-title', 'Course Enrollment & Progress')
 <style>
     .row-alert {
         border-left: 6px solid #dc3545 !important;
@@ -19,7 +19,7 @@
 
     .status-group .status-box {
         padding: 8px 16px;
-        border: 1px solid #dee2e6;
+        /* border: 1px solid #dee2e6; */
         border-right: none;
         display: flex;
         align-items: center;
@@ -72,7 +72,7 @@
                 <div class="col-6 col-md-3 mb-2 text-center">
                     <div class="text-center my-3">
                         <h5 class="text-center text-primary fw-bold mb-3">
-                                Overall Overview
+                                Course Status Summary
                         </h5>
                         <!-- Chart Canvas -->
                         <div id="pieChartContainer" class="mx-auto" style="width: 220px; height: 220px;">
@@ -82,13 +82,13 @@
                         <!-- Legend Badges Below Pie Chart -->
                         <div class="row mt-3 justify-content-center gap-2">
                             <div class="col-auto">
-                                <span class="badge text-white" style="background-color: #007bff;" title="Enrolled">Enrolled: {{ $chartData['enrolled'] }}</span>
+                                <span class="badge text-white" style="background-color: #007bff;" title="Enrolled">Total Enrolled: {{ $chartData['enrolled'] }}</span>
                             </div>
                             <div class="col-auto">
                                 <span class="badge text-white" style="background-color: #28a745;" title="Completed">Completed: {{ $chartData['completed'] }}</span>
                             </div>
                             <div class="col-auto">
-                                <span class="badge text-white" style="background-color: #ffc107;" title="Active">Active: {{ $chartData['active'] }}</span>
+                                <span class="badge text-white" style="background-color: #ffc107;" title="Active">In Progress: {{ $chartData['active'] }}</span>
                             </div>
                             <div class="col-auto">
                                 <span class="badge text-white" style="background-color: #d33d4b; color: #ffffff;" title="Active">Archive: {{ $chartData['is_activated'] }}</span>
@@ -117,7 +117,7 @@
                         <div class="card-body p-4">
 
                             <h5 class="text-center text-primary mb-4 fw-bold">
-                                Course Completion Overview (In Last 12 Months)
+                                Course Activity (Last 12 Months)
                             </h5>
 
                             <!-- Stats Row -->
@@ -127,7 +127,7 @@
                                 <div class="col-6">
                                     <div class="p-3 text-white rounded-4"
                                         style="background: linear-gradient(135deg,#007bff,#0056b3);">
-                                        <h6 class="mb-1">Total Courses</h6>
+                                        <h6 class="mb-1">Courses Assigned</h6>
                                         <h3 class="fw-bold mb-0">
                                             <i class="bi bi-book-fill me-1"></i>
                                             {{ $totalCourses }}
@@ -139,7 +139,7 @@
                                 <div class="col-6">
                                     <div class="p-3 text-white rounded-4"
                                         style="background: linear-gradient(135deg,#28a745,#1e7e34);">
-                                        <h6 class="mb-1">Completed (In Last 12 Months)</h6>
+                                        <h6 class="mb-1">Courses Completed</h6>
                                         <h3 class="fw-bold mb-0">
                                             <i class="bi bi-check-circle-fill me-1"></i>
                                             {{ $completedLast12Months }}
@@ -299,7 +299,7 @@
 
                                     @if ($competentPercent > 0) 
                                     <div class="progress-bar status-box" role="progressbar"
-                                        style="width: {{ $competentPercent }}%; background-color: #008000; color: #000; font-weight: 700; font-size: 11px;"
+                                        style="width: {{ $competentPercent }}%; background-color: #008000; color: #fff; font-weight: 700; font-size: 11px;"
                                         title="Competent">
                                         {{ $competentPercent . '%' }} 
                                     </div>
