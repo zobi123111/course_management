@@ -1719,7 +1719,7 @@
                                                             <button type="button"
                                                                 class="accordion-button collapsed toggleable"
                                                                 data-bs-toggle="collapse"
-                                                                data-bs-target="#examiner-{{ $eventLesson->id }}"
+                                                                data-bs-target="#examiner-{{ $eventLesson->id ?? '' }}"
                                                                 aria-expanded="false">
                                                                 Examiner Competency Grading
                                                             </button>
@@ -1728,7 +1728,7 @@
                                                     @endif
                                                 </div>
 
-                                                <div id="examiner-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                                <div id="examiner-{{ $eventLesson->id ?? '' }}" class="accordion-collapse collapse">
                                                     <!-- Student name aligned to the right, above the competency grading -->
                                                     <div class="text-end pe-4 pt-2 fw-semibold">
                                                         {{ $student->fname }} {{ $student->lname }}
@@ -1814,7 +1814,7 @@
                                                             <button type="button"
                                                                 class="accordion-button collapsed toggleable"
                                                                 data-bs-toggle="collapse"
-                                                                data-bs-target="#instructor-{{ $eventLesson->id }}"
+                                                                data-bs-target="#instructor-{{ $eventLesson->id ?? '' }}"
                                                                 aria-expanded="false">
                                                                 Instructor Competency Grading
                                                             </button>
@@ -1823,7 +1823,7 @@
                                                     @endif
                                                 </div>
 
-                                                <div id="instructor-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                                <div id="instructor-{{ $eventLesson->id ?? '' }}" class="accordion-collapse collapse">
                                                     <!-- Student name aligned to the right, above the competency grading -->
                                                     <div class="text-end pe-4 pt-2 fw-semibold">
                                                         {{ $student->fname }} {{ $student->lname }}
@@ -2313,7 +2313,7 @@
                                                                     <button type="button"
                                                                         class="accordion-button collapsed toggleable"
                                                                         data-bs-toggle="collapse"
-                                                                        data-bs-target="#examiner-{{ $eventLesson->id }}"
+                                                                        data-bs-target="#examiner-{{ $eventLesson->id ?? '' }}"
                                                                         aria-expanded="false">
                                                                         Examiner Competency Grading
                                                                     </button>
@@ -2322,7 +2322,7 @@
                                                             @endif
                                                         </div>
 
-                                                        <div id="examiner-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                                        <div id="examiner-{{ $eventLesson->id ?? '' }}" class="accordion-collapse collapse">
                                                             <!-- Student name aligned to the right, above the competency grading -->
                                                             <div class="text-end pe-4 pt-2 fw-semibold">
                                                                 {{ $student->fname }} {{ $student->lname }}
@@ -2408,7 +2408,7 @@
                                                                     <button type="button"
                                                                         class="accordion-button collapsed toggleable"
                                                                         data-bs-toggle="collapse"
-                                                                        data-bs-target="#instructor-{{ $eventLesson->id }}"
+                                                                        data-bs-target="#instructor-{{ $eventLesson->id ?? '' }}"
                                                                         aria-expanded="false">
                                                                         Instructor Competency Grading
                                                                     </button>
@@ -2417,7 +2417,7 @@
                                                             @endif
                                                         </div>
 
-                                                        <div id="instructor-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                                        <div id="instructor-{{ $eventLesson->id ?? '' }}" class="accordion-collapse collapse">
                                                             <!-- Student name aligned to the right, above the competency grading -->
                                                             <div class="text-end pe-4 pt-2 fw-semibold">
                                                                 {{ $student->fname }} {{ $student->lname }}
@@ -2914,7 +2914,7 @@
                                                                     <button type="button"
                                                                         class="accordion-button collapsed toggleable"
                                                                         data-bs-toggle="collapse"
-                                                                        data-bs-target="#examiner-{{ $eventLesson->id }}"
+                                                                        data-bs-target="#examiner-{{ $eventLesson->id ?? '' }}"
                                                                         aria-expanded="false">
                                                                         Examiner Competency Grading
                                                                     </button>
@@ -2923,7 +2923,7 @@
                                                             @endif
                                                         </div>
 
-                                                        <div id="examiner-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                                        <div id="examiner-{{ $eventLesson->id ?? '' }}" class="accordion-collapse collapse">
                                                             <!-- Student name aligned to the right, above the competency grading -->
                                                             <div class="text-end pe-4 pt-2 fw-semibold">
                                                                 {{ $student->fname }} {{ $student->lname }}
@@ -3009,7 +3009,7 @@
                                                                     <button type="button"
                                                                         class="accordion-button collapsed toggleable"
                                                                         data-bs-toggle="collapse"
-                                                                        data-bs-target="#instructor-{{ $eventLesson->id }}"
+                                                                        data-bs-target="#instructor-{{ $eventLesson->id ?? '' }}"
                                                                         aria-expanded="false">
                                                                         Instructor Competency Grading
                                                                     </button>
@@ -3018,7 +3018,7 @@
                                                             @endif
                                                         </div>
 
-                                                        <div id="instructor-{{ $eventLesson->id }}" class="accordion-collapse collapse">
+                                                        <div id="instructor-{{ $eventLesson->id ?? '' }}" class="accordion-collapse collapse">
                                                             <!-- Student name aligned to the right, above the competency grading -->
                                                             <div class="text-end pe-4 pt-2 fw-semibold">
                                                                 {{ $student->fname }} {{ $student->lname }}
