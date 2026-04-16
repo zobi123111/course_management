@@ -42,6 +42,13 @@
         background-color: #fff3cd !important;
         /* Keep alert yellow styling */
     }
+    .complete-prog-label .form-check-input:disabled {
+        opacity: .4;
+    }
+
+    .complete-prog-label .form-check-input:disabled~.form-check-label, .complete-prog-label .form-check-input[disabled]~.form-check-label {
+        opacity: .8;
+    }
 </style>
 @section('content')
 <!-- Breadcrumb -->
@@ -81,18 +88,27 @@
 
                         <!-- Legend Badges Below Pie Chart -->
                         <div class="row mt-3 justify-content-center gap-2">
-                            <div class="col-auto">
-                                <span class="badge text-white" style="background-color: #007bff;" title="Enrolled">Total Enrolled: {{ $chartData['enrolled'] }}</span>
+                            <div>
+                                <div class="col-auto">
+                                    <span class="badge text-white" style="background-color: #007bff;" title="Enrolled">Total Enrolled: {{ $chartData['enrolled'] }}</span>
+                                </div>
                             </div>
-                            <div class="col-auto">
-                                <span class="badge text-white" style="background-color: #28a745;" title="Completed">Completed: {{ $chartData['completed'] }}</span>
+                            <div style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 10px;
+                                    justify-content: center;
+                                ">
+                                <div class="col-auto">
+                                    <span class="badge text-white" style="background-color: #ffc107;" title="Active">In Progress: {{ $chartData['active'] }}</span>
+                                </div>
+                                <div class="col-auto">
+                                    <span class="badge text-white" style="background-color: #28a745;" title="Completed">Completed: {{ $chartData['completed'] }}</span>
+                                </div>
                             </div>
-                            <div class="col-auto">
-                                <span class="badge text-white" style="background-color: #ffc107;" title="Active">In Progress: {{ $chartData['active'] }}</span>
-                            </div>
-                            <div class="col-auto">
+                            <!-- <div class="col-auto">
                                 <span class="badge text-white" style="background-color: #d33d4b; color: #ffffff;" title="Active">Archive: {{ $chartData['is_activated'] }}</span>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>
@@ -189,7 +205,7 @@
 
                             <!-- Legend Section -->
                             <div class="mt-4 pt-3 border-top">
-                                <div class="d-flex justify-content-center gap-4">
+                                <div class="d-flex justify-content-center gap-4 complete-prog-label">
 
                                     <!-- Completed Legend -->
                                     <div class="form-check d-flex align-items-center">
@@ -228,7 +244,7 @@
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="toggleArchived" {{ $showArchived ? 'checked' : '' }}>
                     <strong><label class="form-check-label" for="toggleArchived">
-                            Archived
+                            Archived ({{ $chartData['is_activated'] }})
                         </label></strong>
                 </div>
             </div>
@@ -460,7 +476,7 @@ $(document).ready(function () {
     const rawData = {
       //  enrolled: {{ $chartData['enrolled'] }},
         completed: {{ $chartData['completed'] }},
-        archived: {{ $chartData['is_activated'] ?? 0 }},
+       // archived: {{ $chartData['is_activated'] ?? 0 }},
         active: {{ $chartData['active'] ?? 0 }},
         @if($showFailing) failing: {{ $chartData['failing'] }} @endif
     };
