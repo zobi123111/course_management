@@ -99,6 +99,88 @@
         </tr>
     </table>
 
+    @php
+        $lessons = $event->eventLessons[0];
+        $singleCustomTime = $event->eventLessons[0]->lesson->customTime ?? null;
+        $multipleCustomTimes = $event->eventLessons[0]->lesson->lessoncustomTime ?? collect();
+        $creditedTimes = $lesson->CreditedTime ?? collect();
+    @endphp
+
+    @if($singleCustomTime)
+        <div class="col-md-12 mt-3">
+            <h2>Course Tracking</h2>
+            <div class="table-responsive mt-2">
+                <table class="table table-bordered table-sm" style="border-color: #000 !important;">
+                    <thead class="table-light" style="border-color: #000 !important;">
+                        <tr>
+                            <th class="text-center">Custom Time</th>
+                            <th class="text-center">Allotted Time</th>
+                            <th class="text-center">Credited Time</th>
+                            <th class="text-center">Remaining Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $allotted = (float) ($singleCustomTime->given_hours ?? $singleCustomTime->hours ?? 0);
+                            $creditedHours = (float) ($lesson->custom_hours_credited ?? 0);
+
+                            $remaining = max($allotted - $creditedHours, 0);
+
+                            $remainingFormatted = number_format($remaining, 2);
+                        @endphp
+
+                        <tr class="text-center">
+                            <td>{{ $singleCustomTime->name }}</td>
+                            <td>{{ number_format($allotted, 2) }}</td>
+                            <td>{{ number_format($creditedHours, 2) }}</td>
+                            <td>{{ $remainingFormatted }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @elseif($multipleCustomTimes->count())
+        <div class="col-md-12 mt-3">
+            <h2>Course Tracking</h2>
+
+            <div class="table-responsive mt-2">
+                <table class="table table-bordered table-sm" style="border-color: #000 !important;">
+                    <thead class="table-light" style="border-color: #000 !important;">
+                        <tr>
+                            <!-- <th class="text-center">Custom Time</th> -->
+                            <th class="text-center"></th>
+                            <th class="text-center">Allotted Time</th>
+                            <th class="text-center">Credited Time</th>
+                            <th class="text-center">Remaining Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($multipleCustomTimes as $ct)
+                            @php
+                                $credited = $creditedTimes->firstWhere('custom_time_id', $ct->id);
+
+                                $allotted = (float) ($ct->given_hours ?? $ct->hours ?? 0);
+                                $creditedHours = (float) ($credited->hours ?? 0);
+
+                                $remaining = max($allotted - $creditedHours, 0);
+
+                                // format to 2 decimal (like your DB)
+                                $remainingFormatted = number_format($remaining, 2);
+                            @endphp
+
+                            <tr class="text-center">
+                                <td>{{ $ct->name }}</td>
+                                <td>{{ number_format($allotted, 2) }}</td>
+                                <td>{{ number_format($creditedHours, 2) }}</td>
+                                <td>{{ $remainingFormatted }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
+
     @if($eventLesson->sectors->isNotEmpty())
         <table width="100%" cellspacing="0" cellpadding="0" style="border-collapse: collapse; border: none;">
             <tr>
