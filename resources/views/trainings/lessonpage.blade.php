@@ -1335,7 +1335,7 @@
 
                                         <div class="col-md-4">
                                             <label class="form-label">Credited Custom Time</label>
-                                            <input type="text" class="form-control" name="custom_time_credited[]" data-allotted="{{ $ct->given_hours ?? $ct->hours }}">
+                                            <input type="text" class="form-control" name="custom_time_credited[]">
                                         </div>
 
                                         <div class="col-md-4 d-flex align-items-end">
