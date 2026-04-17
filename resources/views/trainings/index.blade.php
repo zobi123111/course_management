@@ -513,7 +513,7 @@
                 @if(auth()->user()->is_owner == 1)
                     <div class="col-md-6">
                         <label class="form-label">Select Org Unit<span class="text-danger">*</span></label>
-                        <select class="form-select select_org_unit" name="ou_id" id="edit_ou_id" readonly>
+                        <select class="form-select select_org_unit" name="ou_id" id="edit_ou_id" style="pointer-events: none;; background:#80808038;">
                             <option value="">Select Org Unit</option>
                             @foreach($organizationUnits as $val)
                                 <option value="{{ $val->id }}">{{ $val->org_unit_name }}</option>
@@ -526,7 +526,7 @@
                     <label class="form-label">
                         <span id="edit_student_label">Select Student</span><span class="text-danger">*</span>
                     </label>
-                    <select class="form-select " name="student_id" id="edit_select_user">
+                    <select class="form-select " name="student_id" id="edit_select_user" style="pointer-events: none; background:#80808038;">
                         <option value="">Select Student</option>
                         @foreach($students as $val)
                         <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
@@ -536,7 +536,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Select Course<span class="text-danger">*</span></label>
-                    <select class="form-select" name="course_id" id="edit_select_course" readonly>
+                    <select class="form-select" name="course_id" id="edit_select_course" style="pointer-events: none;; background:#80808038;">
                         <option value="">Select Course</option>
                         @foreach($courses as $val)
                             <option value="{{ $val->id }}">{{ $val->course_name }}</option>
