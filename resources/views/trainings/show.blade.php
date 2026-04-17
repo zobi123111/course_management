@@ -1085,11 +1085,45 @@
                                     @endphp
 
                                     @if($singleCustomTime)
-                                        <div class="col-md-3 mt-2">
+                                        <!-- <div class="col-md-3 mt-2">
                                             <strong><i class="text-primary fas fa-clock"></i> Custom Time:</strong><br>
                                             <span>Name: {{ $singleCustomTime->name }}</span><br>
                                             <span>Allotted: {{ $singleCustomTime->given_hours ?? $singleCustomTime->hours }}</span><br>
                                             <span>Credited: {{ $lesson->custom_hours_credited ?? '00:00' }}</span>
+                                        </div> -->
+
+                                        <div class="col-md-12 mt-3">
+                                            <strong><i class="text-primary fas fa-clock"></i> Custom Times:</strong>
+
+                                            <div class="table-responsive mt-2">
+                                                <table class="table table-bordered table-sm" style="border-color: #000 !important;">
+                                                    <thead class="table-light" style="border-color: #000 !important;">
+                                                        <tr>
+                                                            <th class="text-center">Custom Time</th>
+                                                            <th class="text-center">Allotted Time</th>
+                                                            <th class="text-center">Credited Time</th>
+                                                            <th class="text-center">Remaining Time</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @php
+                                                            $allotted = (float) ($singleCustomTime->given_hours ?? $singleCustomTime->hours ?? 0);
+                                                            $creditedHours = (float) ($lesson->custom_hours_credited ?? 0);
+
+                                                            $remaining = max($allotted - $creditedHours, 0);
+
+                                                            $remainingFormatted = number_format($remaining, 2);
+                                                        @endphp
+
+                                                        <tr class="text-center">
+                                                            <td>{{ $singleCustomTime->name }}</td>
+                                                            <td>{{ number_format($allotted, 2) }}</td>
+                                                            <td>{{ number_format($creditedHours, 2) }}</td>
+                                                            <td>{{ $remainingFormatted }}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     @elseif($multipleCustomTimes->count())
                                         <div class="col-md-12 mt-3">
