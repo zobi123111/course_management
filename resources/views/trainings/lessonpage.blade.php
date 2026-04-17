@@ -1244,10 +1244,10 @@
                         </div>
                     </div>
 
-                    @if ($lessonType !== 'deferred' && $lessonType !== 'custom')
+                    @if ($lesson->customTime->count())
                         <div class="card">
                             <div class="card-body">
-                                    <h5 class="details-card-title d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="details-card-title d-flex justify-content-between align-items-center mt-3 mb-3">
                                         Credited Time
                                     </h5>
 
@@ -1299,7 +1299,7 @@
                                 
 
                                 @if($creditedCount < $customCount)
-                                    <button class="btn btn-primary mt-3" id="showAddFormBtn">Add Custom Time</button>
+                                    <button class="btn btn-primary" id="showAddFormBtn">Add Custom Time</button>
                                 @endif
 
                                 {{-- Add Custom Time Form --}}
