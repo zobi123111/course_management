@@ -1081,6 +1081,7 @@
                                     @php
                                         $singleCustomTime = $lesson->lesson->customTime ?? null;
                                         $multipleCustomTimes = $lesson->lesson->lessoncustomTime ?? collect();
+                                        $creditedTimes = $lesson->CreditedTime ?? collect();
                                     @endphp
 
                                     @if($singleCustomTime)
@@ -1091,16 +1092,44 @@
                                             <span>Credited: {{ $lesson->custom_hours_credited ?? '00:00' }}</span>
                                         </div>
                                     @elseif($multipleCustomTimes->count())
-                                        @foreach($multipleCustomTimes as $ct)
-                                            <div class="col-md-2 mt-2">
-                                                <strong><i class="text-primary fas fa-clock"></i> Custom Time(s):</strong><br>
-                                                <div class="mb-1">
-                                                    <span>Name: {{ $ct->name }}</span><br>
-                                                    <span>Allotted: {{ $ct->given_hours ?? $ct->hours }}</span><br>
-                                                    <span>Credited: {{ $lesson->custom_hours_credited ?? '00:00' }}</span>
-                                                </div>
+                                        <div class="col-md-12 mt-3">
+                                            <strong><i class="text-primary fas fa-clock"></i> Custom Times:</strong>
+
+                                            <div class="table-responsive mt-2">
+                                                <table class="table table-bordered table-sm" style="border-color: #000 !important;">
+                                                    <thead class="table-light" style="border-color: #000 !important;">
+                                                        <tr>
+                                                            <th class="text-center">Custom Time</th>
+                                                            <th class="text-center">Allotted Time</th>
+                                                            <th class="text-center">Credited Time</th>
+                                                            <th class="text-center">Remaining Time</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach($multipleCustomTimes as $ct)
+                                                            @php
+                                                                $credited = $creditedTimes->firstWhere('custom_time_id', $ct->id);
+
+                                                                $allotted = (float) ($ct->given_hours ?? $ct->hours ?? 0);
+                                                                $creditedHours = (float) ($credited->hours ?? 0);
+
+                                                                $remaining = max($allotted - $creditedHours, 0);
+
+                                                                // format to 2 decimal (like your DB)
+                                                                $remainingFormatted = number_format($remaining, 2);
+                                                            @endphp
+
+                                                            <tr class="text-center">
+                                                                <td>{{ $ct->name }}</td>
+                                                                <td>{{ number_format($allotted, 2) }}</td>
+                                                                <td>{{ number_format($creditedHours, 2) }}</td>
+                                                                <td>{{ $remainingFormatted }}</td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
                                             </div>
-                                        @endforeach
+                                        </div>
                                     @endif
 
 
@@ -2164,7 +2193,7 @@
                                         @foreach($totals['custom'] as $name => $custom)
                                         <p>
                                             <strong>Custom ({{ $name }}):</strong>
-                                            Allotted: {{ $custom['allotted'] }} |
+                                            Allotted: {{ formatSeconds($custom['allotted']) }} |
                                             Credited: {{ formatSeconds($custom['credited']) }}
                                         </p>
                                         @endforeach
@@ -2537,13 +2566,38 @@
 
                                         $blockCredited = $totalSectorblockTime + $TotalBlockCredited;
 
+                                        // foreach ($trainingEvent->eventLessons as $eventLesson) {
+
+                                        //     $customTimes = $eventLesson->lesson?->lessoncustomTime ?? collect();
+
+                                        //     foreach ($customTimes as $ct) {
+                                        //         $name = $ct->name;
+                                        //         $totals['custom'][$name]['allotted'] = $ct->hours;
+
+                                        //         $totals['custom'][$name]['credited'] = $totals['custom'][$name]['credited'] ?? 0;
+                                        //     }
+
+                                        //     foreach ($eventLesson->CreditedTime as $creditRow) {
+
+                                        //         $name = $creditRow->name;
+                                        //         $seconds = strtotime("1970-01-01 {$creditRow->hours}") - strtotime("1970-01-01 00:00");
+
+                                        //         if (isset($totals['custom'][$name])) {
+                                        //             $totals['custom'][$name]['credited'] += $seconds;
+                                        //         }
+                                        //     }
+                                        // }
                                         foreach ($trainingEvent->eventLessons as $eventLesson) {
 
                                             $customTimes = $eventLesson->lesson?->lessoncustomTime ?? collect();
 
                                             foreach ($customTimes as $ct) {
                                                 $name = $ct->name;
-                                                $totals['custom'][$name]['allotted'] = $ct->hours;
+
+                                                // convert allotted to seconds
+                                                $allottedSeconds = strtotime("1970-01-01 {$ct->hours}") - strtotime("1970-01-01 00:00");
+
+                                                $totals['custom'][$name]['allotted'] = ($totals['custom'][$name]['allotted'] ?? 0) + $allottedSeconds;
 
                                                 $totals['custom'][$name]['credited'] = $totals['custom'][$name]['credited'] ?? 0;
                                             }
@@ -2551,6 +2605,7 @@
                                             foreach ($eventLesson->CreditedTime as $creditRow) {
 
                                                 $name = $creditRow->name;
+
                                                 $seconds = strtotime("1970-01-01 {$creditRow->hours}") - strtotime("1970-01-01 00:00");
 
                                                 if (isset($totals['custom'][$name])) {
@@ -2582,7 +2637,7 @@
                                         @foreach($totals['custom'] as $name => $custom)
                                         <p>
                                             <strong>Custom ({{ $name }}):</strong>
-                                            Allotted: {{ $custom['allotted'] }} |
+                                            Allotted: {{ formatSeconds($custom['allotted']) }} |
                                             Credited: {{ formatSeconds($custom['credited']) }}
                                         </p>
                                         @endforeach
