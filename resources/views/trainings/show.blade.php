@@ -636,6 +636,26 @@
         .document_btn {
             padding: 5px 10px !important;
         }
+
+        .custom-list {
+            list-style-type: disc;
+            padding-left: 0px !important;
+        }
+
+        .custom-item {
+            display: grid;
+            grid-template-columns: 100px auto;
+        }
+
+        .label {
+            width: 100px;
+            font-weight: bold;
+        }
+
+        .values {
+            flex: 1;
+        }
+        
     </style>
 
     <head>
@@ -1093,7 +1113,7 @@
                                         </div> -->
 
                                         <div class="col-md-12 mt-3">
-                                            <strong><i class="text-primary fas fa-clock"></i> Custom Times:</strong>
+                                            <strong><i class="text-primary fas fa-clock"></i> Course Tracking :</strong>
 
                                             <div class="table-responsive mt-2">
                                                 <table class="table table-bordered table-sm" style="border-color: #000 !important;">
@@ -1127,13 +1147,14 @@
                                         </div>
                                     @elseif($multipleCustomTimes->count())
                                         <div class="col-md-12 mt-3">
-                                            <strong><i class="text-primary fas fa-clock"></i> Custom Times:</strong>
+                                            <strong><i class="text-primary fas fa-clock"></i> Course Tracking:</strong>
 
                                             <div class="table-responsive mt-2">
                                                 <table class="table table-bordered table-sm" style="border-color: #000 !important;">
                                                     <thead class="table-light" style="border-color: #000 !important;">
                                                         <tr>
-                                                            <th class="text-center">Custom Time</th>
+                                                            <!-- <th class="text-center">Custom Time</th> -->
+                                                            <th class="text-center"></th>
                                                             <th class="text-center">Allotted Time</th>
                                                             <th class="text-center">Credited Time</th>
                                                             <th class="text-center">Remaining Time</th>
@@ -2223,14 +2244,28 @@
                                     </p>
                                     @endif
 
-                                    @if(!empty($totals['custom']))
+                                    <!-- @if(!empty($totals['custom']))
                                         @foreach($totals['custom'] as $name => $custom)
                                         <p>
-                                            <strong>Custom ({{ $name }}):</strong>
+                                            <strong>{{ $name }}:</strong>
                                             Allotted: {{ formatSeconds($custom['allotted']) }} |
                                             Credited: {{ formatSeconds($custom['credited']) }}
                                         </p>
                                         @endforeach
+                                    @endif -->
+
+                                    @if(!empty($totals['custom']))
+                                        <ul class="custom-list">
+                                            @foreach($totals['custom'] as $name => $custom)
+                                                <li class="custom-item">
+                                                    <span class="label">{{ $name }} : </span>
+                                                    <span class="values">
+                                                        Allotted: {{ formatSeconds($custom['allotted']) }} |
+                                                        Credited: {{ formatSeconds($custom['credited']) }}
+                                                    </span>
+                                                </li>
+                                            @endforeach
+                                        </ul>
                                     @endif
 
                                     <?php
@@ -2667,14 +2702,27 @@
                                         {{ formatSeconds($totalFlightTime) }}
                                     </p>
 
-                                    @if(!empty($totals['custom']))
+                                    <!-- @if(!empty($totals['custom']))
                                         @foreach($totals['custom'] as $name => $custom)
                                         <p>
-                                            <strong>Custom ({{ $name }}):</strong>
+                                            <strong>{{ $name }}:</strong>
                                             Allotted: {{ formatSeconds($custom['allotted']) }} |
                                             Credited: {{ formatSeconds($custom['credited']) }}
                                         </p>
                                         @endforeach
+                                    @endif -->
+                                    @if(!empty($totals['custom']))
+                                        <ul class="custom-list">
+                                            @foreach($totals['custom'] as $name => $custom)
+                                                <li class="custom-item mb-2">
+                                                    <span class="label">{{ $name }} : </span>
+                                                    <span class="values">
+                                                        Allotted: {{ formatSeconds($custom['allotted']) }} |
+                                                        Credited: {{ formatSeconds($custom['credited']) }}
+                                                    </span>
+                                                </li>
+                                            @endforeach
+                                        </ul>
                                     @endif
 
                                 @endif
