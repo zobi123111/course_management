@@ -1503,6 +1503,9 @@
                                                     $isDeferred = in_array($sublesson->id, $deferredTaskIds);
                                                     $is_my_lesson = $eventLesson->is_my_lesson;
                                                     $isDisabled = !$is_my_lesson;
+
+                                                    $isStudentSelf = ($eventLesson->trainingEvent->student_id === auth()->id());
+                                                    $disableGrading = $isDeferred || $isStudentSelf;
                                                     @endphp
 
 
@@ -1529,26 +1532,26 @@
                                                                     <tr>
                                                                         <td>
                                                                             <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
-                                                                                <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Not Applicable" {{ $selectedGrade == 'Not Applicable' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
+                                                                                <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Not Applicable" {{ $selectedGrade == 'Not Applicable' ? 'checked' : '' }} {{ $disableGrading ? 'disabled' : '' }}>
                                                                                 <span class="custom-radio not_applicable">N/A</span>
                                                                             </label>
                                                                         </td>
 
                                                                         <td>
                                                                             <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
-                                                                                <input type="radio" class="deselectable-radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
+                                                                                <input type="radio" class="deselectable-radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Incomplete" {{ $selectedGrade == 'Incomplete' ? 'checked' : '' }} {{ $disableGrading ? 'disabled' : '' }} }}>
                                                                                 <span class="custom-radio incomplete">Incomplete</span>
                                                                             </label>
                                                                         </td>
                                                                         <td>
                                                                             <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
-                                                                                <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
+                                                                                <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Further training required" {{ $selectedGrade == 'Further training required' ? 'checked' : '' }} {{ $disableGrading ? 'disabled' : '' }}>
                                                                                 <span class="custom-radio ftr">FTR</span>
                                                                             </label>
                                                                         </td>
                                                                         <td>
                                                                             <label class="radio-label" title="{{ $isDeferred ? 'Deferred: You cannot edit this grading.' : '' }}">
-                                                                                <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Competent" {{ $selectedGrade == 'Competent' ? 'checked' : '' }} {{ $isDeferred ? 'disabled' : '' }}>
+                                                                                <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="Competent" {{ $selectedGrade == 'Competent' ? 'checked' : '' }} {{ $disableGrading ? 'disabled' : '' }}>
                                                                                 <span class="custom-radio competent">Competent</span>
                                                                             </label>
                                                                         </td>
@@ -1566,7 +1569,7 @@
                                                                                 min="0" max="100"
                                                                                 step="0.1"
                                                                                 style="width: 250px;" {{-- Increased width --}}
-                                                                                {{ $isDeferred ? 'readonly title=Deferred: You cannot edit this grading.' : '' }}>
+                                                                                {{ $disableGrading ? 'readonly title=You cannot edit this grading.' : '' }}>
                                                                         </td>
                                                                     </tr>
                                                                     @else
@@ -1577,7 +1580,8 @@
                                                                             @endphp
                                                                             <td>
                                                                             <label class="radio-label">
-                                                                                <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="{{ $i }}" {{ old("task_grade.$lesson->id.$sublesson->id.$student->id", $selectedGrade) == $i ? 'checked' : '' }}>
+                                                                                <input type="radio" name="task_grade[{{ $lesson->id }}][{{ $sublesson->id }}]" value="{{ $i }}" {{ old("task_grade.$lesson->id.$sublesson->id.$student->id", $selectedGrade) == $i ? 'checked' : '' }}
+                                                                                {{ $disableGrading ? 'disabled' : '' }}>
                                                                                 <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
                                                                             </label>
                                                                             </td>
@@ -1591,6 +1595,7 @@
                                                     </div>
                                                 </div>
                                             </div>
+
                                             <!-- Toggleable Comment Box -->
                                             <div class="collapse mt-2" id="comment-box-{{ $sublesson->id }}">
                                                 <textarea name="task_comments[{{ $lesson->id ?? '' }}][{{ $sublesson->id ?? '' }}]" rows="3" class="form-control" placeholder="Add your remarks or feedback here..." @if($isDeferred) readonly title="Deferred: You cannot edit this comment." @endif>{{ old("task_comments.$lesson->id.$sublesson->id.$student->id", $selectedComment) }}</textarea>
@@ -1714,6 +1719,11 @@
                                         @endif -->
                                         
 
+                                        @php
+                                            $isStudentSelf = ($eventLesson->trainingEvent->student_id === auth()->id());
+                                        @endphp
+
+
                                         @if($lesson->examiner_cbta == 1)
                                             <!-- Examiner CBTA -->
                                             <div class="accordion-card">
@@ -1778,7 +1788,7 @@
                                                                                                 data-code="{{ $val['id'] }}"
                                                                                                 data-color-class="{{ $colorClass }}"
                                                                                                 {{-- check if saved grade matches --}}
-                                                                                                {{ isset($savedGrade['competency_value']) && $savedGrade['competency_value'] == $i ? 'checked' : '' }}>
+                                                                                                {{ isset($savedGrade['competency_value']) && $savedGrade['competency_value'] == $i ? 'checked' : '' }} {{ $isStudentSelf ? 'disabled' : '' }}>
                                                                                             <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
                                                                                         </label>
                                                                                         </td>
@@ -1796,7 +1806,7 @@
                                                                 <textarea name="examiner_comments[{{ $lesson->id }}][{{ $val['id'] }}]"
                                                                     rows="3"
                                                                     class="form-control"
-                                                                    placeholder="Add remarks or comments on competency">{{ $savedGrade['comment'] ?? '' }}</textarea>
+                                                                    placeholder="Add remarks or comments on competency" {{ $isStudentSelf ? 'disabled' : '' }}>{{ $savedGrade['comment'] ?? '' }}</textarea>
                                                             </div>
                                                             @endforeach
                                                         </div>
@@ -1873,7 +1883,7 @@
                                                                                                 data-code="{{ $val['id'] }}"
                                                                                                 data-color-class="{{ $colorClass }}"
                                                                                                 {{-- check if saved grade matches --}}
-                                                                                                {{ isset($savedGrade['competency_value']) && $savedGrade['competency_value'] == $i ? 'checked' : '' }}>
+                                                                                                {{ isset($savedGrade['competency_value']) && $savedGrade['competency_value'] == $i ? 'checked' : '' }} {{ $isStudentSelf ? 'disabled' : '' }}>
                                                                                             <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
                                                                                         </label>
                                                                                         </td>
@@ -1891,7 +1901,7 @@
                                                                 <textarea name="instructor_comments[{{ $lesson->id }}][{{ $val['id'] }}]"
                                                                     rows="3"
                                                                     class="form-control"
-                                                                    placeholder="Add remarks or comments on competency">{{ $savedGrade['comment'] ?? '' }}</textarea>
+                                                                    placeholder="Add remarks or comments on competency" {{ $isStudentSelf ? 'disabled' : '' }}>{{ $savedGrade['comment'] ?? '' }}</textarea>
                                                             </div>
                                                             @endforeach
                                                         </div>
@@ -1969,7 +1979,7 @@
                                                                                                 data-code="{{ $val['id'] }}"
                                                                                                 data-color-class="{{ $colorClass }}"
                                                                                                 {{-- check if saved grade matches --}}
-                                                                                                {{ isset($savedGrade['competency_value']) && $savedGrade['competency_value'] == $i ? 'checked' : '' }}>
+                                                                                                {{ isset($savedGrade['competency_value']) && $savedGrade['competency_value'] == $i ? 'checked' : '' }} {{ $isStudentSelf ? 'disabled' : '' }}>
                                                                                             <span class="custom-radio {{ $colorClass }}">{{ $i }}</span>
                                                                                         </label>
                                                                                         </td>
@@ -1987,7 +1997,7 @@
                                                                 <textarea name="pilot_comments[{{ $lesson->id }}][{{ $val['id'] }}]"
                                                                     rows="3"
                                                                     class="form-control"
-                                                                    placeholder="Add remarks or comments on competency">{{ $savedGrade['comment'] ?? '' }}</textarea>
+                                                                    placeholder="Add remarks or comments on competency" {{ $isStudentSelf ? 'disabled' : '' }}>{{ $savedGrade['comment'] ?? '' }}</textarea>
                                                             </div>
                                                             @endforeach
                                                         </div>
@@ -2001,17 +2011,19 @@
                                             </div>
                                         @endif
 
-                                        <div>
-                                            <label class="mt-3 mb-3">Lesson Summary</label>
-                                            <textarea name="lesson_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Write Lesson Summary">{{ old("lesson_summary.$lesson->id", $eventLesson->lesson_summary ?? '') }}</textarea>
-                                        </div>
+                                        @if(Auth::user()->role == "1")
+                                            <div>
+                                                <label class="mt-3 mb-3">Lesson Summary</label>
+                                                <textarea name="lesson_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Write Lesson Summary">{{ old("lesson_summary.$lesson->id", $eventLesson->lesson_summary ?? '') }}</textarea>
+                                            </div>
+                                        @endif
 
                                         @if(Auth::user()->role == "1")
-                                        <div>
-                                            <label class="mt-3 mb-3">Instructor Comment</label>
-                                            <textarea name="instructor_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Instructor Comment">{{ old("lesson_summary.$lesson->id", $eventLesson->instructor_comment ?? '') }}</textarea>
-                                        </div>
-                                        <i><strong> Notes: </strong> for training manager/instructors only</i>
+                                            <div>
+                                                <label class="mt-3 mb-3">Instructor Comment</label>
+                                                <textarea name="instructor_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Instructor Comment">{{ old("lesson_summary.$lesson->id", $eventLesson->instructor_comment ?? '') }}</textarea>
+                                            </div>
+                                            <i><strong> Notes: </strong> for training manager/instructors only</i>
                                         @endif
                                         
                                         <div class="accordion-item">
@@ -2047,7 +2059,7 @@
                                                                             <input type="radio"
                                                                                 name="overall_result[{{ $eventLesson->id }}]"
                                                                                 value="Incomplete"
-                                                                                {{ $lessonData->overall_result == 'Incomplete' ? 'checked' : '' }}>
+                                                                                {{ $lessonData->overall_result == 'Incomplete' ? 'checked' : '' }} {{ $isStudentSelf ? 'disabled' : '' }}>
                                                                             <span class="custom-radio incomplete">Incomplete</span>
                                                                         </label>
                                                                     </td>
@@ -2057,7 +2069,7 @@
                                                                             <input type="radio"
                                                                                 name="overall_result[{{ $eventLesson->id }}]"
                                                                                 value="Further training required"
-                                                                                {{ $lessonData->overall_result == 'Further training required' ? 'checked' : '' }}>
+                                                                                {{ $lessonData->overall_result == 'Further training required' ? 'checked' : '' }} {{ $isStudentSelf ? 'disabled' : '' }}>
                                                                             <span class="custom-radio ftr">FTR</span>
                                                                         </label>
                                                                     </td>
@@ -2066,7 +2078,7 @@
                                                                             <input type="radio"
                                                                                 name="overall_result[{{ $eventLesson->id }}]"
                                                                                 value="Competent"
-                                                                                {{ $lessonData->overall_result == 'Competent' ? 'checked' : '' }} style="width:100%">
+                                                                                {{ $lessonData->overall_result == 'Competent' ? 'checked' : '' }} style="width:100%" {{ $isStudentSelf ? 'disabled' : '' }}>
                                                                             <span class="custom-radio competent">Competent</span>
                                                                         </label>
                                                                     </td>
@@ -2133,9 +2145,11 @@
                                                 <span style="color:red"> You are not eligible to perform any action on this lesson </span>
                                             </div>
                                             @endif
-                                            <div class="btn-container ms-3 mt-3 mb-3">
-                                                <button type="submit" class="btn btn-save" id="submitGrading" {{ $isDisabled ? 'disabled' : '' }}>Save Lesson</button>
-                                            </div>
+                                            @if(!$isStudentSelf)
+                                                <div class="btn-container ms-3 mt-3 mb-3">
+                                                    <button type="submit" class="btn btn-save" id="submitGrading" {{ $isDisabled ? 'disabled' : '' }}>Save Lesson</button>
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                     @endif
