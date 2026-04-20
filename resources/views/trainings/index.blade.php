@@ -33,28 +33,14 @@
     <!-- Right Side -->
     <?php  $currentUser = auth()->user(); ?>
     @if ($currentUser->is_owner == 1 || $currentUser->is_admin == 1) 
-    <div class="form-check form-switch mb-0 d-flex align-items-center me-2">
-        <select id="sortDropdown" class="form-select form-select-sm w-auto me-5">
-            <option value="">Sort By</option>
-            <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>
-                Start Date (Newest → Oldest)
-            </option>
-            <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>
-                Start Date (Oldest → Newest)
-            </option>
-            <option value="name_asc" {{ request('sort') == 'name_asc' ? 'selected' : '' }}>
-                Name (A → Z)
-            </option>
-            <option value="name_desc" {{ request('sort') == 'name_desc' ? 'selected' : '' }}>
-                Name (Z → A)
-            </option>
-            <option value="updated" {{ request('sort') == 'updated' ? 'selected' : '' }}>
-                Recently Updated
-            </option>
-        </select>
-
-        <input class="form-check-input" type="checkbox"  id="archiveToggle" {{ request('archive') == '1' ? 'checked' : '' }}>
-        <label class="form-check-label fw-medium" for="archiveToggle"> Archive </label>
+    <div class="form-check form-switch mb-0">
+        <input class="form-check-input" 
+       type="checkbox" 
+       id="archiveToggle"
+       {{ request('archive') == '1' ? 'checked' : '' }}>
+        <label class="form-check-label fw-medium" for="archiveToggle">
+            Archive
+        </label>
     </div>
     @endif
 </div>
@@ -200,8 +186,8 @@
     </table>
 </div>
 </div>
-@if(get_user_role(auth()->user()->role) == 'administrator') 
-<h4 class="fw-semibold text-primary mb-2">Instructor Training events</h4> 
+@if(get_user_role(auth()->user()->role) == 'administrator' || get_user_role(auth()->user()->role) == 'Instructor') 
+<h4>Instructor Training events</h4> 
 <div class="card pt-4">
         <div class="card-body">
     <table class="table table-hover" id="trainingEventTable">
@@ -2039,12 +2025,6 @@ $(document).ready(function() {
             url.searchParams.delete('archive');
         }
 
-        window.location.href = url.toString();
-    });
-
-    document.getElementById('sortDropdown').addEventListener('change', function () {
-        let url = new URL(window.location.href);
-        url.searchParams.set('sort', this.value);
         window.location.href = url.toString();
     });
 

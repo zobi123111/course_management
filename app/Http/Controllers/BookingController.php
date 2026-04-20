@@ -27,7 +27,7 @@ class BookingController extends Controller
         $ou_id = auth()->user()->ou_id;
         if (auth()->user()->is_owner == 1) {
             $students = collect();
-        } elseif (auth()->user()->is_admin == 1) {
+        } elseif (auth()->user()->is_admin == 1) { 
             $students = User::where('ou_id', $ou_id)
                 ->where(function ($q) {
                     $q->where('is_admin', false)->orWhereNull('is_admin');
@@ -35,8 +35,20 @@ class BookingController extends Controller
                 ->whereHas('roles', fn($q) => $q->where('role_name', 'like', '%Student%'))
                 ->with('roles')
                 ->get();
-        }else{
-            $students = collect();
+        }else{ 
+        $students = User::where('ou_id', $ou_id)
+                        ->where('status', 1)
+                        ->where(function ($q) {
+                           // $q->where('is_admin', false)->orWhereNull('is_admin');
+                            $q->where('status', 0);
+                        })
+                        ->whereHas('roles', function ($q) {
+                            $q->where('role_name', 'like', '%Student%');
+                        })
+                        ->with('roles')
+                        ->get();
+                       
+
         }
 
 
@@ -927,14 +939,16 @@ class BookingController extends Controller
                     ->get();
 
         }
-        elseif($request->instructor_checkbox == 0){
+        elseif($request->instructor_checkbox == 0){ 
                  $students = User::where('ou_id', $request->ou_id)
-                    ->where(function ($q) {
-                        $q->where('is_admin', false)->orWhereNull('is_admin');
-                    })
-                   // ->whereHas('roles', fn($q) => $q->where('role_name', 'like', '%Student%'))
-                    ->with('roles')
-                    ->get();
+                            ->where(function ($q) {
+                                $q->where('is_admin', false)->orWhereNull('is_admin');
+                                $q->where('is_activated', 0);
+                                  $q->where('status', 1);
+                            })
+                         ->whereHas('roles', fn($q) => $q->where('role_name', 'like', '%Student%'))
+                            ->with('roles')
+                            ->get();
         }
    
    
