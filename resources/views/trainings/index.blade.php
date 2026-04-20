@@ -37,10 +37,10 @@
         <select id="sortDropdown" class="form-select form-select-sm w-auto me-5">
             <option value="">Sort By</option>
             <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>
-                Date (Newest → Oldest)
+                Start Date (Newest → Oldest)
             </option>
             <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>
-                Date (Oldest → Newest)
+                Start Date (Oldest → Newest)
             </option>
             <option value="name_asc" {{ request('sort') == 'name_asc' ? 'selected' : '' }}>
                 Name (A → Z)
@@ -200,7 +200,7 @@
     </table>
 </div>
 </div>
-<h4>Instructor Training events</h4> 
+<h4 class="fw-semibold text-primary mb-2">Instructor Training events</h4> 
 <div class="card pt-4">
         <div class="card-body">
     <table class="table table-hover" id="trainingEventTable">
