@@ -243,10 +243,10 @@ class DashboardController extends Controller
         $unreadDocuments = $totalDocuments - $readDocuments;
 
         if($user->role == 3){
-            $bookings = Booking ::where('std_id', $userId)->where('status', 'approved')->get();
+            $bookings = Booking ::where('std_id', $userId)->get();
         }
         else {
-            $bookings = Booking ::where('instructor_id', $userId)->where('status', 'approved')->get();
+            $bookings = Booking ::where('instructor_id', $userId)->get();
         }
 
         $users = User::where('ou_id', $ou_id)

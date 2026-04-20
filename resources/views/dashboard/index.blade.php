@@ -2133,7 +2133,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 searching: true,
                 pageLength: 10,
                 language: {
-                    emptyTable: "No pending bookings"
+                    emptyTable: "No  bookings"
                 }
             });
 
