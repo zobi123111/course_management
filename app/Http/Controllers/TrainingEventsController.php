@@ -95,32 +95,39 @@ class TrainingEventsController extends Controller
             })->with('roles')->get();
 
            
+
+            $query = TrainingEvents::with($trainingEventsRelations)
+                ->where('entry_source', null)
+                ->where('archive', $archive)
+                ->withCount(['taskGradings','competencyGradings']);
+
+            $trainingEvents = $this->applySorting($query)->get();
          
 
-            $trainingEvents = TrainingEvents::with($trainingEventsRelations)
-                            ->where('entry_source', null)
-                            ->where('archive', $archive)
-                            ->withCount([
-                                'taskGradings',
-                                'competencyGradings'
-                            ])
-                            // ->orderByDesc('event_date')
-                            ->orderByDesc('updated_at') 
-                            ->get();
+            // $trainingEvents = TrainingEvents::with($trainingEventsRelations)
+            //                 ->where('entry_source', null)
+            //                 ->where('archive', $archive)
+            //                 ->withCount([
+            //                     'taskGradings',
+            //                     'competencyGradings'
+            //                 ])
+            //                 // ->orderByDesc('event_date')
+            //                 // ->orderByDesc('updated_at') 
+            //                 ->get();
                            
            
 
-          $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations)
+            $trainingEvents_instructor_query = TrainingEvents::with($trainingEventsRelations)
                                         ->where('entry_source', 'instructor')
                                         ->where('archive', $archive)
                                         ->withCount([
                                             'taskGradings',
                                             'competencyGradings'
-                                        ])
-                                        ->orderByDesc('updated_at')   // Latest updated first
-                                        ->get();
+                                        ]);
+                                        // ->orderByDesc('updated_at')   // Latest updated first
+                                        // ->get();
       
-       
+            $trainingEvents_instructor = $this->applySorting($trainingEvents_instructor_query)->get();
                                 
                
         } elseif (checkAllowedModule('training', 'training.index')->isNotEmpty() && empty($currentUser->is_admin)) { 
@@ -167,7 +174,9 @@ class TrainingEventsController extends Controller
                     ->unique();
 
 
-                $trainingEvents = $trainingEvents_instructorQuery->whereIn('id', $eventIds)->get();
+                $trainingEvents = $this->applySorting(
+                                        $trainingEvents_instructorQuery->whereIn('id', $eventIds)
+                                    )->get();;
                 
                 $trainingEvents_instructor = TrainingEvents::with($trainingEventsRelations)
                     ->where('entry_source', "instructor")
@@ -177,15 +186,15 @@ class TrainingEventsController extends Controller
                         'taskGradings',
                         'competencyGradings'
                     ])
-                    ->orderByDesc('updated_at')
+                    // ->orderByDesc('updated_at')
                     ->get();
                    
                     
                    
             } else {
-                $trainingEvents = $trainingEventsQuery
-                    ->where('student_id', $currentUser->id)
-                    ->get();
+                $trainingEvents = $this->applySorting(
+                                $trainingEventsQuery->where('student_id', $currentUser->id)
+                            )->get();
                 $trainingEvents_instructor = [];
                   
             }
@@ -212,20 +221,20 @@ class TrainingEventsController extends Controller
                     $query->where('role_name', 'like', '%Student%');
                 })->with('roles')->get();
 
-            $trainingEvents = TrainingEvents::where('ou_id', $currentUser->ou_id)
+            $trainingEvents =  $this->applySorting(TrainingEvents::where('training_events.ou_id', $currentUser->ou_id)
                 ->where('entry_source', null)
                 ->where('archive', $archive)
                 ->with($trainingEventsRelations)
                 ->withCount(['taskGradings', 'competencyGradings'])
-                ->orderByDesc('updated_at') 
-                ->get();
+                // ->orderByDesc('updated_at') 
+                )->get();
               
-            $trainingEvents_instructor = TrainingEvents::where('ou_id', $currentUser->ou_id)
+            $trainingEvents_instructor =  $this->applySorting(TrainingEvents::where('training_events.ou_id', $currentUser->ou_id)
                 ->where('entry_source', "instructor")
                 ->where('archive', $archive)
                 ->withCount(['taskGradings', 'competencyGradings'])
-                ->orderByDesc('updated_at') 
-                ->get();
+                // ->orderByDesc('updated_at') 
+            )->get();
                 
         }
  
@@ -286,6 +295,43 @@ class TrainingEventsController extends Controller
 
         $tags = RhsTag::all();
         return view('trainings.index', compact('groups', 'courses', 'instructors', 'organizationUnits', 'trainingEvents', 'resources', 'students', 'trainingEvents_instructor', 'tags'));
+    }
+    
+
+    public function applySorting($query)
+    {
+        $sort = request('sort');
+
+        switch ($sort) {
+            case 'newest':
+                $query->orderBy('event_date', 'desc');
+                break;
+
+            case 'oldest':
+                $query->orderBy('event_date', 'asc');
+                break;
+
+            case 'name_asc':
+                $query->leftJoin('courses', 'courses.id', '=', 'training_events.course_id')
+                    ->orderBy('courses.course_name', 'asc')
+                    ->select('training_events.*');
+                break;
+
+            case 'name_desc':
+                $query->leftJoin('courses', 'courses.id', '=', 'training_events.course_id')
+                    ->orderBy('courses.course_name', 'desc')
+                    ->select('training_events.*');
+                break;
+
+            case 'updated':
+                $query->orderBy('updated_at', 'desc');
+                break;
+
+            default:
+                $query->orderByDesc('updated_at');
+        }
+
+        return $query;
     }
 
     public function getOrgStudentsInstructorsResources(Request $request, $ou_id)
@@ -4805,8 +4851,8 @@ class TrainingEventsController extends Controller
                 ? Carbon::parse($opcRating->opc_expiry_date)
                 : null;
 
-            $validityMonths = (int) ($event->opc_validity ?? 6);
-            $opcExtend      = (int) ($event->opc_extend ?? 1);
+            $validityMonths = (int) ($event->course->opc_validity ?? 6);
+            $opcExtend      = (int) ($event->course->opc_extend ?? 1);
 
             $newExpiry = $this->calculateOpcExpiry(
                 $completionDate,
