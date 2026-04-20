@@ -128,12 +128,14 @@
                                 </a>             -->
                             @endif
                         
-                            @if($event->can_end_course) 
-                                {{-- Active “End Course” button/icon --}}
-                                <button class="btn btn-sm btn-flag-checkered end-course-btn" data-event-id="{{ encode_id($event->id) }}"
-                                    title="End Course/Event" >
-                                    <i class="fa fa-flag-checkered text-primary"></i>
-                                </button>
+                            @if(auth()->user()->is_owner != 1)
+                                @if($event->can_end_course) 
+                                    {{-- Active “End Course” button/icon --}}
+                                    <button class="btn btn-sm btn-flag-checkered end-course-btn" data-event-id="{{ encode_id($event->id) }}"
+                                        title="End Course/Event" >
+                                        <i class="fa fa-flag-checkered text-primary"></i>
+                                    </button>
+                                @endif
                             @endif
                         @else
                             {{-- This event is already locked/ended --}}
@@ -271,15 +273,19 @@
                                     Old View
                                 </a>   -->
                             @endif
-                            @if($event->can_end_course)
-                                {{-- Active “End Course” button/icon --}}
-                                <button
-                                    class="btn btn-sm btn-flag-checkered end-course-btn"
-                                    data-event-id="{{ encode_id($event->id) }}"
-                                    title="End Course/Event"
-                                >
-                                    <i class="fa fa-flag-checkered text-primary"></i>
-                                </button>
+
+                            @if(auth()->user()->is_owner != 1)
+                                @if($event->can_end_course)
+                                    {{-- Active “End Course” button/icon --}}
+
+                                    <button
+                                        class="btn btn-sm btn-flag-checkered end-course-btn"
+                                        data-event-id="{{ encode_id($event->id) }}"
+                                        title="End Course/Event"
+                                    >
+                                        <i class="fa fa-flag-checkered text-primary"></i>
+                                    </button>
+                                @endif
                             @endif
                             
                         @else
