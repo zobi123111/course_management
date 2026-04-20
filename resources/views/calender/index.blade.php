@@ -556,9 +556,8 @@
                     </div>
                     @endif
                     <div class="row">
-                        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
+                        @if((auth()->user()->role == 1 && empty(auth()->user()->ou_id)))
                         <div class="col-md-6 form-group">
-
                             <label>Select Org Unit</label>
                             <select id="organizationUnits" name="organizationUnits" class="form-control mb-2">
                                 <option value="">Select Org Unit</option>
@@ -573,7 +572,7 @@
 
                         <div class="col-md-6 form-group">
                             <div class="form-group">
-                                @if(auth()->user()->is_owner == 1 || auth()->user()->is_admin == 1)
+                                @if((auth()->user()->role == 1 && empty(auth()->user()->ou_id)) || auth()->user()->role == 18)
                                 <label id="student_label_name">Select Student</label>
                                 <select id="add_student" name="student" class="form-control mb-2">
                                     <option value="">Select Student</option>
@@ -773,7 +772,7 @@
 
                         </div>
                         <div class="col-md-6 form-group">
-                            @if (auth()->user()->role == 1)
+                           
                             <div class="form-group">
                                 <div id="create_instructor_wrapper" style="display:none">
                                     <label>Instructor</label>
@@ -783,7 +782,7 @@
                                 </div>
                                 <span class="text-danger error-text" id="error_instructor"></span>
                             </div>
-                             @endif
+                           
                         </div>
                     </div>
 
