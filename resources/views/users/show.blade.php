@@ -280,7 +280,14 @@
                         <!-- Second License Details -->
                             @if($user->licence_2_required == 1)
                             <div class="col-md-6 mb-4 license-six-cont">
-                                    <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>EASA License Details</h5>
+                                <h5 class="text-muted mb-3"><i class="bi bi-award-fill text-danger me-2"></i>EASA License Details</h5>
+                           
+                                <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="non_expiring_licence" name="non_expiring_licence" value="1" {{ $document?->licence_non_expiring_2 ? 'checked': '' }}>
+                                        <label class="form-check-label" for="non_expiring_licence" data-user-id="{{ $document->user_id }}">
+                                            <strong>Non-Expiring Licence</strong>
+                                        </label>
+                                </div>
                                 @if(!empty($document->licence_2))
                                     <div class="validate-inner-cont">
                                         <div class="licensefile">
@@ -415,7 +422,7 @@
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                            </li>
+                                                            </li> 
                                                             @endforeach
                                                         </ul>
                                                         @endif
@@ -829,7 +836,41 @@
                     }
                 });
             });
+            $(document).on('change', '#non_expiring_licence', function () {
+    
+                let isChecked = $(this).is(':checked') ? 1 : 0;
+                let userId = $(this).next('label').data('user-id');
+
+
+                $.ajax({
+                    url: '/updateNnon_expiringLicence', // your route
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        user_id: userId,
+                        non_expiring_licence: isChecked
+                    },
+                    success: function (response) {
+                        console.log(response.status==true);
+                        if(response.status==true){
+                                   // Optional message
+                            alert('Updated successfully');
+
+                            // Reload after 2 seconds
+                            setTimeout(function () {
+                                location.reload();
+                            }, 1000);
+
+                        }
+                    },
+                    error: function (xhr) {
+                        console.log('Something went wrong');
+                    }
+                }); 
+            });
         });
     </script>
+
+
 
     @endsection

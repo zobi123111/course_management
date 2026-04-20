@@ -492,18 +492,15 @@ class BookingController extends Controller
         ];
 
         if ($request->booking_type == 2 || $request->booking_type == 3) {
-            $rules['instructor'] = 'required';
+          //  $rules['instructor'] = 'required';
             $rules['course'] = 'required';
             $rules['lesson'] = 'required';
-           // $rules['course_date'] = 'required';
-            $rules['rank'] = 'required';
-           // $rules['lesson_date'] = 'required';
-        //  $rules['start_time'] = 'required';
-        //  $rules['end_time'] = 'required';
-            $rules['departure_airfield'] = 'required';
-            $rules['destination_airfield'] = 'required';
-            $rules['operation'] = 'required';
-            $rules['role'] = 'required';
+           // $rules['rank'] = 'required';
+       
+           //$rules['departure_airfield'] = 'required';
+           // $rules['destination_airfield'] = 'required';
+           // $rules['operation'] = 'required';
+           // $rules['role'] = 'required';
         }
 
         if (Auth::user()->is_owner == 1) {
@@ -562,7 +559,7 @@ class BookingController extends Controller
 
                 // Create new event
                 $trainingEvent = TrainingEvents::create([
-                    'student_id'        => $request->student,
+                    'student_id'        => $request->student ?? auth()->user()->id,
                     'course_id'         => $request->course,
                     'lesson_ids'        => json_encode([$request->lesson]),
                     'event_date'        => Carbon::today()->format('Y-m-d'),
@@ -672,18 +669,16 @@ class BookingController extends Controller
     
 
         if ($request->booking_type == 2 || $request->booking_type == 3) {
-            $rules['instructor'] = 'required';
+          //  $rules['instructor'] = 'required';
             $rules['course'] = 'required';
             $rules['lesson'] = 'required';
-          //  $rules['course_date'] = 'required';
-            $rules['rank'] = 'required';
-           // $rules['lesson_date'] = 'required';
+           // $rules['rank'] = 'required';
             $rules['start_time'] = 'required';
             $rules['end_time'] = 'required';
-            $rules['departure_airfield'] = 'required';
-            $rules['destination_airfield'] = 'required';
-            $rules['operation'] = 'required';
-            $rules['role'] = 'required';
+          //  $rules['departure_airfield'] = 'required';
+          //  $rules['destination_airfield'] = 'required';
+          //  $rules['operation'] = 'required';
+           // $rules['role'] = 'required';
         }
 
         $validated = $request->validate($rules);
@@ -882,7 +877,7 @@ class BookingController extends Controller
         //     });
         // }
 
-        return response()->json(['success' => true]);
+        return response()->json(['success' => true]); 
     }
 
     public function delete(Request $request)
@@ -957,10 +952,11 @@ class BookingController extends Controller
             $instructors = User::where('ou_id', $request->ou_id)->where('role', 18)->where('is_activated', 0)->where('status', 1)->get(['id', 'fname', 'lname']);
             $courses = Courses::where('ou_id', $request->ou_id)->get();
         } else {
+            $ou_id = auth()->user()->ou_id;
             $org_resource = Resource::where('ou_id', $request->ou_id)->get();
 
             $id = auth()->id();
-            $ou_id = auth()->user()->ou_id;
+            
             $groupIds = Group::whereJsonContains('user_ids', (string) $id)->pluck('id');
 
             // Get resources linked to those groups
@@ -977,6 +973,11 @@ class BookingController extends Controller
                             ->where('is_activated', 0)->where('status', 1)
                             ->whereIn('id', $userIds)
                             ->get(['id', 'fname', 'lname']);
+            
+
+           $courses = Courses::where('archive_trainingCourse', null)->where('ou_id', $ou_id)->orderBy('position')->get();
+         //  dd($courses);
+           
         }
 
         return response()->json(['org_resource' => $org_resource, 'ato_num' => $ato_num, 'students' => $students, 'instructors' => $instructors, 'courses' => $courses]);
