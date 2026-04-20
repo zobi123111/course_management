@@ -334,13 +334,13 @@
                         </div>
                         @endif
                         <input type="hidden" name="event_id" id="event_id" />
-                     
+
                         <div class="col-md-6 form-group" id="edit_student_div" style="display:none">
                             <label>Select Student</label>
                             <select id="edit_student" name="student" class="form-control mb-2">
                             </select>
                         </div>
-                        
+
                     </div>
 
                     @if(auth()->user()->is_admin == 1 && !empty(auth()->user()->ou_id))
@@ -401,7 +401,7 @@
 
                             </div>
                         </div>
-                      @if (auth()->user()->role == 1)
+                        @if (auth()->user()->role == 1)
                         <div class="row">
                             <div class="col-md-6">
                                 <label>Rank</label>
@@ -414,7 +414,7 @@
                             </div>
                         </div>
                         @endif
-                    @if (auth()->user()->role == 1)
+                        @if (auth()->user()->role == 1)
                         <div class="row">
                             <div class="col-md-6">
                                 <label>Instructor Licence Number</label>
@@ -460,7 +460,7 @@
                                 <span class="text-danger edit-error-text" id="editerror_role"></span>
                             </div>
                         </div>
-                      
+
 
                         <div class="row">
                             <div class="col-md-6 form-group">
@@ -498,7 +498,7 @@
 
                             </div>
                         </div>
-                         @endif
+                        @endif
                     </div>
 
                     <!-- Time Section -->
@@ -547,7 +547,7 @@
             </div>
             <form id="booking_form">
                 <div class="modal-body">
-                   @if(get_user_role(auth()->user()->role) == 'administrator')  
+                    @if(get_user_role(auth()->user()->role) == 'administrator')
                     <div style="text-align: right;">
                         <label class="form-check-label">
                             <input type="checkbox" name="add_instructor_training" value="1" class="form-check-input" id="add_instructor_training">
@@ -646,7 +646,7 @@
                                     <label>Courses</label>
                                     <select name="course" id="course" class="form-control mb-2 add_courses">
                                         <option value="">Select Courses</option>
-                                   
+
                                     </select>
                                     <span class="text-danger error-text" id="error_course"></span>
 
@@ -664,7 +664,7 @@
 
                             </div>
                         </div>
-                      @if (auth()->user()->role == 1)
+                        @if (auth()->user()->role == 1)
                         <div class="row">
                             <div class="col-md-6 form-group">
                                 <div class="form-group">
@@ -680,7 +680,7 @@
                             </div>
                         </div>
                         @endif
-                       @if (auth()->user()->role == 1)
+                        @if (auth()->user()->role == 1)
                         <div class="row">
                             <div class="col-md-6 form-group">
                                 <div class="form-group">
@@ -737,7 +737,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
 
                         <div class="row">
                             <div class="col-md-6 form-group">
@@ -772,7 +772,7 @@
 
                         </div>
                         <div class="col-md-6 form-group">
-                           
+
                             <div class="form-group">
                                 <div id="create_instructor_wrapper" style="display:none">
                                     <label>Instructor</label>
@@ -782,7 +782,7 @@
                                 </div>
                                 <span class="text-danger error-text" id="error_instructor"></span>
                             </div>
-                           
+
                         </div>
                     </div>
 
@@ -1131,6 +1131,35 @@
                                 $("#resource").val(resourceId).trigger("change");
                             }, 300);
                         }
+                        let userRole = "{{ auth()->user()->role }}";
+                        if (userRole == 3) {
+                            var ou_id = '{{ auth()->user()->ou_id }}';
+                            var userId = '{{ auth()->user()->id }}';
+
+                            let $courses = $("#course");
+                            $courses.empty().append('<option value="">Select Course</option>');
+
+                            $.ajax({
+                                url: "{{ url('/training/get_licence_number_and_courses') }}/" + userId + '/' + ou_id,
+                                type: "GET",
+                                success: function(response) {
+                                    if (response.courses && response.courses.length > 0) {
+                                        response.courses.forEach(i => {
+                                            $courses.append(
+                                                `<option value="${i.id}">${i.course_name}</option>`
+                                            );
+                                        });
+                                    }
+
+
+                                },
+                                error: function(xhr) {
+                                    console.error(xhr.responseText);
+                                }
+                            });
+
+                        }
+
                         $('#newBookingModal').modal('show');
                     },
                     eventDidMount: function(info) {
@@ -1345,14 +1374,14 @@
             allowInput: true,
         });
 
-        function resetBookingForm() { 
+        function resetBookingForm() {
             $('#booking_form')[0].reset();
             startPicker.clear();
             endPicker.clear();
             $('#create_trainingevent_div').hide();
             $('.add_resource').val('').trigger('change');
             $('#time_div').hide();
-           // $('#organizationUnits').val('').trigger('change');
+            // $('#organizationUnits').val('').trigger('change');
             $('#add_student').val('').trigger('change');
             $('#course').val('').trigger('change');
             $('#operation').val('').trigger('change');
@@ -1364,8 +1393,8 @@
         //     //  resetBookingForm();
         //     let userRole = "{{ auth()->user()->role }}";
         //      if (userRole == 3) { alert("if");
-          
-            
+
+
 
         //         } else {
         //             $('#newBookingModal').modal('show');
@@ -1403,15 +1432,15 @@
         });
 
         initCalendar();
-        $("#organizationUnits").on('change', function(e) {  
+        $("#organizationUnits").on('change', function(e) {
             //  let ou_id = $(this).val();
 
             var $groupSelect = $("#group");
             var $resourceSelect = $("#resource");
             var $student = $("#add_student");
             let $instructor = $("#booking_instructor");
-           
-          
+
+
             let $instructor_checkbox = $("#add_instructor_training");
             let instructor_checkbox = 0; // ✅ Declare variable
 
@@ -1420,7 +1449,7 @@
             } else {
                 instructor_checkbox = 0;
             }
-             let $courses = $("#course");
+            let $courses = $("#course");
 
             $groupSelect.empty().append("<option value=''>Select Group</option>").trigger("change");
             $resourceSelect.empty().append("<option value=''>Select Resource</option>");
@@ -1435,12 +1464,12 @@
                 type: "GET",
                 data: {
                     'ou_id': ou_id,
-                    'instructor_checkbox' :instructor_checkbox
+                    'instructor_checkbox': instructor_checkbox
                 },
                 dataType: "json", // Ensures response is treated as JSON
                 success: function(response) {
                     if (response.students && Array.isArray(response.students)) {
-                         var options = "<option value=''>Select Student</option>";
+                        var options = "<option value=''>Select Student</option>";
                         response.students.forEach(function(value) {
                             options += "<option value='" + value.id + "'>" + value.fname + ' ' + value.lname +
                                 "</option>";
@@ -1464,7 +1493,7 @@
                             options += "<option data-resource='" + value.name + "' value='" + value.id + "'>" + value.name + "</option>";
                         });
                         $resourceSelect.html(options);
-                       
+
                     }
                     // if(response.courses) {
                     //    response.courses.forEach(function(value) {
@@ -1523,36 +1552,36 @@
                 '#booking_instructor'
             );
 
-                let userRole = "{{ auth()->user()->role }}";
-                    if (userRole == 3) { console.log("yes");
-                    var ou_id = '{{ auth()->user()->ou_id }}';
-                    var userId = '{{ auth()->user()->id }}';
+            let userRole = "{{ auth()->user()->role }}";
+            if (userRole == 3) {
+                var ou_id = '{{ auth()->user()->ou_id }}';
+                var userId = '{{ auth()->user()->id }}';
 
-                       let $courses = $("#course");
-            $courses.empty().append('<option value="">Select Course</option>');
-                
+                let $courses = $("#course");
+                $courses.empty().append('<option value="">Select Course</option>');
+
                 $.ajax({
                     url: "{{ url('/training/get_licence_number_and_courses') }}/" + userId + '/' + ou_id,
                     type: "GET",
                     success: function(response) {
-                           if (response.courses && response.courses.length > 0) {
-                                response.courses.forEach(i => {
-                                    $courses.append(
-                                        `<option value="${i.id}">${i.course_name}</option>`
-                                    );
-                                });
-                            }
+                        if (response.courses && response.courses.length > 0) {
+                            response.courses.forEach(i => {
+                                $courses.append(
+                                    `<option value="${i.id}">${i.course_name}</option>`
+                                );
+                            });
+                        }
 
-                    
+
                     },
                     error: function(xhr) {
                         console.error(xhr.responseText);
                     }
                 });
 
-                        } else {
-                            $('#newBookingModal').modal('show');
-                        }
+            } else {
+                $('#newBookingModal').modal('show');
+            }
             // 4️⃣ Open modal
             $('#newBookingModal').modal('show');
         });
@@ -1653,19 +1682,19 @@
                     $('#edit_end_time').val(response.training_event_lesson?.end_time ?? '');
 
                     $('#event_id').val(response.event_id);
-                    if (response.training_event && response.training_event.entry_source== "instructor") { 
+                    if (response.training_event && response.training_event.entry_source == "instructor") {
                         $("#instructor_training").prop("checked", true);
-                    } else { 
+                    } else {
                         $("#instructor_training").prop("checked", false);
                     }
 
-                    let role = {{ auth()->user()->role }};
-                     if(role == 3){
+                    let role = {{ auth() -> user() -> role }};
+                    if (role == 3) {
                         $('#edit_student_div').hide();
 
-                     }else{
+                    } else {
                         $('#edit_student_div').show();
-                     }
+                    }
 
 
                     // Basic fields
@@ -1678,14 +1707,14 @@
                         $('#edit_trainingevent_div').show();
                     }
 
-                 
+
                     setTimeout(function() {
                         $("#edit_course_booking").val(response.course_id).addClass("no-change");;
                         //  $("#edit_course_booking").trigger("change");
 
                     }, 700);
                     console.log(response.std_id);
-                   
+
                     setTimeout(function() {
                         $("#edit_resource").val(String(response.resource)).trigger("change");
                         $("#edit_student").val(response.std_id).trigger('change').addClass("no-change");
@@ -1693,11 +1722,11 @@
                         edit_instructor(response.course_id);
 
 
-                       
+
                         setTimeout(function() {
-                          $("#edit_course_booking").val(response.course_id);
-                        //  $("#edit_course_booking").trigger("change");
-                         
+                            $("#edit_course_booking").val(response.course_id);
+                            //  $("#edit_course_booking").trigger("change");
+
                         }, 700);
 
                         setTimeout(function() {
@@ -1705,23 +1734,23 @@
                             $("#edit_student").val(response.std_id).trigger('change').addClass("no-change");
 
 
-                            
-                            $("#edit_lesson").val(response.lesson_id).addClass("no-change");
-                             edit_instructor(response.course_id);
 
-                           
-                           setTimeout(function () {
+                            $("#edit_lesson").val(response.lesson_id).addClass("no-change");
+                            edit_instructor(response.course_id);
+
+
+                            setTimeout(function() {
                                 $("#edit_instructor").val(response.instructor_id);
                                 window.selectedEditCourseId = response.course_id;
                                 window.selectedEditLessonId = response.lesson_id;
 
                                 editFormLoading = false;
 
-                                $("#edit_instructor").trigger("change");  // 🔵 Now course exists
+                                $("#edit_instructor").trigger("change"); // 🔵 Now course exists
                             }, 500);
 
-                             window.selectedEditCourseId = response.course_id;
-                             window.selectedEditLessonId = response.lesson_id;
+                            window.selectedEditCourseId = response.course_id;
+                            window.selectedEditLessonId = response.lesson_id;
                             window.resource = response.resource;
                         }, 600);
 
@@ -1762,11 +1791,12 @@
             });
         });
 
-        $("#edit_course_booking").on('change', function() {  console.log("asdas");
-            
+        $("#edit_course_booking").on('change', function() {
+            console.log("asdas");
+
             let course_id = $(this).val();
-        
-           // alert(course_id);
+
+            // alert(course_id);
             let $lesson = $("#edit_lesson");
             var $resourceSelect = $("#edit_resource");
             var ou_id = $('#edit_organizationUnits').val() ?? "{{ auth()->user()->ou_id }}";
@@ -1780,8 +1810,8 @@
                 type: "POST",
                 data: {
                     course_id: course_id,
-                    ou_id:ou_id,
-                    std_id:std_id
+                    ou_id: ou_id,
+                    std_id: std_id
                 },
                 dataType: "json",
                 success: function(response) {
@@ -1867,7 +1897,7 @@
                                 licenseInput.val(response.instructor_licence_number);
                             } else {
                                 licenseInput.val('');
-                               // alert("Instructor licence number not found.");
+                                // alert("Instructor licence number not found.");
                             }
 
                         } else {
@@ -1884,9 +1914,9 @@
                 });
             });
 
-        }  
+        }
 
-        $("#edit_organizationUnits").on('change', function() { 
+        $("#edit_organizationUnits").on('change', function() {
             let ou_id = $(this).val();
             let $resource = $("#edit_resource");
             let $student = $("#edit_student");
@@ -2049,7 +2079,7 @@
             let $lesson = $("#lesson");
             var $resourceSelect = $("#resource");
             let ou_val = $('#organizationUnits').val();
-            let ou_id = ou_val ? ou_val : @json(auth()-> user()-> ou_id);
+            let ou_id = ou_val ? ou_val : @json(auth() -> user() -> ou_id);
             var std_id = $('#add_student').val();
 
             $lesson.empty().append("<option value=''>Select Lesson</option>");
@@ -2239,7 +2269,8 @@
             }
         });
 
-        $(document).on('change', '#edit_student', function() { console.log("append courses");
+        $(document).on('change', '#edit_student', function() {
+            console.log("append courses");
             var userId = $(this).val() || "{{ auth()->user()->id }}"
 
             var licenceNumberField = $('#studentLicence_number');
@@ -2361,19 +2392,19 @@
         }
 
         $('#add_instructor_training').click(function() {
-                let isChecked = $(this).is(":checked");
+            let isChecked = $(this).is(":checked");
 
-                if (isChecked) {
-                    $("#student_label_name").text("Select Instructor");
-                    $("#add_student option[value='']").text("Select Instructor");
-                } else {
-                    $("#student_label_name").text("Select Student");
-                    $("#add_student option[value='']").text("Select Student");
-                }
-                    
-                        $("#organizationUnits").trigger("change");
-                        
-                    });
+            if (isChecked) {
+                $("#student_label_name").text("Select Instructor");
+                $("#add_student option[value='']").text("Select Instructor");
+            } else {
+                $("#student_label_name").text("Select Student");
+                $("#add_student option[value='']").text("Select Student");
+            }
+
+            $("#organizationUnits").trigger("change");
+
+        });
     });
 </script>
 @endsection
