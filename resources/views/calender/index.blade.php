@@ -150,6 +150,7 @@
     }
 </style>
 
+
 <div class="container-fluid mt-3">
     <div style="margin-bottom: 10px;">
         <a class="btn btn-primary me-2 booking-button" id="create_booking">
@@ -333,12 +334,13 @@
                         </div>
                         @endif
                         <input type="hidden" name="event_id" id="event_id" />
-
-                        <div class="col-md-6 form-group">
+                     
+                        <div class="col-md-6 form-group" id="edit_student_div" style="display:none">
                             <label>Select Student</label>
                             <select id="edit_student" name="student" class="form-control mb-2">
                             </select>
                         </div>
+                        
                     </div>
 
                     @if(auth()->user()->is_admin == 1 && !empty(auth()->user()->ou_id))
@@ -399,7 +401,7 @@
 
                             </div>
                         </div>
-
+                      @if (auth()->user()->role == 1)
                         <div class="row">
                             <div class="col-md-6">
                                 <label>Rank</label>
@@ -410,28 +412,16 @@
                                 </select>
                                 <span class="text-danger edit-error-text" id="editerror_rank"></span>
                             </div>
-
-                            <!-- <div class="col-md-6">
-                                <label>Course Start Date</label>
-                                <input type="date" name="course_date" id="edit_course_date" class="form-control mb-2">
-                                <span class="text-danger edit-error-text" id="editerror_course_date"></span>
-                            </div> -->
                         </div>
-
+                        @endif
+                    @if (auth()->user()->role == 1)
                         <div class="row">
-                            <!-- <div class="col-md-6">
-                                <label>Lesson Date</label>
-                                <input type="date" name="lesson_date" id="edit_lesson_date" class="form-control mb-2">
-                                <span class="text-danger edit-error-text" id="editerror_lesson_date"></span>
-                            </div> -->
-
                             <div class="col-md-6">
                                 <label>Instructor Licence Number</label>
                                 <input type="text" name="licence_number" id="edit_licence_number" class="form-control mb-2" readonly>
                                 <span class="text-danger edit-error-text" id="editerror_licence_number"></span>
                             </div>
                         </div>
-
                         <div class="row">
                             <div class="col-md-6">
                                 <label>Departure Airfield</label>
@@ -470,6 +460,7 @@
                                 <span class="text-danger edit-error-text" id="editerror_role"></span>
                             </div>
                         </div>
+                      
 
                         <div class="row">
                             <div class="col-md-6 form-group">
@@ -488,6 +479,7 @@
                                 </div>
                             </div>
                         </div>
+                        @endif
                     </div>
 
                     <!-- Resource & Instructor -->
@@ -497,7 +489,7 @@
                             <select name="resource" id="edit_resource" class="form-control mb-2"></select>
                             <span class="text-danger edit-error-text" id="editerror_resource"></span>
                         </div>
-
+                        @if (auth()->user()->role == 1)
                         <div class="col-md-6">
                             <div id="edit_instructor_wrapper" style="display:none">
                                 <label>Instructor</label>
@@ -506,6 +498,7 @@
 
                             </div>
                         </div>
+                         @endif
                     </div>
 
                     <!-- Time Section -->
@@ -554,12 +547,14 @@
             </div>
             <form id="booking_form">
                 <div class="modal-body">
+                   @if(get_user_role(auth()->user()->role) == 'administrator')  
                     <div style="text-align: right;">
                         <label class="form-check-label">
                             <input type="checkbox" name="add_instructor_training" value="1" class="form-check-input" id="add_instructor_training">
                             Instructor Training
                         </label>
                     </div>
+                    @endif
                     <div class="row">
                         @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
                         <div class="col-md-6 form-group">
@@ -650,8 +645,9 @@
                             <div class="col-md-6 form-group">
                                 <div class="form-group">
                                     <label>Courses</label>
-                                    <select name="course" id="course" class="form-control mb-2">
+                                    <select name="course" id="course" class="form-control mb-2 add_courses">
                                         <option value="">Select Courses</option>
+                                   
                                     </select>
                                     <span class="text-danger error-text" id="error_course"></span>
 
@@ -669,7 +665,7 @@
 
                             </div>
                         </div>
-
+                      @if (auth()->user()->role == 1)
                         <div class="row">
                             <div class="col-md-6 form-group">
                                 <div class="form-group">
@@ -683,24 +679,10 @@
                                 </div>
 
                             </div>
-
-                            <!-- <div class="col-md-6 form-group">
-                                <div class="form-group">
-                                    <label>Course Start Date</label>
-                                    <input type="date" name="course_date" id="course_date" class="form-control mb-2" autocomplete="off">
-                                    <span class="text-danger error-text" id="error_course_date"></span>
-                                </div>
-                            </div> -->
                         </div>
-
+                        @endif
+                       @if (auth()->user()->role == 1)
                         <div class="row">
-                            <!-- <div class="col-md-6 form-group">
-                                <div class="form-group">
-                                    <label>Lesson Date</label>
-                                    <input type="date" name="lesson_date" id="lesson_date" class="form-control mb-2" autocomplete="off">
-                                    <span class="text-danger error-text" id="error_lesson_date"></span>
-                                </div>
-                            </div> -->
                             <div class="col-md-6 form-group">
                                 <div class="form-group">
                                     <label>Instructor Licence Number</label>
@@ -709,8 +691,6 @@
                                 </div>
                             </div>
                         </div>
-
-
 
                         <div class="row">
                             <div class="col-md-6 form-group">
@@ -758,6 +738,7 @@
                                 </div>
                             </div>
                         </div>
+                        
 
                         <div class="row">
                             <div class="col-md-6 form-group">
@@ -776,6 +757,7 @@
                                 </div>
                             </div>
                         </div>
+                        @endif
                     </div>
                     <div class="row">
                         <div class="col-md-6 form-group">
@@ -791,6 +773,7 @@
 
                         </div>
                         <div class="col-md-6 form-group">
+                            @if (auth()->user()->role == 1)
                             <div class="form-group">
                                 <div id="create_instructor_wrapper" style="display:none">
                                     <label>Instructor</label>
@@ -800,6 +783,7 @@
                                 </div>
                                 <span class="text-danger error-text" id="error_instructor"></span>
                             </div>
+                             @endif
                         </div>
                     </div>
 
@@ -1362,14 +1346,14 @@
             allowInput: true,
         });
 
-        function resetBookingForm() {
+        function resetBookingForm() { 
             $('#booking_form')[0].reset();
             startPicker.clear();
             endPicker.clear();
             $('#create_trainingevent_div').hide();
             $('.add_resource').val('').trigger('change');
             $('#time_div').hide();
-            $('#organizationUnits').val('').trigger('change');
+           // $('#organizationUnits').val('').trigger('change');
             $('#add_student').val('').trigger('change');
             $('#course').val('').trigger('change');
             $('#operation').val('').trigger('change');
@@ -1377,11 +1361,17 @@
 
         }
 
-        $('#create_booking').on('click', function() {
-            //  resetBookingForm();
-            $('#newBookingModal')
-            $('#newBookingModal').modal('show');
-        });
+        // $('#create_booking').on('click', function() {
+        //     //  resetBookingForm();
+        //     let userRole = "{{ auth()->user()->role }}";
+        //      if (userRole == 3) { alert("if");
+          
+            
+
+        //         } else {
+        //             $('#newBookingModal').modal('show');
+        //         }
+        //    });
 
         $('#saveBookingBtn').on('click', function(e) {
             e.preventDefault();
@@ -1414,13 +1404,14 @@
         });
 
         initCalendar();
-        $("#organizationUnits").on('change', function(e) {
+        $("#organizationUnits").on('change', function(e) {  
             //  let ou_id = $(this).val();
 
             var $groupSelect = $("#group");
             var $resourceSelect = $("#resource");
             var $student = $("#add_student");
             let $instructor = $("#booking_instructor");
+           
           
             let $instructor_checkbox = $("#add_instructor_training");
             let instructor_checkbox = 0; // ✅ Declare variable
@@ -1430,13 +1421,13 @@
             } else {
                 instructor_checkbox = 0;
             }
-            //  let $courses = $("#course");
+             let $courses = $("#course");
 
             $groupSelect.empty().append("<option value=''>Select Group</option>").trigger("change");
             $resourceSelect.empty().append("<option value=''>Select Resource</option>");
             // $student.empty().append("<option value=''>Select Student</option>").trigger("change");
             $instructor.empty().append("<option value=''>Select Instructor</option>");
-            //  $courses.empty().append("<option value=''>Select Courses</option>");
+            $courses.empty().append("<option value=''>Select Courses</option>");
 
             var ou_id = $(this).val() ? $(this).val() : '{{ auth()->user()->ou_id }}';
 
@@ -1474,8 +1465,16 @@
                             options += "<option data-resource='" + value.name + "' value='" + value.id + "'>" + value.name + "</option>";
                         });
                         $resourceSelect.html(options);
-                        // $resourceSelect.trigger("change");
+                       
                     }
+                    // if(response.courses) {
+                    //    response.courses.forEach(function(value) {
+                    //       console.log(response.courses);
+                    //            options += "<option value='" + value.id + "'>" + value.id + "</option>";
+                    //     });
+                    //        $courses.html(options);
+
+                    // }
 
                 },
                 error: function(xhr, status, error) {
@@ -1508,6 +1507,7 @@
         });
         // On page load
         toggleInstructorRequirement('#booking_type', '#booking_instructor');
+
         $(document).on("click", "#create_booking", function() {
             resetBookingForm();
             // 2️⃣ If Org Unit is prefilled (hidden input), trigger change
@@ -1523,6 +1523,37 @@
                 '#create_instructor_wrapper',
                 '#booking_instructor'
             );
+
+                let userRole = "{{ auth()->user()->role }}";
+                    if (userRole == 3) { console.log("yes");
+                    var ou_id = '{{ auth()->user()->ou_id }}';
+                    var userId = '{{ auth()->user()->id }}';
+
+                       let $courses = $("#course");
+            $courses.empty().append('<option value="">Select Course</option>');
+                
+                $.ajax({
+                    url: "{{ url('/training/get_licence_number_and_courses') }}/" + userId + '/' + ou_id,
+                    type: "GET",
+                    success: function(response) {
+                           if (response.courses && response.courses.length > 0) {
+                                response.courses.forEach(i => {
+                                    $courses.append(
+                                        `<option value="${i.id}">${i.course_name}</option>`
+                                    );
+                                });
+                            }
+
+                    
+                    },
+                    error: function(xhr) {
+                        console.error(xhr.responseText);
+                    }
+                });
+
+                        } else {
+                            $('#newBookingModal').modal('show');
+                        }
             // 4️⃣ Open modal
             $('#newBookingModal').modal('show');
         });
@@ -1629,6 +1660,14 @@
                         $("#instructor_training").prop("checked", false);
                     }
 
+                    let role = {{ auth()->user()->role }};
+                     if(role == 3){
+                        $('#edit_student_div').hide();
+
+                     }else{
+                        $('#edit_student_div').show();
+                     }
+
 
                     // Basic fields
                     $("#edit_booking_id").val(response.id);
@@ -1646,6 +1685,7 @@
                         //  $("#edit_course_booking").trigger("change");
 
                     }, 700);
+                    console.log(response.std_id);
                    
                     setTimeout(function() {
                         $("#edit_resource").val(String(response.resource)).trigger("change");
@@ -1666,7 +1706,7 @@
                             $("#edit_student").val(response.std_id).trigger('change').addClass("no-change");
 
 
-                            console.log(response.lesson_id);    
+                            
                             $("#edit_lesson").val(response.lesson_id).addClass("no-change");
                              edit_instructor(response.course_id);
 
@@ -1724,7 +1764,7 @@
         });
 
         $("#edit_course_booking").on('change', function() {  console.log("asdas");
-             console.log("second click");
+            
             let course_id = $(this).val();
         
            // alert(course_id);
@@ -1847,7 +1887,7 @@
 
         }  
 
-        $("#edit_organizationUnits").on('change', function() {
+        $("#edit_organizationUnits").on('change', function() { 
             let ou_id = $(this).val();
             let $resource = $("#edit_resource");
             let $student = $("#edit_student");
@@ -2201,7 +2241,7 @@
         });
 
         $(document).on('change', '#edit_student', function() { console.log("append courses");
-            var userId = $(this).val();
+            var userId = $(this).val() || "{{ auth()->user()->id }}"
 
             var licenceNumberField = $('#studentLicence_number');
             let $courses = $("#edit_course_booking");

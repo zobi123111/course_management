@@ -1,5 +1,5 @@
-@section('title', 'Training Event')
-@section('sub-title', 'Training Event')
+@section('title', 'Training Events')
+@section('sub-title', 'Training Events')
 @extends('layout.app')
 @section('content')
 
@@ -26,9 +26,9 @@
 <br>
 <div class="d-flex justify-content-between align-items-center mb-3">
     <!-- Left Side -->
-    <h4 class="mb-0 fw-semibold text-primary">
-        Student Training Events
-    </h4>
+   @if(get_user_role(auth()->user()->role) == 'administrator')  
+      <h4 class="mb-0 fw-semibold text-primary"> Student Training Events </h4>
+   @endif
 
     <!-- Right Side -->
     <?php  $currentUser = auth()->user(); ?>
@@ -200,6 +200,7 @@
     </table>
 </div>
 </div>
+@if(get_user_role(auth()->user()->role) == 'administrator') 
 <h4 class="fw-semibold text-primary mb-2">Instructor Training events</h4> 
 <div class="card pt-4">
         <div class="card-body">
@@ -344,6 +345,7 @@
         </tbody>
     </table>
 </div>
+@endif
 </div>
 
 

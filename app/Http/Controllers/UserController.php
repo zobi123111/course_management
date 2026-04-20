@@ -624,7 +624,7 @@ class UserController extends Controller
                     ['medical_verified_2' => 0] // Fields to update or set on creation
                 );
             } else {
-                $medicalFilePath_2 = $request->old_medical_file_2;
+                $medicalFilePath_2 = $request->old_medical_file_2; 
             }
 
             // if ($userToUpdate->currency_required == 1 && !$userToUpdate->currency) {
@@ -790,7 +790,7 @@ class UserController extends Controller
                 'licence_2' => $request->licence_2 ?? null,
                 'licence_file_2' => $licenceFilePath_2 ?? null,
                 'licence_expiry_date_2' => $request->licence_expiry_date_2 ?? null,
-                'licence_non_expiring_2' => $request->has('non_expiring_licence_2') ? 1 : 0,
+                'licence_non_expiring_2' => $request->has('non_expiring_licence_2') ? 1 : 0, 
                 'licence_file_uploaded_2' => $request->hasFile('licence_file_2')
                     ? true
                     : ($document?->licence_file_uploaded_2 ?? false),
@@ -3079,6 +3079,19 @@ class UserController extends Controller
             'exists' => $users->count() > 0,
             'users'  => $users, // changed from names → users
             'message' => $users->count() > 0 ? 'Rating Exists for user' : 'Rating Not Found for user'
+        ]);
+    }
+
+    public function updateNnon_expiringLicence(Request $request)
+    {
+        UserDocument::where('user_id', $request->user_id)
+            ->update([
+                'licence_non_expiring_2' => $request->non_expiring_licence
+            ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Updated successfully'
         ]);
     }
 }

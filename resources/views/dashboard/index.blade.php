@@ -1639,7 +1639,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                 <div class="col-md-6">
                     <div class="card student-info-card">
                         <div class="student-card-body d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0 student-card-title">Documents</h5>
+                            <h5 class="card-title mb-0 student-card-title"><a href="{{ URL('documents') }}">Documents</a></h5>
 
                             <div>
                                 {{-- Green dot = Read --}}
