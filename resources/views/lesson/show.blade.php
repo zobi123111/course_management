@@ -260,18 +260,20 @@
 
                                         @if(checkAllowedModule('quiz','quiz.start')->isNotEmpty())
                                             @if(auth()->user()->role == 3)
-                                                @if($quiz->topics->isNotEmpty())
-                                                    @if($quiz->quizAttempts->contains('student_id', auth()->user()->id))
-                                                        <button class="start-quiz-btn action-btn view-result-icon btn btn-primary" style="cursor: pointer; color: white;" 
-                                                            data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}"> View
-                                                        </button>
+                                                @if($quiz->activeTrainingQuiz)
+                                                    @if($quiz->topics->isNotEmpty())
+                                                        @if($quiz->quizAttempts->contains('student_id', auth()->user()->id))
+                                                            <button class="start-quiz-btn action-btn view-result-icon btn btn-primary" style="cursor: pointer; color: white;" 
+                                                                data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}"> View
+                                                            </button>
+                                                        @else
+                                                            <button class="start-quiz-btn action-btn start-quiz-icon" style="cursor: pointer; background: #198754; color: white; border-radius: .25rem; padding: 7px; border: none;" 
+                                                                data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}" data-duration="{{ $quiz->duration }}"> Start Quiz
+                                                            </button>
+                                                        @endif
                                                     @else
-                                                        <button class="start-quiz-btn action-btn start-quiz-icon" style="cursor: pointer; background: #198754; color: white; border-radius: .25rem; padding: 7px; border: none;" 
-                                                            data-quiz-id="{{ encode_id($quiz->id) }}" data-quiz-name="{{ $quiz->title }}" data-duration="{{ $quiz->duration }}"> Start Quiz
-                                                        </button>
+                                                        <span class="text-danger">You can't started yet</span>
                                                     @endif
-                                                @else
-                                                    <span class="text-danger">You can't started yet</span>
                                                 @endif
                                             @endif
                                         @endif
