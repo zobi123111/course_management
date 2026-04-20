@@ -4714,7 +4714,7 @@
         $(document).on('change', '.validate-tag', function () {
 
             let checkbox   = $(this);
-            let event_id   = checkbox.attr('date-event-id');
+            let event_id   = checkbox.attr('data-event-id');
             let course_id  = checkbox.data('course-id');
             let tag_id     = checkbox.data('tag-id');
             let is_checked = checkbox.is(':checked') ? 1 : 0;

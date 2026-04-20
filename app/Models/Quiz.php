@@ -88,4 +88,12 @@ class Quiz extends Model
     {
         return $this->hasMany(TrainingQuiz::class, 'quiz_id');
     }
+
+    public function activeTrainingQuiz()
+    {
+        return $this->hasOne(TrainingQuiz::class, 'quiz_id')
+            ->where('student_id', auth()->id())
+            ->where('trainingevent_id', request()->event_id)
+            ->where('is_active', 1);
+    }
 }

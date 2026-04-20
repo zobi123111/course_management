@@ -70,7 +70,7 @@
     <div class="create_btn d-flex justify-content-between align-items-center">
         <div>
             <a href="#" class="btn btn-primary me-2 create-button" id="createUser" data-toggle="modal"
-                data-target="#userModal">Create Users</a>
+                data-target="#userModal">Create User</a>
             @if(auth()->user()->is_owner == 1)
             <a href="{{ route('users.rating') }}" class="btn btn-primary" id="addRating">View Rating</a>
             @endif
