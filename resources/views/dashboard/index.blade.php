@@ -44,6 +44,10 @@ $subTitle = "Welcome to Admin Dashboard";
         padding-bottom: 0px !important;
         margin-bottom: 16px !important;
     }
+    .dashboard .student-info-card:hover {
+        transform: translateY(2px);
+        background: #eeeeee;
+    }
 
 </style>
 <?php
@@ -1637,25 +1641,27 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
         @else
             <div class="row">
                 <div class="col-md-6">
-                    <div class="card student-info-card">
-                        <div class="student-card-body d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0 student-card-title"><a href="{{ URL('documents') }}">Documents</a></h5>
+                    <a href="{{ URL('documents') }}">
+                        <div class="card student-info-card">
+                            <div class="student-card-body d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0 student-card-title">Documents</h5>
 
-                            <div>
-                                {{-- Green dot = Read --}}
-                                <span class="badge bg-success rounded-circle p-2" title="Read Documents">
-                                    {{ $readDocuments }}
-                                </span>
-
-                                {{-- Red dot = Unread --}}
-                                @if($unreadDocuments > 0)
-                                    <span class="badge bg-danger rounded-circle p-2" title="Unread Documents">
-                                        {{ $unreadDocuments }}
+                                <div>
+                                    {{-- Green dot = Read --}}
+                                    <span class="badge bg-success rounded-circle p-2" title="Read Documents">
+                                        {{ $readDocuments }}
                                     </span>
-                                @endif
+
+                                    {{-- Red dot = Unread --}}
+                                    @if($unreadDocuments > 0)
+                                        <span class="badge bg-danger rounded-circle p-2" title="Unread Documents">
+                                            {{ $unreadDocuments }}
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
 
                 @if($course_count > 0)
