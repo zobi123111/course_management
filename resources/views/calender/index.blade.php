@@ -314,12 +314,14 @@
 
             <form id="edit_booking_form">
                 <div class="modal-body">
+                     @if(get_user_role(auth()->user()->role) == 'administrator')
                     <div class="text-end">
                         <div class="form-check d-inline-block">
                             <input type="checkbox" class="form-check-input" id="instructor_training">
                             <label for="instructor_training" class="form-check-label">Instructor Training</label>
                         </div>
                     </div>
+                    @endif
                     <input type="hidden" id="edit_booking_id">
                     <div class="row">
                     
