@@ -315,7 +315,7 @@ class BookingController extends Controller
 
     public function store(Request $request)
     { 
-        
+       // dd($request->all());
         $rules = [
             'start_date'    => 'required|date_format:Y-m-d H:i',
             'end_date'      => 'required|date_format:Y-m-d H:i|after:start_date',
@@ -370,18 +370,41 @@ class BookingController extends Controller
                 ]
             ], 422);
         }
+        $booking_myself = $request->booking_myself;
+        // dd($request->all());
+
+        if(Auth::user()->role == 18 && $booking_myself == 1 && $request->booking_type == 1){ 
+            $bookingCreatedRole_id  =  Auth::user()->role;
+            $bookingCreated_by =  Auth::user()->id;
+            $approver_id        =  $request->approver_instructor;
+           
+        }
+
+        elseif(Auth::user()->role == 18 && $booking_myself == 1 && $request->booking_type != 1){ 
+            $bookingCreatedRole_id  =  Auth::user()->role;
+            $bookingCreated_by =  Auth::user()->id;
+            $approver_id        =  $request->instructor;
+           
+        }
         
-        if(Auth::user()->role == 18){
+        elseif(Auth::user()->role == 18 && empty($booking_myself)){
             $bookingCreatedRole_id  =  Auth::user()->role;
             $bookingCreated_by =  Auth::user()->id;
             $approver_id        =  $request->student;
         }
 
-        else if(Auth::user()->role == 3){
+        else if(Auth::user()->role == 3 && $request->booking_type == 1){
+           $bookingCreatedRole_id  =  Auth::user()->role;
+            $bookingCreated_by =  Auth::user()->id;
+            $approver_id        =  $request->approver_instructor;
+        }
+
+          else if(Auth::user()->role == 3 && $request->booking_type != 1){
            $bookingCreatedRole_id  =  Auth::user()->role;
             $bookingCreated_by =  Auth::user()->id;
             $approver_id        =  $request->instructor;
         }
+
         else if(Auth::user()->role == 1){
             $bookingCreatedRole_id   =  Auth::user()->role;
             $bookingCreated_by  =  $request->student;
@@ -410,6 +433,7 @@ class BookingController extends Controller
         $booking->bookingCreatedRole_id  = $bookingCreatedRole_id;
         $booking->bookingCreated_by      = $bookingCreated_by;
         $booking->approver_id            = $approver_id;
+        $booking->booking_myself        =  $booking_myself ?? null;
         $booking->save();
 
         $bookingId = $booking->id;
@@ -528,8 +552,8 @@ class BookingController extends Controller
     {
         $rules = [
             // 'organizationUnits' => 'required|exists:organization_units,id',
-            'start_date'        => 'required|date',
-            'end_date'          => 'required|date|after:start_date',
+          //  'start_date'        => 'required|date',
+           // 'end_date'          => 'required|date|after:start_date',
             'booking_type'      => 'required|in:1,2,3',
             'resource_type'     => 'required|in:1,2,3',
             'resource'          => 'required',
@@ -542,8 +566,8 @@ class BookingController extends Controller
             $rules['course'] = 'required';
             $rules['lesson'] = 'required';
            // $rules['rank'] = 'required';
-            $rules['start_time'] = 'required';
-            $rules['end_time'] = 'required';
+           // $rules['start_time'] = 'required';
+          //  $rules['end_time'] = 'required';
           //  $rules['departure_airfield'] = 'required';
           //  $rules['destination_airfield'] = 'required';
           //  $rules['operation'] = 'required';
