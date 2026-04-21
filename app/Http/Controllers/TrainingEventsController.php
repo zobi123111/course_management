@@ -688,8 +688,12 @@ class TrainingEventsController extends Controller
                         'event_id' => $trainingEvent->id,
                         'course_id' => $request->course_id,
                         'lesson_id' => $lesson['lesson_id'],
-                        'trainingEventLesson_id' => $training_lesson->id
+                        'trainingEventLesson_id' => $training_lesson->id,
+                        'bookingCreatedRole_id'   => Auth::user()->role,
+                        'bookingCreated_by'  =>  $request->student_id ?? Auth::user()->id,
+                        'approver_id'        => $lesson['instructor_id'],
                 );
+
                 Booking::create($booking_data);
         }
         }
