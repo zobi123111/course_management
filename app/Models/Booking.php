@@ -7,7 +7,7 @@ class Booking extends Model
 {
     use SoftDeletes;
     protected $fillable = [
-        'resource', 'start', 'end', 'booking_type', 'resource_type', 'instructor_id', 'status','ou_id','group_id','std_id', 'send_email', 'event_id','course_id','lesson_id','trainingEventLesson_id'
+        'resource', 'start', 'end', 'booking_type', 'resource_type', 'instructor_id', 'status','ou_id','group_id','std_id', 'send_email', 'event_id','course_id','lesson_id','trainingEventLesson_id','bookingCreatedRole_id','bookingCreated_by','approver_id'
     ]; 
 
 

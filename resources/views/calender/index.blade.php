@@ -264,11 +264,11 @@
                 <input type="hidden" id="reject_booking_id">
                 <input type="hidden" id="delete_booking_id">
             </div>
-            @if(auth()->user()->is_owner == 1 || Auth::user()->is_admin == 1 || auth()->user()->role == 3)
+          
             <div class="modal-footer">
                 <button id="editBookingBtn" class="btn btn-primary">Edit</button>
                 <button id="deleteBookingBtn" class="btn btn-danger">Delete</button>
-                @if(auth()->user()->is_owner == 1)
+               
                 <!-- ACTION BUTTONS -->
                 <div id="actionButtons" class="d-flex gap-2">
                     <button id="approveBtn" class="btn btn-success">
@@ -293,9 +293,9 @@
                     <span class="ms-2 text-muted">(This booking has been rejected)</span>
                 </div>
 
-                @endif
+              
             </div>
-            @endif
+        
 
         </div>
     </div>
@@ -322,8 +322,8 @@
                     </div>
                     <input type="hidden" id="edit_booking_id">
                     <div class="row">
-                        @if(auth()->user()->role == 1 && empty(auth()->user()->ou_id))
-                        <div class="col-md-6 form-group">
+                    
+                        <div class="col-md-6 form-group" style="display:none">
                             <label>Select Org Unit</label>
                             <select id="edit_organizationUnits" name="organizationUnits" class="form-control mb-2">
                                 <option value="">Select Org Unit</option>
@@ -332,12 +332,16 @@
                                 @endforeach
                             </select>
                         </div>
-                        @endif
+                      
                         <input type="hidden" name="event_id" id="event_id" />
 
                         <div class="col-md-6 form-group" id="edit_student_div" style="display:none">
                             <label>Select Student</label>
+                           
                             <select id="edit_student" name="student" class="form-control mb-2">
+                                    @foreach ($students as $val)
+                                    <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
+                                    @endforeach
                             </select>
                         </div>
 
@@ -380,6 +384,19 @@
                                 <option value="3">Standby</option>
                             </select>
                             <span class="text-danger edit-error-text" id="editerror_booking_type"></span>
+                        </div>
+                    </div>
+                  <div class="row">
+                        <div class="col-md-6 form-group" id="edit_approver_instructor_div">
+                                <div class="form-group">
+                                    <div id="booking_instructor_approver">
+                                        <label>Instructor</label>
+                                        <select name="approver_instructor" id="approver_instructor" class="form-control mb-2">
+                                            <option value="">Select Instructor</option>
+                                        </select>
+                                    </div>
+                                    <span class="text-danger error-text" id="error_instructor"></span>
+                                </div>
                         </div>
                     </div>
 
@@ -574,7 +591,9 @@
                             <div class="form-group">
                                 @if((auth()->user()->role == 1 && empty(auth()->user()->ou_id)) || auth()->user()->role == 18)
                                 <label id="student_label_name">Select Student</label>
+                          
                                 <select id="add_student" name="student" class="form-control mb-2">
+                                    
                                     <option value="">Select Student</option>
                                     @foreach ($students as $val)
                                     <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
@@ -772,7 +791,6 @@
 
                         </div>
                         <div class="col-md-6 form-group">
-
                             <div class="form-group">
                                 <div id="create_instructor_wrapper" style="display:none">
                                     <label>Instructor</label>
@@ -783,6 +801,17 @@
                                 <span class="text-danger error-text" id="error_instructor"></span>
                             </div>
 
+                        </div>
+                        <div class="col-md-6 form-group" id="approver_instructor_div">
+                            <div class="form-group">
+                                <div id="booking_instructor_approver">
+                                    <label>Instructor</label>
+                                    <select name="approver_instructor" id="add_approver_instructor" class="form-control mb-2">
+                                        <option value="">Select Instructor</option>
+                                    </select>
+                                </div>
+                                <span class="text-danger error-text" id="error_instructor"></span>
+                            </div>
                         </div>
                     </div>
 
@@ -1033,6 +1062,7 @@
                     /* ---------------- EVENT CLICK ---------------- */
                     eventClick: function(info) {
                         let e = info.event.extendedProps;
+                      
                         selectedEvent = e;
                         let mailText = (e.send_mail == 1) ? 'Enabled' : 'Disabled';
                         $('#mail_send').text(mailText);
@@ -1064,19 +1094,34 @@
                         // Reset UI
                         $("#editBookingBtn, #deleteBookingBtn").addClass("d-none");
                         $("#actionButtons, #approvedStatus, #rejectedStatus").addClass("d-none");
+                        let authUserId = "{{ auth()->user()->id }}";
+                        let authUserRole = "{{ auth()->user()->role }}";
 
-                        if (e.status === "approved") {
+                            if (e.status === "approved") { 
 
-                            $("#approvedStatus").removeClass("d-none");
+                                $("#approvedStatus").removeClass("d-none");
 
-                        } else if (e.status === "rejected") {
+                            } else if (e.status === "rejected") {
 
-                            $("#rejectedStatus").removeClass("d-none");
+                                $("#rejectedStatus").removeClass("d-none");
 
-                        } else {
-                            $("#editBookingBtn, #deleteBookingBtn").removeClass("d-none");
-                            $("#actionButtons").removeClass("d-none");
-                        }
+                            }else {
+
+                                    // ✅ EDIT → creator OR super admin
+                                    if (e.created_by == authUserId || authUserRole == 1) {
+                                        $("#editBookingBtn").removeClass("d-none");
+                                    }
+
+                                    // ✅ DELETE → creator OR super admin
+                                    if (e.created_by == authUserId || authUserRole == 1) {
+                                        $("#deleteBookingBtn").removeClass("d-none");
+                                    }
+
+                                    // ✅ APPROVE / REJECT → approver OR super admin
+                                    if (e.approver_id == authUserId || authUserRole == 1) {
+                                        $("#actionButtons").removeClass("d-none");
+                                    }
+                                }
 
                         if (e.instructor != null) {
                             $('#bookingInstructor_li').show();
@@ -1439,6 +1484,7 @@
             var $resourceSelect = $("#resource");
             var $student = $("#add_student");
             let $instructor = $("#booking_instructor");
+            let $approver_instructor = $("#add_approver_instructor");
 
 
             let $instructor_checkbox = $("#add_instructor_training");
@@ -1455,6 +1501,7 @@
             $resourceSelect.empty().append("<option value=''>Select Resource</option>");
             // $student.empty().append("<option value=''>Select Student</option>").trigger("change");
             $instructor.empty().append("<option value=''>Select Instructor</option>");
+            $approver_instructor.empty().append("<option value=''>Select Instructor</option>");
             $courses.empty().append("<option value=''>Select Courses</option>");
 
             var ou_id = $(this).val() ? $(this).val() : '{{ auth()->user()->ou_id }}';
@@ -1482,6 +1529,13 @@
                     if (response.instructors) {
                         response.instructors.forEach(i => {
                             $instructor.append(
+                                `<option value="${i.id}">${i.fname} ${i.lname}</option>`
+                            );
+                        });
+                    }
+                    if (response.instructors) {
+                        response.instructors.forEach(i => {
+                            $approver_instructor.append(
                                 `<option value="${i.id}">${i.fname} ${i.lname}</option>`
                             );
                         });
@@ -1604,6 +1658,8 @@
                 // SOLO
                 $(resourceWrapper).show();
                 $(resourceSelector).prop('required', true);
+                $('#approver_instructor_div').show();
+             
 
             } else if (type == 2) {
                 // LESSON
@@ -1612,6 +1668,7 @@
 
                 $(resourceWrapper).show();
                 $(resourceSelector).prop('required', true);
+                $('#approver_instructor_div').hide();
 
             } else if (type == 3) {
                 // STANDBY
@@ -1620,6 +1677,7 @@
 
                 $(resourceWrapper).show();
                 $(resourceSelector).prop('required', false);
+                $('#approver_instructor_div').hide();
             }
         }
 
@@ -1660,6 +1718,8 @@
             $('.edit-error-text').text('');
             editFormLoading = true;
 
+       
+
             $.ajax({
                 url: SITEURL + "/calendar/edit",
                 type: "POST",
@@ -1668,7 +1728,8 @@
                 },
                 success: function(data) {
                     var response = data.response[0];
-                    $("#edit_organizationUnits").val(response.ou_id).trigger('change').addClass("no-change");
+                    console.log(response.ou_id);
+                    $("#edit_organizationUnits").val(response.ou_id).trigger('change');
                     $('#edit_departure_airfield').val(response.training_event_lesson?.departure_airfield ?? '');
                     $('#edit_destination_airfield').val(response.training_event_lesson?.destination_airfield ?? '');
                     $('#edit_lesson_date').val(response.training_event_lesson?.lesson_date ?? '');
@@ -1719,8 +1780,11 @@
                         $("#edit_resource").val(String(response.resource)).trigger("change");
                         $("#edit_student").val(response.std_id).trigger('change').addClass("no-change");
                         $("#edit_lesson").val(response.lesson_id).addClass("no-change");
-                        edit_instructor(response.course_id);
-
+                        
+                         console.log(response.booking_type);
+                         if(response.booking_type !=1){
+                            edit_instructor(response.course_id);
+                         }
 
 
                         setTimeout(function() {
@@ -1736,11 +1800,23 @@
 
 
                             $("#edit_lesson").val(response.lesson_id).addClass("no-change");
+
+                        if(response.booking_type !=1){
                             edit_instructor(response.course_id);
+                            $('#booking_instructor_approver').hide();
+                          //  $('#edit_time_div').hide();
+                            
+                         }else{
+                            $('#edit_time_div').hide();
+                            $('#booking_instructor_approver').show();
+                         }
+                         
+
 
 
                             setTimeout(function() {
                                 $("#edit_instructor").val(response.instructor_id);
+                                $("#approver_instructor").val(response.instructor_id);
                                 window.selectedEditCourseId = response.course_id;
                                 window.selectedEditLessonId = response.lesson_id;
 
@@ -1916,15 +1992,18 @@
 
         }
 
-        $("#edit_organizationUnits").on('change', function() {
-            let ou_id = $(this).val();
+        $("#edit_organizationUnits").on('change', function() { 
+          //  let ou_id = $(this).val();
+            let ou_id = $(this).val() ? $(this).val() : '{{ auth()->user()->ou_id }}';
             let $resource = $("#edit_resource");
             let $student = $("#edit_student");
             let $instructor = $("#edit_instructor");
+            let $approver_instructor = $("#approver_instructor");
 
             $resource.empty().append("<option value=''>Select Resource</option>");
             $student.empty().append("<option value=''>Select Student</option>");
             $instructor.empty().append("<option value=''>Select Instructor</option>");
+            $approver_instructor.empty().append("<option value=''>Select Instructor</option>");
 
             if (!ou_id) return;
             $.ajax({
@@ -1952,6 +2031,13 @@
                     if (response.instructors) {
                         response.instructors.forEach(function(i) {
                             $instructor.append(
+                                `<option value="${i.id}">${i.fname} ${i.lname}</option>`
+                            );
+                        });
+                    }
+                    if (response.instructors) {
+                        response.instructors.forEach(function(i) {
+                            $approver_instructor.append(
                                 `<option value="${i.id}">${i.fname} ${i.lname}</option>`
                             );
                         });
