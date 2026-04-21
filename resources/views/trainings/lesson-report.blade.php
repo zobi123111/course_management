@@ -85,12 +85,19 @@
                         @endif
                         <br>
                     @endif
-                    <strong>Departure :</strong> {{ $eventLesson?->departure_airfield ?? 'N/A' }}<br>
-                    <strong>Arrival :</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}<br>
-                    <strong>Total Blocks:</strong> {{ $blockCreditedFormatted }}<br>
-                    <strong>Total Flight:</strong> {{ $totalFlightTimeFormatted }}<br>
-                    <strong>Off-Blocks:</strong>{{ \Carbon\Carbon::parse($eventLesson->start_time)->format('H:i') }} <br>
-                    <strong>On-Blocks:</strong> {{ \Carbon\Carbon::parse($eventLesson->end_time)->format('H:i') }} <br>
+                    @if(!in_array($resource, ['Homestudy', 'Home Study', 'Classroom']))
+                        <strong>Departure :</strong> {{ $eventLesson?->departure_airfield ?? 'N/A' }}<br>
+                        <strong>Arrival :</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}<br>
+                        <strong>Total Blocks:</strong> {{ $blockCreditedFormatted }}<br>
+                        <strong>Total Flight:</strong> {{ $totalFlightTimeFormatted }}<br>
+                        <strong>Off-Blocks:</strong>{{ \Carbon\Carbon::parse($eventLesson->start_time)->format('H:i') }} <br>
+                        <strong>On-Blocks:</strong> {{ \Carbon\Carbon::parse($eventLesson->end_time)->format('H:i') }} <br>
+                    @else
+                        <strong>Start Time:</strong> {{ \Carbon\Carbon::parse($eventLesson->start_time)->format('H:i') }}<br>
+                        <strong>End Time:</strong> {{ \Carbon\Carbon::parse($eventLesson->end_time)->format('H:i') }}<br>
+
+                    @endif
+
                     @php
                         $block = \Carbon\Carbon::parse($eventLesson?->end_time)->diffInMinutes(\Carbon\Carbon::parse($eventLesson?->start_time));
                     @endphp
@@ -217,13 +224,19 @@
                                     <h3 style="margin: 0 0 5px 0;">Sector {{ $loop->iteration }} - ({{ $sector->lesson_date ? date('d/m/Y', strtotime($sector->lesson_date)) : 'N/A' }})</h3>
                                     <strong>Reg:</strong> {{ $sector->resourceData->name ?? 'N/A' }}<br>
                                     <strong>Opration:</strong> {{ $operationName }}<br>
-                                    <strong>Departure:</strong> {{ $sector->departure_airfield ?? 'N/A' }}<br>
-                                    <strong>Arrival:</strong> {{ $sector->destination_airfield ?? 'N/A' }}<br>
-                                    <strong>Off Block Time:</strong> {{ $sector->start_time ? \Carbon\Carbon::parse($sector->start_time)->format('H:i') : 'N/A' }}<br>
-                                    <strong>On Block Time:</strong> {{ $sector->end_time ? \Carbon\Carbon::parse($sector->end_time)->format('H:i') : 'N/A' }}<br>
-                                    @if($sector->takeoff_time && $sector->landing_time)
-                                        <strong>Takeoff Time:</strong> {{ $sector->takeoff_time ? \Carbon\Carbon::parse($sector->takeoff_time)->format('H:i') : 'N/A' }}<br>
-                                        <strong>Landing Time:</strong>{{ $sector->landing_time ? \Carbon\Carbon::parse($sector->landing_time)->format('H:i') : 'N/A' }}<br>
+
+                                    @if(!in_array($sector->resourceData->name, ['Homestudy', 'Home Study', 'Classroom']))
+                                        <strong>Departure:</strong> {{ $sector->departure_airfield ?? 'N/A' }}<br>
+                                        <strong>Arrival:</strong> {{ $sector->destination_airfield ?? 'N/A' }}<br>
+                                        <strong>Off Block Time:</strong> {{ $sector->start_time ? \Carbon\Carbon::parse($sector->start_time)->format('H:i') : 'N/A' }}<br>
+                                        <strong>On Block Time:</strong> {{ $sector->end_time ? \Carbon\Carbon::parse($sector->end_time)->format('H:i') : 'N/A' }}<br>
+                                        @if($sector->takeoff_time && $sector->landing_time)
+                                            <strong>Takeoff Time:</strong> {{ $sector->takeoff_time ? \Carbon\Carbon::parse($sector->takeoff_time)->format('H:i') : 'N/A' }}<br>
+                                            <strong>Landing Time:</strong>{{ $sector->landing_time ? \Carbon\Carbon::parse($sector->landing_time)->format('H:i') : 'N/A' }}<br>
+                                        @endif
+                                    @else
+                                        <strong>Start Time:</strong> {{ $sector->start_time ? \Carbon\Carbon::parse($sector->start_time)->format('H:i') : 'N/A' }}<br>
+                                        <strong>End Time:</strong> {{ $sector->end_time ? \Carbon\Carbon::parse($sector->end_time)->format('H:i') : 'N/A' }}<br>
                                     @endif
                                 </td>
 

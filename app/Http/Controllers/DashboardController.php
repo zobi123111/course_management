@@ -255,6 +255,13 @@ class DashboardController extends Controller
                         'documents',
                         'opcRatings', 
                         'licenseValidations.validation',
+                        'training_tags' => function ($query) {
+                            $query->whereIn('id', function ($sub) {
+                                $sub->selectRaw('MAX(id)')
+                                    ->from('training_tags as tt2')
+                                    ->groupBy('tt2.tag_id');
+                            });
+                        },
                         'training_tags.rhsTag',
                         'usrRatings' => function ($query) {
                             $query->whereIn('linked_to', ['licence_1', 'licence_2'])
@@ -265,7 +272,7 @@ class DashboardController extends Controller
                         }
                     ])
                     ->get();
-      //  dump($users);            
+    //    dump($users);                
             
         return view('dashboard.index', compact('user_count', 'course_count', 'group_count', 'folder_count','totalDocuments', 'quizscount', 'quizs', 'readDocuments', 'unreadDocuments', 'requestCount', 'users', 'trainingEvents', 'bookings', 'outstandingItems', 'expiringSoonEvents', 'expiringSoonCount'
         ));

@@ -697,9 +697,9 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                     @endphp
 
                                 <?php 
-                                    $training_tags = $user->training_tags->keyBy('aircraft_type'); 
-                                    $trainingTags = $user->training_tags->where('aircraft_type', $entry['parent']->id);
-                                    //dump($trainingTags);
+                                    $training_tags = $user->training_tags; 
+                                    // $trainingTags = $user->training_tags->where('aircraft_type', 3);
+                                    // dump(   $parent->id);
                                 ?>
                             
 
@@ -720,8 +720,8 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                                 OPC
                                             </span>
                                         @endif
-                                                {{-- Multiple Training Tags --}}
-                                            @foreach ($trainingTags as $trainingTag)
+                                                <!-- {{-- Multiple Training Tags --}}
+                                            @foreach ($training_tags as $trainingTag)
                                                 @php
                                                     $trainingColor = '#dc3545';
                                                     $trainingTooltip = 'No tag expiry date entered';
@@ -748,7 +748,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                                     title="{{ $trainingTooltip }}">
                                                     {{ $trainingTag->rhsTag->rhstag }}
                                                 </span>
-                                            @endforeach
+                                            @endforeach -->
 
                                     </div>
 
@@ -812,6 +812,13 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                             }
                                         }
                                     @endphp
+
+                                        <?php 
+                                            $training_tags = $user->training_tags; 
+                                            // $trainingTags = $user->training_tags->where('aircraft_type', 3);
+                                            // dump(   $parent->id);
+                                        ?>
+
                                     <div class="parent_rate">
                                         <span class="badge" style="background-color:{{ $color }}"
                                             data-bs-toggle="tooltip"
@@ -827,6 +834,35 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                                 OPC
                                             </span>
                                         @endif
+
+                                        @foreach ($training_tags as $trainingTag)
+                                            @php
+                                                $trainingColor = '#dc3545';
+                                                $trainingTooltip = 'No tag expiry date entered';
+
+                                                if (!empty($trainingTag->tag_expiry_date)) {
+                                                    $trainingDate = \Carbon\Carbon::parse($trainingTag->tag_expiry_date);
+
+                                                    if ($trainingDate->isPast()) {
+                                                        $trainingColor = '#dc3545';
+                                                        $trainingTooltip = 'Tag expired on ' . $trainingDate->format('d/m/Y');
+                                                    } elseif ($trainingDate->diffInDays(now()) < 90) {
+                                                        $trainingColor = '#ffc107';
+                                                        $trainingTooltip = 'Tag will expire on ' . $trainingDate->format('d/m/Y');
+                                                    } else {
+                                                        $trainingColor = '#198754';
+                                                        $trainingTooltip = 'Tag valid until ' . $trainingDate->format('d/m/Y');
+                                                    }
+                                                }
+                                            @endphp
+
+                                            <span class="badge ms-1"
+                                                style="background-color:{{ $trainingColor }}; color:white"
+                                                data-bs-toggle="tooltip"
+                                                title="{{ $trainingTooltip }}">
+                                                {{ $trainingTag->rhsTag->rhstag }}
+                                            </span>
+                                        @endforeach
                                     </div>
                                 @endif
                             @endforeach
@@ -1087,6 +1123,40 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                                 OPC
                                             </span>
                                         @endif
+
+                                        <?php 
+                                            $training_tags = $user->training_tags; 
+                                            // $trainingTags = $user->training_tags->where('aircraft_type', 3);
+                                            // dump(   $parent->id);
+                                        ?>
+                                        @foreach ($training_tags as $trainingTag)
+                                            @php
+                                                $trainingColor = '#dc3545';
+                                                $trainingTooltip = 'No tag expiry date entered';
+
+                                                if (!empty($trainingTag->tag_expiry_date)) {
+                                                    $trainingDate = \Carbon\Carbon::parse($trainingTag->tag_expiry_date);
+
+                                                    if ($trainingDate->isPast()) {
+                                                        $trainingColor = '#dc3545';
+                                                        $trainingTooltip = 'Tag expired on ' . $trainingDate->format('d/m/Y');
+                                                    } elseif ($trainingDate->diffInDays(now()) < 90) {
+                                                        $trainingColor = '#ffc107';
+                                                        $trainingTooltip = 'Tag will expire on ' . $trainingDate->format('d/m/Y');
+                                                    } else {
+                                                        $trainingColor = '#198754';
+                                                        $trainingTooltip = 'Tag valid until ' . $trainingDate->format('d/m/Y');
+                                                    }
+                                                }
+                                            @endphp
+
+                                            <span class="badge ms-1"
+                                                style="background-color:{{ $trainingColor }}; color:white"
+                                                data-bs-toggle="tooltip"
+                                                title="{{ $trainingTooltip }}">
+                                                {{ $trainingTag->rhsTag->rhstag }}
+                                            </span>
+                                        @endforeach
                                     </div>
                                 @endif
                             @endforeach
@@ -2014,7 +2084,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title"> Bookings</h5>
+                                <h5 class="card-title"> Pending Bookings</h5>
                                 <table class="table table-hover" id="pendingbookingTable">
                                     <thead>
                                         <tr>
@@ -2026,7 +2096,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                             <th scope="col">Booking Type</th>
                                             <th scope="col">Resource Type</th>
                                             <th scope="col">Status</th>
-                                            <!-- <th scope="col">Actions</th> -->
+                                            <th scope="col">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -2056,7 +2126,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                                     @endif
                                                 </td>
                                                 <td>{{ $booking->status }}</td>
-                                                <!-- <td>
+                                                <td>
                                                     @if(auth()->user()->role == 18)
                                                         <button class="btn btn-success booking-btn approve-btn"
                                                             data-id="{{ $booking->id }}" data-ou-id="{{ $booking->ou_id }}">
@@ -2068,7 +2138,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                                             Reject
                                                         </button>
                                                     @endif
-                                                </td> -->
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
