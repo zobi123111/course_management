@@ -516,7 +516,7 @@
                             <select name="resource" id="edit_resource" class="form-control mb-2"></select>
                             <span class="text-danger edit-error-text" id="editerror_resource"></span>
                         </div>
-                        @if (auth()->user()->role == 1)
+                     
                         <div class="col-md-6">
                             <div id="edit_instructor_wrapper" style="display:none">
                                 <label>Instructor</label>
@@ -525,7 +525,7 @@
 
                             </div>
                         </div>
-                        @endif
+                     
                     </div>
 
                     <!-- Time Section -->
@@ -809,7 +809,7 @@
                         </div>
                         <div class="col-md-6 form-group" id="create_instructor_wrapper" style="display:none">
                             <div class="form-group">
-                                <div >
+                                <div>
                                     <label>Instructor</label>
                                     <select name="instructor" id="booking_instructor" class="form-control mb-2">
                                         <option value="">Select Instructor</option>
