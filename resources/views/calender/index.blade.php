@@ -322,6 +322,14 @@
                         </div>
                     </div>
                     @endif
+                    @if(get_user_role(auth()->user()->role) == 'instructor')
+                    <div style="text-align: right;">
+                        <label class="form-check-label">
+                            <input type="checkbox" name="booking_myself" value="1" class="form-check-input" id="edit_booking_myself">
+                            Booking for me
+                        </label>
+                    </div>
+                    @endif
                     <input type="hidden" id="edit_booking_id">
                     <div class="row">
                     
@@ -380,7 +388,7 @@
 
                         <div class="col-md-6 form-group">
                             <label>Booking Type</label>
-                            <select id="edit_booking_type" name="booking_type" class="form-control mb-2">
+                            <select id="edit_booking_type" name="booking_type" class="form-control mb-2 no-change">
                                 <option value="1">Resource</option>
                                 <option value="2">Lesson</option>
                                 <option value="3">Standby</option>
@@ -574,6 +582,15 @@
                         </label>
                     </div>
                     @endif
+               
+                    @if(get_user_role(auth()->user()->role) == 'instructor')
+                    <div style="text-align: right;">
+                        <label class="form-check-label">
+                            <input type="checkbox" name="booking_myself" value="1" class="form-check-input" id="booking_myself">
+                            Booking for me
+                        </label>
+                    </div>
+                    @endif
                     <div class="row">
                         @if((auth()->user()->role == 1 && empty(auth()->user()->ou_id)))
                         <div class="col-md-6 form-group">
@@ -588,23 +605,21 @@
                             <span class="text-danger error-text" id="error_organizationUnits"></span>
                         </div>
                         @endif
-
-                        <div class="col-md-6 form-group">
+                       @if((auth()->user()->role == 1 && empty(auth()->user()->ou_id)) || auth()->user()->role == 18)
+                        <div class="col-md-6 form-group" id="add_student_div">
                             <div class="form-group">
-                                @if((auth()->user()->role == 1 && empty(auth()->user()->ou_id)) || auth()->user()->role == 18)
                                 <label id="student_label_name">Select Student</label>
-                          
                                 <select id="add_student" name="student" class="form-control mb-2">
-                                    
                                     <option value="">Select Student</option>
                                     @foreach ($students as $val)
                                     <option value="{{ $val->id }}">{{ $val->fname }} {{ $val->lname }}</option>
                                     @endforeach
                                 </select>
-                                @endif
+                              
                                 <span class="text-danger error-text" id="error_student"></span>
                             </div>
                         </div>
+                          @endif
                     </div>
 
                     @if(auth()->user()->is_admin == 1 && !empty(auth()->user()->ou_id))
@@ -792,9 +807,9 @@
                             </div>
 
                         </div>
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-6 form-group" id="create_instructor_wrapper" style="display:none">
                             <div class="form-group">
-                                <div id="create_instructor_wrapper" style="display:none">
+                                <div >
                                     <label>Instructor</label>
                                     <select name="instructor" id="booking_instructor" class="form-control mb-2">
                                         <option value="">Select Instructor</option>
@@ -1720,8 +1735,6 @@
             $('.edit-error-text').text('');
             editFormLoading = true;
 
-       
-
             $.ajax({
                 url: SITEURL + "/calendar/edit",
                 type: "POST",
@@ -1758,6 +1771,21 @@
                     } else {
                         $('#edit_student_div').show();
                     }
+
+                  if (role == 18) {
+                    $('#booking_myself').show();
+
+                    if (response.booking_myself == 1) {
+                       $('#edit_booking_myself').prop('checked', true).prop('disabled', true);
+                        $('#add_student_div').hide(); // keep UI in sync
+                         $('#edit_student_div').hide(); 
+                        
+                    } else {
+                        $('#edit_booking_myself').prop('checked', false).prop('disabled', true);
+                        $('#booking_myself').prop('checked', false);
+                        $('#add_student_div').show();
+                    }
+                }
 
 
                     // Basic fields
@@ -2479,7 +2507,7 @@
             }
         }
 
-        $('#add_instructor_training').click(function() {
+        $('#add_instructor_training').click(function() { 
             let isChecked = $(this).is(":checked");
 
             if (isChecked) {
@@ -2493,6 +2521,24 @@
             $("#organizationUnits").trigger("change");
 
         });
+        
+      $('#booking_myself').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('#add_student_div').hide();
+                } else {
+                    $('#add_student_div').show();
+                }
+            });
+
+       $('#edit_booking_myself').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('#edit_student_div').hide();
+                } else {
+                    $('#edit_student_div').show();
+                }
+            });
+
+            
     });
 </script>
 @endsection
