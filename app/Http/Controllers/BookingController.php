@@ -551,7 +551,13 @@ class BookingController extends Controller
         }
 
         $validated = $request->validate($rules);
-        // dd($request->all()); 
+
+        if($request->booking_type == 1){
+            $instructor = $request->approver_instructor;
+        }else{
+             $instructor = $request->instructor;
+        }
+ 
 
         $booking_update = array(
             "ou_id"         => $request->organizationUnits ?? Auth::user()->ou_id,
@@ -561,11 +567,10 @@ class BookingController extends Controller
             "end"           => $request->end_date,
             "booking_type"  => $request->booking_type,
             "resource_type" => $request->resource_type,
-            "instructor_id" => $request->instructor,
+            "instructor_id" => $instructor,
             // "send_email "   => $request->boolean('send_email') ? 1 : 0,
         );
 
-        //  dd($booking_update);
 
         $update_booking =  Booking::where('id', $request->id)->update($booking_update);
 
