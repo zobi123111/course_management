@@ -2590,7 +2590,7 @@ class TrainingEventsController extends Controller
                 'deferredGradings' => function ($query) {
                     $query->with('defLesson:id,lesson_title');
                 },
-                'course:id,course_name,enable_feedback',
+                'course:id,course_name,enable_feedback,duration_value,duration_type',
                 'group:id,name',
                 'instructor:id,fname,lname',
                 'documents:id,training_event_id,course_document_id,file_path',
@@ -2901,6 +2901,260 @@ class TrainingEventsController extends Controller
 
            // dd($userId);
         $user_name = User::where('id', $userId)->select('fname', 'lname')->first();
+        
+
+        $user = User::with([
+                'training_tags' => function ($query) {
+                    $query->whereIn('id', function ($sub) {
+                        $sub->select('tt1.id')
+                            ->from('training_tags as tt1')
+                            ->whereRaw('tt1.updated_at = (
+                                SELECT MAX(tt2.updated_at)
+                                FROM training_tags as tt2
+                                WHERE tt2.user_id = tt1.user_id
+                                AND tt2.tag_id = tt1.tag_id
+                            )');
+                    });
+                },
+                'training_tags.rhsTag',
+            ])
+            ->where('id', $userId)
+            ->select('id', 'fname', 'lname')
+            ->first();
+
+        if (!function_exists('toSeconds')) {
+            function toSeconds(?string $time): int {
+                if (!$time) return 0;
+                [$h, $m] = array_pad(explode(':', $time), 2, 0);
+                return ($h * 3600) + ($m * 60);
+            }
+        }
+
+        if (!function_exists('formatSeconds')) {
+            function formatSeconds(int $seconds): string
+            {
+                $h = floor($seconds / 3600);
+                $m = floor(($seconds % 3600) / 60);
+
+                return sprintf('%02d:%02d', $h, $m);
+            }
+        }
+
+        $totals = [
+            'flight'            => 0,
+            'deferred'          => 0,
+            'customDuration'    => 0,
+            'lessonCreditedTime'=> 0
+        ];
+
+        /* -------------------------
+        FLIGHT / SIM / GROUND
+        ------------------------- */
+        foreach ($event->eventLessons as $lesson) {
+
+            $type = $lesson->lesson->lesson_type ?? null;
+
+            $credited = toSeconds($lesson->hours_credited);
+
+            if ($type === 'flight') {
+                $totals['flight'] += $credited;
+            }
+
+            /* -------------------------
+                LESSON CREDITED TIME TABLE
+            ------------------------- */
+            foreach ($lesson->CreditedTime as $ct) {
+                $sec = toSeconds($ct->hours);
+                $totals['lessonCreditedTime'] += $sec;
+            }
+        }
+
+        /* -------------------------
+        DEFERRED LESSON DURATION
+        ------------------------- */
+        foreach ($event->defLessons as $def) {
+            $start = strtotime($def->start_time);
+            $end   = strtotime($def->end_time);
+            if ($start && $end && $end > $start) {
+                $totals['deferred'] += ($end - $start);
+            }
+        }
+
+        /* -------------------------
+        CUSTOM SECTORS PER DEF LESSON
+        ------------------------- */
+        foreach ($event->defLessons as $def) {
+
+            // deferred sectors
+            foreach ($def->deferredSectors as $sec) {
+                $s = strtotime($sec->start_time);
+                $e = strtotime($sec->end_time);
+                if ($s && $e && $e > $s) {
+                    $totals['customDuration'] += ($e - $s);
+                }
+            }
+
+            // custom sectors
+            foreach ($def->customSectors as $sec) {
+                $s = strtotime($sec->start_time);
+                $e = strtotime($sec->end_time);
+                if ($s && $e && $e > $s) {
+                    $totals['customDuration'] += ($e - $s);
+                }
+            }
+        }
+
+        /* -------------------------
+        SECTOR BLOCK TIME
+        ------------------------- */
+        $totalSectorblockTime = 0;
+
+        foreach ($event->eventLessons as $lesson) {
+            foreach ($lesson->sectors as $sector) {
+                $start = strtotime($sector->start_time);
+                $end = strtotime($sector->end_time);
+                if ($start && $end && $end > $start) {
+                    $totalSectorblockTime += ($end - $start);
+                }
+            }
+        }
+
+        foreach ($event->eventLessons as $lesson) {
+            $t  = strtotime($lesson->start_time);
+            $l  = strtotime($lesson->end_time);
+            if ($t && $l && $l > $t) {
+                $totalSectorblockTime += ($l - $t);
+            }
+        }
+
+        foreach ($event->defLessons as $def) {
+            foreach ($def->deferredSectors as $s) {
+                $start = strtotime($s->start_time);
+                $end   = strtotime($s->end_time);
+                if ($start && $end && $end > $start) {
+                    $totalSectorblockTime += ($end - $start);
+                }
+            }
+
+            foreach ($def->customSectors as $s) {
+                $start = strtotime($s->start_time);
+                $end   = strtotime($s->end_time);
+                if ($start && $end && $end > $start) {
+                    $totalSectorblockTime += ($end - $start);
+                }
+            }
+        }
+
+        /* -------------------------
+        SECTOR FLIGHT TIME
+        ------------------------- */
+        $sectorFlightTime = 0;
+
+        foreach ($event->eventLessons as $lesson) {
+            foreach ($lesson->sectors as $sector) {
+                $t  = strtotime($sector->takeoff_time);
+                $l  = strtotime($sector->landing_time);
+                if ($t && $l && $l > $t) {
+                    $sectorFlightTime += ($l - $t);
+                }
+            }
+        }
+
+        /* -------------------------------------------------------
+            FINAL FORMULAS (same as Blade)
+        ------------------------------------------------------- */
+        $lessonFlightTime = 0;
+
+        foreach ($event->eventLessons as $lesson) {
+            $takeoff  = strtotime($lesson->takeoff_time);
+            $landing  = strtotime($lesson->landing_time);
+
+            if ($takeoff && $landing && $landing > $takeoff) {
+                $lessonFlightTime += ($landing - $takeoff);
+            }
+        }
+
+        /* ----------------------------
+            DEFERRED LESSON FLIGHT TIME
+        ---------------------------- */
+        $deferredFlightTime = 0;
+
+        foreach ($event->defLessons as $def) {
+            $takeoff = strtotime($def->takeoff_time);
+            $landing = strtotime($def->landing_time);
+
+            if ($takeoff && $landing && $landing > $takeoff) {
+                $deferredFlightTime += ($landing - $takeoff);
+            }
+        }
+
+        /* ----------------------------
+            SECTOR FLIGHT TIME
+        ---------------------------- */
+        $sectorFlightTime = 0;
+
+        // event lesson sectors
+        foreach ($event->eventLessons as $lesson) {
+            foreach ($lesson->sectors as $sector) {
+                $t = strtotime($sector->takeoff_time);
+                $l = strtotime($sector->landing_time);
+
+                if ($t && $l && $l > $t) {
+                    $sectorFlightTime += ($l - $t);
+                }
+            }
+        }
+
+        // deferred lesson sectors
+        foreach ($event->defLessons as $def) {
+            foreach ($def->deferredSectors as $sector) {
+                $t = strtotime($sector->takeoff_time);
+                $l = strtotime($sector->landing_time);
+
+                if ($t && $l && $l > $t) {
+                    $sectorFlightTime += ($l - $t);
+                }
+            }
+
+            foreach ($def->customSectors as $sector) {
+                $t = strtotime($sector->takeoff_time);
+                $l = strtotime($sector->landing_time);
+
+                if ($t && $l && $l > $t) {
+                    $sectorFlightTime += ($l - $t);
+                }
+            }
+        }
+
+        /* ----------------------------
+            FINAL FLIGHT TIME
+        ---------------------------- */
+        $totalFlightTime =
+            $lessonFlightTime +
+            $deferredFlightTime +
+            $sectorFlightTime;
+
+        
+
+        // Total Block Credited (blade logic)
+        $TotalBlockCredited =
+            // $lessonFlightTime +
+            $totals['deferred'] +
+            $totals['customDuration'] +
+            // $sectorFlightTime +
+            $totals['lessonCreditedTime'];
+
+        // Add sector block time
+        $blockCredited = $totalSectorblockTime + $TotalBlockCredited;
+        
+        // Duration (hours * 3600)
+        $blockDuration = $event->course->duration_value * 3600;
+        $eventtype = $event->course->duration_type;
+
+        // Convert to readable for PDF
+        $totalFlightTimeFormatted = formatSeconds($totalFlightTime);
+        $blockCreditedFormatted   = formatSeconds($blockCredited);
+        $blockDurationFormatted   = formatSeconds($blockDuration);
 
        $course_id = request()->segment(4);
 
@@ -2910,7 +3164,7 @@ class TrainingEventsController extends Controller
         ];
       
 
-        return view('trainings.grading-list', compact('event', 'userId', 'defLessonGrading', 'CustomLessonGrading', 'deferredFinal', 'customFinal', 'examinerFinal', 'instructorFinal', 'pilotFinal','reviews','allLessonsGraded','user_name', 'breadcrumbs'));
+        return view('trainings.grading-list', compact('event', 'user', 'eventtype', 'totalFlightTimeFormatted', 'blockCreditedFormatted', 'blockDurationFormatted', 'userId', 'defLessonGrading', 'CustomLessonGrading', 'deferredFinal', 'customFinal', 'examinerFinal', 'instructorFinal', 'pilotFinal','reviews','allLessonsGraded','user_name', 'breadcrumbs'));
     }
 
     // public function unlockEventGarding(Request $request, $event_id)

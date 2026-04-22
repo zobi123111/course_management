@@ -79,11 +79,37 @@
             <div class="card-body p-4">
                 <!-- Task Grading -->
                 <div class="mb-4">
-                    <div class="d-flex align-items-center bg-light rounded p-3 shadow-sm" style="margin-bottom: 32px; margin-top: -9px">
+                    <div class="d-flex bg-light rounded p-3 shadow-sm" style="margin-bottom: 32px; margin-top: -9px">
                         <i class="bi bi-person-circle text-primary fs-3 me-3"></i>
-                        <div>
+                        <div class="col-md-4">
                             <small class="text-muted">Student Name</small>
                             <h5 class="mb-0 fw-bold text-dark"> {{ $user_name->fname ?? '' }} {{ $user_name->lname ?? '' }}</h5>
+                        </div>
+
+                        <?php 
+                            $training_tags = $user->training_tags; 
+                        ?>
+
+
+                        
+                            <div class="col-md-4">
+                                <small class="text-muted">Additional Items:</small>
+                                <ul>
+                                    @foreach ($training_tags as $trainingTag)
+                                        <li class="mb-0 fw-bold text-dark">{{ $trainingTag->rhsTag->rhstag }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+
+                        <div class="col-md-4">
+                            <small class="text-muted">Summary:</small>
+                            <ul>
+                                @if($eventtype === 'hours')
+                                    <li class="mb-0 fw-bold text-dark">Ground Time: {{ $blockDurationFormatted }}</li>
+                                    <li class="mb-0 fw-bold text-dark">Block Time: {{ $blockCreditedFormatted }}</li>
+                                @endif
+                                <li class="mb-0 fw-bold text-dark">Flight Time: {{ $totalFlightTimeFormatted }}</li>
+                            </ul>
                         </div>
                     </div>
 
