@@ -2084,7 +2084,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title"> Pending Bookings</h5>
+                                <h5 class="card-title"> Bookings</h5>
                                 <table class="table table-hover" id="pendingbookingTable">
                                     <thead>
                                         <tr>
@@ -2096,7 +2096,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                             <th scope="col">Booking Type</th>
                                             <th scope="col">Resource Type</th>
                                             <th scope="col">Status</th>
-                                            <th scope="col">Actions</th>
+                                            <!-- <th scope="col">Actions</th> -->
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -2126,7 +2126,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                                     @endif
                                                 </td>
                                                 <td>{{ $booking->status }}</td>
-                                                <td>
+                                                <!-- <td>
                                                     @if(auth()->user()->role == 18)
                                                         <button class="btn btn-success booking-btn approve-btn"
                                                             data-id="{{ $booking->id }}" data-ou-id="{{ $booking->ou_id }}">
@@ -2138,7 +2138,7 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
                                                             Reject
                                                         </button>
                                                     @endif
-                                                </td>
+                                                </td> -->
                                             </tr>
                                         @endforeach
                                     </tbody>
