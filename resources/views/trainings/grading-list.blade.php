@@ -89,7 +89,6 @@
                         <?php 
                             $training_tags = $user->training_tags; 
                         ?>
-
                         
                         @if($training_tags->isNotEmpty())
                             <div class="col-md-4">
@@ -1429,7 +1428,7 @@
                                     </a>
                                 @else
                                     <span class="badge bg-warning text-dark">
-                                        Report not available until lesson is locked.
+                                        Report not available until lesson is graded.
                                     </span>
                                 @endif
                             </li>
@@ -1456,7 +1455,7 @@
                                     </a>
                                 @else
                                     <span class="badge bg-warning text-dark">
-                                        Report not available until lesson is locked.
+                                        Report not available until lesson is graded.
                                     </span>
                                 @endif
                             </li>
