@@ -2904,8 +2904,9 @@ class TrainingEventsController extends Controller
         
 
         $user = User::with([
-                'training_tags' => function ($query) {
-                    $query->whereIn('id', function ($sub) {
+                'training_tags' => function ($query) use ($event){
+                    $query->where('event_id', $event->id)
+                    ->whereIn('id', function ($sub) {
                         $sub->select('tt1.id')
                             ->from('training_tags as tt1')
                             ->whereRaw('tt1.updated_at = (

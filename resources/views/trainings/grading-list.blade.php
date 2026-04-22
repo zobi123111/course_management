@@ -90,8 +90,8 @@
                             $training_tags = $user->training_tags; 
                         ?>
 
-
                         
+                        @if($training_tags->isNotEmpty())
                             <div class="col-md-4">
                                 <small class="text-muted">Additional Items:</small>
                                 <ul>
@@ -100,6 +100,7 @@
                                     @endforeach
                                 </ul>
                             </div>
+                        @endif
 
                         <div class="col-md-4">
                             <small class="text-muted">Summary:</small>
