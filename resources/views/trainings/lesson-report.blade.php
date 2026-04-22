@@ -85,7 +85,7 @@
                         @endif
                         <br>
                     @endif
-                    @if(!in_array($resource, ['Homestudy', 'Home Study', 'Classroom']))
+                    @if(!$eventLesson->lesson_type == 'groundschool')
                         <strong>Departure :</strong> {{ $eventLesson?->departure_airfield ?? 'N/A' }}<br>
                         <strong>Arrival :</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}<br>
                         <strong>Total Blocks:</strong> {{ $blockCreditedFormatted }}<br>
