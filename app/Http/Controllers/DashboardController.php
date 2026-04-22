@@ -257,9 +257,14 @@ class DashboardController extends Controller
                         'licenseValidations.validation',
                         'training_tags' => function ($query) {
                             $query->whereIn('id', function ($sub) {
-                                $sub->selectRaw('MAX(id)')
-                                    ->from('training_tags as tt2')
-                                    ->groupBy('tt2.tag_id');
+                                $sub->select('tt1.id')
+                                    ->from('training_tags as tt1')
+                                    ->whereRaw('tt1.updated_at = (
+                                        SELECT MAX(tt2.updated_at)
+                                        FROM training_tags as tt2
+                                        WHERE tt2.user_id = tt1.user_id
+                                        AND tt2.tag_id = tt1.tag_id
+                                    )');
                             });
                         },
                         'training_tags.rhsTag',

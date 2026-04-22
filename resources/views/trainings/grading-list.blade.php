@@ -197,20 +197,22 @@
                                         </div>
                                         @endif
 
-                                        {{-- Instructor Comment --}}
-                                        @if(!empty($meta?->instructor_comment))
-                                        <div class="col-md-12">
-                                            <div class="card shadow-sm border-0" style="margin-bottom: 15px !important;">
-                                                <div class="card-header bg-primary text-white py-0">
-                                                    <i class="bi bi-chat-square-text me-2"></i> Instructor Comment
+                                        @if(Auth::user()->role != 3)
+                                            {{-- Instructor Comment --}}
+                                            @if(!empty($meta?->instructor_comment))
+                                                <div class="col-md-12">
+                                                    <div class="card shadow-sm border-0" style="margin-bottom: 15px !important;">
+                                                        <div class="card-header bg-primary text-white py-0">
+                                                            <i class="bi bi-chat-square-text me-2"></i> Instructor Comment
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <p class="mb-0 text-muted">
+                                                                {{ $meta->instructor_comment }}
+                                                            </p>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div class="card-body">
-                                                    <p class="mb-0 text-muted">
-                                                        {{ $meta->instructor_comment }}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                            @endif
                                         @endif
                                     </div>
                                 @endforeach
@@ -590,24 +592,26 @@
                                 @endif
 
 
-                                <!-- //  Instructor Comment -->
-                                @if(!empty($defLesson->instructor_comment))
-                                <div class="col-md-12 mt-3">
-                                    <div class="card shadow-sm border-0">
-                                        <div class="card-header bg-primary text-white py-0">
-                                            <i class="bi bi-journal-text me-2"></i> Instructor Comment
-                                        </div>
-                                        <div class="card-body">
-                                            @if(!empty($defLesson->instructor_comment ))
-                                            <p class="mb-0 text-muted">
-                                                {{ $defLesson->instructor_comment }}
-                                            </p>
-                                            @else
-                                            <p class="mb-0 text-muted fst-italic">No Instructor Comment provided.</p>
-                                            @endif
+                                @if(Auth::user()->role != 3)
+                                    <!-- //  Instructor Comment -->
+                                    @if(!empty($defLesson->instructor_comment))
+                                    <div class="col-md-12 mt-3">
+                                        <div class="card shadow-sm border-0">
+                                            <div class="card-header bg-primary text-white py-0">
+                                                <i class="bi bi-journal-text me-2"></i> Instructor Comment
+                                            </div>
+                                            <div class="card-body">
+                                                @if(!empty($defLesson->instructor_comment ))
+                                                <p class="mb-0 text-muted">
+                                                    {{ $defLesson->instructor_comment }}
+                                                </p>
+                                                @else
+                                                <p class="mb-0 text-muted fst-italic">No Instructor Comment provided.</p>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                    @endif
                                 @endif
 
                                 <!-- Deferred Competency Grading -->
@@ -956,24 +960,26 @@
                                 @endif
 
 
-                                <!-- //  Instructor Comment -->
-                                @if(!empty($defLesson->instructor_comment))
-                                <div class="col-md-12 mt-3">
-                                    <div class="card shadow-sm border-0">
-                                        <div class="card-header bg-primary text-white py-0">
-                                            <i class="bi bi-journal-text me-2"></i> Instructor Comment
-                                        </div>
-                                        <div class="card-body">
-                                            @if(!empty($defLesson->instructor_comment ))
-                                            <p class="mb-0 text-muted">
-                                                {{ $defLesson->instructor_comment }}
-                                            </p>
-                                            @else
-                                            <p class="mb-0 text-muted fst-italic">No Instructor Comment provided.</p>
-                                            @endif
+                                @if(Auth::user()->role != 3)
+                                    <!-- //  Instructor Comment -->
+                                    @if(!empty($defLesson->instructor_comment))
+                                    <div class="col-md-12 mt-3">
+                                        <div class="card shadow-sm border-0">
+                                            <div class="card-header bg-primary text-white py-0">
+                                                <i class="bi bi-journal-text me-2"></i> Instructor Comment
+                                            </div>
+                                            <div class="card-body">
+                                                @if(!empty($defLesson->instructor_comment ))
+                                                <p class="mb-0 text-muted">
+                                                    {{ $defLesson->instructor_comment }}
+                                                </p>
+                                                @else
+                                                <p class="mb-0 text-muted fst-italic">No Instructor Comment provided.</p>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                    @endif
                                 @endif
 
 
@@ -1308,7 +1314,7 @@
                                         </a>
                                     @else
                                         <span class="badge bg-warning text-dark">
-                                            Report not available until lesson is locked.
+                                            Report not available until lesson is graded.
                                         </span>
                                     @endif
                                 </li>

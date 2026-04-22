@@ -4497,6 +4497,7 @@
             // Rename Off/On Blocks
             const startLabel = document.querySelector('.start-label');
             const endLabel = document.querySelector('.end-label');
+            const addSectorBtn = document.querySelector('#addSectorBtn');
 
             if (isGroundschool) {
 
@@ -4508,6 +4509,7 @@
 
                 if (startLabel) startLabel.textContent = "Start";
                 if (endLabel) endLabel.textContent = "Finish";
+                if (addSectorBtn) addSectorBtn.textContent = "Add Lesson";
 
             } else {
                 if (opField) opField.style.display = "";
@@ -4517,6 +4519,7 @@
                 if (landingField) landingField.style.display = "";
                 if (startLabel) startLabel.textContent = "Off Blocks";
                 if (endLabel) endLabel.textContent = "On Blocks";
+                if (addSectorBtn) addSectorBtn.textContent = "Add Sector";
                 
             }
         }
@@ -4542,6 +4545,7 @@
                 // ⭐ Rename only inside this row
                 row.find('.start-label').text(isGroundschool ? "Start" : "Off Blocks");
                 row.find('.end-label').text(isGroundschool ? "Finish" : "On Blocks");
+                row.find('#addSectorBtn').text(isGroundschool ? "Add Lesson" : "Add Sector");
             });
         }
 
