@@ -78,7 +78,7 @@
             <a href="{{ route('users.ou_rating') }}" class="btn btn-primary" id="addRating">View OU Rating</a>
             @endif
             @if(auth()->user()->is_owner == 1)
-            <a href="{{ route('archieveUser.index') }}" class="btn btn-primary" id="addRating">Archive User</a>
+            <a href="{{ route('archieveUser.index') }}" class="btn btn-primary" id="addRating">View Archived Users</a>
             @endif
         </div>
 
