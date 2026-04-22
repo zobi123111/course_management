@@ -79,6 +79,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/users/change-password', [UserController::class, 'changePassword'])->name('user.change-password');
     Route::post('/check_ratingExist', [UserController::class, 'check_ratingExist']);
     Route::post('/updateNnon_expiringLicence', [UserController::class, 'updateNnon_expiringLicence']);
+     Route::post('/updateNnon_expiringLicence_uk', [UserController::class, 'updateNnon_expiringLicence_uk']);
 
 
     Route::post('/rating/update', [UserController::class, 'updateRating'])->name('rating.update');

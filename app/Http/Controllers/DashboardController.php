@@ -9,7 +9,7 @@ use App\Models\Group;
 use App\Models\Folder;
 use App\Models\Document;
 use App\Models\TrainingEvents;
-use App\Models\BookedResource;
+use App\Models\BookedResource; 
 use App\Models\Booking;
 use App\Models\CourseGroup;
 use Illuminate\Support\Facades\Auth;
@@ -158,33 +158,38 @@ class DashboardController extends Controller
                     'overallAssessments',
                 ];
 
+              
+
             $trainingEventsQuery = TrainingEvents::where('ou_id', $currentUser->ou_id)
                             ->with($trainingEventsRelations)
-                            ->withCount(['taskGradings', 'competencyGradings']);
+                            ->withCount(['taskGradings', 'competencyGradings', 'firstLesson']);
+          
  
-            $trainingEvents = $trainingEventsQuery
-                            ->where('student_id', $currentUser->id)
-                            ->where(function ($query) use ($currentUser) {
-                                $query->whereHas('taskGradings', function ($q) use ($currentUser) {
-                                    $q->where('user_id', $currentUser->id);
-                                })->orWhereHas('competencyGradings', function ($q) use ($currentUser) {
-                                    $q->where('user_id', $currentUser->id);
-                                })->orWhereHas('overallAssessments', function ($q) use ($currentUser) {
-                                    $q->where('user_id', $currentUser->id);
-                                });
-                            })
+            // $trainingEvents = $trainingEventsQuery
+            //                     ->where('student_id', $currentUser->id)
+            //                     ->where(function ($query) use ($currentUser) {
+            //                         $query->whereHas('taskGradings', function ($q) use ($currentUser) {
+            //                         $q->where('user_id', $currentUser->id);
+            //                     })
+            //                     ->orWhereHas('competencyGradings', function ($q) use ($currentUser) {
+            //                         $q->where('user_id', $currentUser->id);
+            //                         })->orWhereHas('overallAssessments', function ($q) use ($currentUser) {
+            //                             $q->where('user_id', $currentUser->id);
+            //                         });
+            //                     })
+            //                     ->orderBy('id', 'DESC')
+            //                     ->limit(1)  
+            //                     ->get();
 
-                           ->orderBy('id', 'DESC')
-                           ->limit(1)  
-                           ->get();
-        
-           $trainingEvents_instructor = TrainingEvents::where('entry_source', "instructor")
-                                        ->where('entry_source', "instructor")
-                                        ->where('student_id', $currentUser->id)
-                                        ->withCount(['taskGradings', 'competencyGradings'])
-                                        ->orderBy('id', 'DESC')
-                                    // ->limit(1)  
-                                        ->get();
+             $trainingEvents = TrainingEvents::with('eventLessons')
+                                ->where('ou_id', $currentUser->ou_id)
+                                ->where('student_id', $currentUser->id)
+                                ->whereHas('eventLessons', function ($q) {
+                                    $q->where('is_locked', 0);
+                                })
+                             ->get();
+    
+           //  dd($trainingEvents);                            
 
             foreach ($trainingEvents as $event) {
                 $outstandingItems->push([

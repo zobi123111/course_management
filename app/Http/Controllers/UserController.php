@@ -3094,4 +3094,17 @@ class UserController extends Controller
             'message' => 'Updated successfully'
         ]);
     }
+
+   public function updateNnon_expiringLicence_uk(Request $request)
+    {
+        UserDocument::where('user_id', $request->user_id)
+            ->update([
+                'licence_non_expiring' => $request->non_expiring_licence
+            ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Updated successfully'
+        ]);
+    }
 }
