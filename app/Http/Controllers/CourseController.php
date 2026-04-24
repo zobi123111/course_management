@@ -157,6 +157,7 @@ class CourseController extends Controller
 
     public function createCourse(Request $request)
     {
+    //   dd($request->all());
       //dd($request->enable_aircraft);
         if (!$request->enable_feedback) {
             $request->merge(['feedback_questions' => null]);
@@ -217,6 +218,10 @@ class CourseController extends Controller
             'enable_custom_time_tracking' => 'nullable|boolean',
             'custom_time_name' => 'nullable|string|max:255',
             'custom_time_hours' => 'nullable|numeric|min:0',
+            
+            'teach_track' => 'nullable|boolean',
+            'training_type' => 'required_if:teach_track,1|nullable|in:initial,recurrent,refresher',
+            'validity'      => 'required_if:teach_track,1|nullable|integer|min:1',
         ], [], [
             'feedback_questions.*.question' => 'Feedback question',
             'feedback_questions.*.answer_type' => 'Answer type',
@@ -230,6 +235,8 @@ class CourseController extends Controller
         if ($request->hasFile('image')) {
             $filePath = $request->file('image')->store('courses', 'public');
         }
+
+        $teachTrackEnabled = $request->has('teach_track');
 
         $course = Courses::create([
             'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : auth()->user()->ou_id,
@@ -259,7 +266,13 @@ class CourseController extends Controller
             'opc_aircraft' => $request->enable_aircraft ?? null,
             'opc_validity' => $request->opc_validity_months ?? null,
             'opc_extend' => $request->opc_extend_eom ?? null,
-            'auto_archive'   => $request->auto_archive ?? 0
+            'auto_archive'   => $request->auto_archive ?? 0,
+
+            'teach_track'   => $teachTrackEnabled ? 1 : 0,
+            'is_instructor' => $teachTrackEnabled ? $request->is_instructor : 0,
+            'is_examiner'   => $teachTrackEnabled ? $request->is_examiner : 0,
+            'training_type' => $teachTrackEnabled ? $request->training_type : null,
+            'validity'      => $teachTrackEnabled ? $request->validity : null,
         ]);
 
         $course->groups()->attach($request->group_ids);
@@ -457,6 +470,10 @@ class CourseController extends Controller
                     }
                 }
             ],
+
+            'teach_track' => 'nullable|boolean',
+            'edit_training_type' => 'required_if:teach_track,1|nullable|in:initial,recurrent,refresher',
+            'edit_validity'      => 'required_if:teach_track,1|nullable|integer|min:1',
             // 'opc_validity_months' => [
             //         'sometimes',
             //         'required_if:enable_opc,!=,',
@@ -489,7 +506,8 @@ class CourseController extends Controller
             $filePath = $course->image;
         }
 
-
+        $teachTrackEnabled = $request->has('teach_track');
+           
         // Update the course details
         $course->update([
             'ou_id' => (auth()->user()->role == 1 && empty(auth()->user()->ou_id)) ? $request->ou_id : (auth()->user()->ou_id ?? null),
@@ -516,7 +534,13 @@ class CourseController extends Controller
             'opc_aircraft' => $request->enable_aircraft ?? null,
             'opc_validity' => $request->opc_validity_months ?? null,
             'opc_extend' => $request->opc_extend_eom ?? null,
-            'auto_archive' => $request->auto_archive ?? 0
+            'auto_archive' => $request->auto_archive ?? 0,
+
+            'teach_track'   => $teachTrackEnabled ? 1 : 0,
+            'is_instructor' => $teachTrackEnabled ? $request->boolean('is_instructor') : 0,
+            'is_examiner'   => $teachTrackEnabled ? $request->boolean('is_examiner') : 0,
+            'training_type' => $teachTrackEnabled ? $request->edit_training_type : null,
+            'validity'      => $teachTrackEnabled ? $request->edit_validity : null,
         ]);
 
 
