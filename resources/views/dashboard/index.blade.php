@@ -284,11 +284,17 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
                 @if ($user->is_activated == 0 && $user->status == 1) 
                 <tr>
-                    <td>{{ $user->fname }} {{ $user->lname }}</td>
-                        <?php
+                    <td>{{ $user->fname }} {{ $user->lname }}
+                        @if($user->roles->role_name == 'Instructor')
+                           (I)
+                        @elseif($user->roles->role_name == 'Examiner')
+                            (E)
+                        @endif
+                    </td>
+                    <?php
                         $doc = $user->documents; 
                         $ratingsByLicence = $user->usrRatings->groupBy('linked_to');
-                        ?>
+                    ?>
                     <!-- <td>
                         {{-- UK Licence --}}
                         @if($doc && $doc->licence_file)
