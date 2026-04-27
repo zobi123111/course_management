@@ -315,7 +315,7 @@ class BookingController extends Controller
 
     public function store(Request $request)
     { 
-       // dd($request->all());
+        //dd($request->all());
         $rules = [
             'start_date'    => 'required|date_format:Y-m-d H:i',
             'end_date'      => 'required|date_format:Y-m-d H:i|after:start_date',
@@ -538,7 +538,7 @@ class BookingController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Training event processed successfully.'
+                'message' => 'Booking created successfully.'
             ]);
         }
 
