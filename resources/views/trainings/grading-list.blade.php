@@ -1480,7 +1480,7 @@
                 <div class="alert alert-success mb-0">
                     <i class="bi bi-hand-thumbs-up-fill me-1"></i> You have acknowledged this training event.
                     <br>
-                    <small><strong>Your Comments:</strong> {{ $event->student_acknowledgement_comments ?? 'N/A' }}</small>
+                    <small><strong>Your Comments: </strong> {{ $event->student_acknowledgement_comments ?? 'N/A' }}</small>
                 </div>
                 @else
                 <form id="acknowledgeForm" class="p-3">

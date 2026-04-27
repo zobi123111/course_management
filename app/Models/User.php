@@ -270,4 +270,9 @@ class User extends Authenticatable
         return $this->hasMany(UserLicenseValidation::class);
     }
 
+    public function TeachTrack()
+    {
+        return $this->hasMany(TeachTrack::class);
+    }
+
 }

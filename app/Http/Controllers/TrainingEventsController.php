@@ -38,6 +38,7 @@ use App\Models\Booking;
 use App\Models\LessonCustomTime;
 use App\Models\LessonSector;
 use App\Models\LessonTimeCredited;
+use App\Models\TeachTrack;
 use App\Models\ValidateTrainingTag;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -5128,8 +5129,35 @@ class TrainingEventsController extends Controller
                 'opc_expiry_date' => $newExpiry,
             ]);
         }
+        
+        if ($event->entry_source == 'instructor' && $event->course->teach_track == 1) {
 
-          
+            $teach_track_validation_date = now()->addMonths($event->course->validity ?? 0);
+
+            TeachTrack::create([
+                'event_id' => $id,
+                'user_id' => $event->student_id,
+                'user_type' => 'instructor',
+                'training_type' => $event->course->training_type ?? null,
+                'validity' => $event->course->validity ?? null,
+                'validation_date' => $teach_track_validation_date ?? null,
+            ]);
+        }
+
+        if ($event->entry_source == 'examiner' && $event->course->teach_track == 1) {
+
+            $teach_track_validation_date = now()->addMonths($event->course->validity ?? 0);
+
+            TeachTrack::create([
+                'event_id' => $id,
+                'user_id' => $event->student_id,
+                'user_type' => 'examiner',
+                'training_type' => $event->course->training_type ?? null,
+                'validity' => $event->course->validity ?? null,
+                'validation_date' => $teach_track_validation_date ?? null,
+            ]);
+        }
+         
 
         //   dd($event->id);
         //   dd($course->userTagRatings);
