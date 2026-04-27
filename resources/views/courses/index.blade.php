@@ -746,7 +746,9 @@
 
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="is_examiner" value="1" id="edit_is_examiner">
-                            <label class="form-check-label" for="edit_is_examiner">Examiner</label>
+                            <label class="form-check-label" for="edit_is_examiner" style="cursor: pointer;">
+                                Examiner
+                            </label>
                         </div>
 
                         <div class="row mt-2">
@@ -1484,12 +1486,32 @@
                         $('#edit_is_instructor').prop('checked', response.course.is_instructor == 1);
                         $('#edit_is_examiner').prop('checked', response.course.is_examiner == 1);
 
-                        $('select[name="edit_training_type"]').val(response.course.training_type);
-                        $('input[name="edit_validity"]').val(response.course.validity);
+                        $('select[name="edit_training_type"]').val(response.course.training_type ?? '');
+                        $('input[name="edit_validity"]').val(response.course.validity ?? '');
                     } else {
                         $('#edit_teach_track').prop('checked', false);
                         $('#edit_ie_options').hide();
+
+                        // Reset fields when unchecked
+                        $('#edit_is_instructor').prop('checked', false);
+                        $('#edit_is_examiner').prop('checked', false);
+                        $('select[name="edit_training_type"]').val('');
+                        $('input[name="edit_validity"]').val('');
                     }
+
+                    $('#edit_teach_track').on('change', function () {
+                        if ($(this).is(':checked')) {
+                            $('#edit_ie_options').slideDown();
+                        } else {
+                            $('#edit_ie_options').slideUp();
+
+                            // Reset fields
+                            $('#edit_is_instructor').prop('checked', false);
+                            $('#edit_is_examiner').prop('checked', false);
+                            $('select[name="edit_training_type"]').val('');
+                            $('input[name="edit_validity"]').val('');
+                        }
+                    });
                     
                     $('#rhs_rows_container').empty();
                     $('#is_rhs').prop('checked', false);
