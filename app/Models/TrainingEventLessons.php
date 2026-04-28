@@ -33,7 +33,8 @@ class TrainingEventLessons extends Model
         'takeoff_time',
         'landing_time',
         'tacho_start_time',
-        'tacho_stop_time'
+        'tacho_stop_time',
+        'student_comment'
     ];
 
     // protected $dates = ['lesson_date', 'start_time', 'end_time', 'total_time', 'deleted_at'];
