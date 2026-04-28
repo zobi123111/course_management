@@ -951,7 +951,7 @@
                                 <button type="button" class="btn btn-danger remove_rhs_row">
                                     <i class="fa fa-minus"></i>
                                 </button>
-                            </div>
+                            </div> 
 
                         </div>
                     </div>

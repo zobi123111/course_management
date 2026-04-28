@@ -985,19 +985,70 @@ $(document).ready(function() {
 
                         // Update courses dropdown
                         var courseOptions = '<option value="">Select Course</option>'; // Default option
+                        // if (response.courses && response.courses.length > 0) {
+                        //     $.each(response.courses, function(index, course) {
+
+                        //         var allowCourse = true;
+
+                        //         // 👉 Apply restriction ONLY for instructor/examiner
+                        //         if (response.is_restricted && response.allowed_types) {
+                        //             allowCourse = response.allowed_types.includes(course.training_type);
+                        //         }
+
+                        //         if (allowCourse) {
+                        //             var selected = course.id == selectedCourseId ? 'selected' : '';
+                        //             courseOptions += '<option value="' + course.id + '" ' + selected + '>' 
+                        //                 + course.course_name + ' (' + course.training_type + ')' 
+                        //                 + '</option>';
+                        //         }
+                        //     });
+
+                        // } else {
+                        //     alert('No courses found!');
+                        // }
                         if (response.courses && response.courses.length > 0) {
+
                             $.each(response.courses, function(index, course) {
-                                var selected = course.id == selectedCourseId ? 'selected' : '';
-                                courseOptions += '<option value="' + course.id + '" ' + selected + '>' + course.course_name + '</option>';
+
+                                var allowCourse = true;
+
+                                if (response.is_restricted && response.allowed_types) {
+
+                                    // ✅ NULL training_type → allow
+                                    if (course.training_type === null || course.training_type === '') {
+                                        allowCourse = true;
+                                    } 
+                                    // ✅ Otherwise check allowed types
+                                    else {
+                                        allowCourse = response.allowed_types.includes(course.training_type);
+                                    }
+                                }
+
+                                if (allowCourse) {
+                                    var selected = course.id == selectedCourseId ? 'selected' : '';
+                                    courseOptions += '<option value="' + course.id + '" ' + selected + '>' 
+                                        + course.course_name + 
+                                        (course.training_type ? ' (' + course.training_type + ')' : '') +
+                                        '</option>';
+                                }
+
                             });
+
                         } else {
-                            alert('No courses found!'); // Notify user
+                            alert('No courses found!');
                         }
-                        courseDropdown.html(courseOptions); // Update dropdown
+
+                        courseDropdown.html(courseOptions);
+                        console.log('Restricted:', response.is_restricted);
+                        console.log('Status:', response.status);
                     } else {
                         licenceNumberField.val('');
                         alert('Licence number not found!');
-                        courseDropdown.html('<option value="">Select Course</option>'); // Clear courses
+                        courseDropdown.html('<option value="">Select Course</option>');
+                    }
+
+                    if (response.status === 'lapsed') {
+                        alert('⚠ Instructor is LAPSED. Refresher or Initial required.');
                     }
                 },
                 error: function(xhr) {

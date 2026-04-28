@@ -364,24 +364,138 @@ class TrainingEventsController extends Controller
         }
     }
 
+    // public function getStudentLicenseNumberAndCourses(Request $request, $user_id, $ou_id)
+    // {
+    //     $user = User::with('documents')->find($user_id);
+    //     $groups = Group::where('ou_id', $ou_id)
+    //             ->whereJsonContains('user_ids', strval($user_id)) 
+    //             ->pluck('id'); 
+
+    //     $courses = Courses::with('groups') 
+    //             ->whereNull('archive_trainingCourse')
+    //             ->whereHas('groups', function ($query) use ($groups) {
+    //                 $query->whereIn('groups.id', $groups);
+    //             })
+    //             ->get();
+    //     if ($user) {
+    //         return response()->json(['success' => true, 'licence_number' => $user->licence ?: $user->licence_2, 'courses' => $courses]);
+    //     } else {
+    //         return response()->json(['success' => false]);
+    //     }
+    // }
+
     public function getStudentLicenseNumberAndCourses(Request $request, $user_id, $ou_id)
     {
-        $user = User::with('documents')->find($user_id);
-        $groups = Group::where('ou_id', $ou_id)
-                ->whereJsonContains('user_ids', strval($user_id)) 
-                ->pluck('id'); 
+        $user = User::with(['documents', 'roles', 'TeachTrack'])->find($user_id);
 
-        $courses = Courses::with('groups') 
-                ->whereNull('archive_trainingCourse')
-                ->whereHas('groups', function ($query) use ($groups) {
-                    $query->whereIn('groups.id', $groups);
-                })
-                ->get();
-        if ($user) {
-            return response()->json(['success' => true, 'licence_number' => $user->licence ?: $user->licence_2, 'courses' => $courses]);
-        } else {
+        if (!$user) {
             return response()->json(['success' => false]);
         }
+
+        $roles = $user->roles->pluck('role_name')->map(fn($r) => strtolower($r))->toArray();
+
+        $isInstructorOrExaminer = in_array('instructor', $roles) || in_array('examiner', $roles);
+
+        $groups = Group::where('ou_id', $ou_id)
+            ->whereJsonContains('user_ids', strval($user_id))
+            ->pluck('id');
+
+        $courses = Courses::with('groups')
+            ->whereNull('archive_trainingCourse')
+            ->whereHas('groups', function ($query) use ($groups) {
+                $query->whereIn('groups.id', $groups);
+            })
+            ->get();
+
+        $status = null;
+        $allowedTypes = null;
+
+        // if ($isInstructorOrExaminer) {
+
+        //     $latestTraining = $user->TeachTrack()
+        //         ->orderByDesc('validation_date')
+        //         ->first();
+
+        //     // $hasInitial = $user->TeachTrack()
+        //     //     ->where('training_type', 'initial')
+        //     //     ->exists();
+        //     $hasInitial = $user->TeachTrack()
+        //         ->whereRaw('LOWER(TRIM(training_type)) = ?', ['initial'])
+        //         ->exists();
+
+        //     $status = 'no_training';
+        //     $allowedTypes = ['initial'];
+
+        //     if (!$hasInitial) {
+        //         $status = 'no_initial';
+        //         $allowedTypes = ['initial'];
+
+        //     } elseif ($latestTraining) {
+
+        //         $expiry = \Carbon\Carbon::parse($latestTraining->validation_date);
+
+        //         if ($expiry->isFuture()) {
+        //             $status = 'valid';
+        //             $allowedTypes = ['recurrent'];
+
+        //         } else {
+        //             $status = 'expired';
+        //             $allowedTypes = ['refresher', 'initial'];
+        //         }
+        //     }
+        
+        // }
+
+        if ($isInstructorOrExaminer) {
+
+            $latestTraining = $user->TeachTrack()
+                ->orderByDesc('created_at')
+                ->first();
+
+            $hasInitial = $user->TeachTrack()
+                ->whereRaw('LOWER(TRIM(training_type)) = ?', ['initial'])
+                ->exists();
+
+            $validityMonths = 12;
+
+            if (!$hasInitial) {
+
+                $status = 'no_initial';
+                $allowedTypes = ['initial'];
+
+            } elseif ($latestTraining) {
+
+                $lastCompletion = Carbon::parse($latestTraining->validation_date);
+                $lapseDate = $lastCompletion->copy()->addMonths($validityMonths);
+
+                if (now()->greaterThan($lapseDate)) {
+
+                    $status = 'lapsed';
+                    $allowedTypes = ['refresher', 'initial'];
+
+                } else {
+
+                    $status = 'valid';
+                    $allowedTypes = ['recurrent'];
+                }
+
+            } else {
+
+                $status = 'no_training';
+                $allowedTypes = ['initial'];
+            }
+        
+        }
+
+        
+        return response()->json([
+            'success' => true,
+            'licence_number' => $user->licence ?: $user->licence_2,
+            'courses' => $courses,
+            'status' => $status,
+            'allowed_types' => $allowedTypes,
+            'is_restricted' => $isInstructorOrExaminer // 👈 important flag
+        ]);
     }
 
     public function getInstructorLicenseNumber(Request $request, $instructor_id, $selectedCourseId)
