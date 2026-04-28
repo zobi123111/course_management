@@ -69,9 +69,9 @@ $subTitle = "Welcome to Admin Dashboard";
                 $roleName = $u->roles->role_name ?? 'User';
 
                 if ($daysLeft < 0) {
-                    $messages[] = "❌ <strong>{$roleName}</strong> Teach validity for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
+                    $messages[] = "❌ <strong>{$roleName} Teach</strong> validity for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
                 } elseif ($daysLeft <= 90) {
-                    $messages[] = "⚠️ <strong>{$roleName}</strong> Teach validity for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>{$daysLeft} days</strong>.";
+                    $messages[] = "⚠️ <strong>{$roleName} Teach</strong> validity for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>{$daysLeft} days</strong>.";
                 }
             }
 
