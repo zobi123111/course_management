@@ -274,6 +274,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     // Route::get('/grading', [TrainingEventsController::class, 'getStudentGrading'])->name('grading.list');
     Route::get('/training/grading-list/{event_id}/{course_id?}', [TrainingEventsController::class, 'getStudentGrading'])->name('training.grading-list');
     Route::post('/grading/unlock/{event_id}', [TrainingEventsController::class, 'unlockEventGarding'])->name('grading.unlock'); 
+    Route::post('/student_acknowledge', [TrainingEventsController::class, 'student_acknowledge']); 
 
     // Route::get('/lesson-grade/{event}/{lesson}', [TrainingEventsController::class, 'Lessongrade'])->name('lesson.grade');    
 

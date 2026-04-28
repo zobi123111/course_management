@@ -6452,4 +6452,29 @@ class TrainingEventsController extends Controller
             ], 500);
         }
     }
+
+
+    public function student_acknowledge(Request $request)
+    {
+        // ✅ Get values correctly
+        $event_id  = $request->event_id;
+        $lesson_id = $request->lesson_id;
+        $comment   = $request->comment;
+
+        // ✅ Update record
+        $updated = TrainingEventLessons::where('training_event_id', $event_id)->where('lesson_id', $lesson_id)->update([ 'student_comment' => $comment ]);
+
+        // ✅ Response
+        if ($updated) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Lesson acknowledged successfully.'
+            ]);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Record not found or already updated.'
+            ], 404);
+        }
+    }
 }

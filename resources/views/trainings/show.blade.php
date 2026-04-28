@@ -3375,6 +3375,7 @@
                                             @endif
                                             @endif
                                         </h5>
+                                        <?php  // dump($eventLesson->student_comment); ?>
                                         <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
                                             <div><strong>Instructor:</strong> {{ $eventLesson->instructor->fname ?? '' }} {{ $eventLesson->instructor->lname ?? '' }}</div>
                                             <div><strong>Licence No:</strong> {{ !empty($eventLesson->instructor_license_number) ? $eventLesson->instructor_license_number : 'N/A' }}</div>
@@ -3384,6 +3385,14 @@
                                             <div><strong>End Time:</strong> {{ ($eventLesson->end_time) ? date('h:i A', strtotime($eventLesson->end_time)) : 'N/A' }}</div>
                                             <div><strong>Departure Airfield:</strong> {{ !empty($eventLesson->departure_airfield) ? $eventLesson->departure_airfield : 'N/A' }}</div>
                                             <div><strong>Destination Airfield:</strong>{{ !empty($eventLesson->destination_airfield) ? $eventLesson->destination_airfield : 'N/A' }}</div>
+                                           @if($eventLesson->student_comment != null)
+                                    
+
+                                            <div class="text-break" style="word-wrap: break-word; overflow-wrap: break-word;">
+                                                <strong>Student Comment:</strong>
+                                                {{ $eventLesson->student_comment }}
+                                            </div>
+                                        @endif
                                         </div>
 
                                     </div>
