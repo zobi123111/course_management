@@ -38,6 +38,7 @@ use App\Models\Booking;
 use App\Models\LessonCustomTime;
 use App\Models\LessonSector;
 use App\Models\LessonTimeCredited;
+use App\Models\OuSetting;
 use App\Models\TeachTrack;
 use App\Models\ValidateTrainingTag;
 use Illuminate\Support\Facades\Session;
@@ -400,12 +401,31 @@ class TrainingEventsController extends Controller
             ->whereJsonContains('user_ids', strval($user_id))
             ->pluck('id');
 
-        $courses = Courses::with('groups')
+        $ouSetting = OuSetting::where('organization_id', $ou_id)->first();
+        $teachtrackEnabled = $ouSetting ? (int) $ouSetting->teachtrack_enabled : 0;
+
+        if($teachtrackEnabled){
+             $courses = Courses::with('groups')
             ->whereNull('archive_trainingCourse')
             ->whereHas('groups', function ($query) use ($groups) {
                 $query->whereIn('groups.id', $groups);
             })
             ->get();
+        }
+        else{
+                $courses = Courses::with('groups')
+                ->whereNull('archive_trainingCourse')
+                ->where(function ($q) {
+                    $q->whereNull('teach_track')
+                    ->orWhere('teach_track', 0);
+                })
+                ->whereHas('groups', function ($query) use ($groups) {
+                    $query->whereIn('groups.id', $groups);
+                })
+                ->get();
+        }
+
+       
 
         $status = null;
         $allowedTypes = null;

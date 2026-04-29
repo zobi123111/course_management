@@ -17,6 +17,10 @@ class OuSetting extends Model
             'send_email',
             'timezone',
             'enable_tacho_fields',
-            'enable_licence_validation'
+            'enable_licence_validation',
+            'teachtrack_enabled',
+            'teachtrack_validity_months',
+            'teachtrack_alert_days',
+            'teachtrack_email_enabled'
     ];
 }

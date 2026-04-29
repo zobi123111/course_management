@@ -20,6 +20,7 @@ use App\Models\CourseCustomTime;
 use App\Models\CourseLesson;
 use App\Models\SubLesson;
 use App\Models\LessonPrerequisite;
+use App\Models\OuSetting;
 use App\Models\Rating;
 use App\Models\RhsTag;
 use App\Models\UserTagRating;
@@ -394,12 +395,16 @@ class CourseController extends Controller
 
         $ato_num = OrganizationUnits::where('id', $ou_id)->get();
 
+        $OuSetting = OuSetting::where('organization_id', $ou_id)->first();
+
+
         return response()->json([
             'course' => $course,
             'allGroups' => $allGroups,
             'courseResources' => $courseResources, 
             'resources' => $resources,
-            'ato_num' => $ato_num
+            'ato_num' => $ato_num,
+            'ou_setting' => $OuSetting
         ]);
     }
 
