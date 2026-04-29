@@ -1344,6 +1344,20 @@
                             ato_number += "<option disabled>No ATO number found</option>";
                         }
 
+                        if (response.ou_setting && response.ou_setting.teachtrack_enabled == 1) {
+                            $('#teach_track').closest('.form-group').show();
+                        } else {
+                            $('#teach_track').prop('checked', false);
+                            $('#ie_options').hide();
+                            $('#teach_track').closest('.form-group').hide();
+
+                            // Reset fields
+                            $('#is_instructor').prop('checked', false);
+                            $('#is_examiner').prop('checked', false);
+                            $('select[name="training_type"]').val('');
+                            $('input[name="validity"]').val('');
+                        }
+
                         $ato_numSelect.html(ato_number);
                     }
                 },
@@ -1479,7 +1493,53 @@
                         $('#edit_opc_extend_eom_col').hide();
                     }
                     
+                    // if (response.ou_setting && response.ou_setting.teachtrack_enabled == 1) {
+
+                    //     $('#edit_teach_track').closest('.form-group').show();
+
+                        // if (response.course.teach_track == 1) {
+                        //     $('#edit_teach_track').closest('.form-group').show();
+                        //     $('#edit_teach_track').prop('checked', true);
+                        //     $('#edit_ie_options').show();
+
+                        //     $('#edit_is_instructor').prop('checked', response.course.is_instructor == 1);
+                        //     $('#edit_is_examiner').prop('checked', response.course.is_examiner == 1);
+
+                        //     $('select[name="edit_training_type"]').val(response.course.training_type ?? '');
+                        //     $('input[name="edit_validity"]').val(response.course.validity ?? '');
+                        // } else {
+                        //     $('#edit_teach_track').prop('checked', false);
+                        //     $('#edit_teach_track').closest('.form-group').hide();
+                        //     $('#edit_ie_options').hide();
+                        // }
+
+                    // } else {
+
+                    //     $('#edit_teach_track').prop('checked', false);
+                    //     $('#edit_ie_options').hide();
+                    //     $('#edit_teach_track').closest('.form-group').hide();
+                    //     $('#edit_is_instructor').prop('checked', false);
+                    //     $('#edit_is_examiner').prop('checked', false);
+                    //     $('select[name="edit_training_type"]').val('');
+                    //     $('input[name="edit_validity"]').val('');
+                    // }
+
+                    // $('#edit_teach_track').on('change', function () {
+                    //     if ($(this).is(':checked')) {
+                    //         $('#edit_ie_options').slideDown();
+                    //     } else {
+                    //         $('#edit_ie_options').slideUp();
+
+                    //         // Reset fields
+                    //         // $('#edit_is_instructor').prop('checked', false);
+                    //         // $('#edit_is_examiner').prop('checked', false);
+                    //         // $('select[name="edit_training_type"]').val('');
+                    //         // $('input[name="edit_validity"]').val('');
+                    //     }
+                    // });
+
                     if (response.course.teach_track == 1) {
+                        $('#edit_teach_track').closest('.form-group').show();
                         $('#edit_teach_track').prop('checked', true);
                         $('#edit_ie_options').show();
 
@@ -1488,15 +1548,22 @@
 
                         $('select[name="edit_training_type"]').val(response.course.training_type ?? '');
                         $('input[name="edit_validity"]').val(response.course.validity ?? '');
-                    } else {
+
+                    } else if (response.ou_setting && response.ou_setting.teachtrack_enabled == 1) {
+
+                        $('#edit_teach_track').closest('.form-group').show();
                         $('#edit_teach_track').prop('checked', false);
                         $('#edit_ie_options').hide();
 
-                        // Reset fields when unchecked
                         $('#edit_is_instructor').prop('checked', false);
                         $('#edit_is_examiner').prop('checked', false);
                         $('select[name="edit_training_type"]').val('');
                         $('input[name="edit_validity"]').val('');
+
+                    } else {
+                        $('#edit_teach_track').prop('checked', false);
+                        $('#edit_teach_track').closest('.form-group').hide();
+                        $('#edit_ie_options').hide();
                     }
 
                     $('#edit_teach_track').on('change', function () {
@@ -1504,13 +1571,9 @@
                             $('#edit_ie_options').slideDown();
                         } else {
                             $('#edit_ie_options').slideUp();
-
-                            // Reset fields
-                            $('#edit_is_instructor').prop('checked', false);
-                            $('#edit_is_examiner').prop('checked', false);
-                            $('select[name="edit_training_type"]').val('');
-                            $('input[name="edit_validity"]').val('');
                         }
+
+                        
                     });
                     
                     $('#rhs_rows_container').empty();
@@ -2240,6 +2303,19 @@
                     }
 
                     $ato_numSelect.html(ato_number);
+                }
+                if (response.ou_setting && response.ou_setting.teachtrack_enabled == 1) {
+                    $('#teach_track').closest('.form-group').show();
+                } else {
+                    $('#teach_track').prop('checked', false);
+                    $('#ie_options').hide();
+                    $('#teach_track').closest('.form-group').hide();
+
+                    // Reset fields
+                    $('#is_instructor').prop('checked', false);
+                    $('#is_examiner').prop('checked', false);
+                    $('select[name="training_type"]').val('');
+                    $('input[name="validity"]').val('');
                 }
             },
             error: function(xhr, status, error) {

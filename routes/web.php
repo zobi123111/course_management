@@ -430,6 +430,7 @@ Route::post('/calendar/edit', [BookingController::class, 'edit_booking']);
 Route::get('/org_setting/{id}', [OrganizationController::class, 'org_setting'])->name('org_setting');
 Route::post('/store/org_setting', [OrganizationController::class, 'store_org_setting'])->name('store_org_setting');
 Route::get('/get_org_setting/{id}', [OrganizationController::class, 'get_org_setting'])->name('get_org_setting');
+Route::post('/store/teachtrack-settings', [OrganizationController::class, 'saveTeachTrackSettings']);
 
     
 Route::get('/clear-cache', function() {

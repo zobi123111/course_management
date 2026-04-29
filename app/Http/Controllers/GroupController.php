@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Group;
 use App\Models\User;
 use App\Models\OrganizationUnits;
+use App\Models\OuSetting;
 use App\Models\Resource;
 use Illuminate\Support\Facades\Session;
 
@@ -161,8 +162,14 @@ class GroupController extends Controller
         $org_group    = Group::where('ou_id', $request->ou_id)->get();
         $org_resource = Resource::where('ou_id', $request->ou_id)->get();
         $ato_num = OrganizationUnits::where('id', $request->ou_id)->get();
+        $OuSetting = OuSetting::where('organization_id', $request->ou_id)->first();
             if($org_group){
-                return response()->json(['org_group' => $org_group, 'org_resource' => $org_resource, 'ato_num' => $ato_num]);
+                return response()->json([
+                    'org_group' => $org_group, 
+                    'org_resource' => $org_resource, 
+                    'ato_num' => $ato_num,
+                    'ou_setting' => $OuSetting
+                ]);
             }else{
                 return response()->json(['error'=> 'No group Found']);
             }
