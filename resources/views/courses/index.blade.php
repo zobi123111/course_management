@@ -1555,6 +1555,11 @@
                         $('#edit_teach_track').prop('checked', false);
                         $('#edit_ie_options').hide();
 
+                        $('#edit_is_instructor').prop('checked', false);
+                        $('#edit_is_examiner').prop('checked', false);
+                        $('select[name="edit_training_type"]').val('');
+                        $('input[name="edit_validity"]').val('');
+
                     } else {
                         $('#edit_teach_track').prop('checked', false);
                         $('#edit_teach_track').closest('.form-group').hide();
@@ -1567,6 +1572,8 @@
                         } else {
                             $('#edit_ie_options').slideUp();
                         }
+
+                        
                     });
                     
                     $('#rhs_rows_container').empty();
