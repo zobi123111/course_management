@@ -158,7 +158,7 @@ class CourseController extends Controller
 
     public function createCourse(Request $request)
     {
-    //   dd($request->all());
+        //   dd($request->all());
       //dd($request->enable_aircraft);
         if (!$request->enable_feedback) {
             $request->merge(['feedback_questions' => null]);
@@ -270,8 +270,8 @@ class CourseController extends Controller
             'auto_archive'   => $request->auto_archive ?? 0,
 
             'teach_track'   => $teachTrackEnabled ? 1 : 0,
-            'is_instructor' => $teachTrackEnabled ? $request->is_instructor : 0,
-            'is_examiner'   => $teachTrackEnabled ? $request->is_examiner : 0,
+            'is_instructor' => $teachTrackEnabled ? (int) $request->input('is_instructor', 0) : 0,
+            'is_examiner'   => $teachTrackEnabled ? (int) $request->input('is_examiner', 0) : 0,
             'training_type' => $teachTrackEnabled ? $request->training_type : null,
             'validity'      => $teachTrackEnabled ? $request->validity : null,
         ]);
