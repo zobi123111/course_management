@@ -18,37 +18,47 @@ class TeachTrackAlertMail extends Mailable
      */
     public $user;
     public $status;
-    public function __construct($user, $status)
+    public $type;
+    public $training;
+
+    public function __construct($user, $status, $type = 'user', $training = null)
     {
         $this->user = $user;
         $this->status = $status;
+        $this->type = $type;
+        $this->training = $training;
     }
 
-    public function build()
+   public function build()
     {
         return $this->subject('Training Status Alert')
-            ->view('emails.teachtrack_alert');
+            ->view('email.teachtrack_alert')
+            ->with([
+                'user' => $this->user,
+                'status' => $this->status,
+                'type' => $this->type,
+                'training' => $this->training,
+            ]);
     }
-
     /**
      * Get the message envelope.
      */
-    public function envelope(): Envelope
-    {
-        return new Envelope(
-            subject: 'Teach Track Alert Mail',
-        );
-    }
+    // public function envelope(): Envelope
+    // {
+    //     return new Envelope(
+    //         subject: 'Teach Track Alert Mail',
+    //     );
+    // }
 
     /**
      * Get the message content definition.
      */
-    public function content(): Content
-    {
-        return new Content(
-            view: 'view.name',
-        );
-    }
+    // public function content(): Content
+    // {
+    //     return new Content(
+    //         view: 'view.name',
+    //     );
+    // }
 
     /**
      * Get the attachments for the message.

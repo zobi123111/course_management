@@ -34,6 +34,8 @@ class TeachTrack extends Command
     {
         $today = now();
 
+        Log::info('TeachTrack command STARTED at ' . now());
+
         $users = User::with(['roles', 'TeachTrack'])
             ->whereHas('roles', function ($q) {
                 $q->whereIn('role_name', ['Instructor', 'Examiner']);
@@ -42,60 +44,88 @@ class TeachTrack extends Command
 
         foreach ($users as $user) {
 
-            $ouSetting = OuSetting::where('ou_id', $user->ou_id)->first();
+            $ouSetting = OuSetting::where('organization_id', $user->ou_id)->first();
 
             if (!$ouSetting || !$ouSetting->teachtrack_enabled) {
                 continue;
             }
 
-            $validityMonths = $ouSetting->teachtrack_validity_months ?? 12;
-            $alertDays = $ouSetting->teachtrack_alert_days ?? 30;
-
+            // -- Get the latest training record for the user
             $latestTraining = $user->TeachTrack()
                 ->orderByDesc('created_at')
                 ->first();
 
-            $hasInitial = $user->TeachTrack()
-                ->whereRaw('LOWER(TRIM(training_type)) = ?', ['initial'])
-                ->exists();
+            $validityMonths = $ouSetting->teachtrack_validity_months ?? 12;
+            $alertDays = $ouSetting->teachtrack_alert_days ?? 30;
 
             $status = null;
 
-            if (!$hasInitial) {
-                $status = 'no_initial';
+            if (!$latestTraining || !$latestTraining->validation_date) {
 
-            } elseif ($latestTraining) {
-                $lastDate = Carbon::parse($latestTraining->validation_date);
-                $lapseDate = $lastDate->copy()->addMonths($validityMonths);
-
-                if ($today->greaterThan($lapseDate)) {
-                    $status = 'lapsed';
-
-                } elseif ($today->diffInDays($lapseDate, false) <= $alertDays) {
-                    $status = 'expiring_soon';
-
-                } else {
-                    $status = 'valid';
-                }
+                $status = 'lapsed';
 
             } else {
-                $status = 'no_training';
+
+                $lastTrainingDate = Carbon::parse($latestTraining->validation_date);
+
+                // 1️⃣ LAPSED: no training in last 12 months
+                if ($lastTrainingDate->diffInMonths(now()) >= $validityMonths) {
+
+                    $status = 'lapsed';
+
+                } else {
+
+                    // 2️⃣ EXPIRY BASED DIRECTLY ON VALIDATION DATE
+                    $expiryDate = $lastTrainingDate;
+
+                    $daysLeft = now()->diffInDays($expiryDate, false);
+
+                    if ($daysLeft < 0) {
+
+                        $status = 'lapsed';
+
+                    } elseif ($daysLeft <= $alertDays) {
+
+                        $status = 'expiring_soon';
+
+                    } else {
+
+                        $status = 'valid';
+                    }
+                }
             }
+
+            // --
+
+            Log::info('User Name: ' . $user->name . ' | Email: ' . $user->email . ' | Status: ' . $status);
+            $ouAdmins = User::where('ou_id', $user->ou_id)
+                        ->where('is_admin', 1)
+                        ->pluck('email')
+                        ->toArray();
 
             if ($ouSetting->teachtrack_email_enabled) {
 
                 if (in_array($status, ['lapsed', 'expiring_soon'])) {
 
-                    // OPTIONAL: store last_sent_at in DB to prevent spam
-                    // if ($user->last_teachtrack_email_sent_at == today()) continue;
+                    try {
+                        Mail::to($user->email)
+                            ->send(new TeachTrackAlertMail($user, $status, 'user', $latestTraining));
 
-                    Mail::to($user->email)->send(new TeachTrackAlertMail($user, $status));
+                        if (!empty($ouAdmins)) {
+                            Mail::to($ouAdmins)
+                                ->send(new TeachTrackAlertMail($user, $status, 'admin', $latestTraining));
+                        }
 
-                    Log::info("TeachTrack email sent to {$user->email} - Status: {$status}");
+                        Log::info("TeachTrack email sent to user + admins for {$user->email}");
+
+                    } catch (\Exception $e) {
+                        Log::error("MAIL FAILED for {$user->email}: " . $e->getMessage());
+                    }
                 }
             }
         }
 
+        Log::info('TeachTrack command COMPLETED at ' . now());
         $this->info('TeachTrack cron executed successfully.');
     }
 }
