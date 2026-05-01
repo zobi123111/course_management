@@ -1205,6 +1205,7 @@ class TrainingEventsController extends Controller
             return $lesson->enable_cbta == 1;
         });
         $isGradingCompleted = $taskGrades->isNotEmpty() && ($hasCBTA ? $competencyGrades->isNotEmpty() : true);
+        
 
         //Retrieve feedback data
         $trainingFeedbacks = $trainingEvent->trainingFeedbacks;
@@ -1392,7 +1393,23 @@ class TrainingEventsController extends Controller
                             ->where('course_id', $trainingEvent->course_id)
                             ->pluck('validate_status', 'tag_id');  
 
-        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs','course_tags', 'validate_tags'));
+        $allDefLessons = $deferredLessons->merge($customLessons);
+
+        // dd($allDefLessons);
+
+        $allDefLessonsLocked = $allDefLessons->isNotEmpty() &&
+            $allDefLessons->every(fn($lesson) => $lesson->is_locked == 1);
+
+        $allEventLessonsLocked = $trainingEvent->eventLessons->isNotEmpty() &&
+            $trainingEvent->eventLessons->every(fn($lesson) => $lesson->is_locked == 1);
+
+        $isFullyLocked =
+            ($allDefLessons->isEmpty() || $allDefLessonsLocked) &&
+            ($trainingEvent->eventLessons->isEmpty() || $allEventLessonsLocked) &&
+            ($allDefLessons->isNotEmpty() || $trainingEvent->eventLessons->isNotEmpty());
+
+
+        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'isFullyLocked', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs','course_tags', 'validate_tags'));
     } 
 
     public function TestshowTrainingEvent(Request $request, $event_id)

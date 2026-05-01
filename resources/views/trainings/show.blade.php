@@ -786,49 +786,49 @@
                                         </p>
                                     </div>
                                     <?php
-                                    $atoNum = strtolower($trainingEvent->course->ato_num);
+                                        $atoNum = strtolower($trainingEvent->course->ato_num);
 
-                                    $isUK = str_contains($atoNum, 'uk');
-                                    $isEASA = str_contains($atoNum, 'easa');
+                                        $isUK = str_contains($atoNum, 'uk');
+                                        $isEASA = str_contains($atoNum, 'easa');
 
-                                    $ukLicence = '';
-                                    $easaLicence = '';
-                                    if (isset($trainingEvent->studentDocument->licence)) {
-                                        $ukLicence = trim($trainingEvent->studentDocument->licence);
-                                    }
-
-                                    if (isset($trainingEvent->studentDocument->licence_2)) {
-                                        $easaLicence = trim($trainingEvent->studentDocument->licence_2);
-                                    }
-
-
-
-                                    // Determine label based only on atoNum
-                                    if ($isUK && !$isEASA) {
-                                        $label = "Licence Number (UK)";
-                                        $student_licence = !empty($ukLicence) ? $ukLicence : 'N/A';
-                                    } elseif ($isEASA && !$isUK) {
-                                        $label = "Licence Number (EASA)";
-                                        $student_licence = !empty($easaLicence) ? $easaLicence : 'N/A';
-                                    } elseif ($isUK && $isEASA) {
-                                        if (empty($ukLicence) && empty($easaLicence)) {
-                                            // Generic case, but no data — fallback to general label
-                                            $label = "Licence";
-                                            $student_licence = "N/A";
-                                        } else {
-                                            $label = "Licence Number";
-                                            $student_licence = implode(', ', array_filter([$ukLicence, $easaLicence]));
+                                        $ukLicence = '';
+                                        $easaLicence = '';
+                                        if (isset($trainingEvent->studentDocument->licence)) {
+                                            $ukLicence = trim($trainingEvent->studentDocument->licence);
                                         }
-                                    } else {
-                                        // Neither UK nor EASA in ATO number
-                                        if (empty($ukLicence) && empty($easaLicence)) {
-                                            $label = "Licence";
-                                            $student_licence = "N/A";
-                                        } else {
-                                            $label = "Licence Number";
-                                            $student_licence = implode(', ', array_filter([$ukLicence, $easaLicence]));
+
+                                        if (isset($trainingEvent->studentDocument->licence_2)) {
+                                            $easaLicence = trim($trainingEvent->studentDocument->licence_2);
                                         }
-                                    }
+
+
+
+                                        // Determine label based only on atoNum
+                                        if ($isUK && !$isEASA) {
+                                            $label = "Licence Number (UK)";
+                                            $student_licence = !empty($ukLicence) ? $ukLicence : 'N/A';
+                                        } elseif ($isEASA && !$isUK) {
+                                            $label = "Licence Number (EASA)";
+                                            $student_licence = !empty($easaLicence) ? $easaLicence : 'N/A';
+                                        } elseif ($isUK && $isEASA) {
+                                            if (empty($ukLicence) && empty($easaLicence)) {
+                                                // Generic case, but no data — fallback to general label
+                                                $label = "Licence";
+                                                $student_licence = "N/A";
+                                            } else {
+                                                $label = "Licence Number";
+                                                $student_licence = implode(', ', array_filter([$ukLicence, $easaLicence]));
+                                            }
+                                        } else {
+                                            // Neither UK nor EASA in ATO number
+                                            if (empty($ukLicence) && empty($easaLicence)) {
+                                                $label = "Licence";
+                                                $student_licence = "N/A";
+                                            } else {
+                                                $label = "Licence Number";
+                                                $student_licence = implode(', ', array_filter([$ukLicence, $easaLicence]));
+                                            }
+                                        }
                                     ?>
 
                                     <div class="col-md-4">
@@ -904,6 +904,7 @@
                                 Lessons
                             </h4>
                             @foreach($normalLessons as $lesson)
+                            
                                 <div class="row mb-4 p-3 border rounded bg-light">
                                     <div class="col-md-12">
                                         <strong><i class="text-primary fas fa-book"></i> Lesson Name:</strong>
@@ -926,9 +927,56 @@
                                         {{ optional($lesson->instructor)->fname }} {{ optional($lesson->instructor)->lname }}
                                     </div>
 
-                                    <div class="col-md-2 mt-3">
-                                        <strong><i class="text-primary bi bi-card-text"></i> License:</strong>
-                                        {{ $lesson->instructor_license_number ?? 'N/A' }}
+                                    <?php
+                                        $atoNum = strtolower($trainingEvent->course->ato_num);
+
+                                        $isUK = str_contains($atoNum, 'uk');
+                                        $isEASA = str_contains($atoNum, 'easa');
+
+                                        // Instructor licence values (adjust fields if different in your DB)
+                                        $ukInstructorLicence = trim($lesson->instructor_license_number ?? '');
+                                        $easaInstructorLicence = trim($lesson->instructor_license_number_2 ?? '');
+
+                                        // Determine label + value
+                                        if ($isUK && !$isEASA) {
+                                            $instLabel = "Instructor Licence Number (UK)";
+                                            $instructorLicence = !empty($ukInstructorLicence) ? $ukInstructorLicence : 'N/A';
+
+                                        } elseif ($isEASA && !$isUK) {
+                                            $instLabel = "Instructor Licence Number (EASA)";
+                                            $instructorLicence = !empty($easaInstructorLicence) ? $easaInstructorLicence : 'N/A';
+
+                                        } elseif ($isUK && $isEASA) {
+                                            if (empty($ukInstructorLicence) && empty($easaInstructorLicence)) {
+                                                $instLabel = "Instructor Licence";
+                                                $instructorLicence = "N/A";
+                                            } else {
+                                                $instLabel = "Instructor Licence Number";
+                                                $instructorLicence = implode(', ', array_filter([
+                                                    $ukInstructorLicence,
+                                                    $easaInstructorLicence
+                                                ]));
+                                            }
+
+                                        } else {
+                                            if (empty($ukInstructorLicence) && empty($easaInstructorLicence)) {
+                                                $instLabel = "Instructor Licence";
+                                                $instructorLicence = "N/A";
+                                            } else {
+                                                $instLabel = "Instructor Licence Number";
+                                                $instructorLicence = implode(', ', array_filter([
+                                                    $ukInstructorLicence,
+                                                    $easaInstructorLicence
+                                                ]));
+                                            }
+                                        }
+                                    ?>
+
+                                    <div class="col-md-4 mt-3">
+                                        <h6 class="text-muted mb-1">
+                                            <i class="text-primary fas fa-id-card me-1"></i>{{ $instLabel }}
+                                        </h6>
+                                        <p class="mb-0 fw-semibold">{{ $instructorLicence }}</p>
                                     </div>
 
                                     <div class="col-md-2 mt-3">
@@ -946,7 +994,7 @@
 
                                     <!-- <div class="col-md-2 mt-3">
                                         <strong><i class="text-primary fas fa-clock"></i> Start:</strong><br>
-                                        {{ date('h:i A', strtotime($lesson->start_time)) }}
+                                        {{ date('H:i', strtotime($lesson->start_time)) }}
                                     </div> -->
                                     
                                     @php 
@@ -961,7 +1009,7 @@
                                             {{ $isGroundschool ? 'Start Time:' : 'Off blocks:' }}
                                         </strong><br>
                                         @if(!empty($lesson->start_time) && $lesson->start_time !== '00:00:00')
-                                        {{ date('h:i A', strtotime($lesson->start_time)) }}
+                                        {{ date('H:i', strtotime($lesson->start_time)) }}
                                         @elseif($lesson->start_time === '00:00:00')
                                         {{ $lesson->start_time }}
                                         @else
@@ -975,7 +1023,7 @@
                                             {{ $isGroundschool ? 'End Time:' : 'On blocks:' }}
                                         </strong><br>
                                         @if(!empty($lesson->end_time) && $lesson->end_time !== '00:00:00')
-                                        {{ date('h:i A', strtotime($lesson->end_time)) }}
+                                        {{ date('H:i', strtotime($lesson->end_time)) }}
                                         @elseif($lesson->end_time === '00:00:00')
                                         {{ $lesson->end_time }}
                                         @else
@@ -985,7 +1033,7 @@
 
                                         <!-- <div class="col-md-2 mt-2">
                                             <strong><i class="text-primary fas fa-clock"></i> End:</strong><br>
-                                            {{ date('h:i A', strtotime($lesson->end_time)) }}
+                                            {{ date('H:i', strtotime($lesson->end_time)) }}
                                         </div> -->
 
                                     @if($lessonType != 'groundschool')
@@ -1199,10 +1247,62 @@
                                                     {{ optional($lesson->instructor)->fname }} {{ optional($lesson->instructor)->lname }}
                                                 </div>
 
-                                                <div class="col-md-2 mt-3">
+                                                <?php
+                                                    $atoNum = strtolower($trainingEvent->course->ato_num);
+
+                                                    $isUK = str_contains($atoNum, 'uk');
+                                                    $isEASA = str_contains($atoNum, 'easa');
+
+                                                    // Instructor licence values (adjust fields if different in your DB)
+                                                    $ukInstructorLicence = trim($lesson->instructor_license_number ?? '');
+                                                    $easaInstructorLicence = trim($lesson->instructor_license_number_2 ?? '');
+
+                                                    // Determine label + value
+                                                    if ($isUK && !$isEASA) {
+                                                        $instLabel = "Instructor Licence Number (UK)";
+                                                        $instructorLicence = !empty($ukInstructorLicence) ? $ukInstructorLicence : 'N/A';
+
+                                                    } elseif ($isEASA && !$isUK) {
+                                                        $instLabel = "Instructor Licence Number (EASA)";
+                                                        $instructorLicence = !empty($easaInstructorLicence) ? $easaInstructorLicence : 'N/A';
+
+                                                    } elseif ($isUK && $isEASA) {
+                                                        if (empty($ukInstructorLicence) && empty($easaInstructorLicence)) {
+                                                            $instLabel = "Instructor Licence";
+                                                            $instructorLicence = "N/A";
+                                                        } else {
+                                                            $instLabel = "Instructor Licence Number";
+                                                            $instructorLicence = implode(', ', array_filter([
+                                                                $ukInstructorLicence,
+                                                                $easaInstructorLicence
+                                                            ]));
+                                                        }
+
+                                                    } else {
+                                                        if (empty($ukInstructorLicence) && empty($easaInstructorLicence)) {
+                                                            $instLabel = "Instructor Licence";
+                                                            $instructorLicence = "N/A";
+                                                        } else {
+                                                            $instLabel = "Instructor Licence Number";
+                                                            $instructorLicence = implode(', ', array_filter([
+                                                                $ukInstructorLicence,
+                                                                $easaInstructorLicence
+                                                            ]));
+                                                        }
+                                                    }
+                                                ?>
+
+                                                <div class="col-md-4 mt-3">
+                                                    <h6 class="text-muted mb-1">
+                                                        <i class="text-primary fas fa-id-card me-1"></i>{{ $instLabel }}
+                                                    </h6>
+                                                    <p class="mb-0 fw-semibold">{{ $instructorLicence }}</p>
+                                                </div>
+
+                                                <!-- <div class="col-md-2 mt-3">
                                                     <strong><i class="text-primary bi bi-card-text"></i> License:</strong>
                                                     {{ $lesson->instructor_license_number ?? 'N/A' }}
-                                                </div>
+                                                </div> -->
 
                                                 <div class="col-md-2 mt-3">
                                                     <strong><i class="text-primary fas fa-toolbox"></i> Resource:</strong><br>
@@ -1228,7 +1328,7 @@
                                                         {{ $isGroundschool ? 'Start Time:' : 'Off blocks:' }}
                                                     </strong><br>
                                                     @if(!empty($sector->start_time) && $sector->start_time !== '00:00:00')
-                                                        {{ date('h:i A', strtotime($sector->start_time)) }}
+                                                        {{ date('H:i', strtotime($sector->start_time)) }}
                                                     @else
                                                         -
                                                     @endif
@@ -1239,7 +1339,7 @@
                                                         {{ $isGroundschool ? 'End Time:' : 'On blocks:' }}
                                                     </strong><br>
                                                     @if(!empty($sector->end_time) && $sector->end_time !== '00:00:00')
-                                                        {{ date('h:i A', strtotime($sector->end_time)) }}
+                                                        {{ date('H:i', strtotime($sector->end_time)) }}
                                                     @else
                                                         -
                                                     @endif
@@ -1500,14 +1600,41 @@
                                     $end = strtotime($def->end_time);
                                     $duration = max(0, $end - $start);
 
+                                    $atoNum = strtolower($trainingEvent->course->ato_num);
+
+                                    $isUK = str_contains($atoNum, 'uk');
+                                    $isEASA = str_contains($atoNum, 'easa');
+
                                     $documents = $def?->instructor?->documents;
 
-                                    if ($documents && !empty($documents->licence_2)) {
-                                        $instructor_lic_no = $documents->licence_2;
-                                    } elseif ($documents && !empty($documents->licence)) {
-                                        $instructor_lic_no = $documents->licence;
+                                    $ukLicence = $documents?->licence ? trim($documents->licence) : '';
+                                    $easaLicence = $documents?->licence_2 ? trim($documents->licence_2) : '';
+
+                                    if ($isUK && !$isEASA) {
+                                        $instLabel = "Licence (UK)";
+                                        $instructor_lic_no = $ukLicence ?: 'N/A';
+
+                                    } elseif ($isEASA && !$isUK) {
+                                        $instLabel = "Licence (EASA)";
+                                        $instructor_lic_no = $easaLicence ?: 'N/A';
+
+                                    } elseif ($isUK && $isEASA) {
+                                        if (empty($ukLicence) && empty($easaLicence)) {
+                                            $instLabel = "Instructor Licence";
+                                            $instructor_lic_no = "N/A";
+                                        } else {
+                                            $instLabel = "Licence";
+                                            $instructor_lic_no = implode(', ', array_filter([$ukLicence, $easaLicence]));
+                                        }
+
                                     } else {
-                                        $instructor_lic_no = 'N/A';
+                                        if (empty($ukLicence) && empty($easaLicence)) {
+                                            $instLabel = "Instructor Licence";
+                                            $instructor_lic_no = "N/A";
+                                        } else {
+                                            $instLabel = "Licence";
+                                            $instructor_lic_no = implode(', ', array_filter([$ukLicence, $easaLicence]));
+                                        }
                                     }
                                 @endphp
 
@@ -1540,7 +1667,7 @@
                                     </div>
 
                                     <div class="col-md-2 mt-2">
-                                        <strong><i class="text-primary bi bi-card-text"></i> License:</strong>
+                                        <strong><i class="text-primary bi bi-card-text"></i> {{ $instLabel }} : </strong>
                                         {{ $instructor_lic_no }}
                                     </div>
 
@@ -1564,7 +1691,7 @@
                                             <i class="text-primary fas fa-clock"></i>
                                             {{ $isGroundschool ? 'Start Time:' : 'Off blocks:' }}
                                         </strong><br>
-                                        {{ date('h:i A', strtotime($def->start_time)) }}
+                                        {{ date('H:i', strtotime($def->start_time)) }}
                                     </div>
 
                                     <div class="col-md-2 mt-2">
@@ -1572,7 +1699,7 @@
                                             <i class="text-primary fas fa-clock"></i>
                                             {{ $isGroundschool ? 'End Time:' : 'On blocks:' }}
                                         </strong><br>
-                                        {{ date('h:i A', strtotime($def->end_time)) }}
+                                        {{ date('H:i', strtotime($def->end_time)) }}
                                     </div>
 
                                     @if($lessonType != 'groundschool')
@@ -1628,7 +1755,7 @@
                                                 </div>
 
                                                 <div class="col-md-2 mt-3">
-                                                    <strong><i class="text-primary bi bi-card-text"></i> License:</strong>
+                                                    <strong><i class="text-primary bi bi-card-text"></i> {{ $instLabel }} :</strong>
                                                     {{ $instructor_lic_no }}
                                                 </div>
 
@@ -1656,7 +1783,7 @@
                                                         {{ $isGroundschool ? 'Start Time:' : 'Off blocks:' }}
                                                     </strong><br>
                                                     @if(!empty($sector->start_time) && $sector->start_time !== '00:00:00')
-                                                        {{ date('h:i A', strtotime($sector->start_time)) }}
+                                                        {{ date('H:i', strtotime($sector->start_time)) }}
                                                     @else
                                                         -
                                                     @endif
@@ -1667,7 +1794,7 @@
                                                         {{ $isGroundschool ? 'End Time:' : 'On blocks:' }}
                                                     </strong><br>
                                                     @if(!empty($sector->end_time) && $sector->end_time !== '00:00:00')
-                                                        {{ date('h:i A', strtotime($sector->end_time)) }}
+                                                        {{ date('H:i', strtotime($sector->end_time)) }}
                                                     @else
                                                         -
                                                     @endif
@@ -1790,14 +1917,41 @@
                             $end = strtotime($def->end_time);
                             $duration = max(0, $end - $start);
 
+                            $atoNum = strtolower($trainingEvent->course->ato_num);
+
+                            $isUK = str_contains($atoNum, 'uk');
+                            $isEASA = str_contains($atoNum, 'easa');
+
                             $documents = $def?->instructor?->documents;
 
-                            if ($documents && $documents->licence) {
-                                $instructor_lic_no = $documents->licence;
-                            } elseif ($documents && $documents->licence_2) {
-                                $instructor_lic_no = $documents->licence_2;
+                            $ukLicence = $documents?->licence ? trim($documents->licence) : '';
+                            $easaLicence = $documents?->licence_2 ? trim($documents->licence_2) : '';
+
+                            if ($isUK && !$isEASA) {
+                                $instLabel = "Licence (UK)";
+                                $instructor_lic_no = $ukLicence ?: 'N/A';
+
+                            } elseif ($isEASA && !$isUK) {
+                                $instLabel = "Licence (EASA)";
+                                $instructor_lic_no = $easaLicence ?: 'N/A';
+
+                            } elseif ($isUK && $isEASA) {
+                                if (empty($ukLicence) && empty($easaLicence)) {
+                                    $instLabel = "Instructor Licence";
+                                    $instructor_lic_no = "N/A";
+                                } else {
+                                    $instLabel = "Licence";
+                                    $instructor_lic_no = implode(', ', array_filter([$ukLicence, $easaLicence]));
+                                }
+
                             } else {
-                                $instructor_lic_no = 'N/A';
+                                if (empty($ukLicence) && empty($easaLicence)) {
+                                    $instLabel = "Instructor Licence";
+                                    $instructor_lic_no = "N/A";
+                                } else {
+                                    $instLabel = "Licence";
+                                    $instructor_lic_no = implode(', ', array_filter([$ukLicence, $easaLicence]));
+                                }
                             }
                         @endphp
 
@@ -1827,7 +1981,7 @@
                             </div>
 
                             <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary bi bi-card-text"></i> License:</strong>
+                                <strong><i class="text-primary bi bi-card-text"></i> {{ $instLabel }} :</strong>
                                 {{ $instructor_lic_no }}
                             </div>
 
@@ -1851,7 +2005,7 @@
                                     <i class="text-primary fas fa-clock"></i>
                                     {{ $isGroundschool ? 'Start Time:' : 'Off blocks:' }}
                                 </strong><br>
-                                {{ date('h:i A', strtotime($def->start_time)) }}
+                                {{ date('H:i', strtotime($def->start_time)) }}
                             </div>
 
                             <div class="col-md-2 mt-2">
@@ -1859,7 +2013,7 @@
                                     <i class="text-primary fas fa-clock"></i>
                                     {{ $isGroundschool ? 'End Time:' : 'On blocks:' }}
                                 </strong><br>
-                                {{ date('h:i A', strtotime($def->end_time)) }}
+                                {{ date('H:i', strtotime($def->end_time)) }}
                             </div>
 
                             @if($lessonType != 'groundschool')
@@ -1915,7 +2069,7 @@
                                         </div>
 
                                         <div class="col-md-2 mt-3">
-                                            <strong><i class="text-primary bi bi-card-text"></i> License:</strong>
+                                            <strong><i class="text-primary bi bi-card-text"></i> {{ $instLabel }} :</strong>
                                             {{ $instructor_lic_no }}
                                         </div>
 
@@ -1943,7 +2097,7 @@
                                                 {{ $isGroundschool ? 'Start Time:' : 'Off blocks:' }}
                                             </strong><br>
                                             @if(!empty($sector->start_time) && $sector->start_time !== '00:00:00')
-                                                {{ date('h:i A', strtotime($sector->start_time)) }}
+                                                {{ date('H:i', strtotime($sector->start_time)) }}
                                             @else
                                                 -
                                             @endif
@@ -1954,7 +2108,7 @@
                                                 {{ $isGroundschool ? 'End Time:' : 'On blocks:' }}
                                             </strong><br>
                                             @if(!empty($sector->end_time) && $sector->end_time !== '00:00:00')
-                                                {{ date('h:i A', strtotime($sector->end_time)) }}
+                                                {{ date('H:i', strtotime($sector->end_time)) }}
                                             @else
                                                 -
                                             @endif
@@ -2141,10 +2295,44 @@
 
                                         if (isset($deferredLessons) && $deferredLessons->isNotEmpty()) {
                                             foreach ($deferredLessons as $defLesson) {
+                                                $lessonType = $defLesson?->deftasks?->subddddLesson?->courseLesson?->lesson_type;
                                                 $start = strtotime($defLesson->start_time);
                                                 $end   = strtotime($defLesson->end_time);
                                                 $duration = max(0, $end - $start);
                                                 $totals['deferred'] += $duration;
+
+                                                if ($lessonType === 'flight') {
+                                                    $totals['deferred'] += $duration;
+                                                } elseif ($lessonType === 'groundschool') {
+                                                    $totals['flight']['credited'] += $credited;
+                                                    $totals['groundschool']['credited'] += $duration;
+                                                } elseif ($lessonType === 'simulator') {
+                                                    $totals['flight']['credited'] += $credited;
+                                                }
+                                            }
+                                        }
+
+                                        if(isset($customLessons) && $customLessons->isNotEmpty()) {
+                                            foreach($customLessons as $custom) {
+                                                
+                                                $lessonType = $custom?->deftasks?->subddddLesson?->courseLesson?->lesson_type;
+                                                
+                                                if ($lessonType === 'flight') {
+                                                    $start        = strtotime($custom->start_time);
+                                                    $end          = strtotime($custom->end_time);
+                                                    $cus_duration = max(0, $end - $start);
+                                                    if (!isset($totals['customDuration'])) {
+                                                        $totals['customDuration'] = 0;
+                                                    }
+                                                    $totals['customDuration'] += $cus_duration;
+                                                }
+                                                
+                                                if ($lessonType === 'groundschool') {
+                                                    $start        = strtotime($custom->start_time);
+                                                    $end          = strtotime($custom->end_time);
+                                                    $creditedduration = max(0, $end - $start);
+                                                    $totals['groundschool']['credited'] += $creditedduration;
+                                                }
                                             }
                                         }
                                     @endphp
@@ -2448,12 +2636,14 @@
                                                 $totals['deferred'] += $duration;
                                             } elseif ($lessonType === 'groundschool') {
                                                 $totals['flight']['credited'] += $credited;
+                                                $totals['groundschool']['credited'] += $duration;
                                             } elseif ($lessonType === 'simulator') {
                                                 $totals['flight']['credited'] += $credited;
                                             }
                                         ?>
                                         @endforeach
                                     @endif
+
 
                                     @if(isset($customLessons) && $customLessons->isNotEmpty())
                                         @foreach($customLessons as $custom)
@@ -2467,6 +2657,12 @@
                                                     $totals['customDuration'] = 0;
                                                 }
                                                 $totals['customDuration'] += $cus_duration;
+                                            }
+                                            if ($lessonType === 'groundschool') {
+                                                $start        = strtotime($custom->start_time);
+                                                $end          = strtotime($custom->end_time);
+                                                $creditedduration = max(0, $end - $start);
+                                                $totals['groundschool']['credited'] += $creditedduration;
                                             }
                                         ?>
                                         @endforeach
@@ -3219,7 +3415,7 @@
                         </div>
                         @endif
 
-                        @if($isGradingCompleted && $trainingEvent->course->documents->isNotEmpty())
+                        @if($isFullyLocked && $trainingEvent->course->documents->isNotEmpty())
                         <div class="mt-4">
                             <div id="doc-alert" class="alert d-none"></div>
 
@@ -3381,8 +3577,8 @@
                                             <div><strong>Licence No:</strong> {{ !empty($eventLesson->instructor_license_number) ? $eventLesson->instructor_license_number : 'N/A' }}</div>
                                             <div><strong>Resource:</strong> {{ $eventLesson->resource->name ?? 'N/A' }}</div>
                                             <div><strong>Lesson Date:</strong> {{ ($eventLesson->lesson_date) ? date('d/m/Y', strtotime($eventLesson->lesson_date)) : 'N/A' }}</div>
-                                            <div><strong>Start Time:</strong> {{ ($eventLesson->start_time) ? date('h:i A', strtotime($eventLesson->start_time)) : 'N/A' }}</div>
-                                            <div><strong>End Time:</strong> {{ ($eventLesson->end_time) ? date('h:i A', strtotime($eventLesson->end_time)) : 'N/A' }}</div>
+                                            <div><strong>Start Time:</strong> {{ ($eventLesson->start_time) ? date('H:i', strtotime($eventLesson->start_time)) : 'N/A' }}</div>
+                                            <div><strong>End Time:</strong> {{ ($eventLesson->end_time) ? date('H:i', strtotime($eventLesson->end_time)) : 'N/A' }}</div>
                                             <div><strong>Departure Airfield:</strong> {{ !empty($eventLesson->departure_airfield) ? $eventLesson->departure_airfield : 'N/A' }}</div>
                                             <div><strong>Destination Airfield:</strong>{{ !empty($eventLesson->destination_airfield) ? $eventLesson->destination_airfield : 'N/A' }}</div>
                                            @if($eventLesson->student_comment != null)
