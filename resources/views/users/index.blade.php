@@ -1739,7 +1739,7 @@
                 $('#licence').hide().prop('required', false).val('');
                 $('#licence_file').hide().prop('required', false).val('');
                 $('#licence_error, #licence_file_error').hide();
-                $('#second_licence_section').hide();
+                // $('#second_licence_section').hide();
                 // $('#license_2').hide();
 
                 // 👉 Hide the ratings for Licence 1
@@ -1763,6 +1763,7 @@
                 $('#licence_file_2').prop('required', false).val('');
 
                 // 👉 Hide the ratings for Licence 2
+                $('#second_licence_section').hide();
                 $('#licence_2').hide();
                 $('#licence_file_2').hide();
                 $('#licence_2_rating_section').hide();
