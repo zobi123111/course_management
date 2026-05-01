@@ -1173,7 +1173,6 @@
                 selectBoxIndex = 0;
                 $('#add_rating_box').trigger('click'); // add one by default
             } else {
-                alert("else");
                 $('#rating_select_boxes_container').empty().hide();
                 $('#add_rating_box').hide();
             }
