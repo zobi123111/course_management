@@ -12,12 +12,14 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-         $schedule->command('unarchive:user')->everyMinute();
+        $schedule->command('unarchive:user')->everyMinute();
+        $schedule->command('teachtrack:check-completion')->daily();
     }
 
     protected $commands = [
         \App\Console\Commands\UnarchiveUser::class,
         \App\Console\Commands\EndCourseCommand::class,
+        \App\Console\Commands\TeachTrack::class,
     ];
    
 }

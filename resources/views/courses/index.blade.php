@@ -289,6 +289,50 @@
                             placeholder="Enter number of hours/events">
                         <div id="duration_error" class="text-danger error_e"></div>
                     </div>
+
+                    <div class="form-group" style="display:none;">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="teach_track" name="teach_track" style="cursor: pointer;">
+                            <label class="form-check-label" for="teach_track" style="cursor: pointer;">
+                                Instructor / Examiner
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="ie_options" style="display:none; padding: 15px 20px;" class="mb -5 card-body border rounded">
+                        <div class="checkbox-fields d-flex gap-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_instructor" value="1" id="is_instructor">
+                                <label class="form-check-label" for="is_instructor" style="cursor: pointer;">
+                                    Instructor
+                                </label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_examiner" value="1" id="is_examiner">
+                                <label class="form-check-label" for="is_examiner">Examiner</label>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label>Training Type</label>
+                                <select name="training_type" class="form-control">
+                                    <option value="">Select</option>
+                                    <option value="initial">Initial</option>
+                                    <option value="recurrent">Recurrent</option>
+                                    <option value="refresher">Refresher</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label>Validity (in months)</label>
+                                <input type="number" name="validity" class="form-control" placeholder="e.g. 24">
+                            </div>
+                        </div>
+                    </div>
+                    
+
                     <div class="form-group">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="enable_groundschool_time" name="enable_groundschool_time">
@@ -385,8 +429,8 @@
                         <label class="form-label">OPC Validity<span class="text-danger">*</span></label>
                         <select class="form-select" name="opc_validity_months" id="opc_validity_months">
                             <option value="">Select Validity</option>
-                            @for($i=1;$i<=12;$i++)
-                                <option value="{{ $i }}">{{ $i }} Month{{ $i>1?'s':'' }}</option>
+                                @for($i=1;$i<=12;$i++)
+                                    <option value="{{ $i }}">{{ $i }} Month{{ $i>1?'s':'' }}</option>
                                 @endfor
                         </select>
                         <div id="opc_validity_months_error" class="text-danger error_e"></div>
@@ -683,6 +727,52 @@
                             placeholder="Enter number of hours/events">
                         <div id="duration_error_up" class="text-danger error_e"></div>
                     </div>
+
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="edit_teach_track" name="teach_track" style="cursor: pointer;">
+                            <label class="form-check-label" for="edit_teach_track" style="cursor: pointer;">
+                                Instructor / Examiner
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="edit_ie_options" style="display:none; padding: 15px 20px;" class="mb -5 card-body border rounded">
+                        <div class="checkbox-fields d-flex gap-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_instructor" value="1" id="edit_is_instructor">
+                                <label class="form-check-label" for="edit_is_instructor" style="cursor: pointer;">
+                                    Instructor
+                                </label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_examiner" value="1" id="edit_is_examiner">
+                                <label class="form-check-label" for="edit_is_examiner" style="cursor: pointer;">
+                                    Examiner
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label>Training Type</label>
+                                <select name="edit_training_type" class="form-control">
+                                    <option value="">Select</option>
+                                    <option value="initial">Initial</option>
+                                    <option value="recurrent">Recurrent</option>
+                                    <option value="refresher">Refresher</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label>Validity (in months)</label>
+                                <input type="number" name="edit_validity" class="form-control" placeholder="e.g. 24">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="col-md-6">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="edit_enable_groundschool_time" name="enable_groundschool_time">
@@ -865,7 +955,7 @@
                                 <button type="button" class="btn btn-danger remove_rhs_row">
                                     <i class="fa fa-minus"></i>
                                 </button>
-                            </div>
+                            </div> 
 
                         </div>
                     </div>
@@ -1258,6 +1348,20 @@
                             ato_number += "<option disabled>No ATO number found</option>";
                         }
 
+                        if (response.ou_setting && response.ou_setting.teachtrack_enabled == 1) {
+                            $('#teach_track').closest('.form-group').show();
+                        } else {
+                            $('#teach_track').prop('checked', false);
+                            $('#ie_options').hide();
+                            $('#teach_track').closest('.form-group').hide();
+
+                            // Reset fields
+                            $('#is_instructor').prop('checked', false);
+                            $('#is_examiner').prop('checked', false);
+                            $('select[name="training_type"]').val('');
+                            $('input[name="validity"]').val('');
+                        }
+
                         $ato_numSelect.html(ato_number);
                     }
                 },
@@ -1300,6 +1404,10 @@
             });
         });
 
+        document.getElementById('teach_track').addEventListener('change', function () {
+            document.getElementById('ie_options').style.display = this.checked ? 'block' : 'none';
+        });
+        
         $('.edit-course-icon').click(function(e) {
             e.preventDefault();
             $('.error_e').html('');
@@ -1388,6 +1496,90 @@
                         $('#edit_opc_validity_col').hide();
                         $('#edit_opc_extend_eom_col').hide();
                     }
+                    
+                    // if (response.ou_setting && response.ou_setting.teachtrack_enabled == 1) {
+
+                    //     $('#edit_teach_track').closest('.form-group').show();
+
+                        // if (response.course.teach_track == 1) {
+                        //     $('#edit_teach_track').closest('.form-group').show();
+                        //     $('#edit_teach_track').prop('checked', true);
+                        //     $('#edit_ie_options').show();
+
+                        //     $('#edit_is_instructor').prop('checked', response.course.is_instructor == 1);
+                        //     $('#edit_is_examiner').prop('checked', response.course.is_examiner == 1);
+
+                        //     $('select[name="edit_training_type"]').val(response.course.training_type ?? '');
+                        //     $('input[name="edit_validity"]').val(response.course.validity ?? '');
+                        // } else {
+                        //     $('#edit_teach_track').prop('checked', false);
+                        //     $('#edit_teach_track').closest('.form-group').hide();
+                        //     $('#edit_ie_options').hide();
+                        // }
+
+                    // } else {
+
+                    //     $('#edit_teach_track').prop('checked', false);
+                    //     $('#edit_ie_options').hide();
+                    //     $('#edit_teach_track').closest('.form-group').hide();
+                    //     $('#edit_is_instructor').prop('checked', false);
+                    //     $('#edit_is_examiner').prop('checked', false);
+                    //     $('select[name="edit_training_type"]').val('');
+                    //     $('input[name="edit_validity"]').val('');
+                    // }
+
+                    // $('#edit_teach_track').on('change', function () {
+                    //     if ($(this).is(':checked')) {
+                    //         $('#edit_ie_options').slideDown();
+                    //     } else {
+                    //         $('#edit_ie_options').slideUp();
+
+                    //         // Reset fields
+                    //         // $('#edit_is_instructor').prop('checked', false);
+                    //         // $('#edit_is_examiner').prop('checked', false);
+                    //         // $('select[name="edit_training_type"]').val('');
+                    //         // $('input[name="edit_validity"]').val('');
+                    //     }
+                    // });
+
+                    if (response.course.teach_track == 1) {
+                        $('#edit_teach_track').closest('.form-group').show();
+                        $('#edit_teach_track').prop('checked', true);
+                        $('#edit_ie_options').show();
+
+                        $('#edit_is_instructor').prop('checked', response.course.is_instructor == 1);
+                        $('#edit_is_examiner').prop('checked', response.course.is_examiner == 1);
+
+                        $('select[name="edit_training_type"]').val(response.course.training_type ?? '');
+                        $('input[name="edit_validity"]').val(response.course.validity ?? '');
+
+                    } else if (response.ou_setting && response.ou_setting.teachtrack_enabled == 1) {
+
+                        $('#edit_teach_track').closest('.form-group').show();
+                        $('#edit_teach_track').prop('checked', false);
+                        $('#edit_ie_options').hide();
+
+                        $('#edit_is_instructor').prop('checked', false);
+                        $('#edit_is_examiner').prop('checked', false);
+                        $('select[name="edit_training_type"]').val('');
+                        $('input[name="edit_validity"]').val('');
+
+                    } else {
+                        $('#edit_teach_track').prop('checked', false);
+                        $('#edit_teach_track').closest('.form-group').hide();
+                        $('#edit_ie_options').hide();
+                    }
+
+                    $('#edit_teach_track').on('change', function () {
+                        if ($(this).is(':checked')) {
+                            $('#edit_ie_options').slideDown();
+                        } else {
+                            $('#edit_ie_options').slideUp();
+                        }
+
+                        
+                    });
+                    
                     $('#rhs_rows_container').empty();
                     $('#is_rhs').prop('checked', false);
                     $('#edit_rhs_tag_col').addClass('d-none');
@@ -1431,7 +1623,6 @@
                             $('#rhs_rows_container').append($row);
                         });
                     }
-
 
                     function toggleOPC(checkbox, container) {
                         if ($(checkbox).is(":checked")) {
@@ -2116,6 +2307,19 @@
                     }
 
                     $ato_numSelect.html(ato_number);
+                }
+                if (response.ou_setting && response.ou_setting.teachtrack_enabled == 1) {
+                    $('#teach_track').closest('.form-group').show();
+                } else {
+                    $('#teach_track').prop('checked', false);
+                    $('#ie_options').hide();
+                    $('#teach_track').closest('.form-group').hide();
+
+                    // Reset fields
+                    $('#is_instructor').prop('checked', false);
+                    $('#is_examiner').prop('checked', false);
+                    $('select[name="training_type"]').val('');
+                    $('input[name="validity"]').val('');
                 }
             },
             error: function(xhr, status, error) {

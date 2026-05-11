@@ -85,7 +85,8 @@
                         @endif
                         <br>
                     @endif
-                    @if(!$eventLesson->lesson_type == 'groundschool')
+
+                    @if($eventLesson->lesson_type != 'groundschool')
                         <strong>Departure :</strong> {{ $eventLesson?->departure_airfield ?? 'N/A' }}<br>
                         <strong>Arrival :</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}<br>
                         <strong>Total Blocks:</strong> {{ $blockCreditedFormatted }}<br>

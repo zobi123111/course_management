@@ -52,138 +52,170 @@ $subTitle = "Welcome to Admin Dashboard";
 </style>
 <?php
 
-$messages = [];
-$user = Auth::user();
+    $messages = [];
+    $user = Auth::user();
 
-// Check for Admin
-if ($user->is_admin == "1") {
-    foreach ($users as $u) {
-        if ($u->is_activated == 0 && $u->status == 1) {
-            $userDoc = $u->documents;
-            // Admin Verification Alerts
-            if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
-                $messages[] = "📝 <strong>UK Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
-            }
+    // Check for Admin
+    if ($user->is_admin == "1") {
+        foreach ($users as $u) {
 
-            if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
-                $messages[] = "📝 <strong>EASA Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
-            }
+            $latestTrack = $u->TeachTrack->sortByDesc('id')->first();
 
-            if ($u->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
-                $messages[] = "📝 <strong>Passport</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
-            }
+            if ($latestTrack && $latestTrack->validation_date) {
 
-            if ($u->medical_adminRequired == '1' && $userDoc?->medical_verified == "0" && !empty($userDoc?->medical_file)) {
-                $messages[] = "📝 <strong>UK Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
-            }
+                $expiryDate = \Carbon\Carbon::parse($latestTrack->validation_date);
+                $daysLeft = now()->diffInDays($expiryDate, false);
 
-            if ($u->medical_adminRequired == '1' && $userDoc?->medical_verified_2 == "0" && !empty($userDoc?->medical_file_2)) {
-                $messages[] = "📝 <strong>EASA Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
-            }
+                $roleName = $u->roles->role_name ?? 'User';
 
-            // Expiry Alerts
-            $expiryStatuses = [
-                'UK Licence' => $userDoc?->licence_status,
-                'EASA Licence' => $userDoc?->licence_2_status,
-                'Passport' => $userDoc?->passport_status,
-                'UK Medical' => $userDoc?->medical_status,
-                'EASA Medical' => $userDoc?->medical_2_status,
-            ];
-
-            foreach ($expiryStatuses as $doc => $status) {
-                if ($status === 'Red') {
-                    $messages[] = "❌ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
-                } elseif ($status === 'Yellow') {
-                    $messages[] = "⚠️ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
+                if ($daysLeft < 0) {
+                    $messages[] = "❌ <strong>{$roleName} Teach</strong> validity for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
+                } elseif ($daysLeft <= 90) {
+                    $messages[] = "⚠️ <strong>{$roleName} Teach</strong> validity for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>{$daysLeft} days</strong>.";
                 }
             }
 
-            // User Ratings (untouched)
-            foreach ($u->usrRatings as $userRating) {
-                if ($userRating->linked_to == "licence_1") {
-                    $linked_to = "UK";
-                }
-                if ($userRating->linked_to == "licence_2") {
-                    $linked_to = "EASA";
+            if ($u->is_activated == 0 && $u->status == 1) {
+                $userDoc = $u->documents;
+                // Admin Verification Alerts
+                if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
+                    $messages[] = "📝 <strong>UK Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
                 }
 
-                $ratingName = $linked_to . ' Rating ' . ($userRating->parentRating?->name ?? '');
-
-                if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
-                    $messages[] = "📝 <strong>{$ratingName}</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+                if ($u->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
+                    $messages[] = "📝 <strong>EASA Licence</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
                 }
 
-                $status = $userRating->expiry_status;
+                if ($u->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
+                    $messages[] = "📝 <strong>Passport</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+                }
 
-                if ($status === 'Red') {
-                    $messages[] = "❌ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
-                } elseif ($status === 'Yellow') {
-                    $messages[] = "⚠️ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
+                if ($u->medical_adminRequired == '1' && $userDoc?->medical_verified == "0" && !empty($userDoc?->medical_file)) {
+                    $messages[] = "📝 <strong>UK Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+                }
+
+                if ($u->medical_adminRequired == '1' && $userDoc?->medical_verified_2 == "0" && !empty($userDoc?->medical_file_2)) {
+                    $messages[] = "📝 <strong>EASA Medical</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+                }
+
+                // Expiry Alerts
+                $expiryStatuses = [
+                    'UK Licence' => $userDoc?->licence_status,
+                    'EASA Licence' => $userDoc?->licence_2_status,
+                    'Passport' => $userDoc?->passport_status,
+                    'UK Medical' => $userDoc?->medical_status,
+                    'EASA Medical' => $userDoc?->medical_2_status,
+                ];
+
+                foreach ($expiryStatuses as $doc => $status) {
+                    if ($status === 'Red') {
+                        $messages[] = "❌ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
+                    } elseif ($status === 'Yellow') {
+                        $messages[] = "⚠️ <strong>{$doc}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
+                    }
+                }
+
+                // User Ratings (untouched)
+                foreach ($u->usrRatings as $userRating) {
+                    if ($userRating->linked_to == "licence_1") {
+                        $linked_to = "UK";
+                    }
+                    if ($userRating->linked_to == "licence_2") {
+                        $linked_to = "EASA";
+                    }
+
+                    $ratingName = $linked_to . ' Rating ' . ($userRating->parentRating?->name ?? '');
+
+                    if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
+                        $messages[] = "📝 <strong>{$ratingName}</strong> verification required for <strong>{$u->fname} {$u->lname}</strong>.";
+                    }
+
+                    $status = $userRating->expiry_status;
+
+                    if ($status === 'Red') {
+                        $messages[] = "❌ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
+                    } elseif ($status === 'Yellow') {
+                        $messages[] = "⚠️ <strong>{$ratingName}</strong> for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>less than 90 days</strong>.";
+                    }
                 }
             }
         }
     }
-}
 
-// For Regular Users
-if ($user->is_admin != "1" && !empty($user->ou_id)) {
-    $userDoc = $user->documents;
+    // For Regular Users
+    if ($user->is_admin != "1" && !empty($user->ou_id)) {
+        $userDoc = $user->documents;
 
+        $latestTrack = $user->TeachTrack->sortByDesc('id')->first();
 
-    if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
-        $messages[] = "📝 Your <strong>UK Licence</strong> is pending admin verification.";
-    }
+        if ($latestTrack && $latestTrack->validation_date) {
 
-    if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
-        $messages[] = "📝 Your <strong>EASA Licence</strong> is pending admin verification.";
-    }
+            $expiryDate = \Carbon\Carbon::parse($latestTrack->validation_date);
+            $daysLeft = now()->diffInDays($expiryDate, false);
 
-    if ($user->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
-        $messages[] = "📝 Your <strong>Passport</strong> is pending admin verification.";
-    }
+            $roleName = $user->roles->role_name ?? 'User';
 
-    if ($user->medical_adminRequired == '1' && $userDoc?->medical_verified == "0" && !empty($userDoc?->medical_file)) {
-        $messages[] = "📝 Your <strong>UK Medical</strong> is pending admin verification.";
-    }
-
-    if ($user->medical_adminRequired == '1' && $userDoc?->medical_verified_2 == "0" && !empty($userDoc?->medical_file_2)) {
-        $messages[] = "📝 Your <strong>EASA Medical</strong> is pending admin verification.";
-    }
-
-    $expiryStatuses = [
-        'UK Licence' => $userDoc?->licence_status,
-        'EASA Licence' => $userDoc?->licence_2_status,
-        'Passport' => $userDoc?->passport_status,
-        'UK Medical' => $userDoc?->medical_status,
-        'EASA Medical' => $userDoc?->medical_2_status,
-    ];
-
-    foreach ($expiryStatuses as $doc => $status) {
-        if ($status === 'Red') {
-            $messages[] = "❌ Your <strong>{$doc}</strong> has <strong>expired</strong>.";
-        } elseif ($status === 'Yellow') {
-            $messages[] = "⚠️ Your <strong>{$doc}</strong> will expire in <strong>less than 90 days</strong>.";
-        }
-    }
-
-
-    // User Ratings (untouched)
-    foreach ($user->usrRatings as $userRating) {
-
-        $ratingName = $userRating->parentRating->name ?? '';
-
-        if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
-            $messages[] = "📝 Your <strong>{$ratingName}</strong> is pending admin verification.";
+            if ($daysLeft < 0) {
+                $messages[] = "❌ Your <strong>{$roleName} Teach</strong> validity has <strong>expired</strong>.";
+            } elseif ($daysLeft <= 90) {
+                $messages[] = "⚠️ Your <strong>{$roleName} Teach</strong> validity will expire in <strong>{$daysLeft} days</strong>.";
+            }
         }
 
-        $status = $userRating->expiry_status;
-        if ($status === 'Red') {
-            $messages[] = "❌ Your <strong>{$ratingName}</strong> has <strong>expired</strong>.";
-        } elseif ($status === 'Yellow') {
-            $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong>less than 90 days</strong>.";
+        if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
+            $messages[] = "📝 Your <strong>UK Licence</strong> is pending admin verification.";
+        }
+
+        if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified_2 == "0" && !empty($userDoc?->licence_file_2)) {
+            $messages[] = "📝 Your <strong>EASA Licence</strong> is pending admin verification.";
+        }
+
+        if ($user->passport_admin_verification_required == '1' && $userDoc?->passport_verified == "0" && !empty($userDoc?->passport_file)) {
+            $messages[] = "📝 Your <strong>Passport</strong> is pending admin verification.";
+        }
+
+        if ($user->medical_adminRequired == '1' && $userDoc?->medical_verified == "0" && !empty($userDoc?->medical_file)) {
+            $messages[] = "📝 Your <strong>UK Medical</strong> is pending admin verification.";
+        }
+
+        if ($user->medical_adminRequired == '1' && $userDoc?->medical_verified_2 == "0" && !empty($userDoc?->medical_file_2)) {
+            $messages[] = "📝 Your <strong>EASA Medical</strong> is pending admin verification.";
+        }
+
+        $expiryStatuses = [
+            'UK Licence' => $userDoc?->licence_status,
+            'EASA Licence' => $userDoc?->licence_2_status,
+            'Passport' => $userDoc?->passport_status,
+            'UK Medical' => $userDoc?->medical_status,
+            'EASA Medical' => $userDoc?->medical_2_status,
+        ];
+
+        foreach ($expiryStatuses as $doc => $status) {
+            if ($status === 'Red') {
+                $messages[] = "❌ Your <strong>{$doc}</strong> has <strong>expired</strong>.";
+            } elseif ($status === 'Yellow') {
+                $messages[] = "⚠️ Your <strong>{$doc}</strong> will expire in <strong>less than 90 days</strong>.";
+            }
+        }
+
+
+        // User Ratings (untouched)
+        foreach ($user->usrRatings as $userRating) {
+
+            $ratingName = $userRating->parentRating->name ?? '';
+
+            if ($userRating->admin_verified == '0' && !empty($userRating->file_path)) {
+                $messages[] = "📝 Your <strong>{$ratingName}</strong> is pending admin verification.";
+            }
+
+            $status = $userRating->expiry_status;
+            if ($status === 'Red') {
+                $messages[] = "❌ Your <strong>{$ratingName}</strong> has <strong>expired</strong>.";
+            } elseif ($status === 'Yellow') {
+                $messages[] = "⚠️ Your <strong>{$ratingName}</strong> will expire in <strong>less than 90 days</strong>.";
+            }
         }
     }
-}
 ?>
 @if(auth()->user()->is_admin && isset($expiringSoonEvents) && $expiringSoonEvents->isNotEmpty())
 
@@ -215,7 +247,6 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
     @endforeach
 
 @endif
-
 
 @if (!empty($messages))
     <div id="alertBox" class="alert alert-warning alert-dismissible fade show" role="alert">
@@ -284,11 +315,49 @@ if ($user->is_admin != "1" && !empty($user->ou_id)) {
 
                 @if ($user->is_activated == 0 && $user->status == 1) 
                 <tr>
-                    <td>{{ $user->fname }} {{ $user->lname }}</td>
-                        <?php
+                    <td>
+                        {{ $user->fname }} {{ $user->lname }}
+
+                        @php
+                            $latestTrack = $user->TeachTrack->sortByDesc('id')->first();
+
+                            $expiry = $latestTrack 
+                                ? \Carbon\Carbon::parse($latestTrack->validation_date) 
+                                : null;
+
+                            $color = 'danger';
+
+                            if ($expiry) {
+                                if ($expiry->isPast()) {
+                                    $color = 'danger';
+                                } elseif ($expiry->diffInDays(now()) <= 30) {
+                                    $color = 'warning';
+                                } else {
+                                    $color = 'success';
+                                }
+                            }
+                        @endphp
+
+                        @if($user->roles->role_name == 'Instructor')
+                            <span class="badge bg-{{ $color }} ms-1"
+                                data-bs-toggle="tooltip"
+                                title="Instructor Expiry: {{ $expiry ? $expiry->format('d M Y') : 'N/A' }}">
+                                I
+                            </span>
+                        @endif
+
+                        @if($user->roles->role_name == 'Examiner')
+                            <span class="badge bg-{{ $color }} ms-1"
+                                data-bs-toggle="tooltip"
+                                title="Examiner Expiry: {{ $expiry ? $expiry->format('d M Y') : 'N/A' }}">
+                                E
+                            </span>
+                        @endif
+                    </td>
+                    <?php
                         $doc = $user->documents; 
                         $ratingsByLicence = $user->usrRatings->groupBy('linked_to');
-                        ?>
+                    ?>
                     <!-- <td>
                         {{-- UK Licence --}}
                         @if($doc && $doc->licence_file)

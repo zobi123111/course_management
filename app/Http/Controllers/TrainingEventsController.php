@@ -38,6 +38,8 @@ use App\Models\Booking;
 use App\Models\LessonCustomTime;
 use App\Models\LessonSector;
 use App\Models\LessonTimeCredited;
+use App\Models\OuSetting;
+use App\Models\TeachTrack;
 use App\Models\ValidateTrainingTag;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -363,24 +365,157 @@ class TrainingEventsController extends Controller
         }
     }
 
+    // public function getStudentLicenseNumberAndCourses(Request $request, $user_id, $ou_id)
+    // {
+    //     $user = User::with('documents')->find($user_id);
+    //     $groups = Group::where('ou_id', $ou_id)
+    //             ->whereJsonContains('user_ids', strval($user_id)) 
+    //             ->pluck('id'); 
+
+    //     $courses = Courses::with('groups') 
+    //             ->whereNull('archive_trainingCourse')
+    //             ->whereHas('groups', function ($query) use ($groups) {
+    //                 $query->whereIn('groups.id', $groups);
+    //             })
+    //             ->get();
+    //     if ($user) {
+    //         return response()->json(['success' => true, 'licence_number' => $user->licence ?: $user->licence_2, 'courses' => $courses]);
+    //     } else {
+    //         return response()->json(['success' => false]);
+    //     }
+    // }
+
     public function getStudentLicenseNumberAndCourses(Request $request, $user_id, $ou_id)
     {
-        $user = User::with('documents')->find($user_id);
-        $groups = Group::where('ou_id', $ou_id)
-                ->whereJsonContains('user_ids', strval($user_id)) 
-                ->pluck('id'); 
+        $user = User::with(['documents', 'roles', 'TeachTrack'])->find($user_id);
 
-        $courses = Courses::with('groups') 
+        if (!$user) {
+            return response()->json(['success' => false]);
+        }
+
+        $roles = $user->roles->pluck('role_name')->map(fn($r) => strtolower($r))->toArray();
+
+        $isInstructorOrExaminer = in_array('instructor', $roles) || in_array('examiner', $roles);
+
+        $groups = Group::where('ou_id', $ou_id)
+            ->whereJsonContains('user_ids', strval($user_id))
+            ->pluck('id');
+
+        $ouSetting = OuSetting::where('organization_id', $ou_id)->first();
+        $teachtrackEnabled = $ouSetting ? (int) $ouSetting->teachtrack_enabled : 0;
+
+        if($teachtrackEnabled){
+             $courses = Courses::with('groups')
+            ->whereNull('archive_trainingCourse')
+            ->whereHas('groups', function ($query) use ($groups) {
+                $query->whereIn('groups.id', $groups);
+            })
+            ->get();
+        }
+        else{
+                $courses = Courses::with('groups')
                 ->whereNull('archive_trainingCourse')
+                ->where(function ($q) {
+                    $q->whereNull('teach_track')
+                    ->orWhere('teach_track', 0);
+                })
                 ->whereHas('groups', function ($query) use ($groups) {
                     $query->whereIn('groups.id', $groups);
                 })
                 ->get();
-        if ($user) {
-            return response()->json(['success' => true, 'licence_number' => $user->licence ?: $user->licence_2, 'courses' => $courses]);
-        } else {
-            return response()->json(['success' => false]);
         }
+
+       
+
+        $status = null;
+        $allowedTypes = null;
+
+        // if ($isInstructorOrExaminer) {
+
+        //     $latestTraining = $user->TeachTrack()
+        //         ->orderByDesc('validation_date')
+        //         ->first();
+
+        //     // $hasInitial = $user->TeachTrack()
+        //     //     ->where('training_type', 'initial')
+        //     //     ->exists();
+        //     $hasInitial = $user->TeachTrack()
+        //         ->whereRaw('LOWER(TRIM(training_type)) = ?', ['initial'])
+        //         ->exists();
+
+        //     $status = 'no_training';
+        //     $allowedTypes = ['initial'];
+
+        //     if (!$hasInitial) {
+        //         $status = 'no_initial';
+        //         $allowedTypes = ['initial'];
+
+        //     } elseif ($latestTraining) {
+
+        //         $expiry = \Carbon\Carbon::parse($latestTraining->validation_date);
+
+        //         if ($expiry->isFuture()) {
+        //             $status = 'valid';
+        //             $allowedTypes = ['recurrent'];
+
+        //         } else {
+        //             $status = 'expired';
+        //             $allowedTypes = ['refresher', 'initial'];
+        //         }
+        //     }
+        
+        // }
+
+        if ($isInstructorOrExaminer) {
+
+            $latestTraining = $user->TeachTrack()
+                ->orderByDesc('created_at')
+                ->first();
+
+            $hasInitial = $user->TeachTrack()
+                ->whereRaw('LOWER(TRIM(training_type)) = ?', ['initial'])
+                ->exists();
+
+            $validityMonths = 12;
+
+            if (!$hasInitial) {
+
+                $status = 'no_initial';
+                $allowedTypes = ['initial'];
+
+            } elseif ($latestTraining) {
+
+                $lastCompletion = Carbon::parse($latestTraining->validation_date);
+                $lapseDate = $lastCompletion->copy()->addMonths($validityMonths);
+
+                if (now()->greaterThan($lapseDate)) {
+
+                    $status = 'lapsed';
+                    $allowedTypes = ['refresher', 'initial'];
+
+                } else {
+
+                    $status = 'valid';
+                    $allowedTypes = ['recurrent'];
+                }
+
+            } else {
+
+                $status = 'no_training';
+                $allowedTypes = ['initial'];
+            }
+        
+        }
+
+        
+        return response()->json([
+            'success' => true,
+            'licence_number' => $user->licence ?: $user->licence_2,
+            'courses' => $courses,
+            'status' => $status,
+            'allowed_types' => $allowedTypes,
+            'is_restricted' => $isInstructorOrExaminer // 👈 important flag
+        ]);
     }
 
     public function getInstructorLicenseNumber(Request $request, $instructor_id, $selectedCourseId)
@@ -1070,6 +1205,7 @@ class TrainingEventsController extends Controller
             return $lesson->enable_cbta == 1;
         });
         $isGradingCompleted = $taskGrades->isNotEmpty() && ($hasCBTA ? $competencyGrades->isNotEmpty() : true);
+        
 
         //Retrieve feedback data
         $trainingFeedbacks = $trainingEvent->trainingFeedbacks;
@@ -1257,7 +1393,23 @@ class TrainingEventsController extends Controller
                             ->where('course_id', $trainingEvent->course_id)
                             ->pluck('validate_status', 'tag_id');  
 
-        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs','course_tags', 'validate_tags'));
+        $allDefLessons = $deferredLessons->merge($customLessons);
+
+        // dd($allDefLessons);
+
+        $allDefLessonsLocked = $allDefLessons->isNotEmpty() &&
+            $allDefLessons->every(fn($lesson) => $lesson->is_locked == 1);
+
+        $allEventLessonsLocked = $trainingEvent->eventLessons->isNotEmpty() &&
+            $trainingEvent->eventLessons->every(fn($lesson) => $lesson->is_locked == 1);
+
+        $isFullyLocked =
+            ($allDefLessons->isEmpty() || $allDefLessonsLocked) &&
+            ($trainingEvent->eventLessons->isEmpty() || $allEventLessonsLocked) &&
+            ($allDefLessons->isNotEmpty() || $trainingEvent->eventLessons->isNotEmpty());
+
+
+        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'isFullyLocked', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs','course_tags', 'validate_tags'));
     } 
 
     public function TestshowTrainingEvent(Request $request, $event_id)
@@ -5128,8 +5280,35 @@ class TrainingEventsController extends Controller
                 'opc_expiry_date' => $newExpiry,
             ]);
         }
+        
+        if ($event->entry_source == 'instructor' && $event->course->teach_track == 1) {
 
-          
+            $teach_track_validation_date = now()->addMonths($event->course->validity ?? 0);
+
+            TeachTrack::create([
+                'event_id' => $id,
+                'user_id' => $event->student_id,
+                'user_type' => 'instructor',
+                'training_type' => $event->course->training_type ?? null,
+                'validity' => $event->course->validity ?? null,
+                'validation_date' => $teach_track_validation_date ?? null,
+            ]);
+        }
+
+        if ($event->entry_source == 'examiner' && $event->course->teach_track == 1) {
+
+            $teach_track_validation_date = now()->addMonths($event->course->validity ?? 0);
+
+            TeachTrack::create([
+                'event_id' => $id,
+                'user_id' => $event->student_id,
+                'user_type' => 'examiner',
+                'training_type' => $event->course->training_type ?? null,
+                'validity' => $event->course->validity ?? null,
+                'validation_date' => $teach_track_validation_date ?? null,
+            ]);
+        }
+         
 
         //   dd($event->id);
         //   dd($course->userTagRatings);
@@ -6422,6 +6601,31 @@ class TrainingEventsController extends Controller
                 'message' => 'Something went wrong',
                 'error'   => $e->getMessage()
             ], 500);
+        }
+    }
+
+
+    public function student_acknowledge(Request $request)
+    {
+        // ✅ Get values correctly
+        $event_id  = $request->event_id;
+        $lesson_id = $request->lesson_id;
+        $comment   = $request->comment;
+
+        // ✅ Update record
+        $updated = TrainingEventLessons::where('training_event_id', $event_id)->where('lesson_id', $lesson_id)->update([ 'student_comment' => $comment ]);
+
+        // ✅ Response
+        if ($updated) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Lesson acknowledged successfully.'
+            ]);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Record not found or already updated.'
+            ], 404);
         }
     }
 }
