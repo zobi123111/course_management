@@ -37,8 +37,8 @@
             <strong>Start Time:</strong> {{ date('h:i A', strtotime($eventLesson?->start_time)) }}<br>
             <strong>End Time:</strong> {{ date('h:i A', strtotime($eventLesson?->end_time)) }}<br>
             <strong>Total Lesson Time:</strong> {{ \Carbon\Carbon::parse($eventLesson?->end_time)->diffInMinutes(\Carbon\Carbon::parse($eventLesson?->start_time)) }} minutes<br>
-            <strong>Departure Airfield:</strong> {{ $eventLesson?->departure_airfield ?? 'N/A' }}<br>
-            <strong>Destination Airfield:</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}<br> 
+            <strong>Departure:</strong> {{ $eventLesson?->departure_airfield ?? 'N/A' }}<br>
+            <strong>Arrival:</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}<br> 
 
             <strong>Resource :</strong> {{ $eventLesson?->resource_name ?? 'N/A' }}<br>
             @php
@@ -63,8 +63,8 @@
                     <div><strong>Lesson Date:</strong> {{ ($sector->lesson_date) ? date('d/m/Y', strtotime($sector->lesson_date)) : 'N/A' }}</div>
                     <div><strong>Start Time:</strong> {{ ($sector->start_time) ? date('h:i A', strtotime($sector->start_time)) : 'N/A' }}</div>
                     <div><strong>End Time:</strong> {{ ($sector->end_time) ? date('h:i A', strtotime($sector->end_time)) : 'N/A' }}</div>
-                    <div><strong>Departure Airfield:</strong> {{ !empty($sector->departure_airfield) ? $sector->departure_airfield : 'N/A' }}</div>
-                    <div><strong>Destination Airfield:</strong> {{ !empty($sector->destination_airfield) ? $sector->destination_airfield : 'N/A' }}</div>
+                    <div><strong>Departure:</strong> {{ !empty($sector->departure_airfield) ? $sector->departure_airfield : 'N/A' }}</div>
+                    <div><strong>Arrival:</strong> {{ !empty($sector->destination_airfield) ? $sector->destination_airfield : 'N/A' }}</div>
                 @endforeach
             </div>
         @endif
@@ -79,8 +79,8 @@
                     <div><strong>Lesson Date:</strong> {{ ($sector->lesson_date) ? date('d/m/Y', strtotime($sector->lesson_date)) : 'N/A' }}</div>
                     <div><strong>Start Time:</strong> {{ ($sector->start_time) ? date('h:i A', strtotime($sector->start_time)) : 'N/A' }}</div>
                     <div><strong>End Time:</strong> {{ ($sector->end_time) ? date('h:i A', strtotime($sector->end_time)) : 'N/A' }}</div>
-                    <div><strong>Departure Airfield:</strong> {{ !empty($sector->departure_airfield) ? $sector->departure_airfield : 'N/A' }}</div>
-                    <div><strong>Destination Airfield:</strong> {{ !empty($sector->destination_airfield) ? $sector->destination_airfield : 'N/A' }}</div>
+                    <div><strong>Departure:</strong> {{ !empty($sector->departure_airfield) ? $sector->departure_airfield : 'N/A' }}</div>
+                    <div><strong>Arrival:</strong> {{ !empty($sector->destination_airfield) ? $sector->destination_airfield : 'N/A' }}</div>
                 @endforeach
             </div>
         @endif

@@ -1437,7 +1437,7 @@
                                 <span>
                                     <i class="bi bi-book me-1"></i>{{ $eventLesson->lesson_title ?? 'N/A' }}
                                 </span>
-                                @if($eventLesson->is_locked == 1)
+                                @if($eventLesson->defLesson->is_locked == 1)
                                     <a href="{{ route('lesson.deffered.report.download', ['event_id' => $event->id, 'lesson_id' => $eventLesson->def_lesson_id, 'userID' => $event->student_id]) }}"
                                         class="btn btn-outline-secondary btn-sm">
                                         <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
@@ -1460,11 +1460,12 @@
                         </h5>
                         <ul class="list-group shadow-sm">
                             @foreach($customLessons as $eventLesson)
+                               
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <span>
                                     <i class="bi bi-book me-1"></i>{{ $eventLesson->lesson_title ?? 'N/A' }}
                                 </span>
-                                @if($eventLesson->is_locked == 1)
+                                @if($eventLesson->defLesson->is_locked == 1)
                                     <a href="{{ route('lesson.deffered.report.download', ['event_id' => $event->id, 'lesson_id' => $eventLesson->def_lesson_id, 'userID' => $event->student_id]) }}"
                                         class="btn btn-outline-secondary btn-sm">
                                         <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
