@@ -5325,20 +5325,56 @@ class TrainingEventsController extends Controller
                 ? Carbon::parse($latestLessonDate)
                 : Carbon::parse($request->course_end_date);
 
-            // Calculate validation expiry
-            $teach_track_validation_date = $baseDate->copy()->addMonths(
-                $event->course->validity ?? 0
-            );
+            $validityMonths = (int) ($event->course->validity ?? 0);
+            $teachExtend    = (int) ($event->course->teach_extend_validity ?? 0);
+
+            if ($teachExtend == 1) {
+                $teach_track_validation_date = $baseDate
+                    ->copy()
+                    ->addMonths($validityMonths)
+                    ->endOfMonth();
+
+            } else {
+                $teach_track_validation_date = $baseDate
+                    ->copy()
+                    ->addMonths($validityMonths);
+            }
 
             TeachTrack::create([
-                'event_id' => $id,
-                'user_id' => $event->student_id,
-                'user_type' => $event->entry_source,
-                'training_type' => $event->course->training_type ?? null,
-                'validity' => $event->course->validity ?? null,
+                'event_id'        => $id,
+                'user_id'         => $event->student_id,
+                'user_type'       => $event->entry_source,
+                'training_type'   => $event->course->training_type ?? null,
+                'validity'        => $validityMonths,
                 'validation_date' => $teach_track_validation_date,
             ]);
         }
+
+        // if (in_array($event->entry_source, ['instructor', 'examiner']) && $event->course->teach_track == 1) {
+
+        //     $latestLessonDate = TrainingEventLessons::where('training_event_id', $event->id)
+        //         ->whereNotNull('locked_date')
+        //         ->latest('locked_date')
+        //         ->value('locked_date');
+
+        //     $baseDate = $latestLessonDate
+        //         ? Carbon::parse($latestLessonDate)
+        //         : Carbon::parse($request->course_end_date);
+
+        //     // Calculate validation expiry
+        //     $teach_track_validation_date = $baseDate->copy()->addMonths(
+        //         $event->course->validity ?? 0
+        //     );
+
+        //     TeachTrack::create([
+        //         'event_id' => $id,
+        //         'user_id' => $event->student_id,
+        //         'user_type' => $event->entry_source,
+        //         'training_type' => $event->course->training_type ?? null,
+        //         'validity' => $event->course->validity ?? null,
+        //         'validation_date' => $teach_track_validation_date,
+        //     ]);
+        // }
          
 
         //   dd($event->id);
