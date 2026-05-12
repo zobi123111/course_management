@@ -2481,7 +2481,10 @@ class TrainingEventsController extends Controller
                       
                         TrainingEventLessons::where('training_event_id', $event_id)
                             ->where('lesson_id', $lesson_id)
-                            ->update(['is_locked' => 1]); 
+                            ->update([
+                                'is_locked' => 1,
+                                'locked_date' => now()->toDateString(),
+                            ]); 
                             
                          TrainingEventLog::create([
                              'event_id'  => $event_id,
@@ -5133,18 +5136,17 @@ class TrainingEventsController extends Controller
         }
 
         $eventLesson->is_locked = 0;
+        $eventLesson->locked_date = null;
         $eventLesson->save();
 
 
         TrainingEventLog::create([
-                'event_id'  => $eventId,
-                'lesson_id' =>   $lessonId,
-                'user_id'   => auth()->user()->id,
-                'is_locked' => 0,
-                'lesson_type' => 1
-            ]);
-
-
+            'event_id'  => $eventId,
+            'lesson_id' =>   $lessonId,
+            'user_id'   => auth()->user()->id,
+            'is_locked' => 0,
+            'lesson_type' => 1
+        ]);
 
         return response()->json(['success' => true]);
     }
@@ -5284,31 +5286,57 @@ class TrainingEventsController extends Controller
             ]);
         }
         
-        if ($event->entry_source == 'instructor' && $event->course->teach_track == 1) {
+        // if ($event->entry_source == 'instructor' && $event->course->teach_track == 1) {
 
-            $teach_track_validation_date = now()->addMonths($event->course->validity ?? 0);
+        //     $teach_track_validation_date = now()->addMonths($event->course->validity ?? 0);
+
+        //     TeachTrack::create([
+        //         'event_id' => $id,
+        //         'user_id' => $event->student_id,
+        //         'user_type' => 'instructor',
+        //         'training_type' => $event->course->training_type ?? null,
+        //         'validity' => $event->course->validity ?? null,
+        //         'validation_date' => $teach_track_validation_date ?? null,
+        //     ]);
+        // }
+
+        // if ($event->entry_source == 'examiner' && $event->course->teach_track == 1) {
+
+        //     $teach_track_validation_date = now()->addMonths($event->course->validity ?? 0);
+
+        //     TeachTrack::create([
+        //         'event_id' => $id,
+        //         'user_id' => $event->student_id,
+        //         'user_type' => 'examiner',
+        //         'training_type' => $event->course->training_type ?? null,
+        //         'validity' => $event->course->validity ?? null,
+        //         'validation_date' => $teach_track_validation_date ?? null,
+        //     ]);
+        // }
+
+        if (in_array($event->entry_source, ['instructor', 'examiner']) && $event->course->teach_track == 1) {
+
+            $latestLessonDate = TrainingEventLessons::where('training_event_id', $event->id)
+                ->whereNotNull('locked_date')
+                ->latest('locked_date')
+                ->value('locked_date');
+
+            $baseDate = $latestLessonDate
+                ? Carbon::parse($latestLessonDate)
+                : Carbon::parse($request->course_end_date);
+
+            // Calculate validation expiry
+            $teach_track_validation_date = $baseDate->copy()->addMonths(
+                $event->course->validity ?? 0
+            );
 
             TeachTrack::create([
                 'event_id' => $id,
                 'user_id' => $event->student_id,
-                'user_type' => 'instructor',
+                'user_type' => $event->entry_source,
                 'training_type' => $event->course->training_type ?? null,
                 'validity' => $event->course->validity ?? null,
-                'validation_date' => $teach_track_validation_date ?? null,
-            ]);
-        }
-
-        if ($event->entry_source == 'examiner' && $event->course->teach_track == 1) {
-
-            $teach_track_validation_date = now()->addMonths($event->course->validity ?? 0);
-
-            TeachTrack::create([
-                'event_id' => $id,
-                'user_id' => $event->student_id,
-                'user_type' => 'examiner',
-                'training_type' => $event->course->training_type ?? null,
-                'validity' => $event->course->validity ?? null,
-                'validation_date' => $teach_track_validation_date ?? null,
+                'validation_date' => $teach_track_validation_date,
             ]);
         }
          
