@@ -1026,6 +1026,7 @@ $(document).ready(function() {
 
                                 if (allowCourse) {
                                     var selected = course.id == selectedCourseId ? 'selected' : '';
+                                    
                                     courseOptions += '<option value="' + course.id + '" ' + selected + '>' 
                                         + course.course_name + 
                                         (course.training_type ? ' (' + course.training_type + ')' : '') +
@@ -1039,8 +1040,7 @@ $(document).ready(function() {
                         }
 
                         courseDropdown.html(courseOptions);
-                        console.log('Restricted:', response.is_restricted);
-                        console.log('Status:', response.status);
+                    
                     } else {
                         licenceNumberField.val('');
                         alert('Licence number not found!');

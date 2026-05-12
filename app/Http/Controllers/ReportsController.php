@@ -45,6 +45,8 @@ class ReportsController extends Controller
                         })
                         ->orderByDesc('course_end_date')
                         ->get();
+                        $old_course_id = [];
+                        $course_id = [];
                         
                             // Step 1: Build arrays
                             foreach ($events as $row) {

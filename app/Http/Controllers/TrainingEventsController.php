@@ -404,25 +404,27 @@ class TrainingEventsController extends Controller
         $ouSetting = OuSetting::where('organization_id', $ou_id)->first();
         $teachtrackEnabled = $ouSetting ? (int) $ouSetting->teachtrack_enabled : 0;
 
-        if($teachtrackEnabled){
-             $courses = Courses::with('groups')
-            ->whereNull('archive_trainingCourse')
-            ->whereHas('groups', function ($query) use ($groups) {
-                $query->whereIn('groups.id', $groups);
-            })
-            ->get();
+        if($teachtrackEnabled){ 
+                $courses =  Courses::with('groups')
+                            ->whereNull('archive_trainingCourse')
+                            ->whereHas('groups', function ($query) use ($groups) {
+                                $query->whereIn('groups.id', $groups);
+                            })
+                            ->where('status', 1)
+                            ->get();
         }
-        else{
+        else{ 
                 $courses = Courses::with('groups')
-                ->whereNull('archive_trainingCourse')
-                ->where(function ($q) {
-                    $q->whereNull('teach_track')
-                    ->orWhere('teach_track', 0);
-                })
-                ->whereHas('groups', function ($query) use ($groups) {
-                    $query->whereIn('groups.id', $groups);
-                })
-                ->get();
+                        ->whereNull('archive_trainingCourse')
+                        ->where(function ($q) {
+                            $q->whereNull('teach_track')
+                            ->orWhere('teach_track', 0);
+                        })
+                         ->where('status', 1)
+                        ->whereHas('groups', function ($query) use ($groups) {
+                            $query->whereIn('groups.id', $groups);
+                        })
+                        ->get();
         }
 
        
@@ -5271,6 +5273,7 @@ class TrainingEventsController extends Controller
                 $opcExtend,
                 $currentExpiry
             );
+        
 
             UserOpcRating::create([
                 'user_id' => $event->student_id,
