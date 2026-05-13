@@ -4288,6 +4288,7 @@ class TrainingEventsController extends Controller
         $student = $event->student;  
         $course = $event->course;
         $firstLesson = $event->firstLesson;
+        $ou_id = $event->ou_id;
 
         // Helper function
         if (!function_exists('toSeconds')) {
@@ -4532,6 +4533,11 @@ class TrainingEventsController extends Controller
 
         $recommendedBy = $event->recommendedInstructor;
 
+        // signature
+        $signature =  OuSetting::where('organization_id', $ou_id)->value('signature');
+
+     //    return view('trainings.course-completion-certificate', compact('event', 'student', 'course', 'firstLesson', 'hoursOfGroundschool', 'flightTime', 'simulatorTime', 'recommendedBy', 'totalFlightTimeFormatted', 'blockCreditedFormatted', 'blockDurationFormatted', 'signature'));
+
         $pdf = PDF::loadView('trainings.course-completion-certificate', [
             'event' => $event,
             'student' => $student,
@@ -4547,10 +4553,13 @@ class TrainingEventsController extends Controller
             'totalFlightTimeFormatted' => $totalFlightTimeFormatted,
             'blockCreditedFormatted'   => $blockCreditedFormatted,
             'blockDurationFormatted'   => $blockDurationFormatted,
+            'signature'   => $signature,
         ]);
 
         $filename = 'Certificate_' . Str::slug($student->fname . ' ' . $student->lname) . '.pdf';
         return $pdf->download($filename);
+
+   
     }
 
 
