@@ -273,6 +273,7 @@ class CourseController extends Controller
             'is_instructor' => $teachTrackEnabled ? (int) $request->input('is_instructor', 0) : 0,
             'is_examiner'   => $teachTrackEnabled ? (int) $request->input('is_examiner', 0) : 0,
             'training_type' => $teachTrackEnabled ? $request->training_type : null,
+            'teach_extend_validity' => $teachTrackEnabled ? $request->teach_extend_validity : null,
             'validity'      => $teachTrackEnabled ? $request->validity : null,
         ]);
 
@@ -445,6 +446,7 @@ class CourseController extends Controller
     // Update course
     public function updateCourse(Request $request)
     {
+
         $request->validate([
             'course_name' => 'required',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
@@ -545,6 +547,7 @@ class CourseController extends Controller
             'is_instructor' => $teachTrackEnabled ? $request->boolean('is_instructor') : 0,
             'is_examiner'   => $teachTrackEnabled ? $request->boolean('is_examiner') : 0,
             'training_type' => $teachTrackEnabled ? $request->edit_training_type : null,
+            'teach_extend_validity' => $teachTrackEnabled ? $request->teach_extend_validity : null,
             'validity'      => $teachTrackEnabled ? $request->edit_validity : null,
         ]);
 

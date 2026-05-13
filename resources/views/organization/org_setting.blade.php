@@ -358,7 +358,7 @@
                                 <h6 class="fw-semibold text-muted mt-3 mb-3">General Settings</h6>
 
                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <label class="mb-0">Enable TeachTrack</label>
+                                    <label class="mb-0">Enable Instructor TeachTrack</label>
 
                                     <input type="hidden" name="teachtrack_enabled" value="0">
 
@@ -392,14 +392,14 @@
                             <div>
                                 <h6 class="fw-semibold text-muted mb-3">Configuration</h6>
 
-                                <div class="mb-3">
+                                <!-- <div class="mb-3">
                                     <label class="form-label">Validity (Months)</label>
                                     <input type="number"
                                         id="teachtrack_validity_months"
                                         class="form-control"
                                         placeholder="e.g. 12"
                                         value="{{ optional($OuSetting)->teachtrack_validity_months ?? 12 }}">
-                                </div>
+                                </div> -->
 
                                 <div class="mb-2">
                                     <label class="form-label">Alert Before (Days)</label>
@@ -511,7 +511,7 @@ $(document).ready(function () {
         let data = {
             organization_unit_id: "{{ $ou_id }}",
             teachtrack_enabled: $('#teachtrack_enabled').is(':checked') ? 1 : 0,
-            teachtrack_validity_months: $('#teachtrack_validity_months').val(),
+            // teachtrack_validity_months: $('#teachtrack_validity_months').val(),
             teachtrack_alert_days: $('#teachtrack_alert_days').val(),
             teachtrack_email_enabled: $('#teachtrack_email_enabled').is(':checked') ? 1 : 0
         };
@@ -542,7 +542,7 @@ $(document).ready(function () {
         let isEnabled = $(this).is(':checked');
 
         // Disable/enable dependent fields
-        $('#teachtrack_validity_months').prop('disabled', !isEnabled);
+        // $('#teachtrack_validity_months').prop('disabled', !isEnabled);
         $('#teachtrack_alert_days').prop('disabled', !isEnabled);
         $('#teachtrack_email_enabled').prop('disabled', !isEnabled);
 

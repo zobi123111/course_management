@@ -24,6 +24,7 @@ class TrainingEventLessons extends Model
         'destination_airfield',
         'instructor_license_number',
         'is_locked',
+        'locked_date',
         'operation1',
         'role1',
         'operation2',

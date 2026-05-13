@@ -313,21 +313,34 @@
                                 <label class="form-check-label" for="is_examiner">Examiner</label>
                             </div>
                         </div>
+                        <div id="ie_role_error" class="text-danger error_e mt-1"></div>
 
                         <div class="row mt-3">
                             <div class="col-md-6">
-                                <label>Training Type</label>
-                                <select name="training_type" class="form-control">
+                                <label>Training Type<span class="text-danger">*</span></label>
+                                <select name="training_type" class="form-control" id="training_type">
                                     <option value="">Select</option>
                                     <option value="initial">Initial</option>
                                     <option value="recurrent">Recurrent</option>
                                     <option value="refresher">Refresher</option>
                                 </select>
+                                <div id="training_type_error" class="text-danger error_e"></div>
                             </div>
 
                             <div class="col-md-6">
-                                <label>Validity (in months)</label>
-                                <input type="number" name="validity" class="form-control" placeholder="e.g. 24">
+                                <label>Validity (in months)<span class="text-danger">*</span></label>
+                                <input type="number" name="validity" class="form-control" id="ie_validity" placeholder="e.g. 24">
+                                <div id="ie_validity_error" class="text-danger error_e"></div>
+                            </div>
+
+                            <div class="col-md-6 mt-3">
+                                <label for="teach_extend_validity" class="form-label">Validity Extension</label>
+                                <select class="form-select" name="teach_extend_validity" id="teach_extend_validity">
+                                    <option value="">Select Option</option>
+                                    <option value="1">Extend validity to end of month</option>
+                                    <option value="0">Do not extend (exact date)</option>
+                                </select>
+                                <div id="teach_extend_validity_error" class="text-danger error_e"></div>
                             </div>
                         </div>
                     </div>
@@ -416,14 +429,14 @@
                         <select class="form-select" name="enable_aircraft" id="enable_aircraft">
                             <option value="">Select Aircraft</option>
                             @foreach ($ratings as $rating)
-                            @if ($rating->status == 1)
-                            <option value="{{ $rating->id }}">
-                                {{ $rating->name }}
-                            </option>
-                            @endif
+                                @if ($rating->status == 1)
+                                    <option value="{{ $rating->id }}">
+                                        {{ $rating->name }}
+                                    </option>
+                                @endif
                             @endforeach
-
                         </select>
+                        <div id="enable_aircraft_error" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-6 " id="opc_validity_col" style="display:none">
                         <label class="form-label">OPC Validity<span class="text-danger">*</span></label>
@@ -754,21 +767,34 @@
                                 </label>
                             </div>
                         </div>
+                        <div id="edit_ie_role_error" class="text-danger error_e mt-1"></div>
 
                         <div class="row mt-3">
                             <div class="col-md-6">
-                                <label>Training Type</label>
-                                <select name="edit_training_type" class="form-control">
+                                <label>Training Type<span class="text-danger">*</span></label>
+                                <select name="edit_training_type" class="form-control" id="edit_training_type_select">
                                     <option value="">Select</option>
                                     <option value="initial">Initial</option>
                                     <option value="recurrent">Recurrent</option>
                                     <option value="refresher">Refresher</option>
                                 </select>
+                                <div id="edit_training_type_error" class="text-danger error_e"></div>
                             </div>
 
                             <div class="col-md-6">
-                                <label>Validity (in months)</label>
-                                <input type="number" name="edit_validity" class="form-control" placeholder="e.g. 24">
+                                <label>Validity (in months)<span class="text-danger">*</span></label>
+                                <input type="number" name="edit_validity" class="form-control" id="edit_ie_validity" placeholder="e.g. 24">
+                                <div id="edit_ie_validity_error" class="text-danger error_e"></div>
+                            </div>
+
+                            <div class="col-md-6 mt-3">
+                                <label for="edit_teach_extend_validity" class="form-label">Validity Extension</label>
+                                <select class="form-select" name="teach_extend_validity" id="edit_teach_extend_validity">
+                                    <option value="">Select Option</option>
+                                    <option value="1">Extend validity to end of month</option>
+                                    <option value="0">Do not extend (exact date)</option>
+                                </select>
+                                <div id="edit_teach_extend_validity_error" class="text-danger error_e"></div>
                             </div>
                         </div>
                     </div>
@@ -860,6 +886,7 @@
                             <option value="{{ $rating->id }}">{{ $rating->name }}</option>
                             @endforeach
                         </select>
+                        <div id="edit_enable_aircraft_error" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-6 " id="edit_opc_validity_col" style="display:none">
                         <label class="form-label">OPC Validity<span class="text-danger">*</span></label>
@@ -1376,6 +1403,45 @@
 
         $("#submitCourse").on("click", function(e) {
             e.preventDefault();
+
+            // Clear previous IE errors
+            $('#ie_role_error').html('');
+            $('#training_type_error').html('');
+            $('#ie_validity_error').html('');
+            $('#teach_extend_validity_error').html('');
+
+            // Validate Instructor/Examiner section if enabled
+            if ($('#teach_track').is(':checked')) {
+                var roleChecked = $('#is_instructor').is(':checked') || $('#is_examiner').is(':checked');
+                if (!roleChecked) {
+                    $('#ie_role_error').html('<p>Please select at least one role: Instructor or Examiner.</p>');
+                    $('#ie_options')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+                if ($('#training_type').val() === '') {
+                    $('#training_type_error').html('<p>Please select a Training Type (Initial, Recurrent or Refresher).</p>');
+                    $('#ie_options')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+                if (!$('#ie_validity').val()) {
+                    $('#ie_validity_error').html('<p>Please enter a validity period in months.</p>');
+                    $('#ie_options')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+                if (!$('#teach_extend_validity').val()) {
+                    $('#teach_extend_validity_error').html('<p>Please select validity period extended or not.</p>');
+                    $('#ie_options')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+            }
+
+            if ($('#enable_opc').is(':checked')) {
+                if (!$('#enable_aircraft').val()) {
+                    $('#enable_aircraft_error').html('<p>Please select a aircraft type.</p>');
+                    return;
+                }
+            }
+
             $(".loader").fadeIn();
             $('.error_e').html('');
             var formData = new FormData($('#courses')[0]);
@@ -1550,8 +1616,9 @@
                         $('#edit_is_instructor').prop('checked', response.course.is_instructor == 1);
                         $('#edit_is_examiner').prop('checked', response.course.is_examiner == 1);
 
-                        $('select[name="edit_training_type"]').val(response.course.training_type ?? '');
-                        $('input[name="edit_validity"]').val(response.course.validity ?? '');
+                        $('#edit_training_type_select').val(response.course.training_type ?? '');
+                        $('#edit_ie_validity').val(response.course.validity ?? '');
+                        $('#edit_teach_extend_validity').val(response.course.teach_extend_validity ?? '');
 
                     } else if (response.ou_setting && response.ou_setting.teachtrack_enabled == 1) {
 
@@ -1561,8 +1628,8 @@
 
                         $('#edit_is_instructor').prop('checked', false);
                         $('#edit_is_examiner').prop('checked', false);
-                        $('select[name="edit_training_type"]').val('');
-                        $('input[name="edit_validity"]').val('');
+                        $('#edit_training_type_select').val('');
+                        $('#edit_ie_validity').val('');
 
                     } else {
                         $('#edit_teach_track').prop('checked', false);
@@ -1957,6 +2024,45 @@
         // Update Course functionality
         $('#updateCourse').on('click', function(e) {
             e.preventDefault();
+
+            // Clear previous IE errors
+            $('#edit_ie_role_error').html('');
+            $('#edit_training_type_error').html('');
+            $('#edit_ie_validity_error').html('');
+            $('#edit_teach_extend_validity_error').html('');
+
+            // Validate Instructor/Examiner section if enabled
+            if ($('#edit_teach_track').is(':checked')) {
+                var roleChecked = $('#edit_is_instructor').is(':checked') || $('#edit_is_examiner').is(':checked');
+                if (!roleChecked) {
+                    $('#edit_ie_role_error').html('<p>Please select at least one role: Instructor or Examiner.</p>');
+                    $('#edit_ie_options')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+                if ($('#edit_training_type_select').val() === '') {
+                    $('#edit_training_type_error').html('<p>Please select a Training Type (Initial, Recurrent or Refresher).</p>');
+                    $('#edit_ie_options')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+                if (!$('#edit_ie_validity').val()) {
+                    $('#edit_ie_validity_error').html('<p>Please enter a validity period in months.</p>');
+                    $('#edit_ie_options')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+                if (!$('#edit_teach_extend_validity').val()) {
+                    $('#edit_teach_extend_validity_error').html('<p>Please selec validity period extended or not.</p>');
+                    $('#edit_ie_options')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+            }
+
+            if ($('#edit_enable_opc').is(':checked')) {
+                if (!$('#edit_enable_aircraft').val()) {
+                    $('#edit_enable_aircraft_error').html('<p>Please select a aircraft type.</p>');
+                    return;
+                }
+            }
+
             $(".loader").fadeIn('fast');
             var formData = new FormData($('#editCourse')[0]);
             formData.append('enable_prerequisites', $('#enable_prerequisites').is(':checked') ? 1 : 0);

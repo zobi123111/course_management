@@ -407,7 +407,7 @@ $subTitle = "Welcome to Admin Dashboard";
                     </td> -->
 
                     <td>
-                        @if($doc && $doc->licence_file && $doc->licence_file_2)
+                        @if($doc && $doc->licence_file)
                             {{-- ================= UK LICENCE ================= --}}
                             @if($doc && $doc->licence_file)
 

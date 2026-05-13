@@ -457,7 +457,7 @@ class OrganizationController extends Controller
             ['organization_id' => $request->organization_unit_id],
             [
                 'teachtrack_enabled' => $teachtrackEnabled,
-                'teachtrack_validity_months' => $request->teachtrack_validity_months,
+                // 'teachtrack_validity_months' => $request->teachtrack_validity_months,
                 'teachtrack_alert_days' => $request->teachtrack_alert_days,
                 'teachtrack_email_enabled' => $teachtrackEnabled
                     ? $request->teachtrack_email_enabled
