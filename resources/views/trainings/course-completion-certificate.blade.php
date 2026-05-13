@@ -116,7 +116,7 @@ $competentPercent = 100 - ($incompletePercent + $furtherPercent);
         </tr> -->
         <tr>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Hours TK:</th>
-          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">{{ $flightTime ?? 'N/A' }}</td>
+          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">{{ $groundschoolCredited ?? 'N/A' }}</td>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Hours, simulator:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">{{ $simulatorTime ? "$simulatorTime (OTD)" : '' }}</td>
         </tr>
