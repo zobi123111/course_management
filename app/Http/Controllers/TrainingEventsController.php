@@ -4536,7 +4536,7 @@ class TrainingEventsController extends Controller
         $recommendedBy = $event->recommendedInstructor;
 
         // Signature
-        $signature =  OuSetting::where('organization_id', $ou_id)->value('signature');
+      //  $signature =  OuSetting::where('organization_id', $ou_id)->value('signature');
         $trainingEvent = TrainingEvents::with([
                     'course:id,course_name,enable_mp_lifus,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num,instructor_cbta,examiner_cbta,enable_mp_lifus',
                     'course.documents',
@@ -4606,7 +4606,7 @@ class TrainingEventsController extends Controller
             'totalFlightTimeFormatted' => $totalFlightTimeFormatted,
             'blockCreditedFormatted'   => $blockCreditedFormatted,
             'blockDurationFormatted'   => $blockDurationFormatted,
-            'signature'   => $signature,
+           // 'signature'   => $signature,
             'groundschoolCredited' => $groundschoolCredited
         ]);
 
