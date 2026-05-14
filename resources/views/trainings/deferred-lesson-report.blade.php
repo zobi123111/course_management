@@ -15,9 +15,17 @@
 
         <table width="100%" style="border: none; border-collapse: collapse;">
             <tr>
+
                 <td style="border: none; text-align: left; vertical-align: top;">
-                    <h1 style="margin: 0;">Lesson Report - {{ $eventLesson->lesson_title }}</h1>
+
+                    <h2 style="margin: 0; font-weight: bold;">
+                        Course Name - {{ $eventLesson->event->course->course_name }}
+                    </h2>
+                    <h3 style="margin: 8px 0 0 0; font-weight: bold;">
+                        Lesson Report - {{ $eventLesson->lesson_title }}
+                    </h3>
                 </td>
+
                 <td style="border: none; text-align: right; vertical-align: top;">
                     @if($event?->orgUnit?->org_logo)
                         <img src="{{ public_path('storage/organization_logo/' . $event->orgUnit->org_logo) }}"
