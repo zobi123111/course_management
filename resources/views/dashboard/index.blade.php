@@ -69,9 +69,9 @@ $subTitle = "Welcome to Admin Dashboard";
                 $roleName = $u->roles->role_name ?? 'User';
 
                 if ($daysLeft < 0) {
-                    $messages[] = "❌ <strong>{$roleName}</strong> Teach validity for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
+                    $messages[] = "❌ <strong>{$roleName} Teach</strong> validity for <strong>{$u->fname} {$u->lname}</strong> has <strong>expired</strong>.";
                 } elseif ($daysLeft <= 90) {
-                    $messages[] = "⚠️ <strong>{$roleName}</strong> Teach validity for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>{$daysLeft} days</strong>.";
+                    $messages[] = "⚠️ <strong>{$roleName} Teach</strong> validity for <strong>{$u->fname} {$u->lname}</strong> will expire in <strong>{$daysLeft} days</strong>.";
                 }
             }
 
@@ -146,6 +146,21 @@ $subTitle = "Welcome to Admin Dashboard";
     if ($user->is_admin != "1" && !empty($user->ou_id)) {
         $userDoc = $user->documents;
 
+        $latestTrack = $user->TeachTrack->sortByDesc('id')->first();
+
+        if ($latestTrack && $latestTrack->validation_date) {
+
+            $expiryDate = \Carbon\Carbon::parse($latestTrack->validation_date);
+            $daysLeft = now()->diffInDays($expiryDate, false);
+
+            $roleName = $user->roles->role_name ?? 'User';
+
+            if ($daysLeft < 0) {
+                $messages[] = "❌ Your <strong>{$roleName} Teach</strong> validity has <strong>expired</strong>.";
+            } elseif ($daysLeft <= 90) {
+                $messages[] = "⚠️ Your <strong>{$roleName} Teach</strong> validity will expire in <strong>{$daysLeft} days</strong>.";
+            }
+        }
 
         if ($user->licence_admin_verification_required == '1' && $userDoc?->licence_verified == "0" && !empty($userDoc?->licence_file)) {
             $messages[] = "📝 Your <strong>UK Licence</strong> is pending admin verification.";

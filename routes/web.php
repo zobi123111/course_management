@@ -274,6 +274,7 @@ Route::middleware(['auth', 'role.permission'])->group(function () {
     // Route::get('/grading', [TrainingEventsController::class, 'getStudentGrading'])->name('grading.list');
     Route::get('/training/grading-list/{event_id}/{course_id?}', [TrainingEventsController::class, 'getStudentGrading'])->name('training.grading-list');
     Route::post('/grading/unlock/{event_id}', [TrainingEventsController::class, 'unlockEventGarding'])->name('grading.unlock'); 
+    Route::post('/student_acknowledge', [TrainingEventsController::class, 'student_acknowledge']); 
 
     // Route::get('/lesson-grade/{event}/{lesson}', [TrainingEventsController::class, 'Lessongrade'])->name('lesson.grade');    
 
@@ -429,6 +430,7 @@ Route::post('/calendar/edit', [BookingController::class, 'edit_booking']);
 Route::get('/org_setting/{id}', [OrganizationController::class, 'org_setting'])->name('org_setting');
 Route::post('/store/org_setting', [OrganizationController::class, 'store_org_setting'])->name('store_org_setting');
 Route::get('/get_org_setting/{id}', [OrganizationController::class, 'get_org_setting'])->name('get_org_setting');
+Route::post('/store/teachtrack-settings', [OrganizationController::class, 'saveTeachTrackSettings']);
 
     
 Route::get('/clear-cache', function() {

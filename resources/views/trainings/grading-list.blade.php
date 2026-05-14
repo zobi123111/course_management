@@ -1323,12 +1323,27 @@
 
                         <ul class="list-group shadow-sm">
                             @foreach($lessonReports as $eventLesson)
+                         
+
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <span>
                                         <i class="bi bi-book me-1"></i>
-                                        {{ $eventLesson->lesson->lesson_title ?? 'N/A' }}
+                                        {{ $eventLesson->lesson->lesson_title ?? 'N/A' }} 
                                     </span>
-
+                                <div class="d-flex align-items-center gap-2">
+                                    @if($eventLesson->student_comment ==null)
+                                      <a data-event_id = "{{ $event->id }}", data-lesson_id="{{ $eventLesson->lesson_id }}",
+                                        data-userID="{{ $event->student_id }}"
+                                        class="btn btn-outline-secondary btn-sm openCommentModal">
+                                            <i class="bi bi-chat-left-text me-1"></i> Comment
+                                      </a>
+                                    @else
+                                       <button class="btn btn-success btn-sm viewCommentBtn"
+                                            data-comment="{{ $eventLesson->student_comment }}">
+                                            <i class="bi bi-check-circle me-1"></i> Acknowledged
+                                        </button>
+                                    @endif
+                                  
                                     @if($eventLesson->is_locked == 1)
                                         <a href="{{ route('lesson.report.download', [
                                             'event_id' => $event->id,
@@ -1343,6 +1358,7 @@
                                             Report not available until lesson is graded.
                                         </span>
                                     @endif
+                                </div>
                                 </li>
                             @endforeach
                         </ul>
@@ -1421,7 +1437,7 @@
                                 <span>
                                     <i class="bi bi-book me-1"></i>{{ $eventLesson->lesson_title ?? 'N/A' }}
                                 </span>
-                                @if($eventLesson->is_locked == 1)
+                                @if($eventLesson->defLesson->is_locked == 1)
                                     <a href="{{ route('lesson.deffered.report.download', ['event_id' => $event->id, 'lesson_id' => $eventLesson->def_lesson_id, 'userID' => $event->student_id]) }}"
                                         class="btn btn-outline-secondary btn-sm">
                                         <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
@@ -1444,11 +1460,12 @@
                         </h5>
                         <ul class="list-group shadow-sm">
                             @foreach($customLessons as $eventLesson)
+                               
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <span>
                                     <i class="bi bi-book me-1"></i>{{ $eventLesson->lesson_title ?? 'N/A' }}
                                 </span>
-                                @if($eventLesson->is_locked == 1)
+                                @if($eventLesson->defLesson->is_locked == 1)
                                     <a href="{{ route('lesson.deffered.report.download', ['event_id' => $event->id, 'lesson_id' => $eventLesson->def_lesson_id, 'userID' => $event->student_id]) }}"
                                         class="btn btn-outline-secondary btn-sm">
                                         <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
@@ -1480,7 +1497,7 @@
                 <div class="alert alert-success mb-0">
                     <i class="bi bi-hand-thumbs-up-fill me-1"></i> You have acknowledged this training event.
                     <br>
-                    <small><strong>Your Comments:</strong> {{ $event->student_acknowledgement_comments ?? 'N/A' }}</small>
+                    <small><strong>Your Comments: </strong> {{ $event->student_acknowledgement_comments ?? 'N/A' }}</small>
                 </div>
                 @else
                 <form id="acknowledgeForm" class="p-3">
@@ -1556,6 +1573,60 @@
         @endforeach
        </div>
     </div>
+    <div class="modal fade" id="commentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            
+            <div class="modal-header">
+                <h5 class="modal-title">Add Comment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <form id="commentForm">
+                    <input type="hidden" id="event_id">
+                    <input type="hidden" id="lesson_id">
+                    <input type="hidden" id="user_id">
+
+                    <div class="mb-3">
+                        <label class="form-label">Comment</label>
+                        <textarea class="form-control" id="comment_text" rows="4" placeholder="Enter your comment"></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="submitComment">Submit</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="viewCommentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            
+            <div class="modal-header">
+                <h5 class="modal-title">Student Comment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <textarea class="form-control" id="viewCommentText" rows="5" readonly></textarea>
+            </div>
+
+            <!-- ✅ Footer Added -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
 </section>
 @endsection
 
@@ -1639,9 +1710,63 @@
         });
     });
 
-        setTimeout(function() {
+        setTimeout(function() { 
             $('#successMessage').fadeOut('slow');
         }, 2000);
+        $(document).on('click', '.openCommentModal', function () {
+                let event_id = $(this).data('event_id');
+                let lesson_id = $(this).data('lesson_id');
+                let user_id = $(this).data('userid');
+
+                $('#event_id').val(event_id);
+                $('#lesson_id').val(lesson_id);
+                $('#user_id').val(user_id);
+
+                $('#comment_text').val('');
+
+                $('#commentModal').modal('show');
+            });
+
+            $('#submitComment').on('click', function () {
+                let event_id = $('#event_id').val();
+                let lesson_id = $('#lesson_id').val();
+                let user_id = $('#user_id').val();
+                let comment = $('#comment_text').val();
+
+                if(comment.trim() === ''){
+                    alert('Please enter comment');
+                    return;
+                }
+
+                $.ajax({
+                    url: "{{ url('student_acknowledge') }}", // create this route
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        event_id: event_id,
+                        lesson_id: lesson_id,
+                        user_id: user_id,
+                        comment: comment
+                    },
+                    success: function(response){
+                        $('#commentModal').modal('hide');
+                           alert('Acknowledged Successfully');
+                           setTimeout(function() { 
+                                 location.reload();
+                            }, 2000);
+                        
+                    },
+                    error: function(){
+                        alert('Something went wrong');
+                    }
+                });
+            });
+
+            $(document).on('click', '.viewCommentBtn', function () {
+                        let comment = $(this).data('comment');
+                        $('#viewCommentText').text(comment);
+                        $('#viewCommentModal').modal('show');
+            });
     })
 </script>
 

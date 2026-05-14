@@ -38,6 +38,7 @@ use App\Models\Booking;
 use App\Models\LessonCustomTime;
 use App\Models\LessonSector;
 use App\Models\LessonTimeCredited;
+use App\Models\OuSetting;
 use App\Models\TeachTrack;
 use App\Models\ValidateTrainingTag;
 use Illuminate\Support\Facades\Session;
@@ -364,24 +365,159 @@ class TrainingEventsController extends Controller
         }
     }
 
+    // public function getStudentLicenseNumberAndCourses(Request $request, $user_id, $ou_id)
+    // {
+    //     $user = User::with('documents')->find($user_id);
+    //     $groups = Group::where('ou_id', $ou_id)
+    //             ->whereJsonContains('user_ids', strval($user_id)) 
+    //             ->pluck('id'); 
+
+    //     $courses = Courses::with('groups') 
+    //             ->whereNull('archive_trainingCourse')
+    //             ->whereHas('groups', function ($query) use ($groups) {
+    //                 $query->whereIn('groups.id', $groups);
+    //             })
+    //             ->get();
+    //     if ($user) {
+    //         return response()->json(['success' => true, 'licence_number' => $user->licence ?: $user->licence_2, 'courses' => $courses]);
+    //     } else {
+    //         return response()->json(['success' => false]);
+    //     }
+    // }
+
     public function getStudentLicenseNumberAndCourses(Request $request, $user_id, $ou_id)
     {
-        $user = User::with('documents')->find($user_id);
-        $groups = Group::where('ou_id', $ou_id)
-                ->whereJsonContains('user_ids', strval($user_id)) 
-                ->pluck('id'); 
+        $user = User::with(['documents', 'roles', 'TeachTrack'])->find($user_id);
 
-        $courses = Courses::with('groups') 
-                ->whereNull('archive_trainingCourse')
-                ->whereHas('groups', function ($query) use ($groups) {
-                    $query->whereIn('groups.id', $groups);
-                })
-                ->get();
-        if ($user) {
-            return response()->json(['success' => true, 'licence_number' => $user->licence ?: $user->licence_2, 'courses' => $courses]);
-        } else {
+        if (!$user) {
             return response()->json(['success' => false]);
         }
+
+        $roles = $user->roles->pluck('role_name')->map(fn($r) => strtolower($r))->toArray();
+
+        $isInstructorOrExaminer = in_array('instructor', $roles) || in_array('examiner', $roles);
+
+        $groups = Group::where('ou_id', $ou_id)
+            ->whereJsonContains('user_ids', strval($user_id))
+            ->pluck('id');
+
+        $ouSetting = OuSetting::where('organization_id', $ou_id)->first();
+        $teachtrackEnabled = $ouSetting ? (int) $ouSetting->teachtrack_enabled : 0;
+
+        if($teachtrackEnabled){ 
+                $courses =  Courses::with('groups')
+                            ->whereNull('archive_trainingCourse')
+                            ->whereHas('groups', function ($query) use ($groups) {
+                                $query->whereIn('groups.id', $groups);
+                            })
+                            ->where('status', 1)
+                            ->get();
+        }
+        else{ 
+                $courses = Courses::with('groups')
+                        ->whereNull('archive_trainingCourse')
+                        ->where(function ($q) {
+                            $q->whereNull('teach_track')
+                            ->orWhere('teach_track', 0);
+                        })
+                         ->where('status', 1)
+                        ->whereHas('groups', function ($query) use ($groups) {
+                            $query->whereIn('groups.id', $groups);
+                        })
+                        ->get();
+        }
+
+       
+
+        $status = null;
+        $allowedTypes = null;
+
+        // if ($isInstructorOrExaminer) {
+
+        //     $latestTraining = $user->TeachTrack()
+        //         ->orderByDesc('validation_date')
+        //         ->first();
+
+        //     // $hasInitial = $user->TeachTrack()
+        //     //     ->where('training_type', 'initial')
+        //     //     ->exists();
+        //     $hasInitial = $user->TeachTrack()
+        //         ->whereRaw('LOWER(TRIM(training_type)) = ?', ['initial'])
+        //         ->exists();
+
+        //     $status = 'no_training';
+        //     $allowedTypes = ['initial'];
+
+        //     if (!$hasInitial) {
+        //         $status = 'no_initial';
+        //         $allowedTypes = ['initial'];
+
+        //     } elseif ($latestTraining) {
+
+        //         $expiry = \Carbon\Carbon::parse($latestTraining->validation_date);
+
+        //         if ($expiry->isFuture()) {
+        //             $status = 'valid';
+        //             $allowedTypes = ['recurrent'];
+
+        //         } else {
+        //             $status = 'expired';
+        //             $allowedTypes = ['refresher', 'initial'];
+        //         }
+        //     }
+        
+        // }
+
+        if ($isInstructorOrExaminer) {
+
+            $latestTraining = $user->TeachTrack()
+                ->orderByDesc('created_at')
+                ->first();
+
+            $hasInitial = $user->TeachTrack()
+                ->whereRaw('LOWER(TRIM(training_type)) = ?', ['initial'])
+                ->exists();
+
+            $validityMonths = 12;
+
+            if (!$hasInitial) {
+
+                $status = 'no_initial';
+                $allowedTypes = ['initial'];
+
+            } elseif ($latestTraining) {
+
+                $lastCompletion = Carbon::parse($latestTraining->validation_date);
+                $lapseDate = $lastCompletion->copy()->addMonths($validityMonths);
+
+                if (now()->greaterThan($lapseDate)) {
+
+                    $status = 'lapsed';
+                    $allowedTypes = ['refresher', 'initial'];
+
+                } else {
+
+                    $status = 'valid';
+                    $allowedTypes = ['recurrent'];
+                }
+
+            } else {
+
+                $status = 'no_training';
+                $allowedTypes = ['initial'];
+            }
+        
+        }
+
+        
+        return response()->json([
+            'success' => true,
+            'licence_number' => $user->licence ?: $user->licence_2,
+            'courses' => $courses,
+            'status' => $status,
+            'allowed_types' => $allowedTypes,
+            'is_restricted' => $isInstructorOrExaminer // 👈 important flag
+        ]);
     }
 
     public function getInstructorLicenseNumber(Request $request, $instructor_id, $selectedCourseId)
@@ -1071,6 +1207,7 @@ class TrainingEventsController extends Controller
             return $lesson->enable_cbta == 1;
         });
         $isGradingCompleted = $taskGrades->isNotEmpty() && ($hasCBTA ? $competencyGrades->isNotEmpty() : true);
+        
 
         //Retrieve feedback data
         $trainingFeedbacks = $trainingEvent->trainingFeedbacks;
@@ -1258,7 +1395,23 @@ class TrainingEventsController extends Controller
                             ->where('course_id', $trainingEvent->course_id)
                             ->pluck('validate_status', 'tag_id');  
 
-        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs','course_tags', 'validate_tags'));
+        $allDefLessons = $deferredLessons->merge($customLessons);
+
+        // dd($allDefLessons);
+
+        $allDefLessonsLocked = $allDefLessons->isNotEmpty() &&
+            $allDefLessons->every(fn($lesson) => $lesson->is_locked == 1);
+
+        $allEventLessonsLocked = $trainingEvent->eventLessons->isNotEmpty() &&
+            $trainingEvent->eventLessons->every(fn($lesson) => $lesson->is_locked == 1);
+
+        $isFullyLocked =
+            ($allDefLessons->isEmpty() || $allDefLessonsLocked) &&
+            ($trainingEvent->eventLessons->isEmpty() || $allEventLessonsLocked) &&
+            ($allDefLessons->isNotEmpty() || $trainingEvent->eventLessons->isNotEmpty());
+
+
+        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'isFullyLocked', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs','course_tags', 'validate_tags'));
     } 
 
     public function TestshowTrainingEvent(Request $request, $event_id)
@@ -2328,7 +2481,10 @@ class TrainingEventsController extends Controller
                       
                         TrainingEventLessons::where('training_event_id', $event_id)
                             ->where('lesson_id', $lesson_id)
-                            ->update(['is_locked' => 1]); 
+                            ->update([
+                                'is_locked' => 1,
+                                'locked_date' => now()->toDateString(),
+                            ]); 
                             
                          TrainingEventLog::create([
                              'event_id'  => $event_id,
@@ -4110,8 +4266,6 @@ class TrainingEventsController extends Controller
 
     public function generateCertificate($event)
     {
-
-
         if (!function_exists('formatSeconds')) {
             function formatSeconds(int $seconds): string
             {
@@ -4123,18 +4277,20 @@ class TrainingEventsController extends Controller
         }
         $eventId = decode_id($event);
         $event = TrainingEvents::with([
-            'eventLessons',
-            'eventLessons.sectors',
-            'eventLessons.CreditedTime',
-            'defLessons',
-            'defLessons.deferredSectors',
-            'defLessons.customSectors',
-            'recommendedInstructor'
-        ])->findOrFail($eventId);
+                    'eventLessons',
+                    'eventLessons.sectors',
+                    'eventLessons.CreditedTime',
+                    'defLessons',
+                    'defLessons.deferredSectors',
+                    'defLessons.customSectors',
+                    'recommendedInstructor'
+                ])->findOrFail($eventId);
+           
 
         $student = $event->student;  
         $course = $event->course;
         $firstLesson = $event->firstLesson;
+        $ou_id = $event->ou_id;
 
         // Helper function
         if (!function_exists('toSeconds')) {
@@ -4379,6 +4535,62 @@ class TrainingEventsController extends Controller
 
         $recommendedBy = $event->recommendedInstructor;
 
+        // Signature
+      //  $signature =  OuSetting::where('organization_id', $ou_id)->value('signature');
+        $trainingEvent = TrainingEvents::with([
+                    'course:id,course_name,enable_mp_lifus,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num,instructor_cbta,examiner_cbta,enable_mp_lifus',
+                    'course.documents',
+                    'group:id,name,user_ids',
+                    'instructor:id,fname,lname',
+                    'student:id,fname,lname,licence',
+                    'trainingQuizzes' => function ($q) {
+                        $q->select('id', 'trainingevent_id', 'quiz_id', 'student_id', 'is_active');
+                    },
+                    'resource:id,name',
+                    'eventLessons' => function ($q) {
+                        $q->orderBy('position', 'asc'); 
+                    },
+                    'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id,position,instructor_cbta,examiner_cbta',
+                    'eventLessons.instructor:id,fname,lname', 
+                    'eventLessons.resource:id,name',
+                    'eventLessons.sectors' => function ($q) {
+                        $q->with('resourceData');
+                    },
+                    'eventLessons.CreditedTime',
+                    'trainingFeedbacks.question',
+                    'documents',
+                    'studentDocument'
+                ])->find($eventId);
+              //  dd($trainingEvent->eventLessons);
+           // ✅ Initialize totals
+                $totals = [
+                    'groundschool' => ['duration' => 0, 'credited' => 0],
+                ];
+
+
+                // 🔁 Loop through lessons
+                foreach ($trainingEvent->eventLessons as $val) {
+
+                    $type = $val->lesson?->lesson_type ?? '';
+
+                    if ($type === 'groundschool') {
+                        $totals['groundschool']['credited'] += toSeconds($val->hours_credited ?? 0);
+                        $totals['groundschool']['duration'] += toSeconds($val->hours ?? 0);
+                    }
+                }
+
+
+                // ✅ Apply "value OR N/A" logic
+                $groundschoolDuration = ($totals['groundschool']['duration'] > 0)
+                    ? gmdate('H:i', $totals['groundschool']['duration'])
+                    : 'N/A';
+
+                $groundschoolCredited = ($totals['groundschool']['credited'] > 0)
+                    ? gmdate('H:i', $totals['groundschool']['credited'])
+                    : 'N/A';
+
+        // return view('trainings.course-completion-certificate', compact('event', 'student', 'course', 'firstLesson', 'hoursOfGroundschool', 'flightTime', 'simulatorTime', 'recommendedBy', 'totalFlightTimeFormatted', 'blockCreditedFormatted', 'blockDurationFormatted', 'signature', 'groundschoolCredited'));
+
         $pdf = PDF::loadView('trainings.course-completion-certificate', [
             'event' => $event,
             'student' => $student,
@@ -4394,10 +4606,14 @@ class TrainingEventsController extends Controller
             'totalFlightTimeFormatted' => $totalFlightTimeFormatted,
             'blockCreditedFormatted'   => $blockCreditedFormatted,
             'blockDurationFormatted'   => $blockDurationFormatted,
+           // 'signature'   => $signature,
+            'groundschoolCredited' => $groundschoolCredited
         ]);
 
         $filename = 'Certificate_' . Str::slug($student->fname . ' ' . $student->lname) . '.pdf';
         return $pdf->download($filename);
+
+   
     }
 
 
@@ -4980,18 +5196,17 @@ class TrainingEventsController extends Controller
         }
 
         $eventLesson->is_locked = 0;
+        $eventLesson->locked_date = null;
         $eventLesson->save();
 
 
         TrainingEventLog::create([
-                'event_id'  => $eventId,
-                'lesson_id' =>   $lessonId,
-                'user_id'   => auth()->user()->id,
-                'is_locked' => 0,
-                'lesson_type' => 1
-            ]);
-
-
+            'event_id'  => $eventId,
+            'lesson_id' =>   $lessonId,
+            'user_id'   => auth()->user()->id,
+            'is_locked' => 0,
+            'lesson_type' => 1
+        ]);
 
         return response()->json(['success' => true]);
     }
@@ -5120,6 +5335,7 @@ class TrainingEventsController extends Controller
                 $opcExtend,
                 $currentExpiry
             );
+        
 
             UserOpcRating::create([
                 'user_id' => $event->student_id,
@@ -5130,33 +5346,95 @@ class TrainingEventsController extends Controller
             ]);
         }
         
-        if ($event->entry_source == 'instructor' && $event->course->teach_track == 1) {
+        // if ($event->entry_source == 'instructor' && $event->course->teach_track == 1) {
 
-            $teach_track_validation_date = now()->addMonths($event->course->validity ?? 0);
+        //     $teach_track_validation_date = now()->addMonths($event->course->validity ?? 0);
+
+        //     TeachTrack::create([
+        //         'event_id' => $id,
+        //         'user_id' => $event->student_id,
+        //         'user_type' => 'instructor',
+        //         'training_type' => $event->course->training_type ?? null,
+        //         'validity' => $event->course->validity ?? null,
+        //         'validation_date' => $teach_track_validation_date ?? null,
+        //     ]);
+        // }
+
+        // if ($event->entry_source == 'examiner' && $event->course->teach_track == 1) {
+
+        //     $teach_track_validation_date = now()->addMonths($event->course->validity ?? 0);
+
+        //     TeachTrack::create([
+        //         'event_id' => $id,
+        //         'user_id' => $event->student_id,
+        //         'user_type' => 'examiner',
+        //         'training_type' => $event->course->training_type ?? null,
+        //         'validity' => $event->course->validity ?? null,
+        //         'validation_date' => $teach_track_validation_date ?? null,
+        //     ]);
+        // }
+
+        if (in_array($event->entry_source, ['instructor', 'examiner']) && $event->course->teach_track == 1) {
+
+            $latestLessonDate = TrainingEventLessons::where('training_event_id', $event->id)
+                ->whereNotNull('locked_date')
+                ->latest('locked_date')
+                ->value('locked_date');
+
+            $baseDate = $latestLessonDate
+                ? Carbon::parse($latestLessonDate)
+                : Carbon::parse($request->course_end_date);
+
+            $validityMonths = (int) ($event->course->validity ?? 0);
+            $teachExtend    = (int) ($event->course->teach_extend_validity ?? 0);
+
+            if ($teachExtend == 1) {
+                $teach_track_validation_date = $baseDate
+                    ->copy()
+                    ->addMonths($validityMonths)
+                    ->endOfMonth();
+
+            } else {
+                $teach_track_validation_date = $baseDate
+                    ->copy()
+                    ->addMonths($validityMonths);
+            }
 
             TeachTrack::create([
-                'event_id' => $id,
-                'user_id' => $event->student_id,
-                'user_type' => 'instructor',
-                'training_type' => $event->course->training_type ?? null,
-                'validity' => $event->course->validity ?? null,
-                'validation_date' => $teach_track_validation_date ?? null,
+                'event_id'        => $id,
+                'user_id'         => $event->student_id,
+                'user_type'       => $event->entry_source,
+                'training_type'   => $event->course->training_type ?? null,
+                'validity'        => $validityMonths,
+                'validation_date' => $teach_track_validation_date,
             ]);
         }
 
-        if ($event->entry_source == 'examiner' && $event->course->teach_track == 1) {
+        // if (in_array($event->entry_source, ['instructor', 'examiner']) && $event->course->teach_track == 1) {
 
-            $teach_track_validation_date = now()->addMonths($event->course->validity ?? 0);
+        //     $latestLessonDate = TrainingEventLessons::where('training_event_id', $event->id)
+        //         ->whereNotNull('locked_date')
+        //         ->latest('locked_date')
+        //         ->value('locked_date');
 
-            TeachTrack::create([
-                'event_id' => $id,
-                'user_id' => $event->student_id,
-                'user_type' => 'examiner',
-                'training_type' => $event->course->training_type ?? null,
-                'validity' => $event->course->validity ?? null,
-                'validation_date' => $teach_track_validation_date ?? null,
-            ]);
-        }
+        //     $baseDate = $latestLessonDate
+        //         ? Carbon::parse($latestLessonDate)
+        //         : Carbon::parse($request->course_end_date);
+
+        //     // Calculate validation expiry
+        //     $teach_track_validation_date = $baseDate->copy()->addMonths(
+        //         $event->course->validity ?? 0
+        //     );
+
+        //     TeachTrack::create([
+        //         'event_id' => $id,
+        //         'user_id' => $event->student_id,
+        //         'user_type' => $event->entry_source,
+        //         'training_type' => $event->course->training_type ?? null,
+        //         'validity' => $event->course->validity ?? null,
+        //         'validation_date' => $teach_track_validation_date,
+        //     ]);
+        // }
          
 
         //   dd($event->id);
@@ -6450,6 +6728,31 @@ class TrainingEventsController extends Controller
                 'message' => 'Something went wrong',
                 'error'   => $e->getMessage()
             ], 500);
+        }
+    }
+
+
+    public function student_acknowledge(Request $request)
+    {
+        // ✅ Get values correctly
+        $event_id  = $request->event_id;
+        $lesson_id = $request->lesson_id;
+        $comment   = $request->comment;
+
+        // ✅ Update record
+        $updated = TrainingEventLessons::where('training_event_id', $event_id)->where('lesson_id', $lesson_id)->update([ 'student_comment' => $comment ]);
+
+        // ✅ Response
+        if ($updated) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Lesson acknowledged successfully.'
+            ]);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Record not found or already updated.'
+            ], 404);
         }
     }
 }

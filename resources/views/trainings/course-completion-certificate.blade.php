@@ -1,59 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <title>Course Completion Certificate</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
-@media print {
-  .footer-contact,
-  .footer-logo {
-    display: block !important;
-    text-align: center !important;
-    margin-top: 10px !important;
-  }
+    @media print {
 
-  .footer-logo img {
-    display: block;
-    margin: 0 auto 5px;
-  }
+      .footer-contact,
+      .footer-logo {
+        display: block !important;
+        text-align: center !important;
+        margin-top: 10px !important;
+      }
 
-  .certificate {
-    box-shadow: none !important;
-    margin: 0 !important;
-    padding: 30mm 20mm !important;
-    background: #fff !important;
-  }
+      .footer-logo img {
+        display: block;
+        margin: 0 auto 5px;
+      }
 
-  body {
-    background: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-}
+      .certificate {
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 30mm 20mm !important;
+        background: #fff !important;
+      }
+
+      body {
+        background: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+    }
   </style>
 </head>
-  
 
-     @php
-    $progress = $student->progress ?? [
-        'total' => 0,
-        'incomplete' => 0,
-        'further' => 0,
-    ];
 
-    // Ensure numeric values
-    $total       = max(1, (int) ($progress['total'] ?? 0));
-    $incomplete  = (int) ($progress['incomplete'] ?? 0);
-    $further     = (int) ($progress['further'] ?? 0);
+@php
+$progress = $student->progress ?? [
+'total' => 0,
+'incomplete' => 0,
+'further' => 0,
+];
 
-    // Calculate percentages
-    $incompletePercent = round(($incomplete / $total) * 100);
-    $furtherPercent    = round(($further / $total) * 100);
-    $competentPercent  = 100 - ($incompletePercent + $furtherPercent);
+// Ensure numeric values
+$total = max(1, (int) ($progress['total'] ?? 0));
+$incomplete = (int) ($progress['incomplete'] ?? 0);
+$further = (int) ($progress['further'] ?? 0);
+
+// Calculate percentages
+$incompletePercent = round(($incomplete / $total) * 100);
+$furtherPercent = round(($further / $total) * 100);
+$competentPercent = 100 - ($incompletePercent + $furtherPercent);
 @endphp
+
 <body style=" margin: 0; font-family: Arial, sans-serif;">
   <div class="certificate" style="max-width: 800px; background-color: white; padding: 20px 40px 20px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.15); color: #000;">
     <div style="text-align: center; margin-bottom: 10px;">
@@ -62,11 +65,11 @@
       @endif
     </div>
     <h3 style="text-align: center; font-weight: bold; color: #35a1e1; margin-bottom: 0px; padding: bottom 0;">{{ $event->orgUnit?->org_unit_name }} ATO COURSE COMPLETION CERTIFICATE</h3>
-   
+
 
     <div style="text-align: center; margin: 0px 0 30px;">
       <p>This is to certify that:</p>
-      <h3 style="font-weight: bold; margin: 10px 0;">{{ $student->fname }} {{ $student->lname }}</h3> 
+      <h3 style="font-weight: bold; margin: 10px 0;">{{ $student->fname }} {{ $student->lname }}</h3>
       <p>has successfully Completed: <strong style="color: #35a1e1;">{{ $event->course?->course_name }}:</strong></p>
     </div>
 
@@ -78,13 +81,13 @@
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Licence Number:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">
             @if ($student->documents->licence)
-                {{ $student->documents->licence }}
+            {{ $student->documents->licence }}
             @elseif ($student->documents->licence_2)
-                {{ $student->documents->licence_2 }}
+            {{ $student->documents->licence_2 }}
             @else
-                N/A
+            N/A
             @endif
-        </td>
+          </td>
           <!-- <td style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">{{ $student->documents->licence ?? 'N/A' }}</td> -->
         </tr>
         <tr>
@@ -113,7 +116,7 @@
         </tr> -->
         <tr>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px;  font-size: 14px;">Hours TK:</th>
-          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">{{ $flightTime ?? 'N/A' }}</td>
+          <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">{{ $groundschoolCredited ?? 'N/A' }}</td>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Hours, simulator:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">{{ $simulatorTime ? "$simulatorTime (OTD)" : '' }}</td>
         </tr>
@@ -121,74 +124,45 @@
           <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;"> Instructor (Recommendation):</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">
             @if (is_object($recommendedBy) && isset($recommendedBy->fname) && isset($recommendedBy->lname))
-              {{ $recommendedBy->fname }} {{ $recommendedBy->lname ?? '' }}
+            {{ $recommendedBy->fname }} {{ $recommendedBy->lname ?? '' }}
             @else
-              --
+            --
             @endif
           </td>
           <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Licence Number:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">
-              {{ !empty($licence1) ? $licence1 : (!empty($licence2) ? $licence2 : 'N/A') }}
+            {{ !empty($licence1) ? $licence1 : (!empty($licence2) ? $licence2 : 'N/A') }}
           </td>
         </tr>
         <tr style="background-color: #f8f9fa;">
-          <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Total BLock Time (Duration):</th>
+          <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Total Block Time (Duration):</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">
-              {{ $blockDurationFormatted }}
+            {{ $blockDurationFormatted }}
           </td>
-          <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Total BLock Time (Credited):</th>
+          <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Total Block Time (Credited):</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">
-              {{ $blockCreditedFormatted }}
+            {{ $blockCreditedFormatted }}
           </td>
         </tr>
         <tr style="background-color: #f8f9fa;">
           <th style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">Total Flight Time:</th>
           <td style="border: 1px solid #dee2e6; padding: 6px 10px; font-size: 14px;">
-              {{ $totalFlightTimeFormatted }}
+            {{ $totalFlightTimeFormatted }}
           </td>
         </tr>
       </tbody>
     </table>
 
     <div style="text-align: center; margin-top: 60px;">
+
       <img src="images/AvMS_Logo.png" alt="Signature" style="height: 50px; margin-bottom: 5px;">
       <p style="font-weight: 600;">{{ $event->instructor->fname ?? '' }} {{ $event->instructor->lname ?? '' }}</p>
       <p style="color: #6c757d;"> Head of Training <br>{{ $event->orgUnit?->org_unit_name }}</p>
     </div>
 
-  <!-- <div style="font-size: 0.75rem; margin-top: 50px;">
-     <p>Part-4, Appendix 10<br>Rev. 1 dated {{ \Carbon\Carbon::now()->format('jS F Y') }}</p>
-  </div> -->
-
-
-    <div style="width: 100%; margin-top: 30px; font-size: 0.8rem; color: #666; display: table;">
-      <!-- Left Side -->
-      <div style="display: table-cell; vertical-align: middle; width: 50%;">
-        <p style="margin: 0;">
-          {{ $event->orgUnit->org_unit_name ?? '' }} LIMITED 
-          <!-- <a href="mailto:{{ $event->orgUnit->admin->email ?? 'admin@example.com' }}" style="color: #1c3b6f; text-decoration: none; font-weight: 600;">{{ $event->orgUnit->admin->email}}</a> | -->
-        
-        </p>
-      </div>
-
-      <!-- Right Side -->
-      @if($event?->orgUnit?->org_logo)
-      <div style="display: table-cell; vertical-align: middle; text-align: right; width: 40%;" >
-        <div style="display: inline-block; text-align: center;">
-          <img src="{{ public_path('storage/organization_logo/' . $event->orgUnit->org_logo) }}" alt="T8UK Logo"
-              style="max-width: 39px; height: auto; margin-bottom: 5px;">
-          <div>
-            <!-- <a href="mailto:{{ $event->orgUnit->admin->email ?? '#' }}"
-              style="color: #1c3b6f; text-decoration: none; font-weight: 600;">
-              {{ $event->orgUnit->admin->email }}
-            </a> -->
-          </div>
-        </div>
-      </div>
-      @endif
-  </div>
-    <div class="avms-footer" style="text-align: right; font-size:11px; color: #95d8ffff; margin-top: 20px;">
+    <!-- <div class="avms-footer" style="text-align: right; font-size:11px; color: #95d8ffff; margin-top: 20px;">
       Created by AvMS (Aviation Management Systems LTD)
-    </div>
+    </div> -->
 </body>
+
 </html>

@@ -424,7 +424,6 @@ class OrganizationController extends Controller
                 'archive_after_months' => $validated['archive_after_months'] ?? null,
                 'show_dob'             => $validated['show_dob'],
                 'show_phone'           => $validated['show_phone'],
-                'show_phone'           => $validated['show_phone'],
                 'enable_tacho_fields'  => $validated['enable_tacho_fields'],
                 'send_email'           => $validated['send_email'],
                 'timezone'             => $validated['timezone'],
@@ -448,6 +447,25 @@ class OrganizationController extends Controller
         $rating = Rating::where('status', 1)->whereIn('id', $ou_ratings)->get();
 
         return response()->json(['OuSetting' => $OuSetting, 'validation_type' => $validation_type, 'rating' => $rating]);
+    }
+
+    public function saveTeachTrackSettings(Request $request)
+    {
+        $teachtrackEnabled = (int) $request->teachtrack_enabled;
+
+        $setting = OuSetting::updateOrCreate(
+            ['organization_id' => $request->organization_unit_id],
+            [
+                'teachtrack_enabled' => $teachtrackEnabled,
+                // 'teachtrack_validity_months' => $request->teachtrack_validity_months,
+                'teachtrack_alert_days' => $request->teachtrack_alert_days,
+                'teachtrack_email_enabled' => $teachtrackEnabled
+                    ? $request->teachtrack_email_enabled
+                    : 0,
+            ]
+        );
+
+        return response()->json(['success' => true]);
     }
 
     

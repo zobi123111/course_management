@@ -8,7 +8,7 @@
     .switch {
         position: relative;
         display: inline-block;
-        width: 110px;
+        width: 54px;
         height: 30px;
     }
 
@@ -65,7 +65,7 @@
     }
 
     .switch-input:checked + .switch-button::before {
-        transform: translateX(78px);
+        transform: translateX(25px);
     }
 
     .switch-input:checked + .switch-button .switch-button-left {
@@ -76,6 +76,46 @@
     .switch-input:checked + .switch-button .switch-button-right {
         transform: translateX(0);
         opacity: 1;
+    }
+
+    .teach-switch {
+        position: relative;
+        display: inline-block;
+        width: 46px;
+        height: 24px;
+    }
+
+    .teach-slider {
+        position: absolute;
+        cursor: pointer;
+        background-color: #ccc;
+        border-radius: 30px;
+        inset: 0;
+        transition: 0.3s;
+    }
+
+    .teach-slider::before {
+        content: "";
+        position: absolute;
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        top: 3px;
+        background-color: #fff;
+        border-radius: 50%;
+        transition: 0.3s;
+    }
+
+    .teach-switch-input{
+        display: none;
+    }
+    
+    .teach-switch-input:checked + .teach-slider {
+        background-color: #28a745;
+    }
+
+    .teach-switch-input:checked + .teach-slider::before {
+        transform: translateX(22px);
     }
 </style>
 
@@ -91,6 +131,7 @@
             <a href="{{ url('tags') }}?ou_id={{ encode_id($ou_id) }}" class="btn btn-primary me-2 create-button">Manage Tags</a>
             <a href="{{ url('custom-cbta') }}?ou_id={{ encode_id($ou_id) }}" class="btn btn-primary" id="addRating">Manage Competency Grading</a> 
             <a href="{{ url('validation-codes') }}?ou_id={{ encode_id($ou_id) }}" class="btn btn-primary" id="addRating">Manage Validation Code</a> 
+            <button class="btn btn-primary" id="manage_teachtrack">Manage Teach Track</button> 
         </div>
     </div>
     <div class="container mt-4">
@@ -228,8 +269,8 @@
                                    class="switch-input"
                                    {{ optional($OuSetting)->send_email == 1 ? 'checked' : '' }}>
                             <div class="switch-button">
-                                <span class="switch-button-left">Send Email</span>
-                                <span class="switch-button-right">Not Send Email</span>
+                                <span class="switch-button-left"></span>
+                                <span class="switch-button-right"></span>
                             </div>
                         </label>
                     </div>
@@ -255,8 +296,8 @@
                                    class="switch-input"
                                    {{ optional($OuSetting)->enable_tacho_fields == 1 ? 'checked' : '' }}>
                             <div class="switch-button">
-                                <span class="switch-button-left">Enable Tacho Fields</span>
-                                <span class="switch-button-right">Disable Tacho Fields</span>
+                                <span class="switch-button-left"></span>
+                                <span class="switch-button-right"></span>
                             </div>
                         </label>
                     </div>
@@ -272,8 +313,6 @@
                             </i>
                     </label>
                     <div class="col-sm-8">
-                        <input type="hidden" name="enable_tacho_fields" value="0">
-
                         <label class="switch"> 
                             <input type="checkbox"
                                    id="enable_licence_validation"
@@ -282,8 +321,8 @@
                                    class="switch-input"
                                    {{ optional($OuSetting)->enable_licence_validation == 1 ? 'checked' : '' }}>
                             <div class="switch-button">
-                                <span class="switch-button-left">Enable</span>
-                                <span class="switch-button-right">Disable</span>
+                                <span class="switch-button-left"></span>
+                                <span class="switch-button-right"></span>
                             </div>
                         </label>
                     </div>
@@ -299,6 +338,90 @@
                 </div>
 
             </form>
+
+            <!-- TeachTrack Modal -->
+            <div class="modal fade" id="teachtrackModal" tabindex="-1">
+                <div class="modal-dialog modal-md modal-dialog-centered">
+                    <div class="modal-content rounded-3 shadow">
+
+                        <!-- Header -->
+                        <div class="modal-header border-0 pb-0">
+                            <h5 class="modal-title fw-bold">Manage TeachTrack</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+
+                        <!-- Body -->
+                        <div class="modal-body px-4 pt-2">
+
+                            <!-- General Settings -->
+                            <div class="mb-4">
+                                <h6 class="fw-semibold text-muted mt-3 mb-3">General Settings</h6>
+
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <label class="mb-0">Enable Instructor TeachTrack</label>
+
+                                    <input type="hidden" name="teachtrack_enabled" value="0">
+
+                                    <label class="teach-switch mb-0">
+                                        <input type="checkbox"
+                                            id="teachtrack_enabled"
+                                            class="teach-switch-input"
+                                            {{ optional($OuSetting)->teachtrack_enabled == 1 ? 'checked' : '' }}>
+                                        <span class="teach-slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <label class="mb-0">Enable Email Alerts</label>
+
+                                    <input type="hidden" name="teachtrack_email_enabled" value="0">
+
+                                    <label class="teach-switch mb-0">
+                                        <input type="checkbox"
+                                            id="teachtrack_email_enabled"
+                                            class="teach-switch-input"
+                                            {{ optional($OuSetting)->teachtrack_email_enabled == 1 ? 'checked' : '' }}>
+                                        <span class="teach-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <!-- Configuration -->
+                            <div>
+                                <h6 class="fw-semibold text-muted mb-3">Configuration</h6>
+
+                                <!-- <div class="mb-3">
+                                    <label class="form-label">Validity (Months)</label>
+                                    <input type="number"
+                                        id="teachtrack_validity_months"
+                                        class="form-control"
+                                        placeholder="e.g. 12"
+                                        value="{{ optional($OuSetting)->teachtrack_validity_months ?? 12 }}">
+                                </div> -->
+
+                                <div class="mb-2">
+                                    <label class="form-label">Alert Before (Days)</label>
+                                    <input type="number"
+                                        id="teachtrack_alert_days"
+                                        class="form-control"
+                                        placeholder="e.g. 30"
+                                        value="{{ optional($OuSetting)->teachtrack_alert_days ?? 30 }}">
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-light px-3" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary px-4" id="saveTeachTrack">Save</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
 
         </div>
     </div>
@@ -378,6 +501,56 @@ $(document).ready(function () {
     setTimeout(function () {
         $('#successMessage').fadeOut('fast');
     }, 2000);
+
+    $('#manage_teachtrack').on('click', function () {
+        $('#teachtrackModal').modal('show');
+    });
+
+    $('#saveTeachTrack').on('click', function () {
+
+        let data = {
+            organization_unit_id: "{{ $ou_id }}",
+            teachtrack_enabled: $('#teachtrack_enabled').is(':checked') ? 1 : 0,
+            // teachtrack_validity_months: $('#teachtrack_validity_months').val(),
+            teachtrack_alert_days: $('#teachtrack_alert_days').val(),
+            teachtrack_email_enabled: $('#teachtrack_email_enabled').is(':checked') ? 1 : 0
+        };
+
+        $.ajax({
+            url: "{{ url('/store/teachtrack-settings') }}",
+            type: 'POST',
+            data: data,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (res) {
+                if (res.success) {
+                    $('#teachtrackModal').modal('hide');
+                    location.reload();
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr.responseText);
+                alert('Failed to save TeachTrack settings');
+            }
+        });
+
+    });
+
+
+    $('#teachtrack_enabled').on('change', function () {
+        let isEnabled = $(this).is(':checked');
+
+        // Disable/enable dependent fields
+        // $('#teachtrack_validity_months').prop('disabled', !isEnabled);
+        $('#teachtrack_alert_days').prop('disabled', !isEnabled);
+        $('#teachtrack_email_enabled').prop('disabled', !isEnabled);
+
+        // IMPORTANT: force OFF when TeachTrack is disabled
+        if (!isEnabled) {
+            $('#teachtrack_email_enabled').prop('checked', false);
+        }
+    }).trigger('change');
 });
 </script>
 @endsection

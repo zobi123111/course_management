@@ -20,6 +20,7 @@ use App\Models\CourseCustomTime;
 use App\Models\CourseLesson;
 use App\Models\SubLesson;
 use App\Models\LessonPrerequisite;
+use App\Models\OuSetting;
 use App\Models\Rating;
 use App\Models\RhsTag;
 use App\Models\UserTagRating;
@@ -157,7 +158,7 @@ class CourseController extends Controller
 
     public function createCourse(Request $request)
     {
-    //   dd($request->all());
+        //   dd($request->all());
       //dd($request->enable_aircraft);
         if (!$request->enable_feedback) {
             $request->merge(['feedback_questions' => null]);
@@ -269,9 +270,10 @@ class CourseController extends Controller
             'auto_archive'   => $request->auto_archive ?? 0,
 
             'teach_track'   => $teachTrackEnabled ? 1 : 0,
-            'is_instructor' => $teachTrackEnabled ? $request->is_instructor : 0,
-            'is_examiner'   => $teachTrackEnabled ? $request->is_examiner : 0,
+            'is_instructor' => $teachTrackEnabled ? (int) $request->input('is_instructor', 0) : 0,
+            'is_examiner'   => $teachTrackEnabled ? (int) $request->input('is_examiner', 0) : 0,
             'training_type' => $teachTrackEnabled ? $request->training_type : null,
+            'teach_extend_validity' => $teachTrackEnabled ? $request->teach_extend_validity : null,
             'validity'      => $teachTrackEnabled ? $request->validity : null,
         ]);
 
@@ -394,12 +396,16 @@ class CourseController extends Controller
 
         $ato_num = OrganizationUnits::where('id', $ou_id)->get();
 
+        $OuSetting = OuSetting::where('organization_id', $ou_id)->first();
+
+
         return response()->json([
             'course' => $course,
             'allGroups' => $allGroups,
             'courseResources' => $courseResources, 
             'resources' => $resources,
-            'ato_num' => $ato_num
+            'ato_num' => $ato_num,
+            'ou_setting' => $OuSetting
         ]);
     }
 
@@ -440,6 +446,7 @@ class CourseController extends Controller
     // Update course
     public function updateCourse(Request $request)
     {
+
         $request->validate([
             'course_name' => 'required',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
@@ -540,6 +547,7 @@ class CourseController extends Controller
             'is_instructor' => $teachTrackEnabled ? $request->boolean('is_instructor') : 0,
             'is_examiner'   => $teachTrackEnabled ? $request->boolean('is_examiner') : 0,
             'training_type' => $teachTrackEnabled ? $request->edit_training_type : null,
+            'teach_extend_validity' => $teachTrackEnabled ? $request->teach_extend_validity : null,
             'validity'      => $teachTrackEnabled ? $request->edit_validity : null,
         ]);
 

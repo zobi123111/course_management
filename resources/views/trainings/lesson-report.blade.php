@@ -50,6 +50,7 @@
         <tr>
             <td width="40%" valign="top" style="padding-right: 15px; border: none;">
                 <div class="section" style="border: none;">
+                    <strong>Course:</strong> {{ $event->course->course_name}}<br>
                     <strong>Date:</strong> {{ date('M d, Y', strtotime($eventLesson?->lesson_date)) }}<br>
                     <strong>Student Name:</strong> {{ $event?->student?->fname }} {{ $event?->student?->lname }}<br>
                     <strong>Instructor Name:</strong> {{ $eventLesson?->instructor?->fname }} {{ $eventLesson?->instructor?->lname }}<br>
@@ -85,7 +86,8 @@
                         @endif
                         <br>
                     @endif
-                    @if(!$eventLesson->lesson_type == 'groundschool')
+
+                    @if($eventLesson->lesson_type != 'groundschool')
                         <strong>Departure :</strong> {{ $eventLesson?->departure_airfield ?? 'N/A' }}<br>
                         <strong>Arrival :</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}<br>
                         <strong>Total Blocks:</strong> {{ $blockCreditedFormatted }}<br>
