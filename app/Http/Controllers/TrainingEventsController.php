@@ -4266,8 +4266,6 @@ class TrainingEventsController extends Controller
 
     public function generateCertificate($event)
     {
-
-
         if (!function_exists('formatSeconds')) {
             function formatSeconds(int $seconds): string
             {
@@ -4279,18 +4277,20 @@ class TrainingEventsController extends Controller
         }
         $eventId = decode_id($event);
         $event = TrainingEvents::with([
-            'eventLessons',
-            'eventLessons.sectors',
-            'eventLessons.CreditedTime',
-            'defLessons',
-            'defLessons.deferredSectors',
-            'defLessons.customSectors',
-            'recommendedInstructor'
-        ])->findOrFail($eventId);
+                    'eventLessons',
+                    'eventLessons.sectors',
+                    'eventLessons.CreditedTime',
+                    'defLessons',
+                    'defLessons.deferredSectors',
+                    'defLessons.customSectors',
+                    'recommendedInstructor'
+                ])->findOrFail($eventId);
+           
 
         $student = $event->student;  
         $course = $event->course;
         $firstLesson = $event->firstLesson;
+        $ou_id = $event->ou_id;
 
         // Helper function
         if (!function_exists('toSeconds')) {
@@ -4535,6 +4535,62 @@ class TrainingEventsController extends Controller
 
         $recommendedBy = $event->recommendedInstructor;
 
+        // Signature
+      //  $signature =  OuSetting::where('organization_id', $ou_id)->value('signature');
+        $trainingEvent = TrainingEvents::with([
+                    'course:id,course_name,enable_mp_lifus,course_type,duration_value,duration_type,groundschool_hours,simulator_hours,ato_num,instructor_cbta,examiner_cbta,enable_mp_lifus',
+                    'course.documents',
+                    'group:id,name,user_ids',
+                    'instructor:id,fname,lname',
+                    'student:id,fname,lname,licence',
+                    'trainingQuizzes' => function ($q) {
+                        $q->select('id', 'trainingevent_id', 'quiz_id', 'student_id', 'is_active');
+                    },
+                    'resource:id,name',
+                    'eventLessons' => function ($q) {
+                        $q->orderBy('position', 'asc'); 
+                    },
+                    'eventLessons.lesson:id,lesson_title,enable_cbta,grade_type,lesson_type,custom_time_id,position,instructor_cbta,examiner_cbta',
+                    'eventLessons.instructor:id,fname,lname', 
+                    'eventLessons.resource:id,name',
+                    'eventLessons.sectors' => function ($q) {
+                        $q->with('resourceData');
+                    },
+                    'eventLessons.CreditedTime',
+                    'trainingFeedbacks.question',
+                    'documents',
+                    'studentDocument'
+                ])->find($eventId);
+              //  dd($trainingEvent->eventLessons);
+           // ✅ Initialize totals
+                $totals = [
+                    'groundschool' => ['duration' => 0, 'credited' => 0],
+                ];
+
+
+                // 🔁 Loop through lessons
+                foreach ($trainingEvent->eventLessons as $val) {
+
+                    $type = $val->lesson?->lesson_type ?? '';
+
+                    if ($type === 'groundschool') {
+                        $totals['groundschool']['credited'] += toSeconds($val->hours_credited ?? 0);
+                        $totals['groundschool']['duration'] += toSeconds($val->hours ?? 0);
+                    }
+                }
+
+
+                // ✅ Apply "value OR N/A" logic
+                $groundschoolDuration = ($totals['groundschool']['duration'] > 0)
+                    ? gmdate('H:i', $totals['groundschool']['duration'])
+                    : 'N/A';
+
+                $groundschoolCredited = ($totals['groundschool']['credited'] > 0)
+                    ? gmdate('H:i', $totals['groundschool']['credited'])
+                    : 'N/A';
+
+        // return view('trainings.course-completion-certificate', compact('event', 'student', 'course', 'firstLesson', 'hoursOfGroundschool', 'flightTime', 'simulatorTime', 'recommendedBy', 'totalFlightTimeFormatted', 'blockCreditedFormatted', 'blockDurationFormatted', 'signature', 'groundschoolCredited'));
+
         $pdf = PDF::loadView('trainings.course-completion-certificate', [
             'event' => $event,
             'student' => $student,
@@ -4550,10 +4606,14 @@ class TrainingEventsController extends Controller
             'totalFlightTimeFormatted' => $totalFlightTimeFormatted,
             'blockCreditedFormatted'   => $blockCreditedFormatted,
             'blockDurationFormatted'   => $blockDurationFormatted,
+           // 'signature'   => $signature,
+            'groundschoolCredited' => $groundschoolCredited
         ]);
 
         $filename = 'Certificate_' . Str::slug($student->fname . ' ' . $student->lname) . '.pdf';
         return $pdf->download($filename);
+
+   
     }
 
 
