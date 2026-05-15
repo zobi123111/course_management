@@ -316,7 +316,7 @@ $subTitle = "Welcome to Admin Dashboard";
                 @if ($user->is_activated == 0 && $user->status == 1) 
                 <tr>
                     <td>
-                        {{ $user->fname }} {{ $user->lname }}
+                       
 
                         @php
                             $latestTrack = $user->TeachTrack->sortByDesc('id')->first();
@@ -353,6 +353,7 @@ $subTitle = "Welcome to Admin Dashboard";
                                 E
                             </span>
                         @endif
+                         {{ $user->fname }} {{ $user->lname }}
                     </td>
                     <?php
                         $doc = $user->documents; 

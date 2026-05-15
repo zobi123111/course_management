@@ -65,6 +65,12 @@
         {{ session()->get('message') }}
     </div>
     @endif
+    @if(session()->has('error'))
+    <div id="successMessage" class="alert alert-danger fade show" role="alert">
+        <i class="bi bi-check-circle me-1"></i>
+        {{ session()->get('error') }}
+    </div>
+    @endif
 
     @if(checkAllowedModule('users','user.store')->isNotEmpty())
     <div class="create_btn d-flex justify-content-between align-items-center">
@@ -1175,7 +1181,7 @@
             } else {
                 // alert("else");
                 $('#rating_select_boxes_container').empty().hide();
-                $('#add_rating_box').hide();
+                $('#add_rating_box').hide(); 
             }
         });
 
