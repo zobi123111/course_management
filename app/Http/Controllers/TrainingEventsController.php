@@ -1091,7 +1091,9 @@ class TrainingEventsController extends Controller
     {
         $trainingEvents = TrainingEvents::findOrFail(decode_id($request->event_id));
         if ($trainingEvents) {
+            TeachTrack::where('event_id', decode_id($request->event_id))->delete();
             $trainingEvents->delete();
+           
             return redirect()->route('training.index')->with('message', 'Training event deleted successfully');
         }
     }
