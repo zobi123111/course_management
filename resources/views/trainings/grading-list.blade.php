@@ -105,8 +105,8 @@
                             <small class="text-muted">Summary:</small>
                             <ul>
                                 @if($eventtype === 'hours')
-                                    <li class="mb-0 fw-bold text-dark">Ground Time: {{ $blockDurationFormatted }}</li>
-                                    <li class="mb-0 fw-bold text-dark">Block Time: {{ $blockCreditedFormatted }}</li>
+                                    <li class="mb-0 fw-bold text-dark">Block Time (Duration): {{ $blockDurationFormatted }}</li>
+                                    <li class="mb-0 fw-bold text-dark">Block Time (Credited): {{ $blockCreditedFormatted }}</li>
                                 @endif
                                 <li class="mb-0 fw-bold text-dark">Flight Time: {{ $totalFlightTimeFormatted }}</li>
                             </ul>

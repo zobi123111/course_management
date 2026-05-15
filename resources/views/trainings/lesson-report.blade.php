@@ -34,9 +34,14 @@
     <table width="100%" style="border: none; border-collapse: collapse;">
         <tr>
             <td style="border: none; text-align: left; vertical-align: top;">
-                <h1 style="display: inline-block; margin: 0;">Lesson Report -</h1> 
-                <h2 style="display: inline-block; margin: 0 0 3px 9px;">{{ $event->eventLessons[0]->lesson->lesson_title }}</h2>
+                <h2 style="margin: 0; font-weight: bold;">
+                    Course Name - {{ $event->course->course_name }}
+                </h2>
+                <h3 style="margin: 8px 0 0 0; font-weight: bold;">
+                    Lesson Report - {{ $event->eventLessons[0]->lesson->lesson_title }}
+                </h3>
             </td>
+
             <td style="border: none; text-align: right; vertical-align: top;">
                 @if($event?->orgUnit?->org_logo)
                 <img src="{{ public_path('storage/organization_logo/' . $event->orgUnit->org_logo) }}" alt="Org Logo" style="height: 60px;">
