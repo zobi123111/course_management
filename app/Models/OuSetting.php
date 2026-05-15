@@ -21,6 +21,7 @@ class OuSetting extends Model
             'teachtrack_enabled',
             'teachtrack_validity_months',
             'teachtrack_alert_days',
-            'teachtrack_email_enabled'
+            'teachtrack_email_enabled',
+            'signature'
     ];
 }

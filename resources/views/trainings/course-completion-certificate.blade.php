@@ -154,7 +154,16 @@ $competentPercent = 100 - ($incompletePercent + $furtherPercent);
     </table>
 
     <div style="text-align: center; margin-top: 60px;">
+      @if(!empty($signature))
 
+      <div class="mt-2">
+        <img src="{{ public_path('storage/organization_logo/' . $signature) }}"
+          alt="Signature"
+          style="max-height: 100px;">
+
+        <br>
+      </div>
+      @endif
       <img src="images/AvMS_Logo.png" alt="Signature" style="height: 50px; margin-bottom: 5px;">
       <p style="font-weight: 600;">{{ $event->instructor->fname ?? '' }} {{ $event->instructor->lname ?? '' }}</p>
       <p style="color: #6c757d;"> Head of Training <br>{{ $event->orgUnit?->org_unit_name }}</p>

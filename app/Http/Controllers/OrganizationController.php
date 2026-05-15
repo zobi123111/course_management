@@ -415,6 +415,21 @@ class OrganizationController extends Controller
             'send_email'           => 'required|in:0,1',
             'timezone'             => 'required',
         ]);
+
+            $signature = [];
+            if ($request->hasFile('signature')) {
+                $file = $request->file('signature');
+                // Get the original file name
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                
+                // Store the file with the same name in the 'organization_logo' folder
+                $filePath = $file->storeAs('organization_logo', $fileName, 'public');
+                
+                // Store only the file name if needed
+                $signature[] = $fileName;
+          
+            }
+        $signatureValue = !empty($signature) ? $signature[0] : null;
         
 
         OuSetting::updateOrCreate(
@@ -427,9 +442,10 @@ class OrganizationController extends Controller
                 'enable_tacho_fields'  => $validated['enable_tacho_fields'],
                 'send_email'           => $validated['send_email'],
                 'timezone'             => $validated['timezone'],
+                'signature'            => $signatureValue,
                 'enable_licence_validation' => $request->enable_licence_validation ? 1 : 0,
                 
-            ]
+            ] 
         );
         Session::flash('message', 'Organization General setting Updated successfully .');
         return response()->json([

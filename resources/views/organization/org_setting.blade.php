@@ -136,7 +136,7 @@
     </div>
     <div class="container mt-4">
         <div class="card-body">
-            <form method="POST" id="ouSettingsForm">
+            <form method="POST" id="ouSettingsForm" enctype="multipart/form-data">
                 @csrf
                 {{-- Organization Unit --}}
                 <div class="row mb-3">
@@ -211,6 +211,31 @@
                         </select>
 
                         <div id="timezone_error" class="text-danger error_e"></div>
+                    </div>
+                </div>
+
+               <!-- Upload signature -->
+                <div class="row mb-3">
+                    <label class="col-sm-4 col-form-label">
+                        Signature
+                    </label>
+                    <div class="col-sm-8">
+                        <input type="file" name="signature" class="form-control" accept="image/*">
+
+                        @if(!empty($OuSetting->signature))
+                            <div class="mt-2">
+                                <p class="mb-1">Current Signature:</p>
+                                <img src="{{ asset('storage/organization_logo/' . $OuSetting->signature) }}" 
+                                    alt="Signature" 
+                                    style="max-height: 100px;">
+                                
+                                <br>
+
+                                <a href="{{ asset('storage/organization_logo/' . $OuSetting->signature) }}" target="_blank">
+                                    View Full Image
+                                </a>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
@@ -365,7 +390,7 @@
                                     <label class="teach-switch mb-0">
                                         <input type="checkbox"
                                             id="teachtrack_enabled"
-                                            class="teach-switch-input"
+                                            class="teach-switch-input" 
                                             {{ optional($OuSetting)->teachtrack_enabled == 1 ? 'checked' : '' }}>
                                         <span class="teach-slider"></span>
                                     </label>
@@ -457,46 +482,84 @@ $(document).ready(function () {
         }
     });
 
+    // $('#ouSettingsForm').on('submit', function (e) {
+    //     e.preventDefault();
+    //     $('.error_e').html('');
+
+    //     let formData = $(this).serializeArray(); 
+
+    //     formData.push({
+    //         name: 'show_dob',
+    //         value: $('#show_dob').is(':checked') ? 1 : 0
+    //     });
+
+    //     formData.push({
+    //         name: 'show_phone',
+    //         value: $('#show_phone').is(':checked') ? 1 : 0
+    //     });
+
+    //     $.ajax({
+    //         url: '/store/org_setting',
+    //         type: 'POST',
+    //         data: formData,
+            
+    //         headers: {
+    //             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    //         },
+    //         success: function (response) {
+    //             if (response.success === true) {
+    //                 location.reload();
+    //             }
+    //         },
+    //         error: function (xhr) {
+    //             if (xhr.status === 422) {
+    //                 let errors = xhr.responseJSON.errors;
+    //                 $.each(errors, function (key, value) {
+    //                     $('#' + key + '_error').html('<p>' + value[0] + '</p>');
+    //                 });
+    //             } else {
+    //                 alert('Something went wrong.');
+    //             }
+    //         }
+    //     });
+    // });
+
     $('#ouSettingsForm').on('submit', function (e) {
-        e.preventDefault();
-        $('.error_e').html('');
+    e.preventDefault();
+    $('.error_e').html('');
 
-        let formData = $(this).serializeArray();
+    let formData = new FormData(this); // ✅ includes file
 
-        formData.push({
-            name: 'show_dob',
-            value: $('#show_dob').is(':checked') ? 1 : 0
-        });
+    // overwrite checkbox values properly
+    formData.set('show_dob', $('#show_dob').is(':checked') ? 1 : 0);
+    formData.set('show_phone', $('#show_phone').is(':checked') ? 1 : 0);
 
-        formData.push({
-            name: 'show_phone',
-            value: $('#show_phone').is(':checked') ? 1 : 0
-        });
-
-        $.ajax({
-            url: '/store/org_setting',
-            type: 'POST',
-            data: formData,
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function (response) {
-                if (response.success === true) {
-                    location.reload();
-                }
-            },
-            error: function (xhr) {
-                if (xhr.status === 422) {
-                    let errors = xhr.responseJSON.errors;
-                    $.each(errors, function (key, value) {
-                        $('#' + key + '_error').html('<p>' + value[0] + '</p>');
-                    });
-                } else {
-                    alert('Something went wrong.');
-                }
+    $.ajax({
+        url: '/store/org_setting',
+        type: 'POST',
+        data: formData,
+        processData: false,  // ✅ REQUIRED
+        contentType: false,  // ✅ REQUIRED
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function (response) {
+            if (response.success === true) {
+                location.reload();
             }
-        });
+        },
+        error: function (xhr) {
+            if (xhr.status === 422) {
+                let errors = xhr.responseJSON.errors;
+                $.each(errors, function (key, value) {
+                    $('#' + key + '_error').html('<p>' + value[0] + '</p>');
+                });
+            } else {
+                alert('Something went wrong.');
+            }
+        }
     });
+});
 
     setTimeout(function () {
         $('#successMessage').fadeOut('fast');
